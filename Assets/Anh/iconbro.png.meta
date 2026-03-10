@@ -1,0 +1,715 @@
+fileFormatVersion: 2
+guid: 4fd7b20d402c8f14bb03d7468a51e919
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -1445249447926437541
+    second: iconbro_0
+  - first:
+      213: 8662192891647028312
+    second: iconbro_1
+  - first:
+      213: -5214850069933183553
+    second: iconbro_2
+  - first:
+      213: -2827701541090726959
+    second: iconbro_3
+  - first:
+      213: -1366524336285306634
+    second: iconbro_4
+  - first:
+      213: 2157316861825357001
+    second: iconbro_5
+  - first:
+      213: -3575550976546840755
+    second: iconbro_6
+  - first:
+      213: -2514297128285201972
+    second: iconbro_7
+  - first:
+      213: -7762905460719077163
+    second: iconbro_8
+  - first:
+      213: -7583210414742002580
+    second: iconbro_9
+  - first:
+      213: 1152917117849705785
+    second: iconbro_10
+  - first:
+      213: 6266314728456643428
+    second: iconbro_11
+  - first:
+      213: -432545634715045974
+    second: iconbro_12
+  - first:
+      213: -876918778332675277
+    second: iconbro_13
+  - first:
+      213: 9167480902206119178
+    second: iconbro_14
+  - first:
+      213: 4772678866008448710
+    second: iconbro_15
+  - first:
+      213: -6375729644691100476
+    second: iconbro_16
+  - first:
+      213: 1449970356335656372
+    second: iconbro_17
+  - first:
+      213: -8288585724400086732
+    second: iconbro_18
+  - first:
+      213: -4822492585600394926
+    second: iconbro_19
+  - first:
+      213: -1454894092632257498
+    second: iconbro_20
+  - first:
+      213: -4302250101575422374
+    second: iconbro_21
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: iconbro_0
+      rect:
+        serializedVersion: 2
+        x: 204
+        y: 328
+        width: 33
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b59e38cc84171fbe0800000000000000
+      internalID: -1445249447926437541
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_1
+      rect:
+        serializedVersion: 2
+        x: 235
+        y: 309
+        width: 18
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85ce88a6a8a463870800000000000000
+      internalID: 8662192891647028312
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_2
+      rect:
+        serializedVersion: 2
+        x: 239
+        y: 271
+        width: 85
+        height: 67
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fbd26b8ad7121a7b0800000000000000
+      internalID: -5214850069933183553
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_3
+      rect:
+        serializedVersion: 2
+        x: 268
+        y: 321
+        width: 88
+        height: 54
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1db66702e6cf1c8d0800000000000000
+      internalID: -2827701541090726959
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_4
+      rect:
+        serializedVersion: 2
+        x: 287
+        y: 271
+        width: 89
+        height: 69
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6f0b9c63b51290de0800000000000000
+      internalID: -1366524336285306634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_5
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 228
+        width: 67
+        height: 83
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c49f01814450fd10800000000000000
+      internalID: 2157316861825357001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_6
+      rect:
+        serializedVersion: 2
+        x: 207
+        y: 301
+        width: 16
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4fdf96b457116ec0800000000000000
+      internalID: -3575550976546840755
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_7
+      rect:
+        serializedVersion: 2
+        x: 415
+        y: 255
+        width: 39
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cc996c8451c6b1dd0800000000000000
+      internalID: -2514297128285201972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_8
+      rect:
+        serializedVersion: 2
+        x: 123
+        y: 273
+        width: 16
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5d836e4fc9e944490800000000000000
+      internalID: -7762905460719077163
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_9
+      rect:
+        serializedVersion: 2
+        x: 328
+        y: 241
+        width: 43
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c64a24c2e4603c690800000000000000
+      internalID: -7583210414742002580
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_10
+      rect:
+        serializedVersion: 2
+        x: 381
+        y: 277
+        width: 21
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 93d16e0a20cffff00800000000000000
+      internalID: 1152917117849705785
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_11
+      rect:
+        serializedVersion: 2
+        x: 436
+        y: 255
+        width: 42
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 463e4709b0c66f650800000000000000
+      internalID: 6266314728456643428
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_12
+      rect:
+        serializedVersion: 2
+        x: 250
+        y: 242
+        width: 15
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aafe9a5790a4ff9f0800000000000000
+      internalID: -432545634715045974
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_13
+      rect:
+        serializedVersion: 2
+        x: 377
+        y: 238
+        width: 21
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3338c98640f84d3f0800000000000000
+      internalID: -876918778332675277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_14
+      rect:
+        serializedVersion: 2
+        x: 443
+        y: 243
+        width: 55
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a0d5c252f4f693f70800000000000000
+      internalID: 9167480902206119178
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_15
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 184
+        width: 47
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ce92735426fb3240800000000000000
+      internalID: 4772678866008448710
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_16
+      rect:
+        serializedVersion: 2
+        x: 114
+        y: 201
+        width: 48
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4cc62401babd487a0800000000000000
+      internalID: -6375729644691100476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_17
+      rect:
+        serializedVersion: 2
+        x: 159
+        y: 31
+        width: 399
+        height: 200
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4bdbb385b545f1410800000000000000
+      internalID: 1449970356335656372
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_18
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 167
+        width: 34
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 43152cec23709fc80800000000000000
+      internalID: -8288585724400086732
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_19
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 129
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 25955574b80131db0800000000000000
+      internalID: -4822492585600394926
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_20
+      rect:
+        serializedVersion: 2
+        x: 147
+        y: 35
+        width: 67
+        height: 63
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 62c07d6f78d2fcbe0800000000000000
+      internalID: -1454894092632257498
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: iconbro_21
+      rect:
+        serializedVersion: 2
+        x: 140
+        y: 0
+        width: 86
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a5e65b0b3565b44c0800000000000000
+      internalID: -4302250101575422374
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      iconbro_0: -1445249447926437541
+      iconbro_1: 8662192891647028312
+      iconbro_10: 1152917117849705785
+      iconbro_11: 6266314728456643428
+      iconbro_12: -432545634715045974
+      iconbro_13: -876918778332675277
+      iconbro_14: 9167480902206119178
+      iconbro_15: 4772678866008448710
+      iconbro_16: -6375729644691100476
+      iconbro_17: 1449970356335656372
+      iconbro_18: -8288585724400086732
+      iconbro_19: -4822492585600394926
+      iconbro_2: -5214850069933183553
+      iconbro_20: -1454894092632257498
+      iconbro_21: -4302250101575422374
+      iconbro_3: -2827701541090726959
+      iconbro_4: -1366524336285306634
+      iconbro_5: 2157316861825357001
+      iconbro_6: -3575550976546840755
+      iconbro_7: -2514297128285201972
+      iconbro_8: -7762905460719077163
+      iconbro_9: -7583210414742002580
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Name: Dish_Pho
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: pho_beef
+  dishName: "Ph\u1EDF"
+  dishSubTitle: Vietnamese Noodle Soup
+  dishSprite: {fileID: 307049234662581677, guid: 94dc3efd553d9a44cb130a7ac52c48d1, type: 3}
+  difficulty: 2
+  targetFlavor:
+    sweet: 1
+    spicy: 1
+    sour: 0
+    umami: 5
+    texture: 4
+  required1:
+    displayName: Beef
+    icon: {fileID: 6282751622250221668, guid: d1edf61082fb8db4c950bf561adef9bd, type: 3}
+  required2:
+    displayName: Noodle
+    icon: {fileID: 307049234662581677, guid: 94dc3efd553d9a44cb130a7ac52c48d1, type: 3}
+  optional1:
+    displayName: Mushroom
+    icon: {fileID: -236262655474095786, guid: dec575c70c5d0a74493ec0c7247d7223, type: 3}
+  optional2:
+    displayName: Egg
+    icon: {fileID: 4420155285760907353, guid: 029fc556f8bd59e45987a0cc5cd5383d, type: 3}
+  optional3:
+    displayName: Herbs
+    icon: {fileID: -6473379884045465844, guid: ae1ebfb2e0c364648a535b22df192d73, type: 3}
+  tip1:
+    displayName: Fish Sauce
+    icon: {fileID: -5582771631697853027, guid: 34b84bd10902cd3428f634528d40cdfb, type: 3}
+    effectText: +2 Umami
+  tip2:
+    displayName: Chili
+    icon: {fileID: -1733071076163020357, guid: 6937de7c237f9cc4aabbf97a1459c2b4, type: 3}
+    effectText: +1 Spicy
+  tip3:
+    displayName: Lemon
+    icon: {fileID: 3469545249588112995, guid: 8e84e64d916659c44a48c06f87b8972b, type: 3}
+    effectText: +1 Sour
+  tip4:
+    displayName: Salt
+    icon: {fileID: -2266700597664887886, guid: a96784f63e2f3a94bb37caf0c56ea650, type: 3}
+    effectText: +1 Umami
+  bonusComboText: Beef + Herbs + Fish Sauce = +20 Score
+  whatJudgeLikesText: What Judge Likes
