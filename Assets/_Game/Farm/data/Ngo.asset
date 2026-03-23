@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: Ngo
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  cropId: ngo
+  displayName: "Ng\xF4"
+  icon: {fileID: 1730057366333945802, guid: 7c83cce9260ff06488400749a37612a0, type: 3}
+  sproutSprite: {fileID: 0}
+  growingSprite: {fileID: 1679887171443660079, guid: 1f012ff39822544489267f05d1c9fb7a, type: 3}
+  readySprite: {fileID: -6125162477578923581, guid: 046fb019de7ecf849af5fb989f71003a, type: 3}
+  seedItemId: seed_rice
+  harvestItemId: rice
+  tier: 1
+  unlockLevel: 1
+  growSeconds: 600
+  seedBuyGold: 0
+  sellGold: 3
+  harvestAmount: 20
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1
+  canDropFromAds: 0
+  canAppearInRareMarket: 0

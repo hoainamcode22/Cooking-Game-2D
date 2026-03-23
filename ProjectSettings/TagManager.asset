@@ -3,8 +3,7 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags:
-  - Audio
+  tags: []
   layers:
   - Default
   - TransparentFX
@@ -41,6 +40,36 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: BG
+    uniqueID: 3643994137
+    locked: 0
+  - name: Ground
+    uniqueID: 2201238377
+    locked: 0
+  - name: Soil
+    uniqueID: 1034842109
+    locked: 0
+  - name: Prop
+    uniqueID: 406129909
+    locked: 0
+  - name: Building
+    uniqueID: 3577902825
+    locked: 0
+  - name: Crop
+    uniqueID: 1572012847
+    locked: 0
+  - name: Animal
+    uniqueID: 1996789765
+    locked: 0
+  - name: Lock
+    uniqueID: 1306779905
+    locked: 0
+  - name: Highlight
+    uniqueID: 1208695103
+    locked: 0
+  - name: FX
+    uniqueID: 2526985659
     locked: 0
   m_RenderingLayers:
   - Default

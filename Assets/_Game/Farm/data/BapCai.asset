@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: BapCai
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  cropId: bapcai
+  displayName: "B\u1EAFp c\u1EA3i"
+  icon: {fileID: -1476180068579082342, guid: 28c47cd0d82daec448f10f2257ad105f, type: 3}
+  sproutSprite: {fileID: 0}
+  growingSprite: {fileID: -2398023241171923016, guid: 88f706f4b7de235498ec5a8931fe3396, type: 3}
+  readySprite: {fileID: 6581391040655815886, guid: 54a847e88ac67c841a16ad6896842bb1, type: 3}
+  seedItemId: seed_bapcai
+  harvestItemId: bapcai
+  tier: 1
+  unlockLevel: 1
+  growSeconds: 300
+  seedBuyGold: 0
+  sellGold: 3
+  harvestAmount: 20
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1
+  canDropFromAds: 0
+  canAppearInRareMarket: 0
