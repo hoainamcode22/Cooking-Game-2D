@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: nam
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  cropId: nam
+  displayName: "N\u1EA5m"
+  icon: {fileID: 899575133447737543, guid: d7c8827a218cd2942ba5acb0aef13f83, type: 3}
+  sproutSprite: {fileID: 0}
+  growingSprite: {fileID: 4208644412692552619, guid: afa58443b266817488e60fc350d7ab29, type: 3}
+  readySprite: {fileID: 5693180632895198793, guid: 3715acc9c480283469470b5a94ae6014, type: 3}
+  sproutScale: 1
+  growingScale: 1
+  readyScale: 1
+  sproutOffset: {x: 0, y: 0}
+  growingOffset: {x: 0, y: 0}
+  readyOffset: {x: 0, y: 0}
+  seedItemId: seed_nam
+  harvestItemId: nam
+  tier: 1
+  unlockLevel: 1
+  growSeconds: 600
+  seedBuyGold: 0
+  sellGold: 3
+  harvestAmount: 4
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1
+  canDropFromAds: 0
+  canAppearInRareMarket: 0

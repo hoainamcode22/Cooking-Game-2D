@@ -16,9 +16,12 @@ public class FarmUIManager : MonoBehaviour
     [Header("Popup Root")]
     [SerializeField] private GameObject popupSeed;
 
+    [Header("Harvest Tool")]
+    [SerializeField] private GameObject sickleToolRoot;   // object lưỡi liềm ngoài scene
+    [SerializeField] private SickleController sickleController; // script điều khiển lưỡi liềm
+
     private void Awake()
     {
-        // Singleton chuẩn cho UI manager trong scene farm.
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -30,57 +33,82 @@ public class FarmUIManager : MonoBehaviour
 
     private void Start()
     {
-        // Ẩn popup seed ngay khi vào scene để tránh hiện sẵn.
         HideAllPopups();
+        HideSickleTool();
         RefreshTopBar();
     }
 
     private void HandleCurrencyChanged(int gold, int gems)
     {
-        // Event hook nếu sau này cần update top bar theo economy.
         RefreshTopBar();
     }
 
     private void HandleLevelChanged(int level)
     {
-        // Event hook nếu sau này cần update top bar theo level.
         RefreshTopBar();
     }
 
     public void RefreshTopBar()
     {
-        // Đồng bộ top UI cơ bản từ các manager runtime.
         if (txtDay != null)
             txtDay.text = "Day 1";
 
         if (txtGold != null)
+        {
             txtGold.text = FarmEconomyManager.Instance != null
                 ? FarmEconomyManager.Instance.Gold.ToString()
                 : "0";
+        }
 
         if (txtGem != null)
+        {
             txtGem.text = FarmEconomyManager.Instance != null
                 ? FarmEconomyManager.Instance.Gems.ToString()
                 : "0";
+        }
 
         if (txtLevel != null)
+        {
             txtLevel.text = FarmLevelManager.Instance != null
                 ? $"Lv.{FarmLevelManager.Instance.CurrentLevel}"
                 : "Lv.1";
+        }
     }
 
     public void ShowHint(string message)
     {
-        // Hiển thị message ngắn ở vùng hint để debug / feedback gameplay.
         if (txtHint != null)
             txtHint.text = message;
     }
 
     public void HideAllPopups()
     {
-        // Hiện tại chỉ còn 1 popup seed, nên đóng duy nhất popup này.
         if (popupSeed != null)
             popupSeed.SetActive(false);
+    }
+
+    /// <summary>
+    /// Bật lưỡi liềm tại vị trí ô đất.
+    /// FarmManager gọi hàm này khi click vào ô lúa đã chín.
+    /// </summary>
+    public void ShowSickleTool()
+    {
+        if (sickleToolRoot != null)
+            sickleToolRoot.SetActive(true);
+    }
+
+
+    public void HideSickleTool()
+    {
+        if (sickleController != null)
+        {
+            sickleController.EndHarvestMode();
+        }
+
+        if (sickleToolRoot != null)
+        {
+            sickleToolRoot.SetActive(false);
+        }
     }
 
     public void ShowPlantSelectForPlot(PlotController plot)
@@ -107,44 +135,37 @@ public class FarmUIManager : MonoBehaviour
 
     public void HidePlantSelectPopup()
     {
-        // Đóng popup seed sau khi trồng thành công.
         if (popupSeed != null)
             popupSeed.SetActive(false);
     }
 
     public void OnClick_CloseAllPopups()
     {
-        // API đóng popup dùng cho nút X hoặc background.
         HideAllPopups();
     }
 
     public void OnClick_GoCooking()
     {
-        // Điều hướng sang scene cooking nếu cần từ UI farm.
         SceneManager.LoadScene("SCN_Cooking");
     }
 
     public void OnClick_OpenInventory()
     {
-        // Placeholder cho inventory UI.
         ShowHint("Mở túi đồ.");
     }
 
     public void OnClick_OpenWarehouse()
     {
-        // Placeholder cho warehouse UI.
         ShowHint("Mở kho.");
     }
 
     public void OnClick_OpenMarket()
     {
-        // Placeholder cho market UI.
         ShowHint("Mở chợ.");
     }
 
     public void OnClick_OpenRanking()
     {
-        // Placeholder cho ranking UI.
         ShowHint("Mở bảng xếp hạng.");
     }
 }

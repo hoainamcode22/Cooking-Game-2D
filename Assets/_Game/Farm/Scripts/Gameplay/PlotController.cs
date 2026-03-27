@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -37,7 +36,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     [Header("Refs")]
     [SerializeField] private SpriteRenderer groundSprite;
     [SerializeField] private Transform cropGroup;
-    [SerializeField] private SpriteRenderer[] cropSprites = new SpriteRenderer[4];
+    [SerializeField] private PlotCropVisual cropVisual;
     [SerializeField] private SpriteRenderer lockSprite;
     [SerializeField] private SpriteRenderer readyIcon;
 
@@ -48,14 +47,14 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     [Header("Progress UI")]
     [SerializeField] private Transform progressFill;
     [SerializeField] private GameObject progressRoot;
+    [SerializeField] private float progressFullWidth = 1f;
+    [SerializeField] private bool progressLeftToRight = true;
 
     private PlotState state;
     private CropData plantedCrop;
     private string plantedCropId = "";
     private long startUnixTime;
     private long finishUnixTime;
-
-    private readonly HashSet<SpriteRenderer> validCropSpriteSet = new HashSet<SpriteRenderer>();
 
     public int PlotId => plotId;
     public bool IsRarePlot => isRarePlot;
@@ -71,34 +70,30 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
     private string SaveKey => isRarePlot ? $"PLOT_RARE_{plotId}" : $"PLOT_NORMAL_{plotId}";
 
-    // Bind lại ref child đúng của chính plot này khi reset.
     private void Reset()
     {
         ForceRebindChildren();
     }
 
-    // Bind lại ref child đúng của chính plot này khi inspector đổi.
     private void OnValidate()
     {
         ForceRebindChildren();
     }
 
-    // Cache ref runtime, đồng thời dọn sạch sprite cũ của plot.
     private void Awake()
     {
         ForceRebindChildren();
-        ClearAllCropVisualsImmediate();
-        HideUnexpectedCropRenderers();
+
+        if (cropVisual != null)
+            cropVisual.ClearAll();
     }
 
-    // Load save và đồng bộ visual ban đầu.
     private void Start()
     {
         Load();
         RefreshVisual();
     }
 
-    // Tick thời gian grow, hết giờ thì chuyển sang Ready.
     private void Update()
     {
         if (state != PlotState.Growing)
@@ -113,13 +108,11 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         RefreshVisual();
     }
 
-    // Click vào plot để chọn plot / mở popup / harvest.
     public void OnPointerClick(PointerEventData eventData)
     {
         HandlePlotClick();
     }
 
-    // Luồng xử lý click tập trung.
     public void HandlePlotClick()
     {
         if (FarmManager.Instance == null)
@@ -138,12 +131,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         if (state == PlotState.Ready)
         {
-            string harvestedName = plantedCrop != null ? plantedCrop.displayName : "Nông sản";
-            bool harvested = Harvest();
-
-            if (harvested)
-                FarmManager.Instance.OnPlotHarvested(this, harvestedName);
-
+            FarmManager.Instance.OnReadyPlotClicked(this);
             return;
         }
 
@@ -159,21 +147,20 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    // Bind ref đúng theo child nằm dưới chính plot này, không dùng ref cũ bị dính từ plot khác.
     [ContextMenu("Force Rebind Children")]
     public void ForceRebindChildren()
     {
+        Transform t;
+
         groundSprite = null;
         cropGroup = null;
+        cropVisual = null;
         lockSprite = null;
         readyIcon = null;
         timerRoot = null;
         timerText = null;
         progressRoot = null;
         progressFill = null;
-        cropSprites = new SpriteRenderer[4];
-
-        Transform t;
 
         t = transform.Find("GroundSprite");
         if (t != null) groundSprite = t.GetComponent<SpriteRenderer>();
@@ -182,17 +169,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if (t != null) cropGroup = t;
 
         if (cropGroup != null)
-        {
-            Transform p1 = cropGroup.Find("CropPoint_1");
-            Transform p2 = cropGroup.Find("CropPoint_2");
-            Transform p3 = cropGroup.Find("CropPoint_3");
-            Transform p4 = cropGroup.Find("CropPoint_4");
-
-            if (p1 != null) cropSprites[0] = p1.GetComponent<SpriteRenderer>();
-            if (p2 != null) cropSprites[1] = p2.GetComponent<SpriteRenderer>();
-            if (p3 != null) cropSprites[2] = p3.GetComponent<SpriteRenderer>();
-            if (p4 != null) cropSprites[3] = p4.GetComponent<SpriteRenderer>();
-        }
+            cropVisual = cropGroup.GetComponent<PlotCropVisual>();
 
         t = transform.Find("LockSprite");
         if (t != null) lockSprite = t.GetComponent<SpriteRenderer>();
@@ -211,65 +188,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         t = transform.Find("ProgressRoot/Fill");
         if (t != null) progressFill = t;
-
-        RebuildValidCropSpriteSet();
     }
 
-    // Cache đúng 4 SpriteRenderer hợp lệ của cây.
-    private void RebuildValidCropSpriteSet()
-    {
-        validCropSpriteSet.Clear();
-
-        if (cropSprites == null)
-            return;
-
-        for (int i = 0; i < cropSprites.Length; i++)
-        {
-            if (cropSprites[i] != null)
-                validCropSpriteSet.Add(cropSprites[i]);
-        }
-    }
-
-    // Tắt toàn bộ SpriteRenderer dư trong CropGroup để bỏ cây giữa cũ.
-    private void HideUnexpectedCropRenderers()
-    {
-        if (cropGroup == null)
-            return;
-
-        RebuildValidCropSpriteSet();
-
-        SpriteRenderer[] allRenderers = cropGroup.GetComponentsInChildren<SpriteRenderer>(true);
-        for (int i = 0; i < allRenderers.Length; i++)
-        {
-            SpriteRenderer sr = allRenderers[i];
-            if (sr == null)
-                continue;
-
-            if (!validCropSpriteSet.Contains(sr))
-            {
-                sr.sprite = null;
-                sr.enabled = false;
-            }
-        }
-    }
-
-    // Xóa ngay toàn bộ sprite cây của plot này để tránh mang theo visual cũ khi Ctrl+D.
-    private void ClearAllCropVisualsImmediate()
-    {
-        if (cropSprites == null)
-            return;
-
-        for (int i = 0; i < cropSprites.Length; i++)
-        {
-            if (cropSprites[i] == null)
-                continue;
-
-            cropSprites[i].sprite = null;
-            cropSprites[i].enabled = false;
-        }
-    }
-
-    // Xóa save plot này để test lại từ đầu.
     [ContextMenu("Clear This Plot Save")]
     public void ClearThisPlotSave()
     {
@@ -282,13 +202,13 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         startUnixTime = 0;
         finishUnixTime = 0;
 
-        ClearAllCropVisualsImmediate();
-        RefreshVisual();
+        if (cropVisual != null)
+            cropVisual.ClearAll();
 
+        RefreshVisual();
         Debug.Log("Cleared save for: " + SaveKey);
     }
 
-    // Đổi trạng thái khóa / mở khóa.
     public void SetUnlocked(bool value)
     {
         state = value ? PlotState.Empty : PlotState.Locked;
@@ -296,7 +216,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         RefreshVisual();
     }
 
-    // Check điều kiện unlock bằng level.
     public bool CanUnlockByLevel()
     {
         if (FarmLevelManager.Instance == null)
@@ -305,34 +224,25 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         return FarmLevelManager.Instance.HasReached(requiredLevel);
     }
 
-    // Chỉ mở popup seed khi plot đang Empty.
     public bool CanOpenSeedPopup()
     {
         return state == PlotState.Empty;
     }
 
-    // Bản test: chỉ cần crop khác null và plot đang Empty là trồng được.
     public bool CanPlantCrop(CropData crop)
     {
         return crop != null && state == PlotState.Empty;
     }
 
-    // Trồng crop vào plot hiện tại.
     public bool TryPlant(CropData crop)
     {
         Debug.Log($"[TryPlant] Plot={name}, State={state}, Crop={(crop != null ? crop.displayName : "NULL")}");
 
         if (crop == null)
-        {
-            Debug.LogError("[TryPlant] FAIL: crop NULL");
             return false;
-        }
 
         if (state != PlotState.Empty)
-        {
-            Debug.LogError($"[TryPlant] FAIL: state hiện tại không phải Empty, state={state}");
             return false;
-        }
 
         plantedCrop = crop;
         plantedCropId = crop.cropId;
@@ -352,7 +262,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         return true;
     }
 
-    // Plant helper từ UI.
     public bool TryPlantFromUI(CropData crop)
     {
         bool planted = TryPlant(crop);
@@ -363,13 +272,11 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         return planted;
     }
 
-    // Check plot đã sẵn sàng harvest chưa.
     public bool IsReadyToHarvest()
     {
         return state == PlotState.Ready;
     }
 
-    // Lấy thời gian còn lại.
     public long GetRemainingSeconds()
     {
         if (state != PlotState.Growing)
@@ -379,7 +286,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         return Math.Max(0, remain);
     }
 
-    // Format thời gian còn lại.
     public string GetRemainingTimeText()
     {
         long remain = GetRemainingSeconds();
@@ -388,7 +294,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         return $"{minutes:00}:{seconds:00}";
     }
 
-    // Tính tiến độ grow từ 0 đến 1.
     public float GetGrowProgress01()
     {
         if (state == PlotState.Empty || state == PlotState.Locked || plantedCrop == null)
@@ -405,20 +310,26 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         return Mathf.Clamp01((float)passed / total);
     }
 
-    // Thu hoạch rồi reset plot về Empty.
     public bool Harvest()
     {
         if (state != PlotState.Ready || plantedCrop == null)
             return false;
 
-        string harvestItemId = string.IsNullOrEmpty(plantedCrop.harvestItemId)
-            ? plantedCrop.cropId
-            : plantedCrop.harvestItemId;
+        CropData harvestedCrop = plantedCrop;
 
-        int amount = Mathf.Max(1, plantedCrop.harvestAmount);
+        string harvestItemId = string.IsNullOrEmpty(harvestedCrop.harvestItemId)
+            ? harvestedCrop.cropId
+            : harvestedCrop.harvestItemId;
+
+        int amount = Mathf.Max(1, harvestedCrop.harvestAmount);
 
         if (FarmInventoryManager.Instance != null)
             FarmInventoryManager.Instance.AddItem(harvestItemId, amount);
+
+        HarvestFeedbackSpawner.Instance?.Spawn(
+            transform.position + new Vector3(0f, 1.2f, 0f),
+            $"+{amount} {harvestedCrop.displayName}"
+        );
 
         plantedCrop = null;
         plantedCropId = "";
@@ -431,7 +342,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         return true;
     }
 
-    // Giảm thời gian grow cho plot.
     public void ApplyWaterBonus(int reduceSeconds)
     {
         if (state != PlotState.Growing)
@@ -453,12 +363,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         RefreshVisual();
     }
 
-    // Đồng bộ visual của plot theo state hiện tại.
     public void RefreshVisual()
     {
-        ForceRebindChildren();
-        HideUnexpectedCropRenderers();
-
         if (groundSprite != null)
             groundSprite.enabled = true;
 
@@ -471,19 +377,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if ((state == PlotState.Growing || state == PlotState.Ready) && plantedCrop != null)
         {
             float progress = GetGrowProgress01();
-            Sprite stageSprite = plantedCrop.GetStageSprite(progress);
 
-            if (cropSprites != null)
-            {
-                for (int i = 0; i < cropSprites.Length; i++)
-                {
-                    if (cropSprites[i] == null)
-                        continue;
-
-                    cropSprites[i].sprite = stageSprite;
-                    cropSprites[i].enabled = stageSprite != null;
-                }
-            }
+            if (cropVisual != null)
+                cropVisual.ShowCrop(plantedCrop, progress);
 
             if (timerRoot != null)
                 timerRoot.SetActive(true);
@@ -496,14 +392,24 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
             if (progressFill != null)
             {
+                float p = Mathf.Clamp01(progress);
+
                 Vector3 scale = progressFill.localScale;
-                scale.x = Mathf.Clamp01(progress);
+                scale.x = p;
                 progressFill.localScale = scale;
+
+                if (progressLeftToRight)
+                {
+                    Vector3 pos = progressFill.localPosition;
+                    pos.x = -(progressFullWidth * (1f - p)) * 0.5f;
+                    progressFill.localPosition = pos;
+                }
             }
         }
         else
         {
-            ClearAllCropVisualsImmediate();
+            if (cropVisual != null)
+                cropVisual.ClearAll();
 
             if (timerRoot != null)
                 timerRoot.SetActive(false);
@@ -513,13 +419,11 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    // Check hết giờ grow.
     private bool IsTimeUp()
     {
         return DateTimeOffset.UtcNow.ToUnixTimeSeconds() >= finishUnixTime;
     }
 
-    // Lưu save plot.
     private void Save()
     {
         PlotSaveData data = new PlotSaveData
@@ -535,7 +439,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         PlayerPrefs.Save();
     }
 
-    // Load save plot.
     private void Load()
     {
         if (!PlayerPrefs.HasKey(SaveKey))

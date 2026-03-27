@@ -5,7 +5,7 @@ public class HomeSceneUI : MonoBehaviour
 {
     public void GoToCooking()
     {
-        SceneManager.LoadScene("SCN_Cooking");
+        SceneManager.LoadScene("SampleScene");
     }
 
     public void GoToFarm()

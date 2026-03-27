@@ -9,9 +9,18 @@ public class CropData : ScriptableObject
     public Sprite icon;
 
     [Header("World Visual")]
-    public Sprite sproutSprite;        // Giai đoạn mới gieo / mầm
-    public Sprite growingSprite;       // Giai đoạn trưởng thành
-    public Sprite readySprite;         // Giai đoạn chín / sẵn sàng thu hoạch
+    public Sprite sproutSprite;
+    public Sprite growingSprite;
+    public Sprite readySprite;
+
+    [Header("Visual Tuning")]
+    public float sproutScale = 1f;
+    public float growingScale = 1f;
+    public float readyScale = 1f;
+
+    public Vector2 sproutOffset = Vector2.zero;
+    public Vector2 growingOffset = Vector2.zero;
+    public Vector2 readyOffset = Vector2.zero;
 
     [Header("Inventory")]
     public string seedItemId;
@@ -37,15 +46,11 @@ public class CropData : ScriptableObject
     public bool canDropFromAds = false;
     public bool canAppearInRareMarket = false;
 
-    // Trả sprite theo 3 mốc rõ ràng:
-    // 0%  -> < 50%  : mầm
-    // 50% -> < 100% : trưởng thành
-    // 100%          : thu hoạch / chín
+
     public Sprite GetStageSprite(float progress01)
     {
         progress01 = Mathf.Clamp01(progress01);
 
-        // Đã hoàn tất thời gian grow -> dùng sprite chín
         if (progress01 >= 1f)
         {
             if (readySprite != null) return readySprite;
@@ -54,7 +59,6 @@ public class CropData : ScriptableObject
             return icon;
         }
 
-        // Nửa đầu thời gian -> dùng sprite mầm
         if (progress01 < 0.5f)
         {
             if (sproutSprite != null) return sproutSprite;
@@ -63,10 +67,29 @@ public class CropData : ScriptableObject
             return icon;
         }
 
-        // Nửa sau thời gian -> dùng sprite trưởng thành
         if (growingSprite != null) return growingSprite;
         if (sproutSprite != null) return sproutSprite;
         if (readySprite != null) return readySprite;
         return icon;
+    }
+
+
+
+    public float GetStageScale(float progress01)
+    {
+        progress01 = Mathf.Clamp01(progress01);
+
+        if (progress01 >= 1f) return Mathf.Max(0.01f, readyScale);
+        if (progress01 < 0.5f) return Mathf.Max(0.01f, sproutScale);
+        return Mathf.Max(0.01f, growingScale);
+    }
+
+    public Vector2 GetStageOffset(float progress01)
+    {
+        progress01 = Mathf.Clamp01(progress01);
+
+        if (progress01 >= 1f) return readyOffset;
+        if (progress01 < 0.5f) return sproutOffset;
+        return growingOffset;
     }
 }

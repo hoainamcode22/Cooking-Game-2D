@@ -5,7 +5,7 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/_Game/Scenes/SCN_Boot.unity
     guid: 9b68f25b9cd830a47a17a4ec8ec862d1
   - enabled: 1
