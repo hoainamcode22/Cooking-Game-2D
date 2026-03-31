@@ -15,3 +15,4 @@ MonoBehaviour:
   itemId: beef
   displayName: "Th\u1ECBt b\xF2"
   icon: {fileID: 6282751622250221668, guid: d1edf61082fb8db4c950bf561adef9bd, type: 3}
+  cookingData: {fileID: 11400000, guid: bca8dffa2ead0a1458794f98ac2594ce, type: 2}

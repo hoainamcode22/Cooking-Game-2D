@@ -56,5 +56,5 @@ public class DishData : ScriptableObject
     public string bonusComboText;
 
     [Header("Hints - Judge Button")]
-    public string whatJudgeLikesText = "What Judge Likes";
+    public string whatJudgeLikesText = "Giám kh?o thích gì?";
 }

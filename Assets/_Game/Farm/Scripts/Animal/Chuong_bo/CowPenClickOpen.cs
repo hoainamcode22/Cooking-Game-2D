@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class CowPenClickOpen : MonoBehaviour
 {
@@ -52,6 +53,9 @@ public class CowPenClickOpen : MonoBehaviour
     // mở chuồng bò
     private void TryOpenCowPen(Vector2 screenPos)
     {
+        if (SceneManager.GetSceneByName("SampleScene").isLoaded)
+            return;
+
         if (IsPointerOverPopupUI(screenPos))
             return;
 

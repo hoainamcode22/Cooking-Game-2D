@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.EventSystems;
 
 [RequireComponent(typeof(CanvasGroup))]
@@ -107,3 +108,6 @@ public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         }
     }
 }
+
+
+

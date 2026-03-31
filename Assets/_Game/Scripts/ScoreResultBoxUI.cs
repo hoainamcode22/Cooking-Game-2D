@@ -55,9 +55,9 @@ public class ScoreResultBoxUI : MonoBehaviour
 
     private string GetComment(int score)
     {
-        if (score >= 90) return "Excellent! Near Perfect!";
-        if (score >= 80) return "Great! Almost Perfect!";
-        if (score >= 70) return "Good! Keep Improving!";
-        return "Not Bad! Try Again!";
+        if (score >= 90) return "Tuy?t v?i! G?n nh? hoàn h?o!";
+        if (score >= 80) return "R?t t?t! G?n hoàn h?o!";
+        if (score >= 70) return "Khá t?t! C? g?ng thêm nhé!";
+        return "Ch?a ?n l?m! Th? l?i nào!";
     }
 }

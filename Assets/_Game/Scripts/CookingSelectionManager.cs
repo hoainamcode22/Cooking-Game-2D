@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 
 public class CookingSelectionManager : MonoBehaviour
 {
@@ -12,18 +12,36 @@ public class CookingSelectionManager : MonoBehaviour
     public TMP_Text ingredientsCountText;
     public TMP_Text seasoningsCountText;
 
-    [Header("Pot Containers")]
+    [Header("Old Pot Containers")]
     public Transform potIngredientsContent;
     public Transform potSeasoningsContent;
 
-    [Header("Pot Card Prefab (mini)")]
+    [Header("Old Pot Card Prefab (mini)")]
     public IngredientItemUI potCardPrefab;
+
+    [Header("New Left Panels")]
+    public Transform leftIngredientsContent;
+    public Transform leftSeasoningsContent;
+
+    [Header("New Pot Panels")]
+    public Transform newPotIngredientsContent;
+    public Transform newPotSeasoningsContent;
+
+    [Header("New Slot Prefab")]
+    public CookingStackSlotUI stackSlotPrefab;
+
+    [Header("Cooking Item Database")]
+    public List<InventoryItemData> cookingInventoryItems = new List<InventoryItemData>();
 
     private readonly List<SelectableIngredientCard> selectedIngredients = new();
     private readonly List<SelectableIngredientCard> selectedSeasonings = new();
 
+    private readonly Dictionary<string, InventoryItemData> inventoryLookup = new();
+    private readonly Dictionary<string, int> leftIngredientAmounts = new();
+    private readonly Dictionary<string, int> leftSeasoningAmounts = new();
+    private readonly Dictionary<string, int> potIngredientAmounts = new();
+    private readonly Dictionary<string, int> potSeasoningAmounts = new();
 
-    // hàm này sẽ được gọi từ CookingBoot sau khi đã spawn xong tất cả card ở bên trái, nó sẽ tìm tất cả card và gọi Init để thiết lập liên kết với manager, đồng thời đảm bảo nồi hiển thị đúng những gì đã chọn (lúc đầu là chưa chọn gì nên sẽ trống)
     public void RegisterAllLeftCards(Transform ingredientsContent, Transform seasoningsContent)
     {
         selectedIngredients.Clear();
@@ -31,6 +49,8 @@ public class CookingSelectionManager : MonoBehaviour
 
         foreach (Transform t in ingredientsContent)
         {
+            if (!t.gameObject.activeSelf) continue;
+
             var card = t.GetComponent<SelectableIngredientCard>();
             if (card != null)
                 card.Init(this, false);
@@ -38,6 +58,8 @@ public class CookingSelectionManager : MonoBehaviour
 
         foreach (Transform t in seasoningsContent)
         {
+            if (!t.gameObject.activeSelf) continue;
+
             var card = t.GetComponent<SelectableIngredientCard>();
             if (card != null)
                 card.Init(this, true);
@@ -46,7 +68,7 @@ public class CookingSelectionManager : MonoBehaviour
         RebuildPot();
         UpdateCounts();
     }
-    // hàm này sẽ thử chọn một card, nó sẽ kiểm tra xem đã chọn tối đa chưa, nếu chưa thì thêm vào danh sách đã chọn và cập nhật lại nồi và số lượng hiển thị
+
     public void TrySelect(SelectableIngredientCard card)
     {
         if (card == null) return;
@@ -80,7 +102,7 @@ public class CookingSelectionManager : MonoBehaviour
         RebuildPot();
         UpdateCounts();
     }
-    // hàm này sẽ bỏ chọn một card đã chọn, nó sẽ xóa khỏi danh sách đã chọn và cập nhật lại nồi và số lượng hiển thị
+
     public void TryDeselect(SelectableIngredientCard card)
     {
         if (card == null) return;
@@ -100,16 +122,19 @@ public class CookingSelectionManager : MonoBehaviour
         RebuildPot();
         UpdateCounts();
     }
-    // hàm này sẽ cập nhật lại số lượng đã chọn và hiển thị ở bên trái, nó sẽ hiển thị dạng "Select X/Y" để người chơi biết còn có thể chọn thêm hay không
+
     private void UpdateCounts()
     {
+        int ingredientCount = selectedIngredients.Count;
+        int seasoningCount = selectedSeasonings.Count;
+
         if (ingredientsCountText != null)
-            ingredientsCountText.text = $"Select {selectedIngredients.Count}/{maxIngredients}";
+            ingredientsCountText.text = $"Chọn {ingredientCount}/{maxIngredients}";
 
         if (seasoningsCountText != null)
-            seasoningsCountText.text = $"Select {selectedSeasonings.Count}/{maxSeasonings}";
+            seasoningsCountText.text = $"Chọn {seasoningCount}/{maxSeasonings}";
     }
-    // hàm này sẽ xóa hết các card nhỏ trong nồi rồi tạo lại dựa trên danh sách đã chọn, đảm bảo nồi luôn hiển thị đúng những gì người chơi đã chọn
+
     private void RebuildPot()
     {
         ClearChildren(potIngredientsContent);
@@ -121,7 +146,7 @@ public class CookingSelectionManager : MonoBehaviour
         foreach (var c in selectedSeasonings)
             SpawnPotCard(potSeasoningsContent, c);
     }
-    // hàm này sẽ tạo một card nhỏ trong nồi dựa trên card đã chọn ở bên trái, nó sẽ lấy tên và hình ảnh từ card gốc để hiển thị
+
     private void SpawnPotCard(Transform parent, SelectableIngredientCard fromCard)
     {
         if (potCardPrefab == null || parent == null || fromCard == null) return;
@@ -152,7 +177,7 @@ public class CookingSelectionManager : MonoBehaviour
         for (int i = t.childCount - 1; i >= 0; i--)
             Destroy(t.GetChild(i).gameObject);
     }
-    //hàm này sẽ bỏ chọn tất cả nguyên liệu và gia vị đã chọn, đồng thời cập nhật lại nồi và số lượng hiển thị
+
     public void ResetSelection()
     {
         foreach (var card in selectedIngredients)
@@ -175,32 +200,31 @@ public class CookingSelectionManager : MonoBehaviour
 
         Debug.Log("Đã reset toàn bộ lựa chọn.");
     }
-    // hàm này sẽ được gọi khi người chơi nhấn nút Cook, nó sẽ kiểm tra xem đã chọn nguyên liệu nào chưa, nếu có thì in ra danh sách nguyên liệu và gia vị đã chọn, sau đó hiển thị thông báo nấu xong (tạm thời chưa tính điểm)
+
     public void Cook()
     {
-        if (selectedIngredients.Count == 0)
+        int ingredientCount = GetTotalAmount(potIngredientAmounts);
+        int seasoningCount = GetTotalAmount(potSeasoningAmounts);
+
+        if (ingredientCount == 0)
         {
             Debug.Log("Chưa chọn nguyên liệu nào.");
             return;
         }
 
         Debug.Log("===== COOK START =====");
-        Debug.Log("Số nguyên liệu: " + selectedIngredients.Count);
-        Debug.Log("Số gia vị: " + selectedSeasonings.Count);
+        Debug.Log("Số nguyên liệu: " + ingredientCount);
+        Debug.Log("Số gia vị: " + seasoningCount);
 
-        foreach (var item in selectedIngredients)
-        {
-            Debug.Log("Nguyên liệu: " + item.GetItemName());
-        }
+        foreach (var kv in potIngredientAmounts)
+            Debug.Log("Nguyên liệu: " + kv.Key + " x" + kv.Value);
 
-        foreach (var item in selectedSeasonings)
-        {
-            Debug.Log("Gia vị: " + item.GetItemName());
-        }
+        foreach (var kv in potSeasoningAmounts)
+            Debug.Log("Gia vị: " + kv.Key + " x" + kv.Value);
 
         Debug.Log("Nấu xong! (tạm thời chưa tính điểm)");
     }
-    // hàm này sẽ trả về danh sách các card nguyên liệu đã chọn, nó sẽ tạo một bản sao mới để tránh bị thay đổi từ bên ngoài, đảm bảo tính toàn vẹn của dữ liệu
+
     public List<SelectableIngredientCard> GetSelectedIngredientCards()
     {
         return new List<SelectableIngredientCard>(selectedIngredients);
@@ -209,5 +233,195 @@ public class CookingSelectionManager : MonoBehaviour
     public List<SelectableIngredientCard> GetSelectedSeasoningCards()
     {
         return new List<SelectableIngredientCard>(selectedSeasonings);
+    }
+
+    // =========================
+    // FLOW MỚI
+    // =========================
+
+    public void LoadTransferredItemsToLeftPanel()
+    {
+        BuildInventoryLookup();
+
+        leftIngredientAmounts.Clear();
+        leftSeasoningAmounts.Clear();
+        potIngredientAmounts.Clear();
+        potSeasoningAmounts.Clear();
+
+        if (KitchenTransferManager.Instance == null)
+        {
+            Debug.LogWarning("Chưa có KitchenTransferManager.");
+            RebuildNewUI();
+            return;
+        }
+
+        List<KeyValuePair<string, int>> items = KitchenTransferManager.Instance.GetTransferredItems();
+
+        foreach (var kv in items)
+        {
+            if (!inventoryLookup.TryGetValue(kv.Key, out InventoryItemData inventoryItem))
+                continue;
+
+            if (inventoryItem == null || inventoryItem.cookingData == null)
+                continue;
+
+            if (inventoryItem.cookingData.kind == IngredientKind.Seasoning)
+                leftSeasoningAmounts[kv.Key] = kv.Value;
+            else
+                leftIngredientAmounts[kv.Key] = kv.Value;
+        }
+
+        RebuildNewUI();
+    }
+
+    private void BuildInventoryLookup()
+    {
+        inventoryLookup.Clear();
+
+        for (int i = 0; i < cookingInventoryItems.Count; i++)
+        {
+            InventoryItemData item = cookingInventoryItems[i];
+            if (item == null || string.IsNullOrEmpty(item.itemId))
+                continue;
+
+            if (!inventoryLookup.ContainsKey(item.itemId))
+                inventoryLookup.Add(item.itemId, item);
+        }
+    }
+
+    private void RebuildNewUI()
+    {
+        RebuildAmountPanel(leftIngredientsContent, leftIngredientAmounts, OnLeftIngredientClicked);
+        RebuildAmountPanel(leftSeasoningsContent, leftSeasoningAmounts, OnLeftSeasoningClicked);
+        RebuildAmountPanel(newPotIngredientsContent, potIngredientAmounts, OnPotIngredientClicked);
+        RebuildAmountPanel(newPotSeasoningsContent, potSeasoningAmounts, OnPotSeasoningClicked);
+
+        UpdateCounts();
+    }
+
+    private void RebuildAmountPanel(Transform parent, Dictionary<string, int> source, System.Action<string> clickAction)
+    {
+        if (parent == null)
+            return;
+
+        ClearChildren(parent);
+
+        foreach (var kv in source)
+        {
+            if (kv.Value <= 0)
+                continue;
+
+            if (!inventoryLookup.TryGetValue(kv.Key, out InventoryItemData itemData))
+                continue;
+
+            if (stackSlotPrefab == null)
+                continue;
+
+            Sprite iconSprite = itemData.icon;
+            if (iconSprite == null && itemData.cookingData != null)
+                iconSprite = itemData.cookingData.icon;
+
+            CookingStackSlotUI slot = Instantiate(stackSlotPrefab, parent, false);
+            slot.gameObject.SetActive(true);
+            slot.Setup(kv.Key, iconSprite, kv.Value, clickAction);
+        }
+    }
+
+    private void OnLeftIngredientClicked(string itemId)
+    {
+        if (GetTotalAmount(potIngredientAmounts) >= maxIngredients)
+        {
+            Debug.Log("Đã đạt tối đa nguyên liệu.");
+            return;
+        }
+
+        if (!TryMoveOne(leftIngredientAmounts, potIngredientAmounts, itemId))
+            return;
+
+        RebuildNewUI();
+    }
+
+    private void OnLeftSeasoningClicked(string itemId)
+    {
+        if (GetTotalAmount(potSeasoningAmounts) >= maxSeasonings)
+        {
+            Debug.Log("Đã đạt tối đa gia vị.");
+            return;
+        }
+
+        if (!TryMoveOne(leftSeasoningAmounts, potSeasoningAmounts, itemId))
+            return;
+
+        RebuildNewUI();
+    }
+
+    private void OnPotIngredientClicked(string itemId)
+    {
+        if (!TryMoveOne(potIngredientAmounts, leftIngredientAmounts, itemId))
+            return;
+
+        RebuildNewUI();
+    }
+
+    private void OnPotSeasoningClicked(string itemId)
+    {
+        if (!TryMoveOne(potSeasoningAmounts, leftSeasoningAmounts, itemId))
+            return;
+
+        RebuildNewUI();
+    }
+
+    private bool TryMoveOne(Dictionary<string, int> from, Dictionary<string, int> to, string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId))
+            return false;
+
+        if (!from.TryGetValue(itemId, out int value))
+            return false;
+
+        if (value <= 0)
+            return false;
+
+        from[itemId] = value - 1;
+        if (from[itemId] <= 0)
+            from.Remove(itemId);
+
+        if (!to.ContainsKey(itemId))
+            to[itemId] = 0;
+
+        to[itemId] += 1;
+        return true;
+    }
+
+    private void ReturnAllPotItemsToLeft()
+    {
+        MoveAll(potIngredientAmounts, leftIngredientAmounts);
+        MoveAll(potSeasoningAmounts, leftSeasoningAmounts);
+
+        potIngredientAmounts.Clear();
+        potSeasoningAmounts.Clear();
+
+        RebuildNewUI();
+    }
+
+    private void MoveAll(Dictionary<string, int> from, Dictionary<string, int> to)
+    {
+        foreach (var kv in from)
+        {
+            if (!to.ContainsKey(kv.Key))
+                to[kv.Key] = 0;
+
+            to[kv.Key] += kv.Value;
+        }
+    }
+
+    private int GetTotalAmount(Dictionary<string, int> dict)
+    {
+        int total = 0;
+
+        foreach (var kv in dict)
+            total += kv.Value;
+
+        return total;
     }
 }

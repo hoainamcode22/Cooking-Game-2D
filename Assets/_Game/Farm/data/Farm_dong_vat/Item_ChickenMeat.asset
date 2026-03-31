@@ -15,3 +15,4 @@ MonoBehaviour:
   itemId: chicken_meat
   displayName: "Th\u1ECBt g\xE0"
   icon: {fileID: -2283333445584976228, guid: d96ee5228efd49540b4599213d241129, type: 3}
+  cookingData: {fileID: 11400000, guid: b0631d5b8894e8b4c988c34191d84120, type: 2}

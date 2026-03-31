@@ -48,7 +48,8 @@ public class KitchenClickOpen : MonoBehaviour
 
     private void TryOpenCooking(Vector2 screenPos)
     {
-        if (IsPointerOverPopupUI(screenPos))
+        // ch? ch?n khi ?ang b?m lên UI popup farm (Canvas_Popup)
+        if (IsPointerOverFarmPopupUI(screenPos))
             return;
 
         if (mainCamera == null || targetCollider == null)
@@ -58,13 +59,18 @@ public class KitchenClickOpen : MonoBehaviour
         Vector2 world2 = new Vector2(world3.x, world3.y);
 
         bool hit = targetCollider.OverlapPoint(world2);
+        Debug.Log("[KitchenClickOpen] World = " + world2 + " | Hit = " + hit);
+
         if (!hit)
             return;
 
-        SceneManager.LoadScene(cookingSceneName);
+        if (SceneManager.GetSceneByName(cookingSceneName).isLoaded)
+            return;
+
+        SceneManager.LoadScene(cookingSceneName, LoadSceneMode.Additive);
     }
 
-    private bool IsPointerOverPopupUI(Vector2 screenPos)
+    private bool IsPointerOverFarmPopupUI(Vector2 screenPos)
     {
         if (EventSystem.current == null)
             return false;
@@ -79,7 +85,6 @@ public class KitchenClickOpen : MonoBehaviour
         {
             Transform t = results[i].gameObject.transform;
             Canvas parentCanvas = t.GetComponentInParent<Canvas>();
-
             if (parentCanvas != null && parentCanvas.name == "Canvas_Popup")
                 return true;
         }

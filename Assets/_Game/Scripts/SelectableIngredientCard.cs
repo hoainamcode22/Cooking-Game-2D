@@ -7,12 +7,17 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private IngredientData ingredientData;
 
+    [Header("UI Refs")]
+    [SerializeField] private TMP_Text nameText;
+    [SerializeField] private Image mainIconImage;
+    [SerializeField] private Image topIconImage;
+    [SerializeField] private GameObject statusGO;
+
     public bool isSeasoning;
     public bool IsSelected { get; private set; }
 
     private CookingSelectionManager manager;
 
-    private GameObject statusGO;
     private string cachedName;
     private Sprite cachedMain;
     private Sprite cachedTop;
@@ -22,8 +27,36 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
         manager = mgr;
         isSeasoning = seasoning;
 
+        ResolveRefsIfMissing();
         CacheFromUI();
         SetSelected(false);
+    }
+
+    private void ResolveRefsIfMissing()
+    {
+        if (nameText == null)
+        {
+            Transform t = transform.Find("Txt_Name");
+            if (t != null) nameText = t.GetComponent<TMP_Text>();
+        }
+
+        if (mainIconImage == null)
+        {
+            Transform t = transform.Find("Img_MainIcon");
+            if (t != null) mainIconImage = t.GetComponent<Image>();
+        }
+
+        if (topIconImage == null)
+        {
+            Transform t = transform.Find("Img_TopIcon");
+            if (t != null) topIconImage = t.GetComponent<Image>();
+        }
+
+        if (statusGO == null)
+        {
+            Transform t = transform.Find("Img_Status");
+            if (t != null) statusGO = t.gameObject;
+        }
     }
 
     public void SetIngredientData(IngredientData data)
@@ -54,30 +87,14 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
 
     private void CacheFromUI()
     {
-        Transform tName = transform.Find("Txt_Name");
-        if (tName != null)
-        {
-            TMP_Text tmp = tName.GetComponent<TMP_Text>();
-            if (tmp != null) cachedName = tmp.text;
-        }
+        cachedName = nameText != null ? nameText.text : "";
+        cachedMain = mainIconImage != null ? mainIconImage.sprite : null;
+        cachedTop = topIconImage != null ? topIconImage.sprite : null;
 
-        Transform tTop = transform.Find("Img_TopIcon");
-        if (tTop != null)
-        {
-            Image img = tTop.GetComponent<Image>();
-            if (img != null) cachedTop = img.sprite;
-        }
+        if (cachedMain == null && ingredientData != null)
+            cachedMain = ingredientData.icon;
 
-        Transform tMain = transform.Find("Img_MainIcon");
-        if (tMain != null)
-        {
-            Image img = tMain.GetComponent<Image>();
-            if (img != null) cachedMain = img.sprite;
-        }
-
-        Transform tStatus = transform.Find("Img_Status");
-        if (tStatus != null)
-            statusGO = tStatus.gameObject;
+        Debug.Log($"[CARD CACHE] {cachedName} | main={(cachedMain != null ? cachedMain.name : "NULL")} | top={(cachedTop != null ? cachedTop.name : "NULL")}");
     }
 
     public string GetItemName() => cachedName;

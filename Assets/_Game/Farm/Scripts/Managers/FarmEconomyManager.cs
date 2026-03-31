@@ -5,6 +5,9 @@ public class FarmEconomyManager : MonoBehaviour
 {
     public static FarmEconomyManager Instance { get; private set; }
 
+    private const string GoldKey = "FARM_ECONOMY_GOLD";
+    private const string GemsKey = "FARM_ECONOMY_GEMS";
+
     [SerializeField] private int startGold = 1250;
     [SerializeField] private int startGems = 10;
 
@@ -22,13 +25,25 @@ public class FarmEconomyManager : MonoBehaviour
         }
 
         Instance = this;
-        Gold = startGold;
-        Gems = startGems;
+        DontDestroyOnLoad(gameObject);
+
+        LoadCurrency();
     }
 
     private void Start()
     {
         NotifyCurrencyChanged();
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+            SaveCurrency();
+    }
+
+    private void OnApplicationQuit()
+    {
+        SaveCurrency();
     }
 
     public bool SpendGold(int amount)
@@ -40,6 +55,7 @@ public class FarmEconomyManager : MonoBehaviour
             return false;
 
         Gold -= amount;
+        SaveCurrency();
         NotifyCurrencyChanged();
         return true;
     }
@@ -53,6 +69,7 @@ public class FarmEconomyManager : MonoBehaviour
             return false;
 
         Gems -= amount;
+        SaveCurrency();
         NotifyCurrencyChanged();
         return true;
     }
@@ -63,6 +80,7 @@ public class FarmEconomyManager : MonoBehaviour
             return;
 
         Gold += amount;
+        SaveCurrency();
         NotifyCurrencyChanged();
     }
 
@@ -72,11 +90,25 @@ public class FarmEconomyManager : MonoBehaviour
             return;
 
         Gems += amount;
+        SaveCurrency();
         NotifyCurrencyChanged();
     }
 
     private void NotifyCurrencyChanged()
     {
         OnCurrencyChanged?.Invoke(Gold, Gems);
+    }
+
+    private void LoadCurrency()
+    {
+        Gold = PlayerPrefs.HasKey(GoldKey) ? PlayerPrefs.GetInt(GoldKey) : startGold;
+        Gems = PlayerPrefs.HasKey(GemsKey) ? PlayerPrefs.GetInt(GemsKey) : startGems;
+    }
+
+    private void SaveCurrency()
+    {
+        PlayerPrefs.SetInt(GoldKey, Gold);
+        PlayerPrefs.SetInt(GemsKey, Gems);
+        PlayerPrefs.Save();
     }
 }

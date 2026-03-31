@@ -17,7 +17,7 @@ public class WarehousePopupUI : MonoBehaviour
     }
 
     [Header("Popup Root")]
-    [SerializeField] private GameObject popupRoot;   // kéo Frame vào đây
+    [SerializeField] private GameObject popupRoot;
 
     [Header("Close Button")]
     [SerializeField] private Button btnClose;
@@ -35,15 +35,21 @@ public class WarehousePopupUI : MonoBehaviour
     [Header("Extra Item Database")]
     [SerializeField] private List<InventoryItemData> extraItemDatabase = new List<InventoryItemData>();
 
+    [Header("Kitchen Transfer UI")]
+    [SerializeField] private Button btnSendToKitchen;
+    [SerializeField] private Image selectedPreviewIcon;
+    [SerializeField] private TMP_Text selectedPreviewAmount;
+
     private Dictionary<string, CropData> cropLookup = new Dictionary<string, CropData>();
     private Dictionary<string, InventoryItemData> extraItemLookup = new Dictionary<string, InventoryItemData>();
 
+    private readonly Dictionary<string, int> pendingSelection = new Dictionary<string, int>();
+
+    private string lastSelectedItemId;
+
     private void Awake()
     {
-        // build lookup crop
         BuildCropLookup();
-
-        // build lookup item ngoài crop
         BuildExtraItemLookup();
 
         if (btnClose != null)
@@ -55,8 +61,13 @@ public class WarehousePopupUI : MonoBehaviour
         if (inputSearch != null)
             inputSearch.onSubmit.AddListener(_ => RefreshUI());
 
+        if (btnSendToKitchen != null)
+            btnSendToKitchen.onClick.AddListener(SendPendingItemsToKitchen);
+
         if (popupRoot != null)
             popupRoot.SetActive(false);
+
+        RefreshSelectedPreview();
     }
 
     private void Start()
@@ -73,7 +84,23 @@ public class WarehousePopupUI : MonoBehaviour
             FarmInventoryManager.Instance.OnInventoryChanged -= RefreshUI;
     }
 
-    // build crop lookup theo harvestItemId
+    private void EnsurePopupRaycastBlock()
+    {
+        if (popupRoot == null)
+            return;
+
+        if (popupRoot.GetComponent<UIRaycastBlocker>() == null)
+            popupRoot.AddComponent<UIRaycastBlocker>();
+
+        CanvasGroup cg = popupRoot.GetComponent<CanvasGroup>();
+        if (cg == null)
+            cg = popupRoot.AddComponent<CanvasGroup>();
+
+        cg.alpha = 1f;
+        cg.blocksRaycasts = true;
+        cg.interactable = true;
+    }
+
     private void BuildCropLookup()
     {
         cropLookup.Clear();
@@ -91,7 +118,6 @@ public class WarehousePopupUI : MonoBehaviour
         }
     }
 
-    // build lookup cho item động vật / item đặc biệt
     private void BuildExtraItemLookup()
     {
         extraItemLookup.Clear();
@@ -110,7 +136,10 @@ public class WarehousePopupUI : MonoBehaviour
     public void OpenPopup()
     {
         if (popupRoot != null)
+        {
             popupRoot.SetActive(true);
+            EnsurePopupRaycastBlock();
+        }
 
         RefreshUI();
         Debug.Log("[WarehousePopupUI] OpenPopup");
@@ -141,11 +170,15 @@ public class WarehousePopupUI : MonoBehaviour
         for (int i = 0; i < count; i++)
         {
             if (slots[i] != null)
-                slots[i].SetData(items[i].icon, items[i].amount);
+            {
+                int visibleAmount = GetVisibleAmount(items[i].itemId, items[i].amount);
+                slots[i].SetData(items[i].itemId, items[i].icon, visibleAmount, OnWarehouseSlotClicked);
+            }
         }
+
+        RefreshSelectedPreview();
     }
 
-    // lấy item trong kho rồi lọc theo ô search
     private List<WarehouseViewItem> BuildFilteredItems()
     {
         List<WarehouseViewItem> result = new List<WarehouseViewItem>();
@@ -165,7 +198,6 @@ public class WarehousePopupUI : MonoBehaviour
             string displayName = itemId;
             Sprite icon = null;
 
-            // ưu tiên crop trước
             CropData crop = GetCropByItemId(itemId);
             if (crop != null)
             {
@@ -174,7 +206,6 @@ public class WarehousePopupUI : MonoBehaviour
             }
             else
             {
-                // nếu không phải crop thì tìm trong item data riêng
                 InventoryItemData extraItem = GetExtraItemById(itemId);
                 if (extraItem != null)
                 {
@@ -206,7 +237,124 @@ public class WarehousePopupUI : MonoBehaviour
         return result;
     }
 
-    // tìm crop theo itemId
+    private void OnWarehouseSlotClicked(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId))
+            return;
+
+        if (FarmInventoryManager.Instance == null)
+            return;
+
+        int totalInInventory = FarmInventoryManager.Instance.GetAmount(itemId);
+        int alreadyPending = GetPendingAmount(itemId);
+
+        if (alreadyPending >= totalInInventory)
+        {
+            Debug.Log("[WarehousePopupUI] Không còn vật phẩm để chọn thêm: " + itemId);
+            return;
+        }
+
+        if (!pendingSelection.ContainsKey(itemId))
+            pendingSelection[itemId] = 0;
+
+        pendingSelection[itemId] += 1;
+        lastSelectedItemId = itemId;
+
+        RefreshUI();
+    }
+
+    private int GetPendingAmount(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId))
+            return 0;
+
+        return pendingSelection.TryGetValue(itemId, out int value) ? value : 0;
+    }
+
+    private int GetVisibleAmount(string itemId, int totalAmount)
+    {
+        int pending = GetPendingAmount(itemId);
+        return Mathf.Max(0, totalAmount - pending);
+    }
+
+    private void RefreshSelectedPreview()
+    {
+        if (selectedPreviewIcon != null)
+        {
+            Sprite previewSprite = null;
+
+            if (!string.IsNullOrEmpty(lastSelectedItemId))
+            {
+                CropData crop = GetCropByItemId(lastSelectedItemId);
+                if (crop != null)
+                    previewSprite = crop.icon;
+                else
+                {
+                    InventoryItemData extra = GetExtraItemById(lastSelectedItemId);
+                    if (extra != null)
+                        previewSprite = extra.icon;
+                }
+            }
+
+            selectedPreviewIcon.sprite = previewSprite;
+            selectedPreviewIcon.enabled = previewSprite != null;
+        }
+
+        if (selectedPreviewAmount != null)
+        {
+            int amount = GetPendingAmount(lastSelectedItemId);
+            selectedPreviewAmount.text = amount > 0 ? ("x" + amount) : "";
+        }
+
+        if (btnSendToKitchen != null)
+            btnSendToKitchen.interactable = pendingSelection.Count > 0;
+    }
+
+    private void SendPendingItemsToKitchen()
+    {
+        if (KitchenTransferManager.Instance == null)
+        {
+            Debug.LogWarning("[WarehousePopupUI] Chưa có KitchenTransferManager trong scene.");
+            return;
+        }
+
+        if (FarmInventoryManager.Instance == null)
+        {
+            Debug.LogWarning("[WarehousePopupUI] Chưa có FarmInventoryManager.");
+            return;
+        }
+
+        foreach (var kv in pendingSelection)
+        {
+            if (kv.Value <= 0)
+                continue;
+
+            // chỉ chuyển nếu kho thật còn đủ
+            if (!FarmInventoryManager.Instance.HasItem(kv.Key, kv.Value))
+            {
+                Debug.LogWarning("[WarehousePopupUI] Không đủ vật phẩm trong kho: " + kv.Key);
+                continue;
+            }
+
+            // trừ kho thật
+            bool removed = FarmInventoryManager.Instance.RemoveItem(kv.Key, kv.Value);
+            if (!removed)
+            {
+                Debug.LogWarning("[WarehousePopupUI] Trừ kho thất bại: " + kv.Key);
+                continue;
+            }
+
+            // đưa sang bếp
+            KitchenTransferManager.Instance.AddTransferredItem(kv.Key, kv.Value);
+        }
+
+        pendingSelection.Clear();
+        lastSelectedItemId = null;
+
+        RefreshUI();
+        Debug.Log("[WarehousePopupUI] Đã đưa vật phẩm sang bếp.");
+    }
+
     private CropData GetCropByItemId(string itemId)
     {
         if (string.IsNullOrEmpty(itemId))
@@ -218,7 +366,6 @@ public class WarehousePopupUI : MonoBehaviour
         return null;
     }
 
-    // tìm item ngoài crop theo itemId
     private InventoryItemData GetExtraItemById(string itemId)
     {
         if (string.IsNullOrEmpty(itemId))
@@ -230,7 +377,6 @@ public class WarehousePopupUI : MonoBehaviour
         return null;
     }
 
-    // lấy id harvest của crop
     private string GetHarvestItemId(CropData crop)
     {
         if (crop == null)
@@ -239,7 +385,6 @@ public class WarehousePopupUI : MonoBehaviour
         return string.IsNullOrEmpty(crop.harvestItemId) ? crop.cropId : crop.harvestItemId;
     }
 
-    // lấy tên hiển thị của crop
     private string GetDisplayName(CropData crop)
     {
         if (crop == null)
@@ -251,7 +396,6 @@ public class WarehousePopupUI : MonoBehaviour
         return GetHarvestItemId(crop);
     }
 
-    // bỏ dấu để search dễ hơn
     private string NormalizeText(string input)
     {
         if (string.IsNullOrEmpty(input))

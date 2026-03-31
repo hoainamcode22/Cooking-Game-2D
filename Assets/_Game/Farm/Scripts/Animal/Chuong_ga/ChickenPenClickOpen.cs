@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class ChickenPenClickOpen : MonoBehaviour
 {
@@ -52,6 +53,9 @@ public class ChickenPenClickOpen : MonoBehaviour
     // mở chuồng gà
     private void TryOpenChickenPen(Vector2 screenPos)
     {
+        if (SceneManager.GetSceneByName("SampleScene").isLoaded)
+            return;
+
         if (IsPointerOverPopupUI(screenPos))
             return;
 

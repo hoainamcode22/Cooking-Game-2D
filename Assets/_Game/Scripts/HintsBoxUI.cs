@@ -1,6 +1,6 @@
-﻿using TMPro;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class HintsBoxUI : MonoBehaviour
 {
@@ -72,28 +72,6 @@ public class HintsBoxUI : MonoBehaviour
     [SerializeField] private TMP_Text txtButtonPrefix;
     [SerializeField] private TMP_Text txtButtonLabel;
 
-    private void Awake()
-    {
-        SetStaticTexts();
-    }
-
-    private void SetStaticTexts()
-    {
-        if (txtHintTitle != null) txtHintTitle.text = "Hint";
-        if (txtRequiredLabel != null) txtRequiredLabel.text = "Required:";
-        if (txtOptionalLabel != null) txtOptionalLabel.text = "Optional:";
-        if (txtSeasoningTipsTitle != null) txtSeasoningTipsTitle.text = "Seasoning Tips:";
-        if (txtBonusComboLabel != null) txtBonusComboLabel.text = "Bonus Combo:";
-
-        if (txtBonusPlus1 != null) txtBonusPlus1.text = "+";
-        if (txtBonusPlus2 != null) txtBonusPlus2.text = "+";
-        if (txtBonusEquals != null) txtBonusEquals.text = "=";
-        if (txtBonusScore != null) txtBonusScore.text = "Score";
-
-        if (txtButtonPrefix != null) txtButtonPrefix.text = "?";
-        if (txtButtonLabel != null) txtButtonLabel.text = "What Judge Likes";
-    }
-
     public void BindDish(DishData dishData)
     {
         if (dishData == null)
@@ -134,8 +112,7 @@ public class HintsBoxUI : MonoBehaviour
         BindSeasoningTip(null, hintSeasoningTipLemon, imgTipLemonIcon, txtTipLemonItemName, txtTipLemonStatValue, txtTipLemonStatName);
         BindSeasoningTip(null, hintSeasoningTipSalt, imgTipSaltIcon, txtTipSaltItemName, txtTipSaltStatValue, txtTipSaltStatName);
 
-        ApplyBonusComboText("");
-        if (txtButtonLabel != null) txtButtonLabel.text = "What Judge Likes";
+        ApplyBonusComboText(string.Empty);
     }
 
     private void BindHintItem(HintIngredientSlotData data, GameObject root, Image icon, TMP_Text nameText)
@@ -178,36 +155,35 @@ public class HintsBoxUI : MonoBehaviour
         if (itemName != null)
             itemName.text = data.displayName;
 
+        string effect = LocalizeEffectText(data.effectText);
         if (statValue != null)
-            statValue.text = data.effectText;
+            statValue.text = effect;
+
+        if (statName != null)
+            statName.text = string.Empty;
     }
-    private void ParseEffectText(string effectText, out string value, out string stat)
+
+    private string LocalizeEffectText(string effectText)
     {
-        value = "";
-        stat = "";
-
         if (string.IsNullOrEmpty(effectText))
-            return;
+            return string.Empty;
 
-        string[] parts = effectText.Split(' ');
-        if (parts.Length > 0)
-        {
-            value = parts[0];
-            if (parts.Length > 1)
-                stat = string.Join(" ", parts, 1, parts.Length - 1);
-        }
-        else
-        {
-            value = effectText;
-        }
+        return effectText
+            .Replace("Umami", "Đậm đà")
+            .Replace("Spicy", "Cay")
+            .Replace("Sour", "Chua")
+            .Replace("Sweet", "Ngọt")
+            .Replace("Texture", "Kết cấu");
     }
+
     public void OnClickWhatJudgeLikes()
     {
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayUIClick();
 
-        Debug.Log("What Judge Likes clicked.");
+        Debug.Log("Giám khảo thích gì? clicked.");
     }
+
     private void ApplyBonusComboText(string comboText)
     {
         if (txtBonusItem1 == null || txtBonusItem2 == null || txtBonusItem3 == null || txtBonusValue == null)
@@ -226,6 +202,8 @@ public class HintsBoxUI : MonoBehaviour
         if (sides.Length >= 1)
         {
             string left = sides[0].Trim();
+            left = LocalizeCommonCookingWords(left);
+
             string[] items = left.Split('+');
 
             if (items.Length > 0) txtBonusItem1.text = items[0].Trim();
@@ -236,8 +214,32 @@ public class HintsBoxUI : MonoBehaviour
         if (sides.Length > 1)
         {
             string right = sides[1].Trim();
-            right = right.Replace("Score", "").Trim();
+            right = LocalizeCommonCookingWords(right);
+            right = right.Replace("Điểm", "").Trim();
             txtBonusValue.text = right;
         }
+
+        if (txtBonusPlus1 != null) txtBonusPlus1.text = "+";
+        if (txtBonusPlus2 != null) txtBonusPlus2.text = "+";
+        if (txtBonusEquals != null) txtBonusEquals.text = "=";
+
+        if (txtBonusScore != null) txtBonusScore.text = "Điểm";
+    }
+
+    private string LocalizeCommonCookingWords(string s)
+    {
+        if (string.IsNullOrEmpty(s))
+            return string.Empty;
+
+        return s
+            .Replace("Score", "Điểm")
+            .Replace("Beef", "Thịt bò")
+            .Replace("Noodle", "Bánh phở")
+            .Replace("Egg", "Trứng")
+            .Replace("Herbs", "Rau thơm")
+            .Replace("Fish Sauce", "Nước mắm")
+            .Replace("Chili", "Ớt")
+            .Replace("Lemon", "Chanh")
+            .Replace("Salt", "Muối");
     }
 }

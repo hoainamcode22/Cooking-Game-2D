@@ -71,5 +71,8 @@ TagManager:
   - name: FX
     uniqueID: 2526985659
     locked: 0
+  - name: HarvestFX
+    uniqueID: 2433806025
+    locked: 0
   m_RenderingLayers:
   - Default

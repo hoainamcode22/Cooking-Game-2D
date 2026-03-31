@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class PigPenClickOpen : MonoBehaviour
 {
@@ -52,6 +53,9 @@ public class PigPenClickOpen : MonoBehaviour
     // mở chuồng heo
     private void TryOpenPigPen(Vector2 screenPos)
     {
+        if (SceneManager.GetSceneByName("SampleScene").isLoaded)
+            return;
+
         if (IsPointerOverPopupUI(screenPos))
             return;
 

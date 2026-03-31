@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a791c5bd17555a4fb83c11cba2eba68, type: 3}
+  m_Name: ING_Mushroom
+  m_EditorClassIdentifier: Assembly-CSharp::IngredientData
+  id: mushroom
+  displayName: Mushroom
+  icon: {fileID: -7855416830827057825, guid: a10a431e54b82e04abf1a371398de997, type: 3}
+  kind: 0
+  tier: 1
+  vector:
+    sweet: 0
+    spicy: 0
+    sour: 0
+    umami: 2
+    texture: 1
+  stars: 3

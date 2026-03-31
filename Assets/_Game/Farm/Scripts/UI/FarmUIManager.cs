@@ -1,6 +1,15 @@
-﻿using TMPro;
+﻿using System.Xml.Linq;
+using TMPro;
+using Unity.Burst.Intrinsics;
+using Unity.VisualScripting;
+using UnityEditor.ShaderGraph;
 using UnityEngine;
+using UnityEngine.LightTransport;
+using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
+using UnityEngine.U2D;
+using static UnityEngine.InputManagerEntry;
+using static UnityEngine.UI.Image;
 
 public class FarmUIManager : MonoBehaviour
 {
@@ -17,8 +26,20 @@ public class FarmUIManager : MonoBehaviour
     [SerializeField] private GameObject popupSeed;
 
     [Header("Harvest Tool")]
-    [SerializeField] private GameObject sickleToolRoot;   // object lưỡi liềm ngoài scene
-    [SerializeField] private SickleController sickleController; // script điều khiển lưỡi liềm
+    [SerializeField] private GameObject sickleToolRoot;
+    [SerializeField] private SickleController sickleController;
+
+    [Header("Scene Names")]
+    [SerializeField] private string cookingSceneName = "SampleScene";
+
+    [Header("Cooking Mode - Hide/Disable")]
+    [SerializeField] private GameObject canvasHudRoot;
+    [SerializeField] private GameObject canvasPopupRoot;
+    [SerializeField] private GameObject[] popupObjectsToForceClose;
+    [SerializeField] private Behaviour[] behavioursToDisableInCooking;
+    [SerializeField] private AudioListener farmAudioListener;
+
+    private bool isCookingMode;
 
     private void Awake()
     {
@@ -51,7 +72,7 @@ public class FarmUIManager : MonoBehaviour
     public void RefreshTopBar()
     {
         if (txtDay != null)
-            txtDay.text = "Day 1";
+            txtDay.text = "Ngày 1";
 
         if (txtGold != null)
         {
@@ -85,34 +106,37 @@ public class FarmUIManager : MonoBehaviour
     {
         if (popupSeed != null)
             popupSeed.SetActive(false);
+
+        if (popupObjectsToForceClose != null)
+        {
+            for (int i = 0; i < popupObjectsToForceClose.Length; i++)
+            {
+                if (popupObjectsToForceClose[i] != null)
+                    popupObjectsToForceClose[i].SetActive(false);
+            }
+        }
     }
 
-    /// <summary>
-    /// Bật lưỡi liềm tại vị trí ô đất.
-    /// FarmManager gọi hàm này khi click vào ô lúa đã chín.
-    /// </summary>
     public void ShowSickleTool()
     {
         if (sickleToolRoot != null)
             sickleToolRoot.SetActive(true);
     }
 
-
     public void HideSickleTool()
     {
         if (sickleController != null)
-        {
             sickleController.EndHarvestMode();
-        }
 
         if (sickleToolRoot != null)
-        {
             sickleToolRoot.SetActive(false);
-        }
     }
 
     public void ShowPlantSelectForPlot(PlotController plot)
     {
+        if (isCookingMode)
+            return;
+
         Debug.Log("[FarmUI] ShowPlantSelectForPlot CALLED");
 
         HideAllPopups();
@@ -124,8 +148,6 @@ public class FarmUIManager : MonoBehaviour
         }
 
         popupSeed.SetActive(true);
-        Debug.Log("[FarmUI] popupSeed activeSelf = " + popupSeed.activeSelf);
-        Debug.Log("[FarmUI] popupSeed name = " + popupSeed.name);
 
         if (plot != null)
             ShowHint($"Kéo hạt giống để trồng vào ô {plot.PlotId}");
@@ -146,26 +168,91 @@ public class FarmUIManager : MonoBehaviour
 
     public void OnClick_GoCooking()
     {
-        SceneManager.LoadScene("SCN_Cooking");
+        if (!SceneManager.GetSceneByName(cookingSceneName).isLoaded)
+            SceneManager.LoadScene(cookingSceneName, LoadSceneMode.Additive);
     }
 
     public void OnClick_OpenInventory()
     {
+        if (isCookingMode) return;
         ShowHint("Mở túi đồ.");
     }
 
     public void OnClick_OpenWarehouse()
     {
+        if (isCookingMode) return;
         ShowHint("Mở kho.");
     }
 
     public void OnClick_OpenMarket()
     {
+        if (isCookingMode) return;
         ShowHint("Mở chợ.");
     }
 
     public void OnClick_OpenRanking()
     {
+        if (isCookingMode) return;
         ShowHint("Mở bảng xếp hạng.");
     }
+
+    public void EnterCookingMode()
+    {
+        if (isCookingMode)
+            return;
+
+        isCookingMode = true;
+
+        HideAllPopups();
+        HideSickleTool();
+
+        if (canvasHudRoot != null)
+            canvasHudRoot.SetActive(false);
+
+        if (canvasPopupRoot != null)
+            canvasPopupRoot.SetActive(false);
+
+        if (behavioursToDisableInCooking != null)
+        {
+            for (int i = 0; i < behavioursToDisableInCooking.Length; i++)
+            {
+                if (behavioursToDisableInCooking[i] != null)
+                    behavioursToDisableInCooking[i].enabled = false;
+            }
+        }
+
+        if (farmAudioListener != null)
+            farmAudioListener.enabled = false;
+    }
+
+    public void ExitCookingMode()
+    {
+        if (!isCookingMode)
+            return;
+
+        isCookingMode = false;
+
+        if (canvasHudRoot != null)
+            canvasHudRoot.SetActive(true);
+
+        if (canvasPopupRoot != null)
+            canvasPopupRoot.SetActive(true);
+
+        if (behavioursToDisableInCooking != null)
+        {
+            for (int i = 0; i < behavioursToDisableInCooking.Length; i++)
+            {
+                if (behavioursToDisableInCooking[i] != null)
+                    behavioursToDisableInCooking[i].enabled = true;
+            }
+        }
+
+        if (farmAudioListener != null)
+            farmAudioListener.enabled = true;
+
+        HideAllPopups();
+        HideSickleTool();
+        RefreshTopBar();
+    }
 }
+

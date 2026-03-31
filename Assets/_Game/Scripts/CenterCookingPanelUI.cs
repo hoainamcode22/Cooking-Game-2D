@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 public class CenterCookingPanelUI : MonoBehaviour
@@ -26,6 +26,6 @@ public class CenterCookingPanelUI : MonoBehaviour
     public void SetCookSubmitScore(int score)
     {
         if (txtCookSubmitScore != null)
-            txtCookSubmitScore.text = score + " Score";
+            txtCookSubmitScore.text = score + " Điểm";
     }
 }

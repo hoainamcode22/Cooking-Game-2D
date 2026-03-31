@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class MarketClickOpen : MonoBehaviour
 {
@@ -50,6 +51,9 @@ public class MarketClickOpen : MonoBehaviour
     // mở chợ
     private void TryOpenMarket(Vector2 screenPos)
     {
+        if (SceneManager.GetSceneByName("SampleScene").isLoaded)
+            return;
+
         if (IsPointerOverPopupUI(screenPos))
             return;
 

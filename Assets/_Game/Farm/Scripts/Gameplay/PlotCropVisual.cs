@@ -14,7 +14,18 @@ public class PlotCropVisual : MonoBehaviour
     [SerializeField] private float growingHeight = 3.00f;
     [SerializeField] private float readyHeight = 3.00f;
 
+    [Header("Ripe Wind Sway (Ready Only)")]
+    [SerializeField] private bool enableReadySway = true;
+    [SerializeField] private float swayAngle = 4.5f;
+    [SerializeField] private float swaySpeed = 1.4f;
+    [SerializeField] private float randomOffset = 2.0f;
+
     private SpriteRenderer[] slotRenderers;
+    private Transform[] slotVisuals;
+    private float[] slotPhase;
+
+    private float swayTimer;
+    private bool isReadySwayActive;
 
     private void Awake()
     {
@@ -46,6 +57,8 @@ public class PlotCropVisual : MonoBehaviour
             return;
 
         slotRenderers = new SpriteRenderer[cropPoints.Length];
+        slotVisuals = new Transform[cropPoints.Length];
+        slotPhase = new float[cropPoints.Length];
 
         for (int i = 0; i < cropPoints.Length; i++)
         {
@@ -79,12 +92,54 @@ public class PlotCropVisual : MonoBehaviour
             go.transform.localScale = Vector3.one;
 
             slotRenderers[i] = sr;
+            slotVisuals[i] = go.transform;
+            slotPhase[i] = Random.Range(-randomOffset, randomOffset);
+        }
+
+        swayTimer = Random.Range(0f, 10f);
+        isReadySwayActive = false;
+    }
+
+    private void Update()
+    {
+        if (!enableReadySway || !isReadySwayActive || slotVisuals == null)
+            return;
+
+        swayTimer += Time.deltaTime;
+
+        for (int i = 0; i < slotVisuals.Length; i++)
+        {
+            Transform v = slotVisuals[i];
+            SpriteRenderer sr = slotRenderers[i];
+            if (v == null || sr == null || !sr.enabled)
+                continue;
+
+            float a = Mathf.Sin((swayTimer + slotPhase[i]) * swaySpeed) * swayAngle;
+            v.localRotation = Quaternion.Euler(0f, 0f, a);
+        }
+    }
+
+    private void SetReadySwayActive(bool active)
+    {
+        if (isReadySwayActive == active)
+            return;
+
+        isReadySwayActive = active;
+
+        if (!isReadySwayActive && slotVisuals != null)
+        {
+            for (int i = 0; i < slotVisuals.Length; i++)
+            {
+                if (slotVisuals[i] != null)
+                    slotVisuals[i].localRotation = Quaternion.identity;
+            }
         }
     }
 
     public void ClearAll()
     {
         EnsureSetup();
+        SetReadySwayActive(false);
 
         for (int i = 0; i < slotRenderers.Length; i++)
         {
@@ -94,6 +149,9 @@ public class PlotCropVisual : MonoBehaviour
             slotRenderers[i].sprite = null;
             slotRenderers[i].transform.localPosition = Vector3.zero;
             slotRenderers[i].transform.localScale = Vector3.one;
+
+            if (slotVisuals != null && slotVisuals.Length > i && slotVisuals[i] != null)
+                slotVisuals[i].localRotation = Quaternion.identity;
         }
     }
 
@@ -118,6 +176,9 @@ public class PlotCropVisual : MonoBehaviour
         Vector2 offset = crop.GetStageOffset(progress01);
         Vector3 normalizedScale = GetNormalizedScale(sprite, targetHeight);
 
+        bool isReady = Mathf.Clamp01(progress01) >= 1f;
+        SetReadySwayActive(isReady);
+
         for (int i = 0; i < slotRenderers.Length; i++)
         {
             SpriteRenderer sr = slotRenderers[i];
@@ -128,6 +189,9 @@ public class PlotCropVisual : MonoBehaviour
             sr.transform.localPosition = new Vector3(offset.x, offset.y, 0f);
             sr.transform.localRotation = Quaternion.identity;
             sr.transform.localScale = normalizedScale;
+
+            if (!isReady && slotVisuals != null && slotVisuals.Length > i && slotVisuals[i] != null)
+                slotVisuals[i].localRotation = Quaternion.identity;
         }
     }
 

@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 
 public class WarehouseClickOpen : MonoBehaviour
 {
@@ -52,6 +53,9 @@ public class WarehouseClickOpen : MonoBehaviour
     // mở kho
     private void TryOpenWarehouse(Vector2 screenPos)
     {
+        if (SceneManager.GetSceneByName("SampleScene").isLoaded)
+            return;
+
         // chỉ chặn khi bấm vào UI popup
         if (IsPointerOverPopupUI(screenPos))
             return;

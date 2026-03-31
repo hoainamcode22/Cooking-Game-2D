@@ -4,7 +4,22 @@ using UnityEngine;
 
 public class KitchenTransferManager : MonoBehaviour
 {
+    [Serializable]
+    private class TransferEntry
+    {
+        public string itemId;
+        public int amount;
+    }
+
+    [Serializable]
+    private class TransferSaveData
+    {
+        public List<TransferEntry> entries = new List<TransferEntry>();
+    }
+
     public static KitchenTransferManager Instance { get; private set; }
+
+    private const string SaveKey = "KITCHEN_TRANSFER_SAVE";
 
     private readonly Dictionary<string, int> transferredItems = new Dictionary<string, int>();
 
@@ -20,6 +35,19 @@ public class KitchenTransferManager : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        LoadTransferData();
+    }
+
+    private void OnApplicationPause(bool pauseStatus)
+    {
+        if (pauseStatus)
+            SaveTransferData();
+    }
+
+    private void OnApplicationQuit()
+    {
+        SaveTransferData();
     }
 
     public void AddTransferredItem(string itemId, int amount)
@@ -31,6 +59,7 @@ public class KitchenTransferManager : MonoBehaviour
             transferredItems[itemId] = 0;
 
         transferredItems[itemId] += amount;
+        SaveTransferData();
         OnTransferredItemsChanged?.Invoke();
     }
 
@@ -58,6 +87,7 @@ public class KitchenTransferManager : MonoBehaviour
     public void ClearTransferredItems()
     {
         transferredItems.Clear();
+        SaveTransferData();
         OnTransferredItemsChanged?.Invoke();
     }
 
@@ -87,7 +117,54 @@ public class KitchenTransferManager : MonoBehaviour
         else
             transferredItems[itemId] = current;
 
+        SaveTransferData();
         OnTransferredItemsChanged?.Invoke();
         return true;
+    }
+
+    private void SaveTransferData()
+    {
+        TransferSaveData data = new TransferSaveData();
+
+        foreach (var kv in transferredItems)
+        {
+            if (kv.Value <= 0)
+                continue;
+
+            data.entries.Add(new TransferEntry
+            {
+                itemId = kv.Key,
+                amount = kv.Value
+            });
+        }
+
+        string json = JsonUtility.ToJson(data);
+        PlayerPrefs.SetString(SaveKey, json);
+        PlayerPrefs.Save();
+    }
+
+    private void LoadTransferData()
+    {
+        transferredItems.Clear();
+
+        if (!PlayerPrefs.HasKey(SaveKey))
+            return;
+
+        string json = PlayerPrefs.GetString(SaveKey, "");
+        if (string.IsNullOrEmpty(json))
+            return;
+
+        TransferSaveData data = JsonUtility.FromJson<TransferSaveData>(json);
+        if (data == null || data.entries == null)
+            return;
+
+        for (int i = 0; i < data.entries.Count; i++)
+        {
+            TransferEntry entry = data.entries[i];
+            if (entry == null || string.IsNullOrEmpty(entry.itemId) || entry.amount <= 0)
+                continue;
+
+            transferredItems[entry.itemId] = entry.amount;
+        }
     }
 }

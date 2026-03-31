@@ -29,7 +29,7 @@ public class FarmManager : MonoBehaviour
     [Header("Fast Time")]
     [Range(0.1f, 1f)]
     [SerializeField] private float realTimeMultiplier = 0.3f;
-    // mở slot đất dùng gem, hoặc mở hết để test, hoặc mở theo level nhân vật, hoặc mở theo nhiệm vụ hoàn thành,... tùy ý
+
     [Header("Plot Debug / Layout")]
     [SerializeField] private bool unlockAllPlotsForLayout = true;
     [SerializeField] private int startUnlockedNormalCount = 20;
@@ -95,13 +95,13 @@ public class FarmManager : MonoBehaviour
 
         for (int i = 0; i < normalPlots.Count; i++)
         {
-            if (normalPlots[i] != null)
+            if (normalPlots[i] != null && !normalPlots[i].HasSavedState())
                 normalPlots[i].SetUnlocked(true);
         }
 
         for (int i = 0; i < rarePlots.Count; i++)
         {
-            if (rarePlots[i] != null)
+            if (rarePlots[i] != null && !rarePlots[i].HasSavedState())
                 rarePlots[i].SetUnlocked(true);
         }
     }
@@ -121,6 +121,9 @@ public class FarmManager : MonoBehaviour
         {
             PlotController plot = normalPlots[i];
             if (plot == null)
+                continue;
+
+            if (plot.HasSavedState())
                 continue;
 
             bool unlocked = plot.PlotId <= startUnlockedNormalCount;
@@ -289,10 +292,9 @@ public class FarmManager : MonoBehaviour
 
         selectedPlot = plot;
         FarmUIManager.Instance?.ShowHint("Kéo lưỡi liềm qua cây để thu hoạch.");
-
-        // Chỉ hiện liềm lên, KHÔNG truyền vị trí plot để nó tự bay tới gặt
         FarmUIManager.Instance?.ShowSickleTool();
     }
+
     public void OnPlotPlanted(PlotController plot, CropData crop)
     {
         selectedPlot = plot;

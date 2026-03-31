@@ -50,6 +50,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     [SerializeField] private float progressFullWidth = 1f;
     [SerializeField] private bool progressLeftToRight = true;
 
+    [Header("FX")]
+    [SerializeField] private Transform harvestSpawnPoint;
+
     private PlotState state;
     private CropData plantedCrop;
     private string plantedCropId = "";
@@ -91,6 +94,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     private void Start()
     {
         Load();
+        TryResolvePlantedCrop();
         RefreshVisual();
     }
 
@@ -98,6 +102,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         if (state != PlotState.Growing)
             return;
+
+        TryResolvePlantedCrop();
 
         if (IsTimeUp())
         {
@@ -147,6 +153,11 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         }
     }
 
+    public bool HasSavedState()
+    {
+        return PlayerPrefs.HasKey(SaveKey);
+    }
+
     [ContextMenu("Force Rebind Children")]
     public void ForceRebindChildren()
     {
@@ -188,6 +199,41 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         t = transform.Find("ProgressRoot/Fill");
         if (t != null) progressFill = t;
+
+        AutoFindHarvestSpawnPoint();
+    }
+
+    private Transform AutoFindHarvestSpawnPoint()
+    {
+        // Always prefer the local child named "HarvestSpawnPoint" on THIS plot.
+        // This prevents a wrong serialized reference (e.g. from another plot) from causing bad spawn positions.
+        Transform local = transform.Find("HarvestSpawnPoint");
+        if (local != null)
+        {
+            harvestSpawnPoint = local;
+            return harvestSpawnPoint;
+        }
+
+        // Fallback: keep any manually assigned reference.
+        return harvestSpawnPoint;
+    }
+
+    private static string GetTransformPath(Transform t)
+    {
+        if (t == null) return "NULL";
+        string path = t.name;
+        while (t.parent != null)
+        {
+            t = t.parent;
+            path = t.name + "/" + path;
+        }
+        return path;
+    }
+
+    public Vector3 GetHarvestSpawnPosition()
+    {
+        AutoFindHarvestSpawnPoint();
+        return harvestSpawnPoint != null ? harvestSpawnPoint.position : transform.position + Vector3.up * 0.6f;
     }
 
     [ContextMenu("Clear This Plot Save")]
@@ -212,6 +258,11 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     public void SetUnlocked(bool value)
     {
         state = value ? PlotState.Empty : PlotState.Locked;
+        plantedCrop = null;
+        plantedCropId = "";
+        startUnixTime = 0;
+        finishUnixTime = 0;
+
         Save();
         RefreshVisual();
     }
@@ -326,9 +377,36 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if (FarmInventoryManager.Instance != null)
             FarmInventoryManager.Instance.AddItem(harvestItemId, amount);
 
+        AutoFindHarvestSpawnPoint();
+
+        bool plotIsRectTransform = transform is RectTransform;
+        bool spawnIsRectTransform = harvestSpawnPoint != null && harvestSpawnPoint is RectTransform;
+
+        Vector3 plotWorldPos = transform.position;
+        Vector3 spawnPointWorldPos = harvestSpawnPoint != null ? harvestSpawnPoint.position : Vector3.zero;
+
+        Vector3 fxSpawn = GetHarvestSpawnPosition();
+
+        Debug.Log(
+            $"[Harvest] WorldPos Debug | plot={name} | plotPath={GetTransformPath(transform)} | plot.transform.position={plotWorldPos} | " +
+            $"harvestSpawnPoint={(harvestSpawnPoint != null ? harvestSpawnPoint.name : "NULL")} | harvestSpawnPointPath={GetTransformPath(harvestSpawnPoint)} | " +
+            $"harvestSpawnPoint.position={(harvestSpawnPoint != null ? spawnPointWorldPos.ToString() : "NULL")} | final fxSpawn={fxSpawn} | " +
+            $"plotIsRectTransform={plotIsRectTransform} | harvestSpawnPointIsRectTransform={spawnIsRectTransform}"
+        );
+
         HarvestFeedbackSpawner.Instance?.Spawn(
             transform.position + new Vector3(0f, 1.2f, 0f),
             $"+{amount} {harvestedCrop.displayName}"
+        );
+
+        Sprite fxIcon = harvestedCrop.icon != null ? harvestedCrop.icon : harvestedCrop.readySprite;
+
+        Debug.Log($"[Harvest] SpawnHarvestFly | plot={name} | crop={harvestedCrop.displayName} | cropId={harvestedCrop.cropId} | amount={amount} | icon={(fxIcon != null ? fxIcon.name : "NULL")} | fxSpawn={fxSpawn}");
+
+        HarvestFeedbackSpawner.Instance?.SpawnHarvestFly(
+            fxIcon,
+            fxSpawn,
+            amount
         );
 
         plantedCrop = null;
@@ -365,6 +443,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
     public void RefreshVisual()
     {
+        TryResolvePlantedCrop();
+
         if (groundSprite != null)
             groundSprite.enabled = true;
 
@@ -422,6 +502,20 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     private bool IsTimeUp()
     {
         return DateTimeOffset.UtcNow.ToUnixTimeSeconds() >= finishUnixTime;
+    }
+
+    private void TryResolvePlantedCrop()
+    {
+        if (plantedCrop != null)
+            return;
+
+        if (string.IsNullOrEmpty(plantedCropId))
+            return;
+
+        if (FarmManager.Instance == null)
+            return;
+
+        plantedCrop = FarmManager.Instance.GetCropById(plantedCropId);
     }
 
     private void Save()
@@ -482,8 +576,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         finishUnixTime = data.finishUnixTime;
         plantedCrop = null;
 
-        if (!string.IsNullOrEmpty(plantedCropId) && FarmManager.Instance != null)
-            plantedCrop = FarmManager.Instance.GetCropById(plantedCropId);
+        TryResolvePlantedCrop();
 
         if (state == PlotState.Growing && IsTimeUp())
             state = PlotState.Ready;
@@ -491,3 +584,4 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         RefreshVisual();
     }
 }
+

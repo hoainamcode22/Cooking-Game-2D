@@ -41,14 +41,14 @@ public class TargetFlavorBoxUI : MonoBehaviour
     // hàm này sẽ thiết lập tất cả text cố định trong UI, nó sẽ được gọi một lần duy nhất trong Awake để đảm bảo rằng các text như tiêu đề và nhãn vị luôn hiển thị đúng, bất kể món ăn nào được chọn
     private void SetStaticTexts()
     {
-        if (txtTodayDishTitle != null) txtTodayDishTitle.text = "Today's Dish";
-        if (txtTargetFlavorTitle != null) txtTargetFlavorTitle.text = "Target Flavor";
+        if (txtTodayDishTitle != null) txtTodayDishTitle.text = "Món ăn hôm nay";
+        if (txtTargetFlavorTitle != null) txtTargetFlavorTitle.text = "Hương vị";
 
-        if (txtFlavorLabelSweet != null) txtFlavorLabelSweet.text = "Sweet";
-        if (txtFlavorLabelSpicy != null) txtFlavorLabelSpicy.text = "Spicy";
-        if (txtFlavorLabelSour != null) txtFlavorLabelSour.text = "Sour";
-        if (txtFlavorLabelUmami != null) txtFlavorLabelUmami.text = "Umami";
-        if (txtFlavorLabelTexture != null) txtFlavorLabelTexture.text = "Texture";
+        if (txtFlavorLabelSweet != null) txtFlavorLabelSweet.text = "Ngọt";
+        if (txtFlavorLabelSpicy != null) txtFlavorLabelSpicy.text = "Cay";
+        if (txtFlavorLabelSour != null) txtFlavorLabelSour.text = "Chua";
+        if (txtFlavorLabelUmami != null) txtFlavorLabelUmami.text = "Đậm đà";
+        if (txtFlavorLabelTexture != null) txtFlavorLabelTexture.text = "Kết cấu";
     }
     // hàm này sẽ được gọi từ CenterCookingPanelUI mỗi khi có món mới được chọn, nó sẽ cập nhật toàn bộ UI dựa trên thông tin của món ăn đó, bao gồm tên đầy đủ (có thể có phụ đề), hình ảnh và các giá trị vị
     public void BindDish(DishData dishData)
@@ -59,9 +59,24 @@ public class TargetFlavorBoxUI : MonoBehaviour
             return;
         }
 
-        string fullDishName = string.IsNullOrEmpty(dishData.dishSubTitle)
-            ? dishData.dishName
-            : $"{dishData.dishName} ({dishData.dishSubTitle})";
+        string dishName = dishData.dishName;
+        string sub = dishData.dishSubTitle;
+
+        if (string.IsNullOrWhiteSpace(sub))
+            sub = string.Empty;
+
+        string fullDishName;
+        if (string.IsNullOrEmpty(sub))
+        {
+            fullDishName = dishName;
+        }
+        else
+        {
+            // nếu subtitle đã có ngoặc sẵn thì không bọc thêm
+            string trimmed = sub.Trim();
+            bool alreadyWrapped = trimmed.StartsWith("(") && trimmed.EndsWith(")");
+            fullDishName = alreadyWrapped ? (dishName + " " + trimmed) : ($"{dishName} ({trimmed})");
+        }
 
         if (uiDishImage != null)
         {
