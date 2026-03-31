@@ -2,10 +2,9 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public class HarvestFlyItemFX : MonoBehaviour
+public class ExpFlyToAvatarFX : MonoBehaviour
 {
     [Header("Refs (World Prefab)")]
-    [SerializeField] private SpriteRenderer iconRenderer;
     [SerializeField] private Transform visualRoot;
 
     [Header("Timing")]
@@ -14,10 +13,10 @@ public class HarvestFlyItemFX : MonoBehaviour
     [SerializeField] private float flyDuration = 0.65f;
 
     [Header("World Motion")]
-    [SerializeField] private float scatterRadius = 0.35f;
-    [SerializeField] private float dropDownOffset = 0.18f;
+    [SerializeField] private float scatterRadius = 0.28f;
+    [SerializeField] private float dropDownOffset = 0.16f;
 
-    [Header("Scale (World)")]
+    [Header("Scale")]
     [SerializeField] private Vector3 startScale = new Vector3(0.55f, 0.55f, 0.55f);
     [SerializeField] private Vector3 normalScale = new Vector3(0.85f, 0.85f, 0.85f);
 
@@ -30,28 +29,12 @@ public class HarvestFlyItemFX : MonoBehaviour
     private void Reset()
     {
         visualRoot = transform;
-        iconRenderer = GetComponentInChildren<SpriteRenderer>(true);
     }
 
     private void Awake()
     {
         if (visualRoot == null)
             visualRoot = transform;
-
-        if (iconRenderer == null)
-            iconRenderer = GetComponentInChildren<SpriteRenderer>(true);
-    }
-
-    public void ClearIconImmediate()
-    {
-        if (iconRenderer == null)
-            iconRenderer = GetComponentInChildren<SpriteRenderer>(true);
-
-        if (iconRenderer == null)
-            return;
-
-        iconRenderer.sprite = null;
-        iconRenderer.enabled = false;
     }
 
     private void OnDisable() => StopRoutineIfRunning();
@@ -67,25 +50,12 @@ public class HarvestFlyItemFX : MonoBehaviour
         finally { routine = null; }
     }
 
-    public void Play(Sprite icon, Vector3 worldSpawnPos, Vector3 worldTargetPos, Action arrivedCallback = null)
+    public void Play(Vector3 worldSpawnPos, Vector3 worldTargetPos, Action arrivedCallback = null)
     {
         if (!gameObject.activeInHierarchy)
             return;
 
         StopRoutineIfRunning();
-
-        if (iconRenderer == null)
-            iconRenderer = GetComponentInChildren<SpriteRenderer>(true);
-
-        if (iconRenderer != null)
-        {
-            iconRenderer.sprite = icon;
-            iconRenderer.enabled = icon != null;
-        }
-        else
-        {
-            Debug.LogWarning("[HarvestFlyItemFX] Missing SpriteRenderer reference (child Icon)");
-        }
 
         onArrived = arrivedCallback;
         transform.position = worldSpawnPos;
@@ -102,7 +72,6 @@ public class HarvestFlyItemFX : MonoBehaviour
         Vector3 groundPos = worldSpawnPos + new Vector3(scatter.x, scatter.y - dropDownOffset, 0f);
 
         float timer = 0f;
-
         while (timer < dropDuration)
         {
             timer += Time.deltaTime;

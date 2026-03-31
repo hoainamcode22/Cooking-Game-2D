@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   cropId: rice
   displayName: "L\xFAa"
-  icon: {fileID: 7469862485501457946, guid: 41691b0d780958f429595fb193de0a12, type: 3}
+  icon: {fileID: -8677233541277829496, guid: 135adb1db95f7c946b2dad149bb8baa6, type: 3}
   sproutSprite: {fileID: 0}
-  growingSprite: {fileID: 7836054017678178629, guid: d3b1bd818766b3042b6fe59e6527165d, type: 3}
-  readySprite: {fileID: -2147581710025465639, guid: 07fa991ff38d7404aa4ae7b71e761f46, type: 3}
+  growingSprite: {fileID: -7461114738252458422, guid: 15847aa3acb250b48b40807b2ebb0200, type: 3}
+  readySprite: {fileID: 2801810866627978505, guid: fd0d447c99f4e1c4688ca0e6301e3b0d, type: 3}
   sproutScale: 1
   growingScale: 1
   readyScale: 1
@@ -32,6 +32,7 @@ MonoBehaviour:
   seedBuyGold: 0
   sellGold: 3
   harvestAmount: 4
+  expReward: 5
   sweet: 0
   spicy: 0
   sour: 0

@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   cropId: ngo
   displayName: "Ng\xF4"
-  icon: {fileID: 1730057366333945802, guid: 7c83cce9260ff06488400749a37612a0, type: 3}
+  icon: {fileID: -6025809935225615670, guid: 60701cfb768ef344781de8328928c613, type: 3}
   sproutSprite: {fileID: 0}
-  growingSprite: {fileID: 1679887171443660079, guid: 1f012ff39822544489267f05d1c9fb7a, type: 3}
-  readySprite: {fileID: -6125162477578923581, guid: 046fb019de7ecf849af5fb989f71003a, type: 3}
+  growingSprite: {fileID: -3274412804828334012, guid: 53bf07ac886667044b029de54af98b23, type: 3}
+  readySprite: {fileID: -4524866862682364126, guid: bbc8d2d169e07d54a96a1540000f1a69, type: 3}
   sproutScale: 1
   growingScale: 1
   readyScale: 1
@@ -32,6 +32,7 @@ MonoBehaviour:
   seedBuyGold: 0
   sellGold: 3
   harvestAmount: 4
+  expReward: 5
   sweet: 0
   spicy: 0
   sour: 0

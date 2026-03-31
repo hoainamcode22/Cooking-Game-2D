@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 046fb019de7ecf849af5fb989f71003a
+guid: bbc8d2d169e07d54a96a1540000f1a69
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6125162477578923581
-    second: ngoluc3-removebg-preview_0
+      213: -4524866862682364126
+    second: baplever3-removebg-preview_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ngoluc3-removebg-preview_0
+      name: baplever3-removebg-preview_0
       rect:
         serializedVersion: 2
-        x: 105
-        y: 10
-        width: 359
-        height: 424
+        x: 10
+        y: 83
+        width: 474
+        height: 407
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3c15b5cdd2d0ffaa0800000000000000
-      internalID: -6125162477578923581
+      spriteID: 227a1e9ef817431c0800000000000000
+      internalID: -4524866862682364126
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ngoluc3-removebg-preview_0: -6125162477578923581
+      baplever3-removebg-preview_0: -4524866862682364126
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

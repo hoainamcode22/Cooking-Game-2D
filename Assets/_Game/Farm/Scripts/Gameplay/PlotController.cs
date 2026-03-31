@@ -52,6 +52,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
     [Header("FX")]
     [SerializeField] private Transform harvestSpawnPoint;
+    [SerializeField] private Transform expSpawnPoint;
 
     private PlotState state;
     private CropData plantedCrop;
@@ -201,6 +202,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if (t != null) progressFill = t;
 
         AutoFindHarvestSpawnPoint();
+        AutoFindExpSpawnPoint();
     }
 
     private Transform AutoFindHarvestSpawnPoint()
@@ -216,6 +218,18 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         // Fallback: keep any manually assigned reference.
         return harvestSpawnPoint;
+    }
+
+    private Transform AutoFindExpSpawnPoint()
+    {
+        Transform local = transform.Find("ExpSpawnPoint");
+        if (local != null)
+        {
+            expSpawnPoint = local;
+            return expSpawnPoint;
+        }
+
+        return expSpawnPoint;
     }
 
     private static string GetTransformPath(Transform t)
@@ -234,6 +248,12 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         AutoFindHarvestSpawnPoint();
         return harvestSpawnPoint != null ? harvestSpawnPoint.position : transform.position + Vector3.up * 0.6f;
+    }
+
+    public Vector3 GetExpSpawnPosition()
+    {
+        AutoFindExpSpawnPoint();
+        return expSpawnPoint != null ? expSpawnPoint.position : GetHarvestSpawnPosition();
     }
 
     [ContextMenu("Clear This Plot Save")]
@@ -259,6 +279,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         state = value ? PlotState.Empty : PlotState.Locked;
         plantedCrop = null;
+
         plantedCropId = "";
         startUnixTime = 0;
         finishUnixTime = 0;
@@ -378,6 +399,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             FarmInventoryManager.Instance.AddItem(harvestItemId, amount);
 
         AutoFindHarvestSpawnPoint();
+        AutoFindExpSpawnPoint();
 
         bool plotIsRectTransform = transform is RectTransform;
         bool spawnIsRectTransform = harvestSpawnPoint != null && harvestSpawnPoint is RectTransform;
@@ -408,6 +430,12 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             fxSpawn,
             amount
         );
+
+        int expReward = harvestedCrop != null ? Mathf.Max(0, harvestedCrop.expReward) : 5;
+        if (expReward <= 0)
+            expReward = 5;
+
+        HarvestFeedbackSpawner.Instance?.SpawnExpFly(GetExpSpawnPosition(), expReward);
 
         plantedCrop = null;
         plantedCropId = "";

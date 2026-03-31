@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 12eb9655c2d4fec44852bbcb7173894e
+guid: 135adb1db95f7c946b2dad149bb8baa6
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 9172856394956354561
-    second: ngoluc1-removebg-preview_0
+      213: -8677233541277829496
+    second: lualever1-removebg-preview_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ngoluc1-removebg-preview_0
+      name: lualever1-removebg-preview_0
       rect:
         serializedVersion: 2
-        x: 65
-        y: 19
-        width: 388
-        height: 354
+        x: 34
+        y: 72
+        width: 436
+        height: 367
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 1043b059a488c4f70800000000000000
-      internalID: 9172856394956354561
+      spriteID: 886b7037116449780800000000000000
+      internalID: -8677233541277829496
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ngoluc1-removebg-preview_0: 9172856394956354561
+      lualever1-removebg-preview_0: -8677233541277829496
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -34,6 +34,9 @@ public class CropData : ScriptableObject
     public int sellGold;
     public int harvestAmount = 1;
 
+    [Header("Progression")]
+    public int expReward = 5;
+
     [Header("Cooking Vector")]
     public int sweet;
     public int spicy;

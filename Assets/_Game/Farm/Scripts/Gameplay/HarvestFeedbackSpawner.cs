@@ -13,11 +13,21 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     [SerializeField] private Transform warehouseTarget;
     [SerializeField] private WarehousePulseFX warehousePulseFX;
 
+    [Header("EXP FX")]
+    [SerializeField] private ExpFlyToAvatarFX expFlyPrefab;
+    [SerializeField] private TopBarExpUI topBarExpUI;
+
     [Header("Tuning (World)")]
     [SerializeField] private int minVisualIcons = 2;
     [SerializeField] private int maxVisualIcons = 4;
     [SerializeField] private float spawnGap = 0.06f;
     [SerializeField] private float spawnScatterRadius = 0.25f;
+
+    [Header("Tuning (EXP)")]
+    [SerializeField] private int minVisualExpOrbs = 1;
+    [SerializeField] private int maxVisualExpOrbs = 3;
+    [SerializeField] private float expSpawnGap = 0.05f;
+    [SerializeField] private float expSpawnScatterRadius = 0.18f;
 
     private void Awake()
     {
@@ -28,6 +38,12 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         }
 
         Instance = this;
+    }
+
+    private void Start()
+    {
+        if (topBarExpUI == null)
+            topBarExpUI = FindFirstObjectByType<TopBarExpUI>();
     }
 
     public void Spawn(Vector3 worldPosition, string content)
@@ -67,6 +83,23 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         }
 
         StartCoroutine(CoSpawnFly(icon, worldPosition, amount));
+    }
+
+    public void SpawnExpFly(Vector3 worldPosition, int expAmount)
+    {
+        if (expAmount <= 0)
+            return;
+
+        if (expFlyPrefab == null)
+            return;
+
+        if (topBarExpUI == null)
+            topBarExpUI = FindFirstObjectByType<TopBarExpUI>();
+
+        if (topBarExpUI == null || topBarExpUI.IconExp == null)
+            return;
+
+        StartCoroutine(CoSpawnExp(worldPosition, expAmount));
     }
 
     private IEnumerator CoSpawnFly(Sprite icon, Vector3 worldPosition, int amount)
@@ -115,4 +148,40 @@ public class HarvestFeedbackSpawner : MonoBehaviour
                 yield return new WaitForSeconds(spawnGap);
         }
     }
+
+    private IEnumerator CoSpawnExp(Vector3 worldPosition, int expAmount)
+    {
+        Camera cam = Camera.main;
+        if (cam == null)
+            yield break;
+
+        Vector3 uiWorldTarget = topBarExpUI.IconExp.position;
+
+        int visualCount = Mathf.Clamp(expAmount, minVisualExpOrbs, maxVisualExpOrbs);
+        int arrivedCount = 0;
+
+        for (int i = 0; i < visualCount; i++)
+        {
+            Vector2 scatter = Random.insideUnitCircle * expSpawnScatterRadius;
+            Vector3 spawnPos = worldPosition + new Vector3(scatter.x, scatter.y, 0f);
+
+            ExpFlyToAvatarFX fx = Instantiate(expFlyPrefab, spawnPos, Quaternion.identity);
+            if (fx == null)
+                continue;
+
+            fx.Play(spawnPos, uiWorldTarget, () =>
+            {
+                arrivedCount++;
+                if (arrivedCount >= visualCount)
+                {
+                    if (PlayerProgressManager.Instance != null)
+                        PlayerProgressManager.Instance.AddExp(expAmount);
+                }
+            });
+
+            if (expSpawnGap > 0f)
+                yield return new WaitForSeconds(expSpawnGap);
+        }
+    }
 }
+

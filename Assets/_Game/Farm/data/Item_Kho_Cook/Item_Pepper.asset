@@ -15,4 +15,4 @@ MonoBehaviour:
   itemId: pepper
   displayName: "Ti\xEAu"
   icon: {fileID: 8973804588490373932, guid: 7d9a9fe8bc011a046ade02492b7f05b9, type: 3}
-  cookingData: {fileID: 0}
+  cookingData: {fileID: 11400000, guid: 068c729ad2bb67e4d9a7cea8aec07a6d, type: 2}
