@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: acfc89903cb3f6d4e9737105dc9f14e3
+guid: 32ac31aea0d5a1c4f8226c32320abd39
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -4646388339264681199
-    second: khung_0
+      213: 5631778342788076661
+    second: coixoaygio_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: khung_0
+      name: coixoaygio_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1920
-        height: 1080
+        x: 281
+        y: 5
+        width: 216
+        height: 325
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 11b8c9d4c66b48fb0800000000000000
-      internalID: -4646388339264681199
+      spriteID: 5741f977098182e40800000000000000
+      internalID: 5631778342788076661
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      khung_0: -4646388339264681199
+      coixoaygio_0: 5631778342788076661
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

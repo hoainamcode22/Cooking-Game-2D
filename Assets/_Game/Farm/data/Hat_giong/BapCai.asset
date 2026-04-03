@@ -14,16 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   cropId: bapcai
   displayName: "B\u1EAFp c\u1EA3i"
-  icon: {fileID: -1476180068579082342, guid: 28c47cd0d82daec448f10f2257ad105f, type: 3}
-  sproutSprite: {fileID: 0}
+  icon: {fileID: 6581391040655815886, guid: 54a847e88ac67c841a16ad6896842bb1, type: 3}
+  sproutSprite: {fileID: -2398023241171923016, guid: 88f706f4b7de235498ec5a8931fe3396, type: 3}
   growingSprite: {fileID: -2398023241171923016, guid: 88f706f4b7de235498ec5a8931fe3396, type: 3}
   readySprite: {fileID: 6581391040655815886, guid: 54a847e88ac67c841a16ad6896842bb1, type: 3}
-  sproutScale: 1
-  growingScale: 1
-  readyScale: 1
-  sproutOffset: {x: 0, y: 0}
-  growingOffset: {x: 0, y: 0}
-  readyOffset: {x: 0, y: 0}
+  sproutScale: {x: 10, y: 10, z: 1}
+  growingScale: {x: 20, y: 20, z: 1}
+  readyScale: {x: 35, y: 35, z: 1}
+  displayCount: 6
   seedItemId: seed_bapcai
   harvestItemId: bapcai
   tier: 1
@@ -32,6 +30,7 @@ MonoBehaviour:
   seedBuyGold: 0
   sellGold: 3
   harvestAmount: 4
+  expReward: 5
   sweet: 0
   spicy: 0
   sour: 0

@@ -3,7 +3,27 @@ using UnityEngine;
 
 public class FarmManager : MonoBehaviour
 {
-    public static FarmManager Instance { get; private set; }
+    public static FarmManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindFirstObjectByTypeSafe();
+
+                if (_instance == null)
+                {
+                    GameObject go = new GameObject("FarmManager(Auto)");
+                    _instance = go.AddComponent<FarmManager>();
+                }
+            }
+
+            return _instance;
+        }
+        private set => _instance = value;
+    }
+
+    private static FarmManager _instance;
 
     [System.Serializable]
     public class SeedStockData
@@ -34,6 +54,8 @@ public class FarmManager : MonoBehaviour
     [SerializeField] private bool unlockAllPlotsForLayout = true;
     [SerializeField] private int startUnlockedNormalCount = 20;
 
+    public int CropDatabaseCount => cropMap.Count;
+
     private readonly Dictionary<string, CropData> cropMap = new Dictionary<string, CropData>();
     private readonly Dictionary<string, int> seedStockMap = new Dictionary<string, int>();
 
@@ -49,11 +71,11 @@ public class FarmManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance == null)
+        if (_instance == null)
         {
-            Instance = this;
+            _instance = this;
         }
-        else if (Instance != this)
+        else if (_instance != this)
         {
             Destroy(gameObject);
             return;
@@ -62,6 +84,15 @@ public class FarmManager : MonoBehaviour
         RebuildCropMap();
         RebuildSeedStockMap();
         CachePlotsFromRoots();
+    }
+
+    private static FarmManager FindFirstObjectByTypeSafe()
+    {
+#if UNITY_2023_1_OR_NEWER
+        return Object.FindFirstObjectByType<FarmManager>();
+#else
+        return Object.FindObjectOfType<FarmManager>();
+#endif
     }
 
     private void Start()

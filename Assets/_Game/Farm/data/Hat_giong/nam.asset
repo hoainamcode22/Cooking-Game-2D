@@ -14,16 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   cropId: nam
   displayName: "N\u1EA5m"
-  icon: {fileID: 4208644412692552619, guid: afa58443b266817488e60fc350d7ab29, type: 3}
-  sproutSprite: {fileID: 0}
+  icon: {fileID: -7866956879579072398, guid: dc01f5b0992f8c94e86cc8c2f412eb5c, type: 3}
+  sproutSprite: {fileID: 4208644412692552619, guid: afa58443b266817488e60fc350d7ab29, type: 3}
   growingSprite: {fileID: 5693180632895198793, guid: 3715acc9c480283469470b5a94ae6014, type: 3}
   readySprite: {fileID: -7866956879579072398, guid: dc01f5b0992f8c94e86cc8c2f412eb5c, type: 3}
-  sproutScale: 1
-  growingScale: 1
-  readyScale: 1
-  sproutOffset: {x: 0, y: 0}
-  growingOffset: {x: 0, y: 0}
-  readyOffset: {x: 0, y: 0}
+  sproutScale: {x: 10, y: 10, z: 1}
+  growingScale: {x: 20, y: 20, z: 1}
+  readyScale: {x: 35, y: 35, z: 1}
+  displayCount: 6
   seedItemId: seed_nam
   harvestItemId: nam
   tier: 1

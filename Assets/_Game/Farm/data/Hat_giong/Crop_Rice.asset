@@ -14,16 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   cropId: rice
   displayName: "L\xFAa"
-  icon: {fileID: -8677233541277829496, guid: 135adb1db95f7c946b2dad149bb8baa6, type: 3}
-  sproutSprite: {fileID: 0}
-  growingSprite: {fileID: -7461114738252458422, guid: 15847aa3acb250b48b40807b2ebb0200, type: 3}
-  readySprite: {fileID: 2801810866627978505, guid: fd0d447c99f4e1c4688ca0e6301e3b0d, type: 3}
-  sproutScale: 1
-  growingScale: 1
-  readyScale: 1
-  sproutOffset: {x: 0, y: 0}
-  growingOffset: {x: 0, y: 0}
-  readyOffset: {x: 0, y: 0}
+  icon: {fileID: 2801810866627978505, guid: fd0d447c99f4e1c4688ca0e6301e3b0d, type: 3}
+  sproutSprite: {fileID: 7611661123719943158, guid: e5986225ff18c4f4a88616410a6ec147, type: 3}
+  growingSprite: {fileID: -7393588120481326132, guid: d4afe1a0a33d80c418181ab08a1e94e8, type: 3}
+  readySprite: {fileID: 960488127760353586, guid: 5f4b50baf50e17c44962d33c59101e81, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 60, y: 60, z: 1}
+  readyScale: {x: 70, y: 70, z: 1}
+  displayCount: 12
   seedItemId: seed_rice
   harvestItemId: rice
   tier: 1
@@ -39,5 +37,5 @@ MonoBehaviour:
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 0
+  canDropFromAds: 1
   canAppearInRareMarket: 0

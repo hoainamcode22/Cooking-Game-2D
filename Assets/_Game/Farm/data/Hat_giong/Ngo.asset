@@ -15,15 +15,13 @@ MonoBehaviour:
   cropId: ngo
   displayName: "Ng\xF4"
   icon: {fileID: -6025809935225615670, guid: 60701cfb768ef344781de8328928c613, type: 3}
-  sproutSprite: {fileID: 0}
-  growingSprite: {fileID: -3274412804828334012, guid: 53bf07ac886667044b029de54af98b23, type: 3}
-  readySprite: {fileID: -4524866862682364126, guid: bbc8d2d169e07d54a96a1540000f1a69, type: 3}
-  sproutScale: 1
-  growingScale: 1
-  readyScale: 1
-  sproutOffset: {x: 0, y: 0}
-  growingOffset: {x: 0, y: 0}
-  readyOffset: {x: 0, y: 0}
+  sproutSprite: {fileID: 3938912592072765698, guid: 3f7d8bea625df654796f32330760899d, type: 3}
+  growingSprite: {fileID: 3954842684570580545, guid: 78ffcaff38a49e049aeb7435df03c569, type: 3}
+  readySprite: {fileID: 2778021726456339881, guid: b31bd3c1a3417044f943cc0c4eec4c64, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 60, y: 60, z: 1}
+  readyScale: {x: 75, y: 75, z: 1}
+  displayCount: 12
   seedItemId: seed_ngo
   harvestItemId: ngo
   tier: 1

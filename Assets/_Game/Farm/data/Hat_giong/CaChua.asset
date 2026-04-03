@@ -15,15 +15,13 @@ MonoBehaviour:
   cropId: cachua
   displayName: "C\xE0 Chua"
   icon: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
-  sproutSprite: {fileID: 0}
+  sproutSprite: {fileID: 1582209969873154330, guid: c42dc85dcfd15b8489523fb1e3e62e97, type: 3}
   growingSprite: {fileID: 1582209969873154330, guid: c42dc85dcfd15b8489523fb1e3e62e97, type: 3}
   readySprite: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
-  sproutScale: 1
-  growingScale: 1
-  readyScale: 1
-  sproutOffset: {x: 0, y: 0}
-  growingOffset: {x: 0, y: 0}
-  readyOffset: {x: 0, y: 0}
+  sproutScale: {x: 10, y: 10, z: 1}
+  growingScale: {x: 20, y: 20, z: 1}
+  readyScale: {x: 35, y: 35, z: 1}
+  displayCount: 6
   seedItemId: seed_cachua
   harvestItemId: cachua
   tier: 1
@@ -32,6 +30,7 @@ MonoBehaviour:
   seedBuyGold: 0
   sellGold: 3
   harvestAmount: 4
+  expReward: 5
   sweet: 0
   spicy: 0
   sour: 0

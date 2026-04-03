@@ -29,7 +29,7 @@ public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
             rootCanvas = GetComponentInParent<Canvas>();
     }
 
-    // Bắt đầu kéo item hạt giống.
+    // Bắt đầu kéo item hạt giống — set drag lock.
     public void OnBeginDrag(PointerEventData eventData)
     {
         canDrag = cropData != null;
@@ -61,6 +61,7 @@ public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         canvasGroup.alpha = 0.75f;
         canvasGroup.blocksRaycasts = false;
 
+        FarmInputLock.IsDraggingSeed = true;
         Debug.Log($"BEGIN DRAG: {cropData.displayName} | selectedPlot = {FarmManager.Instance.SelectedPlot.name}");
     }
 
@@ -73,9 +74,11 @@ public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         rectTransform.anchoredPosition += eventData.delta / rootCanvas.scaleFactor;
     }
 
-    // Khi thả, trồng vào đúng ô đã click trước đó.
+    // Khi thả, trồng vào đúng ô đã click trước đó — clear drag lock.
     public void OnEndDrag(PointerEventData eventData)
     {
+        FarmInputLock.IsDraggingSeed = false;
+
         if (!canDrag)
             return;
 

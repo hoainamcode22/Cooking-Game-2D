@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: de35b72f83986e14784b6e5fec34b0fe
+guid: b5bff0e7927a0544bab4f04f58a39b01
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8770121595369259447
-    second: backroundFarm_0
+      213: 176183013055257204
+    second: icondoinui_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: backroundFarm_0
+      name: icondoinui_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 3076
-        height: 1376
+        x: 25
+        y: 15
+        width: 539
+        height: 410
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 94e780700e44a4680800000000000000
-      internalID: -8770121595369259447
+      spriteID: 47add94548de17200800000000000000
+      internalID: 176183013055257204
       vertices: []
       indices: 
       edges: []
@@ -161,7 +161,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      backroundFarm_0: -8770121595369259447
+      icondoinui_0: 176183013055257204
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

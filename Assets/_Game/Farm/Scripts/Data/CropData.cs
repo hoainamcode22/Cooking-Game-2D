@@ -14,13 +14,12 @@ public class CropData : ScriptableObject
     public Sprite readySprite;
 
     [Header("Visual Tuning")]
-    public float sproutScale = 1f;
-    public float growingScale = 1f;
-    public float readyScale = 1f;
+    public Vector3 sproutScale  = new Vector3(1f, 1f,   1f);
+    public Vector3 growingScale = new Vector3(1f, 1.5f, 1f);
+    public Vector3 readyScale   = new Vector3(1f, 2f,   1f);
 
-    public Vector2 sproutOffset = Vector2.zero;
-    public Vector2 growingOffset = Vector2.zero;
-    public Vector2 readyOffset = Vector2.zero;
+    [Header("Visual")]
+    public int displayCount = 4;
 
     [Header("Inventory")]
     public string seedItemId;
@@ -78,21 +77,10 @@ public class CropData : ScriptableObject
 
 
 
-    public float GetStageScale(float progress01)
+    public Sprite GetSprite(int stage)
     {
-        progress01 = Mathf.Clamp01(progress01);
-
-        if (progress01 >= 1f) return Mathf.Max(0.01f, readyScale);
-        if (progress01 < 0.5f) return Mathf.Max(0.01f, sproutScale);
-        return Mathf.Max(0.01f, growingScale);
-    }
-
-    public Vector2 GetStageOffset(float progress01)
-    {
-        progress01 = Mathf.Clamp01(progress01);
-
-        if (progress01 >= 1f) return readyOffset;
-        if (progress01 < 0.5f) return sproutOffset;
-        return growingOffset;
+        if (stage == 0) return sproutSprite;
+        if (stage == 1) return growingSprite;
+        return readySprite;
     }
 }

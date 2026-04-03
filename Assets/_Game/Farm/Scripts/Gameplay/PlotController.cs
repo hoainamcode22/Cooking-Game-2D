@@ -473,6 +473,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         TryResolvePlantedCrop();
 
+        Debug.Log($"[RefreshVisual] {name} | state={state} | plantedCrop={plantedCrop?.cropId ?? "NULL"} | plantedCropId={plantedCropId}");
+
         if (groundSprite != null)
             groundSprite.enabled = true;
 
@@ -541,9 +543,14 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             return;
 
         if (FarmManager.Instance == null)
+        {
+            Debug.LogWarning($"[ResolveCrop] {name} | FarmManager.Instance == NULL | cropId={plantedCropId}");
             return;
+        }
 
-        plantedCrop = FarmManager.Instance.GetCropById(plantedCropId);
+        CropData resolved = FarmManager.Instance.GetCropById(plantedCropId);
+        Debug.Log($"[ResolveCrop] {name} | Looking for cropId={plantedCropId} | DB count={FarmManager.Instance.CropDatabaseCount} | resolved={(resolved != null ? resolved.cropId : "NULL")}");
+        plantedCrop = resolved;
     }
 
     private void Save()

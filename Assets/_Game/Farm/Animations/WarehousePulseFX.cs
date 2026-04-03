@@ -5,21 +5,22 @@ using UnityEngine;
 public class WarehousePulseFX : MonoBehaviour
 {
     [Header("Refs")]
-    [SerializeField] private Transform visualRoot;
-    [SerializeField] private SpriteRenderer glowRenderer;
+    [SerializeField] private Transform visualRoot;       // Transform gốc của phần hình ảnh (dùng để rung/scale)
+    [SerializeField] private SpriteRenderer glowRenderer; // SpriteRenderer hiệu ứng phát sáng
 
     [Header("Shake")]
-    [SerializeField] private float duration = 0.18f;
-    [SerializeField] private float shakeStrength = 0.06f;
-    [SerializeField] private float scaleBoost = 0.05f;
+    [SerializeField] private float duration = 0.18f;      // Thời gian hiệu ứng pulse (giây)
+    [SerializeField] private float shakeStrength = 0.06f; // Biên độ rung theo trục X
+    [SerializeField] private float scaleBoost = 0.05f;    // Mức độ phóng to tối đa khi pulse
 
     [Header("Glow")]
-    [SerializeField] private float glowMaxAlpha = 0.85f;
+    [SerializeField] private float glowMaxAlpha = 0.85f;  // Alpha tối đa của hiệu ứng glow
 
-    private Coroutine pulseRoutine;
-    private Vector3 originalLocalPos;
-    private Vector3 originalLocalScale;
+    private Coroutine pulseRoutine;        // Coroutine đang chạy (dùng để tránh chồng chéo)
+    private Vector3 originalLocalPos;      // Vị trí local ban đầu trước khi rung
+    private Vector3 originalLocalScale;    // Scale local ban đầu trước khi phóng to
 
+    // Khởi tạo: lưu vị trí/scale gốc và ẩn glow
     private void Awake()
     {
         if (visualRoot == null)
@@ -36,6 +37,7 @@ public class WarehousePulseFX : MonoBehaviour
         }
     }
 
+    // Gọi từ ngoài để kích hoạt hiệu ứng pulse (nếu đang chạy thì restart)
     public void PlayPulse()
     {
         if (!gameObject.activeInHierarchy)
@@ -47,6 +49,7 @@ public class WarehousePulseFX : MonoBehaviour
         pulseRoutine = StartCoroutine(CoPulse());
     }
 
+    // Coroutine thực hiện hiệu ứng rung + glow rồi reset về trạng thái ban đầu
     private IEnumerator CoPulse()
     {
         float timer = 0f;

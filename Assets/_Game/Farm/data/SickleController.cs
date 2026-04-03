@@ -42,6 +42,7 @@ public class SickleController : MonoBehaviour
             transform.position = pos;
 
         isDragging = true; // click ô lúa xong là kéo luôn
+        FarmInputLock.IsDraggingSickle = true; // block map pan while sickle is active
         gameObject.SetActive(true);
 
         Debug.Log("[Sickle] BeginHarvestMode -> auto drag");
@@ -50,7 +51,14 @@ public class SickleController : MonoBehaviour
     public void EndHarvestMode()
     {
         isDragging = false;
+        FarmInputLock.IsDraggingSickle = false;
         Debug.Log("[Sickle] EndHarvestMode");
+    }
+
+    private void OnDisable()
+    {
+        // Safety: ensure map pan lock is released if sickle is disabled externally.
+        FarmInputLock.IsDraggingSickle = false;
     }
 
     private void Update()
