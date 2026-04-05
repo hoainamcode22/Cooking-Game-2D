@@ -18,9 +18,9 @@ MonoBehaviour:
   sproutSprite: {fileID: 3938912592072765698, guid: 3f7d8bea625df654796f32330760899d, type: 3}
   growingSprite: {fileID: 3954842684570580545, guid: 78ffcaff38a49e049aeb7435df03c569, type: 3}
   readySprite: {fileID: 2778021726456339881, guid: b31bd3c1a3417044f943cc0c4eec4c64, type: 3}
-  sproutScale: {x: 50, y: 50, z: 1}
-  growingScale: {x: 60, y: 60, z: 1}
-  readyScale: {x: 75, y: 75, z: 1}
+  sproutScale: {x: 40, y: 40, z: 1}
+  growingScale: {x: 55, y: 55, z: 1}
+  readyScale: {x: 60, y: 60, z: 1}
   displayCount: 12
   seedItemId: seed_ngo
   harvestItemId: ngo

@@ -56,6 +56,10 @@ public class FarmManager : MonoBehaviour
 
     public int CropDatabaseCount => cropMap.Count;
 
+    // Fired every time a plot is actively planted by the player (not on scene load).
+    // FarmerBehavior subscribes to this to know when to start a new job.
+    public static event System.Action<PlotController> OnPlotPlantedEvent;
+
     private readonly Dictionary<string, CropData> cropMap = new Dictionary<string, CropData>();
     private readonly Dictionary<string, int> seedStockMap = new Dictionary<string, int>();
 
@@ -323,7 +327,7 @@ public class FarmManager : MonoBehaviour
 
         selectedPlot = plot;
         FarmUIManager.Instance?.ShowHint("Kéo lưỡi liềm qua cây để thu hoạch.");
-        FarmUIManager.Instance?.ShowSickleTool();
+        FarmUIManager.Instance?.ShowSickleTool(plot.transform.position);
     }
 
     public void OnPlotPlanted(PlotController plot, CropData crop)
@@ -332,6 +336,8 @@ public class FarmManager : MonoBehaviour
 
         if (crop != null && plot != null)
             FarmUIManager.Instance?.ShowHint($"Đã trồng {crop.displayName} ở ô {plot.PlotId}");
+
+        OnPlotPlantedEvent?.Invoke(plot);
     }
 
     public void OnPlotHarvested(PlotController plot, string cropName = "")

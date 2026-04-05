@@ -18,10 +18,10 @@ MonoBehaviour:
   sproutSprite: {fileID: 1582209969873154330, guid: c42dc85dcfd15b8489523fb1e3e62e97, type: 3}
   growingSprite: {fileID: 1582209969873154330, guid: c42dc85dcfd15b8489523fb1e3e62e97, type: 3}
   readySprite: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
-  sproutScale: {x: 10, y: 10, z: 1}
-  growingScale: {x: 20, y: 20, z: 1}
-  readyScale: {x: 35, y: 35, z: 1}
-  displayCount: 6
+  sproutScale: {x: 20, y: 20, z: 1}
+  growingScale: {x: 35, y: 35, z: 1}
+  readyScale: {x: 40, y: 40, z: 1}
+  displayCount: 4
   seedItemId: seed_cachua
   harvestItemId: cachua
   tier: 1

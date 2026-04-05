@@ -1,0 +1,455 @@
+fileFormatVersion: 2
+guid: 8e73ae04a2c1e854cb64fb8cce0a943a
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 6504103806754275556
+    second: tuoicaynongdan_0
+  - first:
+      213: -3255344584402553091
+    second: tuoicaynongdan_1
+  - first:
+      213: 1620001957175990234
+    second: tuoicaynongdan_2
+  - first:
+      213: 2809589118787860805
+    second: tuoicaynongdan_3
+  - first:
+      213: 8964519443078924602
+    second: tuoicaynongdan_4
+  - first:
+      213: -5267585958016889593
+    second: tuoicaynongdan_5
+  - first:
+      213: -2805559597665266251
+    second: tuoicaynongdan_6
+  - first:
+      213: 4467245152826726459
+    second: tuoicaynongdan_7
+  - first:
+      213: -8514722382498169648
+    second: tuoicaynongdan_8
+  - first:
+      213: 3352413865783915560
+    second: tuoicaynongdan_9
+  - first:
+      213: 2458267267372378523
+    second: tuoicaynongdan_10
+  - first:
+      213: 6913162684989383934
+    second: tuoicaynongdan_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: tuoicaynongdan_0
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 192
+        width: 79
+        height: 133
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e0cad7b3f7334a50800000000000000
+      internalID: 6504103806754275556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_1
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 188
+        width: 78
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df6b1391951b2d2d0800000000000000
+      internalID: -3255344584402553091
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_2
+      rect:
+        serializedVersion: 2
+        x: 267
+        y: 187
+        width: 77
+        height: 138
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad799e862376b7610800000000000000
+      internalID: 1620001957175990234
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_3
+      rect:
+        serializedVersion: 2
+        x: 375
+        y: 192
+        width: 80
+        height: 133
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 549372eea6aadf620800000000000000
+      internalID: 2809589118787860805
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_4
+      rect:
+        serializedVersion: 2
+        x: 518
+        y: 188
+        width: 76
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a394dcaffee586c70800000000000000
+      internalID: 8964519443078924602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_5
+      rect:
+        serializedVersion: 2
+        x: 638
+        y: 188
+        width: 77
+        height: 137
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 70d4194ea76c5e6b0800000000000000
+      internalID: -5267585958016889593
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_6
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 25
+        width: 73
+        height: 132
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5b559f01966a019d0800000000000000
+      internalID: -2805559597665266251
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_7
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 26
+        width: 73
+        height: 129
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b3892da4cc7defd30800000000000000
+      internalID: 4467245152826726459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_8
+      rect:
+        serializedVersion: 2
+        x: 256
+        y: 26
+        width: 73
+        height: 127
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0dcf0262b11a5d980800000000000000
+      internalID: -8514722382498169648
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_9
+      rect:
+        serializedVersion: 2
+        x: 376
+        y: 26
+        width: 73
+        height: 129
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 824f42a26aa268e20800000000000000
+      internalID: 3352413865783915560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_10
+      rect:
+        serializedVersion: 2
+        x: 517
+        y: 25
+        width: 68
+        height: 133
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9963b22e058d1220800000000000000
+      internalID: 2458267267372378523
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tuoicaynongdan_11
+      rect:
+        serializedVersion: 2
+        x: 634
+        y: 25
+        width: 67
+        height: 133
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ef42741a5dc70ff50800000000000000
+      internalID: 6913162684989383934
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      tuoicaynongdan_0: 6504103806754275556
+      tuoicaynongdan_1: -3255344584402553091
+      tuoicaynongdan_10: 2458267267372378523
+      tuoicaynongdan_11: 6913162684989383934
+      tuoicaynongdan_2: 1620001957175990234
+      tuoicaynongdan_3: 2809589118787860805
+      tuoicaynongdan_4: 8964519443078924602
+      tuoicaynongdan_5: -5267585958016889593
+      tuoicaynongdan_6: -2805559597665266251
+      tuoicaynongdan_7: 4467245152826726459
+      tuoicaynongdan_8: -8514722382498169648
+      tuoicaynongdan_9: 3352413865783915560
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

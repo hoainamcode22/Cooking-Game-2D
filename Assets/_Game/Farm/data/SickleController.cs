@@ -7,6 +7,7 @@ public class SickleController : MonoBehaviour
     private Rigidbody2D rb;
 
     private bool isDragging = false;
+    private int enabledFrame = -1; // guard: không xử lý release ngay frame được enable
 
     private void Awake()
     {
@@ -22,7 +23,9 @@ public class SickleController : MonoBehaviour
         if (rb == null)
             rb = GetComponent<Rigidbody2D>();
 
-        isDragging = true; // bật lên là kéo luôn
+        isDragging    = true;
+        enabledFrame  = Time.frameCount; // ghi nhận frame bật lên để tránh immediate-hide
+        FarmInputLock.IsDraggingSickle = true; // khoá camera ngay khi liềm xuất hiện
         Debug.Log("[Sickle] OnEnable -> auto drag ON");
     }
 
@@ -85,7 +88,9 @@ public class SickleController : MonoBehaviour
                 transform.position = worldPos;
         }
 
-        if (releasedThisFrame)
+        // Bỏ qua release trên frame đầu tiên được enable
+        // (tránh trường hợp OnPointerClick kích hoạt liềm rồi wasReleasedThisFrame = true ngay lập tức)
+        if (releasedThisFrame && Time.frameCount != enabledFrame)
         {
             isDragging = false;
             Debug.Log("[Sickle] Release -> Hide");

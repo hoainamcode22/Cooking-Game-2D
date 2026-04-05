@@ -90,8 +90,9 @@ public class CameraController : MonoBehaviour
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         if (scroll != 0f)
         {
-            // zoom only, do NOT pan
-            targetSize = Mathf.Clamp(targetSize - scroll * zoomSpeed * 100f, minSize, maxSize);
+            // zoom only, do NOT pan — nhưng vẫn block nếu harvest mode đang active
+            if (!FarmInputLock.BlockMapZoom)
+                targetSize = Mathf.Clamp(targetSize - scroll * zoomSpeed * 100f, minSize, maxSize);
             return; // prevent pan logic from running on this frame
         }
 
@@ -159,10 +160,13 @@ public class CameraController : MonoBehaviour
             pressHeld           = false;
             pressStartScreenPos = Vector2.zero;
 
-            // Vẫn cho zoom
-            float scrollBlocked = mouse.scroll.ReadValue().y / 120f;
-            if (Mathf.Abs(scrollBlocked) > 0.001f)
-                targetSize = Mathf.Clamp(targetSize - scrollBlocked / zoomSpeed, minSize, maxSize);
+            // Cho zoom trừ khi harvest mode đang active
+            if (!FarmInputLock.BlockMapZoom)
+            {
+                float scrollBlocked = mouse.scroll.ReadValue().y / 120f;
+                if (Mathf.Abs(scrollBlocked) > 0.001f)
+                    targetSize = Mathf.Clamp(targetSize - scrollBlocked / zoomSpeed, minSize, maxSize);
+            }
 
             return;
         }
@@ -243,9 +247,13 @@ public class CameraController : MonoBehaviour
             pressHeld           = false;
             pressStartScreenPos = Vector2.zero;
 
-            float scrollBlocked = Input.GetAxis("Mouse ScrollWheel");
-            if (Mathf.Abs(scrollBlocked) > 0.001f)
-                targetSize = Mathf.Clamp(targetSize - scrollBlocked / zoomSpeed, minSize, maxSize);
+            // Cho zoom trừ khi harvest mode đang active
+            if (!FarmInputLock.BlockMapZoom)
+            {
+                float scrollBlocked = Input.GetAxis("Mouse ScrollWheel");
+                if (Mathf.Abs(scrollBlocked) > 0.001f)
+                    targetSize = Mathf.Clamp(targetSize - scrollBlocked / zoomSpeed, minSize, maxSize);
+            }
 
             return;
         }
@@ -385,9 +393,12 @@ public class CameraController : MonoBehaviour
             else
             {
                 float currentDist = Vector2.Distance(t0.screenPosition, t1.screenPosition);
-                float delta       = lastPinchDist - currentDist;
-                targetSize        = Mathf.Clamp(targetSize + delta * zoomSpeed * 0.01f, minSize, maxSize);
-                lastPinchDist     = currentDist;
+                if (!FarmInputLock.BlockMapZoom)
+                {
+                    float delta = lastPinchDist - currentDist;
+                    targetSize  = Mathf.Clamp(targetSize + delta * zoomSpeed * 0.01f, minSize, maxSize);
+                }
+                lastPinchDist = currentDist;
             }
         }
         else
@@ -451,5 +462,3 @@ public class CameraController : MonoBehaviour
         return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(fingerIndex);
     }
 }
-
-

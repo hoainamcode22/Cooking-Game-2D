@@ -244,6 +244,16 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         return path;
     }
 
+    /// <summary>
+    /// Trả về vị trí để farmer đứng cuốc.
+    /// Ưu tiên child "FarmerStandPoint" nếu có, fallback về plot.transform.position.
+    /// </summary>
+    public Vector3 GetFarmerStandPosition()
+    {
+        Transform standPoint = transform.Find("FarmerStandPoint");
+        return standPoint != null ? standPoint.position : transform.position;
+    }
+
     public Vector3 GetHarvestSpawnPosition()
     {
         AutoFindHarvestSpawnPoint();
@@ -497,8 +507,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             if (timerText != null)
                 timerText.text = state == PlotState.Ready ? "Chín" : GetRemainingTimeText();
 
-            if (progressRoot != null)
-                progressRoot.SetActive(state == PlotState.Growing);
+            // progressRoot.SetActive(state == PlotState.Growing); // ẩn progress bar
 
             if (progressFill != null)
             {
@@ -527,6 +536,12 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             if (progressRoot != null)
                 progressRoot.SetActive(false);
         }
+    }
+
+    public void ShowProgressBar(bool show)
+    {
+        if (progressRoot != null)
+            progressRoot.SetActive(show);
     }
 
     private bool IsTimeUp()

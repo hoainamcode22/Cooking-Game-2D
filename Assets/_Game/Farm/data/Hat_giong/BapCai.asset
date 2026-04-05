@@ -19,9 +19,9 @@ MonoBehaviour:
   growingSprite: {fileID: -2398023241171923016, guid: 88f706f4b7de235498ec5a8931fe3396, type: 3}
   readySprite: {fileID: 6581391040655815886, guid: 54a847e88ac67c841a16ad6896842bb1, type: 3}
   sproutScale: {x: 10, y: 10, z: 1}
-  growingScale: {x: 20, y: 20, z: 1}
-  readyScale: {x: 35, y: 35, z: 1}
-  displayCount: 6
+  growingScale: {x: 30, y: 30, z: 1}
+  readyScale: {x: 33, y: 33, z: 1}
+  displayCount: 4
   seedItemId: seed_bapcai
   harvestItemId: bapcai
   tier: 1

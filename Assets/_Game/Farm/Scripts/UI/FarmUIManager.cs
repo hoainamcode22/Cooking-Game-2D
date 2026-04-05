@@ -112,9 +112,11 @@ public class FarmUIManager : MonoBehaviour
         }
     }
 
-    public void ShowSickleTool()
+    public void ShowSickleTool(Vector3 startWorldPos)
     {
-        if (sickleToolRoot != null)
+        if (sickleController != null)
+            sickleController.BeginHarvestMode(startWorldPos);
+        else if (sickleToolRoot != null)
             sickleToolRoot.SetActive(true);
     }
 
