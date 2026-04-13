@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   cropId: rice
   displayName: "L\xFAa"
-  icon: {fileID: 2801810866627978505, guid: fd0d447c99f4e1c4688ca0e6301e3b0d, type: 3}
-  sproutSprite: {fileID: 7611661123719943158, guid: e5986225ff18c4f4a88616410a6ec147, type: 3}
-  growingSprite: {fileID: -7393588120481326132, guid: d4afe1a0a33d80c418181ab08a1e94e8, type: 3}
-  readySprite: {fileID: 960488127760353586, guid: 5f4b50baf50e17c44962d33c59101e81, type: 3}
+  icon: {fileID: 7469862485501457946, guid: c146cf6e2a9488841864077192a7280e, type: 3}
+  sproutSprite: {fileID: 7611661123719943158, guid: 56a1e33a247b2394a8ca2f132ec4e5c1, type: 3}
+  growingSprite: {fileID: -7393588120481326132, guid: f26c9579233d7ce43bd5c1ed9690b85e, type: 3}
+  readySprite: {fileID: 960488127760353586, guid: 30d900c857aa92543959a3db8968e93b, type: 3}
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 60, y: 60, z: 1}
   readyScale: {x: 70, y: 70, z: 1}

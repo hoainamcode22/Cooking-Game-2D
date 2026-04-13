@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   cropId: cachua
   displayName: "C\xE0 Chua"
-  icon: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
-  sproutSprite: {fileID: 1582209969873154330, guid: c42dc85dcfd15b8489523fb1e3e62e97, type: 3}
-  growingSprite: {fileID: 1582209969873154330, guid: c42dc85dcfd15b8489523fb1e3e62e97, type: 3}
-  readySprite: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
-  sproutScale: {x: 20, y: 20, z: 1}
-  growingScale: {x: 35, y: 35, z: 1}
-  readyScale: {x: 40, y: 40, z: 1}
-  displayCount: 4
+  icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+  sproutSprite: {fileID: -6113928553433563965, guid: f719c7ddf414eb644839961262c4efd9, type: 3}
+  growingSprite: {fileID: 1582209969873154330, guid: dd2517376f1ec954593eac15b0bb50b4, type: 3}
+  readySprite: {fileID: 1024109497520081698, guid: 69f4fc0e8e9c4da40913c25b747f81d9, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 60, y: 60, z: 1}
+  readyScale: {x: 70, y: 70, z: 1}
+  displayCount: 12
   seedItemId: seed_cachua
   harvestItemId: cachua
   tier: 1

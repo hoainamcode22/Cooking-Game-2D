@@ -86,6 +86,28 @@ public class WarehouseManager : MonoBehaviour
         return found != null ? found.amount : 0;
     }
 
+    /// <summary>
+    /// Trừ vật phẩm khỏi kho. Trả về false nếu không đủ.
+    /// </summary>
+    public bool RemoveItem(string itemId, int amount)
+    {
+        if (string.IsNullOrEmpty(itemId) || amount <= 0) return false;
+
+        WarehouseItemEntry found = items.Find(x => x.itemId == itemId);
+        if (found == null || found.amount < amount)
+        {
+            Debug.LogWarning($"[Warehouse] Không đủ {itemId} để trừ (cần {amount}, có {(found?.amount ?? 0)})");
+            return false;
+        }
+
+        found.amount -= amount;
+        if (found.amount <= 0) items.Remove(found);
+
+        Debug.Log($"[Warehouse] RemoveItem -> {itemId} -{amount}");
+        OnWarehouseChanged?.Invoke();
+        return true;
+    }
+
     public void ClearAll()
     {
         items.Clear();

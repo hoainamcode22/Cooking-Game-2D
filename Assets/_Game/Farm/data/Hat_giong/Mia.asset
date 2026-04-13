@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: Mia
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  cropId: sugarcane
+  displayName: "M\xEDa"
+  icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
+  sproutSprite: {fileID: -6759751035301295870, guid: 740facc17f153814ebf4246a65674170, type: 3}
+  growingSprite: {fileID: -7236330514469861798, guid: f93177773effa094eb3dfc62b2be5e36, type: 3}
+  readySprite: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 60, y: 60, z: 1}
+  readyScale: {x: 70, y: 70, z: 1}
+  displayCount: 12
+  seedItemId: seed_sugarcane
+  harvestItemId: sugarcane
+  tier: 1
+  unlockLevel: 1
+  growSeconds: 420
+  seedBuyGold: 0
+  sellGold: 3
+  harvestAmount: 4
+  expReward: 8
+  sweet: 3
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 1
+  canBuyInSeedShop: 1
+  canDropFromAds: 1
+  canAppearInRareMarket: 0

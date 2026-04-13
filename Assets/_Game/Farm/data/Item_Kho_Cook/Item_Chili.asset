@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: chili
   displayName: "\u1EDAt"
-  icon: {fileID: -1733071076163020357, guid: 6937de7c237f9cc4aabbf97a1459c2b4, type: 3}
+  icon: {fileID: -9177740170459379683, guid: 93d08f9a4a0bdd5439d158511a7d845e, type: 3}
   cookingData: {fileID: 11400000, guid: 047a75f3fbcb9974b91428681e2e96ac, type: 2}

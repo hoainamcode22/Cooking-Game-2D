@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   cropId: ngo
   displayName: "Ng\xF4"
-  icon: {fileID: -6025809935225615670, guid: 60701cfb768ef344781de8328928c613, type: 3}
-  sproutSprite: {fileID: 3938912592072765698, guid: 3f7d8bea625df654796f32330760899d, type: 3}
-  growingSprite: {fileID: 3954842684570580545, guid: 78ffcaff38a49e049aeb7435df03c569, type: 3}
-  readySprite: {fileID: 2778021726456339881, guid: b31bd3c1a3417044f943cc0c4eec4c64, type: 3}
-  sproutScale: {x: 40, y: 40, z: 1}
-  growingScale: {x: 55, y: 55, z: 1}
-  readyScale: {x: 60, y: 60, z: 1}
+  icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
+  sproutSprite: {fileID: 3938912592072765698, guid: 3eef62c56eb694b4ab936992d151a020, type: 3}
+  growingSprite: {fileID: 3954842684570580545, guid: fc39a502c1c61914984f49c90bf5a099, type: 3}
+  readySprite: {fileID: 2778021726456339881, guid: ed2788fb0865b5444883bedfd7afa696, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 60, y: 60, z: 1}
+  readyScale: {x: 70, y: 70, z: 1}
   displayCount: 12
   seedItemId: seed_ngo
   harvestItemId: ngo

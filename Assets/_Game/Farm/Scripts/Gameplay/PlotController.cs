@@ -138,6 +138,19 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         if (state == PlotState.Ready)
         {
+            TryResolvePlantedCrop();
+            // Nếu không có crop nào (save bị lỗi) → reset về Empty thay vì hiện liềm
+            if (plantedCrop == null)
+            {
+                state = PlotState.Empty;
+                plantedCropId = "";
+                startUnixTime = 0;
+                finishUnixTime = 0;
+                Save();
+                RefreshVisual();
+                FarmManager.Instance.OnPlotClicked(this);
+                return;
+            }
             FarmManager.Instance.OnReadyPlotClicked(this);
             return;
         }
@@ -625,6 +638,17 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         startUnixTime = data.startUnixTime;
         finishUnixTime = data.finishUnixTime;
         plantedCrop = null;
+
+        // Nếu state là Growing/Ready nhưng không có cropId → dữ liệu bị hỏng, reset về Empty
+        if ((state == PlotState.Growing || state == PlotState.Ready) && string.IsNullOrEmpty(plantedCropId))
+        {
+            state = PlotState.Empty;
+            plantedCropId = "";
+            startUnixTime = 0;
+            finishUnixTime = 0;
+            Save();
+            return;
+        }
 
         TryResolvePlantedCrop();
 

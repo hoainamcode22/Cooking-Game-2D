@@ -106,8 +106,21 @@ public class FarmUIManager : MonoBehaviour
         {
             for (int i = 0; i < popupObjectsToForceClose.Length; i++)
             {
-                if (popupObjectsToForceClose[i] != null)
-                    popupObjectsToForceClose[i].SetActive(false);
+                if (popupObjectsToForceClose[i] == null) continue;
+
+                // Bỏ qua building cố định của map — chúng luôn phải hiện.
+                if (popupObjectsToForceClose[i].GetComponentInChildren<PermanentBuilding>(true) != null
+                 || popupObjectsToForceClose[i].GetComponentInParent<PermanentBuilding>()    != null)
+                {
+                    Debug.LogWarning($"[FarmUI] Bỏ qua HideAllPopups cho '{popupObjectsToForceClose[i].name}' — đây là PermanentBuilding.");
+                    continue;
+                }
+
+                // Bỏ qua Train popup (kể cả khi object trong mảng là Canvas parent chứa chúng).
+                if (popupObjectsToForceClose[i].GetComponentInChildren<TrainLoadPopupUI>(true)    != null) continue;
+                if (popupObjectsToForceClose[i].GetComponentInChildren<TrainProcessPopupUI>(true) != null) continue;
+
+                popupObjectsToForceClose[i].SetActive(false);
             }
         }
     }
@@ -148,8 +161,28 @@ public class FarmUIManager : MonoBehaviour
             return;
         }
 
-        // Open at fixed UI position — do not reposition near the plot.
+        // Đảm bảo toàn bộ parent chain của popupSeed đều active
+        Transform p = popupSeed.transform.parent;
+        while (p != null)
+        {
+            if (!p.gameObject.activeSelf)
+            {
+                Debug.LogWarning($"[FarmUI] Parent bị tắt, bật lại: {p.name}");
+                p.gameObject.SetActive(true);
+            }
+            p = p.parent;
+        }
+
+        // Reset popup về giữa màn hình để đảm bảo luôn hiển thị
+        RectTransform popupRect = popupSeed.GetComponent<RectTransform>();
+        if (popupRect != null)
+        {
+            popupRect.anchoredPosition = Vector2.zero;
+            Debug.Log($"[FarmUI] popup anchoredPosition reset to (0,0)");
+        }
+
         popupSeed.SetActive(true);
+        Debug.Log($"[FarmUI] popupSeed.SetActive(true) | activeInHierarchy={popupSeed.activeInHierarchy}");
         FarmInputLock.IsSeedPopupOpen = true;
 
         if (plot != null)

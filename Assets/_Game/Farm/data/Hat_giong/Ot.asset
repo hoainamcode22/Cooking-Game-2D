@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: Ot
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  cropId: chili
+  displayName: "\u1EDAt"
+  icon: {fileID: -1733071076163020357, guid: 6937de7c237f9cc4aabbf97a1459c2b4, type: 3}
+  sproutSprite: {fileID: -471260011933795411, guid: e162379a861a53043a6875aa8b6a042a, type: 3}
+  growingSprite: {fileID: -1988381813660673640, guid: 44fe0924a57d4dd40aaaa6a4696e342f, type: 3}
+  readySprite: {fileID: 4202961238837710150, guid: 75e4c6e4abc9a2141818453c94c19422, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 60, y: 60, z: 1}
+  readyScale: {x: 70, y: 70, z: 1}
+  displayCount: 12
+  seedItemId: seed_chili
+  harvestItemId: chili
+  tier: 1
+  unlockLevel: 1
+  growSeconds: 540
+  seedBuyGold: 0
+  sellGold: 3
+  harvestAmount: 4
+  expReward: 5
+  sweet: 0
+  spicy: 3
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1
+  canDropFromAds: 1
+  canAppearInRareMarket: 0

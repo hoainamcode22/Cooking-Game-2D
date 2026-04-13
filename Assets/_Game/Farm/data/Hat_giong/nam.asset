@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   cropId: nam
   displayName: "N\u1EA5m"
-  icon: {fileID: -7866956879579072398, guid: dc01f5b0992f8c94e86cc8c2f412eb5c, type: 3}
-  sproutSprite: {fileID: 4208644412692552619, guid: afa58443b266817488e60fc350d7ab29, type: 3}
-  growingSprite: {fileID: 5693180632895198793, guid: 3715acc9c480283469470b5a94ae6014, type: 3}
-  readySprite: {fileID: -7866956879579072398, guid: dc01f5b0992f8c94e86cc8c2f412eb5c, type: 3}
+  icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
+  sproutSprite: {fileID: 4208644412692552619, guid: 7a15c25bc6b86f0438b86042fe3bfb6d, type: 3}
+  growingSprite: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
+  readySprite: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
   sproutScale: {x: 50, y: 50, z: 1}
-  growingScale: {x: 35, y: 35, z: 1}
-  readyScale: {x: 40, y: 40, z: 1}
+  growingScale: {x: 60, y: 60, z: 1}
+  readyScale: {x: 70, y: 70, z: 1}
   displayCount: 4
   seedItemId: seed_nam
   harvestItemId: nam
