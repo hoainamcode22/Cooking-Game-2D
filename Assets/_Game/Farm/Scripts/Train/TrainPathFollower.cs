@@ -3,229 +3,145 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
+/// <summary>
+/// Di chuyển tàu theo path.
+/// trainVisualRoot.transform là điểm gốc di chuyển.
+/// Carriages theo sau trainVisualRoot qua path history.
+///
+/// Public API duy nhất TrainManager được gọi:
+///   SnapToPosition(pos, backwardDir)  — đặt tàu tại điểm, trải wagons
+///   ShowTrain()                       — hiện visual
+///   HideTrain()                       — ẩn visual
+///   MoveTo(target, onDone)            — di chuyển, callback khi đến
+/// </summary>
 public class TrainPathFollower : MonoBehaviour
 {
-    [Header("Waypoints")]
-    [Tooltip("Ga tàu — tàu đứng đây chờ chất hàng & thu reward")]
-    public Transform point00;
-    [Tooltip("Điểm quay đầu — gần ga, trên đường ray")]
-    public Transform point01;
-    [Tooltip("Cửa hầm / điểm đích cuối")]
-    public Transform point02;
+    [Header("Visual Root — ROOT của toàn bộ tàu (engine + wagons phải là con của GO này)")]
+    [Tooltip("Kéo TrainVisualRoot hoặc TrainVisualRoot2 vào đây. TOÀN BỘ tàu phải là con của GO này.")]
+    [SerializeField] private Transform trainRoot;
 
-    [Header("Đầu tàu")]
-    public Transform engineTransform;
-
-    [Header("Toa tàu (theo thứ tự từ đầu tàu)")]
+    [Header("Toa tàu (theo thứ tự từ đầu tàu trở ra, là con của trainRoot)")]
     public Transform[] carriages;
 
-    [Tooltip("Khoảng cách giữa các toa (world units). " +
-             "Chỉnh bằng khoảng cách thực tế giữa wagons trong Scene, thường 100–250.")]
+    [Tooltip("Khoảng cách giữa các toa (world units).")]
     public float carriageSpacing = 150f;
 
-    [Header("Tốc độ")]
+    [Tooltip("Khoảng cách từ trainRoot đến Locomotive (carriages[0]). Thường nhỏ hơn carriageSpacing.")]
+    public float locomotiveSpacing = 50f;
+
+    [Header("Tốc độ di chuyển")]
     public float moveSpeed = 300f;
-
-    [Header("Flip sprite khi đổi chiều")]
-    public bool autoFlip = true;
-
-    // ─── Callbacks cho TrainManager ──────────────────────────────
-    /// Gọi khi tàu tới Point_02 (cửa hầm, sau khi Depart xong)
-    public Action onArrivedAtPoint00;
-    /// Gọi khi tàu về lại Point_00 (ga, sau Return)
-    public Action onArrivedAtPoint01AfterReturn;
-    /// Gọi khi tàu hoàn thành ResetMove (Point_00 → Point_01 → Point_00)
-    public Action onResetMoveDone;
 
     // ─── Internal ────────────────────────────────────────────────
     private readonly List<Vector3> _pathHistory = new List<Vector3>();
-    private bool _initialized = false;
-
-    // Engine (Locomotive có Animator) → dùng SpriteRenderer.flipX
-    // → không đụng localScale, không bị pivot offset khi flip
-    private SpriteRenderer _engineSR;
-    private bool           _engineBaseFlipX; // flipX gốc trong Scene
-
-    // Wagon (không có Animator) → dùng localScale.x
-    // → child objects (cargo icon) cũng được flip theo
-    private float[] _carriageBaseScaleX;
-
 
     // ─────────────────────────────────────────────────────────────
     void Start()
     {
-        if (engineTransform == null)
+        if (trainRoot == null)
         {
-            Debug.LogError("[TrainPathFollower] Chưa gán engineTransform!");
+            Debug.LogError($"[TrainPathFollower] {gameObject.name}: trainRoot chưa gán! " +
+                           "Kéo TrainVisualRoot (hoặc TrainVisualRoot2) vào field trainRoot.");
             return;
         }
 
-        int numWagons = carriages != null ? carriages.Length : 0;
-
-        // ── Engine: lấy SpriteRenderer để dùng flipX (không đụng localScale) ──
-        _engineSR = engineTransform.GetComponentInChildren<SpriteRenderer>();
-        if (_engineSR == null)
-            Debug.LogWarning("[Train] Không tìm thấy SpriteRenderer trên engineTransform — flip sẽ không hoạt động.");
-        _engineBaseFlipX = _engineSR != null && _engineSR.flipX;
-
-        // ── Wagon: lưu base localScale.x để flip (không có Animator) ──
-        _carriageBaseScaleX = new float[numWagons];
-        if (carriages != null)
-            for (int i = 0; i < numWagons; i++)
-                _carriageBaseScaleX[i] = carriages[i] != null ? carriages[i].localScale.x : 1f;
-
-        Debug.Log($"[Train] SETUP" +
-                  $"\n  point00 (ga)      = {point00?.position}" +
-                  $"\n  point01 (quay đầu)= {point01?.position}" +
-                  $"\n  point02 (hầm)     = {point02?.position}" +
-                  $"\n  engineBaseFlipX   = {_engineBaseFlipX}");
-
-        // ── Pre-fill history bằng đường vật lý thực tế ────────────
-        Vector3 engineStart = engineTransform.position;
-
-        var initPath = new List<Vector3>();
-        for (int w = numWagons - 1; w >= 0; w--)
-            if (carriages[w] != null) initPath.Add(carriages[w].position);
-        initPath.Add(engineStart);
-
-        if (initPath.Count > 1)
-        {
-            _pathHistory.Add(initPath[0]);
-            for (int i = 1; i < initPath.Count; i++)
-            {
-                Vector3 from  = initPath[i - 1];
-                Vector3 to    = initPath[i];
-                float   dist  = Vector3.Distance(from, to);
-                int     steps = Mathf.Max(1, Mathf.CeilToInt(dist));
-                for (int s = 1; s <= steps; s++)
-                    _pathHistory.Add(Vector3.Lerp(from, to, (float)s / steps));
-            }
-        }
-        else
-        {
-            _pathHistory.Add(engineStart);
-        }
-
-        _initialized = true;
+        // Pre-fill history từ vị trí vật lý hiện tại của trainRoot.
+        // Sẽ bị ghi đè bởi SnapToPosition trong InitAfterFrame.
+        _pathHistory.Add(trainRoot.position);
     }
 
     void LateUpdate()
     {
-        if (_initialized) UpdateCarriages();
+        if (trainRoot == null) return;
+        UpdateCarriages();
     }
 
-    // ─── Public API (gọi từ TrainManager) ────────────────────────
+    // ─── Public API ───────────────────────────────────────────────
 
-    /// Khởi hành: Point_00 (ga) → Point_01 (quay đầu) → Point_02 (hầm)
-    public void DepartToProcess()
+    /// Hiện toàn bộ visual tàu.
+    public void ShowTrain()
     {
-        StopAllCoroutines();
-        StartCoroutine(DepartRoutine());
+        if (trainRoot != null)
+            trainRoot.gameObject.SetActive(true);
+        else
+            Debug.LogWarning($"[TrainPathFollower] {gameObject.name}: trainRoot chưa gán!");
     }
 
-    /// Về: Point_02 (hầm) → Point_00 (ga)
-    public void ReturnToWait()
+    /// Ẩn toàn bộ visual tàu.
+    public void HideTrain()
     {
-        StopAllCoroutines();
-        StartCoroutine(ReturnRoutine());
+        if (trainRoot != null)
+            trainRoot.gameObject.SetActive(false);
+        else
+            Debug.LogWarning($"[TrainPathFollower] {gameObject.name}: trainRoot chưa gán!");
     }
 
-    /// Reset: Point_00 (ga) → Point_01 (quay đầu) → Point_00 (ga) — quay đầu tại ga
-    public void ResetMove()
+    /// Snap tàu đến pos, trải wagons theo backwardDir.
+    /// backwardDir = chiều NGƯỢC với hướng tàu sẽ chạy tiếp.
+    /// Gọi trước ShowTrain + MoveTo.
+    public void SnapToPosition(Vector3 pos, Vector3 backwardDir)
     {
-        StopAllCoroutines();
-        StartCoroutine(ResetRoutine());
-    }
+        if (trainRoot == null) return;
 
-    // ─── Coroutines ──────────────────────────────────────────────
+        float mag = backwardDir.magnitude;
+        backwardDir = mag > 0.001f ? backwardDir / mag : Vector3.left;
 
-    /// Ga → Quay đầu → Hầm
-    private IEnumerator DepartRoutine()
-    {
-        yield return StartCoroutine(MoveToPoint(point01.position)); // quay đầu
-        yield return StartCoroutine(MoveToPoint(point02.position)); // vào hầm
-        onArrivedAtPoint00?.Invoke(); // "đã đến đích"
-    }
+        // Di chuyển trainRoot đến pos
+        trainRoot.position = pos;
 
-    /// Hầm → Ga
-    private IEnumerator ReturnRoutine()
-    {
-        yield return StartCoroutine(MoveToPoint(point00.position)); // về ga
-        onArrivedAtPoint01AfterReturn?.Invoke(); // "đã về ga"
-    }
-
-    /// Ga → Quay đầu → Ga (chuẩn bị chuyến mới)
-    private IEnumerator ResetRoutine()
-    {
-        yield return StartCoroutine(MoveToPoint(point01.position)); // ra điểm quay đầu
-        yield return StartCoroutine(MoveToPoint(point00.position)); // trở về ga
-        onResetMoveDone?.Invoke(); // "đã quay đầu xong"
-    }
-
-    private IEnumerator MoveToPoint(Vector3 target)
-    {
-        if (engineTransform == null) yield break;
-
-        Vector3 dir = target - engineTransform.position;
-
-        // Flip ngay khi bắt đầu đoạn mới — truyền dir.x trực tiếp
-        if (autoFlip) FlipTrain(dir.x);
-
-        // Reset rotation
-        if (engineTransform != null) engineTransform.rotation = Quaternion.identity;
+        // Trải wagons theo backwardDir
+        int numWagons = carriages != null ? carriages.Length : 0;
         if (carriages != null)
-            foreach (var c in carriages)
-                if (c != null) c.rotation = Quaternion.identity;
+            for (int i = 0; i < numWagons; i++)
+                if (carriages[i] != null)
+                {
+                    float dist = locomotiveSpacing + carriageSpacing * i;
+                    carriages[i].position = pos + backwardDir * dist;
+                }
 
-        while (Vector3.Distance(engineTransform.position, target) > 1f)
+        // Rebuild path history: đường thẳng từ xa nhất → pos
+        _pathHistory.Clear();
+        float totalLen = locomotiveSpacing + carriageSpacing * numWagons;
+        int   steps    = Mathf.Max(1, Mathf.CeilToInt(totalLen));
+        for (int i = steps; i >= 0; i--)
+            _pathHistory.Add(pos + backwardDir * i);
+    }
+
+    /// Di chuyển tới target, gọi onDone khi đến nơi.
+    /// Dừng mọi coroutine đang chạy trước khi bắt đầu.
+    public void MoveTo(Vector3 target, Action onDone)
+    {
+        if (trainRoot == null)
         {
-            engineTransform.position = Vector3.MoveTowards(
-                engineTransform.position, target, moveSpeed * Time.deltaTime);
-            _pathHistory.Add(engineTransform.position);
+            Debug.LogError($"[TrainPathFollower] {gameObject.name}: MoveTo gọi nhưng trainRoot == null!");
+            onDone?.Invoke(); // không block flow
+            return;
+        }
+
+        StopAllCoroutines();
+        StartCoroutine(MoveCoroutine(target, onDone));
+    }
+
+    // ─── Coroutine ────────────────────────────────────────────────
+
+    private IEnumerator MoveCoroutine(Vector3 target, Action onDone)
+    {
+        while (Vector3.Distance(trainRoot.position, target) > 1f)
+        {
+            trainRoot.position = Vector3.MoveTowards(
+                trainRoot.position, target, moveSpeed * Time.deltaTime);
+            _pathHistory.Add(trainRoot.position);
             yield return null;
         }
 
-        engineTransform.position = target;
+        trainRoot.position = target;
         _pathHistory.Add(target);
+
+        onDone?.Invoke();
     }
 
-    // ─── Flip toàn bộ đoàn tàu ───────────────────────────────────
-    // goingRight=true  → đi về hầm → flipX=true  cho tất cả
-    // goingRight=false → đi về ga  → flipX=false cho tất cả
-    private void FlipTrain(float dirX)
-    {
-        if (Mathf.Abs(dirX) < 0.01f) return;
+    // ─── Wagons bám theo path ─────────────────────────────────────
 
-        bool goingRight = dirX > 0;
-
-        // Engine
-        if (_engineSR != null)
-            _engineSR.flipX = goingRight;
-
-        // Wagon — lấy SR trực tiếp trên wagon, nếu không có thì lấy child đầu tiên.
-        // KHÔNG dùng GetComponentInChildren vì sẽ lấy nhầm cargo icon child.
-        if (carriages != null)
-        {
-            foreach (var wagon in carriages)
-            {
-                if (wagon == null) continue;
-                var sr = wagon.GetComponent<SpriteRenderer>();
-                if (sr == null)
-                {
-                    foreach (Transform child in wagon)
-                    {
-                        sr = child.GetComponent<SpriteRenderer>();
-                        if (sr != null) break;
-                    }
-                }
-                if (sr != null)
-                    sr.flipX = goingRight;
-            }
-        }
-    }
-
-    // ─── Toa bám vết đầu tàu (distance-based) ────────────────────
     private void UpdateCarriages()
     {
         if (carriages == null || _pathHistory.Count < 2) return;
@@ -233,8 +149,10 @@ public class TrainPathFollower : MonoBehaviour
         for (int i = 0; i < carriages.Length; i++)
         {
             if (carriages[i] == null) continue;
-            float targetDist      = carriageSpacing * (i + 1);
-            carriages[i].position = GetPositionAtDistance(targetDist);
+            // carriages[0] (Locomotive) cách trainRoot = locomotiveSpacing
+            // carriages[1+] (Wagons) cách trainRoot = locomotiveSpacing + carriageSpacing * i
+            float dist = locomotiveSpacing + carriageSpacing * i;
+            carriages[i].position = GetPositionAtDistance(dist);
         }
 
         while (_pathHistory.Count > 2000)
@@ -251,7 +169,7 @@ public class TrainPathFollower : MonoBehaviour
             if (accumulated >= targetDist)
             {
                 float t = (accumulated - targetDist) / d;
-                return Vector3.Lerp(_pathHistory[i], _pathHistory[i - 1], t);
+                return Vector3.Lerp(_pathHistory[i - 1], _pathHistory[i], t);
             }
         }
         return _pathHistory[0];
@@ -260,17 +178,11 @@ public class TrainPathFollower : MonoBehaviour
 #if UNITY_EDITOR
     void OnDrawGizmos()
     {
-        // Vẽ đường ray: ga → quay đầu → hầm
-        Gizmos.color = Color.cyan;
-        if (point00 != null && point01 != null)
-            Gizmos.DrawLine(point00.position, point01.position);
-        if (point01 != null && point02 != null)
-            Gizmos.DrawLine(point01.position, point02.position);
-
-        // Vẽ waypoints
-        if (point00 != null) { Gizmos.color = Color.green; Gizmos.DrawSphere(point00.position, 20f); } // ga = xanh lá
-        if (point01 != null) { Gizmos.color = Color.yellow; Gizmos.DrawSphere(point01.position, 20f); } // quay đầu = vàng
-        if (point02 != null) { Gizmos.color = Color.red;   Gizmos.DrawSphere(point02.position, 20f); } // hầm = đỏ
+        if (trainRoot != null)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(trainRoot.position, 15f);
+        }
     }
 #endif
 }

@@ -172,53 +172,14 @@ public class TrainWagonSlot : MonoBehaviour
         if (txtLabel != null) txtLabel.text = text;
     }
 
-    void Update()
+    // Unity gọi OnMouseDown khi collider của chính GO này được click.
+    // Không cần tự kiểm tra raycast / OverlapPoint nữa.
+    private void OnMouseDown()
     {
-        if (!Input.GetMouseButtonDown(0)) return;
-        if (Camera.main == null) return;
+        if (!enabled || !gameObject.activeInHierarchy) return;
+        if (TrainManager.Instance == null) return;
 
-        // Đặt Z = nearClipPlane để ScreenToWorldPoint cho ra đúng world position
-        Vector3 mouseScreen = Input.mousePosition;
-        mouseScreen.z       = Camera.main.nearClipPlane;
-        Vector2 worldPos    = Camera.main.ScreenToWorldPoint(mouseScreen);
-
-        // Log mỗi click khi slot đang active — để debug nhanh
-        bool colOk = _col != null && _col.enabled;
-        bool hit   = colOk && _col.OverlapPoint(worldPos);
-        string modeStr  = _data != null ? _data.mode.ToString() : "null";
-        string stateStr = TrainManager.Instance != null ? TrainManager.Instance.State.ToString() : "null";
-        Debug.Log($"[TrainSlot {slotIndex}] click world={worldPos:F0} | " +
-                  $"col={colOk} size={(_col != null ? _col.size : Vector2.zero):F1} " +
-                  $"hit={hit} | mode={modeStr} state={stateStr}");
-
-        if (!hit) return;
-        HandleClick();
-    }
-
-    private void HandleClick()
-    {
-        Debug.Log($"[TrainSlot {slotIndex}] HandleClick — State={TrainManager.Instance?.State} data={_data?.mode}");
-        if (TrainManager.Instance == null || _data == null) return;
-
-        switch (TrainManager.Instance.State)
-        {
-            case TrainState.WaitingForLoad:
-                if (_data.mode == TrainWagonSlotMode.CargoRequest && !_data.IsCargoComplete)
-                    TrainManager.Instance.OnCargoSlotClicked(slotIndex);
-                break;
-
-            case TrainState.RewardReadyToCollect:
-                if (_data.mode == TrainWagonSlotMode.Reward && !_data.isCollected)
-                    TrainManager.Instance.CollectReward(slotIndex);
-                break;
-
-            case TrainState.Departing:
-                Debug.Log($"[TrainSlot {slotIndex}] Bỏ qua click — tàu đang khởi hành.");
-                break;
-
-            case TrainState.ReturningWithReward:
-                Debug.Log($"[TrainSlot {slotIndex}] Bỏ qua click — tàu đang trở về.");
-                break;
-        }
+        Debug.Log($"[TrainSlot {slotIndex}] OnMouseDown — state={TrainManager.Instance.State}");
+        TrainManager.Instance.OnWagonSlotClicked(this);
     }
 }

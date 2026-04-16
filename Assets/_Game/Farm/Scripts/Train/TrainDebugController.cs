@@ -1,25 +1,9 @@
 using UnityEngine;
 
+// TrainDebugController đã bị vô hiệu hoá.
+// Các method DepartToProcess / ReturnToWait / ResetMove dùng path cũ (point00→01→02)
+// gây xung đột với flow mới. Không được kích hoạt lại.
 public class TrainDebugController : MonoBehaviour
 {
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            Debug.Log("[Train Debug] Space pressed → DepartToProcess");
-            TrainManager.Instance?.GetComponent<TrainPathFollower>()?.DepartToProcess();
-        }
-
-        if (Input.GetKeyDown(KeyCode.R))
-        {
-            Debug.Log("[Train Debug] R pressed → ResetMove");
-            TrainManager.Instance?.GetComponent<TrainPathFollower>()?.ResetMove();
-        }
-
-        if (Input.GetKeyDown(KeyCode.T))
-        {
-            Debug.Log("[Train Debug] T pressed → ReturnToWait");
-            TrainManager.Instance?.GetComponent<TrainPathFollower>()?.ReturnToWait();
-        }
-    }
+    // Tất cả logic debug đã bị xoá để tránh gọi nhầm method cũ.
 }

@@ -29,6 +29,7 @@ public class FarmUIManager : MonoBehaviour
     [SerializeField] private GameObject[] popupObjectsToForceClose;
     [SerializeField] private Behaviour[] behavioursToDisableInCooking;
     [SerializeField] private AudioListener farmAudioListener;
+    [SerializeField] private Camera farmCamera;
 
     private bool isCookingMode;
 
@@ -41,6 +42,12 @@ public class FarmUIManager : MonoBehaviour
         }
 
         Instance = this;
+
+        if (farmCamera == null)
+            farmCamera = Camera.main;
+
+        if (farmAudioListener == null && farmCamera != null)
+            farmAudioListener = farmCamera.GetComponent<AudioListener>();
     }
 
     private void Start()
@@ -280,8 +287,11 @@ public class FarmUIManager : MonoBehaviour
 
     public void OnClick_GoCooking()
     {
-        if (!SceneManager.GetSceneByName(cookingSceneName).isLoaded)
-            SceneManager.LoadScene(cookingSceneName, LoadSceneMode.Additive);
+        if (SceneManager.GetSceneByName(cookingSceneName).isLoaded)
+            return;
+
+        EnterCookingMode();
+        SceneManager.LoadScene(cookingSceneName, LoadSceneMode.Additive);
     }
 
     public void OnClick_OpenInventory()
@@ -335,6 +345,9 @@ public class FarmUIManager : MonoBehaviour
 
         if (farmAudioListener != null)
             farmAudioListener.enabled = false;
+
+        if (farmCamera != null)
+            farmCamera.enabled = false;
     }
 
     public void ExitCookingMode()
@@ -361,6 +374,9 @@ public class FarmUIManager : MonoBehaviour
 
         if (farmAudioListener != null)
             farmAudioListener.enabled = true;
+
+        if (farmCamera != null)
+            farmCamera.enabled = true;
 
         HideAllPopups();
         HideSickleTool();

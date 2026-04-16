@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class BuildingInteractable : MonoBehaviour
 {
@@ -26,7 +25,8 @@ public class BuildingInteractable : MonoBehaviour
                 break;*/
 
             case BuildingType.CookingGate:
-                SceneManager.LoadScene("SCN_Cooking");
+                if (FarmUIManager.Instance != null)
+                    FarmUIManager.Instance.OnClick_GoCooking();
                 break;
 
             case BuildingType.SeedShop:

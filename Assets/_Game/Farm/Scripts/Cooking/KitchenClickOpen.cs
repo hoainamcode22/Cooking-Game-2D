@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
 
@@ -8,7 +7,6 @@ public class KitchenClickOpen : MonoBehaviour
 {
     [SerializeField] private Camera mainCamera;
     [SerializeField] private Collider2D targetCollider;
-    [SerializeField] private string cookingSceneName = "SampleScene";
 
     private void Awake()
     {
@@ -48,7 +46,7 @@ public class KitchenClickOpen : MonoBehaviour
 
     private void TryOpenCooking(Vector2 screenPos)
     {
-        // ch? ch?n khi ?ang b?m lên UI popup farm (Canvas_Popup)
+        // ch? ch?n khi ?ang b?m lï¿½n UI popup farm (Canvas_Popup)
         if (IsPointerOverFarmPopupUI(screenPos))
             return;
 
@@ -64,10 +62,7 @@ public class KitchenClickOpen : MonoBehaviour
         if (!hit)
             return;
 
-        if (SceneManager.GetSceneByName(cookingSceneName).isLoaded)
-            return;
-
-        SceneManager.LoadScene(cookingSceneName, LoadSceneMode.Additive);
+        // Hit detected â€” BuildingInteractable.OnMouseDown() handles scene transition.
     }
 
     private bool IsPointerOverFarmPopupUI(Vector2 screenPos)
