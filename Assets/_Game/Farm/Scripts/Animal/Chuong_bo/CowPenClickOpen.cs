@@ -12,7 +12,6 @@ public class CowPenClickOpen : MonoBehaviour
 
     private void Awake()
     {
-        // tự lấy ref
         if (mainCamera == null)
             mainCamera = Camera.main;
 
@@ -20,6 +19,18 @@ public class CowPenClickOpen : MonoBehaviour
             targetCollider = GetComponent<Collider2D>();
 
         Debug.Log("[CowPenClickOpen] Awake");
+    }
+
+    private void Start()
+    {
+        // Tự tìm CowPenPopupUI nếu Boss quên kéo vào Inspector
+        if (cowPenPopupUI == null)
+            cowPenPopupUI = CowPenPopupUI.Instance != null
+                ? CowPenPopupUI.Instance
+                : FindObjectOfType<CowPenPopupUI>(true);
+
+        if (cowPenPopupUI == null)
+            Debug.LogError("[CowPenClickOpen] Không tìm được CowPenPopupUI trong scene!");
     }
 
     private void Update()
@@ -54,6 +65,10 @@ public class CowPenClickOpen : MonoBehaviour
     private void TryOpenCowPen(Vector2 screenPos)
     {
         if (SceneManager.GetSceneByName("SampleScene").isLoaded)
+            return;
+
+        // Không mở khi đang có popup khác mở
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;
 
         if (IsPointerOverPopupUI(screenPos))

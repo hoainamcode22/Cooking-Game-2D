@@ -153,6 +153,15 @@ public class CameraController : MonoBehaviour
             return;
         }
 
+        // ────── CHECK: Đang giữ vật thể mới từ Shop → block pan ──────
+        if (PlacementManager.IsPlacingNewObject)
+        {
+            isDragging          = false;
+            pressHeld           = false;
+            pressStartScreenPos = Vector2.zero;
+            return;
+        }
+
         // ────── CHECK: Popup mở hoặc đang kéo seed/sickle → block pan ──────
         if (FarmInputLock.BlockMapPan)
         {
@@ -240,6 +249,15 @@ public class CameraController : MonoBehaviour
             return;
         }
 
+        // ────── CHECK: Đang giữ vật thể mới từ Shop → block pan ──────
+        if (PlacementManager.IsPlacingNewObject)
+        {
+            isDragging          = false;
+            pressHeld           = false;
+            pressStartScreenPos = Vector2.zero;
+            return;
+        }
+
         // ────── CHECK: Popup mở hoặc đang kéo seed/sickle → block pan ──────
         if (FarmInputLock.BlockMapPan)
         {
@@ -311,6 +329,15 @@ public class CameraController : MonoBehaviour
             // Reset trạng thái pan
             isDragging = false;
             touchHeld  = false;
+            touchStartScreenPos = Vector2.zero;
+            return;
+        }
+
+        // ────── CHECK: Đang giữ vật thể mới từ Shop → block pan ──────
+        if (PlacementManager.IsPlacingNewObject)
+        {
+            isDragging          = false;
+            touchHeld           = false;
             touchStartScreenPos = Vector2.zero;
             return;
         }

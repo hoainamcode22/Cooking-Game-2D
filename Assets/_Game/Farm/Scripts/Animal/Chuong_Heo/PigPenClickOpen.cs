@@ -12,7 +12,6 @@ public class PigPenClickOpen : MonoBehaviour
 
     private void Awake()
     {
-        // tự lấy ref
         if (mainCamera == null)
             mainCamera = Camera.main;
 
@@ -20,6 +19,20 @@ public class PigPenClickOpen : MonoBehaviour
             targetCollider = GetComponent<Collider2D>();
 
         Debug.Log("[PigPenClickOpen] Awake");
+    }
+
+    private void Start()
+    {
+        if (pigPenPopupUI == null)
+            pigPenPopupUI = PigPenPopupUI.Instance != null
+                ? PigPenPopupUI.Instance
+                : FindObjectOfType<PigPenPopupUI>(true);
+
+        if (mainCamera == null)
+            mainCamera = Camera.main;
+
+        if (pigPenPopupUI == null)
+            Debug.LogError("[PigPenClickOpen] Không tìm được PigPenPopupUI trong scene!");
     }
 
     private void Update()
@@ -54,6 +67,10 @@ public class PigPenClickOpen : MonoBehaviour
     private void TryOpenPigPen(Vector2 screenPos)
     {
         if (SceneManager.GetSceneByName("SampleScene").isLoaded)
+            return;
+
+        // Không mở khi đang có popup khác mở
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;
 
         if (IsPointerOverPopupUI(screenPos))

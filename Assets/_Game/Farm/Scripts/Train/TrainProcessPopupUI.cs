@@ -10,6 +10,7 @@ public class TrainProcessPopupUI : MonoBehaviour
     [SerializeField] private Button   Btn_close;
 
     public bool IsVisible => gameObject.activeSelf;
+    public bool IsOpen    => gameObject.activeSelf;  // alias dùng chung với PopupManager
 
     void Awake()
     {

@@ -49,9 +49,23 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     public void Spawn(Vector3 worldPosition, string content)
     {
         if (prefab == null)
+        {
+            Debug.LogError("[PlantText] SPAWN FAILED — prefab is NULL. Assign PlantCostText_World in Inspector.");
             return;
+        }
 
-        FloatingHarvestText item = Instantiate(prefab, worldPosition, Quaternion.identity);
+        // z=0 keeps the text in the 2D plane, in front of all sprites
+        Vector3 spawnPos = new Vector3(worldPosition.x, worldPosition.y, -5f);
+        FloatingHarvestText item = Instantiate(prefab, spawnPos, Quaternion.identity);
+
+        // Prefab is plain TMP (3D) world text — scale must stay (1,1,1).
+        item.transform.localScale = Vector3.one;
+
+        var mr = item.GetComponent<MeshRenderer>();
+        Debug.Log($"[PlantText] Spawned | pos={spawnPos} scale={item.transform.localScale}" +
+                  $" | MeshRenderer layer='{(mr != null ? mr.sortingLayerName : "none")}'" +
+                  $" ID={(mr != null ? mr.sortingLayerID : -1)} order={(mr != null ? mr.sortingOrder : -1)}");
+
         item.Setup(content);
     }
 
@@ -107,7 +121,7 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         int visualCount = Mathf.Clamp(amount, minVisualIcons, maxVisualIcons);
         int arrivedCount = 0;
 
-        Debug.Log($"[HarvestFX] Begin spawn fly icons | visualCount={visualCount} | spawnCenter={worldPosition} | warehouseTarget={warehouseTarget.position}");
+        Debug.Log($"[HarvestFX] Begin spawn fly icons | visualCount={visualCount} | spawnCenter={worldPosition} | warehouseTarget={(warehouseTarget != null ? warehouseTarget.position.ToString() : "NULL")}");
 
         for (int i = 0; i < visualCount; i++)
         {
@@ -125,12 +139,13 @@ public class HarvestFeedbackSpawner : MonoBehaviour
             // Defensive: clear any prefab default sprite to prevent flashing/incorrect default icon
             fx.ClearIconImmediate();
 
-            Debug.Log($"[HarvestFX] Spawned fly fx #{i + 1}/{visualCount} | pos={spawnPos} | target={warehouseTarget.position} | icon={icon.name}");
+            Debug.Log($"[HarvestFX] Spawned fly fx #{i + 1}/{visualCount} | pos={spawnPos} | target={(warehouseTarget != null ? warehouseTarget.position.ToString() : "NULL")} | icon={icon.name}");
 
+            if (warehouseTarget == null) continue;
             fx.Play(icon, spawnPos, warehouseTarget.position, () =>
             {
                 arrivedCount++;
-                Debug.Log($"[HarvestFX] Fly arrived | arrivedCount={arrivedCount}/{visualCount} | target={warehouseTarget.position}");
+                Debug.Log($"[HarvestFX] Fly arrived | arrivedCount={arrivedCount}/{visualCount} | target={(warehouseTarget != null ? warehouseTarget.position.ToString() : "NULL")}");
 
                 if (arrivedCount >= visualCount)
                 {

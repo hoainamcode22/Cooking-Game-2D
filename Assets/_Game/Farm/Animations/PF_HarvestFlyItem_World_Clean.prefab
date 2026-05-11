@@ -81,7 +81,7 @@ SpriteRenderer:
   m_SortingLayer: 11
   m_SortingOrder: 150
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7469862485501457946, guid: 41691b0d780958f429595fb193de0a12, type: 3}
+  m_Sprite: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -117,8 +117,8 @@ Transform:
   m_GameObject: {fileID: 5760333426697029183}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 1122.4094, y: 654.19446, z: 0}
-  m_LocalScale: {x: 30, y: 30, z: 30}
+  m_LocalPosition: {x: 1280, y: 354, z: 0}
+  m_LocalScale: {x: 50, y: 50, z: 50}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2925010947020484904}
@@ -136,13 +136,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59c361b8a8e13034d9720e845ec2096b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HarvestFlyItemFX
-  iconRenderer: {fileID: 1981518719638124916}
+  iconRenderer: {fileID: 0}
   visualRoot: {fileID: 6870120059267115293}
   dropDuration: 0.12
   groundStayDuration: 2
-  flyDuration: 0.65
+  flyDuration: 1
   scatterRadius: 0.35
   dropDownOffset: 0.18
-  startScale: {x: 30, y: 30, z: 30}
-  normalScale: {x: 32, y: 32, z: 32}
+  startScale: {x: 80, y: 80, z: 80}
+  normalScale: {x: 85, y: 85, z: 85}
   destroyOnFinish: 1

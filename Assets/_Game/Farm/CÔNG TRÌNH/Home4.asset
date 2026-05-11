@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69a363e6c16666945ac5438e62388fb7, type: 3}
+  m_Name: Home4
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  itemID: 104
+  itemName: "Nh\xE0 D\xE2n 4"
+  itemIcon: {fileID: -3643339759671298996, guid: 3991126b81be07f49bc7c202fc5c34b7, type: 3}
+  goldPrice: 180
+  diamondPrice: 0
+  prefabToBuild: {fileID: 1582242620454337050, guid: 4b0123a1c7700ba4aaf0b4c1e3a91ebd, type: 3}

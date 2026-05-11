@@ -14,6 +14,10 @@ public class BuildingInteractable : MonoBehaviour
 
     private void OnMouseDown()
     {
+        // Không xử lý khi đang có popup mở
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+            return;
+
         switch (buildingType)
         {
 /*            case BuildingType.Warehouse:

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86e861be00e538046af1b12d7d4bdec0, type: 3}
+  m_Name: OrderItem_Mushroom
+  m_EditorClassIdentifier: Assembly-CSharp::Village.OrderItemDefinition
+  itemId: nam
+  displayName: "N\u1EA5m"
+  icon: {fileID: 4208644412692552619, guid: 7a15c25bc6b86f0438b86042fe3bfb6d, type: 3}
+  category: 0
+  unlockLevel: 2
+  weight: 12
+  minAmount: 1
+  maxAmount: 3
+  goldPerUnit: 8
+  expPerUnit: 2

@@ -41,6 +41,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: FX
+    uniqueID: 2556594327
+    locked: 0
   - name: BG
     uniqueID: 3643994137
     locked: 0
@@ -67,9 +70,6 @@ TagManager:
     locked: 0
   - name: Highlight
     uniqueID: 1208695103
-    locked: 0
-  - name: FX
-    uniqueID: 2526985659
     locked: 0
   - name: HarvestFX
     uniqueID: 2433806025

@@ -12,9 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
   m_Name: Ngo
   m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_ngo
+  itemName: "Ng\xF4"
+  itemIcon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
+  goldPrice: 40
+  diamondPrice: 0
+  cropCategory: 0
   cropId: ngo
-  displayName: "Ng\xF4"
-  icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
+  plantSeedFxIcon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+  harvestIcon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
   sproutSprite: {fileID: 3938912592072765698, guid: 3eef62c56eb694b4ab936992d151a020, type: 3}
   growingSprite: {fileID: 3954842684570580545, guid: fc39a502c1c61914984f49c90bf5a099, type: 3}
   readySprite: {fileID: 2778021726456339881, guid: ed2788fb0865b5444883bedfd7afa696, type: 3}
@@ -27,9 +33,9 @@ MonoBehaviour:
   tier: 1
   unlockLevel: 1
   growSeconds: 600
-  seedBuyGold: 0
   sellGold: 3
   harvestAmount: 4
+  plantCost: 1
   expReward: 5
   sweet: 0
   spicy: 0

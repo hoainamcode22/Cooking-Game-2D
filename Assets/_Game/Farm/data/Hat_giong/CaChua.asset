@@ -12,9 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
   m_Name: CaChua
   m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_cachua
+  itemName: "C\xE0 Chua"
+  itemIcon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+  goldPrice: 80
+  diamondPrice: 0
+  cropCategory: 0
   cropId: cachua
-  displayName: "C\xE0 Chua"
-  icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+  plantSeedFxIcon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+  harvestIcon: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
   sproutSprite: {fileID: -6113928553433563965, guid: f719c7ddf414eb644839961262c4efd9, type: 3}
   growingSprite: {fileID: 1582209969873154330, guid: dd2517376f1ec954593eac15b0bb50b4, type: 3}
   readySprite: {fileID: 1024109497520081698, guid: 69f4fc0e8e9c4da40913c25b747f81d9, type: 3}
@@ -27,9 +33,9 @@ MonoBehaviour:
   tier: 1
   unlockLevel: 1
   growSeconds: 900
-  seedBuyGold: 0
   sellGold: 3
   harvestAmount: 4
+  plantCost: 1
   expReward: 5
   sweet: 0
   spicy: 0

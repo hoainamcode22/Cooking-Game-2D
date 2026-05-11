@@ -20,9 +20,28 @@ public class FarmPlotInput : MonoBehaviour
         if (!IsPointerDownThisFrame())
             return;
 
+        // Không xử lý trong khi đang kéo hạt giống
+        if (FarmInputLock.IsDraggingSeed)
+        {
+            Debug.Log("[PlotClick] ignored — IsDraggingSeed=true");
+            return;
+        }
+
+        // Không xử lý plot khi đang có popup mở
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+        {
+            Debug.Log("[PlotClick] ignored — IsAnyPopupOpen=true");
+            return;
+        }
+
         // Nếu đang bấm UI thì không xử lý world plot.
         if (IsPointerOverUI())
+        {
+            Debug.Log("[PlotClick] ignored — IsPointerOverUI=true" +
+                      $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}" +
+                      $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}");
             return;
+        }
 
         if (mainCamera == null || FarmManager.Instance == null)
             return;
@@ -31,18 +50,28 @@ public class FarmPlotInput : MonoBehaviour
         Vector3 worldPos = mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
         worldPos.z = 0f;
 
-        Collider2D hit = Physics2D.OverlapPoint(worldPos, plotMask);
+        const float kTouchRadius = 0.08f;
+        Collider2D hit = Physics2D.OverlapCircle(worldPos, kTouchRadius, plotMask);
         if (hit == null)
+        {
+            Debug.Log($"[PlotClick] no collider hit at worldPos={worldPos}");
             return;
+        }
 
         PlotController plot = hit.GetComponent<PlotController>();
         if (plot == null)
             plot = hit.GetComponentInParent<PlotController>();
 
         if (plot == null)
+        {
+            Debug.Log($"[PlotClick] hit '{hit.name}' — no PlotController found");
             return;
+        }
 
-        // Gọi qua handler của plot để toàn bộ luồng click thống nhất một chỗ.
+        Debug.Log($"[PlotClick] opening handler | plot={plot.PlotId} IsEmpty={plot.IsEmpty}" +
+                  $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}" +
+                  $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}");
+
         plot.HandlePlotClick();
     }
 
@@ -61,7 +90,7 @@ public class FarmPlotInput : MonoBehaviour
     // Lấy tọa độ con trỏ hiện tại theo touch hoặc mouse.
     private Vector2 GetPointerScreenPosition()
     {
-        if (Touchscreen.current != null)
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
             return Touchscreen.current.primaryTouch.position.ReadValue();
 
         if (Mouse.current != null)
@@ -80,7 +109,12 @@ public class FarmPlotInput : MonoBehaviour
         {
             var touch = Touchscreen.current.primaryTouch;
             if (touch.press.isPressed)
-                return EventSystem.current.IsPointerOverGameObject(touch.touchId.ReadValue());
+            {
+                // EventSystem dùng pointer ID âm cho touch: -(touchId + 1)
+                int pointerId = -(touch.touchId.ReadValue() + 1);
+                return EventSystem.current.IsPointerOverGameObject(pointerId);
+            }
+            return false;
         }
 
         return EventSystem.current.IsPointerOverGameObject();

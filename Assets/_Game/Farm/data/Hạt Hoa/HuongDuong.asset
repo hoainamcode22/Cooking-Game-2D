@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: HuongDuong
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_huong_duong
+  itemName: "H\u01B0\u1EDBng D\u01B0\u01A1ng"
+  itemIcon: {fileID: -7696085379610616033, guid: c36c76047753b414093b747a43aecc75, type: 3}
+  goldPrice: 50
+  diamondPrice: 0
+  cropCategory: 1
+  cropId: huong_duong
+  plantSeedFxIcon: {fileID: 0}
+  harvestIcon: {fileID: 0}
+  sproutSprite: {fileID: 6058730466632334000, guid: c36c76047753b414093b747a43aecc75, type: 3}
+  growingSprite: {fileID: 1765865809303983898, guid: c36c76047753b414093b747a43aecc75, type: 3}
+  readySprite: {fileID: -7696085379610616033, guid: c36c76047753b414093b747a43aecc75, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 50, y: 50, z: 1}
+  readyScale: {x: 50, y: 50, z: 1}
+  displayCount: 1
+  seedItemId: seed_huong_duong
+  harvestItemId: huong_duong
+  tier: 1
+  unlockLevel: 1
+  growSeconds: 180
+  sellGold: 3
+  harvestAmount: 4
+  plantCost: 1
+  expReward: 5
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1
+  canDropFromAds: 1
+  canAppearInRareMarket: 0

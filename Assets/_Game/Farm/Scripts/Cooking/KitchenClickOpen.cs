@@ -46,7 +46,11 @@ public class KitchenClickOpen : MonoBehaviour
 
     private void TryOpenCooking(Vector2 screenPos)
     {
-        // ch? ch?n khi ?ang b?m l�n UI popup farm (Canvas_Popup)
+        // Không mở khi đang có popup khác mở
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+            return;
+
+        // Chặn khi đang bấm lên UI popup farm (Canvas_Popup)
         if (IsPointerOverFarmPopupUI(screenPos))
             return;
 

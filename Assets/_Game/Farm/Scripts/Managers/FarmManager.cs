@@ -39,6 +39,9 @@ public class FarmManager : MonoBehaviour
     [Header("Crop Database")]
     [SerializeField] private List<CropData> cropDatabase = new List<CropData>();
 
+    [Header("Flower Crop Database")]
+    [SerializeField] private List<CropData> flowerCropDatabase = new List<CropData>();
+
     [Header("Default Crops")]
     [SerializeField] private CropData defaultNormalCrop;
     [SerializeField] private CropData defaultRareCrop;
@@ -170,14 +173,23 @@ public class FarmManager : MonoBehaviour
     {
         cropMap.Clear();
 
+        // Normal crops
         for (int i = 0; i < cropDatabase.Count; i++)
         {
             CropData crop = cropDatabase[i];
-            if (crop == null || string.IsNullOrEmpty(crop.cropId))
-                continue;
-
+            if (crop == null || string.IsNullOrEmpty(crop.cropId)) continue;
             cropMap[crop.cropId] = crop;
         }
+
+        // Flower crops — cần có trong map để TryResolvePlantedCrop tìm được sau khi load save
+        for (int i = 0; i < flowerCropDatabase.Count; i++)
+        {
+            CropData crop = flowerCropDatabase[i];
+            if (crop == null || string.IsNullOrEmpty(crop.cropId)) continue;
+            cropMap[crop.cropId] = crop;
+        }
+
+        Debug.Log($"[FarmManager] RebuildCropMap: {cropMap.Count} crops (normal={cropDatabase.Count}, flower={flowerCropDatabase.Count})");
     }
 
     private void RebuildSeedStockMap()
@@ -314,10 +326,7 @@ public class FarmManager : MonoBehaviour
         if (plot == null)
             return;
 
-        if (plot.CurrentCrop != null)
-            FarmUIManager.Instance?.ShowHint($"{plot.CurrentCrop.displayName} đang lớn. Còn {plot.GetRemainingTimeText()}");
-        else
-            FarmUIManager.Instance?.ShowHint("Ô đất đang trồng.");
+        // Popup được xử lý trực tiếp bởi PlotController (mỗi ô đất tự quản lý popup con của nó)
     }
 
     public void OnReadyPlotClicked(PlotController plot)

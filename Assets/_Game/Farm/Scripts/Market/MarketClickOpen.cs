@@ -54,6 +54,10 @@ public class MarketClickOpen : MonoBehaviour
         if (SceneManager.GetSceneByName("SampleScene").isLoaded)
             return;
 
+        // Không mở khi đang có popup khác mở
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+            return;
+
         if (IsPointerOverPopupUI(screenPos))
             return;
 

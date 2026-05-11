@@ -179,6 +179,10 @@ public class TrainWagonSlot : MonoBehaviour
         if (!enabled || !gameObject.activeInHierarchy) return;
         if (TrainManager.Instance == null) return;
 
+        // Không xử lý khi đang có popup mở
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+            return;
+
         Debug.Log($"[TrainSlot {slotIndex}] OnMouseDown — state={TrainManager.Instance.State}");
         TrainManager.Instance.OnWagonSlotClicked(this);
     }

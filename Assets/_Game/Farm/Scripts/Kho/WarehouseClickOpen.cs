@@ -56,6 +56,10 @@ public class WarehouseClickOpen : MonoBehaviour
         if (SceneManager.GetSceneByName("SampleScene").isLoaded)
             return;
 
+        // Không mở khi đang có popup khác mở
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+            return;
+
         // chỉ chặn khi bấm vào UI popup
         if (IsPointerOverPopupUI(screenPos))
             return;

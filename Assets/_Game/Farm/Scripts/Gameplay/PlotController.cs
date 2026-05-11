@@ -3,6 +3,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
+public enum PlotCategory { Normal, Flower }
+
 public class PlotController : MonoBehaviour, IPointerClickHandler
 {
     private enum PlotState
@@ -23,6 +25,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         public int state;
     }
 
+    [Header("Category")]
+    [SerializeField] private PlotCategory plotCategory = PlotCategory.Normal;
+
     [Header("Identity")]
     [SerializeField] private int plotId = 1;
     [SerializeField] private bool isRarePlot = false;
@@ -34,6 +39,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     [SerializeField] private bool requireAd = false;
 
     [Header("Refs")]
+    [SerializeField] private CropProcessPopupUI processPopup;
     [SerializeField] private SpriteRenderer groundSprite;
     [SerializeField] private Transform cropGroup;
     [SerializeField] private PlotCropVisual cropVisual;
@@ -60,7 +66,15 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     private long startUnixTime;
     private long finishUnixTime;
 
+    // Đặt true trước Start() để Start() bỏ qua Load() và khởi tạo sạch
+    private bool _skipLoad;
+
+    // Guard: ngăn HandlePlotClick bị gọi 2 lần trong cùng 1 frame
+    // (do cả IPointerClickHandler lẫn FarmPlotInput cùng fire)
+    private int lastHandledFrame = -1;
+
     public int PlotId => plotId;
+    public PlotCategory Category => plotCategory;
     public bool IsRarePlot => isRarePlot;
     public bool IsUnlocked => state != PlotState.Locked;
     public bool IsPlanted => state == PlotState.Growing || state == PlotState.Ready;
@@ -94,9 +108,36 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
     private void Start()
     {
-        Load();
+        if (processPopup == null)
+            processPopup = FindObjectOfType<CropProcessPopupUI>(true);
+
+        if (_skipLoad)
+        {
+            // Ô đất mới mua — không được nạp dữ liệu cũ
+            state         = PlotState.Empty;
+            plantedCrop   = null;
+            plantedCropId = "";
+            startUnixTime = 0;
+            finishUnixTime = 0;
+            Save();
+        }
+        else
+        {
+            Load();
+        }
+
         TryResolvePlantedCrop();
         RefreshVisual();
+    }
+
+    /// <summary>
+    /// Gọi từ PlacementManager ngay sau Instantiate để tránh Load() nạp dữ liệu cũ
+    /// của ô đất trùng plotId.
+    /// </summary>
+    public void InitializeAsNew()
+    {
+        _skipLoad = true;
+        PlayerPrefs.DeleteKey(SaveKey);   // Xóa luôn để không còn "vết tích" cũ
     }
 
     private void Update()
@@ -122,6 +163,11 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
     public void HandlePlotClick()
     {
+        // Chống double-fire trong cùng 1 frame (IPointerClickHandler + FarmPlotInput)
+        if (Time.frameCount == lastHandledFrame)
+            return;
+        lastHandledFrame = Time.frameCount;
+
         if (FarmManager.Instance == null)
         {
             Debug.LogError("FarmManager.Instance NULL");
@@ -157,7 +203,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         if (state == PlotState.Growing)
         {
-            FarmManager.Instance.OnGrowingPlotClicked(this);
+            if (processPopup != null)
+                processPopup.OpenForPlot(this);
             return;
         }
 
@@ -213,6 +260,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         t = transform.Find("ProgressRoot/Fill");
         if (t != null) progressFill = t;
+
+        if (processPopup == null)
+            processPopup = GetComponentInChildren<CropProcessPopupUI>(true);
 
         AutoFindHarvestSpawnPoint();
         AutoFindExpSpawnPoint();
@@ -326,7 +376,27 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
     public bool CanPlantCrop(CropData crop)
     {
-        return crop != null && state == PlotState.Empty;
+        if (crop == null)
+        {
+            Debug.LogWarning($"[CanPlantCrop] FAIL: crop null | plot={name}");
+            return false;
+        }
+
+        if (state != PlotState.Empty)
+        {
+            Debug.LogWarning($"[CanPlantCrop] FAIL: plot not empty | plot={name} state={state}");
+            return false;
+        }
+
+        // Chặn trồng sai loại: plot hoa chỉ nhận Flower, plot thường chỉ nhận Normal.
+        if ((int)crop.cropCategory != (int)plotCategory)
+        {
+            Debug.LogWarning($"[CanPlantCrop] FAIL category mismatch | plot={name} plotCategory={plotCategory} | crop={crop.cropId} cropCategory={crop.cropCategory}" +
+                             $"\n=> Nếu crop.cropCategory=Normal nhưng crop là hoa: mở inspector CropData, đặt cropCategory=Flower");
+            return false;
+        }
+
+        return true;
     }
 
     public bool TryPlant(CropData crop)
@@ -444,7 +514,10 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             $"+{amount} {harvestedCrop.displayName}"
         );
 
-        Sprite fxIcon = harvestedCrop.icon != null ? harvestedCrop.icon : harvestedCrop.readySprite;
+        // Ưu tiên harvestIcon (gán riêng trong CropData), fallback về icon rồi readySprite như cũ
+        Sprite fxIcon = harvestedCrop.harvestIcon != null
+            ? harvestedCrop.harvestIcon
+            : (harvestedCrop.icon != null ? harvestedCrop.icon : harvestedCrop.readySprite);
 
         Debug.Log($"[Harvest] SpawnHarvestFly | plot={name} | crop={harvestedCrop.displayName} | cropId={harvestedCrop.cropId} | amount={amount} | icon={(fxIcon != null ? fxIcon.name : "NULL")} | fxSpawn={fxSpawn}");
 
@@ -469,6 +542,74 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         Save();
         RefreshVisual();
         return true;
+    }
+
+    /// <summary>Bỏ qua toàn bộ thời gian còn lại — dùng cho nút Speed Up (kim cương).</summary>
+    public void CompleteInstantly()
+    {
+        if (state != PlotState.Growing)
+            return;
+
+        finishUnixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        state = PlotState.Ready;
+        Save();
+        RefreshVisual();
+    }
+
+    /// <summary>Trừ 1 Gem và chín lúa ngay lập tức — gắn vào nút Gem trên CropProcessPopupUI.</summary>
+    public void InstantGrow()
+    {
+        if (state != PlotState.Growing)
+        {
+            Debug.LogWarning($"[PlotController] InstantGrow bị gọi nhưng state={state} (không phải Growing). Plot={name}");
+            return;
+        }
+
+        if (FarmEconomyManager.Instance == null)
+        {
+            Debug.LogError("[PlotController] InstantGrow: FarmEconomyManager.Instance NULL.");
+            return;
+        }
+
+        if (FarmEconomyManager.Instance.Gems < 1)
+        {
+            Debug.Log("[PlotController] InstantGrow: không đủ Gem.");
+            return;
+        }
+
+        StopAllCoroutines();                             // dừng mọi timer coroutine nếu có
+        FarmEconomyManager.Instance.SpendGems(1);
+
+        // Ép trạng thái Ready ngay lập tức, không phụ thuộc finishUnixTime
+        finishUnixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        state = PlotState.Ready;
+        Save();
+        RefreshVisual();
+
+        Debug.Log($"[PlotController] InstantGrow OK — Plot={name}, state={state}");
+    }
+
+    /// <summary>Xóa sạch toàn bộ save của các ô đất (PLOT_NORMAL_* và PLOT_RARE_*) khỏi PlayerPrefs.
+    /// Dùng khi cần reset trang trại hoặc dọn "ô đất ma" còn sót từ Play Mode cũ.</summary>
+    [ContextMenu("Debug: Clear All Plot Data")]
+    public void DebugClearData()
+    {
+        int removed = 0;
+        for (int i = 0; i <= 200; i++)
+        {
+            string nk = $"PLOT_NORMAL_{i}";
+            string rk = $"PLOT_RARE_{i}";
+            if (PlayerPrefs.HasKey(nk)) { PlayerPrefs.DeleteKey(nk); removed++; }
+            if (PlayerPrefs.HasKey(rk)) { PlayerPrefs.DeleteKey(rk); removed++; }
+        }
+        // Xóa luôn danh sách nhà/công trình đã đặt
+        if (PlayerPrefs.HasKey(PlacementManager.BuildingsSaveKey))
+        {
+            PlayerPrefs.DeleteKey(PlacementManager.BuildingsSaveKey);
+            removed++;
+        }
+        PlayerPrefs.Save();
+        Debug.Log($"[PlotController] DebugClearData: đã xóa {removed} key(s). Reload scene để áp dụng.");
     }
 
     public void ApplyWaterBonus(int reduceSeconds)
@@ -520,7 +661,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             if (timerText != null)
                 timerText.text = state == PlotState.Ready ? "Chín" : GetRemainingTimeText();
 
-            // progressRoot.SetActive(state == PlotState.Growing); // ẩn progress bar
+            if (progressRoot != null)
+                progressRoot.SetActive(state == PlotState.Growing);
 
             if (progressFill != null)
             {

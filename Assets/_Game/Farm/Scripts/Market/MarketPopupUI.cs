@@ -15,6 +15,9 @@ public class MarketPopupUI : MonoBehaviour
         }
     }
 
+    // true khi popup đang thực sự hiển thị
+    public bool IsOpen => popupRoot != null && popupRoot.activeSelf;
+
     public void OpenPopup()
     {
         if (popupRoot != null)

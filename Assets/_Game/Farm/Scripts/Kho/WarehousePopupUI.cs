@@ -26,8 +26,16 @@ public class WarehousePopupUI : MonoBehaviour
     [SerializeField] private TMP_InputField inputSearch;
     [SerializeField] private Button btnSearch;
 
-    [Header("Slots")]
-    [SerializeField] private List<WarehouseSlotUI> slots = new List<WarehouseSlotUI>();
+    [Header("Slots - Runtime Generate")]
+    // Kéo prefab item slot vào đây (item_1 prefab)
+    [SerializeField] private GameObject slotPrefab;
+    // Kéo ItemGrid transform vào đây (container chứa slot)
+    [SerializeField] private Transform itemGridContainer;
+    // Số slot hiển thị tối đa
+    [SerializeField] private int slotCapacity = 25;
+
+    // List slot được tạo runtime, không kéo tay trong Inspector
+    private List<WarehouseSlotUI> slots = new List<WarehouseSlotUI>();
 
     [Header("Crop Database")]
     [SerializeField] private List<CropData> cropDatabase = new List<CropData>();
@@ -49,6 +57,7 @@ public class WarehousePopupUI : MonoBehaviour
 
     private void Awake()
     {
+        InitSlots();
         BuildCropLookup();
         BuildExtraItemLookup();
 
@@ -101,6 +110,40 @@ public class WarehousePopupUI : MonoBehaviour
         cg.interactable = true;
     }
 
+    // Tạo slot runtime từ prefab, xóa slot cũ nếu có
+    private void InitSlots()
+    {
+        if (slotPrefab == null || itemGridContainer == null)
+        {
+            Debug.LogWarning("[WarehousePopupUI] Chưa gán slotPrefab hoặc itemGridContainer. Bỏ qua generate slot.");
+            return;
+        }
+
+        // Xóa hết child cũ trong container (item_1..item_N còn trong hierarchy)
+        for (int i = itemGridContainer.childCount - 1; i >= 0; i--)
+            Destroy(itemGridContainer.GetChild(i).gameObject);
+
+        slots.Clear();
+
+        // Tạo đủ slotCapacity slot từ prefab
+        for (int i = 0; i < slotCapacity; i++)
+        {
+            GameObject go = Instantiate(slotPrefab, itemGridContainer);
+            go.name = "slot_" + (i + 1);
+            WarehouseSlotUI slotUI = go.GetComponent<WarehouseSlotUI>();
+
+            if (slotUI == null)
+            {
+                Debug.LogError("[WarehousePopupUI] slotPrefab thiếu component WarehouseSlotUI!");
+                continue;
+            }
+
+            slots.Add(slotUI);
+        }
+
+        Debug.Log($"[WarehousePopupUI] Đã tạo {slots.Count} slot.");
+    }
+
     private void BuildCropLookup()
     {
         cropLookup.Clear();
@@ -132,6 +175,9 @@ public class WarehousePopupUI : MonoBehaviour
                 extraItemLookup.Add(item.itemId, item);
         }
     }
+
+    // true khi popup đang thực sự hiển thị
+    public bool IsOpen => popupRoot != null && popupRoot.activeSelf;
 
     public void OpenPopup()
     {

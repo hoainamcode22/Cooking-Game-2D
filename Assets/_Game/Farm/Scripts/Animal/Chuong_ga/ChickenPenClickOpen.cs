@@ -12,7 +12,6 @@ public class ChickenPenClickOpen : MonoBehaviour
 
     private void Awake()
     {
-        // tự lấy ref
         if (mainCamera == null)
             mainCamera = Camera.main;
 
@@ -20,6 +19,20 @@ public class ChickenPenClickOpen : MonoBehaviour
             targetCollider = GetComponent<Collider2D>();
 
         Debug.Log("[ChickenPenClickOpen] Awake");
+    }
+
+    private void Start()
+    {
+        if (chickenPenPopupUI == null)
+            chickenPenPopupUI = ChickenPenPopupUI.Instance != null
+                ? ChickenPenPopupUI.Instance
+                : FindObjectOfType<ChickenPenPopupUI>(true);
+
+        if (mainCamera == null)
+            mainCamera = Camera.main;
+
+        if (chickenPenPopupUI == null)
+            Debug.LogError("[ChickenPenClickOpen] Không tìm được ChickenPenPopupUI trong scene!");
     }
 
     private void Update()
@@ -54,6 +67,10 @@ public class ChickenPenClickOpen : MonoBehaviour
     private void TryOpenChickenPen(Vector2 screenPos)
     {
         if (SceneManager.GetSceneByName("SampleScene").isLoaded)
+            return;
+
+        // Không mở khi đang có popup khác mở
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;
 
         if (IsPointerOverPopupUI(screenPos))

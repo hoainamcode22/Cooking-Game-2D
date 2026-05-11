@@ -31,6 +31,10 @@ public class TrainStationBuilding : MonoBehaviour
 
         if (_col == null || !_col.OverlapPoint(worldPos)) return;
 
+        // Không mở khi đang có popup khác mở
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+            return;
+
         HandleClick();
     }
 

@@ -32,6 +32,11 @@ public class FarmEconomyManager : MonoBehaviour
 
     private void Start()
     {
+#if UNITY_EDITOR
+        Gold = 1000;
+        Gems = 1000;
+        SaveCurrency();
+#endif
         NotifyCurrencyChanged();
     }
 

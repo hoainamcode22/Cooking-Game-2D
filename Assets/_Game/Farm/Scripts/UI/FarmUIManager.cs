@@ -15,6 +15,10 @@ public class FarmUIManager : MonoBehaviour
 
     [Header("Popup Root")]
     [SerializeField] private GameObject popupSeed;
+    [SerializeField] private GameObject popupSeedFlower;
+
+    [Header("Drag Icon")]
+    [SerializeField] private FloatingDragIcon floatingDragIcon;
 
     [Header("Harvest Tool")]
     [SerializeField] private GameObject sickleToolRoot;
@@ -32,6 +36,9 @@ public class FarmUIManager : MonoBehaviour
     [SerializeField] private Camera farmCamera;
 
     private bool isCookingMode;
+
+    // Nhớ loại popup vừa mở để reopen đúng loại khi drag thất bại
+    private PlotCategory lastSeedPopupCategory = PlotCategory.Normal;
 
     private void Awake()
     {
@@ -52,9 +59,19 @@ public class FarmUIManager : MonoBehaviour
 
     private void Start()
     {
+        // Subscribe sau khi tất cả Awake() đã chạy xong — Instance đảm bảo không null
+        if (FarmEconomyManager.Instance != null)
+            FarmEconomyManager.Instance.OnCurrencyChanged += HandleCurrencyChanged;
+
         HideAllPopups();
         HideSickleTool();
         RefreshTopBar();
+    }
+
+    private void OnDestroy()
+    {
+        if (FarmEconomyManager.Instance != null)
+            FarmEconomyManager.Instance.OnCurrencyChanged -= HandleCurrencyChanged;
     }
 
     private void HandleCurrencyChanged(int gold, int gems)
@@ -104,6 +121,9 @@ public class FarmUIManager : MonoBehaviour
     {
         if (popupSeed != null)
             popupSeed.SetActive(false);
+
+        if (popupSeedFlower != null)
+            popupSeedFlower.SetActive(false);
 
         // Clear seed-related input locks whenever all popups close.
         FarmInputLock.IsSeedPopupOpen = false;
@@ -158,18 +178,29 @@ public class FarmUIManager : MonoBehaviour
         if (isCookingMode)
             return;
 
-        Debug.Log("[FarmUI] ShowPlantSelectForPlot CALLED");
+        // Chọn popup đúng loại: plot hoa → popupSeedFlower, plot thường → popupSeed.
+        bool isFlower = plot != null && plot.Category == PlotCategory.Flower;
+        lastSeedPopupCategory = isFlower ? PlotCategory.Flower : PlotCategory.Normal;
+        GameObject targetPopup = isFlower ? popupSeedFlower : popupSeed;
+
+        if (targetPopup == null && isFlower)
+        {
+            Debug.LogWarning("[FarmUI] popupSeedFlower chưa gán inspector — fallback popupSeed.");
+            targetPopup = popupSeed;
+        }
+
+        Debug.Log($"[FarmUI] ShowPlantSelectForPlot | category={plot?.Category} | popup={targetPopup?.name ?? "NULL"}");
 
         HideAllPopups();
 
-        if (popupSeed == null)
+        if (targetPopup == null)
         {
-            Debug.LogError("[FarmUI] popupSeed is NULL");
+            Debug.LogError("[FarmUI] Không tìm thấy popup phù hợp!");
             return;
         }
 
-        // Đảm bảo toàn bộ parent chain của popupSeed đều active
-        Transform p = popupSeed.transform.parent;
+        // Đảm bảo toàn bộ parent chain đều active.
+        Transform p = targetPopup.transform.parent;
         while (p != null)
         {
             if (!p.gameObject.activeSelf)
@@ -180,22 +211,22 @@ public class FarmUIManager : MonoBehaviour
             p = p.parent;
         }
 
-        // Reset popup về giữa màn hình để đảm bảo luôn hiển thị
-        RectTransform popupRect = popupSeed.GetComponent<RectTransform>();
-        if (popupRect != null)
-        {
-            popupRect.anchoredPosition = Vector2.zero;
-            Debug.Log($"[FarmUI] popup anchoredPosition reset to (0,0)");
-        }
-
-        popupSeed.SetActive(true);
-        Debug.Log($"[FarmUI] popupSeed.SetActive(true) | activeInHierarchy={popupSeed.activeInHierarchy}");
+        targetPopup.SetActive(true);
         FarmInputLock.IsSeedPopupOpen = true;
 
+        // Định vị popup gần ô đất được click; fallback về giữa màn hình nếu không có plot
         if (plot != null)
+        {
+            PositionPopupNearPlot(targetPopup, plot.transform.position);
             ShowHint($"Kéo hạt giống để trồng vào ô {plot.PlotId}");
+        }
         else
+        {
+            RectTransform popupRect = targetPopup.GetComponent<RectTransform>();
+            if (popupRect != null)
+                popupRect.anchoredPosition = Vector2.zero;
             ShowHint("Kéo hạt giống để trồng.");
+        }
     }
 
     /// <summary>
@@ -270,15 +301,109 @@ public class FarmUIManager : MonoBehaviour
         return localPos;
     }
 
-    /// <summary>Close seed popup and clear input locks.</summary>
+    /// <summary>
+    /// Called by PlantDragController.CleanupPlantDragState().
+    /// If either popup is still active but alpha=0 (faded during drag), force deactivate it.
+    /// This prevents an invisible CanvasGroup from blocking raycasts or confusing IsPointerOverUI.
+    /// </summary>
+    public void ForceRestorePopupInteraction()
+    {
+        ForceDeactivateIfFaded(popupSeed,       "popupSeed");
+        ForceDeactivateIfFaded(popupSeedFlower, "popupSeedFlower");
+
+        FarmInputLock.IsSeedPopupOpen = false;
+        FarmInputLock.IsDraggingSeed  = false;
+
+        Debug.Log($"[FarmUI] ForceRestorePopupInteraction done" +
+                  $" | popupSeed active={popupSeed != null && popupSeed.activeSelf}" +
+                  $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}" +
+                  $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}");
+    }
+
+    private void ForceDeactivateIfFaded(GameObject popup, string label)
+    {
+        if (popup == null || !popup.activeSelf) return;
+        if (!popup.TryGetComponent(out CanvasGroup cg) || cg.alpha > 0f) return;
+
+        // Restore CG to clean state before deactivating so next SetActive(true) starts fresh
+        cg.alpha          = 1f;
+        cg.blocksRaycasts = true;
+        cg.interactable   = true;
+        popup.SetActive(false);
+        Debug.Log($"[FarmUI] '{label}' was active+alpha=0 → deactivated and CanvasGroup restored");
+    }
+
+    /// <summary>Close seed popup (cả 2 loại) và clear input locks.</summary>
     public void HidePlantSelectPopup()
     {
         if (popupSeed != null)
             popupSeed.SetActive(false);
 
+        if (popupSeedFlower != null)
+            popupSeedFlower.SetActive(false);
+
         FarmInputLock.IsSeedPopupOpen = false;
         FarmInputLock.IsDraggingSeed  = false;
     }
+
+    /// <summary>
+    /// Ẩn popup khi bắt đầu drag bằng CanvasGroup fade — KHÔNG SetActive(false)
+    /// để SeedDragItem (con của popup) vẫn nhận OnDrag/OnEndDrag.
+    /// </summary>
+    public void HideSeedPopupForDrag()
+    {
+        FadePopup(popupSeed, false);
+        FadePopup(popupSeedFlower, false);
+        FarmInputLock.IsSeedPopupOpen = false;
+    }
+
+    /// <summary>
+    /// Mở lại đúng loại popup đã mở trước khi drag.
+    /// Gọi khi drag kết thúc mà không plant được plot nào.
+    /// </summary>
+    public void ReopenSeedPopup()
+    {
+        bool isFlower = lastSeedPopupCategory == PlotCategory.Flower;
+        GameObject targetPopup = isFlower ? popupSeedFlower : popupSeed;
+
+        if (targetPopup == null && isFlower)
+        {
+            Debug.LogWarning("[FarmUI] ReopenSeedPopup: popupSeedFlower null — fallback popupSeed.");
+            targetPopup = popupSeed;
+        }
+
+        if (targetPopup == null)
+            return;
+
+        FadePopup(targetPopup, true);
+        FarmInputLock.IsSeedPopupOpen = true;
+        Debug.Log($"[FarmUI] ReopenSeedPopup | category={lastSeedPopupCategory}");
+    }
+
+    /// <summary>
+    /// Fade popup bằng CanvasGroup thay vì SetActive, giữ GameObject active
+    /// để drag events trên children không bị Unity hủy.
+    /// </summary>
+    private void FadePopup(GameObject popup, bool show)
+    {
+        if (popup == null) return;
+
+        if (show && !popup.activeSelf)
+            popup.SetActive(true);
+
+        if (!popup.TryGetComponent(out CanvasGroup cg))
+            cg = popup.AddComponent<CanvasGroup>();
+
+        cg.alpha          = show ? 1f : 0f;
+        cg.blocksRaycasts = show;
+        cg.interactable   = show;
+    }
+
+    /// <summary>Hiện floating icon theo chuột khi bắt đầu kéo hạt giống.</summary>
+    public void ShowFloatingDragIcon(Sprite icon) => floatingDragIcon?.Show(icon);
+
+    /// <summary>Ẩn floating icon khi kết thúc drag.</summary>
+    public void HideFloatingDragIcon() => floatingDragIcon?.Hide();
 
     public void OnClick_CloseAllPopups()
     {

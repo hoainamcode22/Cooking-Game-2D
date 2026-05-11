@@ -2,207 +2,196 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Quản lý chế độ sắp xếp (Edit Mode) farm.
-/// - Toggle edit mode: bật/tắt chế độ sắp xếp
-/// - Khi bật: overlay vàng nhạt, hiện text "Chế độ sắp xếp", enable ObjectDragHandler
-/// - Khi tắt: bỏ overlay, ẩn text, disable ObjectDragHandler
+/// Quản lý chế độ sắp xếp (Edit Mode).
+/// - Nút Btn_EditMode gọi ToggleEditMode() để bật/tắt.
+/// - Khi bật: overlay vàng, hiện label, cho phép nhấc/kéo công trình.
+/// - Khi tắt: xóa overlay, ẩn label, cấm kéo.
 ///
-/// Singleton pattern — gắn lên Systems object ở scene.
+/// Logic kéo thả (nhấc, snap grid, xanh/đỏ, thả) nằm hoàn toàn ở đây.
+/// Gắn lên Systems / Managers GameObject trong scene.
 /// </summary>
 public class EditModeManager : MonoBehaviour
 {
-	[Header("Edit Mode Visual")]
-	[SerializeField] private Image overlayImage; // UI Image fullscreen, dùng tint overlay
-	[SerializeField] private Color overlayColorActive = new Color(1f, 1f, 0f, 0.1f); // Vàng nhạt, alpha 0.1
-	[SerializeField] private Color overlayColorInactive = Color.clear;
+    // ── Singleton ─────────────────────────────────────────────────────────────
+    public static EditModeManager Instance { get; private set; }
 
-	[Header("Edit Mode UI")]
-	[SerializeField] private Text editModeLabel; // Text "Chế độ sắp xếp"
+    // ── State ─────────────────────────────────────────────────────────────────
+    /// <summary>True khi Edit Mode đang bật</summary>
+    public static bool IsEditMode { get; private set; }
 
-	// ── Singleton ────────────────────────────────────────────────────────────
-	private static EditModeManager instance;
-	public static EditModeManager Instance
-	{
-		get
-		{
-			if (instance == null)
-			{
-				instance = FindObjectOfType<EditModeManager>();
-				if (instance == null)
-					Debug.LogError("[EditModeManager] Không tìm thấy EditModeManager trong scene!");
-			}
-			return instance;
-		}
-	}
+    /// <summary>True khi đang giữ và kéo một vật thể — CameraController dùng để block pan</summary>
+    public static bool IsDragging { get; private set; }
 
-	// ── Public Static Properties ─────────────────────────────────────────────
-	public static bool IsEditMode { get; private set; }
+    // ── Event ─────────────────────────────────────────────────────────────────
+    public static event System.Action<bool> OnEditModeChanged;
 
-	// ── Event ────────────────────────────────────────────────────────────────
-	/// <summary>Event khi Edit Mode thay đổi (true = bật, false = tắt)</summary>
-	public static event System.Action<bool> OnEditModeChanged;
+    // ── Inspector ─────────────────────────────────────────────────────────────
+    [Header("Visuals")]
+    [SerializeField] private Image overlayImage;
+    [SerializeField] private Color overlayActiveColor = new Color(1f, 1f, 0f, 0.1f);
+    [SerializeField] private GameObject editModeLabel; // GameObject chứa Text/TMP "Chế độ sắp xếp"
 
-	// ──────────────────────────────────────────────────────────────────────────
+    [Header("Drag & Drop")]
+    [SerializeField] private float gridSize = 50f;
+    [SerializeField] private Vector2 collisionCheckSize = new Vector2(48f, 48f); // nhỏ hơn 1 chút để tránh edge
+    [SerializeField] private LayerMask obstacleLayerMask; // Layer "Obstacle" của các công trình
 
-	private void Awake()
-	{
-		// Singleton setup
-		if (instance == null)
-		{
-			instance = this;
-			DontDestroyOnLoad(gameObject);
-		}
-		else if (instance != this)
-		{
-			Destroy(gameObject);
-			return;
-		}
+    // ── Drag state ────────────────────────────────────────────────────────────
+    private Camera mainCamera;
+    private GameObject targetObject;     // Công trình đang cầm
+    private SpriteRenderer targetSprite; // SpriteRenderer của công trình
+    private Vector3 originalPosition;    // Vị trí gốc để trả về nếu đặt sai
+    private bool isPlacementValid;       // Ô đứng có hợp lệ không (dùng khi thả)
 
-		// Init trạng thái
-		IsEditMode = false;
-		UpdateEditModeVisuals(false);
-	}
+    // ──────────────────────────────────────────────────────────────────────────
 
-	private void Start()
-	{
-		// Đảm bảo overlay được gắn
-		if (overlayImage == null)
-		{
-			Debug.LogWarning("[EditModeManager] Overlay Image không được gắn! Tìm kiếm tự động...");
-			overlayImage = FindObjectOfType<Canvas>()?.GetComponentInChildren<Image>();
-		}
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+        {
+            Destroy(gameObject);
+            return;
+        }
 
-		// Đảm bảo label được gắn
-		if (editModeLabel == null)
-		{
-			Debug.LogWarning("[EditModeManager] Edit Mode Label không được gắn! Tìm kiếm tự động...");
-			editModeLabel = FindObjectOfType<Canvas>()?.GetComponentInChildren<Text>();
-		}
-	}
+        mainCamera = Camera.main;
+        ApplyVisuals(false);
+    }
 
-	private void Update()
-	{
-		// Debug: Nhấn E để toggle Edit Mode
-		if (Input.GetKeyDown(KeyCode.E))
-		{
-			ToggleEditMode();
-		}
-	}
+    private void Update()
+    {
+        // Phím E để toggle (tiện test trong Editor)
+        if (Input.GetKeyDown(KeyCode.E))
+            ToggleEditMode();
 
-	/// <summary>Bật/tắt chế độ sắp xếp</summary>
-	public void ToggleEditMode()
-	{
-		Debug.Log($"[EditMode] ToggleEditMode CALLED! Current={IsEditMode}");
-		var handlers = FindObjectsOfType<ObjectDragHandler>();
-		Debug.Log($"[EditMode] Found {handlers.Length} ObjectDragHandler in scene");
-		IsEditMode = !IsEditMode;
-		UpdateEditModeVisuals(IsEditMode);
-		UpdateObjectDragHandlers(IsEditMode);
+        if (!IsEditMode) return;
 
-		// Phát sự kiện
-		OnEditModeChanged?.Invoke(IsEditMode);
+        // ── Nhấc vật thể khi click ──
+        if (Input.GetMouseButtonDown(0))
+            TryPickObject();
 
-		Debug.Log($"[EditModeManager] Edit Mode: {(IsEditMode ? "BẬT" : "TẮT")}");
-	}
+        // ── Kéo theo chuột khi đang giữ ──
+        if (IsDragging && targetObject != null)
+            DragObject();
 
-	/// <summary>Cập nhật visual khi Edit Mode bật/tắt</summary>
-	private void UpdateEditModeVisuals(bool isActive)
-	{
-		// Cập nhật overlay
-		if (overlayImage != null)
-		{
-			Color targetColor = isActive ? overlayColorActive : overlayColorInactive;
-			overlayImage.color = targetColor;
-		}
+        // ── Thả khi nhả chuột ──
+        if (Input.GetMouseButtonUp(0) && IsDragging)
+            DropObject();
+    }
 
-		// Cập nhật label
-		if (editModeLabel != null)
-		{
-			editModeLabel.enabled = isActive;
-			if (isActive)
-				editModeLabel.text = "Chế độ sắp xếp";
-		}
-	}
+    // ── Public API ────────────────────────────────────────────────────────────
 
-	/// <summary>Enable/Disable ObjectDragHandler trên tất cả object di chuyển được</summary>
-	private void UpdateObjectDragHandlers(bool isActive)
-	{
-		ObjectDragHandler[] dragHandlers = FindObjectsOfType<ObjectDragHandler>();
+    /// <summary>Gắn vào Btn_EditMode.OnClick() trong Inspector</summary>
+    public void ToggleEditMode()
+    {
+        IsEditMode = !IsEditMode;
+        ApplyVisuals(IsEditMode);
+        OnEditModeChanged?.Invoke(IsEditMode);
+        Debug.Log($"[EditMode] {(IsEditMode ? "BẬT" : "TẮT")}");
+    }
 
-		foreach (var handler in dragHandlers)
-		{
-			// Enable/Disable script component
-			handler.enabled = isActive;
-		}
+    public void EnableEditMode()  { if (!IsEditMode) ToggleEditMode(); }
+    public void DisableEditMode() { if (IsEditMode)  ToggleEditMode(); }
 
-		Debug.Log($"[EditModeManager] {dragHandlers.Length} ObjectDragHandler(s) → {(isActive ? "enabled" : "disabled")}");
-	}
+    // ── Drag Logic ────────────────────────────────────────────────────────────
 
-	/// <summary>Bật Edit Mode (nếu chưa bật)</summary>
-	public void EnableEditMode()
-	{
-		if (!IsEditMode)
-			ToggleEditMode();
-	}
+    /// <summary>
+    /// Bắn Physics2D.OverlapPoint vào vị trí chuột trên Layer Obstacle.
+    /// Nếu trúng → nhặt vật thể đó lên.
+    /// </summary>
+    private void TryPickObject()
+    {
+        Vector3 worldPos = GetMouseWorldPos();
+        Collider2D hit = Physics2D.OverlapPoint(worldPos, obstacleLayerMask);
+        if (hit == null) return;
 
-	/// <summary>Tắt Edit Mode (nếu đang bật)</summary>
-	public void DisableEditMode()
-	{
-		if (IsEditMode)
-			ToggleEditMode();
-	}
+        targetObject     = hit.gameObject;
+        targetSprite     = targetObject.GetComponent<SpriteRenderer>();
+        originalPosition = targetObject.transform.position;
+        IsDragging       = true;
+
+        Debug.Log($"[EditMode] Nhặt: {targetObject.name}");
+    }
+
+    /// <summary>
+    /// Object bám theo chuột với snap grid 50x50.
+    /// Tô xanh nếu ô trống, đỏ nếu vướng.
+    /// </summary>
+    private void DragObject()
+    {
+        Vector3 snapped = SnapToGrid(GetMouseWorldPos());
+        targetObject.transform.position = snapped;
+
+        isPlacementValid = IsValidPlacement(snapped);
+
+        if (targetSprite != null)
+            targetSprite.color = isPlacementValid
+                ? new Color(0f, 1f, 0f, 0.5f)  // xanh = trống
+                : new Color(1f, 0f, 0f, 0.5f); // đỏ  = vướng
+    }
+
+    /// <summary>
+    /// Thả chuột: xanh → chốt vị trí mới; đỏ → trả về vị trí cũ.
+    /// Reset màu về trắng sau khi thả.
+    /// </summary>
+    private void DropObject()
+    {
+        if (!isPlacementValid)
+        {
+            targetObject.transform.position = originalPosition;
+            Debug.Log($"[EditMode] Trả {targetObject.name} về {originalPosition}");
+        }
+        else
+        {
+            Debug.Log($"[EditMode] Đặt {targetObject.name} tại {targetObject.transform.position}");
+        }
+
+        // Reset màu về trắng (1,1,1,1)
+        if (targetSprite != null)
+            targetSprite.color = Color.white;
+
+        targetObject = null;
+        targetSprite = null;
+        IsDragging   = false;
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /// <summary>Kiểm tra vị trí có trống không (OverlapBoxAll, loại trừ chính targetObject)</summary>
+    private bool IsValidPlacement(Vector3 position)
+    {
+        Collider2D[] hits = Physics2D.OverlapBoxAll(position, collisionCheckSize, 0f, obstacleLayerMask);
+        foreach (var col in hits)
+        {
+            if (col.gameObject == targetObject) continue; // bỏ qua chính nó
+            return false;
+        }
+        return true;
+    }
+
+    private Vector3 SnapToGrid(Vector3 pos)
+    {
+        return new Vector3(
+            Mathf.Round(pos.x / gridSize) * gridSize,
+            Mathf.Round(pos.y / gridSize) * gridSize,
+            pos.z);
+    }
+
+    private Vector3 GetMouseWorldPos()
+    {
+        Vector3 pos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+        pos.z = 0f;
+        return pos;
+    }
+
+    /// <summary>Bật/tắt overlay và label theo trạng thái Edit Mode</summary>
+    private void ApplyVisuals(bool active)
+    {
+        if (overlayImage != null)
+            overlayImage.color = active ? overlayActiveColor : Color.clear;
+
+        if (editModeLabel != null)
+            editModeLabel.SetActive(active);
+    }
 }
-
-/*
-╔════════════════════════════════════════════════════════════════════════════════╗
-║                        HƯỚNG DẪN GẮN SCRIPT                                    ║
-╠════════════════════════════════════════════════════════════════════════════════╣
-║                                                                                ║
-║ 1. GĂN SCRIPT LÊN OBJECT NÀO?                                                  ║
-║    → Systems object (hoặc GameObject trống tên "EditModeManager")             ║
-║                                                                                ║
-║ 2. COMPONENT CẦN THIẾT:                                                        ║
-║    ✓ Không cần component nào đặc biệt                                          ║
-║                                                                                ║
-║ 3. INSPECTOR SETUP:                                                            ║
-║    ✓ Overlay Image: Gắn UI Image fullscreen (tint overlay)                     ║
-║      → Nên là CanvasGroup Image hoặc Image tại layer trên cùng                 ║
-║      → Color mặc định: (1, 1, 0, 0.1) — vàng nhạt                            ║
-║                                                                                ║
-║    ✓ Edit Mode Label: Gắn UI Text hiển thị "Chế độ sắp xếp"                   ║
-║      → Nên là Text component trong Canvas                                      ║
-║      → Font lớn, màu nổi bật (ví dụ: trắng hoặc vàng)                         ║
-║                                                                                ║
-║ 4. INPUT:                                                                      ║
-║    ✓ Nhấn E để toggle Edit Mode                                                ║
-║    ✓ Hoặc gọi EditModeManager.Instance.ToggleEditMode()                        ║
-║                                                                                ║
-║ 5. FLOW EDIT MODE:                                                              ║
-║    - Bật (E):                                                                  ║
-║      1. IsEditMode = true                                                      ║
-║      2. Overlay tint vàng (alpha 0.1)                                          ║
-║      3. Hiện text "Chế độ sắp xếp"                                             ║
-║      4. Enable tất cả ObjectDragHandler                                        ║
-║      5. Event OnEditModeChanged(true) phát                                     ║
-║      6. Click object → drag ngay (không cần giữ 0.5s)                          ║
-║      7. Camera pan bình thường (không drag object)                             ║
-║                                                                                ║
-║    - Tắt (E):                                                                  ║
-║      1. IsEditMode = false                                                     ║
-║      2. Bỏ overlay                                                              ║
-║      3. Ẩn text "Chế độ sắp xếp"                                               ║
-║      4. Disable tất cả ObjectDragHandler                                       ║
-║      5. Event OnEditModeChanged(false) phát                                    ║
-║      6. Object không thể kéo (ObjectDragHandler bị disable)                    ║
-║                                                                                ║
-║ 6. INTEGRATION:                                                                ║
-║    ✓ ObjectDragHandler: Thêm check Edit Mode ở Update()                        ║
-║    ✓ CameraController: Khi Edit Mode ON → logic pan thay đổi                   ║
-║                                                                                ║
-║ 7. USAGE CODE:                                                                 ║
-║    - Toggle: EditModeManager.Instance.ToggleEditMode();                        ║
-║    - Check: if (EditModeManager.IsEditMode) { ... }                            ║
-║    - Listen: EditModeManager.OnEditModeChanged += OnEditModeChanged;            ║
-║                                                                                ║
-╚════════════════════════════════════════════════════════════════════════════════╝
-*/

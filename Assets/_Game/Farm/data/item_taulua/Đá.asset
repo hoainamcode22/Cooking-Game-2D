@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a02298ad80f9fbf4986907353d7a0e3c, type: 3}
+  m_Name: "\u0110\xE1"
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
+  itemId: da
+  displayName: "\u0110\xE1"
+  icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+  cookingData: {fileID: 0}

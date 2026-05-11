@@ -15,7 +15,9 @@ public static class FarmInputLock
     public static bool IsDraggingSickle { get; set; }
 
     /// <summary>True when map panning should be blocked.</summary>
-    public static bool BlockMapPan => IsSeedPopupOpen || IsDraggingSeed || IsDraggingSickle;
+    public static bool BlockMapPan =>
+        IsSeedPopupOpen || IsDraggingSeed || IsDraggingSickle
+        || (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen());
 
     /// <summary>True when map zoom should be blocked (e.g. sickle/harvest mode active).</summary>
     public static bool BlockMapZoom => IsDraggingSickle;

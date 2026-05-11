@@ -13,6 +13,9 @@ public class TrainLoadPopupUI : MonoBehaviour
     private int                _selectedSlotIndex = -1;
     private TrainWagonSlotData _selectedSlot;
 
+    // true khi popup đang thực sự hiển thị (toggle trực tiếp gameObject)
+    public bool IsOpen => gameObject.activeSelf;
+
     void Awake()
     {
         if (Btn_themhang != null) Btn_themhang.onClick.AddListener(OnThemHangClicked);

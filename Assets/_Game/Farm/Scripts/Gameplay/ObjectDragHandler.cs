@@ -102,6 +102,10 @@ public class ObjectDragHandler : MonoBehaviour
 		if (!EditModeManager.IsEditMode)
 			return;
 
+		// ── Nhường input cho PlacementManager khi đang đặt vật thể mới ──
+		if (PlacementManager.IsPlacingNewObject)
+			return;
+
 		// Chọn nhánh input: Editor/Desktop dùng chuột, mobile dùng cảm ứng
 #if UNITY_EDITOR || UNITY_STANDALONE
 		HandleMouseInput();
@@ -113,9 +117,6 @@ public class ObjectDragHandler : MonoBehaviour
 	/// <summary>Xử lý input chuột (Editor / Desktop)</summary>
 	private void HandleMouseInput()
 	{
-		if (EditModeManager.IsEditMode)
-			Debug.Log($"[DragHandler] {name} Update | pressHeld={pressHeld} | isDragging={isDraggingNow}");
-
 		var mouse = Mouse.current;
 		if (mouse == null)
 			return;
@@ -264,10 +265,12 @@ public class ObjectDragHandler : MonoBehaviour
 		// Highlight ô
 		UpdatePlacementIndicator(snappedPos, isValidPlacement);
 
-		// Đổi màu object dựa trên hợp lệ
+		// Đổi màu object: xanh (trống) / đỏ (vướng)
 		if (objectSprite != null)
 		{
-			objectSprite.color = isValidPlacement ? originalSpriteColor : new Color(1f, 0.5f, 0.5f, 1f);
+			objectSprite.color = isValidPlacement
+				? new Color(0f, 1f, 0f, 0.5f)
+				: new Color(1f, 0f, 0f, 0.5f);
 		}
 	}
 

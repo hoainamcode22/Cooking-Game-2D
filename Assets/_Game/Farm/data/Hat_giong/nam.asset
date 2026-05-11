@@ -12,9 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
   m_Name: nam
   m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_nam
+  itemName: "N\u1EA5m"
+  itemIcon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
+  goldPrice: 100
+  diamondPrice: 0
+  cropCategory: 0
   cropId: nam
-  displayName: "N\u1EA5m"
-  icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
+  plantSeedFxIcon: {fileID: 4208644412692552619, guid: 7a15c25bc6b86f0438b86042fe3bfb6d, type: 3}
+  harvestIcon: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
   sproutSprite: {fileID: 4208644412692552619, guid: 7a15c25bc6b86f0438b86042fe3bfb6d, type: 3}
   growingSprite: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
   readySprite: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
@@ -27,9 +33,9 @@ MonoBehaviour:
   tier: 1
   unlockLevel: 1
   growSeconds: 600
-  seedBuyGold: 0
   sellGold: 3
   harvestAmount: 4
+  plantCost: 1
   expReward: 5
   sweet: 0
   spicy: 0

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86e861be00e538046af1b12d7d4bdec0, type: 3}
+  m_Name: OrderItem_Corn
+  m_EditorClassIdentifier: Assembly-CSharp::Village.OrderItemDefinition
+  itemId: ngo
+  displayName: "Ng\xF4"
+  icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
+  category: 0
+  unlockLevel: 1
+  weight: 18
+  minAmount: 2
+  maxAmount: 5
+  goldPerUnit: 6
+  expPerUnit: 1

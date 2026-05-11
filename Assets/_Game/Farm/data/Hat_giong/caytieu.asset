@@ -12,9 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
   m_Name: caytieu
   m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_pepper
+  itemName: "Ti\xEAu"
+  itemIcon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
+  goldPrice: 190
+  diamondPrice: 0
+  cropCategory: 0
   cropId: pepper
-  displayName: "Ti\xEAu"
-  icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
+  plantSeedFxIcon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
+  harvestIcon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
   sproutSprite: {fileID: -5633883299991180103, guid: 17420fae5f724b741a1f5d3a395098b5, type: 3}
   growingSprite: {fileID: 6908011483449193910, guid: 3a9183978f854b84c9dba5544d734c48, type: 3}
   readySprite: {fileID: 1916688021515279405, guid: 1fdcbbede3a905e4cae76f111afb884f, type: 3}
@@ -27,9 +33,9 @@ MonoBehaviour:
   tier: 1
   unlockLevel: 1
   growSeconds: 660
-  seedBuyGold: 0
   sellGold: 3
   harvestAmount: 4
+  plantCost: 1
   expReward: 5
   sweet: 0
   spicy: 2
