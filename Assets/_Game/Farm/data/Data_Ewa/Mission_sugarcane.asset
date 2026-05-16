@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27da4e0963ef8a14bba5b6535e1c8d80, type: 3}
+  m_Name: Mission_sugarcane
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionIcon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
+  missionName: "Thu th\u1EADp 5 M\xEDa"
+  targetAmount: 5
+  rewardIcon: {fileID: -5564238710932881115, guid: 63b103dfe32bee843a5c100fa9a0968d, type: 3}
+  rewardAmount: 10
+  rewardType: 1

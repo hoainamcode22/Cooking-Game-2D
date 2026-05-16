@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27da4e0963ef8a14bba5b6535e1c8d80, type: 3}
+  m_Name: Mission_nam
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionIcon: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
+  missionName: "Thu th\u1EADp 5 N\u1EA5m"
+  targetAmount: 5
+  rewardIcon: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
+  rewardAmount: 100
+  rewardType: 0

@@ -491,6 +491,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if (FarmInventoryManager.Instance != null)
             FarmInventoryManager.Instance.AddItem(harvestItemId, amount);
 
+        // Cập nhật tiến độ nhiệm vụ tân thủ theo loại nông sản vừa thu hoạch
+        MissionProgressTracker.Instance?.AddProgress(harvestItemId, amount);
+
         AutoFindHarvestSpawnPoint();
         AutoFindExpSpawnPoint();
 

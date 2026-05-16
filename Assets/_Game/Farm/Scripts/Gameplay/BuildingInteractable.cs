@@ -14,6 +14,9 @@ public class BuildingInteractable : MonoBehaviour
 
     private void OnMouseDown()
     {
+        // Không mở popup khi đang Edit Mode
+        if (EditModeManager.IsEditMode) return;
+
         // Không xử lý khi đang có popup mở
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;

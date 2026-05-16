@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: "V\xF2ng Hoa"
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 11
+  itemName: "V\xF2ng Hoa"
+  itemIcon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}
+  goldPrice: 0
+  diamondPrice: 150
+  prefabToBuild: {fileID: 3739621444991195919, guid: b26b24895dad960408b693ff5022046a, type: 3}

@@ -131,6 +131,9 @@ namespace Village
 
         private void HandleClick(string source)
         {
+            // Không mở popup khi đang Edit Mode
+            if (EditModeManager.IsEditMode) return;
+
             if (HouseOrderPopupUI.IsOpen) return;
 
             if (CurrentState != OrderState.Active)

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: Xe Hoa
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 13
+  itemName: Xe Hoa
+  itemIcon: {fileID: -4702718040798222194, guid: c80b24092c5590c4788d1598a42b0ef8, type: 3}
+  goldPrice: 0
+  diamondPrice: 200
+  prefabToBuild: {fileID: 222874540479932469, guid: 55e1786ddb1ae084e8bcaf0264dbce2b, type: 3}

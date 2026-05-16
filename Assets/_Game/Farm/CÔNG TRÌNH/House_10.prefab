@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2882615087611755439}
   - component: {fileID: 1440741006478611117}
   - component: {fileID: 4613935272346889411}
+  - component: {fileID: 3402638913517569532}
   m_Layer: 6
   m_Name: House_10
   m_TagString: Untagged
@@ -137,7 +138,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.011312753, y: 1.4879401}
+  m_Offset: {x: -0.070126295, y: 1.9731524}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0}
@@ -147,7 +148,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.81949705, y: 0.7937689}
+  m_Size: {x: 2.7015333, y: 3.3815703}
   m_EdgeRadius: 0
 --- !u!114 &4613935272346889411
 MonoBehaviour:
@@ -161,6 +162,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 021556c054d6a3b4ab48a6009d8fe6c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Village.HouseOrderController
+--- !u!114 &3402638913517569532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1582242620454337050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e2b7de78d39b8e47b1c9d6ddc2360f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EditableBuilding
 --- !u!1 &2372543909833395685
 GameObject:
   m_ObjectHideFlags: 0

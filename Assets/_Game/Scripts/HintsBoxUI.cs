@@ -1,6 +1,24 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+
+[System.Serializable]
+public struct HintSlotRefs
+{
+    public GameObject root;
+    public Image      icon;
+    public TMP_Text   label;
+}
+
+[System.Serializable]
+public struct SeasoningTipSlotRefs
+{
+    public GameObject root;
+    public Image      icon;
+    public TMP_Text   itemName;
+    public TMP_Text   statValue;
+    public TMP_Text   statName;
+}
 
 public class HintsBoxUI : MonoBehaviour
 {
@@ -11,52 +29,14 @@ public class HintsBoxUI : MonoBehaviour
     [SerializeField] private TMP_Text txtSeasoningTipsTitle;
     [SerializeField] private TMP_Text txtBonusComboLabel;
 
-    [Header("Required")]
-    [SerializeField] private GameObject hintRequiredItemBeef;
-    [SerializeField] private Image imgRequiredBeefIcon;
-    [SerializeField] private TMP_Text txtRequiredBeefName;
+    [Header("Required Slots (2)")]
+    [SerializeField] private HintSlotRefs[] requiredSlots = new HintSlotRefs[2];
 
-    [SerializeField] private GameObject hintRequiredItemNoodle;
-    [SerializeField] private Image imgRequiredNoodleIcon;
-    [SerializeField] private TMP_Text txtRequiredNoodleName;
+    [Header("Optional Slots (3)")]
+    [SerializeField] private HintSlotRefs[] optionalSlots = new HintSlotRefs[3];
 
-    [Header("Optional")]
-    [SerializeField] private GameObject hintOptionalItemMushroom;
-    [SerializeField] private Image imgOptionalMushroomIcon;
-    [SerializeField] private TMP_Text txtOptionalMushroomName;
-
-    [SerializeField] private GameObject hintOptionalItemEgg;
-    [SerializeField] private Image imgOptionalEggIcon;
-    [SerializeField] private TMP_Text txtOptionalEggName;
-
-    [SerializeField] private GameObject hintOptionalItemHerbs;
-    [SerializeField] private Image imgOptionalHerbsIcon;
-    [SerializeField] private TMP_Text txtOptionalHerbsName;
-
-    [Header("Seasoning Tips")]
-    [SerializeField] private GameObject hintSeasoningTipFishSauce;
-    [SerializeField] private Image imgTipFishSauceIcon;
-    [SerializeField] private TMP_Text txtTipFishSauceItemName;
-    [SerializeField] private TMP_Text txtTipFishSauceStatValue;
-    [SerializeField] private TMP_Text txtTipFishSauceStatName;
-
-    [SerializeField] private GameObject hintSeasoningTipChili;
-    [SerializeField] private Image imgTipChiliIcon;
-    [SerializeField] private TMP_Text txtTipChiliItemName;
-    [SerializeField] private TMP_Text txtTipChiliStatValue;
-    [SerializeField] private TMP_Text txtTipChiliStatName;
-
-    [SerializeField] private GameObject hintSeasoningTipLemon;
-    [SerializeField] private Image imgTipLemonIcon;
-    [SerializeField] private TMP_Text txtTipLemonItemName;
-    [SerializeField] private TMP_Text txtTipLemonStatValue;
-    [SerializeField] private TMP_Text txtTipLemonStatName;
-
-    [SerializeField] private GameObject hintSeasoningTipSalt;
-    [SerializeField] private Image imgTipSaltIcon;
-    [SerializeField] private TMP_Text txtTipSaltItemName;
-    [SerializeField] private TMP_Text txtTipSaltStatValue;
-    [SerializeField] private TMP_Text txtTipSaltStatName;
+    [Header("Seasoning Tip Slots (4)")]
+    [SerializeField] private SeasoningTipSlotRefs[] tipSlots = new SeasoningTipSlotRefs[4];
 
     [Header("Bonus Combo")]
     [SerializeField] private TMP_Text txtBonusItem1;
@@ -74,23 +54,20 @@ public class HintsBoxUI : MonoBehaviour
 
     public void BindDish(DishData dishData)
     {
-        if (dishData == null)
-        {
-            ClearUI();
-            return;
-        }
+        if (dishData == null) { ClearUI(); return; }
 
-        BindHintItem(dishData.required1, hintRequiredItemBeef, imgRequiredBeefIcon, txtRequiredBeefName);
-        BindHintItem(dishData.required2, hintRequiredItemNoodle, imgRequiredNoodleIcon, txtRequiredNoodleName);
+        // Bind required/optional slots theo index — không phụ thuộc tên nguyên liệu
+        var required = new[] { dishData.required1, dishData.required2 };
+        for (int i = 0; i < requiredSlots.Length; i++)
+            BindHintSlot(i < required.Length ? required[i] : null, requiredSlots[i]);
 
-        BindHintItem(dishData.optional1, hintOptionalItemMushroom, imgOptionalMushroomIcon, txtOptionalMushroomName);
-        BindHintItem(dishData.optional2, hintOptionalItemEgg, imgOptionalEggIcon, txtOptionalEggName);
-        BindHintItem(dishData.optional3, hintOptionalItemHerbs, imgOptionalHerbsIcon, txtOptionalHerbsName);
+        var optional = new[] { dishData.optional1, dishData.optional2, dishData.optional3 };
+        for (int i = 0; i < optionalSlots.Length; i++)
+            BindHintSlot(i < optional.Length ? optional[i] : null, optionalSlots[i]);
 
-        BindSeasoningTip(dishData.tip1, hintSeasoningTipFishSauce, imgTipFishSauceIcon, txtTipFishSauceItemName, txtTipFishSauceStatValue, txtTipFishSauceStatName);
-        BindSeasoningTip(dishData.tip2, hintSeasoningTipChili, imgTipChiliIcon, txtTipChiliItemName, txtTipChiliStatValue, txtTipChiliStatName);
-        BindSeasoningTip(dishData.tip3, hintSeasoningTipLemon, imgTipLemonIcon, txtTipLemonItemName, txtTipLemonStatValue, txtTipLemonStatName);
-        BindSeasoningTip(dishData.tip4, hintSeasoningTipSalt, imgTipSaltIcon, txtTipSaltItemName, txtTipSaltStatValue, txtTipSaltStatName);
+        var tips = new[] { dishData.tip1, dishData.tip2, dishData.tip3, dishData.tip4 };
+        for (int i = 0; i < tipSlots.Length; i++)
+            BindSeasoningTipSlot(i < tips.Length ? tips[i] : null, tipSlots[i]);
 
         ApplyBonusComboText(dishData.bonusComboText);
 
@@ -100,79 +77,49 @@ public class HintsBoxUI : MonoBehaviour
 
     public void ClearUI()
     {
-        BindHintItem(null, hintRequiredItemBeef, imgRequiredBeefIcon, txtRequiredBeefName);
-        BindHintItem(null, hintRequiredItemNoodle, imgRequiredNoodleIcon, txtRequiredNoodleName);
-
-        BindHintItem(null, hintOptionalItemMushroom, imgOptionalMushroomIcon, txtOptionalMushroomName);
-        BindHintItem(null, hintOptionalItemEgg, imgOptionalEggIcon, txtOptionalEggName);
-        BindHintItem(null, hintOptionalItemHerbs, imgOptionalHerbsIcon, txtOptionalHerbsName);
-
-        BindSeasoningTip(null, hintSeasoningTipFishSauce, imgTipFishSauceIcon, txtTipFishSauceItemName, txtTipFishSauceStatValue, txtTipFishSauceStatName);
-        BindSeasoningTip(null, hintSeasoningTipChili, imgTipChiliIcon, txtTipChiliItemName, txtTipChiliStatValue, txtTipChiliStatName);
-        BindSeasoningTip(null, hintSeasoningTipLemon, imgTipLemonIcon, txtTipLemonItemName, txtTipLemonStatValue, txtTipLemonStatName);
-        BindSeasoningTip(null, hintSeasoningTipSalt, imgTipSaltIcon, txtTipSaltItemName, txtTipSaltStatValue, txtTipSaltStatName);
-
+        for (int i = 0; i < requiredSlots.Length; i++)  BindHintSlot(null, requiredSlots[i]);
+        for (int i = 0; i < optionalSlots.Length; i++)  BindHintSlot(null, optionalSlots[i]);
+        for (int i = 0; i < tipSlots.Length; i++)       BindSeasoningTipSlot(null, tipSlots[i]);
         ApplyBonusComboText(string.Empty);
     }
 
-    private void BindHintItem(HintIngredientSlotData data, GameObject root, Image icon, TMP_Text nameText)
+    private void BindHintSlot(HintIngredientSlotData data, HintSlotRefs slot)
     {
         bool hasData = data != null && (!string.IsNullOrEmpty(data.displayName) || data.icon != null);
 
-        if (root != null)
-            root.SetActive(hasData);
-
+        if (slot.root != null) slot.root.SetActive(hasData);
         if (!hasData) return;
 
-        if (icon != null)
-            icon.sprite = data.icon;
-
-        if (nameText != null)
-            nameText.text = data.displayName;
+        if (slot.icon  != null) slot.icon.sprite = data.icon;
+        if (slot.label != null) slot.label.text  = data.displayName;
     }
 
-    private void BindSeasoningTip(
-        SeasoningTipData data,
-        GameObject root,
-        Image icon,
-        TMP_Text itemName,
-        TMP_Text statValue,
-        TMP_Text statName)
+    private void BindSeasoningTipSlot(SeasoningTipData data, SeasoningTipSlotRefs slot)
     {
         bool hasData = data != null &&
                        (!string.IsNullOrEmpty(data.displayName) ||
-                        !string.IsNullOrEmpty(data.effectText) ||
+                        !string.IsNullOrEmpty(data.effectText)  ||
                         data.icon != null);
 
-        if (root != null)
-            root.SetActive(hasData);
-
+        if (slot.root != null) slot.root.SetActive(hasData);
         if (!hasData) return;
 
-        if (icon != null)
-            icon.sprite = data.icon;
-
-        if (itemName != null)
-            itemName.text = data.displayName;
-
-        string effect = LocalizeEffectText(data.effectText);
-        if (statValue != null)
-            statValue.text = effect;
-
-        if (statName != null)
-            statName.text = string.Empty;
+        if (slot.icon     != null) slot.icon.sprite    = data.icon;
+        if (slot.itemName != null) slot.itemName.text  = data.displayName;
+        if (slot.statValue != null) slot.statValue.text = LocalizeEffectText(data.effectText);
+        if (slot.statName  != null) slot.statName.text  = string.Empty;
     }
 
+    // Chuyển tên stat từ tiếng Anh sang tiếng Việt (flavor vector labels từ data cũ)
     private string LocalizeEffectText(string effectText)
     {
-        if (string.IsNullOrEmpty(effectText))
-            return string.Empty;
+        if (string.IsNullOrEmpty(effectText)) return string.Empty;
 
         return effectText
-            .Replace("Umami", "Đậm đà")
-            .Replace("Spicy", "Cay")
-            .Replace("Sour", "Chua")
-            .Replace("Sweet", "Ngọt")
+            .Replace("Umami",   "Đậm đà")
+            .Replace("Spicy",   "Cay")
+            .Replace("Sour",    "Chua")
+            .Replace("Sweet",   "Ngọt")
             .Replace("Texture", "Kết cấu");
     }
 
@@ -181,9 +128,10 @@ public class HintsBoxUI : MonoBehaviour
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayUIClick();
 
-        Debug.Log("Giám khảo thích gì? clicked.");
+        Debug.Log("[HintsBoxUI] Giám khảo thích gì? clicked.");
     }
 
+    // bonusComboText trong DishData phải là tiếng Việt, ví dụ: "Thịt bò + Rau thơm + Nước mắm = +20"
     private void ApplyBonusComboText(string comboText)
     {
         if (txtBonusItem1 == null || txtBonusItem2 == null || txtBonusItem3 == null || txtBonusValue == null)
@@ -194,52 +142,24 @@ public class HintsBoxUI : MonoBehaviour
         txtBonusItem3.text = "";
         txtBonusValue.text = "";
 
-        if (string.IsNullOrEmpty(comboText))
-            return;
+        if (string.IsNullOrEmpty(comboText)) return;
 
-        // ví dụ: Beef + Herbs + Fish Sauce = +20 Score
         string[] sides = comboText.Split('=');
+
         if (sides.Length >= 1)
         {
-            string left = sides[0].Trim();
-            left = LocalizeCommonCookingWords(left);
-
-            string[] items = left.Split('+');
-
+            string[] items = sides[0].Trim().Split('+');
             if (items.Length > 0) txtBonusItem1.text = items[0].Trim();
             if (items.Length > 1) txtBonusItem2.text = items[1].Trim();
             if (items.Length > 2) txtBonusItem3.text = items[2].Trim();
         }
 
         if (sides.Length > 1)
-        {
-            string right = sides[1].Trim();
-            right = LocalizeCommonCookingWords(right);
-            right = right.Replace("Điểm", "").Trim();
-            txtBonusValue.text = right;
-        }
+            txtBonusValue.text = sides[1].Trim().Replace("Điểm", "").Trim();
 
-        if (txtBonusPlus1 != null) txtBonusPlus1.text = "+";
-        if (txtBonusPlus2 != null) txtBonusPlus2.text = "+";
+        if (txtBonusPlus1  != null) txtBonusPlus1.text  = "+";
+        if (txtBonusPlus2  != null) txtBonusPlus2.text  = "+";
         if (txtBonusEquals != null) txtBonusEquals.text = "=";
-
-        if (txtBonusScore != null) txtBonusScore.text = "Điểm";
-    }
-
-    private string LocalizeCommonCookingWords(string s)
-    {
-        if (string.IsNullOrEmpty(s))
-            return string.Empty;
-
-        return s
-            .Replace("Score", "Điểm")
-            .Replace("Beef", "Thịt bò")
-            .Replace("Noodle", "Bánh phở")
-            .Replace("Egg", "Trứng")
-            .Replace("Herbs", "Rau thơm")
-            .Replace("Fish Sauce", "Nước mắm")
-            .Replace("Chili", "Ớt")
-            .Replace("Lemon", "Chanh")
-            .Replace("Salt", "Muối");
+        if (txtBonusScore  != null) txtBonusScore.text  = "Điểm";
     }
 }

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: "C\u1ED9t \u0111\xE8n"
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 6
+  itemName: "C\u1ED9t \u0110\xE8n"
+  itemIcon: {fileID: 7719295337550974369, guid: 3805977c0aeac064e93a69298a2f30e2, type: 3}
+  goldPrice: 0
+  diamondPrice: 20
+  prefabToBuild: {fileID: 8981472891268681182, guid: fb55e5e1af6da434889282113971ac18, type: 3}

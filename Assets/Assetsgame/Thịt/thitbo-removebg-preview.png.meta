@@ -129,10 +129,10 @@ TextureImporter:
       name: thitbo-removebg-preview_0
       rect:
         serializedVersion: 2
-        x: 45
-        y: 99
-        width: 414
-        height: 320
+        x: 20
+        y: 134
+        width: 367
+        height: 323
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

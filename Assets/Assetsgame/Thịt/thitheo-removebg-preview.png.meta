@@ -129,10 +129,10 @@ TextureImporter:
       name: thitheo-removebg-preview_0
       rect:
         serializedVersion: 2
-        x: 46
-        y: 78
-        width: 409
-        height: 351
+        x: 24
+        y: 129
+        width: 376
+        height: 339
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

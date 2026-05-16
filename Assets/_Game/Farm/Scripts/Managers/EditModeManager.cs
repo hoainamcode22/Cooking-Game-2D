@@ -1,14 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
 /// Quản lý chế độ sắp xếp (Edit Mode).
-/// - Nút Btn_EditMode gọi ToggleEditMode() để bật/tắt.
-/// - Khi bật: overlay vàng, hiện label, cho phép nhấc/kéo công trình.
-/// - Khi tắt: xóa overlay, ẩn label, cấm kéo.
-///
-/// Logic kéo thả (nhấc, snap grid, xanh/đỏ, thả) nằm hoàn toàn ở đây.
-/// Gắn lên Systems / Managers GameObject trong scene.
+/// Khi bật: hiện gridOverlay + overlay vàng, cho phép click công trình.
+/// Logic di chuyển được xử lý bởi PlacementManager (reuse Placement_Ghost).
 /// </summary>
 public class EditModeManager : MonoBehaviour
 {
@@ -17,31 +14,26 @@ public class EditModeManager : MonoBehaviour
 
     // ── State ─────────────────────────────────────────────────────────────────
     /// <summary>True khi Edit Mode đang bật</summary>
-    public static bool IsEditMode { get; private set; }
+    public bool isEditMode;
 
-    /// <summary>True khi đang giữ và kéo một vật thể — CameraController dùng để block pan</summary>
-    public static bool IsDragging { get; private set; }
+    /// <summary>Backward compat với ObjectDragHandler / CameraController</summary>
+    public static bool IsEditMode => Instance != null && Instance.isEditMode;
 
     // ── Event ─────────────────────────────────────────────────────────────────
     public static event System.Action<bool> OnEditModeChanged;
 
     // ── Inspector ─────────────────────────────────────────────────────────────
+    [Header("Grid")]
+    /// <summary>GameObject lưới hiển thị khi Edit Mode bật</summary>
+    public GameObject gridOverlay;
+
     [Header("Visuals")]
     [SerializeField] private Image overlayImage;
     [SerializeField] private Color overlayActiveColor = new Color(1f, 1f, 0f, 0.1f);
-    [SerializeField] private GameObject editModeLabel; // GameObject chứa Text/TMP "Chế độ sắp xếp"
+    [SerializeField] private GameObject editModeLabel;
 
-    [Header("Drag & Drop")]
-    [SerializeField] private float gridSize = 50f;
-    [SerializeField] private Vector2 collisionCheckSize = new Vector2(48f, 48f); // nhỏ hơn 1 chút để tránh edge
-    [SerializeField] private LayerMask obstacleLayerMask; // Layer "Obstacle" của các công trình
-
-    // ── Drag state ────────────────────────────────────────────────────────────
-    private Camera mainCamera;
-    private GameObject targetObject;     // Công trình đang cầm
-    private SpriteRenderer targetSprite; // SpriteRenderer của công trình
-    private Vector3 originalPosition;    // Vị trí gốc để trả về nếu đặt sai
-    private bool isPlacementValid;       // Ô đứng có hợp lệ không (dùng khi thả)
+    // Danh sách bong bóng đang hiện lúc vào Edit Mode — để khôi phục khi thoát
+    private readonly List<GameObject> _hiddenBubbles = new();
 
     // ──────────────────────────────────────────────────────────────────────────
 
@@ -55,7 +47,6 @@ public class EditModeManager : MonoBehaviour
             return;
         }
 
-        mainCamera = Camera.main;
         ApplyVisuals(false);
     }
 
@@ -64,20 +55,6 @@ public class EditModeManager : MonoBehaviour
         // Phím E để toggle (tiện test trong Editor)
         if (Input.GetKeyDown(KeyCode.E))
             ToggleEditMode();
-
-        if (!IsEditMode) return;
-
-        // ── Nhấc vật thể khi click ──
-        if (Input.GetMouseButtonDown(0))
-            TryPickObject();
-
-        // ── Kéo theo chuột khi đang giữ ──
-        if (IsDragging && targetObject != null)
-            DragObject();
-
-        // ── Thả khi nhả chuột ──
-        if (Input.GetMouseButtonUp(0) && IsDragging)
-            DropObject();
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -85,107 +62,85 @@ public class EditModeManager : MonoBehaviour
     /// <summary>Gắn vào Btn_EditMode.OnClick() trong Inspector</summary>
     public void ToggleEditMode()
     {
-        IsEditMode = !IsEditMode;
-        ApplyVisuals(IsEditMode);
-        OnEditModeChanged?.Invoke(IsEditMode);
-        Debug.Log($"[EditMode] {(IsEditMode ? "BẬT" : "TẮT")}");
-    }
+        isEditMode = !isEditMode;
 
-    public void EnableEditMode()  { if (!IsEditMode) ToggleEditMode(); }
-    public void DisableEditMode() { if (IsEditMode)  ToggleEditMode(); }
+        if (gridOverlay != null)
+            gridOverlay.SetActive(isEditMode);
 
-    // ── Drag Logic ────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Bắn Physics2D.OverlapPoint vào vị trí chuột trên Layer Obstacle.
-    /// Nếu trúng → nhặt vật thể đó lên.
-    /// </summary>
-    private void TryPickObject()
-    {
-        Vector3 worldPos = GetMouseWorldPos();
-        Collider2D hit = Physics2D.OverlapPoint(worldPos, obstacleLayerMask);
-        if (hit == null) return;
-
-        targetObject     = hit.gameObject;
-        targetSprite     = targetObject.GetComponent<SpriteRenderer>();
-        originalPosition = targetObject.transform.position;
-        IsDragging       = true;
-
-        Debug.Log($"[EditMode] Nhặt: {targetObject.name}");
-    }
-
-    /// <summary>
-    /// Object bám theo chuột với snap grid 50x50.
-    /// Tô xanh nếu ô trống, đỏ nếu vướng.
-    /// </summary>
-    private void DragObject()
-    {
-        Vector3 snapped = SnapToGrid(GetMouseWorldPos());
-        targetObject.transform.position = snapped;
-
-        isPlacementValid = IsValidPlacement(snapped);
-
-        if (targetSprite != null)
-            targetSprite.color = isPlacementValid
-                ? new Color(0f, 1f, 0f, 0.5f)  // xanh = trống
-                : new Color(1f, 0f, 0f, 0.5f); // đỏ  = vướng
-    }
-
-    /// <summary>
-    /// Thả chuột: xanh → chốt vị trí mới; đỏ → trả về vị trí cũ.
-    /// Reset màu về trắng sau khi thả.
-    /// </summary>
-    private void DropObject()
-    {
-        if (!isPlacementValid)
+        if (isEditMode)
         {
-            targetObject.transform.position = originalPosition;
-            Debug.Log($"[EditMode] Trả {targetObject.name} về {originalPosition}");
+            HideBubbles();
         }
         else
         {
-            Debug.Log($"[EditMode] Đặt {targetObject.name} tại {targetObject.transform.position}");
+            // Tắt Edit Mode đột ngột trong lúc đang kéo nhà → cancel ngay, trả nhà về chỗ cũ
+            if (PlacementManager.Instance != null && PlacementManager.Instance.IsEditingBuilding)
+                PlacementManager.Instance.CancelPlacement();
+
+            RestoreBubbles();
         }
 
-        // Reset màu về trắng (1,1,1,1)
-        if (targetSprite != null)
-            targetSprite.color = Color.white;
+        // Bật/tắt thảm xanh của tất cả công trình trên map
+        ToggleAllFootprints(isEditMode);
 
-        targetObject = null;
-        targetSprite = null;
-        IsDragging   = false;
+        ApplyVisuals(isEditMode);
+        OnEditModeChanged?.Invoke(isEditMode);
+        Debug.Log($"[EditMode] {(isEditMode ? "BẬT" : "TẮT")}");
     }
+
+    // ── Bubble Management ─────────────────────────────────────────────────────
+
+    private void HideBubbles()
+    {
+        _hiddenBubbles.Clear();
+
+        // Đóng popup nếu đang mở
+        Village.HouseOrderPopupUI.Instance?.Close();
+
+        // Thu thập tất cả bong bóng đang active và ẩn chúng
+        var bubbles = FindObjectsByType<Village.HouseOrderBubble>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        foreach (var b in bubbles)
+        {
+            _hiddenBubbles.Add(b.gameObject);
+            b.gameObject.SetActive(false);
+        }
+
+        Debug.Log($"[EditMode] Đã ẩn {_hiddenBubbles.Count} bong bóng.");
+    }
+
+    private void RestoreBubbles()
+    {
+        foreach (var go in _hiddenBubbles)
+            if (go != null) go.SetActive(true);
+
+        _hiddenBubbles.Clear();
+        Debug.Log("[EditMode] Đã hiện lại bong bóng.");
+    }
+
+    // ── Footprint Management ──────────────────────────────────────────────────
+
+    private void ToggleAllFootprints(bool active)
+    {
+        // Bật/tắt thảm xanh của tất cả công trình đứng yên trên map
+        var buildings = FindObjectsByType<EditableBuilding>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        foreach (var b in buildings)
+            b.SetFootprintActive(active);
+
+        // Bật/tắt thảm xanh của Ghost đang hoạt động (nếu có)
+        PlacementManager.Instance?.SetGhostFootprintActive(active);
+
+        Debug.Log($"[EditMode] Footprint {(active ? "BẬT" : "TẮT")} cho {buildings.Length} công trình + Ghost.");
+    }
+
+    public void EnableEditMode()  { if (!isEditMode) ToggleEditMode(); }
+    public void DisableEditMode() { if (isEditMode)  ToggleEditMode(); }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    /// <summary>Kiểm tra vị trí có trống không (OverlapBoxAll, loại trừ chính targetObject)</summary>
-    private bool IsValidPlacement(Vector3 position)
-    {
-        Collider2D[] hits = Physics2D.OverlapBoxAll(position, collisionCheckSize, 0f, obstacleLayerMask);
-        foreach (var col in hits)
-        {
-            if (col.gameObject == targetObject) continue; // bỏ qua chính nó
-            return false;
-        }
-        return true;
-    }
-
-    private Vector3 SnapToGrid(Vector3 pos)
-    {
-        return new Vector3(
-            Mathf.Round(pos.x / gridSize) * gridSize,
-            Mathf.Round(pos.y / gridSize) * gridSize,
-            pos.z);
-    }
-
-    private Vector3 GetMouseWorldPos()
-    {
-        Vector3 pos = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-        pos.z = 0f;
-        return pos;
-    }
-
-    /// <summary>Bật/tắt overlay và label theo trạng thái Edit Mode</summary>
     private void ApplyVisuals(bool active)
     {
         if (overlayImage != null)

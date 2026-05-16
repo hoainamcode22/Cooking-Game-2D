@@ -129,10 +129,10 @@ TextureImporter:
       name: thitga-removebg-preview_0
       rect:
         serializedVersion: 2
-        x: 55
-        y: 96
-        width: 396
-        height: 328
+        x: 24
+        y: 152
+        width: 353
+        height: 315
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}

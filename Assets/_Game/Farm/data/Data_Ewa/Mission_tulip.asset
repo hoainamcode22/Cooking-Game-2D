@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27da4e0963ef8a14bba5b6535e1c8d80, type: 3}
+  m_Name: Mission_tulip
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionIcon: {fileID: -9055938408451778832, guid: ee879aad837187b4aa8c50051bbdae2a, type: 3}
+  missionName: "Thu th\u1EADp 3 Tulip"
+  targetAmount: 5
+  rewardIcon: {fileID: -5564238710932881115, guid: 63b103dfe32bee843a5c100fa9a0968d, type: 3}
+  rewardAmount: 15
+  rewardType: 1

@@ -17,6 +17,8 @@ public class PopupManager : MonoBehaviour
     [SerializeField] private TrainLoadPopupUI   trainLoadPopup;
     [SerializeField] private HouseOrderPopupUI houseOrderPopup;
     [SerializeField] private ShopManager       shopPopup;
+    // Popup nhiệm vụ tân thủ — đăng ký để BlockMapPan và blockingOverlay hoạt động
+    [SerializeField] private PopupEwarManager  ewarPopup;
 
     /// <summary>
     /// CanvasGroup full-screen trong suốt nằm dưới tất cả popup.
@@ -69,7 +71,8 @@ public class PopupManager : MonoBehaviour
             || (trainProcessPopup != null && trainProcessPopup.IsOpen)
             || (trainLoadPopup    != null && trainLoadPopup.IsOpen)
             || (houseOrderPopup   != null && HouseOrderPopupUI.IsOpen)
-            || (shopPopup         != null && shopPopup.IsOpen);
+            || (shopPopup         != null && shopPopup.IsOpen)
+            || (ewarPopup         != null && ewarPopup.IsOpen);
     }
     
 }

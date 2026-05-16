@@ -8,9 +8,8 @@ public class CookingChallengeManager : MonoBehaviour
     [SerializeField] private DishData currentDishData;
 
     [Header("UI")]
-    [SerializeField] private CenterCookingPanelUI centerCookingPanelUI;
-    [SerializeField] private ScoreResultBoxUI scoreResultBoxUI;
-    [SerializeField] private HintsBoxUI hintsBoxUI;
+    [SerializeField] private CookingUIManager uiManager;
+    [SerializeField] private HintsBoxUI       hintsBoxUI;
 
     [Header("Selection")]
     [SerializeField] private CookingSelectionManager cookingSelectionManager;
@@ -20,8 +19,8 @@ public class CookingChallengeManager : MonoBehaviour
 
     [Header("FX")]
     [SerializeField] private CookingFX cookingFX;
-    [SerializeField] private float cookSubmitDelay = 0.8f;
-    [SerializeField] private int successScoreThreshold = 80;
+    [SerializeField] private float     cookSubmitDelay       = 0.8f;
+    [SerializeField] private int       successScoreThreshold = 80;
 
     private bool isCooking = false;
 
@@ -35,148 +34,86 @@ public class CookingChallengeManager : MonoBehaviour
     private void Update()
     {
         if (!isCooking)
-        {
             RefreshPreviewScore();
-        }
     }
 
     public void RefreshCenterUI()
     {
-        if (centerCookingPanelUI == null)
-        {
-            Debug.LogWarning("CenterCookingPanelUI is missing.");
-            return;
-        }
+        if (uiManager == null) { Debug.LogWarning("[CookingChallengeManager] CookingUIManager is missing."); return; }
 
-        if (currentDishData == null)
-        {
-            centerCookingPanelUI.ClearCenter();
-            Debug.LogWarning("Current Dish Data is null.");
-            return;
-        }
+        if (currentDishData == null) { uiManager.ClearAll(); Debug.LogWarning("[CookingChallengeManager] DishData is null."); return; }
 
-        centerCookingPanelUI.BindDish(currentDishData);
+        uiManager.BindDish(currentDishData);
     }
 
     public void RefreshHintsUI()
     {
-        if (hintsBoxUI == null)
-        {
-            Debug.LogWarning("HintsBoxUI is missing.");
-            return;
-        }
+        if (hintsBoxUI == null) { Debug.LogWarning("[CookingChallengeManager] HintsBoxUI is missing."); return; }
 
-        if (currentDishData == null)
-        {
-            hintsBoxUI.ClearUI();
-            return;
-        }
+        if (currentDishData == null) { hintsBoxUI.ClearUI(); return; }
 
         hintsBoxUI.BindDish(currentDishData);
     }
 
     public void RefreshPreviewScore()
     {
-        if (centerCookingPanelUI == null) return;
-        if (currentDishData == null) return;
-        if (cookingSelectionManager == null) return;
+        if (uiManager == null || currentDishData == null || cookingSelectionManager == null) return;
 
-        List<SelectableIngredientCard> selectedIngredients = cookingSelectionManager.GetSelectedIngredientCards();
-        List<SelectableIngredientCard> selectedSeasonings = cookingSelectionManager.GetSelectedSeasoningCards();
-
-        CookingScoreResult previewResult = CookingScoreCalculator.Evaluate(
+        CookingScoreResult preview = CookingScoreCalculator.Evaluate(
             currentDishData,
-            selectedIngredients,
-            selectedSeasonings,
+            cookingSelectionManager.GetSelectedIngredientCards(),
+            cookingSelectionManager.GetSelectedSeasoningCards(),
             correctTechniqueForNow
         );
 
-        centerCookingPanelUI.SetCookSubmitScore(previewResult.finalScore);
+        uiManager.SetPreviewScore(preview.finalScore);
     }
 
     public void OnClickCookSubmit()
     {
-        if (isCooking)
-        {
-            Debug.Log("Already cooking. Please wait.");
-            return;
-        }
-
-        if (currentDishData == null)
-        {
-            Debug.LogWarning("Current dish data is missing.");
-            return;
-        }
-
-        if (cookingSelectionManager == null)
-        {
-            Debug.LogWarning("CookingSelectionManager is missing.");
-            return;
-        }
-
-        if (scoreResultBoxUI == null)
-        {
-            Debug.LogWarning("ScoreResultBoxUI is missing.");
-            return;
-        }
+        if (isCooking)                  { Debug.Log("[CookingChallengeManager] Already cooking."); return; }
+        if (currentDishData == null)    { Debug.LogWarning("[CookingChallengeManager] DishData missing."); return; }
+        if (cookingSelectionManager == null) { Debug.LogWarning("[CookingChallengeManager] SelectionManager missing."); return; }
+        if (uiManager == null)          { Debug.LogWarning("[CookingChallengeManager] CookingUIManager missing."); return; }
 
         StartCoroutine(CookSubmitRoutine());
     }
+
     public void OnClickClaimReward()
     {
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayCoinReward();
 
-        Debug.Log("Claim Reward clicked.");
+        Debug.Log("[CookingChallengeManager] Claim Reward clicked.");
     }
 
     private IEnumerator CookSubmitRoutine()
     {
         isCooking = true;
 
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.PlayCookStart();
-
-        if (cookingFX != null)
-            cookingFX.PlayCookFX();
+        if (AudioManager.Instance != null) AudioManager.Instance.PlayCookStart();
+        if (cookingFX != null)             cookingFX.PlayCookFX();
 
         yield return new WaitForSeconds(cookSubmitDelay);
 
-        List<SelectableIngredientCard> selectedIngredients = cookingSelectionManager.GetSelectedIngredientCards();
-        List<SelectableIngredientCard> selectedSeasonings = cookingSelectionManager.GetSelectedSeasoningCards();
-
         CookingScoreResult result = CookingScoreCalculator.Evaluate(
             currentDishData,
-            selectedIngredients,
-            selectedSeasonings,
+            cookingSelectionManager.GetSelectedIngredientCards(),
+            cookingSelectionManager.GetSelectedSeasoningCards(),
             correctTechniqueForNow
         );
 
-        scoreResultBoxUI.ShowResult(result);
+        uiManager.ShowResult(result);
+        uiManager.SetPreviewScore(result.finalScore);
 
-        if (centerCookingPanelUI != null)
-            centerCookingPanelUI.SetCookSubmitScore(result.finalScore);
+        if (cookingFX != null) cookingFX.PlayResultFX();
 
-        if (cookingFX != null)
-            cookingFX.PlayResultFX();
+        if (AudioManager.Instance != null && result.finalScore >= successScoreThreshold)
+            AudioManager.Instance.PlaySuccess();
 
-        if (AudioManager.Instance != null)
-        {
-            if (result.finalScore >= successScoreThreshold)
-                AudioManager.Instance.PlaySuccess();
-        }
-
-        Debug.Log("=== COOK SUBMIT RESULT ===");
-        Debug.Log("Ingredient Vector: " + result.ingredientVector);
-        Debug.Log("Seasoning Vector: " + result.seasoningVector);
-        Debug.Log("Total Vector: " + result.totalVector);
-        Debug.Log("Ingredient Score: " + result.ingredientScore);
-        Debug.Log("Seasoning Score: " + result.seasoningScore);
-        Debug.Log("Base Score: " + result.baseScore);
-        Debug.Log("Rare Bonus: " + result.rareBonus);
-        Debug.Log("Technique Bonus: " + result.techniqueBonus);
-        Debug.Log("Final Score: " + result.finalScore);
-        Debug.Log("Reward: Gold +" + result.goldReward + ", Gems +" + result.gemReward + ", Rank +" + result.rankPointReward);
+        Debug.Log($"[Cook] Final={result.finalScore} | Ing={result.ingredientScore} Sea={result.seasoningScore} " +
+                  $"Base={result.baseScore} Rare+{result.rareBonus} Tech+{result.techniqueBonus} | " +
+                  $"Gold+{result.goldReward} Gem+{result.gemReward} Rank+{result.rankPointReward}");
 
         isCooking = false;
     }

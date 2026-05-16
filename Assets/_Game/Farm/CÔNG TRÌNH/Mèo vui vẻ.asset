@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: "M\xE8o vui v\u1EBB"
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 9
+  itemName: "Heo Vui V\u1EBB"
+  itemIcon: {fileID: 1452235257689027093, guid: c7ca3bdd7c6d7af44bf97ba85ddf852d, type: 3}
+  goldPrice: 0
+  diamondPrice: 400
+  prefabToBuild: {fileID: 7194062800773225345, guid: e2b6fd86798c4b543b977657f1f75f01, type: 3}

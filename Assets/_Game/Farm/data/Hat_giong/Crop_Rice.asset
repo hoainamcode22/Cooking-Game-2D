@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   itemID: seed_rice
   itemName: "L\xFAa"
-  itemIcon: {fileID: 7469862485501457946, guid: c146cf6e2a9488841864077192a7280e, type: 3}
+  itemIcon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
   goldPrice: 20
   diamondPrice: 0
   cropCategory: 0

@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: "Ch\xE2n Hoa"
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 4
+  itemName: "Ch\xE2n Hoa"
+  itemIcon: {fileID: -2262683696071897468, guid: da4ee863eee25804588d1cc926b8cc73, type: 3}
+  goldPrice: 0
+  diamondPrice: 20
+  prefabToBuild: {fileID: 1029312101785057983, guid: fa6aebb1137a02841b725518aae8951c, type: 3}

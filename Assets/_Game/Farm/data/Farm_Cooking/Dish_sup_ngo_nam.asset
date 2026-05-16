@@ -1,0 +1,58 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Name: Dish_sup_ngo_nam
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: sup_ngo_nam
+  dishName: "S\xFAp ng\xF4 n\u1EA5m"
+  dishSubTitle: "Ng\xF4 \xB7 N\u1EA5m \xB7 Tr\u1EE9ng g\xE0"
+  dishSprite: {fileID: 0}
+  difficulty: 0
+  targetFlavor:
+    sweet: 0
+    spicy: 0
+    sour: 0
+    umami: 0
+    texture: 0
+  required1:
+    displayName: 
+    icon: {fileID: 0}
+  required2:
+    displayName: 
+    icon: {fileID: 0}
+  optional1:
+    displayName: 
+    icon: {fileID: 0}
+  optional2:
+    displayName: 
+    icon: {fileID: 0}
+  optional3:
+    displayName: 
+    icon: {fileID: 0}
+  tip1:
+    displayName: 
+    icon: {fileID: 0}
+    effectText: 
+  tip2:
+    displayName: 
+    icon: {fileID: 0}
+    effectText: 
+  tip3:
+    displayName: 
+    icon: {fileID: 0}
+    effectText: 
+  tip4:
+    displayName: 
+    icon: {fileID: 0}
+    effectText: 
+  bonusComboText: 
+  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
