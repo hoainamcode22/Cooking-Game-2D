@@ -12,6 +12,7 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Image mainIconImage;
     [SerializeField] private Image topIconImage;
     [SerializeField] private GameObject statusGO;
+    private InventoryItemData inventoryItem;
 
     public bool isSeasoning;
     public bool IsSelected { get; private set; }
@@ -100,4 +101,19 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
     public string GetItemName() => cachedName;
     public Sprite GetMainSprite() => cachedMain;
     public Sprite GetTopSprite() => cachedTop;
+    public void SetInventoryItem(InventoryItemData item)
+{
+    inventoryItem = item;
+    ingredientData = item != null ? item.cookingData : null;
+}
+
+    public InventoryItemData GetInventoryItem()
+    {
+        return inventoryItem;
+    }
+
+    public string GetItemId()
+    {
+        return inventoryItem != null ? inventoryItem.itemId : "";
+    }
 }

@@ -7,6 +7,10 @@ using UnityEngine.UI;
 
 public class WarehousePopupUI : MonoBehaviour
 {
+    // Danh sách itemId của các món ăn đã nấu, sẽ không hiển thị trong kho để tránh nhầm lẫn
+    [Header("Cooked Dish Block")]
+    [SerializeField] private List<string> cookedDishIds = new List<string>();
+
     [System.Serializable]
     private class WarehouseViewItem
     {
@@ -285,6 +289,13 @@ public class WarehousePopupUI : MonoBehaviour
 
     private void OnWarehouseSlotClicked(string itemId)
     {
+        //Code Nguyên Thêm: Nếu đây là món ăn đã nấu thì không cho chọn để gửi sang bếp nữa, tránh nhầm lẫn
+        if (IsCookedDish(itemId))
+        {
+            Debug.Log("[WarehousePopupUI] Đây là món ăn đã nấu, không thể gửi lại sang Cooking: " + itemId);
+            return;
+        }
+        //End code Nguyên thêm
         if (string.IsNullOrEmpty(itemId))
             return;
 
@@ -370,8 +381,11 @@ public class WarehousePopupUI : MonoBehaviour
             return;
         }
 
+        Debug.Log("[WarehousePopupUI] Số item đang chọn: " + pendingSelection.Count);//Nguyên thêm
+
         foreach (var kv in pendingSelection)
         {
+            Debug.Log($"[WarehousePopupUI] Chuẩn bị gửi: {kv.Key} x{kv.Value}");//Nguyên thêm
             if (kv.Value <= 0)
                 continue;
 
@@ -462,5 +476,25 @@ public class WarehousePopupUI : MonoBehaviour
         string result = sb.ToString().Normalize(NormalizationForm.FormC);
         result = result.Replace('đ', 'd').Replace('Đ', 'D');
         return result.ToLowerInvariant().Trim();
+    }
+
+    //Code Nguyên thêm
+    private bool IsCookedDish(string itemId)// Kiểm tra nếu itemId thuộc danh sách món ăn đã nấu thì trả về true, sẽ không hiển thị trong kho
+    {
+        if (string.IsNullOrEmpty(itemId))
+            return false;
+
+        string key = itemId.Trim().ToLower();
+
+        for (int i = 0; i < cookedDishIds.Count; i++)
+        {
+            if (string.IsNullOrEmpty(cookedDishIds[i]))
+                continue;
+
+            if (cookedDishIds[i].Trim().ToLower() == key)
+                return true;
+        }
+
+        return false;
     }
 }

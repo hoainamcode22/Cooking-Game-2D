@@ -167,4 +167,40 @@ public class KitchenTransferManager : MonoBehaviour
             transferredItems[entry.itemId] = entry.amount;
         }
     }
+    //File này của Nguyên thêm vào
+    public void SetAfterCooking(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId))
+            return;
+
+        if (!transferredItems.ContainsKey(itemId))
+        {
+            Debug.LogWarning("[KitchenTransferManager] Không tìm thấy itemId để trừ: " + itemId);
+            return;
+        }
+
+        transferredItems[itemId] -= 1;
+
+        Debug.Log("[KitchenTransferManager] Sau nấu trừ: " + itemId + " còn " + transferredItems[itemId]);
+
+        if (transferredItems[itemId] <= 0)
+        {
+            transferredItems.Remove(itemId);
+            Debug.Log("[KitchenTransferManager] Đã hết và xóa khỏi danh sách: " + itemId);
+        }
+
+        SaveTransferData();
+        OnTransferredItemsChanged?.Invoke();
+    }
+
+    public void SetAfterCooking(List<string> selectedItemIds)
+    {
+        if (selectedItemIds == null || selectedItemIds.Count == 0)
+            return;
+
+        for (int i = 0; i < selectedItemIds.Count; i++)
+        {
+            SetAfterCooking(selectedItemIds[i]);
+        }
+    }
 }
