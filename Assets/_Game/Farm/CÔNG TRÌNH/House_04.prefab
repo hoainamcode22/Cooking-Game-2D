@@ -330,7 +330,7 @@ GameObject:
   - component: {fileID: 4090267291107567799}
   - component: {fileID: 1459590826382274308}
   - component: {fileID: 4029421956788187057}
-  - component: {fileID: 6024491940813502930}
+  - component: {fileID: 3179162342051511493}
   m_Layer: 6
   m_Name: House_04
   m_TagString: Untagged
@@ -479,7 +479,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 021556c054d6a3b4ab48a6009d8fe6c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Village.HouseOrderController
---- !u!114 &6024491940813502930
+--- !u!114 &3179162342051511493
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -491,3 +491,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e2b7de78d39b8e47b1c9d6ddc2360f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EditableBuilding
+  footprintVisual: {fileID: 8293749280720246623, guid: 944a45eded0569f42af3694cee049563, type: 3}

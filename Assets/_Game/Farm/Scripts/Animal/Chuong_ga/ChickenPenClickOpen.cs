@@ -69,6 +69,9 @@ public class ChickenPenClickOpen : MonoBehaviour
         if (SceneManager.GetSceneByName("SampleScene").isLoaded)
             return;
 
+        // Không mở khi Edit Mode đang bật
+        if (EditModeManager.IsEditMode) return;
+
         // Không mở khi đang có popup khác mở
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Gắn lên GameObject gataulua (nhà ga, world-space, KHÔNG phải UI).
@@ -22,14 +23,19 @@ public class TrainStationBuilding : MonoBehaviour
 
     void Update()
     {
-        if (!Input.GetMouseButtonDown(0)) return;
+        bool clicked = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                    || (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame);
+        if (!clicked) return;
         if (Camera.main == null) return;
 
-        Vector3 mouseScreen = Input.mousePosition;
-        mouseScreen.z       = Camera.main.nearClipPlane;
-        Vector2 worldPos    = Camera.main.ScreenToWorldPoint(mouseScreen);
+        Vector2 screenPos = InputBridge.PointerPosition;
+        Vector2 worldPos  = Camera.main.ScreenToWorldPoint(
+            new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
 
         if (_col == null || !_col.OverlapPoint(worldPos)) return;
+
+        // Không mở khi Edit Mode đang bật
+        if (EditModeManager.IsEditMode) return;
 
         // Không mở khi đang có popup khác mở
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())

@@ -129,9 +129,9 @@ TextureImporter:
       name: plotdat-removebg-preview_0
       rect:
         serializedVersion: 2
-        x: 15
+        x: 16
         y: 0
-        width: 709
+        width: 707
         height: 345
       alignment: 7
       pivot: {x: 0.5, y: 0}
@@ -159,7 +159,9 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
       plotdat-removebg-preview_0: -5679404723638615725
   mipmapLimitGroupName: 

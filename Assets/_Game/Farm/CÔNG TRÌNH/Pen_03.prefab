@@ -198,6 +198,7 @@ GameObject:
   - component: {fileID: 7061365699429138985}
   - component: {fileID: 1765749724426036052}
   - component: {fileID: 5141721763928852795}
+  - component: {fileID: -8750096432532591285}
   m_Layer: 6
   m_Name: Pen_03
   m_TagString: Untagged
@@ -301,7 +302,6 @@ MonoBehaviour:
   shadowAlphaActive: 0.6
   gridSize: 50
   collisionCheckSize: {x: 50, y: 50}
-  collisionCheckPadding: 0.1
   obstacleLayerMask:
     serializedVersion: 2
     m_Bits: 64
@@ -313,3 +313,16 @@ MonoBehaviour:
   invalidPlacementColor: {r: 1, g: 0, b: 0, a: 1}
   bounceReturnDuration: 0.3
   bounceHeight: 0.2
+--- !u!114 &-8750096432532591285
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9142124755168808929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e2b7de78d39b8e47b1c9d6ddc2360f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EditableBuilding
+  footprintVisual: {fileID: 8293749280720246623, guid: 944a45eded0569f42af3694cee049563, type: 3}

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
+  m_Name: 3_BuyDirt
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
+  npcText: "Ch\u1ECDn mua \xD4 \u0110\u1EA5t \u1EDF \u0111\xE2y \u2014 l\u1EA7n \u0111\u1EA7u
+    ho\xE0n to\xE0n mi\u1EC5n ph\xED! Nh\u1EA5n Mua r\u1ED3i \u0111\u1EB7t xu\u1ED1ng
+    map nh\xE9."
+  npcPortrait: {fileID: 0}
+  typingSpeed: 0.04
+  targetID: btn_buy_dirt
+  useCircleHole: 0
+  holePaddingPx: 16
+  waitAction: 0
+  showHandPointer: 1
+  handOffset: {x: 40, y: -30}

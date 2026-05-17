@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
@@ -52,8 +53,8 @@ public class EditModeManager : MonoBehaviour
 
     private void Update()
     {
-        // Phím E để toggle (tiện test trong Editor)
-        if (Input.GetKeyDown(KeyCode.E))
+        // Phím E để toggle (tiện test trong Editor) — dùng New Input System
+        if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
             ToggleEditMode();
     }
 
@@ -144,7 +145,11 @@ public class EditModeManager : MonoBehaviour
     private void ApplyVisuals(bool active)
     {
         if (overlayImage != null)
+        {
             overlayImage.color = active ? overlayActiveColor : Color.clear;
+            // Overlay là visual thuần — KHÔNG được chặn Raycast xuống world/building bên dưới
+            overlayImage.raycastTarget = false;
+        }
 
         if (editModeLabel != null)
             editModeLabel.SetActive(active);

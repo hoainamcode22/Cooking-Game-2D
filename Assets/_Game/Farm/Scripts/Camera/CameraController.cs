@@ -85,21 +85,13 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-#if UNITY_EDITOR
-        // Editor only: scroll chuột zoom trực tiếp, không qua lock hay condition nào.
-        float scroll = Input.GetAxis("Mouse ScrollWheel");
-        if (scroll != 0f)
-        {
-            // zoom only, do NOT pan — nhưng vẫn block nếu harvest mode đang active
-            if (!FarmInputLock.BlockMapZoom)
-                targetSize = Mathf.Clamp(targetSize - scroll * zoomSpeed * 100f, minSize, maxSize);
-            return; // prevent pan logic from running on this frame
-        }
+        // Runtime detection: nếu có touch thật (mobile/simulator) → dùng touch path.
+        // Nếu không → dùng mouse path (Editor desktop / standalone).
+        if (Touchscreen.current != null && InputTouch.activeTouches.Count > 0)
+            HandleTouchInput();
+        else
+            HandleMouseInput();
 
-        HandleMouseInput();
-#else
-        HandleTouchInput();
-#endif
         ApplySmoothMovement();
     }
 
@@ -477,15 +469,5 @@ public class CameraController : MonoBehaviour
         return pos;
     }
 
-    /// <summary>Kiểm tra con trỏ chuột có đang chạm vào UI không.</summary>
-    private bool IsPointerOverUI()
-    {
-        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
-    }
-
-    /// <summary>Kiểm tra ngón tay (theo finger index) có đang chạm vào UI không.</summary>
-    private bool IsPointerOverUI(int fingerIndex)
-    {
-        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject(fingerIndex);
-    }
+    // IsPointerOverUI() đã chuyển sang InputBridge.IsPointerOverUI() — dùng trực tiếp ở nơi cần.
 }

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class SeedPopupController : MonoBehaviour
@@ -32,13 +33,19 @@ public class SeedPopupController : MonoBehaviour
         // Không xử lý click-outside trong lúc đang kéo hạt giống
         if (FarmInputLock.IsDraggingSeed) return;
 
-        if (!Input.GetMouseButtonDown(0)) return;
+        bool clicked = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                    || (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame);
+        if (!clicked) return;
 
         if (popupRect == null) return;
 
+        Vector2 pointerPos = Mouse.current != null
+            ? Mouse.current.position.ReadValue()
+            : Touchscreen.current.primaryTouch.position.ReadValue();
+
         // Nếu click NGOÀI vùng popup → đóng bảng
         bool isInsidePopup = RectTransformUtility.RectangleContainsScreenPoint(
-            popupRect, Input.mousePosition, null);
+            popupRect, pointerPos, null);
 
         if (!isInsidePopup)
         {

@@ -277,6 +277,7 @@ public class PlantDragController : MonoBehaviour
     private Vector2 GetMouseWorld()
     {
         if (mainCam == null) mainCam = Camera.main;
-        return mainCam != null ? (Vector2)mainCam.ScreenToWorldPoint(Input.mousePosition) : Vector2.zero;
+        if (mainCam == null) return Vector2.zero;
+        return InputBridge.PointerWorldPosition(mainCam);
     }
 }

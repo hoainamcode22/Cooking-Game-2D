@@ -308,6 +308,7 @@ GameObject:
   - component: {fileID: 3393005452258091241}
   - component: {fileID: 1659998328482306924}
   - component: {fileID: 6082040597299168319}
+  - component: {fileID: -684578008072670873}
   m_Layer: 7
   m_Name: Chauhoa_3
   m_TagString: Untagged
@@ -415,6 +416,19 @@ MonoBehaviour:
   progressLeftToRight: 1
   harvestSpawnPoint: {fileID: 2941901942961779829}
   expSpawnPoint: {fileID: 7898443810356334102}
+--- !u!114 &-684578008072670873
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3358825802531286636}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e2b7de78d39b8e47b1c9d6ddc2360f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EditableBuilding
+  footprintVisual: {fileID: 8293749280720246623, guid: 944a45eded0569f42af3694cee049563, type: 3}
 --- !u!1 &3587784934808096533
 GameObject:
   m_ObjectHideFlags: 0
