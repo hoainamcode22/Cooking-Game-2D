@@ -66,6 +66,7 @@ public class PlacementManager : MonoBehaviour
     {
         public string itemId;
         public float  x, y;
+        public int    plotId; // 0 = save cũ chưa có, >0 = ID đã gán
     }
 
     [Serializable]
@@ -419,11 +420,23 @@ public class PlacementManager : MonoBehaviour
         if (house != null) house.Initialize();
 
         // Khởi tạo sạch nếu là ô đất (tránh load dữ liệu cũ trùng plotId)
+        int assignedPlotId = 0;
         var plot = spawnedObj.GetComponentInChildren<PlotController>(true);
-        if (plot != null) plot.InitializeAsNew();
+        if (plot != null)
+        {
+            plot.InitializeAsNew();
+            assignedPlotId = GetNextPlotId();
+            plot.SetPlotId(assignedPlotId);
+        }
 
-        // Lưu vào PlayerPrefs
-        placedBuildings.Add(new BuildingEntry { itemId = currentItem.itemID, x = pos.x, y = pos.y });
+        // Lưu vào PlayerPrefs kèm plotId
+        placedBuildings.Add(new BuildingEntry
+        {
+            itemId = currentItem.itemID,
+            x      = pos.x,
+            y      = pos.y,
+            plotId = assignedPlotId
+        });
         SaveBuildings();
 
         Cleanup(refund: false);
@@ -467,9 +480,29 @@ public class PlacementManager : MonoBehaviour
             var house = obj.GetComponentInChildren<Village.HouseOrderController>(true);
             if (house != null) house.Initialize();
 
+            // Restore plotId khi load — plot đã có SaveKey riêng nên chỉ cần gán lại ID
+            var plot = obj.GetComponentInChildren<PlotController>(true);
+            if (plot != null)
+            {
+                if (entry.plotId > 0)
+                {
+                    plot.SetPlotId(entry.plotId);
+                }
+                else
+                {
+                    // Save cũ chưa có plotId → cấp ID mới và cập nhật entry để save lại
+                    int newId = GetNextPlotId();
+                    plot.SetPlotId(newId);
+                    entry.plotId = newId;
+                }
+            }
+
             placedBuildings.Add(entry);
-            Debug.Log($"[PlacementManager] Loaded '{entry.itemId}' tại {pos}");
+            Debug.Log($"[PlacementManager] Loaded '{entry.itemId}' tại {pos} | plotId={entry.plotId}");
         }
+
+        // Nếu có entry nào được cấp plotId mới (save cũ không có), ghi lại ngay
+        SaveBuildings();
     }
 
     // Tìm tất cả object trong scene có tên trùng prefabName (không có "(Clone)")
@@ -565,6 +598,21 @@ public class PlacementManager : MonoBehaviour
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Tìm plotId lớn nhất đang tồn tại trong scene rồi trả về maxId + 1.
+    /// Đảm bảo mỗi ô đất được đặt mới có ID duy nhất, không trùng với ô scene hoặc ô đã load.
+    /// </summary>
+    private int GetNextPlotId()
+    {
+        int maxId = 0;
+        foreach (var p in FindObjectsOfType<PlotController>(true))
+        {
+            if (p.PlotId > maxId)
+                maxId = p.PlotId;
+        }
+        return maxId + 1;
+    }
 
     /// <summary>
     /// Lấy vị trí chuột trong world-space rồi snap về tâm ô lưới gần nhất.

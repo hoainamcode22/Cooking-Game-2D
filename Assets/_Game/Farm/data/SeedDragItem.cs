@@ -1,12 +1,15 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
 
 [RequireComponent(typeof(CanvasGroup))]
-public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class SeedDragItem : MonoBehaviour,
+    IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
+    // ── Drag mode ─────────────────────────────────────────────────────────────
+    private enum DragMode { None, Scroll, Plant }
+
     [Header("Seed Data")]
     [SerializeField] private CropData cropData;
 
@@ -14,12 +17,17 @@ public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
     [SerializeField] private Image    iconImage;
     [SerializeField] private TMP_Text txtName;
     [SerializeField] private TMP_Text txtSoLuong;
-    [SerializeField] private Canvas   rootCanvas;
 
     private RectTransform rectTransform;
     private CanvasGroup   canvasGroup;
-    private Vector2       startAnchoredPosition;
-    private bool          canDrag;
+    private ScrollRect    parentScrollRect;
+
+    private Vector2  pointerDownPos;
+    private DragMode dragMode             = DragMode.None;
+    private bool     scrollBeginForwarded = false;
+
+    // Threshold pixel để phân biệt scroll ngang vs kéo trồng
+    private const float kDragThreshold = 12f;
 
     public string   CropId   => cropData != null ? cropData.cropId   : string.Empty;
     public CropData CropData => cropData;
@@ -28,14 +36,11 @@ public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     private void Awake()
     {
-        rectTransform = GetComponent<RectTransform>();
-        canvasGroup   = GetComponent<CanvasGroup>();
+        rectTransform    = GetComponent<RectTransform>();
+        canvasGroup      = GetComponent<CanvasGroup>();
+        parentScrollRect = GetComponentInParent<ScrollRect>();
 
-        if (rootCanvas == null)
-            rootCanvas = GetComponentInParent<Canvas>();
-
-        // BUG FIX: prefab gán iconImage sai vào child "Image" (alpha=0, invisible).
-        // Child hiển thị thật là "Icon_item" — override về đây để SetData ghi đúng chỗ.
+        // Override iconImage về child "Icon_item" — tránh prefab gán sai Image ẩn
         Transform iconChild = transform.Find("Icon_item");
         if (iconChild != null)
         {
@@ -52,7 +57,6 @@ public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     private void OnEnable()
     {
-        // Lắng nghe kho thay đổi để refresh số lượng hiển thị real-time
         if (WarehouseManager.Instance != null)
             WarehouseManager.Instance.OnWarehouseChanged += RefreshStockDisplay;
 
@@ -81,7 +85,6 @@ public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         if (txtName != null)
             txtName.text = data.displayName;
 
-        // Refresh đọc số lượng thực từ Warehouse (không còn dùng harvestAmount)
         RefreshStockDisplay();
 
         Debug.Log($"[SeedDragItem] SetData OK: {data.cropId} | seedItemId={data.seedItemId}");
@@ -89,10 +92,6 @@ public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
 
     // ── Stock Display ─────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Đọc số hạt giống thực tế từ WarehouseManager và cập nhật hiển thị.
-    /// Làm mờ item nếu hết hàng.
-    /// </summary>
     public void RefreshStockDisplay()
     {
         if (cropData == null) return;
@@ -102,64 +101,131 @@ public class SeedDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEnd
         if (txtSoLuong != null)
         {
             txtSoLuong.text  = "x" + stock;
-            // Đổi màu đỏ khi hết hàng để người chơi dễ nhận biết
             txtSoLuong.color = stock > 0 ? Color.white : Color.red;
         }
 
-        // Làm mờ toàn bộ item khi hết hàng — alpha 0.4 thay vì ẩn hẳn
-        if (canvasGroup != null)
+        // Không thay alpha trong lúc đang kéo Plant (alpha đang = 0 để ẩn item)
+        if (dragMode != DragMode.Plant && canvasGroup != null)
             canvasGroup.alpha = stock > 0 ? 1f : 0.4f;
     }
 
     // ── Drag Handlers ─────────────────────────────────────────────────────────
 
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        pointerDownPos        = eventData.position;
+        dragMode              = DragMode.None;
+        scrollBeginForwarded  = false;
+        Debug.Log($"[SeedDragItem] PointerDown {name} crop={cropData?.cropId} pos={eventData.position}");
+    }
+
     public void OnBeginDrag(PointerEventData eventData)
     {
-        // Không cho kéo nếu chưa gán data
-        if (cropData == null)
-        {
-            canDrag = false;
-            Debug.LogWarning($"[SeedDragItem] {name}: chưa gán CropData");
-            return;
-        }
-
-        // Không cho kéo nếu hết hạt giống trong kho
-        if (GetCurrentStock() <= 0)
-        {
-            canDrag = false;
-            Debug.Log($"[SeedDragItem] Không đủ hạt giống '{cropData.displayName}' trong kho để trồng.");
-            return;
-        }
-
-        canDrag = true;
-        startAnchoredPosition = rectTransform.anchoredPosition;
-
-        // Ẩn item gốc trong lúc kéo — popup vẫn active để OnDrag/OnEndDrag tiếp tục nhận
-        canvasGroup.alpha          = 0f;
-        canvasGroup.blocksRaycasts = false;
-
-        PlantDragController.Instance?.StartPlantDrag(cropData);
+        // Chưa xác định hướng kéo — chờ OnDrag tính delta
+        dragMode             = DragMode.None;
+        scrollBeginForwarded = false;
+        Debug.Log($"[SeedDragItem] BeginDrag ENTER {name}");
     }
 
-    // Giữ OnDrag để Unity EventSystem tiếp tục tracking drag pointer.
     public void OnDrag(PointerEventData eventData)
     {
-        if (!canDrag || rootCanvas == null) return;
-        rectTransform.anchoredPosition += eventData.delta / rootCanvas.scaleFactor;
+        Vector2 delta = eventData.position - pointerDownPos;
+        Debug.Log($"[SeedDragItem] Drag {name} delta={delta} mode={dragMode}");
+
+        if (dragMode == DragMode.None)
+        {
+            float ax = Mathf.Abs(delta.x);
+            float ay = Mathf.Abs(delta.y);
+
+            if (ax >= kDragThreshold && ax > ay)
+            {
+                // Kéo NGANG → scroll danh sách
+                dragMode = DragMode.Scroll;
+                Debug.Log($"[SeedDragItem] Mode=Scroll");
+
+                if (parentScrollRect != null && !scrollBeginForwarded)
+                {
+                    scrollBeginForwarded = true;
+                    parentScrollRect.OnBeginDrag(eventData);
+                }
+            }
+            else if (ay >= kDragThreshold && ay > ax)
+            {
+                // Kéo DỌC/XUỐNG → bắt đầu trồng
+                dragMode = DragMode.Plant;
+                Debug.Log($"[SeedDragItem] Mode=Plant");
+                BeginPlantMode();
+            }
+        }
+
+        if (dragMode == DragMode.Scroll && parentScrollRect != null)
+        {
+            parentScrollRect.OnDrag(eventData);
+        }
+        // DragMode.Plant: PlantDragController.Update() tự sweep theo PointerWorldPosition
     }
 
-    // Khi thả — restore item, thông báo PlantDragController kết thúc.
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (!canDrag) return;
+        Debug.Log($"[SeedDragItem] EndDrag {name} mode={dragMode}");
 
-        canvasGroup.blocksRaycasts = true;
-        rectTransform.anchoredPosition = startAnchoredPosition;
+        switch (dragMode)
+        {
+            case DragMode.Scroll:
+                parentScrollRect?.OnEndDrag(eventData);
+                break;
 
-        PlantDragController.Instance?.EndPlantDrag();
+            case DragMode.Plant:
+                // Mở khóa map pan khi thả seed
+                FarmInputLock.IsDraggingSeed = false;
 
-        // Refresh lại sau khi thả (số lượng đã bị trừ trong lúc drag)
-        RefreshStockDisplay();
+                // Restore alpha/raycast trước khi EndPlantDrag (tránh RefreshStockDisplay nhầm)
+                if (canvasGroup != null)
+                {
+                    canvasGroup.blocksRaycasts = true;
+                }
+                PlantDragController.Instance?.EndPlantDrag();
+                RefreshStockDisplay();
+                break;
+
+            case DragMode.None:
+                // Drag không đủ threshold (tap hoặc micro-drag) — không làm gì
+                break;
+        }
+
+        dragMode             = DragMode.None;
+        scrollBeginForwarded = false;
+    }
+
+    // ── Plant mode start ──────────────────────────────────────────────────────
+
+    private void BeginPlantMode()
+    {
+        if (cropData == null)
+        {
+            dragMode = DragMode.None;
+            Debug.LogWarning($"[SeedDragItem] BeginPlantMode: cropData null");
+            return;
+        }
+
+        if (GetCurrentStock() <= 0)
+        {
+            dragMode = DragMode.None;
+            Debug.Log($"[SeedDragItem] Không đủ hạt giống '{cropData.displayName}' để trồng.");
+            return;
+        }
+
+        // Khóa map pan khi bắt đầu kéo seed — Scroll mode KHÔNG set cờ này
+        FarmInputLock.IsDraggingSeed = true;
+
+        // Ẩn item gốc — popup vẫn active để OnDrag/OnEndDrag tiếp tục nhận event
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha          = 0f;
+            canvasGroup.blocksRaycasts = false;
+        }
+
+        PlantDragController.Instance?.StartPlantDrag(cropData);
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

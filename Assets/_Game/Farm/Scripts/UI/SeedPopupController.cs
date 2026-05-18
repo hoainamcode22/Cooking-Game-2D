@@ -1,6 +1,8 @@
+using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class SeedPopupController : MonoBehaviour
 {
@@ -17,43 +19,58 @@ public class SeedPopupController : MonoBehaviour
     [SerializeField] private float itemPreferredWidth  = 120f;
     [SerializeField] private float itemPreferredHeight = 150f;
 
-    [Header("Click Outside để đóng")]
-    // Kéo RectTransform của khung bảng hạt giống vào đây trong Inspector
-    [SerializeField] private RectTransform popupRect;
-
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
     private void OnEnable()
     {
+        FarmInputLock.IsSeedPopupOpen = true;
         SpawnAllItems();
+    }
+
+    private void OnDisable()
+    {
+        FarmInputLock.IsSeedPopupOpen = false;
     }
 
     private void Update()
     {
-        // Không xử lý click-outside trong lúc đang kéo hạt giống
+        // Re-assert mỗi frame trong khi popup đang mở, phòng code bên ngoài
+        // (VD: PlantDragController.CleanupPlantDragState) clear flag sai.
+        FarmInputLock.IsSeedPopupOpen = true;
+
         if (FarmInputLock.IsDraggingSeed) return;
+        if (!InputBridge.IsPointerDownThisFrame) return;
 
-        bool clicked = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-                    || (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame);
-        if (!clicked) return;
+        bool onPopup = IsPointerOnThisPopup();
 
-        if (popupRect == null) return;
+        Debug.Log($"[SeedPopup] ClickOutside check | onPopup={onPopup} | topUI={InputBridge.GetTopUINameUnderPointer()}");
 
-        Vector2 pointerPos = Mouse.current != null
-            ? Mouse.current.position.ReadValue()
-            : Touchscreen.current.primaryTouch.position.ReadValue();
+        if (onPopup) return;
 
-        // Nếu click NGOÀI vùng popup → đóng bảng
-        bool isInsidePopup = RectTransformUtility.RectangleContainsScreenPoint(
-            popupRect, pointerPos, null);
+        FarmUIManager.Instance?.HidePlantSelectPopup();
+    }
 
-        if (!isInsidePopup)
+    private bool IsPointerOnThisPopup()
+    {
+        if (EventSystem.current == null) return false;
+
+        PointerEventData eventData = new PointerEventData(EventSystem.current)
         {
-            // Gọi đúng hàm chuẩn của FarmUIManager thay vì SetActive(false) trực tiếp
-            // HidePlantSelectPopup() sẽ tắt cả 2 popup VÀ clear FarmInputLock.IsSeedPopupOpen
-            // → Map không còn bị khóa sau khi đóng
-            FarmUIManager.Instance?.HidePlantSelectPopup();
+            position = InputBridge.PointerPosition
+        };
+
+        List<RaycastResult> results = new List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        foreach (var r in results)
+        {
+            if (r.gameObject == null) continue;
+
+            if (r.gameObject.transform.IsChildOf(transform))
+                return true;
         }
+
+        return false;
     }
 
     // ── Spawn items ───────────────────────────────────────────────────────────

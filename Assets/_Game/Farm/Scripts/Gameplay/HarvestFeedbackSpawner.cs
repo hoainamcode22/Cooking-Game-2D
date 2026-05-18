@@ -33,11 +33,13 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
+            Debug.LogWarning("[VFX] HarvestFeedbackSpawner: duplicate Instance — destroying extra copy.");
             Destroy(gameObject);
             return;
         }
 
         Instance = this;
+        Debug.Log("[VFX] HarvestFeedbackSpawner Instance ready");
     }
 
     private void Start()

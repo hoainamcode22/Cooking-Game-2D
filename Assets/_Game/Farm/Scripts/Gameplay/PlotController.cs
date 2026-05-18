@@ -60,6 +60,12 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Transform harvestSpawnPoint;
     [SerializeField] private Transform expSpawnPoint;
 
+    [Header("Plot VFX")]
+    [SerializeField] private Transform cropVFXRoot;
+    [SerializeField] private SeedRainVFX seedRainPrefab;
+    [SerializeField] private SeedCostTextVFX seedCostTextPrefab;
+    [SerializeField] private HarvestAmountTextVFX harvestAmountTextPrefab;
+
     private PlotState state;
     private CropData plantedCrop;
     private string plantedCropId = "";
@@ -75,6 +81,14 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
     public int PlotId => plotId;
     public PlotCategory Category => plotCategory;
+
+    /// <summary>Gán plotId mới và đổi tên GameObject. Gọi từ PlacementManager sau Instantiate.</summary>
+    public void SetPlotId(int newId)
+    {
+        plotId = newId;
+        gameObject.name = $"Plot_{plotId:00}";
+        Debug.Log($"[PlotController] SetPlotId {gameObject.name} = {plotId}");
+    }
     public bool IsRarePlot => isRarePlot;
     public bool IsUnlocked => state != PlotState.Locked;
     public bool IsPlanted => state == PlotState.Growing || state == PlotState.Ready;
@@ -101,6 +115,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     private void Awake()
     {
         ForceRebindChildren();
+        EnsureCropVFXRoot();
 
         if (cropVisual != null)
             cropVisual.ClearAll();
@@ -167,6 +182,10 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if (Time.frameCount == lastHandledFrame)
             return;
         lastHandledFrame = Time.frameCount;
+
+        Debug.Log($"[PlotClick] {name} clicked | state={state}" +
+                  $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}" +
+                  $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}");
 
         if (FarmManager.Instance == null)
         {
@@ -266,6 +285,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         AutoFindHarvestSpawnPoint();
         AutoFindExpSpawnPoint();
+
+        Transform vfxRoot = transform.Find("CropVFXRoot");
+        if (vfxRoot != null) cropVFXRoot = vfxRoot;
     }
 
     private Transform AutoFindHarvestSpawnPoint()
@@ -327,6 +349,84 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         AutoFindExpSpawnPoint();
         return expSpawnPoint != null ? expSpawnPoint.position : GetHarvestSpawnPosition();
+    }
+
+    // ── Plot VFX ──────────────────────────────────────────────────────────────
+
+    private void EnsureCropVFXRoot()
+    {
+        if (cropVFXRoot != null) return;
+
+        Transform existing = transform.Find("CropVFXRoot");
+        if (existing != null)
+        {
+            cropVFXRoot = existing;
+            return;
+        }
+
+        GameObject go = new GameObject("CropVFXRoot");
+        go.transform.SetParent(transform);
+        go.transform.localPosition = new Vector3(0f, 0.35f, 0f);
+        cropVFXRoot = go.transform;
+        Debug.Log($"[VFX_DEBUG] Auto created CropVFXRoot for {name}");
+    }
+
+    private void PlaySeedPlantVFX(CropData crop, int seedCost)
+    {
+        EnsureCropVFXRoot();
+        Vector3 pos = cropVFXRoot.position;
+        Debug.Log($"[VFX_DEBUG] PlaySeedPlantVFX ENTER | plot={name} | crop={crop?.cropId} | icon={(crop?.icon != null ? crop.icon.name : "NULL")} | root={(cropVFXRoot != null ? cropVFXRoot.name : "NULL")} | rainPrefab={seedRainPrefab != null} | costPrefab={seedCostTextPrefab != null}");
+
+        if (seedRainPrefab != null)
+        {
+            var rain = Instantiate(seedRainPrefab, pos, Quaternion.identity, cropVFXRoot);
+            rain.Play(crop != null ? crop.icon : null, pos, 8);
+        }
+
+        if (seedCostTextPrefab != null)
+        {
+            Vector3 textPos = pos + new Vector3(0.15f, 0.35f, 0f);
+            var cost = Instantiate(seedCostTextPrefab, textPos, Quaternion.identity, cropVFXRoot);
+            cost.Play(seedCost, textPos, 5);
+        }
+    }
+
+    private void PlayHarvestAmountTextVFX(int amount)
+    {
+        EnsureCropVFXRoot();
+        Vector3 pos = cropVFXRoot.position + new Vector3(0f, 0.45f, 0f);
+        Debug.Log($"[PlotVFX] PlayHarvestAmountTextVFX plot={name} amount={amount}");
+
+        if (harvestAmountTextPrefab != null)
+        {
+            var text = Instantiate(harvestAmountTextPrefab, pos, Quaternion.identity, cropVFXRoot);
+            text.Play(amount, pos, 5);
+        }
+    }
+
+    [ContextMenu("TEST Play Seed VFX")]
+    private void TestPlaySeedVFX()
+    {
+        EnsureCropVFXRoot();
+        if (seedRainPrefab != null)
+        {
+            var rain = Instantiate(seedRainPrefab, cropVFXRoot.position, Quaternion.identity, cropVFXRoot);
+            rain.Play(plantedCrop != null ? plantedCrop.icon : null, cropVFXRoot.position, 8);
+        }
+        else
+        {
+            Debug.LogWarning($"[VFX_DEBUG] TEST: seedRainPrefab NULL on {name}");
+        }
+
+        if (seedCostTextPrefab != null)
+        {
+            var cost = Instantiate(seedCostTextPrefab, cropVFXRoot.position, Quaternion.identity, cropVFXRoot);
+            cost.Play(1, cropVFXRoot.position, 5);
+        }
+        else
+        {
+            Debug.LogWarning($"[VFX_DEBUG] TEST: seedCostTextPrefab NULL on {name}");
+        }
     }
 
     [ContextMenu("Clear This Plot Save")]
@@ -396,6 +496,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             return false;
         }
 
+        Debug.Log($"[CanPlantCrop] OK | plot={name} | plotCategory={plotCategory} | crop={crop.cropId} | cropCategory={crop.cropCategory} | seedItemId={crop.seedItemId} | warehouseStock={WarehouseManager.Instance?.GetAmount(crop.seedItemId)}");
         return true;
     }
 
@@ -424,6 +525,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         Save();
         RefreshVisual();
+        Debug.Log($"[VFX_DEBUG] Plant success hook reached | plot={name} | crop={plantedCrop?.cropId} | icon={(plantedCrop?.icon != null ? plantedCrop.icon.name : "NULL")}");
+        PlaySeedPlantVFX(crop, 1);
         return true;
     }
 
@@ -529,6 +632,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             fxSpawn,
             amount
         );
+
+        PlayHarvestAmountTextVFX(amount);
 
         int expReward = harvestedCrop != null ? Mathf.Max(0, harvestedCrop.expReward) : 5;
         if (expReward <= 0)

@@ -141,8 +141,8 @@ MonoBehaviour:
   dropDuration: 0.12
   groundStayDuration: 2
   flyDuration: 1
-  scatterRadius: 0.35
-  dropDownOffset: 0.18
+  scatterRadius: 0.45
+  dropDownOffset: 0.25
   startScale: {x: 80, y: 80, z: 80}
   normalScale: {x: 85, y: 85, z: 85}
   destroyOnFinish: 1

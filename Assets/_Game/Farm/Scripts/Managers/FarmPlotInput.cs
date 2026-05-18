@@ -46,6 +46,7 @@ public class FarmPlotInput : MonoBehaviour
         if (IsPointerOverUI())
         {
             Debug.Log("[PlotClick] ignored — IsPointerOverUI=true" +
+                      $" | topUI={InputBridge.GetTopUINameUnderPointer()}" +
                       $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}" +
                       $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}");
             return;

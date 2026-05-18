@@ -96,6 +96,30 @@ public static class InputBridge
     }
 
     // =========================================================================
+    // Debug helpers
+    // =========================================================================
+
+    /// <summary>
+    /// Trả về tên UI object nằm trên cùng dưới con trỏ.
+    /// Dùng để debug "UI nào đang che map / chặn click plot".
+    /// </summary>
+    public static string GetTopUINameUnderPointer()
+    {
+        if (EventSystem.current == null) return "No EventSystem";
+
+        var eventData = new PointerEventData(EventSystem.current)
+        {
+            position = PointerPosition
+        };
+
+        var results = new System.Collections.Generic.List<RaycastResult>();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        if (results.Count == 0) return "No UI";
+        return results[0].gameObject != null ? results[0].gameObject.name : "null";
+    }
+
+    // =========================================================================
     // World Space Conversion
     // =========================================================================
 

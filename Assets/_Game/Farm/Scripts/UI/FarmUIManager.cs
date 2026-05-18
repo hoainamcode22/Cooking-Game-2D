@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -36,9 +36,6 @@ public class FarmUIManager : MonoBehaviour
     [SerializeField] private Camera farmCamera;
 
     private bool isCookingMode;
-
-    // Nhớ loại popup vừa mở để reopen đúng loại khi drag thất bại
-    private PlotCategory lastSeedPopupCategory = PlotCategory.Normal;
 
     private void Awake()
     {
@@ -178,29 +175,18 @@ public class FarmUIManager : MonoBehaviour
         if (isCookingMode)
             return;
 
-        // Chọn popup đúng loại: plot hoa → popupSeedFlower, plot thường → popupSeed.
-        bool isFlower = plot != null && plot.Category == PlotCategory.Flower;
-        lastSeedPopupCategory = isFlower ? PlotCategory.Flower : PlotCategory.Normal;
-        GameObject targetPopup = isFlower ? popupSeedFlower : popupSeed;
-
-        if (targetPopup == null && isFlower)
-        {
-            Debug.LogWarning("[FarmUI] popupSeedFlower chưa gán inspector — fallback popupSeed.");
-            targetPopup = popupSeed;
-        }
-
-        Debug.Log($"[FarmUI] ShowPlantSelectForPlot | category={plot?.Category} | popup={targetPopup?.name ?? "NULL"}");
+        Debug.Log("[FarmUI] ShowPlantSelectForPlot CALLED");
 
         HideAllPopups();
 
-        if (targetPopup == null)
+        if (popupSeed == null)
         {
-            Debug.LogError("[FarmUI] Không tìm thấy popup phù hợp!");
+            Debug.LogError("[FarmUI] popupSeed is NULL");
             return;
         }
 
-        // Đảm bảo toàn bộ parent chain đều active.
-        Transform p = targetPopup.transform.parent;
+        // Đảm bảo toàn bộ parent chain của popupSeed đều active
+        Transform p = popupSeed.transform.parent;
         while (p != null)
         {
             if (!p.gameObject.activeSelf)
@@ -211,126 +197,22 @@ public class FarmUIManager : MonoBehaviour
             p = p.parent;
         }
 
-        targetPopup.SetActive(true);
+        // Reset popup về giữa màn hình để đảm bảo luôn hiển thị
+        RectTransform popupRect = popupSeed.GetComponent<RectTransform>();
+        if (popupRect != null)
+        {
+            popupRect.anchoredPosition = Vector2.zero;
+            Debug.Log($"[FarmUI] popup anchoredPosition reset to (0,0)");
+        }
+
+        popupSeed.SetActive(true);
+        Debug.Log($"[FarmUI] popupSeed.SetActive(true) | activeInHierarchy={popupSeed.activeInHierarchy}");
         FarmInputLock.IsSeedPopupOpen = true;
 
-        // Định vị popup gần ô đất được click; fallback về giữa màn hình nếu không có plot
         if (plot != null)
-        {
-            PositionPopupNearPlot(targetPopup, plot.transform.position);
             ShowHint($"Kéo hạt giống để trồng vào ô {plot.PlotId}");
-        }
         else
-        {
-            RectTransform popupRect = targetPopup.GetComponent<RectTransform>();
-            if (popupRect != null)
-                popupRect.anchoredPosition = Vector2.zero;
             ShowHint("Kéo hạt giống để trồng.");
-        }
-    }
-
-    /// <summary>
-    /// Position the popup near the clicked plot using a candidate-position system.
-    /// Tries below → right → left → above. Uses first candidate fully inside canvas.
-    /// Falls back to clamping if none fit perfectly.
-    /// </summary>
-    private void PositionPopupNearPlot(GameObject popup, Vector3 worldPos)
-    {
-        Camera cam = Camera.main;
-        Canvas canvas = canvasPopupRoot != null
-            ? canvasPopupRoot.GetComponent<Canvas>()
-            : popup.GetComponentInParent<Canvas>();
-
-        if (cam == null || canvas == null) return;
-
-        RectTransform popupRect  = popup.GetComponent<RectTransform>();
-        RectTransform canvasRect = canvas.GetComponent<RectTransform>();
-        if (popupRect == null || canvasRect == null) return;
-
-        // World → canvas-local position of the plot (no offset yet).
-        Vector2 screenPos = cam.WorldToScreenPoint(worldPos);
-        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                canvasRect, screenPos, canvas.worldCamera, out Vector2 plotLocal))
-            return;
-
-        Vector2 popupHalf  = popupRect.rect.size * 0.5f;
-        Vector2 canvasHalf = canvasRect.rect.size * 0.5f;
-        float   gap        = 20f; // pixels between plot edge and popup edge
-
-        // Candidate offsets in priority order: below, right, left, above.
-        Vector2[] candidates = new Vector2[]
-        {
-            new Vector2(0f,                       -(popupHalf.y + gap)),  // below
-            new Vector2( popupHalf.x + gap,        0f),                   // right
-            new Vector2(-(popupHalf.x + gap),      0f),                   // left
-            new Vector2(0f,                         popupHalf.y + gap),   // above
-        };
-
-        // Try each candidate; use the first one that fits fully inside the canvas.
-        Vector2 chosen = plotLocal + candidates[0]; // default = below
-        foreach (Vector2 offset in candidates)
-        {
-            Vector2 candidate = plotLocal + offset;
-            if (PopupFitsInCanvas(candidate, popupHalf, canvasHalf))
-            {
-                chosen = candidate;
-                break;
-            }
-        }
-
-        // Clamp the chosen position so popup never goes outside canvas.
-        chosen = ClampToCanvas(chosen, popupHalf, canvasHalf);
-
-        popupRect.anchoredPosition = chosen;
-    }
-
-    /// <summary>Returns true if a popup centered at localPos fits fully inside the canvas.</summary>
-    private bool PopupFitsInCanvas(Vector2 localPos, Vector2 popupHalf, Vector2 canvasHalf)
-    {
-        return localPos.x - popupHalf.x >= -canvasHalf.x
-            && localPos.x + popupHalf.x <=  canvasHalf.x
-            && localPos.y - popupHalf.y >= -canvasHalf.y
-            && localPos.y + popupHalf.y <=  canvasHalf.y;
-    }
-
-    /// <summary>Clamps popup anchoredPosition so all four edges stay inside the canvas.</summary>
-    private Vector2 ClampToCanvas(Vector2 localPos, Vector2 popupHalf, Vector2 canvasHalf)
-    {
-        localPos.x = Mathf.Clamp(localPos.x, -canvasHalf.x + popupHalf.x, canvasHalf.x - popupHalf.x);
-        localPos.y = Mathf.Clamp(localPos.y, -canvasHalf.y + popupHalf.y, canvasHalf.y - popupHalf.y);
-        return localPos;
-    }
-
-    /// <summary>
-    /// Called by PlantDragController.CleanupPlantDragState().
-    /// If either popup is still active but alpha=0 (faded during drag), force deactivate it.
-    /// This prevents an invisible CanvasGroup from blocking raycasts or confusing IsPointerOverUI.
-    /// </summary>
-    public void ForceRestorePopupInteraction()
-    {
-        ForceDeactivateIfFaded(popupSeed,       "popupSeed");
-        ForceDeactivateIfFaded(popupSeedFlower, "popupSeedFlower");
-
-        FarmInputLock.IsSeedPopupOpen = false;
-        FarmInputLock.IsDraggingSeed  = false;
-
-        Debug.Log($"[FarmUI] ForceRestorePopupInteraction done" +
-                  $" | popupSeed active={popupSeed != null && popupSeed.activeSelf}" +
-                  $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}" +
-                  $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}");
-    }
-
-    private void ForceDeactivateIfFaded(GameObject popup, string label)
-    {
-        if (popup == null || !popup.activeSelf) return;
-        if (!popup.TryGetComponent(out CanvasGroup cg) || cg.alpha > 0f) return;
-
-        // Restore CG to clean state before deactivating so next SetActive(true) starts fresh
-        cg.alpha          = 1f;
-        cg.blocksRaycasts = true;
-        cg.interactable   = true;
-        popup.SetActive(false);
-        Debug.Log($"[FarmUI] '{label}' was active+alpha=0 → deactivated and CanvasGroup restored");
     }
 
     /// <summary>Close seed popup (cả 2 loại) và clear input locks.</summary>
@@ -344,59 +226,6 @@ public class FarmUIManager : MonoBehaviour
 
         FarmInputLock.IsSeedPopupOpen = false;
         FarmInputLock.IsDraggingSeed  = false;
-    }
-
-    /// <summary>
-    /// Ẩn popup khi bắt đầu drag bằng CanvasGroup fade — KHÔNG SetActive(false)
-    /// để SeedDragItem (con của popup) vẫn nhận OnDrag/OnEndDrag.
-    /// </summary>
-    public void HideSeedPopupForDrag()
-    {
-        FadePopup(popupSeed, false);
-        FadePopup(popupSeedFlower, false);
-        FarmInputLock.IsSeedPopupOpen = false;
-    }
-
-    /// <summary>
-    /// Mở lại đúng loại popup đã mở trước khi drag.
-    /// Gọi khi drag kết thúc mà không plant được plot nào.
-    /// </summary>
-    public void ReopenSeedPopup()
-    {
-        bool isFlower = lastSeedPopupCategory == PlotCategory.Flower;
-        GameObject targetPopup = isFlower ? popupSeedFlower : popupSeed;
-
-        if (targetPopup == null && isFlower)
-        {
-            Debug.LogWarning("[FarmUI] ReopenSeedPopup: popupSeedFlower null — fallback popupSeed.");
-            targetPopup = popupSeed;
-        }
-
-        if (targetPopup == null)
-            return;
-
-        FadePopup(targetPopup, true);
-        FarmInputLock.IsSeedPopupOpen = true;
-        Debug.Log($"[FarmUI] ReopenSeedPopup | category={lastSeedPopupCategory}");
-    }
-
-    /// <summary>
-    /// Fade popup bằng CanvasGroup thay vì SetActive, giữ GameObject active
-    /// để drag events trên children không bị Unity hủy.
-    /// </summary>
-    private void FadePopup(GameObject popup, bool show)
-    {
-        if (popup == null) return;
-
-        if (show && !popup.activeSelf)
-            popup.SetActive(true);
-
-        if (!popup.TryGetComponent(out CanvasGroup cg))
-            cg = popup.AddComponent<CanvasGroup>();
-
-        cg.alpha          = show ? 1f : 0f;
-        cg.blocksRaycasts = show;
-        cg.interactable   = show;
     }
 
     /// <summary>Hiện floating icon theo chuột khi bắt đầu kéo hạt giống.</summary>
@@ -508,4 +337,3 @@ public class FarmUIManager : MonoBehaviour
         RefreshTopBar();
     }
 }
-

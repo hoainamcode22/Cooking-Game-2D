@@ -86,6 +86,11 @@ public class WarehouseManager : MonoBehaviour
         return found != null ? found.amount : 0;
     }
 
+    public bool HasItem(string itemId, int amount = 1)
+    {
+        return GetAmount(itemId) >= amount;
+    }
+
     /// <summary>
     /// Trừ vật phẩm khỏi kho. Trả về false nếu không đủ.
     /// </summary>

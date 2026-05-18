@@ -55,7 +55,9 @@ public class PlantDragController : MonoBehaviour
         prevMouseWorld = GetMouseWorld();
 
         FarmInputLock.IsDraggingSeed = true;
-        FarmUIManager.Instance?.HideSeedPopupForDrag();
+        // Không SetActive(false) popup ở đây — SeedDragItem vẫn đang active bên trong popup.
+        // SetActive(false) sẽ kill OnDrag/OnEndDrag ngay lập tức.
+        // Popup sẽ được đóng bởi EndPlantDrag sau khi drag kết thúc.
         FarmUIManager.Instance?.ShowFloatingDragIcon(crop.icon);
 
         Debug.Log($"[PlantDrag] BEGIN | crop={crop.cropId} | IsDraggingSeed={FarmInputLock.IsDraggingSeed}");
@@ -81,7 +83,8 @@ public class PlantDragController : MonoBehaviour
         }
         else
         {
-            FarmUIManager.Instance?.ReopenSeedPopup();
+            // Drag cancelled without planting — popup already closed, nothing to reopen.
+            Debug.Log("[PlantDrag] No plots planted this drag.");
         }
     }
 
@@ -99,8 +102,6 @@ public class PlantDragController : MonoBehaviour
         FarmInputLock.IsSeedPopupOpen = false;
 
         FarmUIManager.Instance?.HideFloatingDragIcon();
-        // Deactivate any popup that was faded-but-still-active during drag
-        FarmUIManager.Instance?.ForceRestorePopupInteraction();
 
         Debug.Log($"[PlantDrag] CLEANUP DONE" +
                   $" | isPlantDragging={isPlantDragging}" +
@@ -147,7 +148,8 @@ public class PlantDragController : MonoBehaviour
     {
         if (col == null || currentDragCrop == null) return;
 
-        if (!col.TryGetComponent(out PlotController plot)) return;
+        PlotController plot = col.GetComponentInParent<PlotController>();
+        if (plot == null) return;
         if (plantedThisDrag.Contains(plot)) return;
 
         // Kiểm tra kho còn đủ hạt giống không trước khi trồng
@@ -278,6 +280,6 @@ public class PlantDragController : MonoBehaviour
     {
         if (mainCam == null) mainCam = Camera.main;
         if (mainCam == null) return Vector2.zero;
-        return InputBridge.PointerWorldPosition(mainCam);
+        return mainCam.ScreenToWorldPoint(Input.mousePosition);
     }
 }

@@ -1,57 +1,65 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Icon nổi theo con trỏ khi kéo hạt giống.
-/// Dùng InputBridge.PointerPosition — hoạt động đúng trên cả Mouse và Touch.
-/// </summary>
 public class FloatingDragIcon : MonoBehaviour
 {
     [SerializeField] private Image iconImage;
 
-    private RectTransform _rt;
-    private RectTransform _canvasRect;
-    private Canvas        _canvas;
-    private bool          _isFollowing;
+    private RectTransform rt;
+    private RectTransform canvasRect;
+    private Canvas        canvas;
+    private bool          isFollowing;
 
     private void Awake()
     {
-        _rt     = GetComponent<RectTransform>();
-        _canvas = GetComponentInParent<Canvas>();
+        rt     = GetComponent<RectTransform>();
+        canvas = GetComponentInParent<Canvas>();
 
-        if (_canvas != null)
-            _canvasRect = _canvas.GetComponent<RectTransform>();
+        if (canvas != null)
+            canvasRect = canvas.GetComponent<RectTransform>();
+
+        if (iconImage != null)
+            iconImage.raycastTarget = false;
 
         gameObject.SetActive(false);
     }
 
     public void Show(Sprite icon)
     {
-        if (iconImage != null) iconImage.sprite = icon;
+        if (iconImage != null)
+        {
+            iconImage.sprite        = icon;
+            iconImage.raycastTarget = false;
+        }
+
         gameObject.SetActive(true);
-        _isFollowing = true;
+        isFollowing = true;
+
+        Debug.Log($"[FloatingDragIcon] Show icon={(icon != null ? icon.name : "NULL")}");
     }
 
     public void Hide()
     {
-        _isFollowing = false;
+        isFollowing = false;
         gameObject.SetActive(false);
+
+        Debug.Log("[FloatingDragIcon] Hide");
     }
 
     private void Update()
     {
-        if (!_isFollowing || _canvasRect == null) return;
+        if (!isFollowing || rt == null || canvasRect == null) return;
 
-        Camera uiCam = (_canvas != null && _canvas.renderMode != RenderMode.ScreenSpaceOverlay)
-            ? _canvas.worldCamera
-            : null;
+        Camera uiCam = null;
+        if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            uiCam = canvas.worldCamera;
 
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            _canvasRect,
-            InputBridge.PointerPosition,   // Mouse và Touch đều đúng
+            canvasRect,
+            InputBridge.PointerPosition,
             uiCam,
             out Vector2 localPos);
 
-        _rt.anchoredPosition = localPos;
+        rt.anchoredPosition = localPos;
     }
 }
