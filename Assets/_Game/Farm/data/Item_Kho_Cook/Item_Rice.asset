@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: rice
   displayName: "G\u1EA1o"
-  icon: {fileID: -6555384466431497376, guid: a8558baac0cb3864f9c6ea7f19b5fdaa, type: 3}
+  icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
   cookingData: {fileID: 11400000, guid: a709c3d40f4f1b64b96d6ce35aa30e8a, type: 2}

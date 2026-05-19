@@ -1,6 +1,9 @@
+using System;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using Village;
 
 public class FarmUIManager : MonoBehaviour
 {
@@ -24,10 +27,14 @@ public class FarmUIManager : MonoBehaviour
     [SerializeField] private GameObject sickleToolRoot;
     [SerializeField] private SickleController sickleController;
 
+    [Header("Sickle Bottom Tray")]
+    [SerializeField] private GameObject sickleBottomTray;
+
     [Header("Scene Names")]
     [SerializeField] private string cookingSceneName = "SampleScene";
 
     [Header("Cooking Mode - Hide/Disable")]
+    [SerializeField] private GameObject topBarHUD;
     [SerializeField] private GameObject canvasHudRoot;
     [SerializeField] private GameObject canvasPopupRoot;
     [SerializeField] private GameObject[] popupObjectsToForceClose;
@@ -36,6 +43,7 @@ public class FarmUIManager : MonoBehaviour
     [SerializeField] private Camera farmCamera;
 
     private bool isCookingMode;
+    private CanvasGroup topBarCanvasGroup;
 
     private void Awake()
     {
@@ -60,7 +68,8 @@ public class FarmUIManager : MonoBehaviour
         if (FarmEconomyManager.Instance != null)
             FarmEconomyManager.Instance.OnCurrencyChanged += HandleCurrencyChanged;
 
-        HideAllPopups();
+        ForceCloseAllPopups();
+        StartCoroutine(ForceCloseAllPopupsNextFrame());
         HideSickleTool();
         RefreshTopBar();
     }
@@ -126,6 +135,9 @@ public class FarmUIManager : MonoBehaviour
         FarmInputLock.IsSeedPopupOpen = false;
         FarmInputLock.IsDraggingSeed  = false;
 
+        // Khay liềm cũng là một popup — ẩn khi HideAllPopups được gọi
+        HideSickleTray();
+
         if (popupObjectsToForceClose != null)
         {
             for (int i = 0; i < popupObjectsToForceClose.Length; i++)
@@ -149,6 +161,77 @@ public class FarmUIManager : MonoBehaviour
         }
     }
 
+    /// <summary>Hard reset every farm popup and any invisible blocker that could swallow map input.</summary>
+    public void ForceCloseAllPopups()
+    {
+        HideAllPopups();
+
+        CloseAllOfType<WarehousePopupUI>(popup => popup.ClosePopup());
+        CloseAllOfType<MarketPopupUI>(popup => popup.ClosePopup());
+        CloseAllOfType<HouseOrderPopupUI>(popup => popup.Close());
+        CloseAllOfType<PigPenPopupUI>(popup => popup.ClosePopup());
+        CloseAllOfType<ChickenPenPopupUI>(popup => popup.ClosePopup());
+        CloseAllOfType<CowPenPopupUI>(popup => popup.ClosePopup());
+        CloseAllOfType<ShopManager>(popup => popup.CloseShop());
+        CloseAllOfType<PopupEwarManager>(popup => popup.ClosePopup());
+        CloseAllOfType<AttendanceManager>(popup => popup.ClosePopup());
+        CloseAllOfType<WelfareEventManager>(popup => popup.ClosePopup());
+        CloseAllOfType<TrainLoadPopupUI>(popup => popup.ClosePopup());
+        CloseAllOfType<TrainProcessPopupUI>(popup => popup.Hide());
+        CloseAllOfType<CropProcessPopupUI>(popup => popup.ClosePopup());
+
+        FarmInputLock.ResetAll();
+    }
+
+    private IEnumerator ForceCloseAllPopupsNextFrame()
+    {
+        yield return null;
+        ForceCloseAllPopups();
+    }
+
+    private static void CloseAllOfType<T>(Action<T> closeAction) where T : Component
+    {
+        T[] popups = FindSceneObjects<T>();
+
+        for (int i = 0; i < popups.Length; i++)
+        {
+            T popup = popups[i];
+            if (popup == null)
+                continue;
+
+            try
+            {
+                closeAction(popup);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogWarning($"[FarmUI] ForceCloseAllPopups could not close '{popup.name}' ({typeof(T).Name}): {ex.Message}", popup);
+            }
+        }
+    }
+
+    private static T[] FindSceneObjects<T>() where T : Component
+    {
+#if UNITY_2023_1_OR_NEWER
+        return FindObjectsByType<T>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+#else
+        return FindObjectsOfType<T>(true);
+#endif
+    }
+
+    public void ShowSickleTray()
+    {
+        if (sickleBottomTray != null)
+            sickleBottomTray.SetActive(true);
+    }
+
+    /// <summary>Ẩn khay liềm và giải phóng mọi trạng thái liên quan.</summary>
+    public void HideSickleTray()
+    {
+        if (sickleBottomTray != null)
+            sickleBottomTray.SetActive(false);
+    }
+
     public void ShowSickleTool(Vector3 startWorldPos)
     {
         if (sickleController != null)
@@ -164,6 +247,8 @@ public class FarmUIManager : MonoBehaviour
 
         if (sickleToolRoot != null)
             sickleToolRoot.SetActive(false);
+
+        HideSickleTray();
     }
 
     /// <summary>
@@ -239,13 +324,49 @@ public class FarmUIManager : MonoBehaviour
         HideAllPopups();
     }
 
+    // ── Cooking Transition (tự xử lý, không phụ thuộc SceneTransitionManager) ──
+
     public void OnClick_GoCooking()
     {
-        if (SceneManager.GetSceneByName(cookingSceneName).isLoaded)
-            return;
+        if (isCookingMode) return;
+        if (SceneManager.GetSceneByName(cookingSceneName).isLoaded) return;
+        StartCoroutine(GoToCookingRoutine());
+    }
 
+    private IEnumerator GoToCookingRoutine()
+    {
+        Debug.Log("Đang load SampleScene...");
+
+        // Ẩn Farm ngay lập tức trước khi load
         EnterCookingMode();
-        SceneManager.LoadScene(cookingSceneName, LoadSceneMode.Additive);
+
+        // Load scene Bếp chồng lên Farm
+        yield return SceneManager.LoadSceneAsync(cookingSceneName, LoadSceneMode.Additive);
+    }
+
+    /// <summary>
+    /// Được gọi từ CookingSceneUI khi bấm nút "Về Farm".
+    /// FarmUIManager chạy coroutine unload trên chính nó nên không bị mất khi scene Bếp unload.
+    /// </summary>
+    public void ReturnFromCooking()
+    {
+        if (!isCookingMode) return;
+        StartCoroutine(ReturnToFarmRoutine());
+    }
+
+    private IEnumerator ReturnToFarmRoutine()
+    {
+        // Unload scene Bếp — chờ hoàn tất
+        Scene cookingScene = SceneManager.GetSceneByName(cookingSceneName);
+        if (cookingScene.IsValid() && cookingScene.isLoaded)
+            yield return SceneManager.UnloadSceneAsync(cookingScene);
+
+        yield return null; // 1 frame để Unity dọn dẹp
+
+        // Bật lại Farm
+        ExitCookingMode();
+        ForceCloseAllPopups();
+        FarmInputLock.ResetAll();
     }
 
     public void OnClick_OpenInventory()
@@ -282,26 +403,11 @@ public class FarmUIManager : MonoBehaviour
         HideAllPopups();
         HideSickleTool();
 
-        if (canvasHudRoot != null)
-            canvasHudRoot.SetActive(false);
-
-        if (canvasPopupRoot != null)
-            canvasPopupRoot.SetActive(false);
-
-        if (behavioursToDisableInCooking != null)
-        {
-            for (int i = 0; i < behavioursToDisableInCooking.Length; i++)
-            {
-                if (behavioursToDisableInCooking[i] != null)
-                    behavioursToDisableInCooking[i].enabled = false;
-            }
-        }
-
-        if (farmAudioListener != null)
-            farmAudioListener.enabled = false;
-
-        if (farmCamera != null)
-            farmCamera.enabled = false;
+        SetTopBarActive(false);
+        if (canvasHudRoot != null)   canvasHudRoot.SetActive(false);
+        if (canvasPopupRoot != null) canvasPopupRoot.SetActive(false);
+        if (farmCamera != null)      farmCamera.gameObject.SetActive(false);
+        if (farmAudioListener != null) farmAudioListener.enabled = false;
     }
 
     public void ExitCookingMode()
@@ -311,29 +417,60 @@ public class FarmUIManager : MonoBehaviour
 
         isCookingMode = false;
 
+        // 1. Bật lại Camera Farm — bắt buộc để OnMouseDown trên Building hoạt động
+        if (farmCamera != null)        farmCamera.gameObject.SetActive(true);
+        if (farmAudioListener != null) farmAudioListener.enabled = true;
+
+        // 2. Bật lại Canvas + đảm bảo CanvasGroup không còn block Raycast
+        SetTopBarActive(true);
+
         if (canvasHudRoot != null)
-            canvasHudRoot.SetActive(true);
-
-        if (canvasPopupRoot != null)
-            canvasPopupRoot.SetActive(true);
-
-        if (behavioursToDisableInCooking != null)
         {
-            for (int i = 0; i < behavioursToDisableInCooking.Length; i++)
-            {
-                if (behavioursToDisableInCooking[i] != null)
-                    behavioursToDisableInCooking[i].enabled = true;
-            }
+            canvasHudRoot.SetActive(true);
+            var cg = canvasHudRoot.GetComponent<CanvasGroup>();
+            if (cg != null) { cg.blocksRaycasts = true; cg.interactable = true; cg.alpha = 1f; }
         }
 
-        if (farmAudioListener != null)
-            farmAudioListener.enabled = true;
+        if (canvasPopupRoot != null)
+        {
+            canvasPopupRoot.SetActive(true);
+            var cg = canvasPopupRoot.GetComponent<CanvasGroup>();
+            if (cg != null) { cg.blocksRaycasts = true; cg.interactable = true; cg.alpha = 1f; }
+        }
 
-        if (farmCamera != null)
-            farmCamera.enabled = true;
+        // 3. Đảm bảo EventSystem và TimeScale không bị kẹt
+        if (UnityEngine.EventSystems.EventSystem.current != null)
+            UnityEngine.EventSystems.EventSystem.current.enabled = true;
+        Time.timeScale = 1f;
 
         HideAllPopups();
         HideSickleTool();
         RefreshTopBar();
+    }
+
+    public void SetTopBarActive(bool isActive)
+    {
+        CanvasGroup cg = EnsureTopBarCanvasGroup();
+        if (cg == null)
+            return;
+
+        cg.alpha = isActive ? 1f : 0f;
+        cg.interactable = isActive;
+        cg.blocksRaycasts = isActive;
+    }
+
+    private CanvasGroup EnsureTopBarCanvasGroup()
+    {
+        if (topBarHUD == null)
+            return null;
+
+        if (topBarCanvasGroup != null && topBarCanvasGroup.gameObject == topBarHUD)
+            return topBarCanvasGroup;
+
+        topBarCanvasGroup = topBarHUD.GetComponent<CanvasGroup>();
+        if (topBarCanvasGroup == null)
+            topBarCanvasGroup = topBarHUD.AddComponent<CanvasGroup>();
+
+        return topBarCanvasGroup;
     }
 }

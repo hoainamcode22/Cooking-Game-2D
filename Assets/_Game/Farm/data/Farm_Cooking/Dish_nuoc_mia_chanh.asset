@@ -9,50 +9,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_nuoc_mia_chanh
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: nuoc_mia_chanh
   dishName: "N\u01B0\u1EDBc m\xEDa chanh"
   dishSubTitle: "M\xEDa \xB7 Chanh"
-  dishSprite: {fileID: 0}
+  dishSprite: {fileID: 6062651183374977786, guid: fcbf07e621aaf0f4d86841f67367c8be, type: 3}
   difficulty: 0
   targetFlavor:
-    sweet: 0
+    sweet: 3
     spicy: 0
-    sour: 0
+    sour: 3
     umami: 0
     texture: 0
+  requiredIngredients:
+  - {fileID: 11400000, guid: 1c4f147355611e044beec9c27dc0c752, type: 2}
+  - {fileID: 11400000, guid: cdf2556cba1e8fe4e9b7fabb9944f804, type: 2}
   required1:
-    displayName: 
-    icon: {fileID: 0}
+    displayName: "M\xEDa"
+    icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
   required2:
-    displayName: 
-    icon: {fileID: 0}
-  optional1:
-    displayName: 
-    icon: {fileID: 0}
-  optional2:
-    displayName: 
-    icon: {fileID: 0}
-  optional3:
-    displayName: 
-    icon: {fileID: 0}
-  tip1:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip2:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip3:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip4:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  bonusComboText: 
-  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
+    displayName: Chanh
+    icon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}

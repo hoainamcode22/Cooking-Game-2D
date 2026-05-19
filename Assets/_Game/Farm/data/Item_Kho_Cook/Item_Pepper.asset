@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: pepper
   displayName: "Ti\xEAu"
-  icon: {fileID: 8973804588490373932, guid: 7d9a9fe8bc011a046ade02492b7f05b9, type: 3}
+  icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
   cookingData: {fileID: 11400000, guid: 068c729ad2bb67e4d9a7cea8aec07a6d, type: 2}

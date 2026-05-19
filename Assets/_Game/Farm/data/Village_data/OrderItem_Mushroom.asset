@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.OrderItemDefinition
   itemId: nam
   displayName: "N\u1EA5m"
-  icon: {fileID: 4208644412692552619, guid: 7a15c25bc6b86f0438b86042fe3bfb6d, type: 3}
+  icon: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}
   category: 0
   unlockLevel: 2
   weight: 12

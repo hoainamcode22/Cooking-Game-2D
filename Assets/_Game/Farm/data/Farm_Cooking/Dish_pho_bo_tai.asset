@@ -9,50 +9,29 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_pho_bo_tai
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: pho_bo_tai
   dishName: "Ph\u1EDF b\xF2 t\xE1i"
   dishSubTitle: "L\xFAa \xB7 Th\u1ECBt b\xF2 \xB7 Chanh \xB7 \u1EDAt"
-  dishSprite: {fileID: 0}
-  difficulty: 1
+  dishSprite: {fileID: -5170261589398258476, guid: f29f7ee17ae5e7f448949506935154aa, type: 3}
+  difficulty: 2
   targetFlavor:
-    sweet: 0
+    sweet: 1
     spicy: 0
     sour: 0
-    umami: 0
-    texture: 0
+    umami: 6
+    texture: 5
+  requiredIngredients:
+  - {fileID: 11400000, guid: bca8dffa2ead0a1458794f98ac2594ce, type: 2}
+  - {fileID: 11400000, guid: a709c3d40f4f1b64b96d6ce35aa30e8a, type: 2}
+  - {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}
+  - {fileID: 11400000, guid: cdf2556cba1e8fe4e9b7fabb9944f804, type: 2}
+  - {fileID: 11400000, guid: 61131780ff1d41b4fa8b9e475f382092, type: 2}
   required1:
-    displayName: 
-    icon: {fileID: 0}
+    displayName: Beef
+    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
   required2:
-    displayName: 
-    icon: {fileID: 0}
-  optional1:
-    displayName: 
-    icon: {fileID: 0}
-  optional2:
-    displayName: 
-    icon: {fileID: 0}
-  optional3:
-    displayName: 
-    icon: {fileID: 0}
-  tip1:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip2:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip3:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip4:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  bonusComboText: 
-  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
+    displayName: Rice
+    icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}

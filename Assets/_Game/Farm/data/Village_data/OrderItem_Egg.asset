@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.OrderItemDefinition
   itemId: egg
   displayName: "Tr\u1EE9ng"
-  icon: {fileID: -8307804571547316847, guid: 20cfa699d7411b0499297e423fec3d8a, type: 3}
+  icon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}
   category: 2
   unlockLevel: 2
   weight: 14

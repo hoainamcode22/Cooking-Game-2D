@@ -9,50 +9,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_thit_heo_luoc_cuon_rau
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: thit_heo_luoc_cuon_rau
   dishName: "Th\u1ECBt heo lu\u1ED9c cu\u1ED1n rau"
   dishSubTitle: "Th\u1ECBt heo \xB7 Rau"
-  dishSprite: {fileID: 0}
-  difficulty: 0
+  dishSprite: {fileID: -4925475842963632680, guid: 5375fa516464d464ca62d1abf0b531a0, type: 3}
+  difficulty: 1
   targetFlavor:
     sweet: 0
     spicy: 0
     sour: 0
-    umami: 0
-    texture: 0
+    umami: 6
+    texture: 3
+  requiredIngredients:
+  - {fileID: 11400000, guid: e0b72888953ad72479d8eb9c8462d0c6, type: 2}
+  - {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}
   required1:
-    displayName: 
-    icon: {fileID: 0}
+    displayName: "Th\u1ECBt heo"
+    icon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}
   required2:
-    displayName: 
-    icon: {fileID: 0}
-  optional1:
-    displayName: 
-    icon: {fileID: 0}
-  optional2:
-    displayName: 
-    icon: {fileID: 0}
-  optional3:
-    displayName: 
-    icon: {fileID: 0}
-  tip1:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip2:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip3:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip4:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  bonusComboText: 
-  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
+    displayName: Herbs
+    icon: {fileID: -6473379884045465844, guid: 050a1194adf72f046adc525bddd7bb28, type: 3}

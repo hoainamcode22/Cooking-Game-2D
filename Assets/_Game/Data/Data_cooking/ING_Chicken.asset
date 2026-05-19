@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: chicken
   displayName: Chicken
-  icon: {fileID: -222713599671890319, guid: 52bb66882ea9a9147be15d8cca84230d, type: 3}
+  icon: {fileID: -2283333445584976228, guid: 888289491956e5347952a87ca3ec06d1, type: 3}
   kind: 0
   tier: 1
   vector:

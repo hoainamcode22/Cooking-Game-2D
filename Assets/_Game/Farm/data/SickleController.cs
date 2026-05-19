@@ -88,6 +88,11 @@ public class SickleController : MonoBehaviour
     {
         isDragging = false;
         FarmInputLock.IsDraggingSickle = false;
+
+        // Ép giải phóng focus EventSystem — tránh pointer state bị kẹt sau harvest
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
+
         Debug.Log("[Sickle] EndHarvestMode");
     }
 
@@ -192,9 +197,9 @@ public class SickleController : MonoBehaviour
     private bool IsPointerReleased()
     {
         if (Pointer.current != null)
-            return Pointer.current.press.wasReleasedThisFrame;
+            return !Pointer.current.press.isPressed;
 
-        return Input.GetMouseButtonUp(0);
+        return !Input.GetMouseButton(0);
     }
 
     /// <summary>

@@ -29,7 +29,7 @@ MonoBehaviour:
   readyScale: {x: 70, y: 70, z: 1}
   displayCount: 4
   seedItemId: seed_nam
-  harvestItemId: nam
+  harvestItemId: mushroom
   tier: 1
   unlockLevel: 1
   growSeconds: 600

@@ -9,50 +9,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_bo_ham_ca_rot
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: bo_ham_ca_rot
   dishName: "B\xF2 h\u1EA7m c\xE0 r\u1ED1t"
   dishSubTitle: "Th\u1ECBt b\xF2 \xB7 C\xE0 r\u1ED1t"
-  dishSprite: {fileID: 0}
+  dishSprite: {fileID: 8480360420078679992, guid: 16f2f8a3075d32144a7d080f37d1b683, type: 3}
   difficulty: 2
   targetFlavor:
-    sweet: 0
-    spicy: 0
-    sour: 0
-    umami: 0
-    texture: 0
+    sweet: 1
+    spicy: 1
+    sour: 1
+    umami: 4
+    texture: 3
+  requiredIngredients:
+  - {fileID: 11400000, guid: bca8dffa2ead0a1458794f98ac2594ce, type: 2}
+  - {fileID: 11400000, guid: e3b733d266196064bbe31fc48e40f7e1, type: 2}
+  - {fileID: 11400000, guid: 068c729ad2bb67e4d9a7cea8aec07a6d, type: 2}
+  - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
   required1:
-    displayName: 
-    icon: {fileID: 0}
+    displayName: Beef
+    icon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}
   required2:
-    displayName: 
-    icon: {fileID: 0}
-  optional1:
-    displayName: 
-    icon: {fileID: 0}
-  optional2:
-    displayName: 
-    icon: {fileID: 0}
-  optional3:
-    displayName: 
-    icon: {fileID: 0}
-  tip1:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip2:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip3:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip4:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  bonusComboText: 
-  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
+    displayName: "C\xE0 R\u1ED1t"
+    icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}

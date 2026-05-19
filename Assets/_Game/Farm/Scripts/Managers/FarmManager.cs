@@ -335,8 +335,8 @@ public class FarmManager : MonoBehaviour
             return;
 
         selectedPlot = plot;
-        FarmUIManager.Instance?.ShowHint("Kéo lưỡi liềm qua cây để thu hoạch.");
-        FarmUIManager.Instance?.ShowSickleTool(plot.transform.position);
+        FarmUIManager.Instance?.ShowHint("Nhấn và kéo lưỡi liềm qua cây để thu hoạch.");
+        FarmUIManager.Instance?.ShowSickleTray();
     }
 
     public void OnPlotPlanted(PlotController plot, CropData crop)

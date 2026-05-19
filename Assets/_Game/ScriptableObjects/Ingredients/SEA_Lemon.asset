@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: lemon
   displayName: Lemon
-  icon: {fileID: -4588854041495768185, guid: d3e9fe305f2a2ad4ea92db559f9d1521, type: 3}
+  icon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}
   kind: 1
   tier: 1
   vector:

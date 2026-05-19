@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: chili
   displayName: Chili
-  icon: {fileID: -9177740170459379683, guid: 93d08f9a4a0bdd5439d158511a7d845e, type: 3}
+  icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
   kind: 1
   tier: 2
   vector:

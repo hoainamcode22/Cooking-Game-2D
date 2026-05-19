@@ -25,7 +25,8 @@ public class CookingChallengeManager : MonoBehaviour
 
     [Header("Dish Display After Cooking")]
     [SerializeField] private Image cookedDishDisplayImage;
-    private DishData cookedDishOnPlate;
+    private DishData cookedDishOnPlate;// Biến này để lưu trữ món ăn đã nấu được hiển thị trên đĩa
+    private DishBookUI dishBookUI;// Tham chiếu đến DishBookUI để cập nhật kho sau khi nấu xong
     private DishData currentDishData;
 
     private bool isCooking = false;
@@ -35,6 +36,7 @@ public class CookingChallengeManager : MonoBehaviour
         RefreshCenterUI();
         RefreshHintsUI();
         RefreshPreviewScore();
+        scoreResultBoxUI.ResetUI();
     }
 
     private void Update()
@@ -98,8 +100,7 @@ public class CookingChallengeManager : MonoBehaviour
         CookingScoreResult previewResult = CookingScoreCalculator.Evaluate(
             currentDishData,
             selectedIngredients,
-            selectedSeasonings,
-            correctTechniqueForNow
+            selectedSeasonings
         );
 
         centerCookingPanelUI.SetCookSubmitScore(previewResult.finalScore);
@@ -160,8 +161,7 @@ public class CookingChallengeManager : MonoBehaviour
         CookingScoreResult result = CookingScoreCalculator.Evaluate(
             currentDishData,
             selectedIngredients,
-            selectedSeasonings,
-            correctTechniqueForNow
+            selectedSeasonings
         );
 
         // TRỪ NGUYÊN LIỆU ĐÃ CHỌN SAU KHI NẤU
@@ -183,9 +183,9 @@ public class CookingChallengeManager : MonoBehaviour
         {
             KitchenTransferManager.Instance.SetAfterCooking(cookedItemIds);
         }
-        // scoreResultBoxUI.ShowResult(result);
+        scoreResultBoxUI.ShowResult(result);
         cookedDishOnPlate = currentDishData;// Lưu trữ món ăn đã nấu được hiển thị trên đĩa
-        ShowCookedDishOnPlate();// Hiển thị món ăn đã nấu lên đĩa
+       // Hiển thị món ăn đã nấu lên đĩa
 
         if (centerCookingPanelUI != null)
             centerCookingPanelUI.SetCookSubmitScore(result.finalScore);
@@ -213,9 +213,10 @@ public class CookingChallengeManager : MonoBehaviour
       
 
        isCooking = false;
-       cookingSelectionManager.ResetSelection();
+       cookingSelectionManager.ResetUIAfterCooking();
        if (result.finalScore >= successScoreThreshold)
         {
+             ShowCookedDishOnPlate();
             Debug.Log("Đạt điểm! Qua món mới.");
 
             if (cookingSelectionManager != null)
@@ -235,8 +236,6 @@ public class CookingChallengeManager : MonoBehaviour
             RefreshCenterUI();
         }
        
-        // yield return new WaitForSeconds(1.2f);
-        // NextDish();
     }
 
 
@@ -294,6 +293,7 @@ public class CookingChallengeManager : MonoBehaviour
             cookedDishDisplayImage.sprite = null;
             cookedDishDisplayImage.gameObject.SetActive(false);
         }
+        scoreResultBoxUI.ResetUI();
     }
     public void SetCurrentDish(DishData dish)
     {

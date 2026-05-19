@@ -1,52 +1,32 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+/// <summary>
+/// View controller cho scene Bếp.
+/// Khi bấm nút "Về Farm", ủy quyền cho FarmUIManager để unload scene —
+/// FarmUIManager tồn tại trên Farm scene nên coroutine không bị cắt khi scene Bếp unload.
+/// </summary>
 public class CookingSceneUI : MonoBehaviour
 {
     [SerializeField] private Button btnBackFarm;
-
-    [Header("Optional - Hide in Cooking")]
-    [SerializeField] private GameObject[] rootsToHide;
 
     private void Awake()
     {
         if (btnBackFarm != null)
             btnBackFarm.onClick.AddListener(BackToFarm);
-
-        if (FarmUIManager.Instance != null)
-            FarmUIManager.Instance.EnterCookingMode();
-
-        ApplyRootsToHide(false);
-    }
-
-    private void ApplyRootsToHide(bool visible)
-    {
-        if (rootsToHide == null || rootsToHide.Length == 0)
-            return;
-
-        for (int i = 0; i < rootsToHide.Length; i++)
-        {
-            if (rootsToHide[i] != null)
-                rootsToHide[i].SetActive(visible);
-        }
     }
 
     private void OnDestroy()
     {
-        ApplyRootsToHide(true);
-
-        if (FarmUIManager.Instance != null)
-            FarmUIManager.Instance.ExitCookingMode();
+        if (btnBackFarm != null)
+            btnBackFarm.onClick.RemoveListener(BackToFarm);
     }
 
     public void BackToFarm()
     {
         if (FarmUIManager.Instance != null)
-            FarmUIManager.Instance.ExitCookingMode();
-
-        Scene currentScene = gameObject.scene;
-        if (currentScene.IsValid() && currentScene.isLoaded)
-            SceneManager.UnloadSceneAsync(currentScene.name);
+            FarmUIManager.Instance.ReturnFromCooking();
+        else
+            Debug.LogWarning("[CookingSceneUI] FarmUIManager.Instance là NULL — không thể về Farm.");
     }
 }

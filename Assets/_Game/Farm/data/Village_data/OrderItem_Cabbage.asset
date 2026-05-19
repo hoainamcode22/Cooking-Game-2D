@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.OrderItemDefinition
   itemId: bapcai
   displayName: "B\u1EAFp C\u1EA3i"
-  icon: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}
+  icon: {fileID: -842988855527424611, guid: b0b144ddc7537a348b0c7d8ec7c4b7e4, type: 3}
   category: 0
   unlockLevel: 1
   weight: 14

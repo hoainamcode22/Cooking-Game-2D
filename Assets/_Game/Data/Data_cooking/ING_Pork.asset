@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: pork
   displayName: "Th\u1ECBt heo"
-  icon: {fileID: -855298285791758126, guid: e97c3ca6b86563f4695615c752db8ae7, type: 3}
+  icon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}
   kind: 0
   tier: 1
   vector:

@@ -9,50 +9,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_nam_xao_thit_bo
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: nam_xao_thit_bo
   dishName: "N\u1EA5m x\xE0o th\u1ECBt b\xF2"
   dishSubTitle: "N\u1EA5m \xB7 Th\u1ECBt b\xF2"
-  dishSprite: {fileID: 0}
+  dishSprite: {fileID: -5429935105147195000, guid: 359310b9e1b2cbc4aa5aeb85bc9d66e9, type: 3}
   difficulty: 1
   targetFlavor:
-    sweet: 0
+    sweet: 1
     spicy: 0
     sour: 0
-    umami: 0
-    texture: 0
+    umami: 7
+    texture: 3
+  requiredIngredients:
+  - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
+  - {fileID: 11400000, guid: bca8dffa2ead0a1458794f98ac2594ce, type: 2}
+  - {fileID: 11400000, guid: 7f96869f08d4e0a4687f826acd150dfc, type: 2}
   required1:
-    displayName: 
-    icon: {fileID: 0}
+    displayName: Mushroom
+    icon: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}
   required2:
-    displayName: 
-    icon: {fileID: 0}
-  optional1:
-    displayName: 
-    icon: {fileID: 0}
-  optional2:
-    displayName: 
-    icon: {fileID: 0}
-  optional3:
-    displayName: 
-    icon: {fileID: 0}
-  tip1:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip2:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip3:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip4:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  bonusComboText: 
-  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
+    displayName: Beef
+    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}

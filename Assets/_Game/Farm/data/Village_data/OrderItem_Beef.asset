@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.OrderItemDefinition
   itemId: beef
   displayName: "Th\u1ECBt b\xF2"
-  icon: {fileID: 6282751622250221668, guid: d1edf61082fb8db4c950bf561adef9bd, type: 3}
+  icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
   category: 2
   unlockLevel: 4
   weight: 8

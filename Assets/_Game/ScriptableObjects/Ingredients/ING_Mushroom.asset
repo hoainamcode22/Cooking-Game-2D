@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: mushroom
   displayName: Mushroom
-  icon: {fileID: -7855416830827057825, guid: a10a431e54b82e04abf1a371398de997, type: 3}
+  icon: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}
   kind: 0
   tier: 1
   vector:

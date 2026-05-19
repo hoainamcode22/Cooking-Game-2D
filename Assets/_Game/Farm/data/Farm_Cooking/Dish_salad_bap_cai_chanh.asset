@@ -9,50 +9,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_salad_bap_cai_chanh
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: salad_bap_cai_chanh
   dishName: "Salad b\u1EAFp c\u1EA3i chanh"
   dishSubTitle: "B\u1EAFp c\u1EA3i \xB7 Chanh"
-  dishSprite: {fileID: 0}
+  dishSprite: {fileID: 9089190258953072601, guid: 63b4fa4fa54b6b443b2ca9c2ed795f57, type: 3}
   difficulty: 0
   targetFlavor:
-    sweet: 0
+    sweet: 2
     spicy: 0
-    sour: 0
-    umami: 0
-    texture: 0
+    sour: 3
+    umami: 1
+    texture: 1
+  requiredIngredients:
+  - {fileID: 11400000, guid: e8ff296568c88e84c8ee3c7a64b0615a, type: 2}
+  - {fileID: 11400000, guid: cdf2556cba1e8fe4e9b7fabb9944f804, type: 2}
+  - {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}
   required1:
-    displayName: 
-    icon: {fileID: 0}
+    displayName: "B\u1EAFp C\u1EA3i"
+    icon: {fileID: -842988855527424611, guid: b0b144ddc7537a348b0c7d8ec7c4b7e4, type: 3}
   required2:
-    displayName: 
-    icon: {fileID: 0}
-  optional1:
-    displayName: 
-    icon: {fileID: 0}
-  optional2:
-    displayName: 
-    icon: {fileID: 0}
-  optional3:
-    displayName: 
-    icon: {fileID: 0}
-  tip1:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip2:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip3:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip4:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  bonusComboText: 
-  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
+    displayName: Chanh
+    icon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}

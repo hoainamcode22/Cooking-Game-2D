@@ -9,7 +9,7 @@ namespace Village
     public class HouseOrderPopupUI : MonoBehaviour
     {
         public static HouseOrderPopupUI Instance { get; private set; }
-        public static bool IsOpen { get; private set; }
+        public static bool IsOpen => Instance != null && Instance.gameObject.activeSelf;
 
         // ── Inspector ─────────────────────────────────────────────────────────
 
@@ -55,7 +55,6 @@ namespace Village
         private void Awake()
         {
             Instance = this;
-            IsOpen   = false;
 
             // Panel phải start ACTIVE trong scene để Awake chạy và đăng ký Instance,
             // sau đó ẩn ngay để không lộ ra trước khi Open() được gọi.
@@ -109,7 +108,6 @@ namespace Village
             currentOrder = order;
             currentHouse = house;
 
-            IsOpen = true;
             gameObject.SetActive(true);
 
             DiagnoseButtonInput();
@@ -119,7 +117,6 @@ namespace Village
         public void Close()
         {
             Debug.Log("[OrderPopup] Close()");
-            IsOpen = false;
             gameObject.SetActive(false);
             currentOrder = null;
             currentHouse = null;

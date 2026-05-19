@@ -9,50 +9,26 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_ga_xao_ot
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: ga_xao_ot
   dishName: "G\xE0 x\xE0o \u1EDBt"
   dishSubTitle: "Th\u1ECBt g\xE0 \xB7 \u1EDAt"
-  dishSprite: {fileID: 0}
-  difficulty: 0
+  dishSprite: {fileID: 9033049820550534569, guid: 62b195d16a872fa44be2c338cf58561b, type: 3}
+  difficulty: 1
   targetFlavor:
     sweet: 0
-    spicy: 0
+    spicy: 3
     sour: 0
-    umami: 0
-    texture: 0
+    umami: 4
+    texture: 3
+  requiredIngredients:
+  - {fileID: 11400000, guid: b0631d5b8894e8b4c988c34191d84120, type: 2}
+  - {fileID: 11400000, guid: 047a75f3fbcb9974b91428681e2e96ac, type: 2}
   required1:
-    displayName: 
-    icon: {fileID: 0}
+    displayName: Chicken
+    icon: {fileID: -2283333445584976228, guid: 888289491956e5347952a87ca3ec06d1, type: 3}
   required2:
-    displayName: 
-    icon: {fileID: 0}
-  optional1:
-    displayName: 
-    icon: {fileID: 0}
-  optional2:
-    displayName: 
-    icon: {fileID: 0}
-  optional3:
-    displayName: 
-    icon: {fileID: 0}
-  tip1:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip2:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip3:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip4:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  bonusComboText: 
-  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
+    displayName: "\u1EDAt"
+    icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}

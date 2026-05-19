@@ -9,50 +9,28 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_trung_op_la_bo_ne
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: trung_op_la_bo_ne
   dishName: "Tr\u1EE9ng \u1ED1p la b\xF2 n\xE9"
   dishSubTitle: "Tr\u1EE9ng g\xE0 \xB7 Th\u1ECBt b\xF2 \xB7 C\xE0 chua"
-  dishSprite: {fileID: 0}
-  difficulty: 1
+  dishSprite: {fileID: -7822667871852186656, guid: 153977f51a1ef40478fa44421dd9969d, type: 3}
+  difficulty: 0
   targetFlavor:
     sweet: 0
-    spicy: 0
+    spicy: 1
     sour: 0
-    umami: 0
-    texture: 0
+    umami: 4
+    texture: 3
+  requiredIngredients:
+  - {fileID: 11400000, guid: fc7f3c85c12966b4f993aeca2a544016, type: 2}
+  - {fileID: 11400000, guid: bca8dffa2ead0a1458794f98ac2594ce, type: 2}
+  - {fileID: 11400000, guid: 068c729ad2bb67e4d9a7cea8aec07a6d, type: 2}
+  - {fileID: 11400000, guid: d497d41e2fee904489fe75f7a8f6d927, type: 2}
   required1:
-    displayName: 
-    icon: {fileID: 0}
+    displayName: "Tr\u1EE9ng"
+    icon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}
   required2:
-    displayName: 
-    icon: {fileID: 0}
-  optional1:
-    displayName: 
-    icon: {fileID: 0}
-  optional2:
-    displayName: 
-    icon: {fileID: 0}
-  optional3:
-    displayName: 
-    icon: {fileID: 0}
-  tip1:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip2:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip3:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip4:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  bonusComboText: 
-  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
+    displayName: Beef
+    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}

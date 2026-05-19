@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.OrderItemDefinition
   itemId: huong_duong
   displayName: "H\u01B0\u1EDBng D\u01B0\u01A1ng"
-  icon: {fileID: 0}
+  icon: {fileID: -7696085379610616033, guid: c36c76047753b414093b747a43aecc75, type: 3}
   category: 1
   unlockLevel: 3
   weight: 10

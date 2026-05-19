@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: egg
   displayName: "Tr\u1EE9ng"
-  icon: {fileID: -4072622106568590741, guid: 99c90f6fb54da4d4c964e98444305bdd, type: 3}
+  icon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}
   kind: 0
   tier: 1
   vector:

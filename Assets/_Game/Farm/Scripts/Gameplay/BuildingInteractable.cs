@@ -23,13 +23,7 @@ public class BuildingInteractable : MonoBehaviour
 
         switch (buildingType)
         {
-/*            case BuildingType.Warehouse:
-                FarmUIManager.Instance?.ShowWarehouse();
-                break;
 
-            case BuildingType.Market:
-                FarmUIManager.Instance?.ShowMarket();
-                break;*/
 
             case BuildingType.CookingGate:
                 if (FarmUIManager.Instance != null)

@@ -9,50 +9,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_com_chien_trung
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: com_chien_trung
   dishName: "C\u01A1m chi\xEAn tr\u1EE9ng"
   dishSubTitle: "L\xFAa \xB7 Tr\u1EE9ng g\xE0"
-  dishSprite: {fileID: 0}
+  dishSprite: {fileID: -4455380416464841545, guid: 627c44244ff1a36449a7de95b38c0aef, type: 3}
   difficulty: 0
   targetFlavor:
-    sweet: 0
+    sweet: 2
     spicy: 0
     sour: 0
-    umami: 0
-    texture: 0
+    umami: 3
+    texture: 3
+  requiredIngredients:
+  - {fileID: 11400000, guid: a709c3d40f4f1b64b96d6ce35aa30e8a, type: 2}
+  - {fileID: 11400000, guid: fc7f3c85c12966b4f993aeca2a544016, type: 2}
+  - {fileID: 11400000, guid: 7f96869f08d4e0a4687f826acd150dfc, type: 2}
   required1:
-    displayName: 
-    icon: {fileID: 0}
+    displayName: Rice
+    icon: {fileID: 9135130128162984572, guid: 83b0ddd2946e3e94e9671b1686386e1b, type: 3}
   required2:
-    displayName: 
-    icon: {fileID: 0}
-  optional1:
-    displayName: 
-    icon: {fileID: 0}
-  optional2:
-    displayName: 
-    icon: {fileID: 0}
-  optional3:
-    displayName: 
-    icon: {fileID: 0}
-  tip1:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip2:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip3:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip4:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  bonusComboText: 
-  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
+    displayName: "Tr\u1EE9ng"
+    icon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}

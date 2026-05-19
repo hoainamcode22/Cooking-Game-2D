@@ -4,6 +4,8 @@ using UnityEngine.UI;
 
 public class ScoreResultBoxUI : MonoBehaviour
 {
+
+
     [Header("Ingredient Score")]
     [SerializeField] private TMP_Text txtIngredientPercent;
     [SerializeField] private TMP_Text txtIngredientScoreValue;
@@ -16,23 +18,28 @@ public class ScoreResultBoxUI : MonoBehaviour
     [SerializeField] private TMP_Text txtFinalScoreValue;
     [SerializeField] private TMP_Text txtFinalComment;
 
-    [Header("Reward Preview")]
-    [SerializeField] private TMP_Text txtGoldReward;
-    [SerializeField] private TMP_Text txtGemReward;
-    [SerializeField] private TMP_Text txtRankPointReward;
+
+
+
 
     public void ShowResult(CookingScoreResult result)
     {
-        if (result == null) return;
+        Debug.Log("SHOW RESULT UI CALLED");
 
-        if (txtIngredientPercent != null)
-            txtIngredientPercent.text = result.ingredientScore + "%";
+        if (result == null)
+        {
+            Debug.LogWarning("ShowResult called but result is NULL");
+            return;
+        }
+
+        gameObject.SetActive(true);
+
+
 
         if (txtIngredientScoreValue != null)
             txtIngredientScoreValue.text = result.ingredientScore + "/100";
 
-        if (txtSeasoningPercent != null)
-            txtSeasoningPercent.text = result.seasoningScore + "%";
+
 
         if (txtSeasoningScoreValue != null)
             txtSeasoningScoreValue.text = result.seasoningScore + "/100";
@@ -43,21 +50,33 @@ public class ScoreResultBoxUI : MonoBehaviour
         if (txtFinalComment != null)
             txtFinalComment.text = GetComment(result.finalScore);
 
-        if (txtGoldReward != null)
-            txtGoldReward.text = "+" + result.goldReward;
-
-        if (txtGemReward != null)
-            txtGemReward.text = "+" + result.gemReward;
-
-        if (txtRankPointReward != null)
-            txtRankPointReward.text = "+" + result.rankPointReward;
     }
+    public void ResetUI()
+    {
+        gameObject.SetActive(false);
+
+        if (txtIngredientScoreValue != null)
+            txtIngredientScoreValue.text = "0/100";
+
+
+        if (txtSeasoningScoreValue != null)
+            txtSeasoningScoreValue.text = "0/100";
+
+        if (txtFinalScoreValue != null)
+            txtFinalScoreValue.text = "0/100";
+
+        if (txtFinalComment != null)
+            txtFinalComment.text = "";
+
+
+    }
+
 
     private string GetComment(int score)
     {
-        if (score >= 90) return "Tuy?t v?i! G?n nh? ho�n h?o!";
-        if (score >= 80) return "R?t t?t! G?n ho�n h?o!";
-        if (score >= 70) return "Kh� t?t! C? g?ng th�m nh�!";
-        return "Ch?a ?n l?m! Th? l?i n�o!";
+        if (score >= 90) return "Tuyệt vời! Gần như hoàn hảo!";
+        if (score >= 80) return "Rất tốt! Gần hoàn hảo!";
+        if (score >= 70) return "Khá tốt! Cố gắng thêm nhé!";
+        return "Chưa ổn lắm! Thử lại nào!";
     }
 }

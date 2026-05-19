@@ -9,50 +9,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f19f2b3318e5a954b85c101ab902d994, type: 3}
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_sup_ngo_nam
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: sup_ngo_nam
   dishName: "S\xFAp ng\xF4 n\u1EA5m"
   dishSubTitle: "Ng\xF4 \xB7 N\u1EA5m \xB7 Tr\u1EE9ng g\xE0"
-  dishSprite: {fileID: 0}
-  difficulty: 0
+  dishSprite: {fileID: 5016252123938005860, guid: 7882b075d127ef14593abbb381d7b90a, type: 3}
+  difficulty: 1
   targetFlavor:
-    sweet: 0
+    sweet: 1
     spicy: 0
     sour: 0
-    umami: 0
-    texture: 0
+    umami: 3
+    texture: 1
+  requiredIngredients:
+  - {fileID: 11400000, guid: ec1bd42123fd58842880a4a88b780874, type: 2}
+  - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
+  - {fileID: 11400000, guid: fc7f3c85c12966b4f993aeca2a544016, type: 2}
   required1:
-    displayName: 
-    icon: {fileID: 0}
+    displayName: "Ng\xF4"
+    icon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
   required2:
-    displayName: 
-    icon: {fileID: 0}
-  optional1:
-    displayName: 
-    icon: {fileID: 0}
-  optional2:
-    displayName: 
-    icon: {fileID: 0}
-  optional3:
-    displayName: 
-    icon: {fileID: 0}
-  tip1:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip2:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip3:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  tip4:
-    displayName: 
-    icon: {fileID: 0}
-    effectText: 
-  bonusComboText: 
-  whatJudgeLikesText: "Gi\xE1m kh?o th\xEDch g\xEC?"
+    displayName: Mushroom
+    icon: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}

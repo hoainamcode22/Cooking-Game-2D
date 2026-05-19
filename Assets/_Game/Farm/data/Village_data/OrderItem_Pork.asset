@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Village.OrderItemDefinition
   itemId: pork
   displayName: "Th\u1ECBt heo"
-  icon: {fileID: -1397836899716242382, guid: 43a9fb54d93dd234bb130d3016cd7cb0, type: 3}
+  icon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}
   category: 2
   unlockLevel: 3
   weight: 9
