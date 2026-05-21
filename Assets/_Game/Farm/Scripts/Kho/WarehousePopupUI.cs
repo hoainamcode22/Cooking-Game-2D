@@ -47,9 +47,6 @@ public class WarehousePopupUI : MonoBehaviour
     [Header("Extra Item Database")]
     [SerializeField] private List<InventoryItemData> extraItemDatabase = new List<InventoryItemData>();
 
-    [Header("Dish Database")]
-    [SerializeField] private ListDishData dishDatabase;
-
     [Header("Kitchen Transfer UI")]
     [SerializeField] private Button btnSendToKitchen;
     [SerializeField] private Image selectedPreviewIcon;
@@ -57,7 +54,6 @@ public class WarehousePopupUI : MonoBehaviour
 
     private Dictionary<string, CropData> cropLookup = new Dictionary<string, CropData>();
     private Dictionary<string, InventoryItemData> extraItemLookup = new Dictionary<string, InventoryItemData>();
-    private Dictionary<string, DishData> dishLookup = new Dictionary<string, DishData>();
 
     private readonly Dictionary<string, int> pendingSelection = new Dictionary<string, int>();
 
@@ -68,14 +64,9 @@ public class WarehousePopupUI : MonoBehaviour
         InitSlots();
         BuildCropLookup();
         BuildExtraItemLookup();
-        BuildDishLookup();
 
         if (btnClose != null)
-        {
             btnClose.onClick.AddListener(ClosePopup);
-            // Ép Btn_Close luôn render trên cùng — tránh ScrollView đè lên chặn click
-            btnClose.transform.SetAsLastSibling();
-        }
 
         if (btnSearch != null)
             btnSearch.onClick.AddListener(RefreshUI);
@@ -89,7 +80,6 @@ public class WarehousePopupUI : MonoBehaviour
         if (popupRoot != null)
             popupRoot.SetActive(false);
 
-        HideRuntimeSlots();
         RefreshSelectedPreview();
     }
 
@@ -98,8 +88,7 @@ public class WarehousePopupUI : MonoBehaviour
         if (FarmInventoryManager.Instance != null)
             FarmInventoryManager.Instance.OnInventoryChanged += RefreshUI;
 
-        HideRuntimeSlots();
-        RefreshSelectedPreview();
+        RefreshUI();
     }
 
     private void OnDestroy()
@@ -113,9 +102,8 @@ public class WarehousePopupUI : MonoBehaviour
         if (popupRoot == null)
             return;
 
-        UIRaycastBlocker blocker = popupRoot.GetComponent<UIRaycastBlocker>();
-        if (blocker != null)
-            Destroy(blocker);
+        if (popupRoot.GetComponent<UIRaycastBlocker>() == null)
+            popupRoot.AddComponent<UIRaycastBlocker>();
 
         CanvasGroup cg = popupRoot.GetComponent<CanvasGroup>();
         if (cg == null)
@@ -192,33 +180,6 @@ public class WarehousePopupUI : MonoBehaviour
         }
     }
 
-    private void BuildDishLookup()
-    {
-        dishLookup.Clear();
-
-        if (dishDatabase == null || dishDatabase.allDishes == null)
-            return;
-
-        for (int i = 0; i < dishDatabase.allDishes.Count; i++)
-        {
-            DishData dish = dishDatabase.allDishes[i];
-            if (dish == null || string.IsNullOrEmpty(dish.dishId)) continue;
-
-            string key = dish.dishId.Trim().ToLowerInvariant();
-            if (!dishLookup.ContainsKey(key))
-                dishLookup.Add(key, dish);
-        }
-    }
-
-    private DishData GetDishById(string itemId)
-    {
-        if (string.IsNullOrEmpty(itemId)) return null;
-
-        string key = itemId.Trim().ToLowerInvariant();
-        dishLookup.TryGetValue(key, out DishData dish);
-        return dish;
-    }
-
     // true khi popup đang thực sự hiển thị
     public bool IsOpen => popupRoot != null && popupRoot.activeSelf;
 
@@ -239,19 +200,11 @@ public class WarehousePopupUI : MonoBehaviour
         if (popupRoot != null)
             popupRoot.SetActive(false);
 
-        HideRuntimeSlots();
         Debug.Log("[WarehousePopupUI] ClosePopup");
     }
 
     public void RefreshUI()
     {
-        if (!IsOpen)
-        {
-            HideRuntimeSlots();
-            RefreshSelectedPreview();
-            return;
-        }
-
         for (int i = 0; i < slots.Count; i++)
         {
             if (slots[i] != null)
@@ -274,15 +227,6 @@ public class WarehousePopupUI : MonoBehaviour
         }
 
         RefreshSelectedPreview();
-    }
-
-    private void HideRuntimeSlots()
-    {
-        for (int i = 0; i < slots.Count; i++)
-        {
-            if (slots[i] != null)
-                slots[i].gameObject.SetActive(false);
-        }
     }
 
     private List<WarehouseViewItem> BuildFilteredItems()
@@ -317,15 +261,6 @@ public class WarehousePopupUI : MonoBehaviour
                 {
                     displayName = string.IsNullOrEmpty(extraItem.displayName) ? itemId : extraItem.displayName;
                     icon = extraItem.icon;
-                }
-                else
-                {
-                    DishData dish = GetDishById(itemId);
-                    if (dish != null)
-                    {
-                        displayName = string.IsNullOrEmpty(dish.dishName) ? itemId : dish.dishName;
-                        icon = dish.dishSprite;
-                    }
                 }
             }
 
@@ -415,12 +350,6 @@ public class WarehousePopupUI : MonoBehaviour
                     InventoryItemData extra = GetExtraItemById(lastSelectedItemId);
                     if (extra != null)
                         previewSprite = extra.icon;
-                    else
-                    {
-                        DishData dish = GetDishById(lastSelectedItemId);
-                        if (dish != null)
-                            previewSprite = dish.dishSprite;
-                    }
                 }
             }
 

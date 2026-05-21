@@ -8,17 +8,10 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private IngredientData ingredientData;
 
-    private void Awake()
-    {
-        // DraggableItem là thành phần bắt buộc để kéo thả hoạt động.
-        // Tự thêm vào nếu spawn dynamic từ prefab không có sẵn.
-        if (GetComponent<DraggableItem>() == null)
-            gameObject.AddComponent<DraggableItem>();
-    }
-
     [Header("UI Refs")]
     [SerializeField] private TMP_Text nameText;
     [SerializeField] private Image mainIconImage;
+    [SerializeField] private Image topIconImage;
     [SerializeField] private GameObject statusGO;
 
 
@@ -29,6 +22,7 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
 
     private string cachedName;
     private Sprite cachedMain;
+    private Sprite cachedTop;
     private string idItem;
 
     [SerializeField] private TMP_Text txtQuantity;
@@ -71,6 +65,12 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
             if (t != null) mainIconImage = t.GetComponent<Image>();
         }
 
+        if (topIconImage == null)
+        {
+            Transform t = transform.Find("Img_TopIcon");
+            if (t != null) topIconImage = t.GetComponent<Image>();
+        }
+
         if (statusGO == null)
         {
             Transform t = transform.Find("Img_Status");
@@ -81,11 +81,6 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
     public void SetIngredientData(IngredientData data)
     {
         ingredientData = data;
-
-        // Đồng bộ sang DraggableItem để cả hai component luôn trỏ đến cùng data.
-        DraggableItem drag = GetComponent<DraggableItem>();
-        if (drag != null)
-            drag.ingredientData = data;
     }
 
     public IngredientData GetIngredientData()
@@ -113,15 +108,17 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
     {
         cachedName = nameText != null ? nameText.text : "";
         cachedMain = mainIconImage != null ? mainIconImage.sprite : null;
+        cachedTop = topIconImage != null ? topIconImage.sprite : null;
 
         if (cachedMain == null && ingredientData != null)
             cachedMain = ingredientData.icon;
 
-        Debug.Log($"[CARD CACHE] {cachedName} | main={(cachedMain != null ? cachedMain.name : "NULL")}");
+        Debug.Log($"[CARD CACHE] {cachedName} | main={(cachedMain != null ? cachedMain.name : "NULL")} | top={(cachedTop != null ? cachedTop.name : "NULL")}");
     }
 
     public string GetItemName() => cachedName;
     public int GetQuantity() => currentKitchenQuantity;
     public Sprite GetMainSprite() => cachedMain;
+    public Sprite GetTopSprite() => cachedTop;
     public string GetItemId() => idItem;
 }
