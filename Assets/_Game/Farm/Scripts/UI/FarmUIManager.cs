@@ -282,20 +282,43 @@ public class FarmUIManager : MonoBehaviour
             p = p.parent;
         }
 
-        // Reset popup về giữa màn hình để đảm bảo luôn hiển thị
-        RectTransform popupRect = popupSeed.GetComponent<RectTransform>();
-        if (popupRect != null)
-        {
-            popupRect.anchoredPosition = Vector2.zero;
-            Debug.Log($"[FarmUI] popup anchoredPosition reset to (0,0)");
-        }
-
         popupSeed.SetActive(true);
         Debug.Log($"[FarmUI] popupSeed.SetActive(true) | activeInHierarchy={popupSeed.activeInHierarchy}");
         FarmInputLock.IsSeedPopupOpen = true;
 
         if (plot != null)
             ShowHint($"Kéo hạt giống để trồng vào ô {plot.PlotId}");
+        else
+            ShowHint("Kéo hạt giống để trồng.");
+    }
+
+    /// <summary>Open flower popup near the clicked flower pot world position.</summary>
+    public void ShowFlowerSelectForPlot(PlotController plot)
+    {
+        if (isCookingMode)
+            return;
+
+        HideAllPopups();
+
+        if (popupSeedFlower == null)
+        {
+            Debug.LogError("[FarmUI] popupSeedFlower is NULL");
+            return;
+        }
+
+        Transform p = popupSeedFlower.transform.parent;
+        while (p != null)
+        {
+            if (!p.gameObject.activeSelf)
+                p.gameObject.SetActive(true);
+            p = p.parent;
+        }
+
+        popupSeedFlower.SetActive(true);
+        FarmInputLock.IsSeedPopupOpen = true;
+
+        if (plot != null)
+            ShowHint($"Kéo hạt giống để trồng vào chậu hoa {plot.PlotId}");
         else
             ShowHint("Kéo hạt giống để trồng.");
     }

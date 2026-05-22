@@ -27,10 +27,13 @@ public class SeedDragItem : MonoBehaviour,
     private bool     scrollBeginForwarded = false;
 
     // Threshold pixel để phân biệt scroll ngang vs kéo trồng
-    private const float kDragThreshold = 12f;
+private const float kDragThreshold = 25f;
 
     public string   CropId   => cropData != null ? cropData.cropId   : string.Empty;
     public CropData CropData => cropData;
+    private string  CropLogName => cropData != null
+        ? (!string.IsNullOrEmpty(cropData.displayName) ? cropData.displayName : cropData.cropId)
+        : "NULL";
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
@@ -116,7 +119,8 @@ public class SeedDragItem : MonoBehaviour,
         pointerDownPos        = eventData.position;
         dragMode              = DragMode.None;
         scrollBeginForwarded  = false;
-        Debug.Log($"[SeedDragItem] PointerDown {name} crop={cropData?.cropId} pos={eventData.position}");
+        string cropName = CropLogName;
+        Debug.Log($"[SeedDragItem] PointerDown {name} crop={cropName} pos={eventData.position}");
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -124,13 +128,15 @@ public class SeedDragItem : MonoBehaviour,
         // Chưa xác định hướng kéo — chờ OnDrag tính delta
         dragMode             = DragMode.None;
         scrollBeginForwarded = false;
-        Debug.Log($"[SeedDragItem] BeginDrag ENTER {name}");
+        string cropName = CropLogName;
+        Debug.Log($"[SeedDragItem] BeginDrag ENTER {name} crop={cropName}");
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         Vector2 delta = eventData.position - pointerDownPos;
-        Debug.Log($"[SeedDragItem] Drag {name} delta={delta} mode={dragMode}");
+        string cropName = CropLogName;
+        Debug.Log($"[SeedDragItem] Drag {name} crop={cropName} delta={delta} mode={dragMode}");
 
         if (dragMode == DragMode.None)
         {
@@ -141,7 +147,7 @@ public class SeedDragItem : MonoBehaviour,
             {
                 // Kéo NGANG → scroll danh sách
                 dragMode = DragMode.Scroll;
-                Debug.Log($"[SeedDragItem] Mode=Scroll");
+                Debug.Log($"[SeedDragItem] BeginScrollMode {name} crop={cropName}");
 
                 if (parentScrollRect != null && !scrollBeginForwarded)
                 {
@@ -153,7 +159,7 @@ public class SeedDragItem : MonoBehaviour,
             {
                 // Kéo DỌC/XUỐNG → bắt đầu trồng
                 dragMode = DragMode.Plant;
-                Debug.Log($"[SeedDragItem] Mode=Plant");
+                Debug.Log($"[SeedDragItem] Mode=Plant {name} crop={cropName}");
                 BeginPlantMode();
             }
         }
@@ -167,7 +173,8 @@ public class SeedDragItem : MonoBehaviour,
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        Debug.Log($"[SeedDragItem] EndDrag {name} mode={dragMode}");
+        string cropName = CropLogName;
+        Debug.Log($"[SeedDragItem] EndDrag {name} crop={cropName} mode={dragMode}");
 
         switch (dragMode)
         {
@@ -201,17 +208,20 @@ public class SeedDragItem : MonoBehaviour,
 
     private void BeginPlantMode()
     {
+        string cropName = CropLogName;
+        Debug.Log($"[SeedDragItem] BeginPlantMode {name} crop={cropName}");
+
         if (cropData == null)
         {
             dragMode = DragMode.None;
-            Debug.LogWarning($"[SeedDragItem] BeginPlantMode: cropData null");
+            Debug.LogWarning($"[SeedDragItem] BeginPlantMode: cropData null crop={cropName}");
             return;
         }
 
         if (GetCurrentStock() <= 0)
         {
             dragMode = DragMode.None;
-            Debug.Log($"[SeedDragItem] Không đủ hạt giống '{cropData.displayName}' để trồng.");
+            Debug.Log($"[SeedDragItem] Không đủ hạt giống '{cropData.displayName}' để trồng. crop={cropName}");
             return;
         }
 

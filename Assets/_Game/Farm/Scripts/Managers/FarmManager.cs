@@ -306,7 +306,12 @@ public class FarmManager : MonoBehaviour
         }
 
         if (plot.CanOpenSeedPopup())
-            FarmUIManager.Instance?.ShowPlantSelectForPlot(plot);
+        {
+            if (plot.Category == PlotCategory.Flower)
+                FarmUIManager.Instance?.ShowFlowerSelectForPlot(plot);
+            else
+                FarmUIManager.Instance?.ShowPlantSelectForPlot(plot);
+        }
     }
 
     public void OnLockedPlotClicked(PlotController plot)

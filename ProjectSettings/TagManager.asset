@@ -74,5 +74,20 @@ TagManager:
   - name: HarvestFX
     uniqueID: 2433806025
     locked: 0
+  - name: Background
+    uniqueID: 332801758
+    locked: 0
+  - name: World
+    uniqueID: 391991650
+    locked: 0
+  - name: Characters
+    uniqueID: 751597202
+    locked: 0
+  - name: Foreground
+    uniqueID: 812909395
+    locked: 0
+  - name: UI
+    uniqueID: 1090805748
+    locked: 0
   m_RenderingLayers:
   - Default

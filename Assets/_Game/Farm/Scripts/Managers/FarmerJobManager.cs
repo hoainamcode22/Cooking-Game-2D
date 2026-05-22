@@ -115,7 +115,7 @@ public class FarmerJobManager : MonoBehaviour
             FarmerBehavior freeFarmer = null;
             foreach (FarmerBehavior f in farmers)
             {
-                if (f != null && !f.IsBusy)
+                if (f != null && f.enabled && f.gameObject.activeInHierarchy && !f.IsBusy)
                 {
                     freeFarmer = f;
                     break;

@@ -174,10 +174,10 @@ RectTransform:
   - {fileID: 6300020914134463262}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 39.2, y: 40.5722}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!225 &4066462377075461245
 CanvasGroup:
@@ -207,7 +207,6 @@ MonoBehaviour:
   iconImage: {fileID: 1887203107211816385}
   txtName: {fileID: 2361579324898658064}
   txtSoLuong: {fileID: 5760047318265629348}
-  rootCanvas: {fileID: 0}
 --- !u!222 &7802093649923654151
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -248,10 +247,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 6469289034810306887}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -145.076, y: -41.961}
-  m_SizeDelta: {x: 136.846, y: 163.984}
+  m_AnchorMin: {x: 0.5, y: 0}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: -154, y: -31}
+  m_SizeDelta: {x: 928, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &562714975310574729
 CanvasRenderer:
@@ -275,7 +274,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 0, g: 0, b: 0, a: 0}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:

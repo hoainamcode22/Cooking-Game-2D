@@ -48,13 +48,16 @@ public class FarmerBehavior : MonoBehaviour
     // ── Private state ─────────────────────────────────────────────────────────
 
     private Animator animator;
+    private FarmerAnimationAdapter animAdapter;
     private Vector3 homePosition;
 
     // ─────────────────────────────────────────────────────────────────────────
 
     private void Awake()
     {
-        animator = GetComponent<Animator>();
+        animator    = GetComponent<Animator>();
+        animAdapter = GetComponent<FarmerAnimationAdapter>();
+
         if (animator == null)
             Debug.LogError("[Farmer] Animator not found on " + name);
     }
@@ -64,8 +67,33 @@ public class FarmerBehavior : MonoBehaviour
         homePosition = transform.position;
         Debug.Log($"[Farmer:{name}] Home position saved: {homePosition}");
 
-        if (animator != null)
-            animator.Play("LiftHoe");
+        PlayIdle();
+    }
+
+    // ── Animation helpers (adapter-aware) ────────────────────────────────────
+
+    private void PlayIdle()
+    {
+        if (animAdapter != null) animAdapter.PlayIdle();
+        else if (animator != null) animator.Play("LiftHoe");
+    }
+
+    private void PlayWalk()
+    {
+        if (animAdapter != null) animAdapter.PlayWalk();
+        else if (animator != null) animator.Play("WalkHoe");
+    }
+
+    private void PlayWork(PlotController target)
+    {
+        if (animAdapter != null) animAdapter.PlayWork(target);
+        else if (animator != null) animator.SetTrigger("StartWork");
+    }
+
+    private void PlayRest()
+    {
+        if (animAdapter != null) animAdapter.PlayRest();
+        else if (animator != null) animator.SetTrigger("Rest");
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -111,7 +139,7 @@ public class FarmerBehavior : MonoBehaviour
         // ── Đi tới plot ───────────────────────────────────────────────────────
         Vector3 standPos = target.GetFarmerStandPosition();
         Debug.Log($"[Farmer:{name}] Walking to plot {plotId} at {standPos}");
-        if (animator != null) animator.Play("WalkHoe");
+        PlayWalk();
         yield return StartCoroutine(WalkTo(standPos));
 
         // Kiểm tra lại sau khi đi xong
@@ -126,7 +154,7 @@ public class FarmerBehavior : MonoBehaviour
 
         // ── Tới nơi: trigger WalkToWork ───────────────────────────────────────
         Debug.Log($"[Farmer:{name}] Arrived at plot {plotId} — trigger StartWork");
-        if (animator != null) animator.SetTrigger("StartWork");
+        PlayWork(target);
         yield return new WaitForSeconds(walkToWorkDuration);
 
         // ── HoeLoop: chờ đến khi plot sang stage 1 (progress >= 0.5) ──────────
@@ -135,7 +163,7 @@ public class FarmerBehavior : MonoBehaviour
 
         // ── Trigger Rest ──────────────────────────────────────────────────────
         Debug.Log($"[Farmer:{name}] Plot {plotId} reached stage 1 — trigger Rest | progress={target.GetGrowProgress01():F2}");
-        if (animator != null) animator.SetTrigger("Rest");
+        PlayRest();
         yield return new WaitForSeconds(restDuration);
 
         // ── Về home ───────────────────────────────────────────────────────────
@@ -157,13 +185,13 @@ public class FarmerBehavior : MonoBehaviour
         }
     }
 
-    /// Đi bộ về homePosition rồi phát LiftHoe.
+    /// Đi bộ về homePosition rồi phát Idle.
     private IEnumerator ReturnHome()
     {
-        if (animator != null) animator.Play("WalkHoe");
+        PlayWalk();
         yield return StartCoroutine(WalkTo(homePosition));
-        if (animator != null) animator.Play("LiftHoe");
-        Debug.Log($"[Farmer:{name}] Arrived home — LiftHoe idle");
+        PlayIdle();
+        Debug.Log($"[Farmer:{name}] Arrived home — Idle");
     }
 
     /// Di chuyển trong world space tới đích cố định.

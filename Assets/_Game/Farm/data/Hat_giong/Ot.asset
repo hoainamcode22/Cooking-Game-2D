@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   itemID: seed_chili
   itemName: "\u1EDAt"
-  itemIcon: {fileID: -1733071076163020357, guid: 6937de7c237f9cc4aabbf97a1459c2b4, type: 3}
+  itemIcon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
   goldPrice: 170
   diamondPrice: 0
   cropCategory: 0
   cropId: chili
-  plantSeedFxIcon: {fileID: -1733071076163020357, guid: 6937de7c237f9cc4aabbf97a1459c2b4, type: 3}
-  harvestIcon: {fileID: -1733071076163020357, guid: 6937de7c237f9cc4aabbf97a1459c2b4, type: 3}
+  plantSeedFxIcon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
+  harvestIcon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
   sproutSprite: {fileID: -471260011933795411, guid: e162379a861a53043a6875aa8b6a042a, type: 3}
   growingSprite: {fileID: -1988381813660673640, guid: 44fe0924a57d4dd40aaaa6a4696e342f, type: 3}
   readySprite: {fileID: 4202961238837710150, guid: 75e4c6e4abc9a2141818453c94c19422, type: 3}
