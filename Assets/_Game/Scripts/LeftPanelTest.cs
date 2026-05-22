@@ -24,7 +24,11 @@ public class LeftPanelTest : MonoBehaviour
                 ? leftPanel.ingredientCardSample.mainIconImage.sprite
                 : null;
 
-            leftPanel.ingredientCardSample.Setup("Beef", mainSprite, true);
+            Sprite topSprite = leftPanel.ingredientCardSample.topIconImage != null
+                ? leftPanel.ingredientCardSample.topIconImage.sprite
+                : null;
+
+            leftPanel.ingredientCardSample.Setup("Beef", mainSprite, topSprite, 3, true);
         }
 
         if (leftPanel.seasoningCardSample != null)
@@ -33,7 +37,11 @@ public class LeftPanelTest : MonoBehaviour
                 ? leftPanel.seasoningCardSample.mainIconImage.sprite
                 : null;
 
-            leftPanel.seasoningCardSample.Setup("Fish Sauce", mainSprite, false);
+            Sprite topSprite = leftPanel.seasoningCardSample.topIconImage != null
+                ? leftPanel.seasoningCardSample.topIconImage.sprite
+                : null;
+
+            leftPanel.seasoningCardSample.Setup("Fish Sauce", mainSprite, topSprite, 3, false);
         }
 
         Debug.Log("LeftPanelTest đã chạy.");

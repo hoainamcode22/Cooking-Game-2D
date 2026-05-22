@@ -1,172 +1,166 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-/// <summary>
-/// Khởi tạo UI bếp khi scene load.
-///
-/// Nguồn dữ liệu DUY NHẤT cho số lượng slot = LeftPanelSpawner (đã spawn sẵn tất cả card).
-/// CookingBoot chỉ làm 1 việc: đọc số lượng từ KitchenTransferManager rồi cập nhật
-/// lên từng card theo ingredient ID — không filter, không ẩn slot nào.
-/// </summary>
+[System.Serializable]
+public class CookingTransferredItem
+{
+    public InventoryItemData itemData;
+    public int quantity;
+
+    public CookingTransferredItem(InventoryItemData itemData, int quantity)
+    {
+        this.itemData = itemData;
+        this.quantity = quantity;
+    }
+}
 public class CookingBoot : MonoBehaviour
 {
     [Header("Test Mode")]
-    [Tooltip("True = giữ nguyên toàn bộ card do LeftPanelSpawner spawn (dùng khi test).\n" +
-             "False = cập nhật số lượng từ kho Farm chuyển sang.")]
     public bool useTestData = true;
 
     [Header("Refs")]
     public CookingSelectionManager selection;
     public LeftPanelRefs leftRefs;
 
-    /// <summary>
-    /// Database phụ — vẫn giữ để Editor tool (ExpandCookingSlots) có thể append vào.
-    /// Không còn dùng làm filter gate ở runtime nữa.
-    /// </summary>
-    [Header("Cooking Item Database (tham khảo, không filter runtime)")]
+    [Header("Cooking Item Database")]
     public List<InventoryItemData> cookingInventoryItems = new List<InventoryItemData>();
 
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        cookingInventoryItems.RemoveAll(item => item == null);
-    }
-#endif
-
-    // ─── Lifecycle ────────────────────────────────────────────────────────────
+    private readonly Dictionary<string, InventoryItemData> inventoryLookup = new Dictionary<string, InventoryItemData>();
 
     private IEnumerator Start()
     {
-        // Chờ 1 frame để LeftPanelSpawner.Start() → SpawnAll() hoàn tất trước
         yield return null;
 
         if (selection == null || leftRefs == null)
-        {
-            Debug.LogError("[CookingBoot] Thiếu reference selection hoặc leftRefs.");
             yield break;
-        }
 
         if (!useTestData)
-            SyncQuantitiesFromKitchen();
+        {
+            BuildInventoryLookup();
+            FillOldCardsFromTransferredItems();
+        }
         else
-            Debug.Log("[CookingBoot] Test Mode: giữ nguyên toàn bộ card từ LeftPanelSpawner.");
+        {
+            Debug.Log("[CookingBoot] Test Mode bật: không lọc theo kho, giữ toàn bộ card đã spawn.");
+        }
 
-        // Đăng ký tất cả card vào CookingSelectionManager (sau khi quantity đã cập nhật)
         selection.RegisterAllLeftCards(
             leftRefs.ingredientsContent,
             leftRefs.seasoningsContent
         );
     }
 
-    // ─── Core: đồng bộ số lượng từ kho bếp ──────────────────────────────────
-
-    /// <summary>
-    /// Duyệt tất cả card do LeftPanelSpawner tạo ra.
-    /// Card nào có itemId trùng với item Farm chuyển qua → cập nhật số lượng thực.
-    /// Card nào không được chuyển → hiển thị x0 (không ẩn).
-    /// </summary>
-    private void SyncQuantitiesFromKitchen()
+    private void BuildInventoryLookup()
     {
-        // Build map: itemId → quantity từ KitchenTransferManager
-        // KHÔNG filter qua cookingInventoryItems — dùng dữ liệu gốc từ Farm
-        var transferMap = BuildTransferMap();
+        inventoryLookup.Clear();
 
-        Debug.Log($"[CookingBoot] Farm đã chuyển {transferMap.Count} loại nguyên liệu/gia vị vào bếp.");
+        for (int i = 0; i < cookingInventoryItems.Count; i++)
+        {
+            InventoryItemData item = cookingInventoryItems[i];
+            if (item == null || string.IsNullOrEmpty(item.itemId))
+                continue;
 
-        ApplyQuantitiesToCards(leftRefs.ingredientsContent, transferMap);
-        ApplyQuantitiesToCards(leftRefs.seasoningsContent,  transferMap);
-
-        // Làm mới layout để ScrollView nhận diện đúng kích thước nội dung
-        RefreshLayouts();
+            if (!inventoryLookup.ContainsKey(item.itemId))
+                inventoryLookup.Add(item.itemId, item);
+        }
     }
 
-    /// <summary>
-    /// Đọc tất cả item đã chuyển từ KitchenTransferManager.
-    /// Key = itemId (lowercase, trimmed). Value = số lượng.
-    /// </summary>
-    private static Dictionary<string, int> BuildTransferMap()
+    private void FillOldCardsFromTransferredItems()
     {
-        var map = new Dictionary<string, int>(System.StringComparer.OrdinalIgnoreCase);
+        Debug.Log("[CookingBoot] Điền dữ liệu từ KitchenTransferManager vào card cũ.");
+        
+        List<CookingTransferredItem> ingredientItems = new List<CookingTransferredItem>();
+        List<CookingTransferredItem> seasoningItems = new List<CookingTransferredItem>();
+        
 
-        if (KitchenTransferManager.Instance == null)
-            return map;
-
-        foreach (var kv in KitchenTransferManager.Instance.GetTransferredItems())
+        if (KitchenTransferManager.Instance != null)
         {
-            if (kv.Value <= 0) continue;
+            List<KeyValuePair<string, int>> transferred = KitchenTransferManager.Instance.GetTransferredItems();
 
-            string key = kv.Key?.Trim();
-            if (string.IsNullOrEmpty(key)) continue;
+            foreach (var kv in transferred)
+            {
+                Debug.Log($"[CookingBoot] Transferred Item: {kv.Key} x{kv.Value}");
+                
+                if (!inventoryLookup.TryGetValue(kv.Key, out InventoryItemData inventoryItem))
+                    continue;
 
-            // Cộng dồn nếu trùng key (phòng trường hợp dữ liệu thừa)
-            if (map.ContainsKey(key))
-                map[key] += kv.Value;
-            else
-                map[key] = kv.Value;
+                if (inventoryItem == null || inventoryItem.cookingData == null)
+                    continue;
+
+                int quantity = kv.Value;
+
+                CookingTransferredItem transferredItem = new CookingTransferredItem(inventoryItem, quantity);
+
+                if (inventoryItem.cookingData.kind == IngredientKind.Seasoning)
+                    seasoningItems.Add(transferredItem);
+                else
+                    ingredientItems.Add(transferredItem);
+            }
         }
 
-        return map;
+        ApplyToCardGroup(leftRefs.ingredientsContent, ingredientItems, false);
+        ApplyToCardGroup(leftRefs.seasoningsContent, seasoningItems, true);
     }
 
-    /// <summary>
-    /// Duyệt tất cả card trong contentRoot.
-    /// Mỗi card lấy ID từ SelectableIngredientCard.GetItemId() rồi tra trong transferMap.
-    /// Luôn SetActive(true) — không bao giờ ẩn slot.
-    /// </summary>
-    private void ApplyQuantitiesToCards(Transform contentRoot, Dictionary<string, int> transferMap)
+    private void ApplyToCardGroup(Transform contentRoot, List<CookingTransferredItem> items, bool isSeasoning)
     {
-        if (contentRoot == null) return;
+        if (contentRoot == null)
+            return;
 
-        int shown = 0;
+        List<SelectableIngredientCard> cards = new List<SelectableIngredientCard>();
 
         foreach (Transform child in contentRoot)
         {
-            if (!child.TryGetComponent(out SelectableIngredientCard card)) continue;
-
-            string cardId = card.GetItemId()?.Trim();
-
-            // Bỏ qua sample card (không có ID và không có ingredientData)
-            if (string.IsNullOrEmpty(cardId) && card.GetIngredientData() == null)
-                continue;
-
-            // Chỉ hiển thị slot khi có số lượng thực tế > 0
-            int qty = (!string.IsNullOrEmpty(cardId) && transferMap.TryGetValue(cardId, out int found))
-                ? found
-                : 0;
-
-            bool visible = qty > 0;
-            child.gameObject.SetActive(visible);
-            if (!visible) continue;
-
-            shown++;
-            card.SetQuantityFromKitchen(qty);
+            SelectableIngredientCard card = child.GetComponent<SelectableIngredientCard>();
+            if (card != null)
+                cards.Add(card);
         }
 
-        Debug.Log($"[CookingBoot] {contentRoot.name}: hiển thị {shown} slot.");
+        for (int i = 0; i < cards.Count; i++)
+        {
+            if (i < items.Count)
+            {
+                SetupCard(cards[i], items[i].itemData, items[i].quantity, isSeasoning);
+                cards[i].gameObject.SetActive(true);
+            }
+            else
+            {
+                cards[i].gameObject.SetActive(false);
+            }
+        }
+
+        if (items.Count > cards.Count)
+        {
+            Debug.LogWarning($"[CookingBoot] Không đủ slot {(isSeasoning ? "gia vị" : "nguyên liệu")} để hiển thị. Dư: {items.Count - cards.Count}");
+        }
     }
 
-    // ─── Layout refresh ───────────────────────────────────────────────────────
-
-    private void RefreshLayouts()
+    private void SetupCard(SelectableIngredientCard card, InventoryItemData inventoryItem, int quantity, bool isSeasoning)
     {
-        // Buộc Canvas cập nhật ngay để ScrollView tính đúng chiều cao content
-        Canvas.ForceUpdateCanvases();
+        if (card == null || inventoryItem == null || inventoryItem.cookingData == null)
+            return;
 
-        ForceRebuild(leftRefs.ingredientsContent);
-        ForceRebuild(leftRefs.seasoningsContent);
+        IngredientData ing = inventoryItem.cookingData;
 
-        // Một lần nữa sau khi rebuild để chắc chắn
-        Canvas.ForceUpdateCanvases();
-    }
+        IngredientItemUI ui = card.GetComponent<IngredientItemUI>();
+        if (ui != null)
+        {
+            string displayName = !string.IsNullOrEmpty(inventoryItem.displayName)
+                ? inventoryItem.displayName
+                : ing.displayName;
 
-    private static void ForceRebuild(Transform t)
-    {
-        if (t == null) return;
+            Sprite mainIcon = inventoryItem.icon != null ? inventoryItem.icon : ing.icon;
+            Sprite topIcon = null;
+            int stars = ing.stars;
 
-        RectTransform rt = t as RectTransform ?? t.GetComponent<RectTransform>();
-        if (rt != null)
-            LayoutRebuilder.ForceRebuildLayoutImmediate(rt);
+            ui.Setup(displayName, mainIcon, topIcon, stars, false);
+        }
+
+        card.SetIngredientData(ing);
+        card.Init(selection, isSeasoning);
+        card.SetSelected(false);
+        card.setIdItem(inventoryItem.itemId);
+        card.SetQuantityFromKitchen(quantity);
     }
 }

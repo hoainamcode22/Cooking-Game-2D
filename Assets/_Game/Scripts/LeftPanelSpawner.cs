@@ -10,11 +10,13 @@ public class LeftPanelSpawner : MonoBehaviour
 
         public string itemName;
         public Sprite mainIcon;
+        public Sprite topIcon;
+
+        [Range(1, 3)] public int starCount = 3;
     }
 
     [Header("Refs")]
     public LeftPanelRefs leftPanel;
-    public CookingSelectionManager selectionManager;
 
     [Header("Ingredients")]
     public List<CardData> ingredients = new List<CardData>();
@@ -36,20 +38,21 @@ public class LeftPanelSpawner : MonoBehaviour
     [ContextMenu("Spawn All")]
     public void SpawnAll()
     {
-        // isSeasoning = false cho nguyên liệu, true cho gia vị
-        SpawnList(ingredients, leftPanel.ingredientsContent, leftPanel.ingredientCardSample, isSeasoning: false);
-        SpawnList(seasonings,  leftPanel.seasoningsContent,  leftPanel.seasoningCardSample,  isSeasoning: true);
+        SpawnList(ingredients, leftPanel.ingredientsContent, leftPanel.ingredientCardSample);
+        SpawnList(seasonings, leftPanel.seasoningsContent, leftPanel.seasoningCardSample);
     }
 
-    private void SpawnList(List<CardData> dataList, Transform parent, IngredientItemUI samplePrefab, bool isSeasoning)
+    private void SpawnList(List<CardData> dataList, Transform parent, IngredientItemUI samplePrefab)
     {
         if (parent == null || samplePrefab == null) return;
 
-        // Xoá card cũ, giữ lại sample
         for (int i = parent.childCount - 1; i >= 0; i--)
         {
             Transform child = parent.GetChild(i);
-            if (child == samplePrefab.transform) continue;
+
+            if (child == samplePrefab.transform)
+                continue;
+
             Destroy(child.gameObject);
         }
 
@@ -68,7 +71,8 @@ public class LeftPanelSpawner : MonoBehaviour
             }
 
             string displayName = data.itemName;
-            Sprite mainSprite  = data.mainIcon;
+            Sprite mainSprite = data.mainIcon;
+            Sprite topSprite = data.topIcon;
 
             if (data.ingredientData != null)
             {
@@ -79,29 +83,23 @@ public class LeftPanelSpawner : MonoBehaviour
                     mainSprite = data.ingredientData.icon;
             }
 
-            newCard.Setup(displayName, mainSprite, false);
+            newCard.Setup(
+                displayName,
+                mainSprite,
+                topSprite,
+                data.starCount,
+                false
+            );
 
             SelectableIngredientCard selectableCard = newCard.GetComponent<SelectableIngredientCard>();
-            if (selectableCard == null)
+            if (selectableCard != null)
             {
-                Debug.LogWarning("[LeftPanelSpawner] Card thiếu SelectableIngredientCard: " + displayName);
-                continue;
+                selectableCard.SetIngredientData(data.ingredientData);
             }
-
-            // 1. Gán data nguyên liệu (cũng đồng bộ DraggableItem.ingredientData bên trong)
-            selectableCard.SetIngredientData(data.ingredientData);
-
-            // 2. Gán Item ID để KitchenTransferManager trừ đúng slot sau khi nấu
-            string itemId = data.ingredientData != null ? data.ingredientData.id : "";
-            selectableCard.setIdItem(itemId);
-
-            // 3. Đăng ký manager + đánh dấu loại (nguyên liệu / gia vị)
-            //    Nếu selectionManager chưa gán trong Inspector, card vẫn hiển thị
-            //    nhưng sẽ cảnh báo khi người dùng tương tác.
-            if (selectionManager != null)
-                selectableCard.Init(selectionManager, isSeasoning);
             else
-                Debug.LogWarning("[LeftPanelSpawner] selectionManager chưa được gán — card '" + displayName + "' sẽ không phản hồi khi kéo/thả.");
+            {
+                Debug.LogWarning("Card spawn ra chưa có SelectableIngredientCard: " + displayName);
+            }
         }
     }
 }

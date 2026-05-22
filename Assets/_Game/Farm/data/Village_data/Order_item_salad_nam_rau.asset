@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86e861be00e538046af1b12d7d4bdec0, type: 3}
+  m_Name: Order_item_salad_nam_rau
+  m_EditorClassIdentifier: Assembly-CSharp::Village.OrderItemDefinition
+  itemId: salad_bap_cai_chanh
+  displayName: "Salad b\u1EAFp c\u1EA3i chanh"
+  icon: {fileID: 9089190258953072601, guid: 63b4fa4fa54b6b443b2ca9c2ed795f57, type: 3}
+  category: 3
+  unlockLevel: 1
+  weight: 10
+  minAmount: 1
+  maxAmount: 5
+  goldPerUnit: 10
+  expPerUnit: 5

@@ -211,7 +211,13 @@ public class CookingSelectionManager : MonoBehaviour
             rt.anchoredPosition = Vector2.zero;
         }
 
-        newUi.Setup(fromCard.GetItemName(), fromCard.GetMainSprite(), true);
+        newUi.Setup(
+            fromCard.GetItemName(),
+            fromCard.GetMainSprite(),
+            fromCard.GetTopSprite(),
+            3,
+            true
+        );
     }
 
     private void ClearChildren(Transform t)

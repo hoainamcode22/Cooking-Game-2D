@@ -39,8 +39,6 @@ public class DishBookUI : MonoBehaviour
 
     [Header("Page Text")]
     [SerializeField] private TMP_Text txtPageNumber;
-    [Header("Page score")]
-    [SerializeField] private GameObject scoreResultBoxUI;
 
 
     private int currentPageIndex = 0;
@@ -51,7 +49,6 @@ public class DishBookUI : MonoBehaviour
     {
         SetupButtons();
         ShowCurrentPage();
-        scoreResultBoxUI.gameObject.SetActive(false);
     }
 
     private void SetupButtons()
