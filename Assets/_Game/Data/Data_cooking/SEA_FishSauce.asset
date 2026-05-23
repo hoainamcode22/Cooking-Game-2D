@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: fishsauce
   displayName: FishSauce
-  icon: {fileID: 1949655777808321501, guid: 64be505977a47c14db38f2cad7a9641e, type: 3}
+  icon: {fileID: 1949655777808321501, guid: e05efc49d25b1ac4d8fc62cc1760bf9f, type: 3}
   kind: 1
   tier: 2
   vector:

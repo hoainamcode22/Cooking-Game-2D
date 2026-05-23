@@ -184,7 +184,6 @@ public class CookingChallengeManager : MonoBehaviour
         }
         // scoreResultBoxUI.ShowResult(result);
         cookedDishOnPlate = currentDishData;// Lưu trữ món ăn đã nấu được hiển thị trên đĩa
-        ShowCookedDishOnPlate();// Hiển thị món ăn đã nấu lên đĩa
 
         if (centerCookingPanelUI != null)
             centerCookingPanelUI.SetCookSubmitScore(result.finalScore);
@@ -227,6 +226,7 @@ public class CookingChallengeManager : MonoBehaviour
             {
                 centerCookingPanelUI.SetCookSubmitScore(0);
             }
+            ShowCookedDishOnPlate();
         }
         else
         {
@@ -234,8 +234,7 @@ public class CookingChallengeManager : MonoBehaviour
             RefreshCenterUI();
         }
        
-        // yield return new WaitForSeconds(1.2f);
-        // NextDish();
+
     }
 
 

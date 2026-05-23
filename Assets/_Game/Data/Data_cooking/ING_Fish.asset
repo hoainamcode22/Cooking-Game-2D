@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: ca
   displayName: "C\xE1"
-  icon: {fileID: 0}
+  icon: {fileID: 7846787863919182111, guid: 1db74d2f4859d7240ae7fe851325e081, type: 3}
   kind: 0
   tier: 1
   vector:

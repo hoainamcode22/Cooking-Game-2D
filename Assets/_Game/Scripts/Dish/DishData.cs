@@ -40,8 +40,4 @@ public class DishData : ScriptableObject
     [Header("Scoring - Required Ingredients")]
     public List<IngredientData> requiredIngredients;
 
-    [Header("Hints - Required")]
-    public HintIngredientSlotData required1;
-    public HintIngredientSlotData required2;
-
 }
