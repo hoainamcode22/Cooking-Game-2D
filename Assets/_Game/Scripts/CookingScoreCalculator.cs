@@ -89,6 +89,10 @@ public static class CookingScoreCalculator
         if (dishData == null)
             return result;
 
+        result.ingredientVector = SumVectorsFromCards(selectedIngredients);
+        result.seasoningVector = SumVectorsFromCards(selectedSeasonings);
+        result.totalVector = result.ingredientVector + result.seasoningVector;
+
         result.ingredientScore = ScoreRequiredIngredients(dishData, selectedIngredients);
 
         int flavorScore100 = ScoreFromVector(result.totalVector, dishData.targetFlavor);

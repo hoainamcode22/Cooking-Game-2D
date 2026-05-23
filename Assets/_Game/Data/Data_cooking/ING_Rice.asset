@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: rice
   displayName: Rice
-  icon: {fileID: 9135130128162984572, guid: 83b0ddd2946e3e94e9671b1686386e1b, type: 3}
+  icon: {fileID: 9135130128162984572, guid: ae3730e6740dc42438b21a76abafb62a, type: 3}
   kind: 0
   tier: 1
   vector:

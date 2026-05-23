@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: herbs
   displayName: Herbs
-  icon: {fileID: -6473379884045465844, guid: 050a1194adf72f046adc525bddd7bb28, type: 3}
+  icon: {fileID: -6473379884045465844, guid: 90a4252b924d8fb44b2e6ead23bc8d58, type: 3}
   kind: 0
   tier: 1
   vector:
