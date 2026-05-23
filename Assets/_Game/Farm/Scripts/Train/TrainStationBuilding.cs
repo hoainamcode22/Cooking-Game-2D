@@ -26,6 +26,7 @@ public class TrainStationBuilding : MonoBehaviour
         bool clicked = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
                     || (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame);
         if (!clicked) return;
+        if (FarmInputLock.BlockMapPan) return;
         if (Camera.main == null) return;
 
         Vector2 screenPos = InputBridge.PointerPosition;

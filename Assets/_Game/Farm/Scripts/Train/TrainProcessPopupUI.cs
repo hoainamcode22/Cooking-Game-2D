@@ -8,6 +8,7 @@ public class TrainProcessPopupUI : MonoBehaviour
     [SerializeField] private TMP_Text txtStatus;
     [SerializeField] private TMP_Text txt_time;
     [SerializeField] private Button   Btn_close;
+    private bool popupInputLockHeld;
 
     public bool IsVisible => gameObject.activeSelf;
     public bool IsOpen    => gameObject.activeSelf;  // alias dùng chung với PopupManager
@@ -21,6 +22,7 @@ public class TrainProcessPopupUI : MonoBehaviour
     public void Show(float totalTime)
     {
         gameObject.SetActive(true);
+        AcquirePopupInputBlock();
         if (txtStatus != null) txtStatus.text = "Đang vận chuyển...";
         UpdateTimer(totalTime);
     }
@@ -28,6 +30,7 @@ public class TrainProcessPopupUI : MonoBehaviour
     public void ShowArrived()
     {
         gameObject.SetActive(true);
+        AcquirePopupInputBlock();
         if (txtStatus != null) txtStatus.text = "Tàu đã về!";
         if (txt_time  != null) txt_time.text  = "0:00";
     }
@@ -43,6 +46,34 @@ public class TrainProcessPopupUI : MonoBehaviour
 
     public void Hide()
     {
+        ReleasePopupInputBlock();
         gameObject.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        ReleasePopupInputBlock();
+    }
+
+    private void AcquirePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(gameObject, true);
+
+        if (!popupInputLockHeld)
+        {
+            FarmInputLock.RegisterPopupOpen();
+            popupInputLockHeld = true;
+        }
+    }
+
+    private void ReleasePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(gameObject, false);
+
+        if (popupInputLockHeld)
+        {
+            FarmInputLock.RegisterPopupClose();
+            popupInputLockHeld = false;
+        }
     }
 }

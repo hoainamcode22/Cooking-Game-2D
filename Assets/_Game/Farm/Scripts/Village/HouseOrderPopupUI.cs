@@ -49,6 +49,7 @@ namespace Village
 
         private HouseOrderRuntime    currentOrder;
         private HouseOrderController currentHouse;
+        private bool popupInputLockHeld;
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
 
@@ -91,6 +92,11 @@ namespace Village
             }
         }
 
+        private void OnDisable()
+        {
+            ReleasePopupInputBlock();
+        }
+
         // ── Public API ────────────────────────────────────────────────────────
 
         public void Open(HouseOrderRuntime order, HouseOrderController house)
@@ -109,6 +115,7 @@ namespace Village
             currentHouse = house;
 
             gameObject.SetActive(true);
+            AcquirePopupInputBlock();
 
             DiagnoseButtonInput();
             Refresh();
@@ -117,6 +124,7 @@ namespace Village
         public void Close()
         {
             Debug.Log("[OrderPopup] Close()");
+            ReleasePopupInputBlock();
             gameObject.SetActive(false);
             currentOrder = null;
             currentHouse = null;
@@ -325,6 +333,24 @@ namespace Village
         private static void SetActive(Component c, bool active)
         {
             if (c != null) c.gameObject.SetActive(active);
+        }
+
+        private void AcquirePopupInputBlock()
+        {
+            FarmInputLock.SetPopupRaycastBlock(gameObject, true);
+
+            if (popupInputLockHeld) return;
+            FarmInputLock.RegisterPopupOpen();
+            popupInputLockHeld = true;
+        }
+
+        private void ReleasePopupInputBlock()
+        {
+            FarmInputLock.SetPopupRaycastBlock(gameObject, false);
+
+            if (!popupInputLockHeld) return;
+            FarmInputLock.RegisterPopupClose();
+            popupInputLockHeld = false;
         }
 
         

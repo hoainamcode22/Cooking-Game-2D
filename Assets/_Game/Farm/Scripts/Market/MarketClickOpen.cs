@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 public class MarketClickOpen : MonoBehaviour
 {
     [SerializeField] private MarketPopupUI marketPopupUI;
+    [SerializeField] private MarketManager marketManager;
     [SerializeField] private Camera mainCamera;
     [SerializeField] private Collider2D targetCollider;
 
@@ -18,6 +19,9 @@ public class MarketClickOpen : MonoBehaviour
 
         if (targetCollider == null)
             targetCollider = GetComponent<Collider2D>();
+
+        if (marketManager == null)
+            marketManager = MarketManager.Instance;
     }
 
     private void Update()
@@ -57,6 +61,8 @@ public class MarketClickOpen : MonoBehaviour
         // Không mở khi Edit Mode đang bật
         if (EditModeManager.IsEditMode) return;
 
+        if (FarmInputLock.BlockMapPan) return;
+
         // Không mở khi đang có popup khác mở
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;
@@ -76,9 +82,12 @@ public class MarketClickOpen : MonoBehaviour
             return;
         }
 
-        if (marketPopupUI == null)
+        if (marketManager == null)
+            marketManager = MarketManager.Instance;
+
+        if (marketManager == null && marketPopupUI == null)
         {
-            Debug.LogError("[MarketClickOpen] marketPopupUI null");
+            Debug.LogError("[MarketClickOpen] marketManager and marketPopupUI are null");
             return;
         }
 
@@ -92,7 +101,10 @@ public class MarketClickOpen : MonoBehaviour
             return;
 
         Debug.Log("[MarketClickOpen] OPEN POPUP");
-        marketPopupUI.OpenPopup();
+        if (marketManager != null)
+            marketManager.OpenMarketPopup();
+        else
+            marketPopupUI.OpenPopup();
     }
 
     // check có bấm vào UI popup không
@@ -112,7 +124,7 @@ public class MarketClickOpen : MonoBehaviour
             Transform t = results[i].gameObject.transform;
             Canvas parentCanvas = t.GetComponentInParent<Canvas>();
 
-            if (parentCanvas != null && parentCanvas.name == "Canvas_Popup")
+            if (parentCanvas != null && (parentCanvas.name == "Canvas_Popup" || parentCanvas.name == "Canvas_MarketPopup"))
                 return true;
         }
 
