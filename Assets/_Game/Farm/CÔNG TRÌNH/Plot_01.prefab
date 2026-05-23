@@ -403,8 +403,7 @@ MonoBehaviour:
   spreadXMax: 0.8
   durationMin: 0.5
   durationMax: 0.9
-  scaleMin: 0.18
-  scaleMax: 0.32
+  iconScale: 0.35
   sortingLayerName: FX
   sortingOrder: 200
 --- !u!1 &1773066873076892663
