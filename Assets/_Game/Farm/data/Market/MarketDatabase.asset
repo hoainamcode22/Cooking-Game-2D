@@ -1,0 +1,218 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3621f8005805ec246a584a0a7af3be36, type: 3}
+  m_Name: MarketDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::MarketDatabase_SO
+  setupNotes: 'Fill ItemID from the game''s master item database.
+
+    Old data targets:
+    10 seed IDs, 10 flower seed IDs, cattle meat IDs (cow/chicken/pig), egg ID, 20
+    dish IDs.
+
+    New data targets to add later to the master DB: fish sauce, salt,
+    MSG, vegetables.
+
+    Market only owns BuyPrice and Min/MaxQuantity for each
+    ItemID.'
+  items:
+  - ItemID: rice
+    BuyPrice: 25
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: rice
+    BuyPrice: 25
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_SEED_ID_03
+    BuyPrice: 25
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_SEED_ID_04
+    BuyPrice: 25
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_SEED_ID_05
+    BuyPrice: 25
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_SEED_ID_06
+    BuyPrice: 25
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_SEED_ID_07
+    BuyPrice: 25
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_SEED_ID_08
+    BuyPrice: 25
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_SEED_ID_09
+    BuyPrice: 25
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_SEED_ID_10
+    BuyPrice: 25
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_FLOWER_SEED_ID_01
+    BuyPrice: 30
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_FLOWER_SEED_ID_02
+    BuyPrice: 30
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_FLOWER_SEED_ID_03
+    BuyPrice: 30
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_FLOWER_SEED_ID_04
+    BuyPrice: 30
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_FLOWER_SEED_ID_05
+    BuyPrice: 30
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_FLOWER_SEED_ID_06
+    BuyPrice: 30
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_FLOWER_SEED_ID_07
+    BuyPrice: 30
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_FLOWER_SEED_ID_08
+    BuyPrice: 30
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_FLOWER_SEED_ID_09
+    BuyPrice: 30
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_FLOWER_SEED_ID_10
+    BuyPrice: 30
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_MEAT_COW_ID
+    BuyPrice: 120
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_MEAT_CHICKEN_ID
+    BuyPrice: 90
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_MEAT_PIG_ID
+    BuyPrice: 110
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_EGG_ID
+    BuyPrice: 35
+    MinQuantity: 1
+    MaxQuantity: 4
+  - ItemID: TODO_DISH_ID_01
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_02
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_03
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_04
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_05
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_06
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_07
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_08
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_09
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_10
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_11
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_12
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_13
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_14
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_15
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_16
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_17
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_18
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_19
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_DISH_ID_20
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 2
+  - ItemID: TODO_FISH_SAUCE_ID
+    BuyPrice: 45
+    MinQuantity: 1
+    MaxQuantity: 3
+  - ItemID: TODO_SALT_ID
+    BuyPrice: 20
+    MinQuantity: 1
+    MaxQuantity: 5
+  - ItemID: TODO_MSG_ID
+    BuyPrice: 35
+    MinQuantity: 1
+    MaxQuantity: 4
+  - ItemID: TODO_VEGETABLE_ID
+    BuyPrice: 40
+    MinQuantity: 1
+    MaxQuantity: 4

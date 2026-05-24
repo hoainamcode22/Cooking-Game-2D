@@ -26,6 +26,7 @@ public class CropProcessPopupUI : MonoBehaviour
     public bool IsOpen => gameObject.activeSelf;
 
     private PlotController currentPlot;
+    private bool popupInputLockHeld;
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
@@ -74,12 +75,19 @@ public class CropProcessPopupUI : MonoBehaviour
 
         RefreshDisplay();
         gameObject.SetActive(true);
+        AcquirePopupInputBlock();
     }
 
     public void ClosePopup()
     {
+        ReleasePopupInputBlock();
         gameObject.SetActive(false);
         currentPlot = null;
+    }
+
+    private void OnDisable()
+    {
+        ReleasePopupInputBlock();
     }
 
     /// <summary>
@@ -114,6 +122,7 @@ public class CropProcessPopupUI : MonoBehaviour
 
         // InstantGrow tự trừ gem + ép trạng thái Ready
         currentPlot.InstantGrow();
+        ReleasePopupInputBlock();
         gameObject.SetActive(false);
         currentPlot = null;
     }
@@ -157,6 +166,24 @@ public class CropProcessPopupUI : MonoBehaviour
     }
 
     // ── UI Raycast ────────────────────────────────────────────────────────────
+
+    private void AcquirePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(gameObject, true);
+
+        if (popupInputLockHeld) return;
+        FarmInputLock.RegisterPopupOpen();
+        popupInputLockHeld = true;
+    }
+
+    private void ReleasePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(gameObject, false);
+
+        if (!popupInputLockHeld) return;
+        FarmInputLock.RegisterPopupClose();
+        popupInputLockHeld = false;
+    }
 
     private bool IsPointerOverPopupUI(Vector2 screenPos)
     {

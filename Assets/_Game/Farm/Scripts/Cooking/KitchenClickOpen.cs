@@ -19,6 +19,7 @@ public class KitchenClickOpen : MonoBehaviour
     private void Update()
     {
         if (!GetPointerDown(out Vector2 screenPos)) return;
+        if (FarmInputLock.BlockMapPan) return;
         if (mainCamera == null || targetCollider == null)   return;
 
         Vector2 world = mainCamera.ScreenToWorldPoint(screenPos);
