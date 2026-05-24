@@ -143,6 +143,8 @@ public class CookingSelectionManager : MonoBehaviour
 
     public void TryDeselect(SelectableIngredientCard card)
     {
+        if(!canSelectIngredient)
+            return;
         if (card == null) return;
 
         int quantity = card.GetQuantity();
@@ -275,29 +277,6 @@ public class CookingSelectionManager : MonoBehaviour
         Debug.Log("Đã reset toàn bộ lựa chọn sau khi nấu xong.");
     }
 
-    public void Cook()
-    {
-        int ingredientCount = GetTotalAmount(potIngredientAmounts);
-        int seasoningCount = GetTotalAmount(potSeasoningAmounts);
-
-        if (ingredientCount == 0)
-        {
-            Debug.Log("Chưa chọn nguyên liệu nào.");
-            return;
-        }
-
-        Debug.Log("===== COOK START =====");
-        Debug.Log("Số nguyên liệu: " + ingredientCount);
-        Debug.Log("Số gia vị: " + seasoningCount);
-
-        foreach (var kv in potIngredientAmounts)
-            Debug.Log("Nguyên liệu: " + kv.Key + " x" + kv.Value);
-
-        foreach (var kv in potSeasoningAmounts)
-            Debug.Log("Gia vị: " + kv.Key + " x" + kv.Value);
-
-        Debug.Log("Nấu xong! (tạm thời chưa tính điểm)");
-    }
 
     public List<SelectableIngredientCard> GetSelectedIngredientCards()
     {
@@ -343,7 +322,7 @@ public class CookingSelectionManager : MonoBehaviour
             currentFlavor.SetFlavor(currentFlavorVector);
     }
 
-    private void ResetFlavor()
+    public void ResetFlavor()
     {
         currentFlavorVector = FlavorVector.Zero;
         UpdateCurrentFlavorUI();

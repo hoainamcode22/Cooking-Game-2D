@@ -111,15 +111,13 @@ public class HintsBoxUI : MonoBehaviour
                 rect.anchoredPosition = new Vector2(0f, -index * spacingY);
                 rect.sizeDelta = new Vector2(rect.sizeDelta.x, 20f);
             }
-
             TMP_Text txtName = itemObj.GetComponentInChildren<TMP_Text>(true);
             Image imgIcon = GetIconImage(itemObj);
 
             if (txtName != null)
             {
-                txtName.text = !string.IsNullOrEmpty(ingredient.displayName)
-                    ? ingredient.displayName
-                    : ingredient.name;
+                Debug.Log("[HintsBoxUI] Set name before = " + txtName.text);
+                txtName.text = GetIngredientDisplayName(ingredient);
 
                 Debug.Log("[HintsBoxUI] Set name = " + txtName.text);
             }
@@ -175,5 +173,73 @@ public class HintsBoxUI : MonoBehaviour
             dishBookUI.ShowDishList();
         else
             Debug.LogWarning("[HintsBoxUI] Chưa gắn DishBookUI.");
+    }
+    private string GetIngredientDisplayName(IngredientData ingredient)
+    {
+        if (ingredient == null)
+        {
+            Debug.Log("[HintsBoxUI] IngredientData is null.");
+            return "";
+        }
+
+        if (!string.IsNullOrEmpty(ingredient.displayName))
+        {
+            Debug.Log("[HintsBoxUI] Using custom display name for " + ingredient.name + ": " + ingredient.displayName);
+           return TranslateIngredientName(ingredient.displayName);
+        }
+        return TranslateIngredientName(ingredient.displayName);
+    }
+
+    private string TranslateIngredientName(string englishName)
+    {
+
+        string key = englishName.Trim().ToLower();
+
+        switch (key)
+        {
+            case "beef":
+                return "Thịt bò";
+
+            case "chicken":
+                return "Thịt gà";
+
+            case "mushroom":
+                return "Nấm";
+
+            case "fishsauce":
+            case "fish sauce":
+                return "Nước mắm";
+
+            case "pepper":
+                return "Tiêu";
+
+            case "salt":
+                return "Muối";
+
+            case "chilli":
+            case "chili":
+                return "Ớt";
+
+            case "carrot":
+                return "Cà rốt";
+
+            case "cabbage":
+                return "Bắp cải";
+
+            case "soysauce":
+                return "Nước tương";
+
+            case"lemon":
+                return "Chanh";
+
+            case "herbs":
+                return "Rau";
+            case "rice":
+                return "Gạo";
+            case"sugar":
+                return "Đường";
+            default:
+                return englishName;
+        }
     }
 }

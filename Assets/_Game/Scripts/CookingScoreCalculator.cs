@@ -50,33 +50,6 @@ public static class CookingScoreCalculator
         return bonus;
     }
     // Hàm này sẽ xác định phần thưởng dựa trên điểm số cuối cùng, nó sẽ trả về số vàng, ngọc và điểm xếp hạng tương ứng với từng mức điểm, đảm bảo rằng phần thưởng được phân chia hợp lý để khuyến khích người chơi cải thiện kỹ năng nấu ăn của mình
-    public static void GetRewardByScore(int finalScore, out int gold, out int gems, out int rankPoints)
-    {
-        if (finalScore >= 90)
-        {
-            gold = 200;
-            gems = 5;
-            rankPoints = 50;
-        }
-        else if (finalScore >= 80)
-        {
-            gold = 150;
-            gems = 2;
-            rankPoints = 30;
-        }
-        else if (finalScore >= 70)
-        {
-            gold = 100;
-            gems = 0;
-            rankPoints = 15;
-        }
-        else
-        {
-            gold = 50;
-            gems = 0;
-            rankPoints = 5;
-        }
-    }
 
     public static CookingScoreResult Evaluate(
         DishData dishData,
@@ -105,12 +78,12 @@ public static class CookingScoreCalculator
 
         result.finalScore = Mathf.Clamp(result.baseScore, 0, 100);
 
-        GetRewardByScore(
-            result.finalScore,
-            out result.goldReward,
-            out result.gemReward,
-            out result.rankPointReward
-        );
+        // GetRewardByScore(
+        //     result.finalScore,
+        //     out result.goldReward,
+        //     out result.gemReward,
+        //     out result.rankPointReward
+        // );
         Debug.Log(
             $"[CookingScore] IngredientScore = {result.ingredientScore}, " +
             $"FlavorScore = {result.seasoningScore}, " +

@@ -10,26 +10,25 @@ public class CurrentFlavorBoxUI : MonoBehaviour
     [SerializeField] private TMP_Text txtUmami;
     [SerializeField] private TMP_Text txtTexture;
 
+    private FlavorVector currentFlavor = FlavorVector.Zero;
+
     public void SetFlavor(FlavorVector vector)
     {
+        currentFlavor = vector;
+
         if (txtSweet != null)
-            txtSweet.text = vector.sweet.ToString();
+            txtSweet.text = currentFlavor.sweet.ToString();
 
         if (txtSpicy != null)
-            txtSpicy.text = vector.spicy.ToString();
+            txtSpicy.text = currentFlavor.spicy.ToString();
 
         if (txtSour != null)
-            txtSour.text = vector.sour.ToString();
+            txtSour.text = currentFlavor.sour.ToString();
 
         if (txtUmami != null)
-            txtUmami.text = vector.umami.ToString();
+            txtUmami.text = currentFlavor.umami.ToString();
 
         if (txtTexture != null)
-            txtTexture.text = vector.texture.ToString();
-    }
-
-    public void ClearUI()
-    {
-        SetFlavor(FlavorVector.Zero);
+            txtTexture.text = currentFlavor.texture.ToString();
     }
 }

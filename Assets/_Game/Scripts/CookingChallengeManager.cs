@@ -10,6 +10,7 @@ public class CookingChallengeManager : MonoBehaviour
     [SerializeField] private CenterCookingPanelUI centerCookingPanelUI;
     [SerializeField] private ScoreResultBoxUI scoreResultBoxUI;
     [SerializeField] private HintsBoxUI hintsBoxUI;
+    [SerializeField] private CurrentFlavorBoxUI currentFlavorBoxUI;
 
     [Header("Selection")]
     [SerializeField] private CookingSelectionManager cookingSelectionManager;
@@ -17,8 +18,6 @@ public class CookingChallengeManager : MonoBehaviour
     [Header("Technique")]
     [SerializeField] private bool correctTechniqueForNow = false;
 
-    [Header("FX")]
-    [SerializeField] private CookingFX cookingFX;
     [SerializeField] private float cookSubmitDelay = 0.8f;
     [SerializeField] private int successScoreThreshold = 70;
 
@@ -133,13 +132,6 @@ public class CookingChallengeManager : MonoBehaviour
 
         StartCoroutine(CookSubmitRoutine());
     }
-    public void OnClickClaimReward()
-    {
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.PlayCoinReward();
-
-        Debug.Log("Claim Reward clicked.");
-    }
 
     private IEnumerator CookSubmitRoutine()
     {
@@ -148,8 +140,8 @@ public class CookingChallengeManager : MonoBehaviour
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayCookStart();
 
-        if (cookingFX != null)
-            cookingFX.PlayCookFX();
+        // if (cookingFX != null)
+        //     cookingFX.PlayCookFX();
 
         yield return new WaitForSeconds(cookSubmitDelay);
 
@@ -188,8 +180,8 @@ public class CookingChallengeManager : MonoBehaviour
         if (centerCookingPanelUI != null)
             centerCookingPanelUI.SetCookSubmitScore(result.finalScore);
 
-        if (cookingFX != null)
-            cookingFX.PlayResultFX();
+        // if (cookingFX != null)
+        //     cookingFX.PlayResultFX();
 
         if (AudioManager.Instance != null)
         {
@@ -210,27 +202,31 @@ public class CookingChallengeManager : MonoBehaviour
         Debug.Log("Reward: Gold +" + result.goldReward + ", Gems +" + result.gemReward + ", Rank +" + result.rankPointReward);
       
 
-       isCooking = false;
-       cookingSelectionManager.ResetUIAfterCooking();
+       isCooking = false;// Cho phép người chơi tương tác lại sau khi đã xử lý xong kết quả nấu ăn
+       cookingSelectionManager.DisableIngredientSelection();
        if (result.finalScore >= successScoreThreshold)
         {
+           
             Debug.Log("Đạt điểm! Qua món mới.");
-
             if (cookingSelectionManager != null)
             {
-                cookingSelectionManager.ResetSelection();
+                cookingSelectionManager.ResetFlavor();
             }
-
-
-            if (centerCookingPanelUI != null)
-            {
-                centerCookingPanelUI.SetCookSubmitScore(0);
-            }
+            RefreshCenterUI();
             ShowCookedDishOnPlate();
         }
         else
         {
             Debug.Log("Chưa đủ điểm, làm lại."+successScoreThreshold);
+            cookingSelectionManager.EnableIngredientSelection();
+            if (cookingSelectionManager != null)
+            {
+                cookingSelectionManager.ResetFlavor();
+            }
+             if (cookingSelectionManager != null)
+            {
+                cookingSelectionManager.ResetSelection();
+            }
             RefreshCenterUI();
         }
        
@@ -260,6 +256,13 @@ public class CookingChallengeManager : MonoBehaviour
 
     public void CollectCookedDishToWarehouse()//Hàm này sẽ được gọi khi người chơi nhấn nút "Collect" để đưa món ăn đã nấu vào kho sau khi xem điểm số và thưởng
     {
+        if (cookingSelectionManager != null)
+        {
+            cookingSelectionManager.ResetSelection();
+            cookingSelectionManager.ResetFlavor();
+        }
+        cookingSelectionManager.EnableIngredientSelection();
+
         if (cookedDishOnPlate == null)
         {
             Debug.LogWarning("[Cooking] Không có món ăn trên dĩa để đưa vào kho.");
