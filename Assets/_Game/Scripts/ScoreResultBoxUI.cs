@@ -24,12 +24,22 @@ public class ScoreResultBoxUI : MonoBehaviour
     [SerializeField] private TMP_Text txtGemReward;
     [SerializeField] private TMP_Text txtRankPointReward;
 
+    [Header("Background")]
+    [SerializeField] private Image backgroundImage;
+    [SerializeField] private Sprite successBackground;
+    [SerializeField] private Sprite failBackground;
+
     private void Awake()
     {
         Hide();
     }
 
     public void ShowResult(CookingScoreResult result)
+    {
+        ShowResult(result, true);
+    }
+
+    public void ShowResult(CookingScoreResult result, bool isSuccess)
     {
         Debug.Log("SHOW RESULT UI CALLED");
 
@@ -39,10 +49,27 @@ public class ScoreResultBoxUI : MonoBehaviour
             return;
         }
 
-        if (root != null)
-            root.SetActive(true);
-        else
-            gameObject.SetActive(true);
+        if (root == null)
+        {
+            Debug.LogWarning("Root chưa được gán trong ScoreResultBoxUI.");
+            return;
+        }
+
+       root.SetActive(true);
+
+        if (backgroundImage != null)
+        {
+            backgroundImage.enabled = true;
+
+            Color c = backgroundImage.color;
+            c.a = 1f;
+            backgroundImage.color = c;
+
+            if (isSuccess && successBackground != null)
+                backgroundImage.sprite = successBackground;
+            else if (!isSuccess && failBackground != null)
+                backgroundImage.sprite = failBackground;
+        }
 
         if (txtIngredientPercent != null)
             txtIngredientPercent.text = result.ingredientScore + "%";
@@ -60,7 +87,7 @@ public class ScoreResultBoxUI : MonoBehaviour
             txtFinalScoreValue.text = result.finalScore + "/100";
 
         if (txtFinalComment != null)
-            txtFinalComment.text = GetComment(result.finalScore);
+            txtFinalComment.text = GetComment(result.finalScore, isSuccess);
 
         if (txtGoldReward != null)
             txtGoldReward.text = "+" + result.goldReward;
@@ -75,13 +102,16 @@ public class ScoreResultBoxUI : MonoBehaviour
     public void Hide()
     {
         if (root != null)
+        {
             root.SetActive(false);
-        else
-            gameObject.SetActive(false);
+        }
     }
 
-    private string GetComment(int score)
+    private string GetComment(int score, bool isSuccess)
     {
+        if (!isSuccess)
+            return "Chưa đủ điểm! Hãy thử lại nhé!";
+
         if (score >= 90) return "Tuyệt vời! Gần như hoàn hảo!";
         if (score >= 80) return "Rất tốt! Gần hoàn hảo!";
         if (score >= 70) return "Khá tốt! Cố gắng thêm nhé!";

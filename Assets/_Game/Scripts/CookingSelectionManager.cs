@@ -251,6 +251,7 @@ public class CookingSelectionManager : MonoBehaviour
         selectedSeasonings.Clear();
         RebuildPot();
         UpdateCounts();
+        ResetFlavor();
 
         Debug.Log("Đã reset toàn bộ lựa chọn.");
     }
@@ -273,7 +274,7 @@ public class CookingSelectionManager : MonoBehaviour
         selectedSeasonings.Clear();
         RebuildPot();
         UpdateCounts();
-
+        ResetFlavor();
         Debug.Log("Đã reset toàn bộ lựa chọn sau khi nấu xong.");
     }
 
