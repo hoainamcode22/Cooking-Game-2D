@@ -1,15 +1,16 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class HomeSceneUI : MonoBehaviour
 {
     public void GoToCooking()
     {
-        SceneLoader.Instance.LoadScene("SampleScene");
+        SceneManager.LoadScene("SampleScene");
     }
 
     public void GoToFarm()
     {
-        SceneLoader.Instance.LoadScene("SCN_Farm");
+        SceneManager.LoadScene("SCN_Farm");
     }
 
     public void OpenDailyReward()
