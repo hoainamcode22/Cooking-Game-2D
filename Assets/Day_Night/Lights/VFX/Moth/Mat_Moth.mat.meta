@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: b227a3a14f274fd3986db4f94b59fae3
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/Day_Night/Lights/VFX/Moth/Mat_Moth.mat
+  uploadId: 722366

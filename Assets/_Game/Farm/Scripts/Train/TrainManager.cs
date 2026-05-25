@@ -106,47 +106,66 @@ public class TrainManager : MonoBehaviour
 
     void Start()
     {
-        // Auto-find popup nếu chưa gán trong Inspector
+        // Auto-find popup kể cả khi inactive
         if (loadPopup == null)
-        {
             loadPopup = FindFirstObjectByType<TrainLoadPopupUI>(FindObjectsInactive.Include);
-            if (loadPopup == null)
-                Debug.LogError("[Train] Không tìm thấy TrainLoadPopupUI! Kéo Popup_Item_Train vào Inspector.");
-        }
-        if (processPopup == null) processPopup = FindFirstObjectByType<TrainProcessPopupUI>(FindObjectsInactive.Include);
+        if (processPopup == null)
+            processPopup = FindFirstObjectByType<TrainProcessPopupUI>(FindObjectsInactive.Include);
 
-        // Kiểm tra các field bắt buộc
-        if (shippingPathFollower == null)
-            Debug.LogError("[Train] shippingPathFollower chưa gán! Kéo PathFollower của tàu MỚI (TrainVisualRoot2) vào.");
-        if (rewardPathFollower == null)
-            Debug.LogError("[Train] rewardPathFollower chưa gán! Kéo PathFollower của tàu CŨ (TrainVisualRoot) vào.");
+        if (loadPopup == null)
+            Debug.LogError("[Train] Không tìm thấy TrainLoadPopupUI! Kéo Popup_Item_Train vào Inspector.");
+
+        bool hasError = false;
+        if (shippingPathFollower == null) { Debug.LogError("[Train] shippingPathFollower chưa gán!"); hasError = true; }
+        if (rewardPathFollower   == null) { Debug.LogError("[Train] rewardPathFollower chưa gán!");   hasError = true; }
         if (shippingPathFollower != null && shippingPathFollower == rewardPathFollower)
-            Debug.LogError("[Train] BUG INSPECTOR: shippingPathFollower và rewardPathFollower đang trỏ vào CÙNG 1 object! Phải gán 2 object khác nhau.");
+        { Debug.LogError("[Train] BUG: shippingPathFollower và rewardPathFollower trỏ cùng 1 object!"); hasError = true; }
+        if (pointHiddenShip    == null) { Debug.LogError("[Train] pointHiddenShip chưa gán!");    hasError = true; }
+        if (pointStationShip   == null) { Debug.LogError("[Train] pointStationShip chưa gán!");   hasError = true; }
+        if (pointTunnelShip    == null) { Debug.LogError("[Train] pointTunnelShip chưa gán!");    hasError = true; }
+        if (pointTunnelReward  == null) { Debug.LogError("[Train] pointTunnelReward chưa gán!");  hasError = true; }
+        if (pointStationReward == null) { Debug.LogError("[Train] pointStationReward chưa gán!"); hasError = true; }
+        if (pointHiddenReward  == null) { Debug.LogError("[Train] pointHiddenReward chưa gán!");  hasError = true; }
 
-        if (pointHiddenShip   == null) Debug.LogError("[Train] pointHiddenShip chưa gán!");
-        if (pointStationShip  == null) Debug.LogError("[Train] pointStationShip chưa gán!");
-        if (pointTunnelShip   == null) Debug.LogError("[Train] pointTunnelShip chưa gán!");
-        if (pointTunnelReward == null) Debug.LogError("[Train] pointTunnelReward chưa gán!");
-        if (pointStationReward== null) Debug.LogError("[Train] pointStationReward chưa gán!");
-        if (pointHiddenReward == null) Debug.LogError("[Train] pointHiddenReward chưa gán!");
+        if (hasError)
+        {
+            Debug.LogError("[Train] Khởi tạo bị huỷ vì thiếu references. Kiểm tra Inspector rồi nhấn 'Reset Train' (chuột phải TrainManager).");
+            return;
+        }
 
-        // Khởi tạo sau 1 frame để chắc chắn tất cả Start() khác đã chạy
         StartCoroutine(InitAfterFrame());
+    }
+
+    [ContextMenu("Reset Train / Hiện lại tàu")]
+    public void ResetTrain()
+    {
+        StopAllCoroutines();
+        shippingPathFollower?.ShowTrain();
+        rewardPathFollower?.HideTrain();
+        HideAllRewardSlots();
+        _tripIndex = 0;
+        GenerateNewTrip();
+        ShowShippingAtHiddenThenMoveToStation(() =>
+        {
+            ChangeState(TrainState.WaitingForLoad);
+            RefreshAllShippingSlots();
+        });
+        Debug.Log("[Train] Reset hoàn tất — tàu đang chạy ra ga.");
     }
 
     private IEnumerator InitAfterFrame()
     {
-        yield return null; // chờ 1 frame
+        yield return null;
+
+        // Đảm bảo tàu MỚI hiện trước khi HideTrain() làm bất cứ điều gì
+        shippingPathFollower.ShowTrain();
 
         // Tàu CŨ ẩn hoàn toàn lúc đầu
-        rewardPathFollower?.HideTrain();
+        rewardPathFollower.HideTrain();
         HideAllRewardSlots();
 
-        // Tạo chuyến đầu tiên
         GenerateNewTrip();
 
-        // Chặng 1: HiddenShip → StationShip
-        // Tàu MỚI xuất hiện kín đáo tại HiddenShip rồi chạy ra ga
         ShowShippingAtHiddenThenMoveToStation(() =>
         {
             ChangeState(TrainState.WaitingForLoad);

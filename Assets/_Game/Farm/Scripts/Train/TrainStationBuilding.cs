@@ -16,6 +16,11 @@ public class TrainStationBuilding : MonoBehaviour
     void Awake()
     {
         _col = GetComponent<BoxCollider2D>();
+
+        if (processPopup == null)
+            processPopup = FindFirstObjectByType<TrainProcessPopupUI>(FindObjectsInactive.Include);
+        if (processPopup == null)
+            Debug.LogError("[Station] Không tìm thấy TrainProcessPopupUI! Kéo Popup_train vào Inspector.");
     }
 
     // ─── World-space click (BoxCollider2D + Physics2D.OverlapPoint) ─────────────

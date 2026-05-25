@@ -27,3 +27,6 @@
 # File h? ?i?u hành
 .DS_Store
 Thumbs.db
+# Exclude HappyHarvest source (copy reference only)
+Assets/HappyHarvest/
+Assets/HappyHarvest.meta
