@@ -239,6 +239,12 @@ public class FarmUIManager : MonoBehaviour
         HideAllPopups();
     }
 
+    public void ForceCloseAllPopups()
+    {
+        HideAllPopups();
+        FarmInputLock.ResetAll();
+    }
+
     public void OnClick_GoCooking()
     {
         if (SceneManager.GetSceneByName(cookingSceneName).isLoaded)

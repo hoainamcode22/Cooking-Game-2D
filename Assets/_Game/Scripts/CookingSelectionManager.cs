@@ -489,4 +489,10 @@ public class CookingSelectionManager : MonoBehaviour
 
         return total;
     }
+
+    public void EnableIngredientSelection()
+    {
+        // Cho phép người chơi bắt đầu chọn nguyên liệu (sau khi đã chọn món)
+        ResetSelection();
+    }
 }

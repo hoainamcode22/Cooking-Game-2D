@@ -1,5 +1,4 @@
 ﻿<Solution>
-  <Project Path="HappyHarvest.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="VFXGraph.OutputEventHandlers.csproj" />
