@@ -28,12 +28,6 @@ public class FarmPlotInput : MonoBehaviour
             return;
         }
 
-        if (FarmInputLock.BlockMapPan)
-        {
-            Debug.Log("[PlotClick] ignored — FarmInputLock.BlockMapPan=true");
-            return;
-        }
-
         // Không xử lý trong khi đang kéo hạt giống
         if (FarmInputLock.IsDraggingSeed)
         {

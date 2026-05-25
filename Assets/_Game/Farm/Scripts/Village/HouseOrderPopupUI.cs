@@ -9,7 +9,7 @@ namespace Village
     public class HouseOrderPopupUI : MonoBehaviour
     {
         public static HouseOrderPopupUI Instance { get; private set; }
-        public static bool IsOpen => Instance != null && Instance.gameObject.activeSelf;
+        public static bool IsOpen { get; private set; }
 
         // ── Inspector ─────────────────────────────────────────────────────────
 
@@ -49,13 +49,13 @@ namespace Village
 
         private HouseOrderRuntime    currentOrder;
         private HouseOrderController currentHouse;
-        private bool popupInputLockHeld;
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
 
         private void Awake()
         {
             Instance = this;
+            IsOpen   = false;
 
             // Panel phải start ACTIVE trong scene để Awake chạy và đăng ký Instance,
             // sau đó ẩn ngay để không lộ ra trước khi Open() được gọi.
@@ -92,11 +92,6 @@ namespace Village
             }
         }
 
-        private void OnDisable()
-        {
-            ReleasePopupInputBlock();
-        }
-
         // ── Public API ────────────────────────────────────────────────────────
 
         public void Open(HouseOrderRuntime order, HouseOrderController house)
@@ -114,8 +109,8 @@ namespace Village
             currentOrder = order;
             currentHouse = house;
 
+            IsOpen = true;
             gameObject.SetActive(true);
-            AcquirePopupInputBlock();
 
             DiagnoseButtonInput();
             Refresh();
@@ -124,7 +119,7 @@ namespace Village
         public void Close()
         {
             Debug.Log("[OrderPopup] Close()");
-            ReleasePopupInputBlock();
+            IsOpen = false;
             gameObject.SetActive(false);
             currentOrder = null;
             currentHouse = null;
@@ -333,24 +328,6 @@ namespace Village
         private static void SetActive(Component c, bool active)
         {
             if (c != null) c.gameObject.SetActive(active);
-        }
-
-        private void AcquirePopupInputBlock()
-        {
-            FarmInputLock.SetPopupRaycastBlock(gameObject, true);
-
-            if (popupInputLockHeld) return;
-            FarmInputLock.RegisterPopupOpen();
-            popupInputLockHeld = true;
-        }
-
-        private void ReleasePopupInputBlock()
-        {
-            FarmInputLock.SetPopupRaycastBlock(gameObject, false);
-
-            if (!popupInputLockHeld) return;
-            FarmInputLock.RegisterPopupClose();
-            popupInputLockHeld = false;
         }
 
         

@@ -58,7 +58,6 @@ public class WarehousePopupUI : MonoBehaviour
     private readonly Dictionary<string, int> pendingSelection = new Dictionary<string, int>();
 
     private string lastSelectedItemId;
-    private bool popupInputLockHeld;
 
     private void Awake()
     {
@@ -94,8 +93,6 @@ public class WarehousePopupUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        ReleasePopupInputBlock();
-
         if (FarmInventoryManager.Instance != null)
             FarmInventoryManager.Instance.OnInventoryChanged -= RefreshUI;
     }
@@ -105,25 +102,16 @@ public class WarehousePopupUI : MonoBehaviour
         if (popupRoot == null)
             return;
 
-        FarmInputLock.SetPopupRaycastBlock(popupRoot, true);
+        if (popupRoot.GetComponent<UIRaycastBlocker>() == null)
+            popupRoot.AddComponent<UIRaycastBlocker>();
 
-        if (!popupInputLockHeld)
-        {
-            FarmInputLock.RegisterPopupOpen();
-            popupInputLockHeld = true;
-        }
-    }
+        CanvasGroup cg = popupRoot.GetComponent<CanvasGroup>();
+        if (cg == null)
+            cg = popupRoot.AddComponent<CanvasGroup>();
 
-    private void ReleasePopupInputBlock()
-    {
-        if (popupRoot != null)
-            FarmInputLock.SetPopupRaycastBlock(popupRoot, false);
-
-        if (popupInputLockHeld)
-        {
-            FarmInputLock.RegisterPopupClose();
-            popupInputLockHeld = false;
-        }
+        cg.alpha = 1f;
+        cg.blocksRaycasts = true;
+        cg.interactable = true;
     }
 
     // Tạo slot runtime từ prefab, xóa slot cũ nếu có
@@ -209,8 +197,6 @@ public class WarehousePopupUI : MonoBehaviour
 
     public void ClosePopup()
     {
-        ReleasePopupInputBlock();
-
         if (popupRoot != null)
             popupRoot.SetActive(false);
 

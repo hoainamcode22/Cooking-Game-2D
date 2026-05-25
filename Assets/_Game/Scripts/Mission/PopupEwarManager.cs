@@ -20,7 +20,6 @@ public class PopupEwarManager : MonoBehaviour
 
     private readonly List<MissionItemUI> _spawnedItems = new List<MissionItemUI>();
     private bool _initialized;
-    private bool _popupInputLockHeld;
 
     // PopupManager.IsAnyPopupOpen() đọc property này để biết có đang mở không
     public bool IsOpen => popup_Ewar != null && popup_Ewar.activeSelf;
@@ -33,11 +32,8 @@ public class PopupEwarManager : MonoBehaviour
         if (canvasGroup == null)
             canvasGroup = popup_Ewar.GetComponent<CanvasGroup>() ?? popup_Ewar.AddComponent<CanvasGroup>();
 
-        if (popup_Ewar.GetComponent<UIRaycastBlocker>() == null)
-            popup_Ewar.AddComponent<UIRaycastBlocker>();
-
-        canvasGroup.blocksRaycasts = false;
-        canvasGroup.interactable   = false;
+        canvasGroup.blocksRaycasts = true;
+        canvasGroup.interactable   = true;
 
         popup_Ewar.SetActive(false);
     }
@@ -45,7 +41,6 @@ public class PopupEwarManager : MonoBehaviour
     public void OpenPopup()
     {
         popup_Ewar.SetActive(true);
-        AcquirePopupInputBlock();
 
         // Bật chặn raycast trên popup — ngăn click xuyên xuống các collider phía sau
         canvasGroup.blocksRaycasts = true;
@@ -65,7 +60,6 @@ public class PopupEwarManager : MonoBehaviour
 
     public void ClosePopup()
     {
-        ReleasePopupInputBlock();
         // Tắt chặn raycast — cho phép click xuyên trở lại khi popup đóng
         canvasGroup.blocksRaycasts = false;
         canvasGroup.interactable   = false;
@@ -74,33 +68,6 @@ public class PopupEwarManager : MonoBehaviour
 
         // FarmInputLock.BlockMapPan tự động = false vì IsOpen đã là false
         // → CameraController nhận lại input kéo map bình thường
-    }
-
-    private void OnDisable()
-    {
-        ReleasePopupInputBlock();
-    }
-
-    private void AcquirePopupInputBlock()
-    {
-        FarmInputLock.SetPopupRaycastBlock(popup_Ewar, true);
-
-        if (!_popupInputLockHeld)
-        {
-            FarmInputLock.RegisterPopupOpen();
-            _popupInputLockHeld = true;
-        }
-    }
-
-    private void ReleasePopupInputBlock()
-    {
-        FarmInputLock.SetPopupRaycastBlock(popup_Ewar, false);
-
-        if (_popupInputLockHeld)
-        {
-            FarmInputLock.RegisterPopupClose();
-            _popupInputLockHeld = false;
-        }
     }
 
     private void SpawnMissionItems()

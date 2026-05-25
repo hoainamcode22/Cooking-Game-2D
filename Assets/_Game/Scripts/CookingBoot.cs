@@ -1,24 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+
+
+// using System.Diagnostics;
 using UnityEngine;
 
-[System.Serializable]
-public class CookingTransferredItem
-{
-    public InventoryItemData itemData;
-    public int quantity;
-
-    public CookingTransferredItem(InventoryItemData itemData, int quantity)
-    {
-        this.itemData = itemData;
-        this.quantity = quantity;
-    }
-}
 public class CookingBoot : MonoBehaviour
 {
-    [Header("Test Mode")]
-    public bool useTestData = true;
-
     [Header("Refs")]
     public CookingSelectionManager selection;
     public LeftPanelRefs leftRefs;
@@ -31,19 +19,13 @@ public class CookingBoot : MonoBehaviour
     private IEnumerator Start()
     {
         yield return null;
-
         if (selection == null || leftRefs == null)
+        {
             yield break;
+        }
 
-        if (!useTestData)
-        {
-            BuildInventoryLookup();
-            FillOldCardsFromTransferredItems();
-        }
-        else
-        {
-            Debug.Log("[CookingBoot] Test Mode bật: không lọc theo kho, giữ toàn bộ card đã spawn.");
-        }
+        BuildInventoryLookup();
+        FillOldCardsFromTransferredItems();
 
         selection.RegisterAllLeftCards(
             leftRefs.ingredientsContent,
@@ -51,7 +33,7 @@ public class CookingBoot : MonoBehaviour
         );
     }
 
-    private void BuildInventoryLookup()
+    private void BuildInventoryLookup()// xây dựng lại lookup từ list, để dễ tìm kiếm khi cần thiết
     {
         inventoryLookup.Clear();
 
@@ -61,18 +43,17 @@ public class CookingBoot : MonoBehaviour
             if (item == null || string.IsNullOrEmpty(item.itemId))
                 continue;
 
-            if (!inventoryLookup.ContainsKey(item.itemId))
+            if (!inventoryLookup.ContainsKey(item.itemId))// không nên có trùng id, nhưng nếu có thì lấy cái đầu tiên, bỏ qua các cái sau
                 inventoryLookup.Add(item.itemId, item);
         }
     }
 
-    private void FillOldCardsFromTransferredItems()
+    private void FillOldCardsFromTransferredItems()// điền dữ liệu cho các card đã có sẵn trong scene, dựa trên những item đã được chuyển từ scene trước (nếu có)
     {
-        Debug.Log("[CookingBoot] Điền dữ liệu từ KitchenTransferManager vào card cũ.");
-        
-        List<CookingTransferredItem> ingredientItems = new List<CookingTransferredItem>();
-        List<CookingTransferredItem> seasoningItems = new List<CookingTransferredItem>();
-        
+        List<KeyValuePair<InventoryItemData, int>> ingredientItems = new List<KeyValuePair<InventoryItemData, int>>();
+        List<KeyValuePair<InventoryItemData, int>> seasoningItems = new List<KeyValuePair<InventoryItemData, int>>();
+        Debug.Log("Lấy dữ liệu đã chuyển từ KitchenTransferManager...");
+        //IngredientAmountUI amountUI = card.GetComponent<IngredientAmountUI>();
 
         if (KitchenTransferManager.Instance != null)
         {
@@ -80,22 +61,18 @@ public class CookingBoot : MonoBehaviour
 
             foreach (var kv in transferred)
             {
-                Debug.Log($"[CookingBoot] Transferred Item: {kv.Key} x{kv.Value}");
-                
                 if (!inventoryLookup.TryGetValue(kv.Key, out InventoryItemData inventoryItem))
                     continue;
 
                 if (inventoryItem == null || inventoryItem.cookingData == null)
                     continue;
 
-                int quantity = kv.Value;
-
-                CookingTransferredItem transferredItem = new CookingTransferredItem(inventoryItem, quantity);
-
                 if (inventoryItem.cookingData.kind == IngredientKind.Seasoning)
-                    seasoningItems.Add(transferredItem);
+                    seasoningItems.Add(new KeyValuePair<InventoryItemData, int>(inventoryItem, 1));// hiện tại chưa có trường amount riêng cho gia vị, nên tạm thời cứ cho amount = 1, và sau này nếu có thay đổi thì sẽ điều chỉnh sau. Còn nguyên liệu thì chắc chắn sẽ có amount, nên mới để là int ở đây
                 else
-                    ingredientItems.Add(transferredItem);
+                    ingredientItems.Add(new KeyValuePair<InventoryItemData, int>(inventoryItem, kv.Value));
+
+                Debug.Log($"Transferred item: {inventoryItem.displayName} x{kv.Value}");
             }
         }
 
@@ -103,7 +80,7 @@ public class CookingBoot : MonoBehaviour
         ApplyToCardGroup(leftRefs.seasoningsContent, seasoningItems, true);
     }
 
-    private void ApplyToCardGroup(Transform contentRoot, List<CookingTransferredItem> items, bool isSeasoning)
+    private void ApplyToCardGroup(Transform contentRoot, List<KeyValuePair<InventoryItemData, int>> items, bool isSeasoning)// áp dụng dữ liệu item vào các card con của contentRoot, dựa trên loại (gia vị hay nguyên liệu)
     {
         if (contentRoot == null)
             return;
@@ -112,16 +89,16 @@ public class CookingBoot : MonoBehaviour
 
         foreach (Transform child in contentRoot)
         {
-            SelectableIngredientCard card = child.GetComponent<SelectableIngredientCard>();
+            SelectableIngredientCard card = child.GetComponent<SelectableIngredientCard>();// chỉ lấy những child có component SelectableIngredientCard, bỏ qua những cái không phải card
             if (card != null)
                 cards.Add(card);
         }
 
         for (int i = 0; i < cards.Count; i++)
         {
-            if (i < items.Count)
+            if (i < items.Count)// nếu còn item để điền, thì điền vào card, và bật card lên. Nếu không còn item nào để điền, thì tắt card đi (ẩn khỏi UI)
             {
-                SetupCard(cards[i], items[i].itemData, items[i].quantity, isSeasoning);
+                SetupCard(cards[i], items[i].Key, items[i].Value, isSeasoning);;// điền dữ liệu item vào card, và khởi tạo card với selection manager, để card có thể tương tác được
                 cards[i].gameObject.SetActive(true);
             }
             else
@@ -132,11 +109,11 @@ public class CookingBoot : MonoBehaviour
 
         if (items.Count > cards.Count)
         {
-            Debug.LogWarning($"[CookingBoot] Không đủ slot {(isSeasoning ? "gia vị" : "nguyên liệu")} để hiển thị. Dư: {items.Count - cards.Count}");
+            Debug.Log($"[CookingBoot] Không đủ slot {(isSeasoning ? "gia vị" : "nguyên liệu")} để hiển thị. Dư: {items.Count - cards.Count}");
         }
     }
 
-    private void SetupCard(SelectableIngredientCard card, InventoryItemData inventoryItem, int quantity, bool isSeasoning)
+    private void SetupCard(SelectableIngredientCard card, InventoryItemData inventoryItem, int amount, bool isSeasoning)// điền dữ liệu item vào card, và khởi tạo card với selection manager, để card có thể tương tác được
     {
         if (card == null || inventoryItem == null || inventoryItem.cookingData == null)
             return;
@@ -157,10 +134,14 @@ public class CookingBoot : MonoBehaviour
             ui.Setup(displayName, mainIcon, topIcon, stars, false);
         }
 
+        card.SetInventoryItem(inventoryItem);
         card.SetIngredientData(ing);
         card.Init(selection, isSeasoning);
         card.SetSelected(false);
-        card.setIdItem(inventoryItem.itemId);
-        card.SetQuantityFromKitchen(quantity);
+        var amountUI = card.GetComponent<IngredientAmountUI>();
+        if (amountUI != null)
+        {
+            amountUI.SetAmount(amount);
+        }
     }
 }

@@ -1,245 +1,245 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Collections.Generic;
 
 public class HintsBoxUI : MonoBehaviour
 {
-    [Header("UI")]
-    [SerializeField] private CookingSelectionManager cookingSelectionManager;
-    [SerializeField] private TargetFlavorBoxUI targetFlavorBoxUI;
+    [Header("Header")]
+    [SerializeField] private TMP_Text txtHintTitle;
+    [SerializeField] private TMP_Text txtRequiredLabel;
+    [SerializeField] private TMP_Text txtOptionalLabel;
+    [SerializeField] private TMP_Text txtSeasoningTipsTitle;
+    [SerializeField] private TMP_Text txtBonusComboLabel;
 
-    [Header("Required Ingredients Display")]
-    [SerializeField] private Transform groupNguyenLieu;
-    [SerializeField] private GameObject itemNguyenLieuTemplate;
+    [Header("Required")]
+    [SerializeField] private GameObject hintRequiredItemBeef;
+    [SerializeField] private Image imgRequiredBeefIcon;
+    [SerializeField] private TMP_Text txtRequiredBeefName;
 
-    private readonly List<GameObject> spawnedNguyenLieuItems = new List<GameObject>();
+    [SerializeField] private GameObject hintRequiredItemNoodle;
+    [SerializeField] private Image imgRequiredNoodleIcon;
+    [SerializeField] private TMP_Text txtRequiredNoodleName;
+
+    [Header("Optional")]
+    [SerializeField] private GameObject hintOptionalItemMushroom;
+    [SerializeField] private Image imgOptionalMushroomIcon;
+    [SerializeField] private TMP_Text txtOptionalMushroomName;
+
+    [SerializeField] private GameObject hintOptionalItemEgg;
+    [SerializeField] private Image imgOptionalEggIcon;
+    [SerializeField] private TMP_Text txtOptionalEggName;
+
+    [SerializeField] private GameObject hintOptionalItemHerbs;
+    [SerializeField] private Image imgOptionalHerbsIcon;
+    [SerializeField] private TMP_Text txtOptionalHerbsName;
+
+    [Header("Seasoning Tips")]
+    [SerializeField] private GameObject hintSeasoningTipFishSauce;
+    [SerializeField] private Image imgTipFishSauceIcon;
+    [SerializeField] private TMP_Text txtTipFishSauceItemName;
+    [SerializeField] private TMP_Text txtTipFishSauceStatValue;
+    [SerializeField] private TMP_Text txtTipFishSauceStatName;
+
+    [SerializeField] private GameObject hintSeasoningTipChili;
+    [SerializeField] private Image imgTipChiliIcon;
+    [SerializeField] private TMP_Text txtTipChiliItemName;
+    [SerializeField] private TMP_Text txtTipChiliStatValue;
+    [SerializeField] private TMP_Text txtTipChiliStatName;
+
+    [SerializeField] private GameObject hintSeasoningTipLemon;
+    [SerializeField] private Image imgTipLemonIcon;
+    [SerializeField] private TMP_Text txtTipLemonItemName;
+    [SerializeField] private TMP_Text txtTipLemonStatValue;
+    [SerializeField] private TMP_Text txtTipLemonStatName;
+
+    [SerializeField] private GameObject hintSeasoningTipSalt;
+    [SerializeField] private Image imgTipSaltIcon;
+    [SerializeField] private TMP_Text txtTipSaltItemName;
+    [SerializeField] private TMP_Text txtTipSaltStatValue;
+    [SerializeField] private TMP_Text txtTipSaltStatName;
+
+    [Header("Bonus Combo")]
+    [SerializeField] private TMP_Text txtBonusItem1;
+    [SerializeField] private TMP_Text txtBonusPlus1;
+    [SerializeField] private TMP_Text txtBonusItem2;
+    [SerializeField] private TMP_Text txtBonusPlus2;
+    [SerializeField] private TMP_Text txtBonusItem3;
+    [SerializeField] private TMP_Text txtBonusEquals;
+    [SerializeField] private TMP_Text txtBonusValue;
+    [SerializeField] private TMP_Text txtBonusScore;
 
     [Header("Judge Button")]
-    [SerializeField] private Button btnBack;
-
-    [SerializeField] private DishBookUI dishBookUI;
-
-    private void Start()
-    {
-        if (itemNguyenLieuTemplate != null)
-            itemNguyenLieuTemplate.SetActive(false);
-
-        if (btnBack != null)
-        {
-            btnBack.onClick.RemoveAllListeners();
-            btnBack.onClick.AddListener(OnClickBack);
-        }
-        else
-        {
-            Debug.LogWarning("[HintsBoxUI] Chưa gắn btnBack.");
-        }
-    }
+    [SerializeField] private TMP_Text txtButtonPrefix;
+    [SerializeField] private TMP_Text txtButtonLabel;
 
     public void BindDish(DishData dishData)
     {
-        ClearUI();
-
         if (dishData == null)
+        {
+            ClearUI();
             return;
+        }
 
-        gameObject.SetActive(true);
+        BindHintItem(dishData.required1, hintRequiredItemBeef, imgRequiredBeefIcon, txtRequiredBeefName);
+        BindHintItem(dishData.required2, hintRequiredItemNoodle, imgRequiredNoodleIcon, txtRequiredNoodleName);
 
-        Debug.Log("[HintsBoxUI] BindDish: " + dishData.dishName);
+        BindHintItem(dishData.optional1, hintOptionalItemMushroom, imgOptionalMushroomIcon, txtOptionalMushroomName);
+        BindHintItem(dishData.optional2, hintOptionalItemEgg, imgOptionalEggIcon, txtOptionalEggName);
+        BindHintItem(dishData.optional3, hintOptionalItemHerbs, imgOptionalHerbsIcon, txtOptionalHerbsName);
 
-        BindRequiredIngredients(dishData.requiredIngredients);
+        BindSeasoningTip(dishData.tip1, hintSeasoningTipFishSauce, imgTipFishSauceIcon, txtTipFishSauceItemName, txtTipFishSauceStatValue, txtTipFishSauceStatName);
+        BindSeasoningTip(dishData.tip2, hintSeasoningTipChili, imgTipChiliIcon, txtTipChiliItemName, txtTipChiliStatValue, txtTipChiliStatName);
+        BindSeasoningTip(dishData.tip3, hintSeasoningTipLemon, imgTipLemonIcon, txtTipLemonItemName, txtTipLemonStatValue, txtTipLemonStatName);
+        BindSeasoningTip(dishData.tip4, hintSeasoningTipSalt, imgTipSaltIcon, txtTipSaltItemName, txtTipSaltStatValue, txtTipSaltStatName);
+
+        ApplyBonusComboText(dishData.bonusComboText);
+
+        if (txtButtonLabel != null && !string.IsNullOrEmpty(dishData.whatJudgeLikesText))
+            txtButtonLabel.text = dishData.whatJudgeLikesText;
     }
 
     public void ClearUI()
     {
-        foreach (GameObject item in spawnedNguyenLieuItems)
-        {
-            if (item != null)
-                Destroy(item);
-        }
+        BindHintItem(null, hintRequiredItemBeef, imgRequiredBeefIcon, txtRequiredBeefName);
+        BindHintItem(null, hintRequiredItemNoodle, imgRequiredNoodleIcon, txtRequiredNoodleName);
 
-        spawnedNguyenLieuItems.Clear();
+        BindHintItem(null, hintOptionalItemMushroom, imgOptionalMushroomIcon, txtOptionalMushroomName);
+        BindHintItem(null, hintOptionalItemEgg, imgOptionalEggIcon, txtOptionalEggName);
+        BindHintItem(null, hintOptionalItemHerbs, imgOptionalHerbsIcon, txtOptionalHerbsName);
 
-        if (itemNguyenLieuTemplate != null)
-            itemNguyenLieuTemplate.SetActive(false);
+        BindSeasoningTip(null, hintSeasoningTipFishSauce, imgTipFishSauceIcon, txtTipFishSauceItemName, txtTipFishSauceStatValue, txtTipFishSauceStatName);
+        BindSeasoningTip(null, hintSeasoningTipChili, imgTipChiliIcon, txtTipChiliItemName, txtTipChiliStatValue, txtTipChiliStatName);
+        BindSeasoningTip(null, hintSeasoningTipLemon, imgTipLemonIcon, txtTipLemonItemName, txtTipLemonStatValue, txtTipLemonStatName);
+        BindSeasoningTip(null, hintSeasoningTipSalt, imgTipSaltIcon, txtTipSaltItemName, txtTipSaltStatValue, txtTipSaltStatName);
+
+        ApplyBonusComboText(string.Empty);
     }
 
-    private void BindRequiredIngredients(List<IngredientData> requiredIngredients)
+    private void BindHintItem(HintIngredientSlotData data, GameObject root, Image icon, TMP_Text nameText)
     {
-        if (groupNguyenLieu == null)
-        {
-            Debug.LogWarning("[HintsBoxUI] Chưa gắn Group_NguyenLieu.");
+        bool hasData = data != null && (!string.IsNullOrEmpty(data.displayName) || data.icon != null);
+
+        if (root != null)
+            root.SetActive(hasData);
+
+        if (!hasData) return;
+
+        if (icon != null)
+            icon.sprite = data.icon;
+
+        if (nameText != null)
+            nameText.text = data.displayName;
+    }
+
+    private void BindSeasoningTip(
+        SeasoningTipData data,
+        GameObject root,
+        Image icon,
+        TMP_Text itemName,
+        TMP_Text statValue,
+        TMP_Text statName)
+    {
+        bool hasData = data != null &&
+                       (!string.IsNullOrEmpty(data.displayName) ||
+                        !string.IsNullOrEmpty(data.effectText) ||
+                        data.icon != null);
+
+        if (root != null)
+            root.SetActive(hasData);
+
+        if (!hasData) return;
+
+        if (icon != null)
+            icon.sprite = data.icon;
+
+        if (itemName != null)
+            itemName.text = data.displayName;
+
+        string effect = LocalizeEffectText(data.effectText);
+        if (statValue != null)
+            statValue.text = effect;
+
+        if (statName != null)
+            statName.text = string.Empty;
+    }
+
+    private string LocalizeEffectText(string effectText)
+    {
+        if (string.IsNullOrEmpty(effectText))
+            return string.Empty;
+
+        return effectText
+            .Replace("Umami", "Đậm đà")
+            .Replace("Spicy", "Cay")
+            .Replace("Sour", "Chua")
+            .Replace("Sweet", "Ngọt")
+            .Replace("Texture", "Kết cấu");
+    }
+
+    public void OnClickWhatJudgeLikes()
+    {
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayUIClick();
+
+        Debug.Log("Giám khảo thích gì? clicked.");
+    }
+
+    private void ApplyBonusComboText(string comboText)
+    {
+        if (txtBonusItem1 == null || txtBonusItem2 == null || txtBonusItem3 == null || txtBonusValue == null)
             return;
-        }
 
-        if (itemNguyenLieuTemplate == null)
-        {
-            Debug.LogWarning("[HintsBoxUI] Chưa gắn Item_NguyenLieu template.");
+        txtBonusItem1.text = "";
+        txtBonusItem2.text = "";
+        txtBonusItem3.text = "";
+        txtBonusValue.text = "";
+
+        if (string.IsNullOrEmpty(comboText))
             return;
-        }
 
-        if (requiredIngredients == null || requiredIngredients.Count == 0)
+        // ví dụ: Beef + Herbs + Fish Sauce = +20 Score
+        string[] sides = comboText.Split('=');
+        if (sides.Length >= 1)
         {
-            Debug.LogWarning("[HintsBoxUI] Món này chưa có requiredIngredients.");
-            return;
+            string left = sides[0].Trim();
+            left = LocalizeCommonCookingWords(left);
+
+            string[] items = left.Split('+');
+
+            if (items.Length > 0) txtBonusItem1.text = items[0].Trim();
+            if (items.Length > 1) txtBonusItem2.text = items[1].Trim();
+            if (items.Length > 2) txtBonusItem3.text = items[2].Trim();
         }
 
-        itemNguyenLieuTemplate.SetActive(false);
-
-        float spacingY = 22f;
-        int index = 0;
-
-        foreach (IngredientData ingredient in requiredIngredients)
+        if (sides.Length > 1)
         {
-            if (ingredient == null)
-                continue;
-
-            Debug.Log("[HintsBoxUI] Show required ingredient: " + ingredient.name);
-
-            GameObject itemObj = Instantiate(itemNguyenLieuTemplate, groupNguyenLieu);
-            itemObj.name = "Item_NguyenLieu_" + ingredient.name;
-            itemObj.SetActive(true);
-
-            spawnedNguyenLieuItems.Add(itemObj);
-
-            RectTransform rect = itemObj.GetComponent<RectTransform>();
-            if (rect != null)
-            {
-                rect.anchorMin = new Vector2(0f, 1f);
-                rect.anchorMax = new Vector2(1f, 1f);
-                rect.pivot = new Vector2(0f, 1f);
-                rect.anchoredPosition = new Vector2(0f, -index * spacingY);
-                rect.sizeDelta = new Vector2(rect.sizeDelta.x, 20f);
-            }
-            TMP_Text txtName = itemObj.GetComponentInChildren<TMP_Text>(true);
-            Image imgIcon = GetIconImage(itemObj);
-
-            if (txtName != null)
-            {
-                Debug.Log("[HintsBoxUI] Set name before = " + txtName.text);
-                txtName.text = GetIngredientDisplayName(ingredient);
-
-                Debug.Log("[HintsBoxUI] Set name = " + txtName.text);
-            }
-            else
-            {
-                Debug.LogWarning("[HintsBoxUI] Không tìm thấy TMP_Text trong Item_NguyenLieu.");
-            }
-
-            if (imgIcon != null)
-            {
-                imgIcon.sprite = ingredient.icon;
-                imgIcon.enabled = ingredient.icon != null;
-                imgIcon.preserveAspect = true;
-
-                Debug.Log("[HintsBoxUI] Set icon = " +
-                    (ingredient.icon != null ? ingredient.icon.name : "NULL"));
-            }
-            else
-            {
-                Debug.LogWarning("[HintsBoxUI] Không tìm thấy Image icon trong Item_NguyenLieu.");
-            }
-
-            index++;
+            string right = sides[1].Trim();
+            right = LocalizeCommonCookingWords(right);
+            right = right.Replace("Điểm", "").Trim();
+            txtBonusValue.text = right;
         }
+
+        if (txtBonusPlus1 != null) txtBonusPlus1.text = "+";
+        if (txtBonusPlus2 != null) txtBonusPlus2.text = "+";
+        if (txtBonusEquals != null) txtBonusEquals.text = "=";
+
+        if (txtBonusScore != null) txtBonusScore.text = "Điểm";
     }
 
-    private Image GetIconImage(GameObject itemObj)
+    private string LocalizeCommonCookingWords(string s)
     {
-        Image[] images = itemObj.GetComponentsInChildren<Image>(true);
+        if (string.IsNullOrEmpty(s))
+            return string.Empty;
 
-        foreach (Image img in images)
-        {
-            if (img.gameObject != itemObj)
-                return img;
-        }
-
-        return null;
-    }
-
-    private void OnClickBack()
-    {
-        Debug.Log("Back button clicked in HintsBoxUI.");
-
-        ClearUI();
-
-        if (targetFlavorBoxUI != null)
-            targetFlavorBoxUI.ClearUI();
-
-        if (cookingSelectionManager != null)
-            cookingSelectionManager.DisableIngredientSelection();
-
-        if (dishBookUI != null)
-            dishBookUI.ShowDishList();
-        else
-            Debug.LogWarning("[HintsBoxUI] Chưa gắn DishBookUI.");
-    }
-    private string GetIngredientDisplayName(IngredientData ingredient)
-    {
-        if (ingredient == null)
-        {
-            Debug.Log("[HintsBoxUI] IngredientData is null.");
-            return "";
-        }
-
-        if (!string.IsNullOrEmpty(ingredient.displayName))
-        {
-            Debug.Log("[HintsBoxUI] Using custom display name for " + ingredient.name + ": " + ingredient.displayName);
-           return TranslateIngredientName(ingredient.displayName);
-        }
-        return TranslateIngredientName(ingredient.displayName);
-    }
-
-    private string TranslateIngredientName(string englishName)
-    {
-
-        string key = englishName.Trim().ToLower();
-
-        switch (key)
-        {
-            case "beef":
-                return "Thịt bò";
-
-            case "chicken":
-                return "Thịt gà";
-
-            case "mushroom":
-                return "Nấm";
-
-            case "fishsauce":
-            case "fish sauce":
-                return "Nước mắm";
-
-            case "pepper":
-                return "Tiêu";
-
-            case "salt":
-                return "Muối";
-
-            case "chilli":
-            case "chili":
-                return "Ớt";
-
-            case "carrot":
-                return "Cà rốt";
-
-            case "cabbage":
-                return "Bắp cải";
-
-            case "soysauce":
-                return "Nước tương";
-
-            case"lemon":
-                return "Chanh";
-
-            case "herbs":
-                return "Rau";
-            case "rice":
-                return "Gạo";
-            case"sugar":
-                return "Đường";
-            default:
-                return englishName;
-        }
+        return s
+            .Replace("Score", "Điểm")
+            .Replace("Beef", "Thịt bò")
+            .Replace("Noodle", "Bánh phở")
+            .Replace("Egg", "Trứng")
+            .Replace("Herbs", "Rau thơm")
+            .Replace("Fish Sauce", "Nước mắm")
+            .Replace("Chili", "Ớt")
+            .Replace("Lemon", "Chanh")
+            .Replace("Salt", "Muối");
     }
 }

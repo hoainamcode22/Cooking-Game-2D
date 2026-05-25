@@ -306,12 +306,7 @@ public class FarmManager : MonoBehaviour
         }
 
         if (plot.CanOpenSeedPopup())
-        {
-            if (plot.Category == PlotCategory.Flower)
-                FarmUIManager.Instance?.ShowFlowerSelectForPlot(plot);
-            else
-                FarmUIManager.Instance?.ShowPlantSelectForPlot(plot);
-        }
+            FarmUIManager.Instance?.ShowPlantSelectForPlot(plot);
     }
 
     public void OnLockedPlotClicked(PlotController plot)
@@ -340,8 +335,8 @@ public class FarmManager : MonoBehaviour
             return;
 
         selectedPlot = plot;
-        FarmUIManager.Instance?.ShowHint("Nhấn và kéo lưỡi liềm qua cây để thu hoạch.");
-        FarmUIManager.Instance?.ShowSickleTray();
+        FarmUIManager.Instance?.ShowHint("Kéo lưỡi liềm qua cây để thu hoạch.");
+        FarmUIManager.Instance?.ShowSickleTool(plot.transform.position);
     }
 
     public void OnPlotPlanted(PlotController plot, CropData crop)

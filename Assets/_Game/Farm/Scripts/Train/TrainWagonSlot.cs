@@ -177,7 +177,6 @@ public class TrainWagonSlot : MonoBehaviour
     private void OnMouseDown()
     {
         if (!enabled || !gameObject.activeInHierarchy) return;
-        if (FarmInputLock.BlockMapPan) return;
         if (TrainManager.Instance == null) return;
 
         // Không xử lý khi đang có popup mở

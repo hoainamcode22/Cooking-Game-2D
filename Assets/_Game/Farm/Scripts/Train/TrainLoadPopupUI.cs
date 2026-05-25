@@ -12,7 +12,6 @@ public class TrainLoadPopupUI : MonoBehaviour
 
     private int                _selectedSlotIndex = -1;
     private TrainWagonSlotData _selectedSlot;
-    private bool               _popupInputLockHeld;
 
     // true khi popup đang thực sự hiển thị (toggle trực tiếp gameObject)
     public bool IsOpen => gameObject.activeSelf;
@@ -37,7 +36,6 @@ public class TrainLoadPopupUI : MonoBehaviour
             p = p.parent;
         }
         gameObject.SetActive(true);
-        AcquirePopupInputBlock();
         RefreshPopup();
     }
 
@@ -57,37 +55,9 @@ public class TrainLoadPopupUI : MonoBehaviour
 
     public void ClosePopup()
     {
-        ReleasePopupInputBlock();
         gameObject.SetActive(false);
         _selectedSlotIndex = -1;
         _selectedSlot      = null;
-    }
-
-    private void OnDisable()
-    {
-        ReleasePopupInputBlock();
-    }
-
-    private void AcquirePopupInputBlock()
-    {
-        FarmInputLock.SetPopupRaycastBlock(gameObject, true);
-
-        if (!_popupInputLockHeld)
-        {
-            FarmInputLock.RegisterPopupOpen();
-            _popupInputLockHeld = true;
-        }
-    }
-
-    private void ReleasePopupInputBlock()
-    {
-        FarmInputLock.SetPopupRaycastBlock(gameObject, false);
-
-        if (_popupInputLockHeld)
-        {
-            FarmInputLock.RegisterPopupClose();
-            _popupInputLockHeld = false;
-        }
     }
 
     private void OnThemHangClicked()

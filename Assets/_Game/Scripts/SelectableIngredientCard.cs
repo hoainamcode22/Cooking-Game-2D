@@ -2,7 +2,6 @@
 using UnityEngine.EventSystems;
 using TMPro;
 using UnityEngine.UI;
-using System.Runtime.Serialization;
 
 public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
 {
@@ -13,7 +12,7 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
     [SerializeField] private Image mainIconImage;
     [SerializeField] private Image topIconImage;
     [SerializeField] private GameObject statusGO;
-
+    private InventoryItemData inventoryItem;
 
     public bool isSeasoning;
     public bool IsSelected { get; private set; }
@@ -23,23 +22,6 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
     private string cachedName;
     private Sprite cachedMain;
     private Sprite cachedTop;
-    private string idItem;
-
-    [SerializeField] private TMP_Text txtQuantity;
-
-    private int currentKitchenQuantity;
-
-    public void SetQuantityFromKitchen(int quantity)
-    {
-        currentKitchenQuantity = quantity;
-
-        if (txtQuantity != null)
-            txtQuantity.text = "x" + currentKitchenQuantity;
-    }
-    public void setIdItem(string id)
-    {
-        idItem = id;
-    }
 
     public void Init(CookingSelectionManager mgr, bool seasoning)
     {
@@ -117,8 +99,21 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
     }
 
     public string GetItemName() => cachedName;
-    public int GetQuantity() => currentKitchenQuantity;
     public Sprite GetMainSprite() => cachedMain;
     public Sprite GetTopSprite() => cachedTop;
-    public string GetItemId() => idItem;
+    public void SetInventoryItem(InventoryItemData item)
+{
+    inventoryItem = item;
+    ingredientData = item != null ? item.cookingData : null;
+}
+
+    public InventoryItemData GetInventoryItem()
+    {
+        return inventoryItem;
+    }
+
+    public string GetItemId()
+    {
+        return inventoryItem != null ? inventoryItem.itemId : "";
+    }
 }

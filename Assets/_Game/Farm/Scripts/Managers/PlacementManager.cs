@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
@@ -45,8 +46,6 @@ public class PlacementManager : MonoBehaviour
     private SpriteRenderer    houseRenderer;
     private SpriteRenderer    ringRenderer;
     private Button            btnConfirm;
-    private RectTransform     confirmRect;
-    private RectTransform     cancelRect;
     private PlaceableItemData currentItem;
     private bool              isValidPos;
 
@@ -93,21 +92,14 @@ public class PlacementManager : MonoBehaviour
     {
         if (!isPlacing || currentGhost == null) return;
 
-        // Nút UI được ưu tiên tuyệt đối — kiểm tra trước khi xử lý drag
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (IsMouseOverRect(confirmRect)) { ConfirmPlacement(); return; }
-            if (IsMouseOverRect(cancelRect))  { CancelPlacement();  return; }
-        }
-
-        // Ghost chỉ di chuyển KHI ĐANG GIỮ chuột trái.
-        // Khi thả chuột, Ghost đứng yên → user tự do rê chuột xuống bấm nút V / X / Rotate.
-        if (Input.GetMouseButton(0))
+        // Chỉ cập nhật vị trí Ghost khi con trỏ KHÔNG đang đè lên UI (nút V / X)
+        // → Tránh Ghost trượt đi khi user bấm xác nhận
+        if (!EventSystem.current.IsPointerOverGameObject())
         {
             currentGhost.transform.position = GetSnappedMousePos();
         }
 
-        // Validation chạy liên tục theo vị trí hiện tại của Ghost (dù ghost đứng yên hay đang kéo)
+        // Kiểm tra va chạm liên tục
         isValidPos = !Physics2D.OverlapBox(
             currentGhost.transform.position,
             collisionCheckSize,
@@ -115,11 +107,13 @@ public class PlacementManager : MonoBehaviour
             obstacleLayer
         );
 
+        // Đổi màu Selection_Ring theo kết quả validation
         if (ringRenderer != null)
             ringRenderer.color = isValidPos
-                ? new Color(0f, 1f, 0f, 0.5f)
-                : new Color(1f, 0f, 0f, 0.5f);
+                ? new Color(0f, 1f, 0f, 0.5f)   // Xanh = chỗ trống
+                : new Color(1f, 0f, 0f, 0.5f);  // Đỏ   = bị chặn
 
+        // Chỉ cho bấm V khi vị trí hợp lệ
         if (btnConfirm != null)
             btnConfirm.interactable = isValidPos;
     }
@@ -143,10 +137,6 @@ public class PlacementManager : MonoBehaviour
 
         currentItem  = itemData;
         currentGhost = Instantiate(placementGhostPrefab, GetSnappedMousePos(), Quaternion.identity);
-
-        // Vô hiệu hóa toàn bộ Collider2D trên Ghost — tránh tia chuột / OverlapBox bắn trúng Ghost
-        foreach (var col in currentGhost.GetComponentsInChildren<Collider2D>(true))
-            col.enabled = false;
 
         // ── Tìm SpriteRenderer của ngôi nhà (bỏ qua Selection_Ring) ──
         foreach (SpriteRenderer sr in currentGhost.GetComponentsInChildren<SpriteRenderer>(true))
@@ -175,36 +165,19 @@ public class PlacementManager : MonoBehaviour
         else
             Debug.LogWarning("[PlacementManager] Không tìm thấy 'Selection_Ring' trong Ghost prefab.");
 
-        // ── Set Event Camera cho World Space Canvas — bắt buộc để GraphicRaycaster hoạt động ──
-        Canvas ghostCanvas = currentGhost.GetComponentInChildren<Canvas>(true);
-        if (ghostCanvas != null)
-        {
-            ghostCanvas.worldCamera = Camera.main;
-            Debug.Log($"[PlacementManager] Set worldCamera cho Ghost Canvas: {(Camera.main != null ? Camera.main.name : "null")}");
-        }
-        else
-            Debug.LogWarning("[PlacementManager] Không tìm thấy Canvas trong Ghost prefab!");
-
-        // ── Tự động bind nút V / X / Rotate — gán RectTransform cho cả 3 để freeze logic hoạt động ──
-        int boundCount = 0;
+        // ── Tự động bind nút V (Confirm) và X (Cancel) ──
         foreach (Button btn in currentGhost.GetComponentsInChildren<Button>(true))
         {
             if (btn.name == "Btn_Confirm")
             {
-                btnConfirm  = btn;
-                confirmRect = btn.GetComponent<RectTransform>();
+                btnConfirm = btn;
                 btn.onClick.AddListener(ConfirmPlacement);
-                boundCount++;
             }
             else if (btn.name == "Btn_Cancel")
             {
-                cancelRect = btn.GetComponent<RectTransform>();
                 btn.onClick.AddListener(CancelPlacement);
-                boundCount++;
             }
         }
-        if (boundCount == 0)
-            Debug.LogWarning("[PlacementManager] Không tìm thấy Btn_Confirm / Btn_Cancel trong Ghost!");
 
         isPlacing          = true;
         IsPlacingNewObject = true;  // CameraController tự khóa pan
@@ -230,11 +203,8 @@ public class PlacementManager : MonoBehaviour
         // Ẩn công trình gốc — Ghost đóng vai trò "placeholder" trong khi kéo
         target.gameObject.SetActive(false);
 
+        // Spawn Ghost tại đúng vị trí công trình
         currentGhost = Instantiate(placementGhostPrefab, originalEditPosition, Quaternion.identity);
-
-        // Vô hiệu hóa toàn bộ Collider2D trên Ghost
-        foreach (var col in currentGhost.GetComponentsInChildren<Collider2D>(true))
-            col.enabled = false;
 
         // ── Gán sprite từ công trình gốc vào Ghost ──
         foreach (SpriteRenderer sr in currentGhost.GetComponentsInChildren<SpriteRenderer>(true))
@@ -260,23 +230,16 @@ public class PlacementManager : MonoBehaviour
         if (ringT != null)
             ringRenderer = ringT.GetComponent<SpriteRenderer>();
 
-        // ── Set worldCamera cho Canvas — bắt buộc để IsMouseOverRect hoạt động đúng ──
-        Canvas ghostCanvas = currentGhost.GetComponentInChildren<Canvas>(true);
-        if (ghostCanvas != null)
-            ghostCanvas.worldCamera = Camera.main;
-
-        // ── Bind nút V / X / Rotate + gán RectTransform cho freeze logic ──
+        // ── Bind nút V / X ──
         foreach (Button btn in currentGhost.GetComponentsInChildren<Button>(true))
         {
             if (btn.name == "Btn_Confirm")
             {
-                btnConfirm  = btn;
-                confirmRect = btn.GetComponent<RectTransform>();
+                btnConfirm = btn;
                 btn.onClick.AddListener(ConfirmPlacement);
             }
             else if (btn.name == "Btn_Cancel")
             {
-                cancelRect = btn.GetComponent<RectTransform>();
                 btn.onClick.AddListener(CancelPlacement);
             }
         }
@@ -415,9 +378,9 @@ public class PlacementManager : MonoBehaviour
     /// <summary>Gắn vào Btn_Confirm. Đặt công trình xuống map (mới hoặc edit), xóa Ghost.</summary>
     private void ConfirmPlacement()
     {
-        // Ghost đứng yên khi user thả chuột → vị trí ghost chính là vị trí đặt công trình
+        if (!isValidPos) return;
+
         Vector3 pos = currentGhost.transform.position;
-        pos.z = 0f;
 
         // ── Nhánh Edit Mode: di chuyển công trình cũ sang vị trí mới ──
         if (currentlyEditingBuilding != null)
@@ -627,8 +590,6 @@ public class PlacementManager : MonoBehaviour
         houseRenderer            = null;
         ringRenderer             = null;
         btnConfirm               = null;
-        confirmRect              = null;
-        cancelRect               = null;
         currentItem              = null;
         currentlyEditingBuilding = null;
         footprintTransform       = null;
@@ -637,13 +598,6 @@ public class PlacementManager : MonoBehaviour
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
-
-    /// World Space Canvas cần truyền Camera.main để tính đúng tọa độ screen → rect.
-    private static bool IsMouseOverRect(RectTransform rt)
-    {
-        if (rt == null || !rt.gameObject.activeInHierarchy) return false;
-        return RectTransformUtility.RectangleContainsScreenPoint(rt, Input.mousePosition, Camera.main);
-    }
 
     /// <summary>
     /// Tìm plotId lớn nhất đang tồn tại trong scene rồi trả về maxId + 1.

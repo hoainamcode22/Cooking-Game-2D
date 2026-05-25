@@ -9,7 +9,6 @@ public class WelfareEventManager : MonoBehaviour
     [SerializeField] private RectTransform popupRect;
 
     public bool IsOpen => popupRect != null && popupRect.gameObject.activeSelf;
-    private bool popupInputLockHeld;
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
@@ -36,51 +35,8 @@ public class WelfareEventManager : MonoBehaviour
 
     // ── Public API ────────────────────────────────────────────────────────────
 
-    public void OpenPopup()
-    {
-        if (popupRect != null)
-        {
-            popupRect.gameObject.SetActive(true);
-            AcquirePopupInputBlock();
-        }
-    }
-
-    public void ClosePopup()
-    {
-        ReleasePopupInputBlock();
-
-        if (popupRect != null)
-            popupRect.gameObject.SetActive(false);
-    }
-
-    private void OnDisable()
-    {
-        ReleasePopupInputBlock();
-    }
-
-    private void AcquirePopupInputBlock()
-    {
-        GameObject root = popupRect != null ? popupRect.gameObject : null;
-        FarmInputLock.SetPopupRaycastBlock(root, true);
-
-        if (!popupInputLockHeld)
-        {
-            FarmInputLock.RegisterPopupOpen();
-            popupInputLockHeld = true;
-        }
-    }
-
-    private void ReleasePopupInputBlock()
-    {
-        GameObject root = popupRect != null ? popupRect.gameObject : null;
-        FarmInputLock.SetPopupRaycastBlock(root, false);
-
-        if (popupInputLockHeld)
-        {
-            FarmInputLock.RegisterPopupClose();
-            popupInputLockHeld = false;
-        }
-    }
+    public void OpenPopup()  => popupRect?.gameObject.SetActive(true);
+    public void ClosePopup() => popupRect?.gameObject.SetActive(false);
 
     // ── UI Raycast (y hệt PigPenClickOpen) ───────────────────────────────────
 

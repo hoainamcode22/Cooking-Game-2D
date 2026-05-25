@@ -134,8 +134,6 @@ namespace Village
             // Không mở popup khi đang Edit Mode
             if (EditModeManager.IsEditMode) return;
 
-            if (FarmInputLock.BlockMapPan) return;
-
             if (HouseOrderPopupUI.IsOpen) return;
 
             if (CurrentState != OrderState.Active)

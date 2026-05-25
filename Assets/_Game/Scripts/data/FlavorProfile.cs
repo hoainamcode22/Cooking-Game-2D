@@ -27,14 +27,6 @@ public struct FlavorVector
         umami = a.umami + b.umami,
         texture = a.texture + b.texture
     };
-    public static FlavorVector operator -(FlavorVector a, FlavorVector b) => new FlavorVector
-    {
-        sweet = a.sweet - b.sweet,
-        spicy = a.spicy - b.spicy,
-        sour = a.sour - b.sour,
-        umami = a.umami - b.umami,
-        texture = a.texture - b.texture
-    };
 
     public int ManhattanDistance(FlavorVector other)
     {

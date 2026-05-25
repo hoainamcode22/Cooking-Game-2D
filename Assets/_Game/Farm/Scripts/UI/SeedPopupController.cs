@@ -19,21 +19,17 @@ public class SeedPopupController : MonoBehaviour
     [SerializeField] private float itemPreferredWidth  = 120f;
     [SerializeField] private float itemPreferredHeight = 150f;
 
-    private bool popupInputLockHeld;
-
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
     private void OnEnable()
     {
         FarmInputLock.IsSeedPopupOpen = true;
-        AcquirePopupInputBlock();
         SpawnAllItems();
     }
 
     private void OnDisable()
     {
         FarmInputLock.IsSeedPopupOpen = false;
-        ReleasePopupInputBlock();
     }
 
     private void Update()
@@ -132,23 +128,5 @@ public class SeedPopupController : MonoBehaviour
         }
 
         Debug.Log($"[SeedPopup] Xong: {count}/{cropDataList.Length} items.");
-    }
-
-    private void AcquirePopupInputBlock()
-    {
-        FarmInputLock.SetPopupRaycastBlock(gameObject, true);
-
-        if (popupInputLockHeld) return;
-        FarmInputLock.RegisterPopupOpen();
-        popupInputLockHeld = true;
-    }
-
-    private void ReleasePopupInputBlock()
-    {
-        FarmInputLock.SetPopupRaycastBlock(gameObject, false);
-
-        if (!popupInputLockHeld) return;
-        FarmInputLock.RegisterPopupClose();
-        popupInputLockHeld = false;
     }
 }

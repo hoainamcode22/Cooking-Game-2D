@@ -14,7 +14,6 @@ public class HomeMenuManager : MonoBehaviour
 
     [Header("Popup Manager")]
     [SerializeField] private PopupEwarManager popupEwarManager;
-    private bool popupInputLockHeld;
 
     private void Awake()
     {
@@ -26,46 +25,12 @@ public class HomeMenuManager : MonoBehaviour
 
     private void OnHomeClicked()
     {
-        bool shouldOpen = !panel_Items.activeSelf;
-        panel_Items.SetActive(shouldOpen);
-
-        if (shouldOpen)
-            AcquirePopupInputBlock();
-        else
-            ReleasePopupInputBlock();
+        panel_Items.SetActive(!panel_Items.activeSelf);
     }
 
     private void OnEwarClicked()
     {
-        ReleasePopupInputBlock();
         panel_Items.SetActive(false);
         popupEwarManager.OpenPopup();
-    }
-
-    private void OnDisable()
-    {
-        ReleasePopupInputBlock();
-    }
-
-    private void AcquirePopupInputBlock()
-    {
-        FarmInputLock.SetPopupRaycastBlock(panel_Items, true);
-
-        if (!popupInputLockHeld)
-        {
-            FarmInputLock.RegisterPopupOpen();
-            popupInputLockHeld = true;
-        }
-    }
-
-    private void ReleasePopupInputBlock()
-    {
-        FarmInputLock.SetPopupRaycastBlock(panel_Items, false);
-
-        if (popupInputLockHeld)
-        {
-            FarmInputLock.RegisterPopupClose();
-            popupInputLockHeld = false;
-        }
     }
 }

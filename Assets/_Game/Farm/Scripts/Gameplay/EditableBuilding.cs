@@ -33,7 +33,6 @@ public class EditableBuilding : MonoBehaviour
     {
         // BẮT BUỘC: chỉ bắt đầu đếm giờ khi Edit Mode đang bật
         if (!EditModeManager.IsEditMode) return;
-        if (FarmInputLock.BlockMapPan) return;
 
         isPressing          = true;
         alreadyTriggered    = false;
