@@ -1,7 +1,9 @@
 using Day_Night;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
+using UnityEngine.Tilemaps;
 using UnityEngine.VFX;
 
 namespace Day_Night.Editor
@@ -29,6 +31,11 @@ namespace Day_Night.Editor
         private const string FireVfxPrefabPath = "Assets/Day_Night/Lights/VFX/Fire/VFX_Fire.prefab";
         private const string FireCircleTexturePath = "Assets/Day_Night/Lights/VFX/Fire/circle.png";
         private const string MothsPrefabPath = "Assets/Day_Night/Lights/VFX/Moth/P_VFX_Moths.prefab";
+        private const string SpriteLitMaterialGuid = "a97c105638bdf8b4a8650670310a4cd3";
+        private const string BottomSortingLayerName = "Bottom";
+        private const string WaterSortingLayerName = "Water";
+        private const string BuildingSortingLayerName = "CongTrinh";
+        private const string ObjectsFrontSortingLayerName = "ObjectsFront";
         private const string DefaultSortingLayerName = "Default";
         private const string ForegroundSortingLayerName = "Foreground";
 
@@ -152,6 +159,105 @@ namespace Day_Night.Editor
             }
 
             Debug.Log("Fixed Day_Night fire VFX in scene: " + fixedCount);
+        }
+
+        [MenuItem("Tools/Day Night/Fix Farm Scene Lighting Sorting UI")]
+        public static void FixFarmSceneLightingSortingUi()
+        {
+            Material spriteLitMaterial = LoadSpriteLitMaterial();
+            int litCount = 0;
+            int tilemapCount = 0;
+            int trainCount = 0;
+            int buildingCount = 0;
+
+            DayNightCycleController[] controllers = Object.FindObjectsByType<DayNightCycleController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < controllers.Length; i++)
+            {
+                FixSetupInScene(controllers[i], false);
+                ConfigureControllerLights(controllers[i]);
+            }
+
+            TilemapRenderer[] tilemaps = Object.FindObjectsByType<TilemapRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < tilemaps.Length; i++)
+            {
+                TilemapRenderer renderer = tilemaps[i];
+                if (renderer == null)
+                {
+                    continue;
+                }
+
+                Undo.RecordObject(renderer, "Fix Farm Tilemap Sorting");
+                string name = renderer.gameObject.name;
+                bool isWaterTilemap = name == "Water_Tilemap" || name == "Nước" || name == "Nuoc";
+                if (spriteLitMaterial != null && !isWaterTilemap)
+                {
+                    renderer.sharedMaterial = spriteLitMaterial;
+                    litCount++;
+                }
+
+                if (name == "Underwater_Tilemap")
+                {
+                    renderer.sortingLayerName = WaterSortingLayerName;
+                    renderer.sortingOrder = 0;
+                    tilemapCount++;
+                }
+                else if (isWaterTilemap)
+                {
+                    renderer.sortingLayerName = WaterSortingLayerName;
+                    renderer.sortingOrder = 10;
+                    tilemapCount++;
+                }
+                else if (name == "Dat_Nen")
+                {
+                    renderer.sortingLayerName = BottomSortingLayerName;
+                    renderer.sortingOrder = 0;
+                    tilemapCount++;
+                }
+                else if (name == "Co_Grass")
+                {
+                    renderer.sortingLayerName = BottomSortingLayerName;
+                    renderer.sortingOrder = 1;
+                    tilemapCount++;
+                }
+
+                EditorUtility.SetDirty(renderer);
+            }
+
+            SpriteRenderer[] spriteRenderers = Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < spriteRenderers.Length; i++)
+            {
+                SpriteRenderer renderer = spriteRenderers[i];
+                if (renderer == null || renderer.GetComponentInParent<Canvas>() != null)
+                {
+                    continue;
+                }
+
+                Undo.RecordObject(renderer, "Fix Farm Sprite Sorting");
+                if (spriteLitMaterial != null)
+                {
+                    renderer.sharedMaterial = spriteLitMaterial;
+                    litCount++;
+                }
+
+                if (IsUnderNamedParent(renderer.transform, "TrainVisualRoot") || IsUnderNamedParent(renderer.transform, "TrainVisualRoot2"))
+                {
+                    renderer.sortingLayerName = ObjectsFrontSortingLayerName;
+                    renderer.sortingOrder = Mathf.Max(renderer.sortingOrder, 650);
+                    trainCount++;
+                }
+                else if (renderer.sortingOrder >= 500 || HasComponentInParentByName(renderer.transform, "PermanentBuilding", "EditableBuilding", "HouseOrderController", "TrainStationBuilding"))
+                {
+                    renderer.sortingLayerName = BuildingSortingLayerName;
+                    renderer.sortingOrder = Mathf.Max(renderer.sortingOrder, 500);
+                    buildingCount++;
+                }
+
+                EditorUtility.SetDirty(renderer);
+            }
+
+            FixMarketPopupBlocking();
+            EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+            Debug.Log($"Fixed farm lighting/sorting/UI. DayNight={controllers.Length}, Tilemaps={tilemapCount}, TrainSprites={trainCount}, BuildingSprites={buildingCount}, LitMaterials={litCount}.");
         }
 
         private static GameObject BuildSetup()
@@ -434,6 +540,34 @@ namespace Day_Night.Editor
             EditorUtility.SetDirty(light);
         }
 
+        private static void ConfigureControllerLights(DayNightCycleController controller)
+        {
+            if (controller == null)
+            {
+                return;
+            }
+
+            ConfigureDayNightLight(controller.DayLight);
+            ConfigureDayNightLight(controller.NightLight);
+            ConfigureDayNightLight(controller.AmbientLight);
+            ConfigureDayNightLight(controller.SunRimLight);
+            ConfigureDayNightLight(controller.MoonRimLight);
+        }
+
+        private static void ConfigureDayNightLight(Light2D light)
+        {
+            if (light == null)
+            {
+                return;
+            }
+
+            Undo.RecordObject(light, "Configure Day Night Sorting Layers");
+            SerializedObject serializedLight = new SerializedObject(light);
+            ApplyToAllSortingLayers(serializedLight);
+            serializedLight.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(light);
+        }
+
         public static void FixSetupInScene(DayNightCycleController controller, bool previewBrightDay)
         {
             if (controller == null)
@@ -443,6 +577,7 @@ namespace Day_Night.Editor
 
             Undo.RecordObject(controller, "Fix Day Night Setup");
             controller.ResetToHappyHarvestDefaults();
+            ConfigureControllerLights(controller);
 
             DayNightWeatherSystem weatherSystem = controller.WeatherSystem;
             if (weatherSystem == null)
@@ -530,6 +665,7 @@ namespace Day_Night.Editor
             SetFloat(serializedLight, "m_PointLightOuterRadius", outerRadius);
             SetFloat(serializedLight, "m_PointLightInnerAngle", innerAngle);
             SetFloat(serializedLight, "m_PointLightOuterAngle", outerAngle);
+            ApplyToAllSortingLayers(serializedLight);
             serializedLight.ApplyModifiedPropertiesWithoutUndo();
             light.name = lightLabel;
             return light;
@@ -786,6 +922,92 @@ namespace Day_Night.Editor
             }
         }
 
+        private static Material LoadSpriteLitMaterial()
+        {
+            string materialPath = AssetDatabase.GUIDToAssetPath(SpriteLitMaterialGuid);
+            return string.IsNullOrEmpty(materialPath)
+                ? null
+                : AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+        }
+
+        private static bool IsUnderNamedParent(Transform transform, string parentName)
+        {
+            Transform cursor = transform;
+            while (cursor != null)
+            {
+                if (cursor.name == parentName)
+                {
+                    return true;
+                }
+
+                cursor = cursor.parent;
+            }
+
+            return false;
+        }
+
+        private static bool HasComponentInParentByName(Transform transform, params string[] componentTypeNames)
+        {
+            Transform cursor = transform;
+            while (cursor != null)
+            {
+                MonoBehaviour[] behaviours = cursor.GetComponents<MonoBehaviour>();
+                for (int i = 0; i < behaviours.Length; i++)
+                {
+                    MonoBehaviour behaviour = behaviours[i];
+                    if (behaviour == null)
+                    {
+                        continue;
+                    }
+
+                    string typeName = behaviour.GetType().Name;
+                    for (int j = 0; j < componentTypeNames.Length; j++)
+                    {
+                        if (typeName == componentTypeNames[j])
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                cursor = cursor.parent;
+            }
+
+            return false;
+        }
+
+        private static void FixMarketPopupBlocking()
+        {
+            GameObject marketCanvas = GameObject.Find("Canvas_MarketPopup");
+            if (marketCanvas == null)
+            {
+                return;
+            }
+
+            Undo.RecordObject(marketCanvas, "Fix Market Canvas Blocking");
+            marketCanvas.SetActive(true);
+
+            CanvasGroup canvasGroup = marketCanvas.GetComponent<CanvasGroup>();
+            if (canvasGroup != null)
+            {
+                Undo.RecordObject(canvasGroup, "Fix Market Canvas Group");
+                canvasGroup.alpha = 1f;
+                canvasGroup.interactable = true;
+                canvasGroup.blocksRaycasts = true;
+                EditorUtility.SetDirty(canvasGroup);
+            }
+
+            Transform panel = FindDirectChild(marketCanvas.transform, "Panel_Background");
+            if (panel != null)
+            {
+                Undo.RecordObject(panel.gameObject, "Hide Market Popup Panel");
+                panel.gameObject.SetActive(false);
+                EditorUtility.SetDirty(panel.gameObject);
+            }
+
+            EditorUtility.SetDirty(marketCanvas);
+        }
+
         private static void SetVfxFloat(VisualEffect effect, string propertyName, float value)
         {
             if (effect.HasFloat(propertyName))
@@ -868,6 +1090,11 @@ namespace Day_Night.Editor
             if (GUILayout.Button("Fix Fire VFX In Current Scene"))
             {
                 DayNightSetupTool.FixFireVfxInCurrentScene();
+            }
+
+            if (GUILayout.Button("Fix Farm Scene Lighting Sorting UI"))
+            {
+                DayNightSetupTool.FixFarmSceneLightingSortingUi();
             }
 
             EditorGUILayout.Space(8f);

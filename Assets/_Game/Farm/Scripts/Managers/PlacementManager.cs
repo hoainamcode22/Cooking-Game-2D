@@ -11,6 +11,8 @@ using UnityEngine.UI;
 public class PlacementManager : MonoBehaviour
 {
     public static PlacementManager Instance { get; private set; }
+    private const string BuildingSortingLayerName = "CongTrinh";
+    private const int BuildingSortingOrder = 500;
 
     /// <summary>CameraController đọc flag này để block pan khi user đang bưng vật phẩm.</summary>
     public static bool IsPlacingNewObject { get; private set; }
@@ -412,6 +414,21 @@ public class PlacementManager : MonoBehaviour
         }
     }
 
+    private static void FixBuildingRenderSorting(GameObject buildingObj)
+    {
+        if (buildingObj == null) return;
+
+        SpriteRenderer[] renderers = buildingObj.GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            SpriteRenderer sr = renderers[i];
+            if (sr == null) continue;
+
+            sr.sortingLayerName = BuildingSortingLayerName;
+            sr.sortingOrder = Mathf.Max(sr.sortingOrder, BuildingSortingOrder);
+        }
+    }
+
     /// <summary>Gắn vào Btn_Confirm. Đặt công trình xuống map (mới hoặc edit), xóa Ghost.</summary>
     private void ConfirmPlacement()
     {
@@ -447,6 +464,7 @@ public class PlacementManager : MonoBehaviour
         GameObject spawnedObj = Instantiate(currentItem.prefabToBuild, pos, Quaternion.identity);
         Debug.Log($"[PlacementManager] Đặt thành công: {currentItem.itemName} tại {pos}");
 
+        FixBuildingRenderSorting(spawnedObj);
         FixAnimalVisibility(spawnedObj);
 
         // Tắt bất kỳ placeholder cùng tên trong scene để tránh object thừa
@@ -509,6 +527,7 @@ public class PlacementManager : MonoBehaviour
             Vector3 pos = new(entry.x, entry.y, 0f);
             GameObject obj = Instantiate(itemData.prefabToBuild, pos, Quaternion.identity);
 
+            FixBuildingRenderSorting(obj);
             FixAnimalVisibility(obj);
 
             // Tắt placeholder cùng tên còn sót trong scene

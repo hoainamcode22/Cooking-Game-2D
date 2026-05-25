@@ -98,7 +98,7 @@ public class CookingBoot : MonoBehaviour
         {
             if (i < items.Count)// nếu còn item để điền, thì điền vào card, và bật card lên. Nếu không còn item nào để điền, thì tắt card đi (ẩn khỏi UI)
             {
-                SetupCard(cards[i], items[i].Key, items[i].Value, isSeasoning);;// điền dữ liệu item vào card, và khởi tạo card với selection manager, để card có thể tương tác được
+                SetupCard(cards[i], items[i].Key, isSeasoning);// điền dữ liệu item vào card, và khởi tạo card với selection manager, để card có thể tương tác được
                 cards[i].gameObject.SetActive(true);
             }
             else
@@ -113,7 +113,7 @@ public class CookingBoot : MonoBehaviour
         }
     }
 
-    private void SetupCard(SelectableIngredientCard card, InventoryItemData inventoryItem, int amount, bool isSeasoning)// điền dữ liệu item vào card, và khởi tạo card với selection manager, để card có thể tương tác được
+    private void SetupCard(SelectableIngredientCard card, InventoryItemData inventoryItem, bool isSeasoning)// điền dữ liệu item vào card, và khởi tạo card với selection manager, để card có thể tương tác được
     {
         if (card == null || inventoryItem == null || inventoryItem.cookingData == null)
             return;
@@ -134,14 +134,8 @@ public class CookingBoot : MonoBehaviour
             ui.Setup(displayName, mainIcon, topIcon, stars, false);
         }
 
-        card.SetInventoryItem(inventoryItem);
         card.SetIngredientData(ing);
         card.Init(selection, isSeasoning);
         card.SetSelected(false);
-        var amountUI = card.GetComponent<IngredientAmountUI>();
-        if (amountUI != null)
-        {
-            amountUI.SetAmount(amount);
-        }
     }
 }

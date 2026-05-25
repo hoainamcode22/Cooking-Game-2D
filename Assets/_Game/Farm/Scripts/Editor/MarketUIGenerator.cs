@@ -179,6 +179,7 @@ public static class MarketUIGenerator
         MarketPopupUI marketPopupUI = popupMain.AddComponent<MarketPopupUI>();
         AssignMarketPopupUI(marketPopupUI, panelBackground, buttonClose);
 
+        panelBackground.SetActive(false);
         return canvasObject;
     }
 

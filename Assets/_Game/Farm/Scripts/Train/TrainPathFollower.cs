@@ -16,6 +16,9 @@ using UnityEngine;
 /// </summary>
 public class TrainPathFollower : MonoBehaviour
 {
+    private const string TrainSortingLayerName = "ObjectsFront";
+    private const int TrainSortingOrder = 650;
+
     [Header("Visual Root — ROOT của toàn bộ tàu (engine + wagons phải là con của GO này)")]
     [Tooltip("Kéo TrainVisualRoot hoặc TrainVisualRoot2 vào đây. TOÀN BỘ tàu phải là con của GO này.")]
     [SerializeField] private Transform trainRoot;
@@ -48,6 +51,7 @@ public class TrainPathFollower : MonoBehaviour
         // Pre-fill history từ vị trí vật lý hiện tại của trainRoot.
         // Sẽ bị ghi đè bởi SnapToPosition trong InitAfterFrame.
         _pathHistory.Add(trainRoot.position);
+        ConfigureTrainSorting();
     }
 
     void LateUpdate()
@@ -62,7 +66,10 @@ public class TrainPathFollower : MonoBehaviour
     public void ShowTrain()
     {
         if (trainRoot != null)
+        {
+            ConfigureTrainSorting();
             trainRoot.gameObject.SetActive(true);
+        }
         else
             Debug.LogWarning($"[TrainPathFollower] {gameObject.name}: trainRoot chưa gán!");
     }
@@ -88,6 +95,7 @@ public class TrainPathFollower : MonoBehaviour
 
         // Di chuyển trainRoot đến pos
         trainRoot.position = pos;
+        ConfigureTrainSorting();
 
         // Trải wagons theo backwardDir
         int numWagons = carriages != null ? carriages.Length : 0;
@@ -173,6 +181,21 @@ public class TrainPathFollower : MonoBehaviour
             }
         }
         return _pathHistory[0];
+    }
+
+    private void ConfigureTrainSorting()
+    {
+        if (trainRoot == null) return;
+
+        SpriteRenderer[] renderers = trainRoot.GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            SpriteRenderer sr = renderers[i];
+            if (sr == null) continue;
+
+            sr.sortingLayerName = TrainSortingLayerName;
+            sr.sortingOrder = Mathf.Max(sr.sortingOrder, TrainSortingOrder);
+        }
     }
 
 #if UNITY_EDITOR

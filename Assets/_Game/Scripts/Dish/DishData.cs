@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum DishDifficulty
@@ -36,25 +37,7 @@ public class DishData : ScriptableObject
     [Header("Target Flavor")]
     public FlavorVector targetFlavor;
 
-    [Header("Hints - Required")]
-    public HintIngredientSlotData required1;
-    public HintIngredientSlotData required2;
+    [Header("Scoring - Required Ingredients")]
+    public List<IngredientData> requiredIngredients;
 
-    [Header("Hints - Optional")]
-    public HintIngredientSlotData optional1;
-    public HintIngredientSlotData optional2;
-    public HintIngredientSlotData optional3;
-
-    [Header("Hints - Seasoning Tips")]
-    public SeasoningTipData tip1;
-    public SeasoningTipData tip2;
-    public SeasoningTipData tip3;
-    public SeasoningTipData tip4;
-
-    [Header("Hints - Bonus Combo")]
-    [TextArea(2, 3)]
-    public string bonusComboText;
-
-    [Header("Hints - Judge Button")]
-    public string whatJudgeLikesText = "Giám kh?o thích gì?";
 }
