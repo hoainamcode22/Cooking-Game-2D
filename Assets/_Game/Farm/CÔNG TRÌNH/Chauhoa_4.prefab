@@ -37,7 +37,6 @@ Transform:
   - {fileID: 3066499075713089585}
   - {fileID: 3067506514695668704}
   - {fileID: 3726025470332889913}
-  - {fileID: 5487637104604630080}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &8440994351815365477
@@ -119,6 +118,10 @@ MonoBehaviour:
   progressLeftToRight: 1
   harvestSpawnPoint: {fileID: 3067506514695668704}
   expSpawnPoint: {fileID: 3726025470332889913}
+  cropVFXRoot: {fileID: 0}
+  seedRainPrefab: {fileID: 0}
+  seedCostTextPrefab: {fileID: 0}
+  harvestAmountTextPrefab: {fileID: 0}
 --- !u!114 &-2566009820447563090
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -241,7 +244,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: -7402701471198929866, guid: dfa899eb9b9c0524994383f54f613334, type: 3}
@@ -332,7 +335,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: -6080068321224321704, guid: 3aa966eee3b923a4e89cea5a468021fd, type: 3}
@@ -343,7 +346,7 @@ SpriteRenderer:
   m_Size: {x: 2.51, y: 2.76}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &7472315169885281472
 GameObject:
@@ -429,37 +432,6 @@ MonoBehaviour:
   swayAngle: 4.5
   swaySpeed: 1.4
   swayPhaseRange: 2
---- !u!1 &8576329644540779555
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5487637104604630080}
-  m_Layer: 7
-  m_Name: FarmerStandPoint
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5487637104604630080
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8576329644540779555}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 5322972621356633993}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8765286149444971138
 GameObject:
   m_ObjectHideFlags: 0

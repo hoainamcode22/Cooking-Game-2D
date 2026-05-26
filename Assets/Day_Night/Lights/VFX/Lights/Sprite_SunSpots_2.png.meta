@@ -1,4 +1,4 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: 528bbd599e27497eb589bb92a42b8090
 TextureImporter:
   internalIDToNameTable: []
@@ -130,5 +130,5 @@ AssetOrigin:
   productId: 259218
   packageName: Happy Harvest - 2D Sample Project
   packageVersion: 1.61
-  assetPath: Assets/HappyHarvest/VFX/Lights/Sprite_SunSpots_2.png
+  assetPath: Assets/Day_Night/Lights/VFX/Lights/Sprite_SunSpots_2.png
   uploadId: 722366

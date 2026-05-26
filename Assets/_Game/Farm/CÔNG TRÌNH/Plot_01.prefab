@@ -1,5 +1,18 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-2092318574339711010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1016672308775500909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e2b7de78d39b8e47b1c9d6ddc2360f7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EditableBuilding
+  footprintVisual: {fileID: 8293749280720246623, guid: 944a45eded0569f42af3694cee049563, type: 3}
 --- !u!1 &28335839280894922
 GameObject:
   m_ObjectHideFlags: 0
@@ -81,8 +94,8 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: -1738372969
-  m_SortingLayer: 1
+  m_SortingLayerID: 1669604809
+  m_SortingLayer: 3
   m_SortingOrder: 210
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
@@ -175,8 +188,8 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  _SortingLayer: 0
-  _SortingLayerID: -1738372969
+  _SortingLayer: 3
+  _SortingLayerID: 1669604809
   _SortingOrder: 210
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 9149626090301821477}
@@ -248,7 +261,6 @@ Transform:
   - {fileID: 5690261201191178003}
   - {fileID: 4866194326394941808}
   - {fileID: 1200549869816993770}
-  - {fileID: 3704600264024807887}
   - {fileID: 8422209423343239933}
   - {fileID: 6655136974677105742}
   - {fileID: 5005322921726948899}
@@ -301,19 +313,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 488.85382, y: 250.65338}
   m_EdgeRadius: 0
---- !u!114 &-2092318574339711010
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1016672308775500909}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8e2b7de78d39b8e47b1c9d6ddc2360f7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EditableBuilding
-  footprintVisual: {fileID: 8293749280720246623, guid: 944a45eded0569f42af3694cee049563, type: 3}
 --- !u!114 &5737610210004506391
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -493,37 +492,6 @@ Transform:
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5690261201191178003}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2099623832778485346
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 3704600264024807887}
-  m_Layer: 7
-  m_Name: FarmerStandPoint
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &3704600264024807887
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2099623832778485346}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -34, y: -16, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 612103456330073040}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2268177375606491933
 GameObject:
@@ -1323,8 +1291,8 @@ MeshRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: -1738372969
-  m_SortingLayer: 1
+  m_SortingLayerID: 1669604809
+  m_SortingLayer: 3
   m_SortingOrder: 210
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
@@ -1417,8 +1385,8 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  _SortingLayer: 0
-  _SortingLayerID: -1738372969
+  _SortingLayer: 3
+  _SortingLayerID: 1669604809
   _SortingOrder: 210
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 5475674430846010437}

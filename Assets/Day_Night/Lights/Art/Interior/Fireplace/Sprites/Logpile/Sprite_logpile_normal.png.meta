@@ -1,4 +1,4 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: 31e312c9dbd04c05b6d312d2ecda53bc
 TextureImporter:
   internalIDToNameTable: []
@@ -130,5 +130,5 @@ AssetOrigin:
   productId: 259218
   packageName: Happy Harvest - 2D Sample Project
   packageVersion: 1.61
-  assetPath: Assets/HappyHarvest/Art/Interior/Fireplace/Sprites/Logpile/Sprite_logpile_normal.png
+  assetPath: Assets/Day_Night/Lights/Art/Interior/Fireplace/Sprites/Logpile/Sprite_logpile_normal.png
   uploadId: 722366

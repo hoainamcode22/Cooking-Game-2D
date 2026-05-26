@@ -1106,9 +1106,9 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures:
-    - texture: {fileID: 2800000, guid: f4f09cd9b02651e4cb75f4b9dd8f0e06, type: 3}
+    - texture: {fileID: 2800000, guid: 65b9f6d27c3c86c45a78cc48eedc9871, type: 3}
       name: _NormalMap
-    - texture: {fileID: 2800000, guid: 4ce3a2209deb07e44984dec7226f4a6b, type: 3}
+    - texture: {fileID: 2800000, guid: 5c0877ab2ec16c449b2114f612ba06b7, type: 3}
       name: _MaskTex
     nameFileIdTable:
       wet_tile_0: 995317722

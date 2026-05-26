@@ -8,15 +8,16 @@ namespace Day_Night
     [RequireComponent(typeof(MeshRenderer))]
     public class DayNightRainOverlay : MonoBehaviour
     {
-        public Vector2 AreaSize = new Vector2(90f, 55f);
-        [Range(16, 1200)] public int DropCount = 620;
-        public float FallSpeed = 22f;
-        public float DropLength = 0.8f;
-        public float DropWidth = 0.018f;
+        public Vector2 AreaSize = new Vector2(2600f, 1600f);
+        [Range(16, 6000)] public int DropCount = 160;
+        public float FallSpeed = 850f;
+        public float DropLength = 78f;
+        public float DropWidth = 2.2f;
+        public float DropHeadSize = 4.5f;
         public Vector2 Slant = new Vector2(-0.08f, -1f);
-        public Color DropColor = new Color(0.58f, 0.72f, 1f, 0.58f);
+        public Color DropColor = new Color(0.86f, 0.96f, 1f, 0.72f);
         public string SortingLayerName = "Foreground";
-        public int SortingOrder = 120;
+        public int SortingOrder = 260;
         public bool FollowMainCamera = true;
         public Camera CameraOverride;
         public float CameraAreaPadding = 1.25f;
@@ -55,6 +56,7 @@ namespace Day_Night
             AreaSize.y = Mathf.Max(4f, AreaSize.y);
             DropLength = Mathf.Max(0.05f, DropLength);
             DropWidth = Mathf.Max(0.005f, DropWidth);
+            DropHeadSize = Mathf.Max(0.1f, DropHeadSize);
             EnsureRenderer();
             RebuildMesh();
         }
@@ -87,7 +89,7 @@ namespace Day_Night
                     material = new Material(shader);
                     material.name = "Day Night Rain Overlay Material";
                     material.hideFlags = HideFlags.DontSave;
-                    material.renderQueue = 3000;
+                    material.renderQueue = 4500;
                 }
             }
 
@@ -170,6 +172,8 @@ namespace Day_Night
                 triangles.Add(vertexIndex);
                 triangles.Add(vertexIndex + 2);
                 triangles.Add(vertexIndex + 3);
+
+                AddDropHead(end, DropHeadSize, dropColor);
             }
 
             mesh.Clear();
@@ -177,6 +181,31 @@ namespace Day_Night
             mesh.SetColors(colors);
             mesh.SetTriangles(triangles, 0);
             mesh.RecalculateBounds();
+        }
+
+        private void AddDropHead(Vector2 center, float size, Color color)
+        {
+            int vertexIndex = vertices.Count;
+            float halfSize = size * 0.5f;
+            Color headColor = color;
+            headColor.a = Mathf.Min(1f, headColor.a * 1.25f);
+
+            vertices.Add(new Vector3(center.x - halfSize, center.y - halfSize, 0f));
+            vertices.Add(new Vector3(center.x + halfSize, center.y - halfSize, 0f));
+            vertices.Add(new Vector3(center.x + halfSize, center.y + halfSize, 0f));
+            vertices.Add(new Vector3(center.x - halfSize, center.y + halfSize, 0f));
+
+            colors.Add(headColor);
+            colors.Add(headColor);
+            colors.Add(headColor);
+            colors.Add(headColor);
+
+            triangles.Add(vertexIndex);
+            triangles.Add(vertexIndex + 1);
+            triangles.Add(vertexIndex + 2);
+            triangles.Add(vertexIndex);
+            triangles.Add(vertexIndex + 2);
+            triangles.Add(vertexIndex + 3);
         }
 
         private Vector2 GetDropBasePosition(int index, float time)

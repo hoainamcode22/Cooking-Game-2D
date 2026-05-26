@@ -18801,7 +18801,7 @@ MonoBehaviour:
     - rid: 1001
       type: {class: ParticleShadingShaderGraph, ns: UnityEditor.VFX, asm: Unity.VisualEffectGraph.Editor}
       data:
-        shaderGraph: {fileID: 4333940904281232215, guid: ced56ab612cc5469483c318bf3357d0c, type: 3}
+        shaderGraph: {fileID: 4333940904281232215, guid: fa56fc74e3f59444890f8c2a032a0ff5, type: 3}
         materialSettings:
           m_PropertyNames: []
           m_PropertyValues: []
@@ -19807,7 +19807,7 @@ MonoBehaviour:
     - rid: 1001
       type: {class: ParticleShadingShaderGraph, ns: UnityEditor.VFX, asm: Unity.VisualEffectGraph.Editor}
       data:
-        shaderGraph: {fileID: 4333940904281232215, guid: ced56ab612cc5469483c318bf3357d0c, type: 3}
+        shaderGraph: {fileID: 4333940904281232215, guid: fa56fc74e3f59444890f8c2a032a0ff5, type: 3}
         materialSettings:
           m_PropertyNames: []
           m_PropertyValues: []
@@ -20848,7 +20848,7 @@ MonoBehaviour:
     - rid: 1001
       type: {class: ParticleShadingShaderGraph, ns: UnityEditor.VFX, asm: Unity.VisualEffectGraph.Editor}
       data:
-        shaderGraph: {fileID: 4333940904281232215, guid: ced56ab612cc5469483c318bf3357d0c, type: 3}
+        shaderGraph: {fileID: 4333940904281232215, guid: fa56fc74e3f59444890f8c2a032a0ff5, type: 3}
         materialSettings:
           m_PropertyNames: []
           m_PropertyValues: []
@@ -22020,7 +22020,7 @@ MonoBehaviour:
     - rid: 1001
       type: {class: ParticleShadingShaderGraph, ns: UnityEditor.VFX, asm: Unity.VisualEffectGraph.Editor}
       data:
-        shaderGraph: {fileID: 4333940904281232215, guid: ced56ab612cc5469483c318bf3357d0c, type: 3}
+        shaderGraph: {fileID: 4333940904281232215, guid: fa56fc74e3f59444890f8c2a032a0ff5, type: 3}
         materialSettings:
           m_PropertyNames: []
           m_PropertyValues: []
@@ -23773,7 +23773,7 @@ MonoBehaviour:
     - rid: 1001
       type: {class: ParticleShadingShaderGraph, ns: UnityEditor.VFX, asm: Unity.VisualEffectGraph.Editor}
       data:
-        shaderGraph: {fileID: 4333940904281232215, guid: ced56ab612cc5469483c318bf3357d0c, type: 3}
+        shaderGraph: {fileID: 4333940904281232215, guid: fa56fc74e3f59444890f8c2a032a0ff5, type: 3}
         materialSettings:
           m_PropertyNames: []
           m_PropertyValues: []

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9f9dab72d36a73b46b4ce338cf564fd8
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/Day_Night/Prefabs/TilingPuff_prefab.prefab
+  uploadId: 722366

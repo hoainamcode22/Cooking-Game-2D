@@ -311,7 +311,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: System.Single, mscorlib, Version=4.0.0.0, Culture=neutral,
           PublicKeyToken=b77a5c561934e089
-      m_SerializableObject: 1
+      m_SerializableObject: 12
     m_Space: -1
   m_Property:
     name: Rate
@@ -684,8 +684,8 @@ MonoBehaviour:
   - {fileID: 8926484042661614583}
   - {fileID: 8926484042661614585}
   dataType: 0
-  capacity: 6
-  stripCapacity: 16
+  capacity: 40
+  stripCapacity: 32
   particlePerStripCount: 16
   needsComputeBounds: 0
   boundsMode: 0
@@ -4182,7 +4182,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Vector2, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":0.07000000029802323,"y":0.30000001192092898}'
+      m_SerializableObject: '{"x":0.18000000715255738,"y":0.550000011920929}'
     m_Space: -1
   m_Property:
     name: o
@@ -4637,7 +4637,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Color, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"r":0.8565787076950073,"g":1.0,"b":0.7594339847564697,"a":0.729411780834198}'
+      m_SerializableObject: '{"r":0.9300000071525574,"g":0.9700000286102295,"b":1.0,"a":0.8500000238418579}'
     m_Space: -1
   m_Property:
     name: o

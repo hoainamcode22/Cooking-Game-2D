@@ -78,7 +78,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: 0}
@@ -548,7 +548,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: 0}
@@ -620,7 +620,7 @@ Canvas:
   m_VertexColorAlwaysGammaSpace: 1
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: -717064471
+  m_SortingLayerID: 1669604809
   m_SortingOrder: 409
   m_TargetDisplay: 0
 --- !u!114 &1111329715376261831
@@ -809,6 +809,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4252640032766926828}
+  - component: {fileID: -3506140040944137453}
   m_Layer: 6
   m_Name: Placement_Ghost
   m_TagString: Untagged
@@ -838,6 +839,19 @@ Transform:
   - {fileID: 2438995012820224949}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!210 &-3506140040944137453
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4791510232028003415}
+  m_Enabled: 1
+  m_SortingLayerID: 1669604809
+  m_SortingLayer: 2
+  m_SortingOrder: 500
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!1 &5194115778007814224
 GameObject:
   m_ObjectHideFlags: 0
@@ -916,7 +930,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 501
   m_MaskInteraction: 0
   m_Sprite: {fileID: -3829482726738822940, guid: 8d540eaa08068c44f8e0dd6add8aad41, type: 3}
@@ -1007,7 +1021,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: 0}
@@ -1098,7 +1112,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: 0}
@@ -1512,15 +1526,15 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -5679404723638615725, guid: 7051be6953fc2254d993e597502ddb77, type: 3}
+  m_Sprite: {fileID: 7482667652216324306, guid: 7ee647d858f640108bd8242ac9c31e07, type: 3}
   m_Color: {r: 0, g: 1, b: 0, a: 0.55}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 7.07, y: 3.45}
+  m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1

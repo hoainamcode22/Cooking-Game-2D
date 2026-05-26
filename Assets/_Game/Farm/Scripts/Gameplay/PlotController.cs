@@ -329,16 +329,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         return path;
     }
 
-    /// <summary>
-    /// Trả về vị trí để farmer đứng cuốc.
-    /// Ưu tiên child "FarmerStandPoint" nếu có, fallback về plot.transform.position.
-    /// </summary>
-    public Vector3 GetFarmerStandPosition()
-    {
-        Transform standPoint = transform.Find("FarmerStandPoint");
-        return standPoint != null ? standPoint.position : transform.position;
-    }
-
     public Vector3 GetHarvestSpawnPosition()
     {
         AutoFindHarvestSpawnPoint();

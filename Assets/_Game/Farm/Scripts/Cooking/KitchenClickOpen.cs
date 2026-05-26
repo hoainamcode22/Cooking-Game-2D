@@ -46,10 +46,9 @@ public class KitchenClickOpen : MonoBehaviour
 
     private void TryOpenCooking(Vector2 screenPos)
     {
-        // Không mở khi Edit Mode đang bật
         if (EditModeManager.IsEditMode) return;
+        if (FarmInputLock.BlockMapPan) return;
 
-        // Không mở khi đang có popup khác mở
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;
 

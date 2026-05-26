@@ -31,37 +31,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 3393005452258091241}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &2124972582344063501
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1359993939429018555}
-  m_Layer: 7
-  m_Name: FarmerStandPoint
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1359993939429018555
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2124972582344063501}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 3393005452258091241}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2140003344490568461
 GameObject:
   m_ObjectHideFlags: 0
@@ -193,7 +162,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: -3442666868238728411, guid: dfa899eb9b9c0524994383f54f613334, type: 3}
@@ -284,7 +253,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: -6080068321224321704, guid: 3aa966eee3b923a4e89cea5a468021fd, type: 3}
@@ -295,7 +264,7 @@ SpriteRenderer:
   m_Size: {x: 2.51, y: 2.76}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
 --- !u!1 &3358825802531286636
 GameObject:
@@ -334,7 +303,6 @@ Transform:
   - {fileID: 3645323829035470951}
   - {fileID: 2941901942961779829}
   - {fileID: 7898443810356334102}
-  - {fileID: 1359993939429018555}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &1659998328482306924
@@ -416,6 +384,10 @@ MonoBehaviour:
   progressLeftToRight: 1
   harvestSpawnPoint: {fileID: 2941901942961779829}
   expSpawnPoint: {fileID: 7898443810356334102}
+  cropVFXRoot: {fileID: 0}
+  seedRainPrefab: {fileID: 0}
+  seedCostTextPrefab: {fileID: 0}
+  harvestAmountTextPrefab: {fileID: 0}
 --- !u!114 &-684578008072670873
 MonoBehaviour:
   m_ObjectHideFlags: 0

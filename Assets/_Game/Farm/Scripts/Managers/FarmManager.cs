@@ -60,7 +60,6 @@ public class FarmManager : MonoBehaviour
     public int CropDatabaseCount => cropMap.Count;
 
     // Fired every time a plot is actively planted by the player (not on scene load).
-    // FarmerBehavior subscribes to this to know when to start a new job.
     public static event System.Action<PlotController> OnPlotPlantedEvent;
 
     private readonly Dictionary<string, CropData> cropMap = new Dictionary<string, CropData>();

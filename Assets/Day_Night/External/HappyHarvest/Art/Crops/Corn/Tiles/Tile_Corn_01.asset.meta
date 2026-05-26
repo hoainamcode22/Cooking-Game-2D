@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 620b0226dca643468edde0fdabfe3486
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/Day_Night/External/HappyHarvest/Art/Crops/Corn/Tiles/Tile_Corn_01.asset
+  uploadId: 722366

@@ -19,6 +19,7 @@ public class ShopManager : MonoBehaviour
     public List<BaseItemData> decorList;    // Tab 2 - Trang trí
 
     private List<BaseItemData> currentActiveList;
+    private bool popupInputLockHeld;
 
     public bool IsOpen => shopPanel != null && shopPanel.activeSelf;
 
@@ -51,13 +52,42 @@ public class ShopManager : MonoBehaviour
     public void OpenShop()
     {
         shopPanel.SetActive(true);
+        AcquirePopupInputBlock();
         if (searchBar != null) searchBar.text = "";
         ShowTab(0);
     }
 
     public void CloseShop()
     {
+        ReleasePopupInputBlock();
         shopPanel.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        ReleasePopupInputBlock();
+    }
+
+    private void AcquirePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(shopPanel, true);
+
+        if (!popupInputLockHeld)
+        {
+            FarmInputLock.RegisterPopupOpen();
+            popupInputLockHeld = true;
+        }
+    }
+
+    private void ReleasePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(shopPanel, false);
+
+        if (popupInputLockHeld)
+        {
+            FarmInputLock.RegisterPopupClose();
+            popupInputLockHeld = false;
+        }
     }
 
     public void ShowTab(int tabIndex)

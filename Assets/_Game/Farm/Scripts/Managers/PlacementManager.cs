@@ -166,7 +166,7 @@ public class PlacementManager : MonoBehaviour
             {
                 houseRenderer.sprite = prefabSR.sprite;
                 // Điều chỉnh thảm xanh khớp footprint công trình
-                SetupFootprint(prefabSR.sprite);
+                SetupFootprint(prefabSR);
             }
         }
 
@@ -253,7 +253,7 @@ public class PlacementManager : MonoBehaviour
             {
                 houseRenderer.sprite = targetSR.sprite;
                 // Điều chỉnh thảm xanh khớp footprint công trình
-                SetupFootprint(targetSR.sprite);
+                SetupFootprint(targetSR);
             }
         }
 
@@ -344,27 +344,35 @@ public class PlacementManager : MonoBehaviour
     /// Tìm "Grid_Footprint" trong Ghost hiện tại và scale nó khớp với số ô lưới mà sprite chiếm.
     /// Dùng mapGrid.cellSize nếu đã gán, fallback về gridSize.
     /// </summary>
-    private void SetupFootprint(Sprite sprite)
+    private void SetupFootprint(SpriteRenderer sourceRenderer)
     {
         footprintTransform = currentGhost.transform.Find("Grid_Footprint");
-        if (footprintTransform == null || sprite == null) return;
+        if (footprintTransform == null || sourceRenderer == null || sourceRenderer.sprite == null) return;
 
         float cellW = (mapGrid != null && mapGrid.cellSize.x > 0f) ? mapGrid.cellSize.x : gridSize;
         float cellH = (mapGrid != null && mapGrid.cellSize.y > 0f) ? mapGrid.cellSize.y : gridSize;
 
-        // sprite.bounds.size đã là world units (= pixel / PPU)
-        Vector2 spriteSize = sprite.bounds.size;
-        float scaleX = Mathf.Max(1f, Mathf.Round(spriteSize.x / cellW)) * footprintPadding;
-        float scaleY = Mathf.Max(1f, Mathf.Round(spriteSize.y / cellH)) * footprintPadding;
+        SpriteRenderer fpSR = footprintTransform.GetComponent<SpriteRenderer>();
+        Sprite footprintSourceSprite = fpSR != null ? fpSR.sprite : null;
 
-        footprintTransform.localScale = new Vector3(scaleX, scaleY, 1f);
-
-        // Gán sprite lưới chung để Ghost footprint trông giống hệt building footprint
         if (footprintSprite != null)
         {
-            SpriteRenderer fpSR = footprintTransform.GetComponent<SpriteRenderer>();
+            footprintSourceSprite = footprintSprite;
             if (fpSR != null) fpSR.sprite = footprintSprite;
         }
+
+        Vector3 sourceScale = sourceRenderer.transform.lossyScale;
+        Vector2 spriteSize = sourceRenderer.sprite.bounds.size;
+        float worldW = Mathf.Abs(spriteSize.x * sourceScale.x);
+        float worldH = Mathf.Abs(spriteSize.y * sourceScale.y);
+
+        float targetW = Mathf.Max(cellW, Mathf.Round(worldW / cellW) * cellW) * footprintPadding;
+        float targetH = Mathf.Max(cellH, Mathf.Round(worldH / cellH) * cellH) * footprintPadding;
+
+        Vector2 footprintSpriteSize = footprintSourceSprite != null ? footprintSourceSprite.bounds.size : Vector2.one;
+        float scaleX = footprintSpriteSize.x > 0f ? targetW / footprintSpriteSize.x : targetW;
+        float scaleY = footprintSpriteSize.y > 0f ? targetH / footprintSpriteSize.y : targetH;
+        footprintTransform.localScale = new Vector3(scaleX, scaleY, 1f);
 
         // Luôn hiện footprint ngay sau khi setup — prefab có thể để inactive mặc định
         footprintTransform.gameObject.SetActive(true);

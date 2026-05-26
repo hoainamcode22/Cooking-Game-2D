@@ -1,4 +1,4 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: 0f9840b510e243c188389c253def19a5
 TextureImporter:
   internalIDToNameTable: []
@@ -130,5 +130,5 @@ AssetOrigin:
   productId: 259218
   packageName: Happy Harvest - 2D Sample Project
   packageVersion: 1.61
-  assetPath: Assets/HappyHarvest/VFX/Lights/gradient light.png
+  assetPath: Assets/Day_Night/Lights/VFX/Lights/gradient light.png
   uploadId: 722366

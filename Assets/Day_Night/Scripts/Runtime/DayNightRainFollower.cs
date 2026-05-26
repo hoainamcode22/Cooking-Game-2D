@@ -8,9 +8,15 @@ namespace Day_Night
         public Transform Target;
         public Vector3 Offset;
         public bool FollowZ;
+        public bool FollowInEditMode;
 
         private void LateUpdate()
         {
+            if (!Application.isPlaying && !FollowInEditMode)
+            {
+                return;
+            }
+
             Transform target = Target;
 
             if (target == null && Camera.main != null)

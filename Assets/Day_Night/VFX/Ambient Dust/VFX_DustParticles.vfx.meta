@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: d5d7279a358c0e449952499c208145ff
+VisualEffectImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/Day_Night/VFX/Ambient Dust/VFX_DustParticles.vfx
+  uploadId: 722366

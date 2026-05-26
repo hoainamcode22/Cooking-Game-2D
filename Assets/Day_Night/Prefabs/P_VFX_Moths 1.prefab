@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 1997288309085280967}
   - component: {fileID: 5484988223074275573}
   - component: {fileID: 4385443850773927293}
+  - component: {fileID: 8252662643968276205}
   m_Layer: 0
   m_Name: P_VFX_Moths 1
   m_TagString: Untagged
@@ -4906,3 +4907,16 @@ ParticleSystemRenderer:
   m_MeshWeighting1: 1
   m_MeshWeighting2: 1
   m_MeshWeighting3: 1
+--- !u!210 &8252662643968276205
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8411370193454563676}
+  m_Enabled: 1
+  m_SortingLayerID: 1669604809
+  m_SortingLayer: 2
+  m_SortingOrder: 0
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0

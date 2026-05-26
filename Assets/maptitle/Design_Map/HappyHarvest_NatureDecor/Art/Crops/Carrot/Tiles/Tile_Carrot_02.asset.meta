@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: f7b2000b9cd6489fab9ed6fa216544a1
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/HappyHarvest/Art/Crops/Carrot/Tiles/Tile_Carrot_02.asset
+  uploadId: 722366

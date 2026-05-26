@@ -37,6 +37,14 @@ namespace Day_Night
 
         [Header("Weather")]
         public DayNightWeatherSystem WeatherSystem;
+        public bool UseAutomaticWeather = true;
+        [Range(0f, 1f)] public float DayRainStartMin = 0.36f;
+        [Range(0f, 1f)] public float DayRainStartMax = 0.56f;
+        [Range(0f, 1f)] public float NightRainStartMin = 0.78f;
+        [Range(0f, 1f)] public float NightRainStartMax = 0.92f;
+        [Min(1f)] public float MinRainDurationSeconds = 10f;
+        [Min(1f)] public float MaxRainDurationSeconds = 18f;
+        [Range(0f, 1f)] public float ThunderChance = 0.12f;
         [Range(0.4f, 1.5f)] public float RainLightMultiplier = 1f;
         [Range(0.25f, 1.5f)] public float ThunderLightMultiplier = 0.85f;
 
@@ -54,6 +62,19 @@ namespace Day_Night
         public float CurrentDayRatio { get { return currentDayRatio; } }
 
         private float currentDayRatio;
+        private float previousDayRatio;
+        private ScheduledRain dayRain;
+        private ScheduledRain nightRain;
+        private bool automaticWeatherInitialized;
+
+        private struct ScheduledRain
+        {
+            public float Start;
+            public float End;
+            public bool IsActive;
+            public bool IsFinished;
+            public DayNightWeatherType Weather;
+        }
 
         private void Reset()
         {
@@ -64,7 +85,17 @@ namespace Day_Night
         {
             EnsurePresetIsCurrent();
             currentDayRatio = StartingTime;
+            previousDayRatio = currentDayRatio;
+            automaticWeatherInitialized = false;
             UpdateSystem(currentDayRatio, true);
+        }
+
+        private void Start()
+        {
+            if (Application.isPlaying)
+            {
+                InitializeAutomaticWeather();
+            }
         }
 
         private void OnValidate()
@@ -78,11 +109,14 @@ namespace Day_Night
         {
             if (Application.isPlaying)
             {
+                previousDayRatio = currentDayRatio;
+
                 if (RunInPlayMode)
                 {
                     currentDayRatio = Mathf.Repeat(currentDayRatio + Time.deltaTime / Mathf.Max(1f, DayDurationInSeconds), 1f);
                 }
 
+                UpdateAutomaticWeather();
                 UpdateSystem(currentDayRatio, false);
                 return;
             }
@@ -97,6 +131,8 @@ namespace Day_Night
         {
             currentDayRatio = Mathf.Repeat(normalizedTime, 1f);
             StartingTime = currentDayRatio;
+            previousDayRatio = currentDayRatio;
+            automaticWeatherInitialized = false;
             UpdateSystem(currentDayRatio, true);
         }
 
@@ -113,6 +149,14 @@ namespace Day_Night
             presetVersion = CurrentPresetVersion;
             DayDurationInSeconds = 120f;
             StartingTime = 0.5f;
+            UseAutomaticWeather = true;
+            DayRainStartMin = 0.36f;
+            DayRainStartMax = 0.56f;
+            NightRainStartMin = 0.78f;
+            NightRainStartMax = 0.92f;
+            MinRainDurationSeconds = 10f;
+            MaxRainDurationSeconds = 18f;
+            ThunderChance = 0.12f;
 
             DayLightGradient = CreateGradient(
                 new Color(0f, 0f, 0f, 1f), 0.1900f,
@@ -221,6 +265,105 @@ namespace Day_Night
             {
                 RefreshDayEventHandlers();
             }
+        }
+
+        private void InitializeAutomaticWeather()
+        {
+            automaticWeatherInitialized = true;
+            previousDayRatio = currentDayRatio;
+            ScheduleRainEvents();
+
+            if (UseAutomaticWeather && WeatherSystem != null)
+            {
+                WeatherSystem.ChangeWeather(DayNightWeatherType.Sun);
+            }
+        }
+
+        private void UpdateAutomaticWeather()
+        {
+            if (!UseAutomaticWeather || WeatherSystem == null)
+            {
+                return;
+            }
+
+            if (!automaticWeatherInitialized)
+            {
+                InitializeAutomaticWeather();
+            }
+
+            if (currentDayRatio < previousDayRatio)
+            {
+                ScheduleRainEvents();
+            }
+
+            UpdateScheduledRain(ref dayRain);
+            UpdateScheduledRain(ref nightRain);
+        }
+
+        private void ScheduleRainEvents()
+        {
+            dayRain = CreateScheduledRain(DayRainStartMin, DayRainStartMax);
+            nightRain = CreateScheduledRain(NightRainStartMin, NightRainStartMax);
+        }
+
+        private ScheduledRain CreateScheduledRain(float startMin, float startMax)
+        {
+            float min = Mathf.Clamp01(Mathf.Min(startMin, startMax));
+            float max = Mathf.Clamp01(Mathf.Max(startMin, startMax));
+            float start = Random.Range(min, max);
+            float maxDuration = Mathf.Max(MinRainDurationSeconds, MaxRainDurationSeconds);
+            float duration = Random.Range(MinRainDurationSeconds, maxDuration);
+            float durationRatio = duration / Mathf.Max(1f, DayDurationInSeconds);
+            float end = Mathf.Min(start + durationRatio, 0.98f);
+
+            if (end <= start)
+            {
+                end = Mathf.Min(start + 0.01f, 1f);
+            }
+
+            return new ScheduledRain
+            {
+                Start = start,
+                End = end,
+                Weather = Random.value <= ThunderChance ? DayNightWeatherType.Thunder : DayNightWeatherType.Rain
+            };
+        }
+
+        private void UpdateScheduledRain(ref ScheduledRain rain)
+        {
+            if (rain.IsFinished)
+            {
+                return;
+            }
+
+            if (!rain.IsActive && CrossedTime(rain.Start))
+            {
+                rain.IsActive = true;
+                WeatherSystem.ChangeWeather(rain.Weather);
+                return;
+            }
+
+            if (rain.IsActive && CrossedTime(rain.End))
+            {
+                rain.IsActive = false;
+                rain.IsFinished = true;
+                WeatherSystem.ChangeWeather(DayNightWeatherType.Sun);
+            }
+        }
+
+        private bool CrossedTime(float target)
+        {
+            if (Mathf.Approximately(previousDayRatio, currentDayRatio))
+            {
+                return false;
+            }
+
+            if (previousDayRatio < currentDayRatio)
+            {
+                return target > previousDayRatio && target <= currentDayRatio;
+            }
+
+            return target > previousDayRatio || target <= currentDayRatio;
         }
 
         private void ApplyLighting(float ratio)

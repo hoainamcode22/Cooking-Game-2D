@@ -6,6 +6,8 @@ public class MarketPopupUI : MonoBehaviour
     [SerializeField] private GameObject popupRoot;
     [SerializeField] private Button btnClose;
 
+    private bool popupInputLockHeld;
+
     private void Start()
     {
         if (btnClose != null)
@@ -27,43 +29,62 @@ public class MarketPopupUI : MonoBehaviour
             {
                 if (!parent.gameObject.activeSelf)
                     parent.gameObject.SetActive(true);
-
                 parent = parent.parent;
             }
-        }
 
-        if (popupRoot != null)
-        {
             popupRoot.SetActive(true);
-            SetCanvasGroups(popupRoot, true);
+            AcquirePopupInputBlock();
         }
     }
 
     public void ClosePopup()
     {
-        if (popupRoot != null)
+        // Nếu MarketManager đang giữ lock (mở qua BuildingInteractable), delegate sang nó
+        if (!popupInputLockHeld && MarketManager.Instance != null && MarketManager.Instance.IsOpen)
         {
-            SetCanvasGroups(popupRoot, false);
-            popupRoot.SetActive(false);
+            MarketManager.Instance.CloseMarketPopup();
+            return;
         }
+
+        ReleasePopupInputBlock();
+
+        if (popupRoot != null)
+            popupRoot.SetActive(false);
     }
 
-    private static void SetCanvasGroups(GameObject root, bool active)
+    private void OnDisable()
     {
-        CanvasGroup[] groups = root.GetComponentsInParent<CanvasGroup>(true);
-        for (int i = 0; i < groups.Length; i++)
-        {
-            groups[i].alpha = active ? 1f : 0f;
-            groups[i].interactable = active;
-            groups[i].blocksRaycasts = active;
-        }
+        ReleasePopupInputBlock();
+    }
 
-        CanvasGroup[] childGroups = root.GetComponentsInChildren<CanvasGroup>(true);
-        for (int i = 0; i < childGroups.Length; i++)
-        {
-            childGroups[i].alpha = active ? 1f : 0f;
-            childGroups[i].interactable = active;
-            childGroups[i].blocksRaycasts = active;
-        }
+    private void AcquirePopupInputBlock()
+    {
+        GameObject root = popupRoot != null ? popupRoot : gameObject;
+        Canvas parentCanvas = root.GetComponentInParent<Canvas>();
+        if (parentCanvas != null)
+            FarmInputLock.SetPopupRaycastBlock(parentCanvas.gameObject, true);
+
+        FarmInputLock.SetPopupRaycastBlock(root, true);
+        FarmInputLock.IsMarketPopupOpen = true;
+
+        if (popupInputLockHeld) return;
+        FarmInputLock.RegisterPopupOpen();
+        popupInputLockHeld = true;
+    }
+
+    private void ReleasePopupInputBlock()
+    {
+        GameObject root = popupRoot != null ? popupRoot : gameObject;
+        FarmInputLock.SetPopupRaycastBlock(root, false);
+
+        Canvas parentCanvas = root.GetComponentInParent<Canvas>();
+        if (parentCanvas != null)
+            FarmInputLock.SetPopupRaycastBlock(parentCanvas.gameObject, false);
+
+        FarmInputLock.IsMarketPopupOpen = false;
+
+        if (!popupInputLockHeld) return;
+        FarmInputLock.RegisterPopupClose();
+        popupInputLockHeld = false;
     }
 }

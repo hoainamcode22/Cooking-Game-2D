@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d43b8d999cd644908e42a99e1b6970e4
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 24100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/Day_Night/Audio/Common/MainMixer.mixer
+  uploadId: 722366

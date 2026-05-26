@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 1485fcbb01158bb42bf7cdfa0b9e97db
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/Day_Night/Prefabs/Managers/DayCycleHandler.prefab
+  uploadId: 722366

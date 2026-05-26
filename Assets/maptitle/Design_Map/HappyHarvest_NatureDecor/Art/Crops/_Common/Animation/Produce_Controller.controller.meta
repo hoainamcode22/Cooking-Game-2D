@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5c599aa0398548c086a632899946643c
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 9100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/HappyHarvest/Art/Crops/_Common/Animation/Produce_Controller.controller
+  uploadId: 722366

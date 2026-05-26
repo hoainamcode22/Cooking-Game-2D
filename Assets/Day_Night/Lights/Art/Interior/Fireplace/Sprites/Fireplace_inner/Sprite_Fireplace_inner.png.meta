@@ -1,4 +1,4 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: 7f3338a78bf24920a6b536bbdfa336cb
 TextureImporter:
   internalIDToNameTable: []
@@ -134,5 +134,5 @@ AssetOrigin:
   productId: 259218
   packageName: Happy Harvest - 2D Sample Project
   packageVersion: 1.61
-  assetPath: Assets/HappyHarvest/Art/Interior/Fireplace/Sprites/Fireplace_inner/Sprite_Fireplace_inner.png
+  assetPath: Assets/Day_Night/Lights/Art/Interior/Fireplace/Sprites/Fireplace_inner/Sprite_Fireplace_inner.png
   uploadId: 722366

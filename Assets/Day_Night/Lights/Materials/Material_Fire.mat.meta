@@ -1,4 +1,4 @@
-﻿fileFormatVersion: 2
+fileFormatVersion: 2
 guid: f1b0bfea784448d0b180813db091b890
 NativeFormatImporter:
   externalObjects: {}
@@ -11,5 +11,5 @@ AssetOrigin:
   productId: 259218
   packageName: Happy Harvest - 2D Sample Project
   packageVersion: 1.61
-  assetPath: Assets/HappyHarvest/Materials/Material_Fire.mat
+  assetPath: Assets/Day_Night/Lights/Materials/Material_Fire.mat
   uploadId: 722366

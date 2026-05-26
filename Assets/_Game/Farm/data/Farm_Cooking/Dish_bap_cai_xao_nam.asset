@@ -9,13 +9,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
+  m_Script: {fileID: 11500000, guid: 116a3cfc81810a44180358c724a13d14, type: 3}
   m_Name: Dish_bap_cai_xao_nam
   m_EditorClassIdentifier: Assembly-CSharp::DishData
   dishId: bap_cai_xao_nam
   dishName: "B\u1EAFp c\u1EA3i x\xE0o n\u1EA5m"
-  dishSubTitle: "B\u1EAFp c\u1EA3i \xB7 N\u1EA5m"
-  dishSprite: {fileID: -2206189127974015184, guid: 80983d354252dbe42a2ec238d577a885, type: 3}
+  dishSubTitle: "B\u1EAFp c\u1EA3i \xB7 N\u1EA5m "
+  dishSprite: {fileID: 0}
   difficulty: 1
   targetFlavor:
     sweet: 2
@@ -25,11 +25,5 @@ MonoBehaviour:
     texture: 1
   requiredIngredients:
   - {fileID: 11400000, guid: e8ff296568c88e84c8ee3c7a64b0615a, type: 2}
-  - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
+  - {fileID: 11400000, guid: 5500cad7c9fdcaa41b6519d5c2cd327f, type: 2}
   - {fileID: 11400000, guid: 7df2822734955c543a8459823997157a, type: 2}
-  required1:
-    displayName: "B\u1EAFp C\u1EA3i"
-    icon: {fileID: -842988855527424611, guid: b0b144ddc7537a348b0c7d8ec7c4b7e4, type: 3}
-  required2:
-    displayName: Mushroom
-    icon: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}

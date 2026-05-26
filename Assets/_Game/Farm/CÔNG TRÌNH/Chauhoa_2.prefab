@@ -37,7 +37,6 @@ Transform:
   - {fileID: 6824118626386882639}
   - {fileID: 2947752823815976925}
   - {fileID: 1138520025736286613}
-  - {fileID: 6158892254280631900}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &3873722937014384352
@@ -119,6 +118,10 @@ MonoBehaviour:
   progressLeftToRight: 1
   harvestSpawnPoint: {fileID: 2947752823815976925}
   expSpawnPoint: {fileID: 1138520025736286613}
+  cropVFXRoot: {fileID: 0}
+  seedRainPrefab: {fileID: 0}
+  seedCostTextPrefab: {fileID: 0}
+  harvestAmountTextPrefab: {fileID: 0}
 --- !u!114 &1210208406202845424
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -241,7 +244,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: 3332838346118911793, guid: dfa899eb9b9c0524994383f54f613334, type: 3}
@@ -447,7 +450,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: -6080068321224321704, guid: 3aa966eee3b923a4e89cea5a468021fd, type: 3}
@@ -458,36 +461,5 @@ SpriteRenderer:
   m_Size: {x: 2.51, y: 2.76}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_SpriteSortPoint: 0
---- !u!1 &9211424246313649674
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 6158892254280631900}
-  m_Layer: 7
-  m_Name: FarmerStandPoint
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &6158892254280631900
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9211424246313649674}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 8199925524640384551}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

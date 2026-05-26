@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 2c028b859af44dd59187dda387f968d0
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/Day_Night/External/HappyHarvest/Art/Crops/Wheat/Tiles/Tile_Wheat_01.asset
+  uploadId: 722366

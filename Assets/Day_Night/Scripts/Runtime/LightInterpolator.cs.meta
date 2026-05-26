@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 73519b00205a40b4eb3d9a74035b7c0c
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/Day_Night/Scripts/Runtime/LightInterpolator.cs
+  uploadId: 722366

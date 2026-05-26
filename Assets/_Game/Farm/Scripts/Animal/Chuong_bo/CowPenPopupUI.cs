@@ -20,6 +20,7 @@ public class CowPenPopupUI : MonoBehaviour
     [SerializeField] private string beefItemId = "beef";
 
     public bool IsOpen => popupRoot.activeSelf;
+    private bool popupInputLockHeld;
 
     private void Awake()
     {
@@ -59,12 +60,41 @@ public class CowPenPopupUI : MonoBehaviour
     public void OpenPopup()
     {
         popupRoot.SetActive(true);
+        AcquirePopupInputBlock();
         RefreshFeedUI();
     }
 
     public void ClosePopup()
     {
+        ReleasePopupInputBlock();
         popupRoot.SetActive(false);
+    }
+
+    private void OnDisable()
+    {
+        ReleasePopupInputBlock();
+    }
+
+    private void AcquirePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(popupRoot, true);
+
+        if (!popupInputLockHeld)
+        {
+            FarmInputLock.RegisterPopupOpen();
+            popupInputLockHeld = true;
+        }
+    }
+
+    private void ReleasePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(popupRoot, false);
+
+        if (popupInputLockHeld)
+        {
+            FarmInputLock.RegisterPopupClose();
+            popupInputLockHeld = false;
+        }
     }
 
     public void RefreshFeedUI()

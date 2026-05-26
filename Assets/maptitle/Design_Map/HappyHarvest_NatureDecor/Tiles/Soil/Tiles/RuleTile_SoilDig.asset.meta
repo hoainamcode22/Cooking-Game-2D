@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 15dc51f7c66f457ea7a24b698754c325
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 11400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/maptitle/Design_Map/HappyHarvest_NatureDecor/Art/Tiles/Soil/Tiles/RuleTile_SoilDig.asset
+  uploadId: 722366

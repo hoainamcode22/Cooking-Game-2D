@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 76938022d7724d47a8a2d8bd0a538831
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 2100000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 259218
+  packageName: Happy Harvest - 2D Sample Project
+  packageVersion: 1.61
+  assetPath: Assets/HappyHarvest/Art/Crops/_Common/Materials/Material_Crops.mat
+  uploadId: 722366
