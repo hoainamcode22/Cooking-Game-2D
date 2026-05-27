@@ -78,9 +78,6 @@ public class WarehousePopupUI : MonoBehaviour
         if (btnSendToKitchen != null)
             btnSendToKitchen.onClick.AddListener(SendPendingItemsToKitchen);
 
-        if (popupRoot != null)
-            popupRoot.SetActive(false);
-
         RefreshSelectedPreview();
     }
 

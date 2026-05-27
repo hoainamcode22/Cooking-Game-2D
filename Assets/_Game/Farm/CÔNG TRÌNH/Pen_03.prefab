@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &2590498883799504472
 GameObject:
@@ -199,6 +199,8 @@ GameObject:
   - component: {fileID: 1765749724426036052}
   - component: {fileID: 5141721763928852795}
   - component: {fileID: -8750096432532591285}
+  - component: {fileID: 781902113510030001}
+  - component: {fileID: 5029630525709600141}
   m_Layer: 6
   m_Name: Pen_03
   m_TagString: Untagged
@@ -326,3 +328,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EditableBuilding
   footprintVisual: {fileID: 8293749280720246623, guid: 944a45eded0569f42af3694cee049563, type: 3}
+--- !u!114 &781902113510030001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9142124755168808929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ac91e2250a04dbd8323e0283a46b6f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Assetsgame.Animals.HappyHarvestAnimalVisualSpawner
+  animalPrefab: {fileID: 100100000, guid: 7538caeddd7e4f5e9877a851b50b68ed, type: 3}
+  legacyChildName: ganam1_0
+  spawnedChildName: HappyHarvest_Chicken
+  localPosition: {x: 0.01, y: 0.1, z: 0}
+  localScale: {x: 0.1, y: 0.1, z: 0.1}
+  sortingOrderOffset: 10

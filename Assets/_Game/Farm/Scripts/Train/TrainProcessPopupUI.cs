@@ -15,8 +15,9 @@ public class TrainProcessPopupUI : MonoBehaviour
 
     void Awake()
     {
+        bool startOpen = gameObject.activeSelf;
         if (Btn_close != null) Btn_close.onClick.AddListener(Hide);
-        gameObject.SetActive(false);
+        if (!startOpen) gameObject.SetActive(false);
     }
 
     public void Show(float totalTime)

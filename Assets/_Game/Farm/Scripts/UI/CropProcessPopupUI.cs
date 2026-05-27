@@ -32,10 +32,12 @@ public class CropProcessPopupUI : MonoBehaviour
 
     private void Awake()
     {
+        bool startOpen = gameObject.activeSelf;
+
         if (btnSpeedUp != null)
             btnSpeedUp.onClick.AddListener(OnSpeedUpClicked);
 
-        gameObject.SetActive(false);
+        if (!startOpen) gameObject.SetActive(false);
     }
 
     private void Update()

@@ -4,6 +4,9 @@ public class PlayerWallet : MonoBehaviour
 {
     public static PlayerWallet Instance { get; private set; }
 
+    private const string PrefCoins    = "WALLET_COINS";
+    private const string PrefDiamonds = "WALLET_DIAMONDS";
+
     public int Coins    { get; private set; }
     public int Diamonds { get; private set; }
 
@@ -12,17 +15,20 @@ public class PlayerWallet : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        Load();
     }
 
     public void AddCoin(int amount)
     {
         Coins += amount;
+        Save();
         Debug.Log($"[Wallet] +{amount} Coin | Tổng: {Coins}");
     }
 
     public void AddDiamond(int amount)
     {
         Diamonds += amount;
+        Save();
         Debug.Log($"[Wallet] +{amount} Diamond | Tổng: {Diamonds}");
     }
 
@@ -30,6 +36,7 @@ public class PlayerWallet : MonoBehaviour
     {
         if (Coins < amount) return false;
         Coins -= amount;
+        Save();
         return true;
     }
 
@@ -37,6 +44,20 @@ public class PlayerWallet : MonoBehaviour
     {
         if (Diamonds < amount) return false;
         Diamonds -= amount;
+        Save();
         return true;
+    }
+
+    private void Load()
+    {
+        Coins    = PlayerPrefs.GetInt(PrefCoins, 0);
+        Diamonds = PlayerPrefs.GetInt(PrefDiamonds, 0);
+    }
+
+    private void Save()
+    {
+        PlayerPrefs.SetInt(PrefCoins, Coins);
+        PlayerPrefs.SetInt(PrefDiamonds, Diamonds);
+        PlayerPrefs.Save();
     }
 }

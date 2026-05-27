@@ -166,7 +166,8 @@ public class CookingSelectionManager : MonoBehaviour
             Debug.Log("Đã bỏ nguyên liệu: " + card.GetItemName());
 
             // Bỏ nguyên liệu thì phải trừ vector hương vị
-        RemoveFlavor(card.GetIngredientData());        }
+            RemoveFlavor(card.GetIngredientData());
+        }
 
         card.SetQuantityFromKitchen(quantity + 1);
         card.SetSelected(false);

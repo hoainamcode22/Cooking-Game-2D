@@ -55,12 +55,13 @@ namespace Village
 
         private void Awake()
         {
+            bool startOpen = gameObject.activeSelf;
             Instance = this;
-            IsOpen   = false;
+            IsOpen   = startOpen;
 
             // Panel phải start ACTIVE trong scene để Awake chạy và đăng ký Instance,
             // sau đó ẩn ngay để không lộ ra trước khi Open() được gọi.
-            gameObject.SetActive(false);
+            if (!startOpen) gameObject.SetActive(false);
         }
 
         private void Start()

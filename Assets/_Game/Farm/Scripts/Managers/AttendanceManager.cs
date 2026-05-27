@@ -10,6 +10,7 @@ public class AttendanceManager : MonoBehaviour
 
     public bool IsOpen => popupRect != null && popupRect.gameObject.activeSelf;
     private bool popupInputLockHeld;
+    private bool _startOpen;
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
@@ -17,11 +18,12 @@ public class AttendanceManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        _startOpen = popupRect != null && popupRect.gameObject.activeSelf;
     }
 
     private void Start()
     {
-        if (popupRect != null) popupRect.gameObject.SetActive(false);
+        if (!_startOpen && popupRect != null) popupRect.gameObject.SetActive(false);
     }
 
     private void Update()

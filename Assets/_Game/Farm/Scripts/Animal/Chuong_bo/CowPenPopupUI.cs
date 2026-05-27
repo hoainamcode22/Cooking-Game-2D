@@ -21,15 +21,17 @@ public class CowPenPopupUI : MonoBehaviour
 
     public bool IsOpen => popupRoot.activeSelf;
     private bool popupInputLockHeld;
+    private bool _startOpen;
 
     private void Awake()
     {
         Instance = this;
+        _startOpen = popupRoot != null && popupRoot.activeSelf;
     }
 
     private void Start()
     {
-        popupRoot.SetActive(false);
+        if (!_startOpen) popupRoot.SetActive(false);
 
         for (int i = 0; i < cowSlots.Count; i++)
         {
