@@ -75,12 +75,6 @@ public class SickleController : MonoBehaviour
         FarmInputLock.IsDraggingSickle = true;
         gameObject.SetActive(true);
 
-        // Thu hoạch ngay lập tức ô đang được click — không đợi Update đầu tiên
-        Vector2 startPos2D = new Vector2(startWorldPos.x, startWorldPos.y);
-        Collider2D startCol = Physics2D.OverlapPoint(startPos2D, plotLayerMask);
-        if (startCol != null)
-            TryHarvest(startCol);
-
         Debug.Log($"[Sickle] BeginHarvestMode at {startWorldPos}");
     }
 

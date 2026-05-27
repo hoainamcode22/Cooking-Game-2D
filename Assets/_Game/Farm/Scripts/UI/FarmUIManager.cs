@@ -149,12 +149,21 @@ public class FarmUIManager : MonoBehaviour
         }
     }
 
+    // Bước 1: click ô chín → chỉ hiện khay (tray), chưa bắt đầu harvest
+    public void ShowSickleTray()
+    {
+        if (sickleToolRoot != null)
+            sickleToolRoot.SetActive(true);
+    }
+
+    // Bước 2: player nhấn giữ icon liềm trong tray → bắt đầu harvest mode
     public void ShowSickleTool(Vector3 startWorldPos)
     {
+        if (sickleToolRoot != null)
+            sickleToolRoot.SetActive(true);
+
         if (sickleController != null)
             sickleController.BeginHarvestMode(startWorldPos);
-        else if (sickleToolRoot != null)
-            sickleToolRoot.SetActive(true);
     }
 
     public void HideSickleTool()

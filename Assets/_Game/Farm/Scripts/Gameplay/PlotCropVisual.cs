@@ -98,7 +98,7 @@ public class PlotCropVisual : MonoBehaviour
                             : stage == 1 ? currentCrop.growingScale
                             : currentCrop.readyScale;
 
-        float offsetY = (targetScale.y - currentCrop.sproutScale.y) * -0.3f;
+        float offsetY = (targetScale.y - currentCrop.sproutScale.y) * 0.3f;
 
         for (int i = 0; i < slotRenderers.Length; i++)
         {

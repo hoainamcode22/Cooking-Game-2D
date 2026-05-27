@@ -335,7 +335,8 @@ public class FarmManager : MonoBehaviour
 
         selectedPlot = plot;
         FarmUIManager.Instance?.ShowHint("Kéo lưỡi liềm qua cây để thu hoạch.");
-        FarmUIManager.Instance?.ShowSickleTool(plot.transform.position);
+        // Chỉ hiện khay liềm — harvest bắt đầu khi player nhấn giữ icon liềm trong khay
+        FarmUIManager.Instance?.ShowSickleTray();
     }
 
     public void OnPlotPlanted(PlotController plot, CropData crop)
