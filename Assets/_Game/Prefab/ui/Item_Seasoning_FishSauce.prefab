@@ -238,6 +238,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IngredientItemUI
   nameText: {fileID: 5577069173773550809}
+  topIconImage: {fileID: 0}
   mainIconImage: {fileID: 7900544255836966800}
   statusIcon: {fileID: 0}
 --- !u!114 &3721214090068518234
@@ -255,6 +256,7 @@ MonoBehaviour:
   ingredientData: {fileID: 0}
   nameText: {fileID: 5577069173773550809}
   mainIconImage: {fileID: 7900544255836966800}
+  topIconImage: {fileID: 0}
   statusGO: {fileID: 0}
   isSeasoning: 1
   txtQuantity: {fileID: 3607465316032095200}
@@ -376,8 +378,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 7
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
+  m_sharedMaterial: {fileID: 2180264, guid: 2e498d1c8094910479dc3e1b768306a4, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

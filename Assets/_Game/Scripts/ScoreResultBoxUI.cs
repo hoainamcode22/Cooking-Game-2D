@@ -64,39 +64,25 @@ public class ScoreResultBoxUI : MonoBehaviour
             Color c = backgroundImage.color;
             c.a = 1f;
             backgroundImage.color = c;
-
-            if (isSuccess && successBackground != null)
-                backgroundImage.sprite = successBackground;
-            else if (!isSuccess && failBackground != null)
-                backgroundImage.sprite = failBackground;
         }
 
         if (txtIngredientPercent != null)
-            txtIngredientPercent.text = result.ingredientScore + "%";
+            txtIngredientPercent.text =  "70%";
 
         if (txtIngredientScoreValue != null)
-            txtIngredientScoreValue.text = result.ingredientScore + "/100";
+            txtIngredientScoreValue.text = result.ingredientScore + "";
 
         if (txtSeasoningPercent != null)
-            txtSeasoningPercent.text = result.seasoningScore + "%";
+            txtSeasoningPercent.text =  "30%";
 
         if (txtSeasoningScoreValue != null)
-            txtSeasoningScoreValue.text = result.seasoningScore + "/100";
+            txtSeasoningScoreValue.text = result.seasoningScore + "";
 
         if (txtFinalScoreValue != null)
             txtFinalScoreValue.text = result.finalScore + "/100";
 
         if (txtFinalComment != null)
             txtFinalComment.text = GetComment(result.finalScore, isSuccess);
-
-        if (txtGoldReward != null)
-            txtGoldReward.text = "+" + result.goldReward;
-
-        if (txtGemReward != null)
-            txtGemReward.text = "+" + result.gemReward;
-
-        if (txtRankPointReward != null)
-            txtRankPointReward.text = "+" + result.rankPointReward;
     }
 
     public void Hide()

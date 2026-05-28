@@ -105,7 +105,6 @@ public class HintsBoxUI : MonoBehaviour
             RectTransform rect = itemObj.GetComponent<RectTransform>();
             if (rect != null)
             {
-
                 rect.anchorMin = new Vector2(0f, 1f);
                 rect.anchorMax = new Vector2(1f, 1f);
                 rect.pivot = new Vector2(0f, 1f);
@@ -202,9 +201,7 @@ public class HintsBoxUI : MonoBehaviour
                 return "Thịt bò";
 
             case "chicken":
-
-
-            return "Thịt gà";
+                return "Thịt gà";
 
             case "mushroom":
                 return "Nấm";

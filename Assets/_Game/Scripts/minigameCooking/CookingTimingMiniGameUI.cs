@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using TMPro;
+
 
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -46,6 +48,7 @@ public class CookingTimingMiniGameUI : MonoBehaviour
     
     [Header("Interaction Blocker")]
     [SerializeField] private GameObject interactionBlocker;
+    [SerializeField] private TMP_Text txtTimeRemaining;
 
     private void Start()
     {
@@ -71,6 +74,7 @@ public class CookingTimingMiniGameUI : MonoBehaviour
         }
 
         remainingTime -= Time.deltaTime;
+        UpdateTimeRemainingUI();
 
         if (remainingTime <= 0f)
         {
@@ -103,6 +107,7 @@ public class CookingTimingMiniGameUI : MonoBehaviour
         hasStopped = false;
 
         remainingTime = miniGameDuration;
+        UpdateTimeRemainingUI();
 
         markerDirection = 1f;
         zoneDirection = -1f;
@@ -265,10 +270,21 @@ public class CookingTimingMiniGameUI : MonoBehaviour
         {
             interactionBlocker.SetActive(false);
         }
+        if (txtTimeRemaining != null)
+        {
+            txtTimeRemaining.text = "";
+        }
 
         Action<bool> callback = onMiniGameFinished;
         onMiniGameFinished = null;
 
         callback?.Invoke(isSuccess);
+    }
+    private void UpdateTimeRemainingUI()
+    {
+        if (txtTimeRemaining == null) return;
+
+        float time = Mathf.Max(0f, remainingTime);
+        txtTimeRemaining.text = Mathf.CeilToInt(time)+"s";
     }
 }

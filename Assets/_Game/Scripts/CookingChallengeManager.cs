@@ -8,15 +8,11 @@ public class CookingChallengeManager : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private CenterCookingPanelUI centerCookingPanelUI;
-    [SerializeField] private ScoreResultBoxUI scoreResultBoxUI;
     [SerializeField] private HintsBoxUI hintsBoxUI;
-    [SerializeField] private CurrentFlavorBoxUI currentFlavorBoxUI;
 
     [Header("Selection")]
     [SerializeField] private CookingSelectionManager cookingSelectionManager;
 
-    [Header("Technique")]
-    [SerializeField] private bool correctTechniqueForNow = false;
 
     [SerializeField] private float cookSubmitDelay = 0.8f;
     [SerializeField] private int successScoreThreshold = 70;
@@ -25,45 +21,36 @@ public class CookingChallengeManager : MonoBehaviour
     [SerializeField] private CookingTimingMiniGameUI timingMiniGame;
 
 
-    [Header("Dish Display After Cooking")]
-    [SerializeField] private Image cookedDishDisplayImage;
     private DishData cookedDishOnPlate;// Biến này để lưu trữ món ăn đã nấu được hiển thị trên đĩa
-    private DishBookUI dishBookUI;// Tham chiếu đến DishBookUI để cập nhật kho sau khi nấu xong
     private DishData currentDishData;
 
     private bool isCooking = false;
-    [SerializeField] private GameObject failMessageText;
-    [SerializeField] private float failMessageDuration = 3f;
+    [Header("Letter Mini Game")]
+    [SerializeField] private LetterMiniGame letterMiniGame;
+    [SerializeField] private CookingBoot cookingBoot;
 
-    [Header("Check Selection Popup")]
-    [SerializeField] private GameObject checkSelectionPopup;
-    [SerializeField] private float checkSelectionPopupDuration = 2f;
+    [SerializeField] private CookingEffectController cookingEffectController;
+    [SerializeField] private CookingPopupController cookingPopupController;
+    [SerializeField] private CookingItemConsumer cookingItemConsumer;
+    [SerializeField] private DeliveryCharacterMover deliveryCharacterMover;
 
-    private bool isShowingCheckSelectionPopup;
 
-    private bool isShowingFailMessage;
     private void Start()
     {
         RefreshCenterUI();
         RefreshHintsUI();
-        RefreshPreviewScore();
+        if (centerCookingPanelUI != null)
+                centerCookingPanelUI.SetCookSubmitScore(0);
     }
-
-    private void Update()
-    {
-        if (!isCooking)
-        {
-            RefreshPreviewScore();
-        }
-    }
-
     public void RefreshCenterUI()
     {
+        Debug.Log("[CookingChallengeManager] RefreshCenterUI được gọi.");
         if (centerCookingPanelUI == null)
         {
             Debug.LogWarning("CenterCookingPanelUI is missing.");
             return;
         }
+
 
         if (currentDishData == null)
         {
@@ -71,10 +58,10 @@ public class CookingChallengeManager : MonoBehaviour
             Debug.LogWarning("Current Dish Data is null.");
             return;
         }
+        Debug.Log("[CookingChallengeManager] RefreshCenterUI với món: " + currentDishData.dishName);
 
         centerCookingPanelUI.BindDish(currentDishData);
     }
-
     public void RefreshHintsUI()
     {
         if (hintsBoxUI == null)
@@ -91,56 +78,32 @@ public class CookingChallengeManager : MonoBehaviour
 
         hintsBoxUI.BindDish(currentDishData);
     }
-
-    public void RefreshPreviewScore()
-    {
-
-        if (centerCookingPanelUI == null) return;
-        if (currentDishData == null) return;
-        if (cookingSelectionManager == null) return;
-
-        List<SelectableIngredientCard> selectedIngredients = cookingSelectionManager.GetSelectedIngredientCards();
-        List<SelectableIngredientCard> selectedSeasonings = cookingSelectionManager.GetSelectedSeasoningCards();
-        if ((selectedIngredients == null || selectedIngredients.Count == 0) &&
-            (selectedSeasonings == null || selectedSeasonings.Count == 0))
-        {
-            centerCookingPanelUI.SetCookSubmitScore(0);
-            return;
-        }
-
-    }
-
+// Các hàm liên quan đến mini game
     private void OnTimingMiniGameFinished(bool isSuccess)
     {
+        OnCookingMiniGameFinished(isSuccess);
+    }
+    private void OnLetterMiniGameFinished(bool isSuccess)
+    {
+        OnCookingMiniGameFinished(isSuccess);
+    }
 
-
+    private void OnCookingMiniGameFinished(bool isSuccess)
+    {
         if (isCooking)
         {
             Debug.Log("Already cooking. Please wait.");
             return;
         }
-
         if (!isSuccess)
         {
             Debug.Log("Mini game thất bại.");
-
-            StartCoroutine(ShowFailMessageRoutine());
-            List<SelectableIngredientCard> selectedIngredients = cookingSelectionManager.GetSelectedIngredientCards();
-            List<SelectableIngredientCard> selectedSeasonings = cookingSelectionManager.GetSelectedSeasoningCards();
-
-            ConsumeSelectedCookingItems(selectedIngredients, selectedSeasonings);
-            cookingSelectionManager.ResetUIAfterCooking();
-            cookingSelectionManager.EnableIngredientSelection();
-            if (cookingSelectionManager != null)
+            cookingPopupController.ShowFailMessage();
+            if (cookingItemConsumer != null)
             {
-                cookingSelectionManager.ResetFlavor();
+                cookingItemConsumer.ConsumeSelectedCookingItems();
             }
-             if (cookingSelectionManager != null)
-            {
-                cookingSelectionManager.ResetSelection();
-            }
-            RefreshCenterUI();
-
+            ResetCookingSelectionState();
             return;
         }
 
@@ -155,10 +118,9 @@ public class CookingChallengeManager : MonoBehaviour
             Debug.LogWarning("CookingSelectionManager is missing.");
             return;
         }
-
-        if (scoreResultBoxUI == null)
+        if (cookingPopupController == null)
         {
-            Debug.LogWarning("ScoreResultBoxUI is missing.");
+            Debug.LogWarning("CookingPopupController is missing.");
             return;
         }
 
@@ -167,46 +129,11 @@ public class CookingChallengeManager : MonoBehaviour
 
     public void OnClickCookSubmit()
     {
-        if (isCooking)
-        {
-            Debug.Log("Already cooking. Please wait.");
+        if (!CanStartCooking())
             return;
-        }
 
-        if (isShowingFailMessage)
-        {
-            Debug.Log("Fail message is showing. Please wait.");
-            return;
-        }
-
-        if (isShowingCheckSelectionPopup)
-        {
-            Debug.Log("Check selection popup is showing. Please wait.");
-            return;
-        }
-
-        if (currentDishData == null)
-        {
-            Debug.LogWarning("Chưa chọn món ăn.");
-            return;
-        }
-
-        if (!HasSelectedCookingItem())
-        {
-            Debug.Log("Chưa chọn nguyên liệu hoặc gia vị nào.");
-
-            StartCoroutine(ShowCheckSelectionPopupRoutine());
-
-            return;
-        }
-
-        if (timingMiniGame == null)
-        {
-            Debug.LogWarning("Timing mini game is missing.");
-            return;
-        }
-
-        timingMiniGame.StartMiniGame(currentDishData.difficulty, OnTimingMiniGameFinished);
+        Debug.Log("OnClickCookSubmit không chạy được vì điều kiện chưa được đáp ứng.");
+        StartRandomMiniGame();
     }
     private IEnumerator CookSubmitRoutine()
     {
@@ -229,12 +156,10 @@ public class CookingChallengeManager : MonoBehaviour
         );
 
         // TRỪ NGUYÊN LIỆU ĐÃ CHỌN SAU KHI NẤU
-        ConsumeSelectedCookingItems(selectedIngredients, selectedSeasonings);
-        cookedDishOnPlate = currentDishData;// Lưu trữ món ăn đã nấu được hiển thị trên đĩa
-
-        if (centerCookingPanelUI != null)
-            centerCookingPanelUI.SetCookSubmitScore(result.finalScore);
-
+        if (cookingItemConsumer != null)
+        {
+            cookingItemConsumer.ConsumeSelectedCookingItems();
+        }
 
         if (AudioManager.Instance != null)
         {
@@ -242,80 +167,29 @@ public class CookingChallengeManager : MonoBehaviour
                 AudioManager.Instance.PlaySuccess();
         }
 
+        Debug.Log("Final Score = " + result.finalScore);
+
         isCooking = false;
         cookingSelectionManager.DisableIngredientSelection();
 
         if (result.finalScore >= successScoreThreshold)
         {
-            Debug.Log("Đạt điểm! Hiện popup kết quả trước.");
-
-            if (cookingSelectionManager != null)
-            {
-                cookingSelectionManager.ResetFlavor();
-            }
-
-            RefreshCenterUI();
-
-            StartCoroutine(ShowScoreResultPopupRoutine(result, true));
+            yield return StartCoroutine(HandleCookingSuccess(result));
         }
         else
         {
-            Debug.Log("Chưa đủ điểm, làm lại. " + successScoreThreshold);
-
-            cookingSelectionManager.EnableIngredientSelection();
-
-            if (cookingSelectionManager != null)
-            {
-                cookingSelectionManager.ResetFlavor();
-                cookingSelectionManager.ResetSelection();
-            }
-
-            RefreshCenterUI();
-
-            StartCoroutine(ShowScoreResultPopupRoutine(result, false));
+            yield return StartCoroutine(HandleCookingFailed(result));
         }
+
+        ResetCookingSelectionState();
 
     }
 
-
-    //Hàm mới do Nguyên thêm 
-
-    private void ShowCookedDishOnPlate()//Hàm này sẽ hiển thị món ăn đã nấu lên đĩa sau khi người chơi nhấn nút Cook Submit
+    public void CollectCookedDishToWarehouse()
     {
-        if (cookedDishDisplayImage == null)
-        {
-            Debug.LogWarning("Cooked Dish Display Image chưa được gán!");
-            return;
-        }
-
-        if (currentDishData == null || currentDishData.dishSprite == null)
-        {
-            Debug.LogWarning("Món hiện tại chưa có sprite!");
-            return;
-        }
-
-        cookedDishDisplayImage.sprite = currentDishData.dishSprite;
-        cookedDishDisplayImage.gameObject.SetActive(true);
-    }
-
-    public void CollectCookedDishToWarehouse()//Hàm này sẽ được gọi khi người chơi nhấn nút "Collect" để đưa món ăn đã nấu vào kho sau khi xem điểm số và thưởng
-    {
-        if (cookingSelectionManager != null)
-        {
-            cookingSelectionManager.ResetSelection();
-            cookingSelectionManager.ResetFlavor();
-        }
-        cookingSelectionManager.EnableIngredientSelection();
-
         if (cookedDishOnPlate == null)
         {
             Debug.LogWarning("[Cooking] Không có món ăn trên dĩa để đưa vào kho.");
-            return;
-        }
-
-        if (FarmInventoryManager.Instance == null)
-        {
-            Debug.LogError("[Cooking] Không tìm thấy FarmInventoryManager.");
             return;
         }
 
@@ -324,21 +198,29 @@ public class CookingChallengeManager : MonoBehaviour
             Debug.LogError("[Cooking] dishId của món ăn đang bị trống.");
             return;
         }
+        if (deliveryCharacterMover != null)
+        {
+            deliveryCharacterMover.ShowDeliveryOnly();
+        }
 
         FarmInventoryManager.Instance.AddItem(cookedDishOnPlate.dishId, 1);
-        int amount = FarmInventoryManager.Instance.GetAmount(cookedDishOnPlate.dishId);
-         Debug.Log("[Cooking] Số lượng trong FarmInventoryManager sau khi thêm: "
-              + cookedDishOnPlate.dishId + " = " + amount);
+        if (deliveryCharacterMover != null)
+        {
+            deliveryCharacterMover.MoveFromCookingToWarehouse();
+        }
 
         Debug.Log("[Cooking] Đã đưa món vào kho: " + cookedDishOnPlate.dishId);
 
-        cookedDishOnPlate = null;
 
-        if (cookedDishDisplayImage != null)
+        cookedDishOnPlate = null;
+        if (centerCookingPanelUI != null)
+            centerCookingPanelUI.SetCookSubmitScore(0);
+
+        if (cookingEffectController != null)
         {
-            cookedDishDisplayImage.sprite = null;
-            cookedDishDisplayImage.gameObject.SetActive(false);
+            cookingEffectController.HideCookedDish();
         }
+        ResetCookingSelectionState();
     }
     public void SetCurrentDish(DishData dish)
     {
@@ -347,100 +229,17 @@ public class CookingChallengeManager : MonoBehaviour
             Debug.LogWarning("[CookingChallengeManager] Dish truyền vào bị null.");
             return;
         }
-
+ 
         currentDishData = dish;
 
         Debug.Log("[CookingChallengeManager] Đã nhận món: " + currentDishData.dishName);
 
         RefreshCenterUI();
         RefreshHintsUI();
-        RefreshPreviewScore();
+
     }
-    private IEnumerator ShowFailMessageRoutine()
-    {
-        isShowingFailMessage = true;
 
-        if (failMessageText != null)
-        {
-            failMessageText.SetActive(true);
-        }
-
-        yield return new WaitForSeconds(failMessageDuration);
-
-        if (failMessageText != null)
-        {
-            failMessageText.SetActive(false);
-        }
-
-        isShowingFailMessage = false;
-    }
-    // Hàm mới do Nguyên thêm để trừ nguyên liệu đã chọn sau khi nấu ăn xong, bất kể thành công hay thất bại
-    private void ConsumeSelectedCookingItems(
-    List<SelectableIngredientCard> selectedIngredients,
-    List<SelectableIngredientCard> selectedSeasonings
-    )
-    {
-        List<string> cookedItemIds = new List<string>();
-
-        foreach (var card in selectedIngredients)
-        {
-            if (card == null) continue;
-
-            string itemId = card.GetItemId();
-
-            if (!string.IsNullOrEmpty(itemId))
-            {
-                cookedItemIds.Add(itemId);
-            }
-        }
-
-        foreach (var card in selectedSeasonings)
-        {
-            if (card == null) continue;
-
-            string itemId = card.GetItemId();
-
-            if (!string.IsNullOrEmpty(itemId))
-            {
-                cookedItemIds.Add(itemId);
-            }
-        }
-
-        if (KitchenTransferManager.Instance != null)
-        {
-            KitchenTransferManager.Instance.SetAfterCooking(cookedItemIds);
-        }
-        else
-        {
-            Debug.LogWarning("KitchenTransferManager.Instance is missing.");
-        }
-    }
-    private IEnumerator ShowScoreResultPopupRoutine(CookingScoreResult result, bool isSuccess)
-    {
-        Debug.Log("CALL SHOW SCORE RESULT POPUP | isSuccess = " + isSuccess);
-
-        if (scoreResultBoxUI != null)
-        {
-            scoreResultBoxUI.ShowResult(result, isSuccess);
-        }
-        else
-        {
-            Debug.LogWarning("ScoreResultBoxUI is missing.");
-        }
-
-        yield return new WaitForSeconds(3f);
-
-        if (scoreResultBoxUI != null)
-        {
-            scoreResultBoxUI.Hide();
-        }
-
-        if (isSuccess)
-        {
-            ShowCookedDishOnPlate();
-        }
-    }
-    private bool HasSelectedCookingItem()
+    private bool HasSelectedCookingItem()// Hàm này kiểm tra xem người chơi đã chọn nguyên liệu hoặc gia vị nào chưa trước khi nấu
     {
         if (cookingSelectionManager == null)
         {
@@ -474,22 +273,116 @@ public class CookingChallengeManager : MonoBehaviour
 
         return false;
     }
-    private IEnumerator ShowCheckSelectionPopupRoutine()
+
+
+
+///Các hàm con
+/// Hàm này kiểm tra xem có thể bắt đầu nấu ăn hay không dựa trên các điều kiện như đang nấu ăn, đang hiển thị thông báo thất bại, đang hiển thị popup kiểm tra lựa chọn, đã chọn món ăn chưa, đã chọn nguyên liệu hoặc gia vị chưa, và mini game đã sẵn sàng chưa.
+    private bool CanStartCooking()
     {
-        isShowingCheckSelectionPopup = true;
-
-        if (checkSelectionPopup != null)
+        if (isCooking)
         {
-            checkSelectionPopup.SetActive(true);
+            Debug.Log("Already cooking. Please wait.");
+            return false;
         }
 
-        yield return new WaitForSeconds(checkSelectionPopupDuration);
-
-        if (checkSelectionPopup != null)
+        if (cookingPopupController != null && cookingPopupController.IsShowingFailMessage)
         {
-            checkSelectionPopup.SetActive(false);
+            Debug.Log("Fail message is showing. Please wait.");
+            return false;
         }
 
-        isShowingCheckSelectionPopup = false;
+        if (cookingPopupController != null && cookingPopupController.IsShowingCheckSelectionPopup)
+        {
+            Debug.Log("Check selection popup is showing. Please wait.");
+            return false;
+        }
+
+        if (currentDishData == null)
+        {
+            Debug.LogWarning("Chưa chọn món ăn.");
+            return false;
+        }
+
+        if (!HasSelectedCookingItem())
+        {
+            Debug.Log("Chưa chọn nguyên liệu hoặc gia vị nào.");
+            if (cookingPopupController != null)
+            {
+                cookingPopupController.ShowCheckSelectionPopup();
+            }
+            return false;
+        }
+
+        if (timingMiniGame == null || letterMiniGame == null)
+        {
+            Debug.LogWarning("Mini game is missing.");
+            return false;
+        }
+
+        return true;
+    }
+    private void StartRandomMiniGame()
+    {
+        int randomMiniGame = UnityEngine.Random.Range(0, 2);
+
+        if (randomMiniGame == 0)
+        {
+            timingMiniGame.StartMiniGame(currentDishData.difficulty, OnTimingMiniGameFinished);
+        }
+        else
+        {
+            letterMiniGame.StartMiniGame(currentDishData.difficulty, OnLetterMiniGameFinished);
+        }
+    }
+
+    //
+    private IEnumerator HandleCookingSuccess(CookingScoreResult result)
+    {
+        cookedDishOnPlate = currentDishData;
+        Debug.Log("Đạt điểm! Hiện popup kết quả trước.");
+
+        if (cookingPopupController != null)
+        {
+            cookingPopupController.ShowScoreResultPopup(result, true, currentDishData);
+        }
+
+        if (centerCookingPanelUI != null)
+        {
+            centerCookingPanelUI.SetCookSubmitScore(result.finalScore);
+            yield return new WaitForSeconds(5f);
+            centerCookingPanelUI.SetCookSubmitScore(0);
+        }
+    }
+
+    private IEnumerator HandleCookingFailed(CookingScoreResult result)
+    {
+        Debug.Log("Chưa đủ điểm, làm lại. " + successScoreThreshold);
+
+        cookingSelectionManager.EnableIngredientSelection();
+
+        cookingPopupController.ShowScoreResultPopup(result, false, currentDishData);
+
+        if (centerCookingPanelUI != null)
+        {
+            centerCookingPanelUI.SetCookSubmitScore(result.finalScore);
+            yield return new WaitForSeconds(5f);
+            centerCookingPanelUI.SetCookSubmitScore(0);
+        }
+    }
+
+    private void ResetCookingSelectionState()
+    {
+        if (cookingBoot != null)
+        {
+            cookingBoot.RefreshTransferredItemCards();
+        }
+
+        if (cookingSelectionManager != null)
+        {
+            cookingSelectionManager.ResetSelection();
+            cookingSelectionManager.ResetFlavor();
+            cookingSelectionManager.EnableIngredientSelection();
+        }
     }
 }

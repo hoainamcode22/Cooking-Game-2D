@@ -22,6 +22,9 @@ public class MarketClickOpen : MonoBehaviour
 
         if (marketManager == null)
             marketManager = MarketManager.Instance;
+
+        if (marketManager == null)
+            marketManager = FindAnyObjectByType<MarketManager>(FindObjectsInactive.Include);
     }
 
     private void Update()
@@ -98,7 +101,7 @@ public class MarketClickOpen : MonoBehaviour
         Debug.Log("[MarketClickOpen] World = " + world2 + " | Hit = " + hit);
 
         if (!hit)
-            return;
+return;
 
         Debug.Log("[MarketClickOpen] OPEN POPUP");
         if (marketManager != null)

@@ -42,7 +42,7 @@ public class CookingSelectionManager : MonoBehaviour
     private readonly List<SelectableIngredientCard> selectedIngredients = new();
     private readonly List<SelectableIngredientCard> selectedSeasonings = new();
 
-    private readonly Dictionary<string, InventoryItemData> inventoryLookup = new();
+  
 
     private readonly Dictionary<string, int> potIngredientAmounts = new();
     private readonly Dictionary<string, int> potSeasoningAmounts = new();
@@ -166,8 +166,7 @@ public class CookingSelectionManager : MonoBehaviour
             Debug.Log("Đã bỏ nguyên liệu: " + card.GetItemName());
 
             // Bỏ nguyên liệu thì phải trừ vector hương vị
-            RemoveFlavor(card.GetIngredientData());
-        }
+        RemoveFlavor(card.GetIngredientData());        }
 
         card.SetQuantityFromKitchen(quantity + 1);
         card.SetSelected(false);
@@ -200,14 +199,14 @@ public class CookingSelectionManager : MonoBehaviour
             SpawnPotCard(potSeasoningsContent, c);
     }
 
-    private void SpawnPotCard(Transform parent, SelectableIngredientCard fromCard)
+    private void SpawnPotCard(Transform parent, SelectableIngredientCard fromCard)// Tạo một card nhỏ trong nồi dựa trên card đã chọn ở bên trái
     {
         if (potCardPrefab == null || parent == null || fromCard == null) return;
 
-        var newUi = Instantiate(potCardPrefab, parent, false);
+        var newUi = Instantiate(potCardPrefab, parent, false);// Tạo một card nhỏ trong nồi dựa trên card đã chọn ở bên trái
         newUi.gameObject.SetActive(true);
 
-        RectTransform rt = newUi.GetComponent<RectTransform>();
+        RectTransform rt = newUi.GetComponent<RectTransform>();// Đảm bảo scale và position đúng
         if (rt != null)
         {
             rt.localScale = Vector3.one;
@@ -218,7 +217,6 @@ public class CookingSelectionManager : MonoBehaviour
             fromCard.GetItemName(),
             fromCard.GetMainSprite(),
             fromCard.GetTopSprite(),
-            3,
             true
         );
     }

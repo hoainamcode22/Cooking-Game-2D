@@ -1,0 +1,481 @@
+fileFormatVersion: 2
+guid: 512400ac5c4a1e74fb58bdbeef21dfeb
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5479613057819889656
+    second: Cooking_UI_0
+  - first:
+      213: 5868012732076778819
+    second: Cooking_UI_1
+  - first:
+      213: -4804018179404364651
+    second: Cooking_UI_2
+  - first:
+      213: -8173856496538898839
+    second: Cooking_UI_3
+  - first:
+      213: -8438841969673571843
+    second: Cooking_UI_4
+  - first:
+      213: 6650876746670200668
+    second: Cooking_UI_5
+  - first:
+      213: -4335254121386853022
+    second: Cooking_UI_6
+  - first:
+      213: 4971451366361173088
+    second: Cooking_UI_7
+  - first:
+      213: -6958522405970119402
+    second: Cooking_UI_8
+  - first:
+      213: 5152177318225545147
+    second: Cooking_UI_9
+  - first:
+      213: -5433271546547822910
+    second: Cooking_UI_10
+  - first:
+      213: 6351801890419247032
+    second: Cooking_UI_11
+  - first:
+      213: -858333274950846715
+    second: Cooking_UI_12
+  - first:
+      213: 827797854753514586
+    second: Cooking_UI_13
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Cooking_UI_0
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 377
+        width: 219
+        height: 56
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 800bd06c4f084f3b0800000000000000
+      internalID: -5479613057819889656
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_1
+      rect:
+        serializedVersion: 2
+        x: 11
+        y: 89
+        width: 167
+        height: 287
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 345e7e06d7e5f6150800000000000000
+      internalID: 5868012732076778819
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_2
+      rect:
+        serializedVersion: 2
+        x: 186
+        y: 324
+        width: 28
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 594851a2be2b45db0800000000000000
+      internalID: -4804018179404364651
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_3
+      rect:
+        serializedVersion: 2
+        x: 215
+        y: 318
+        width: 139
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96ea7c6c2d0a09e80800000000000000
+      internalID: -8173856496538898839
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_4
+      rect:
+        serializedVersion: 2
+        x: 356
+        y: 324
+        width: 27
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: df1f2f180f533ea80800000000000000
+      internalID: -8438841969673571843
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_5
+      rect:
+        serializedVersion: 2
+        x: 386
+        y: 259
+        width: 180
+        height: 103
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c57de2ac929ac4c50800000000000000
+      internalID: 6650876746670200668
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_6
+      rect:
+        serializedVersion: 2
+        x: 187
+        y: 214
+        width: 195
+        height: 102
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 26d30b3885516d3c0800000000000000
+      internalID: -4335254121386853022
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_7
+      rect:
+        serializedVersion: 2
+        x: 386
+        y: 92
+        width: 177
+        height: 158
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 06c86168da42ef440800000000000000
+      internalID: 4971451366361173088
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_8
+      rect:
+        serializedVersion: 2
+        x: 184
+        y: 86
+        width: 198
+        height: 124
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 615fd865dbc5e6f90800000000000000
+      internalID: -6958522405970119402
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_9
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 23
+        width: 181
+        height: 55
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb788a839f5308740800000000000000
+      internalID: 5152177318225545147
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_10
+      rect:
+        serializedVersion: 2
+        x: 212
+        y: 23
+        width: 69
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ce97cba0542994b0800000000000000
+      internalID: -5433271546547822910
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_11
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 21
+        width: 147
+        height: 50
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8b708128a22262850800000000000000
+      internalID: 6351801890419247032
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_12
+      rect:
+        serializedVersion: 2
+        x: 453
+        y: 31
+        width: 35
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 50738af1f669614f0800000000000000
+      internalID: -858333274950846715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Cooking_UI_13
+      rect:
+        serializedVersion: 2
+        x: 506
+        y: 31
+        width: 35
+        height: 37
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a54e96653cdec7b00800000000000000
+      internalID: 827797854753514586
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Cooking_UI_0: -5479613057819889656
+      Cooking_UI_1: 5868012732076778819
+      Cooking_UI_10: -5433271546547822910
+      Cooking_UI_11: 6351801890419247032
+      Cooking_UI_12: -858333274950846715
+      Cooking_UI_13: 827797854753514586
+      Cooking_UI_2: -4804018179404364651
+      Cooking_UI_3: -8173856496538898839
+      Cooking_UI_4: -8438841969673571843
+      Cooking_UI_5: 6650876746670200668
+      Cooking_UI_6: -4335254121386853022
+      Cooking_UI_7: 4971451366361173088
+      Cooking_UI_8: -6958522405970119402
+      Cooking_UI_9: 5152177318225545147
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

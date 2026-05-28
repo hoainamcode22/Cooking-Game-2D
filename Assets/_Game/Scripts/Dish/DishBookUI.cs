@@ -22,7 +22,7 @@ public class DishBookUI : MonoBehaviour
     [SerializeField] private ListDishData listDishData;
 
     [Header("Page Settings")]
-    [SerializeField] private int dishesPerSide = 4;
+    [SerializeField] private int dishesPerSide = 3;
 
     [Header("Left Page")]
     [SerializeField] private Transform leftContent;

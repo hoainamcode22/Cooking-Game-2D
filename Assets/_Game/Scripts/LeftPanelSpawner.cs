@@ -42,7 +42,7 @@ public class LeftPanelSpawner : MonoBehaviour
         SpawnList(seasonings, leftPanel.seasoningsContent, leftPanel.seasoningCardSample);
     }
 
-    private void SpawnList(List<CardData> dataList, Transform parent, IngredientItemUI samplePrefab)
+    private void SpawnList(List<CardData> dataList, Transform parent, IngredientItemUI samplePrefab)// Tạo các card trong một danh sách (nguyên liệu hoặc gia vị)
     {
         if (parent == null || samplePrefab == null) return;
 
@@ -87,7 +87,6 @@ public class LeftPanelSpawner : MonoBehaviour
                 displayName,
                 mainSprite,
                 topSprite,
-                data.starCount,
                 false
             );
 

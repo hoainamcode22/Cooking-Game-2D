@@ -14,15 +14,6 @@ public class UIRaycastBlocker : MonoBehaviour, IPointerClickHandler, IPointerDow
     {
         if (!isActiveAndEnabled) return;
         if (eventData == null) return;
-
-        CanvasGroup[] groups = GetComponentsInParent<CanvasGroup>(true);
-        for (int i = 0; i < groups.Length; i++)
-        {
-            CanvasGroup group = groups[i];
-            if (!group.blocksRaycasts || !group.interactable || group.alpha <= 0.001f)
-                return;
-        }
-
         eventData.Use();
     }
 }

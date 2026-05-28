@@ -16,8 +16,6 @@ public class IngredientData : ScriptableObject
     [Header("Flavor Vector")]
     public FlavorVector vector;
 
-    [Header("Optional")]
-    [Range(1, 5)] public int stars = 3;
 
     public bool IsRareOrBetter => tier != IngredientTier.Basic;
 }

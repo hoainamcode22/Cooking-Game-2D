@@ -78,7 +78,7 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
         }
     }
 
-    public void SetIngredientData(IngredientData data)
+    public void SetIngredientData(IngredientData data)// Thiết lập IngredientData cho card
     {
         ingredientData = data;
     }

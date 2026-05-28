@@ -27,7 +27,6 @@ public struct FlavorVector
         umami = a.umami + b.umami,
         texture = a.texture + b.texture
     };
-
     public static FlavorVector operator -(FlavorVector a, FlavorVector b) => new FlavorVector
     {
         sweet = a.sweet - b.sweet,
