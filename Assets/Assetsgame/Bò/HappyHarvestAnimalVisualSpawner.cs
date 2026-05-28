@@ -44,19 +44,27 @@ namespace Assetsgame.Animals
             ApplySorting(visual);
         }
 
+        private const string AnimalSortingLayer = "CongTrinh";
+        private const int AnimalBaseSortingOrder = 500;
+
         private void ApplySorting(GameObject visual)
         {
-            SpriteRenderer buildingRenderer = GetComponent<SpriteRenderer>();
-            if (buildingRenderer == null)
-                buildingRenderer = GetComponentInChildren<SpriteRenderer>(true);
+            SpriteRenderer[] renderers = visual.GetComponentsInChildren<SpriteRenderer>(true);
+            if (renderers.Length == 0) return;
 
-            string sortingLayerName = buildingRenderer != null ? buildingRenderer.sortingLayerName : "Default";
-            int sortingOrder = buildingRenderer != null ? buildingRenderer.sortingOrder + sortingOrderOffset : sortingOrderOffset;
+            // Tìm order nhỏ nhất trong animal để tính offset tương đối
+            int minOrder = int.MaxValue;
+            foreach (SpriteRenderer sr in renderers)
+                if (sr.sortingOrder < minOrder) minOrder = sr.sortingOrder;
 
-            foreach (SpriteRenderer renderer in visual.GetComponentsInChildren<SpriteRenderer>(true))
+            // Base = CongTrinh/510, các bộ phận giữ nguyên khoảng cách nhau
+            // Ví dụ: thân=0 → 510, đầu=2 → 512, mắt=4 → 514
+            int baseOrder = AnimalBaseSortingOrder + sortingOrderOffset;
+
+            foreach (SpriteRenderer renderer in renderers)
             {
-                renderer.sortingLayerName = sortingLayerName;
-                renderer.sortingOrder = sortingOrder;
+                renderer.sortingLayerName = AnimalSortingLayer;
+                renderer.sortingOrder = baseOrder + (renderer.sortingOrder - minOrder);
             }
         }
     }

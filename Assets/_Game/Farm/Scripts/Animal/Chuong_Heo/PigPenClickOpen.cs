@@ -37,6 +37,7 @@ public class PigPenClickOpen : MonoBehaviour
 
     private void Update()
     {
+        return; // TẠM TẮT để debug PenClickDetector
         if (TryGetPointerScreenPosition(out Vector2 screenPos))
         {
             TryOpenPigPen(screenPos);

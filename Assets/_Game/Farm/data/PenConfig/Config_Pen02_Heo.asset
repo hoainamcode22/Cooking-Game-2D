@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c4f7a8e2b1d39507c4f7a8e2b1d39507, type: 3}
+  m_Name: Config_Pen02_Heo
+  m_EditorClassIdentifier: Assembly-CSharp::PenMiniPanelConfig
+  penId: pen_02
+  food1ItemId: bapcai
+  food2ItemId: carot
+  food1Icon: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}
+  food2Icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
+  productItemId: pork
+  secondProductItemId: 
+  productIcon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}
+  secondProductIcon: {fileID: 0}
+  basketIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
+  feedDurationSeconds: 120
+  expReward: 10
