@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 882a6e0088284bf4e90f7457a99dfc8b
+guid: 73f84bedf0deb244095fe162e7c739e3
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -8802970154593359523
-    second: home2-removebg-preview_0
+      213: 1946073115125465677
+    second: home3_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: home2-removebg-preview_0
+      name: home3_0
       rect:
         serializedVersion: 2
-        x: 8
-        y: 108
-        width: 394
-        height: 481
+        x: 78
+        y: 73
+        width: 343
+        height: 361
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: d59e817d84195d580800000000000000
-      internalID: -8802970154593359523
+      spriteID: d42cdfdff27d10b10800000000000000
+      internalID: 1946073115125465677
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 9f81dd216a5d88541a18a02c602cd55c
+    spriteID: 7adbfc03c0fdd1a4e9aa209cfb618849
     internalID: 0
     vertices: []
     indices: 
@@ -163,7 +163,7 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      home2-removebg-preview_0: -8802970154593359523
+      home3_0: 1946073115125465677
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

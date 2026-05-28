@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &1663442949529134927
 GameObject:
@@ -14,7 +14,6 @@ GameObject:
   - component: {fileID: 6208592978794919782}
   - component: {fileID: -651776419640960550}
   - component: {fileID: 781902113510010001}
-  - component: {fileID: 5173363022641873530}
   m_Layer: 6
   m_Name: Pen_01
   m_TagString: Untagged
@@ -31,8 +30,8 @@ Transform:
   m_GameObject: {fileID: 1663442949529134927}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -3899, y: 1182, z: 1}
-  m_LocalScale: {x: 500, y: 500, z: 500}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 100, y: 100, z: 100}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 1317435345985132639}
@@ -154,11 +153,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ac91e2250a04dbd8323e0283a46b6f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Assetsgame.Animals.HappyHarvestAnimalVisualSpawner
-  animalPrefab: {fileID: 100100000, guid: ae8359af6fad488bb8032d045019a30c, type: 3}
+  animalPrefab: {fileID: 6625395460638792448, guid: ae8359af6fad488bb8032d045019a30c, type: 3}
   legacyChildName: bonam1
   spawnedChildName: HappyHarvest_Cow_Brown
-  localPosition: {x: 0.02, y: -0.07, z: 0}
-  localScale: {x: 0.13, y: 0.13, z: 0.13}
+  localPosition: {x: 0.12, y: 1.57, z: 0}
+  localScale: {x: 0.8, y: 0.8, z: 0.8}
   sortingOrderOffset: 10
 --- !u!1 &4248410558371359685
 GameObject:
@@ -193,7 +192,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.02, y: -0.07}
+  m_AnchoredPosition: {x: 0.12, y: 1.57}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!212 &6061152132916974072
@@ -242,7 +241,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
   m_Sprite: {fileID: 4166679972850612677, guid: ae00471613e669549b3a2f8a4aa07761, type: 3}
@@ -282,7 +281,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6190439189493794535}
@@ -333,10 +332,10 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 500
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 490399278396297472, guid: 1baa7b7fe9c59aa4084db65b3860be47, type: 3}
+  m_Sprite: {fileID: -6646364240435935972, guid: 7bc629fa4aaae3145a5cc5286a95e404, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0

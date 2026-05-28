@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 11bc8f4d634a10f458111e1894b76bdb
+guid: f79850f38b909e246a3f676d91e415e9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6223564286572649110
-    second: home3-removebg-preview_0
+      213: 4560433487954533715
+    second: gataulua_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -126,13 +126,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: home3-removebg-preview_0
+      name: gataulua_0
       rect:
         serializedVersion: 2
-        x: 29
-        y: 126
-        width: 355
-        height: 330
+        x: 100
+        y: 65
+        width: 298
+        height: 376
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -141,8 +141,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 69a58f9aeba8e5650800000000000000
-      internalID: 6223564286572649110
+      spriteID: 35d5357581ae94f30800000000000000
+      internalID: 4560433487954533715
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 93cf666c9df853e448f2d46c8180c613
+    spriteID: 5d6228957dae62b4b8019a0ca30539d2
     internalID: 0
     vertices: []
     indices: 
@@ -163,7 +163,7 @@ TextureImporter:
       - key: SpriteEditor.SliceSettings
         value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      home3-removebg-preview_0: 6223564286572649110
+      gataulua_0: 4560433487954533715
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

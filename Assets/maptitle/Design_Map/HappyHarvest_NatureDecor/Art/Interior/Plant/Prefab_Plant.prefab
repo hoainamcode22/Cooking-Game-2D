@@ -30,7 +30,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -7.58, y: -0.85, z: 0}
-  m_LocalScale: {x: 150, y: 150, z: 150}
+  m_LocalScale: {x: 80.00001, y: 80.00001, z: 80.00001}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4738512479795987024}
@@ -195,6 +195,23 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.6538377, y: 0.44146776}
   m_EdgeRadius: 0
+--- !u!114 &8100000000000000008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4770943969623387678}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb6ed498cb0fb92469c620272bf0502d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  swayAngle: 3.2
+  swaySpeed: 1.15
+  positionAmplitude: 0.035
+  positionAxis: {x: 1, y: 0}
+  scaleAmplitude: 0.006
 --- !u!1001 &5243477288884308173
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -273,20 +290,3 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 650208495533673117, guid: 063abfe9ba9f4f89b2dad75bdc751c2c, type: 3}
   m_PrefabInstance: {fileID: 5243477288884308173}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8100000000000000008
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4770943969623387678}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb6ed498cb0fb92469c620272bf0502d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  swayAngle: 3.2
-  swaySpeed: 1.15
-  positionAmplitude: 0.035
-  positionAxis: {x: 1, y: 0}
-  scaleAmplitude: 0.006

@@ -1,14 +1,10 @@
 fileFormatVersion: 2
-guid: 32b6ccda730749ebb03a6315393c1ffb
-AssetOrigin:
-  serializedVersion: 1
-  productId: 259218
-  packageName: Happy Harvest - 2D Sample Project
-  packageVersion: 1.61
-  assetPath: Assets/Day_Night/Lights/Art/Interior/VFX/Sprites/Sprite_Windows_light.png
-  uploadId: 722366
+guid: 7108f0f188a55d94b928e0b10cfae55c
 TextureImporter:
-  internalIDToNameTable: []
+  internalIDToNameTable:
+  - first:
+      213: 3272501538999977076
+    second: home2_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -101,19 +97,6 @@ TextureImporter:
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
-    buildTarget: Server
-    maxTextureSize: 2048
-    resizeAlgorithm: 0
-    textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
-    crunchedCompression: 0
-    allowsAlphaSplitting: 0
-    overridden: 0
-    ignorePlatformSupport: 0
-    androidETC2FallbackOverride: 0
-    forceMaximumCompressionQuality_BC6H_BC7: 0
-  - serializedVersion: 4
     buildTarget: Android
     maxTextureSize: 2048
     resizeAlgorithm: 0
@@ -141,12 +124,34 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: home2_0
+      rect:
+        serializedVersion: 2
+        x: 124
+        y: 52
+        width: 238
+        height: 406
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 474430fafc24a6d20800000000000000
+      internalID: 3272501538999977076
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 5bc70dfd5fabb17489fd3dc2f80a17b4
     internalID: 0
     vertices: []
     indices: 
@@ -154,8 +159,11 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
-    nameFileIdTable: {}
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+    nameFileIdTable:
+      home2_0: 3272501538999977076
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

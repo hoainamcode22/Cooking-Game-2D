@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 4c8ae4f75bba9d54abd3d08997c73bc3
+guid: 1bbb08395055ade4f9eb9ee6dd21bf59
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2267812719908153456
-    second: kho_0
+      213: -3810440115334909774
+    second: ro_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -48,7 +48,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -75,7 +75,7 @@ TextureImporter:
     maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 0
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -126,23 +126,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: kho_0
+      name: ro_0
       rect:
         serializedVersion: 2
-        x: 15
-        y: 123
-        width: 371
-        height: 354
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 112
+        y: 116
+        width: 278
+        height: 302
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 078ec3347a3e87f10800000000000000
-      internalID: 2267812719908153456
+      spriteID: 2b0709757e89e1bc0800000000000000
+      internalID: -3810440115334909774
       vertices: []
       indices: 
       edges: []
@@ -151,7 +151,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 58457be1404374d47b3035752ab54dbe
     internalID: 0
     vertices: []
     indices: 
@@ -159,9 +159,11 @@ TextureImporter:
     weights: []
     secondaryTextures: []
     spriteCustomMetadata:
-      entries: []
+      entries:
+      - key: SpriteEditor.SliceSettings
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":7,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      kho_0: 2267812719908153456
+      ro_0: -3810440115334909774
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
