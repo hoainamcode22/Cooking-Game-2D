@@ -82,7 +82,28 @@ public class DraggablePigFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandl
         }
 
         rectTransform.anchoredPosition = originalAnchoredPos;
+
+        // [NEW] Thử drop vào world collider (PenDropTarget) trước
+        if (TryDropOnPenTarget(eventData.position))
+            return;
+
+        // Fallback: drop vào PigSlotUI trong popup cũ
         TryFeedSlotAtPosition(eventData);
+    }
+
+    // [NEW] World-space drop vào PenDropTarget
+    private bool TryDropOnPenTarget(Vector2 screenPos)
+    {
+        Camera cam = Camera.main;
+        if (cam == null) return false;
+        Vector3 world  = cam.ScreenToWorldPoint(screenPos);
+        Vector2 world2 = new Vector2(world.x, world.y);
+        Collider2D hit = Physics2D.OverlapPoint(world2);
+        if (hit == null) return false;
+        PenDropTarget target = hit.GetComponent<PenDropTarget>();
+        if (target == null) return false;
+        Debug.Log($"[DraggablePigFeedItem] Drop '{feedItemId}' vào PenDropTarget {hit.gameObject.name}");
+        return target.ReceiveFoodDrop(feedItemId);
     }
 
     // ─── Highlight Logic ─────────────────────────────────────────

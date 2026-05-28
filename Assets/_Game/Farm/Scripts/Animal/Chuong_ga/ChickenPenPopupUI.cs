@@ -81,6 +81,9 @@ public class ChickenPenPopupUI : MonoBehaviour
 
     public void OpenPopup()
     {
+        // [LEGACY - disabled, replaced by PenMiniPanelUI + PenClickDetector]
+        return;
+
         popupRoot.SetActive(true);
         AcquirePopupInputBlock();
         RefreshFeedUI();

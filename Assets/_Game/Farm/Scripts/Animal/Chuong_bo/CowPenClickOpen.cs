@@ -35,6 +35,7 @@ public class CowPenClickOpen : MonoBehaviour
 
     private void Update()
     {
+        return; // TẠM TẮT để debug PenClickDetector
         if (TryGetPointerScreenPosition(out Vector2 screenPos))
         {
             TryOpenCowPen(screenPos);
