@@ -365891,7 +365891,7 @@ MonoBehaviour:
   popupSeed: {fileID: 1116062372}
   popupSeedFlower: {fileID: 29644360}
   floatingDragIcon: {fileID: 360097902}
-  sickleToolRoot: {fileID: 1318615227}
+  sickleToolRoot: {fileID: 513894934}
   sickleController: {fileID: 1318615233}
   cookingSceneName: SampleScene
   canvasHudRoot: {fileID: 1003668410}

@@ -83,9 +83,10 @@ public class SickleController : MonoBehaviour
         isDragging = false;
         FarmInputLock.IsDraggingSickle = false;
 
-        // Ép giải phóng focus EventSystem — tránh pointer state bị kẹt sau harvest
         if (EventSystem.current != null)
             EventSystem.current.SetSelectedGameObject(null);
+
+        gameObject.SetActive(false); // ẩn SickleTool world object sau khi gặt xong
 
         Debug.Log("[Sickle] EndHarvestMode");
     }
