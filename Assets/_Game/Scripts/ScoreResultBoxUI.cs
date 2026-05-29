@@ -64,6 +64,16 @@ public class ScoreResultBoxUI : MonoBehaviour
             Color c = backgroundImage.color;
             c.a = 1f;
             backgroundImage.color = c;
+            
+            if (isSuccess && successBackground != null)
+            {
+            
+                backgroundImage.sprite = successBackground;
+            }
+            else if (!isSuccess && failBackground != null)
+            {
+                backgroundImage.sprite = failBackground;
+            }
         }
 
         if (txtIngredientPercent != null)

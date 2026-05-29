@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public static class CookingScoreCalculator
 {
@@ -30,25 +31,6 @@ public static class CookingScoreCalculator
         return Mathf.Clamp(score, 0, 100);
     }
 
-    public static int CalculateRareBonusFromCards(List<SelectableIngredientCard> cards)
-    {
-        if (cards == null) return 0;
-
-        int bonus = 0;
-
-        foreach (SelectableIngredientCard card in cards)
-        {
-            if (card == null) continue;
-
-            IngredientData data = card.GetIngredientData();
-            if (data == null) continue;
-
-            if (data.tier != IngredientTier.Basic)
-                bonus += 5;
-        }
-
-        return bonus;
-    }
     // Hàm này sẽ xác định phần thưởng dựa trên điểm số cuối cùng, nó sẽ trả về số vàng, ngọc và điểm xếp hạng tương ứng với từng mức điểm, đảm bảo rằng phần thưởng được phân chia hợp lý để khuyến khích người chơi cải thiện kỹ năng nấu ăn của mình
 
     public static CookingScoreResult Evaluate(
@@ -78,12 +60,6 @@ public static class CookingScoreCalculator
 
         result.finalScore = Mathf.Clamp(result.baseScore, 0, 100);
 
-        // GetRewardByScore(
-        //     result.finalScore,
-        //     out result.goldReward,
-        //     out result.gemReward,
-        //     out result.rankPointReward
-        // );
         Debug.Log(
             $"[CookingScore] IngredientScore = {result.ingredientScore}, " +
             $"FlavorScore = {result.seasoningScore}, " +
@@ -97,72 +73,24 @@ public static class CookingScoreCalculator
         List<SelectableIngredientCard> selectedIngredients
     )
     {
-        Debug.Log("===== SCORE REQUIRED INGREDIENTS START =====");
-
-        if (dishData == null)
-        {
-            Debug.Log("DishData NULL");
-            return 0;
-        }
-
-        if (dishData.requiredIngredients == null)
-        {
-            Debug.Log("requiredIngredients NULL");
-            return 0;
-        }
-
-        if (selectedIngredients == null)
-        {
-            Debug.Log("selectedIngredients NULL");
-            return 0;
-        }
-
-        Debug.Log($"Required Count = {dishData.requiredIngredients.Count}");
-        Debug.Log($"Selected Count = {selectedIngredients.Count}");
-
-        int requiredCount = dishData.requiredIngredients.Count;
-
-        if (requiredCount == 0)
+        if (dishData == null || dishData.requiredIngredients == null || selectedIngredients == null)
             return 0;
 
         int maxScore = 70;
-        int penaltyPerMistake = 10;
 
-        int matchedCount = 0;
-        int wrongCount = 0;
+        HashSet<string> requiredNames = new HashSet<string>();
+        HashSet<string> selectedNames = new HashSet<string>();
 
+        // Tập hợp nguyên liệu yêu cầu
         foreach (IngredientData required in dishData.requiredIngredients)
         {
             if (required == null)
                 continue;
 
-            bool found = false;
-
-            foreach (SelectableIngredientCard card in selectedIngredients)
-            {
-                if (card == null)
-                    continue;
-
-                IngredientData selected = card.GetIngredientData();
-
-                Debug.Log(
-                    $"Check Required = {required.name} | Selected = {(selected != null ? selected.name : "NULL")}"
-                );
-
-                if (selected == null)
-                    continue;
-
-                if (selected == required || selected.name == required.name)
-                {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found)
-                matchedCount++;
+            requiredNames.Add(required.name);
         }
 
+        // Tập hợp nguyên liệu người chơi đã chọn
         foreach (SelectableIngredientCard card in selectedIngredients)
         {
             if (card == null)
@@ -170,40 +98,44 @@ public static class CookingScoreCalculator
 
             IngredientData selected = card.GetIngredientData();
 
-            Debug.Log($"Wrong Check Selected = {(selected != null ? selected.name : "NULL")}");
-
             if (selected == null)
                 continue;
 
-            bool isRequired = false;
+            selectedNames.Add(selected.name);
+        }
 
-            foreach (IngredientData required in dishData.requiredIngredients)
+        bool hasMistake = false;
+        bool hasMatched = false;
+
+        // Kiểm tra thừa và xem có chọn đúng nguyên liệu nào không
+        foreach (string selectedName in selectedNames)
+        {
+            if (requiredNames.Contains(selectedName))
+                hasMatched = true; // chọn trúng ít nhất 1 nguyên liệu
+            else
+                hasMistake = true; // chọn sai → thừa
+        }
+
+        // Kiểm tra thiếu nếu chưa có lỗi
+        if (!hasMistake)
+        {
+            foreach (string requiredName in requiredNames)
             {
-                if (required == null)
-                    continue;
-
-                if (selected == required || selected.name == required.name)
+                if (!selectedNames.Contains(requiredName))
                 {
-                    isRequired = true;
+                    hasMistake = true; // thiếu nguyên liệu
                     break;
                 }
             }
-
-            if (!isRequired)
-                wrongCount++;
         }
 
-        Debug.Log($"Matched = {matchedCount}, Wrong = {wrongCount}");
+        if (!hasMatched)
+            return 0; // không trúng nguyên liệu nào → 0 điểm
 
-        if (matchedCount == 0)
-            return 0;
+        if (hasMistake)
+            return maxScore / 2; // trúng nhưng có thiếu hoặc thừa → 50%
 
-        int missingCount = requiredCount - matchedCount;
-        int totalMistake = missingCount + wrongCount;
-
-        int score = maxScore - totalMistake * penaltyPerMistake;
-
-        return Mathf.Clamp(score, 0, maxScore);
+        return maxScore; // đúng hoàn toàn → 100%
     }
     private static bool IsSameIngredient(IngredientData selected, IngredientData required)
     {

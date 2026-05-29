@@ -12,15 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
   m_Name: Dish_bap_cai_xao_nam
   m_EditorClassIdentifier: Assembly-CSharp::DishData
-  dishId: 
-  dishName: 
-  dishSubTitle: 
-  dishSprite: {fileID: 0}
+  dishId: bap_cai_xao_nam
+  dishName: "B\u1EAFp c\u1EA3i x\xE0o n\u1EA5m"
+  dishSubTitle: "B\u1EAFp c\u1EA3i \xB7 N\u1EA5m"
+  dishSprite: {fileID: -2206189127974015184, guid: 80983d354252dbe42a2ec238d577a885, type: 3}
   difficulty: 1
   targetFlavor:
-    sweet: 0
+    sweet: 2
     spicy: 0
     sour: 0
-    umami: 0
-    texture: 0
-  requiredIngredients: []
+    umami: 4
+    texture: 1
+  requiredIngredients:
+  - {fileID: 11400000, guid: e8ff296568c88e84c8ee3c7a64b0615a, type: 2}
+  - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
+  - {fileID: 11400000, guid: 75006c3941d066f42be1cfa651b2ac0c, type: 2}

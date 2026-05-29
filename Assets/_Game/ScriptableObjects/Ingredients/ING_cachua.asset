@@ -18,9 +18,8 @@ MonoBehaviour:
   kind: 0
   tier: 1
   vector:
-    sweet: 0
+    sweet: 2
     spicy: 0
-    sour: 0
+    sour: 2
     umami: 0
     texture: 0
-  stars: 3
