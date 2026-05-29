@@ -1725,11 +1725,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-<<<<<<< HEAD
   m_AnchoredPosition: {x: 233.85, y: -137.1148}
-=======
-  m_AnchoredPosition: {x: 233.85, y: -137.11403}
->>>>>>> d4be6bda9530c380d11ecc2ceb9592c8144c8dd8
+
   m_SizeDelta: {x: 430, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &207288232
@@ -12242,8 +12239,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1607301039}
   m_CullTransparentMesh: 1
-<<<<<<< HEAD
-=======
+
 --- !u!1 &1611829247
 GameObject:
   m_ObjectHideFlags: 0
@@ -12381,7 +12377,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1611829247}
   m_CullTransparentMesh: 1
->>>>>>> d4be6bda9530c380d11ecc2ceb9592c8144c8dd8
+
 --- !u!1 &1641075479
 GameObject:
   m_ObjectHideFlags: 0
