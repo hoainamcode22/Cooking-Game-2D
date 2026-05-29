@@ -1726,10 +1726,8 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
   m_AnchoredPosition: {x: 233.85, y: -137.1148}
-<<<<<<< HEAD
-=======
 
->>>>>>> 81ae575bff6357e92c12ee22ae20443ba645c3b3
+
   m_SizeDelta: {x: 430, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &207288232
@@ -12241,8 +12239,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1607301039}
   m_CullTransparentMesh: 1
-<<<<<<< HEAD
-=======
+
 
 --- !u!1 &1611829247
 GameObject:
@@ -12382,7 +12379,7 @@ CanvasRenderer:
   m_GameObject: {fileID: 1611829247}
   m_CullTransparentMesh: 1
 
->>>>>>> 81ae575bff6357e92c12ee22ae20443ba645c3b3
+
 --- !u!1 &1641075479
 GameObject:
   m_ObjectHideFlags: 0
