@@ -13,21 +13,14 @@ public class DraggableFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
     public TMP_Text txtFeedAmount;
     public Image imgFeedIcon;
 
-    private Canvas rootCanvas;
     private RectTransform rectTransform;
     private Vector2 originalAnchoredPos;
     private CanvasGroup canvasGroup;
+    private Canvas ghostCanvas;   // screen-space overlay để ghost theo đúng cursor
     private GameObject ghostObj;
-
-    // Track slot đang được highlight để reset đúng lúc
-    private CowSlotUI currentHighlightedSlot;
 
     private void Start()
     {
-        rootCanvas = GetComponentInParent<Canvas>();
-        while (rootCanvas != null && !rootCanvas.isRootCanvas)
-            rootCanvas = rootCanvas.transform.parent.GetComponentInParent<Canvas>();
-
         rectTransform = GetComponent<RectTransform>();
         originalAnchoredPos = rectTransform.anchoredPosition;
 
@@ -38,60 +31,56 @@ public class DraggableFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        Debug.Log("Begin drag: " + gameObject.name);
         canvasGroup.blocksRaycasts = false;
+        FarmInputLock.IsDraggingSeed = true; // khoá map pan khi kéo thức ăn
 
-        // Tạo ghost icon bám theo ngón tay
+        // Tạo canvas Screen Space Overlay riêng — position = screen pixels, không bị lệch
+        GameObject canvasGo = new GameObject("_FeedGhostCanvas");
+        ghostCanvas = canvasGo.AddComponent<Canvas>();
+        ghostCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        ghostCanvas.sortingOrder = 999;
+
         ghostObj = new GameObject("GhostFeed");
-        ghostObj.transform.SetParent(rootCanvas.transform, false);
-        ghostObj.transform.SetAsLastSibling();
+        ghostObj.transform.SetParent(canvasGo.transform, false);
 
         Image ghostImg = ghostObj.AddComponent<Image>();
         ghostImg.sprite = imgFeedIcon != null ? imgFeedIcon.sprite : null;
         ghostImg.raycastTarget = false;
 
         RectTransform ghostRect = ghostObj.GetComponent<RectTransform>();
-        ghostRect.sizeDelta = new Vector2(100f, 100f);
-        ghostRect.position = rectTransform.position;
+        ghostRect.sizeDelta = new Vector2(80f, 80f);
+        ghostRect.anchorMin = ghostRect.anchorMax = Vector2.zero;
+        ghostRect.pivot = new Vector2(0.5f, 0.5f);
+        ghostRect.position = eventData.position; // screen pixels → đúng ngay cursor
 
         CanvasGroup ghostCG = ghostObj.AddComponent<CanvasGroup>();
-        ghostCG.alpha = 0.65f;
+        ghostCG.alpha = 0.85f;
         ghostCG.blocksRaycasts = false;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         if (ghostObj != null)
-            ghostObj.transform.position = eventData.position;
-
-        // Cập nhật highlight slot gần nhất mỗi frame kéo
-        UpdateSlotHighlight(eventData);
+            ghostObj.GetComponent<RectTransform>().position = eventData.position;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         canvasGroup.blocksRaycasts = true;
+        FarmInputLock.IsDraggingSeed = false; // mở khoá map pan
 
-        // Tắt highlight trước khi xử lý feed
-        ClearHighlight();
-
-        if (ghostObj != null)
+        if (ghostCanvas != null)
         {
-            Destroy(ghostObj);
+            Destroy(ghostCanvas.gameObject);
+            ghostCanvas = null;
             ghostObj = null;
         }
 
         rectTransform.anchoredPosition = originalAnchoredPos;
 
-        // [NEW] Thử drop vào world collider (PenDropTarget) trước
-        if (TryDropOnPenTarget(eventData.position))
-            return;
-
-        // Fallback: drop vào CowSlotUI trong popup cũ (giữ nguyên)
-        TryFeedSlotAtPosition(eventData);
+        TryDropOnPenTarget(eventData.position);
     }
 
-    // [NEW] Tìm PenDropTarget tại vị trí thả trong world space
     private bool TryDropOnPenTarget(Vector2 screenPos)
     {
         Camera cam = Camera.main;
@@ -106,77 +95,7 @@ public class DraggableFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
         PenDropTarget target = hit.GetComponent<PenDropTarget>();
         if (target == null) return false;
 
-        Debug.Log($"[DraggableFeedItem] Drop '{feedItemId}' vào PenDropTarget {hit.gameObject.name}");
+        Debug.Log($"[DraggableFeedItem] Drop '{feedItemId}' → {hit.gameObject.name}");
         return target.ReceiveFoodDrop(feedItemId);
-    }
-
-    // ─── Highlight Logic ─────────────────────────────────────────
-
-    private void UpdateSlotHighlight(PointerEventData eventData)
-    {
-        CowSlotUI nearest = GetNearestValidSlot(eventData, out float dist);
-        CowSlotUI toHighlight = (nearest != null && dist < 200f) ? nearest : null;
-
-        if (toHighlight == currentHighlightedSlot) return;
-
-        // Reset slot cũ, bật slot mới
-        if (currentHighlightedSlot != null)
-            currentHighlightedSlot.SetDragHighlight(false);
-
-        currentHighlightedSlot = toHighlight;
-
-        if (currentHighlightedSlot != null)
-            currentHighlightedSlot.SetDragHighlight(true);
-    }
-
-    private void ClearHighlight()
-    {
-        if (currentHighlightedSlot != null)
-        {
-            currentHighlightedSlot.SetDragHighlight(false);
-            currentHighlightedSlot = null;
-        }
-    }
-
-    // ─── Feed Detection ──────────────────────────────────────────
-
-    private void TryFeedSlotAtPosition(PointerEventData eventData)
-    {
-        CowSlotUI bestSlot = GetNearestValidSlot(eventData, out float bestDist);
-
-        Debug.Log($"[Drag] End: best={(bestSlot != null ? bestSlot.name : "none")} dist={bestDist:F0}");
-
-        if (bestSlot != null && bestDist < 200f)
-        {
-            Debug.Log($"[Drag] HIT slot {bestSlot.name} dist={bestDist:F0}");
-            bestSlot.StartFeeding(feedDuration > 0 ? feedDuration : 10f);
-        }
-        else
-        {
-            Debug.Log($"[Drag] No slot hit. bestDist={bestDist:F0}");
-        }
-    }
-
-    private CowSlotUI GetNearestValidSlot(PointerEventData eventData, out float bestDist)
-    {
-        CowSlotUI[] allSlots = FindObjectsByType<CowSlotUI>(FindObjectsSortMode.None);
-        CowSlotUI best = null;
-        bestDist = float.MaxValue;
-
-        foreach (var slot in allSlots)
-        {
-            if (slot == null || !slot.CanFeed()) continue;
-
-            Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(
-                eventData.pressEventCamera, slot.transform.position);
-            float d = Vector2.Distance(eventData.position, screenPos);
-
-            if (d < bestDist)
-            {
-                bestDist = d;
-                best = slot;
-            }
-        }
-        return best;
     }
 }

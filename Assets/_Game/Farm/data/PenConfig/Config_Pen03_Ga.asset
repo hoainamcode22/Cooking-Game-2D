@@ -22,5 +22,5 @@ MonoBehaviour:
   productIcon: {fileID: -2283333445584976228, guid: 888289491956e5347952a87ca3ec06d1, type: 3}
   secondProductIcon: {fileID: 0}
   basketIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-  feedDurationSeconds: 120
+  feedDurationSeconds: 30
   expReward: 10

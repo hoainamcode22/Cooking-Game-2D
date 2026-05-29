@@ -47,11 +47,11 @@ public class SickleController : MonoBehaviour
         if (mainCam == null)
             mainCam = Camera.main;
 
-        isDragging   = true;
+        // isDragging=false khi tray hiện — chỉ set true khi user thật sự kéo liềm (BeginHarvestMode)
+        isDragging   = false;
         enabledFrame = Time.frameCount;
         harvestedThisDrag.Clear();
-        FarmInputLock.IsDraggingSickle = true;
-        Debug.Log("[Sickle] OnEnable → drag start");
+        Debug.Log("[Sickle] OnEnable → tray shown");
     }
 
     private void OnDisable()
@@ -66,14 +66,14 @@ public class SickleController : MonoBehaviour
         if (mainCam == null)
             mainCam = Camera.main;
 
-        startWorldPos.z = transform.position.z;
+        startWorldPos.z    = transform.position.z;
         transform.position = startWorldPos;
         prevCursorWorld    = startWorldPos;
-
         harvestedThisDrag.Clear();
-        isDragging = true;
+        gameObject.SetActive(true);  // kích hoạt object (OnEnable set isDragging=false)
+        isDragging                     = true;  // override OnEnable ngay sau
+        enabledFrame                   = Time.frameCount;
         FarmInputLock.IsDraggingSickle = true;
-        gameObject.SetActive(true);
 
         Debug.Log($"[Sickle] BeginHarvestMode at {startWorldPos}");
     }

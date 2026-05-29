@@ -10,7 +10,6 @@ GameObject:
   m_Component:
   - component: {fileID: 6190439189493794535}
   - component: {fileID: 5162378728540472894}
-  - component: {fileID: 3825470020700994700}
   - component: {fileID: 6208592978794919782}
   - component: {fileID: -651776419640960550}
   - component: {fileID: 781902113510010001}
@@ -90,21 +89,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1.5598919, y: 4.5045643}
   m_EdgeRadius: 0
---- !u!114 &3825470020700994700
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1663442949529134927}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bb47c5b5bac48d4c99792afcb5388db, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CowPenClickOpen
-  cowPenPopupUI: {fileID: 0}
-  mainCamera: {fileID: 0}
-  targetCollider: {fileID: 5162378728540472894}
 --- !u!114 &6208592978794919782
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -329,7 +313,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PenClickDetector
   miniPanel: {fileID: 8582948023360218029}
-  mainCamera: {fileID: 1362634386090815505, guid: 44a02c763aa888448a1edfe501e94d28, type: 3}
+  mainCamera: {fileID: 0}
   targetCollider: {fileID: 5162378728540472894}
 --- !u!1 &4248410558371359685
 GameObject:
@@ -528,7 +512,11 @@ PrefabInstance:
     - target: {fileID: 249679460158116682, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+      objectReference: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
+    - target: {fileID: 736988142960254716, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
     - target: {fileID: 1037848967059955010, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Size.x
       value: 442.5832
@@ -545,6 +533,10 @@ PrefabInstance:
       propertyPath: m_Offset.y
       value: 149.4068
       objectReference: {fileID: 0}
+    - target: {fileID: 1321998621206274008, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -3810440115334909774, guid: 1bbb08395055ade4f9eb9ee6dd21bf59, type: 3}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -607,11 +599,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 1.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 1
+      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -657,6 +649,26 @@ PrefabInstance:
       propertyPath: feedDuration
       value: 120
       objectReference: {fileID: 0}
+    - target: {fileID: 3704375995234496229, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704375995234496229, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704375995234496229, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704375995234496229, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3796745679944943026, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -3810440115334909774, guid: 1bbb08395055ade4f9eb9ee6dd21bf59, type: 3}
     - target: {fileID: 4355131913021778495, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25
@@ -681,6 +693,14 @@ PrefabInstance:
       propertyPath: m_ActiveFontFeatures.Array.size
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6056364980241170663, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+    - target: {fileID: 7645119900833754873, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
     - target: {fileID: 8008097636037535231, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_IsActive
       value: 0

@@ -11,19 +11,16 @@ public class PenBasketDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
     [Header("Icon rổ")]
     [SerializeField] private Image basketImage;
 
-    private Canvas         rootCanvas;
     private RectTransform  rectTransform;
     private Vector2        originalAnchoredPos;
     private CanvasGroup    canvasGroup;
+    private Canvas         ghostCanvas;  // screen-space overlay để ghost theo đúng cursor
     private GameObject     ghostObj;
 
     private void Start()
     {
-        rectTransform      = GetComponent<RectTransform>();
+        rectTransform       = GetComponent<RectTransform>();
         originalAnchoredPos = rectTransform.anchoredPosition;
-
-        // Root canvas của World Space panel
-        rootCanvas = GetComponentInParent<Canvas>();
 
         canvasGroup = GetComponent<CanvasGroup>();
         if (canvasGroup == null)
@@ -33,46 +30,52 @@ public class PenBasketDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
     public void OnBeginDrag(PointerEventData eventData)
     {
         canvasGroup.blocksRaycasts = false;
+        FarmInputLock.IsDraggingSeed = true; // khoá map pan khi kéo rổ
 
-        // Ghost icon theo ngón tay
+        // Canvas Screen Space Overlay riêng — ghost position = screen pixels
+        GameObject canvasGo = new GameObject("_BasketGhostCanvas");
+        ghostCanvas = canvasGo.AddComponent<Canvas>();
+        ghostCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        ghostCanvas.sortingOrder = 999;
+
         ghostObj = new GameObject("GhostBasket");
-
-        // Nếu panel là World Space Canvas, ghost cũng nằm trong cùng canvas
-        ghostObj.transform.SetParent(rootCanvas.transform, false);
-        ghostObj.transform.SetAsLastSibling();
+        ghostObj.transform.SetParent(canvasGo.transform, false);
 
         Image ghostImg = ghostObj.AddComponent<Image>();
         ghostImg.sprite        = basketImage != null ? basketImage.sprite : null;
         ghostImg.raycastTarget = false;
 
         RectTransform ghostRect = ghostObj.GetComponent<RectTransform>();
-        ghostRect.sizeDelta = new Vector2(80f, 80f);
-        ghostRect.position  = rectTransform.position;
+        ghostRect.sizeDelta  = new Vector2(80f, 80f);
+        ghostRect.anchorMin  = ghostRect.anchorMax = Vector2.zero;
+        ghostRect.pivot      = new Vector2(0.5f, 0.5f);
+        ghostRect.position   = eventData.position; // screen pixels → đúng ngay cursor
 
         CanvasGroup ghostCG = ghostObj.AddComponent<CanvasGroup>();
-        ghostCG.alpha          = 0.7f;
+        ghostCG.alpha          = 0.85f;
         ghostCG.blocksRaycasts = false;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         if (ghostObj != null)
-            ghostObj.transform.position = eventData.position;
+            ghostObj.GetComponent<RectTransform>().position = eventData.position;
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         canvasGroup.blocksRaycasts = true;
+        FarmInputLock.IsDraggingSeed = false; // mở khoá map pan
 
-        if (ghostObj != null)
+        if (ghostCanvas != null)
         {
-            Destroy(ghostObj);
+            Destroy(ghostCanvas.gameObject);
+            ghostCanvas = null;
             ghostObj = null;
         }
 
         rectTransform.anchoredPosition = originalAnchoredPos;
 
-        // Tìm PenDropTarget tại vị trí drop trong world
         PenDropTarget target = FindDropTarget(eventData.position);
         if (target != null)
         {

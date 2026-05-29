@@ -78,7 +78,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 160
   m_MaskInteraction: 0
   m_Sprite: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}
@@ -101,6 +101,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1209606243487655951}
   - component: {fileID: -3926941381075050831}
+  - component: {fileID: -601195751987134994}
   m_Layer: 0
   m_Name: PF_ExpFly_World
   m_TagString: Untagged
@@ -145,3 +146,16 @@ MonoBehaviour:
   startScale: {x: 2, y: 2, z: 2}
   normalScale: {x: 2, y: 2, z: 2}
   destroyOnFinish: 1
+--- !u!210 &-601195751987134994
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8820341290181755197}
+  m_Enabled: 1
+  m_SortingLayerID: 1669604809
+  m_SortingLayer: 2
+  m_SortingOrder: 570
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
