@@ -60,8 +60,7 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         Vector3 spawnPos = new Vector3(worldPosition.x, worldPosition.y, -5f);
         FloatingHarvestText item = Instantiate(prefab, spawnPos, Quaternion.identity);
 
-        // Prefab is plain TMP (3D) world text — scale must stay (1,1,1).
-        item.transform.localScale = Vector3.one;
+        item.transform.localScale = Vector3.one * 500f; // scale theo world coords game
 
         var mr = item.GetComponent<MeshRenderer>();
         Debug.Log($"[PlantText] Spawned | pos={spawnPos} scale={item.transform.localScale}" +

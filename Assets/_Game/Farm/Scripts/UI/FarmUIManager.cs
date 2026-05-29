@@ -224,6 +224,37 @@ public class FarmUIManager : MonoBehaviour
             ShowHint("Kéo hạt giống để trồng.");
     }
 
+    public void ShowPlantSelectForFlower(PlotController plot)
+    {
+        if (isCookingMode) return;
+
+        HideAllPopups();
+
+        if (popupSeedFlower == null)
+        {
+            Debug.LogError("[FarmUI] popupSeedFlower is NULL — kéo popup hoa vào Inspector.");
+            return;
+        }
+
+        Transform p = popupSeedFlower.transform.parent;
+        while (p != null)
+        {
+            if (!p.gameObject.activeSelf) p.gameObject.SetActive(true);
+            p = p.parent;
+        }
+
+        RectTransform rt = popupSeedFlower.GetComponent<RectTransform>();
+        if (rt != null) rt.anchoredPosition = Vector2.zero;
+
+        popupSeedFlower.SetActive(true);
+        FarmInputLock.IsSeedPopupOpen = true;
+
+        if (plot != null)
+            ShowHint($"Kéo hạt giống hoa để trồng vào ô {plot.PlotId}");
+        else
+            ShowHint("Kéo hạt giống hoa để trồng.");
+    }
+
     /// <summary>Close seed popup (cả 2 loại) và clear input locks.</summary>
     public void HidePlantSelectPopup()
     {

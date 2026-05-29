@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: salt
   displayName: "Mu\u1ED1i"
-  icon: {fileID: -1162442978445507191, guid: 6a4738e13ca8cb241a5f783fc16228d2, type: 3}
+  icon: {fileID: -1162442978445507191, guid: a849ade4905cf98419e62a9cf5b043e5, type: 3}
   cookingData: {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}

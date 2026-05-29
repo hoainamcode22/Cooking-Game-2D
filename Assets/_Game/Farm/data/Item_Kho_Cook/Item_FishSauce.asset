@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: fishsauce
   displayName: "N\u01B0\u1EDBc m\u1EAFm"
-  icon: {fileID: -5582771631697853027, guid: 34b84bd10902cd3428f634528d40cdfb, type: 3}
+  icon: {fileID: 1949655777808321501, guid: e05efc49d25b1ac4d8fc62cc1760bf9f, type: 3}
   cookingData: {fileID: 11400000, guid: 7df2822734955c543a8459823997157a, type: 2}

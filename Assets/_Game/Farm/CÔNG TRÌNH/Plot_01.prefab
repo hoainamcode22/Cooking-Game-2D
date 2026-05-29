@@ -27,8 +27,8 @@ RectTransform:
   m_GameObject: {fileID: 28335839280894922}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 100, y: 100, z: 100}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 5005322921726948899}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -83,7 +83,7 @@ MeshRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
   m_SortingLayer: 2
-  m_SortingOrder: 210
+  m_SortingOrder: 570
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &1437764567935635446
@@ -116,7 +116,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 0.35, b: 0.15, a: 1}
+  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -128,7 +128,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -139,7 +139,7 @@ MonoBehaviour:
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
+  m_fontStyle: 1
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
@@ -470,9 +470,9 @@ Transform:
   m_GameObject: {fileID: 1152259972324624022}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -12.99029, y: 134.44795, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: -82, y: 294, z: 0}
+  m_LocalScale: {x: 40, y: 40, z: 40}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 8672933552142732472}
   m_Father: {fileID: 612103456330073040}
@@ -497,8 +497,8 @@ MonoBehaviour:
   durationMin: 0.5
   durationMax: 0.9
   iconScale: 0.35
-  sortingLayerName: FX
-  sortingOrder: 200
+  sortingLayerName: CongTrinh
+  sortingOrder: 510
 --- !u!1 &1773066873076892663
 GameObject:
   m_ObjectHideFlags: 0
@@ -525,9 +525,9 @@ Transform:
   m_GameObject: {fileID: 1773066873076892663}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -54, y: 152, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 597, y: 575, z: 0}
+  m_LocalScale: {x: 7, y: 7, z: 7}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6291118023394625287}
   m_Father: {fileID: 612103456330073040}
@@ -554,8 +554,8 @@ MonoBehaviour:
   spawnDelay: 0.07
   fontSize: 6
   textColor: {r: 0.2, g: 0.95, b: 0.3, a: 1}
-  sortingLayerName: FX
-  sortingOrder: 210
+  sortingLayerName: CongTrinh
+  sortingOrder: 570
 --- !u!1 &2086479571925551832
 GameObject:
   m_ObjectHideFlags: 0
@@ -675,9 +675,9 @@ Transform:
   m_GameObject: {fileID: 2617243248990731080}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -9.991628, y: 134.35835, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 302, y: 280, z: 0}
+  m_LocalScale: {x: 7, y: 7, z: 7}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 2706459555623192247}
   m_Father: {fileID: 612103456330073040}
@@ -703,9 +703,9 @@ MonoBehaviour:
   durationMax: 0.9
   spawnDelay: 0.06
   fontSize: 5
-  textColor: {r: 1, g: 0.35, b: 0.15, a: 1}
-  sortingLayerName: FX
-  sortingOrder: 210
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  sortingLayerName: CongTrinh
+  sortingOrder: 570
 --- !u!1 &2722862180969564039
 GameObject:
   m_ObjectHideFlags: 0
@@ -1253,8 +1253,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 4, y: 4, z: 4}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 6655136974677105742}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1305,7 +1305,7 @@ SpriteRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
   m_SortingLayer: 2
-  m_SortingOrder: 500
+  m_SortingOrder: 570
   m_MaskInteraction: 0
   m_Sprite: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -1344,8 +1344,8 @@ RectTransform:
   m_GameObject: {fileID: 8966931856897743643}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 100, y: 100, z: 100}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 941523982779734206}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1400,7 +1400,7 @@ MeshRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
   m_SortingLayer: 2
-  m_SortingOrder: 210
+  m_SortingOrder: 570
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &1116191035752413570
@@ -1432,7 +1432,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4283232819
   m_fontColor: {r: 0.2, g: 0.95, b: 0.3, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -1445,7 +1445,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2

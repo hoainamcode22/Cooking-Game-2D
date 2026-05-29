@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 69a363e6c16666945ac5438e62388fb7, type: 3}
-  m_Name: Home2
+  m_Name: Home5
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  itemID: 102
-  itemName: "Nh\xE0 D\xE2n 2"
-  itemIcon: {fileID: 3272501538999977076, guid: 7108f0f188a55d94b928e0b10cfae55c, type: 3}
-  goldPrice: 120
+  itemID: 104
+  itemName: "Nh\xE0 D\xE2n 4"
+  itemIcon: {fileID: -1012304903085406105, guid: 155788aa74607b74cb3bf78bd04339bd, type: 3}
+  goldPrice: 180
   diamondPrice: 0
-  prefabToBuild: {fileID: 8741544369598970430, guid: d191c4718e8cc53458a6998072f063d4, type: 3}
+  prefabToBuild: {fileID: 1582242620454337050, guid: a9229cf0ba6b6b04fb012b47f8639e99, type: 3}

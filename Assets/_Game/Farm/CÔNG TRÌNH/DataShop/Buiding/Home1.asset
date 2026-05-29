@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   itemID: 101
   itemName: "Nh\xE0 D\xE2n 1"
-  itemIcon: {fileID: -3829482726738822940, guid: 8d540eaa08068c44f8e0dd6add8aad41, type: 3}
+  itemIcon: {fileID: 950524911477112507, guid: 0772edf2be2709a42bc3f4e453c8fec2, type: 3}
   goldPrice: 100
   diamondPrice: 0
   prefabToBuild: {fileID: 5933733125098785684, guid: 944a45eded0569f42af3694cee049563, type: 3}

@@ -82,8 +82,8 @@ MeshRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
-  m_SortingOrder: 210
+  m_SortingLayer: 2
+  m_SortingOrder: 570
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &1437764567935635446
@@ -175,9 +175,9 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  _SortingLayer: 3
+  _SortingLayer: 2
   _SortingLayerID: 1669604809
-  _SortingOrder: 210
+  _SortingOrder: 570
   m_hasFontAssetChanged: 0
   m_renderer: {fileID: 9149626090301821477}
   m_maskType: 0
@@ -237,4 +237,4 @@ MonoBehaviour:
   fontSize: 5
   textColor: {r: 1, g: 0.35, b: 0.15, a: 1}
   sortingLayerName: FX
-  sortingOrder: 210
+  sortingOrder: 570

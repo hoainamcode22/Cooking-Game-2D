@@ -20,8 +20,6 @@ namespace Village
         [SerializeField] private List<OrderItemDefinition> availableItems = new List<OrderItemDefinition>();
 
         [Header("Order Config")]
-        [SerializeField] private int   minActiveOrders        = 3;
-        [SerializeField] private int   maxActiveOrders        = 4;
         [SerializeField] private float cooldownDuration       = 60f;
         [SerializeField] private float replenishCheckInterval = 5f;
 
@@ -116,28 +114,17 @@ namespace Village
 
         public void ReplenishOrders()
         {
-            int active = CountActiveOrders();
-            int target = UnityEngine.Random.Range(minActiveOrders, maxActiveOrders + 1);
-            int needed = Mathf.Max(0, target - active);
-            if (needed == 0) return;
-
-            // BUG-FIX: guard against null OR destroyed houses with Unity-safe null check.
+            // Mọi nhà Idle đều nhận order — user cần thấy yêu cầu của tất cả nhà
+            // để quyết định đi farm nguyên liệu nào rồi giao.
             var eligible = houses
                 .Where(h => h != null && h.CurrentState == OrderState.Idle)
                 .ToList();
 
             if (eligible.Count == 0) return;
 
-            Shuffle(eligible);
-
             int assigned = 0;
             foreach (var house in eligible)
             {
-                if (assigned >= needed) break;
-
-                // Skip if the house already has an active order (double-safety).
-                if (house.CurrentState != OrderState.Idle) continue;
-
                 var order = GenerateOrder(house.HouseId);
                 if (order == null) continue;
 
@@ -146,7 +133,7 @@ namespace Village
             }
 
             if (assigned > 0)
-                Debug.Log($"[VillageOrderManager] +{assigned} orders assigned. Active: {CountActiveOrders()}/{target}");
+                Debug.Log($"[VillageOrderManager] +{assigned} orders assigned. Active: {CountActiveOrders()}/{houses.Count}");
         }
 
         private HouseOrderRuntime GenerateOrder(int houseId)
@@ -305,6 +292,9 @@ namespace Village
             // Cân bằng lại các nhà cũ sau 1 giây (frame đầu tiên đã ổn định)
             Invoke(nameof(ReplenishOrders), 1f);
         }
+
+        public bool IsRegistered(HouseOrderController house) =>
+            house != null && houses.Contains(house);
 
         public void UnregisterHouse(HouseOrderController house)
         {

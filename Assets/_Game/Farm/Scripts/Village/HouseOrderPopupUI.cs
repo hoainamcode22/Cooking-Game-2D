@@ -53,15 +53,26 @@ namespace Village
 
         // ── Lifecycle ─────────────────────────────────────────────────────────
 
+        // Fallback: tìm Instance kể cả khi object bắt đầu inactive trong scene.
+        // Chạy sau khi scene load xong, trước Start() của các component khác.
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void FindInstanceAfterLoad()
+        {
+            if (Instance != null) return;
+            Instance = UnityEngine.Object.FindObjectOfType<HouseOrderPopupUI>(true);
+            if (Instance != null)
+                Debug.Log("[HouseOrderPopupUI] Instance found via RuntimeInitializeOnLoadMethod.");
+            else
+                Debug.LogWarning("[HouseOrderPopupUI] OrderPopup không tìm thấy trong scene!");
+        }
+
         private void Awake()
         {
-            bool startOpen = gameObject.activeSelf;
             Instance = this;
-            IsOpen   = startOpen;
-
-            // Panel phải start ACTIVE trong scene để Awake chạy và đăng ký Instance,
-            // sau đó ẩn ngay để không lộ ra trước khi Open() được gọi.
-            if (!startOpen) gameObject.SetActive(false);
+            IsOpen   = false;
+            // Luôn ẩn khi khởi động — Open() sẽ hiện lên khi cần.
+            if (gameObject.activeSelf)
+                gameObject.SetActive(false);
         }
 
         private void Start()

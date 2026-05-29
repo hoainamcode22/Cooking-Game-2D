@@ -183,6 +183,10 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             return;
         lastHandledFrame = Time.frameCount;
 
+        // Không xử lý click khi đang kéo hạt giống — tránh liềm hiện nhầm
+        if (FarmInputLock.IsDraggingSeed)
+            return;
+
         Debug.Log($"[PlotClick] {name} clicked | state={state}" +
                   $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}" +
                   $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}");

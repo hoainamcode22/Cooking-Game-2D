@@ -176,7 +176,7 @@ public class PlantDragController : MonoBehaviour
 
         if (currentDragCrop.plantCost > 0)
         {
-            Vector3 textPos = new Vector3(plot.transform.position.x, plot.transform.position.y + 2.5f, -5f);
+            Vector3 textPos = new Vector3(plot.transform.position.x, plot.transform.position.y + 500f, -5f);
             Debug.Log($"[PlantText] Spawning '-{currentDragCrop.plantCost}' at {textPos}" +
                       $" | spawner={(HarvestFeedbackSpawner.Instance != null ? "OK" : "NULL")}");
             HarvestFeedbackSpawner.Instance?.Spawn(textPos, $"-{currentDragCrop.plantCost}");
@@ -203,35 +203,27 @@ public class PlantDragController : MonoBehaviour
         return _proceduralDebugSprite;
     }
 
-    // BRUTAL VISIBILITY PASS — confirmed world positions are in the 1000s.
-    // scale=20, spread=8, spawnY=8-12 to guarantee visibility at this world scale.
-    // Tune down after confirmed visible.
     private void SpawnSeedRain(Vector3 plotWorldPos)
     {
-        const int   COUNT    = 6;
-        const float SCALE    = 20f;
+        const int   COUNT    = 8;
+        const float SCALE    = 12000f;  // world units
         const float DUR_MIN  = 0.35f;
         const float DUR_MAX  = 0.55f;
 
-        // Sprite: plantSeedFxIcon → crop.icon → procedural white square
         Sprite finalSprite = currentDragCrop?.plantSeedFxIcon != null ? currentDragCrop.plantSeedFxIcon :
                              currentDragCrop?.icon             != null ? currentDragCrop.icon :
                              GetProceduralDebugSprite();
 
-        Debug.Log($"[SeedRain] START | crop={currentDragCrop?.cropId}" +
-                  $" | sprite='{finalSprite?.name}' | plotPos={plotWorldPos}" +
-                  $" | count={COUNT} scale={SCALE}");
-
         for (int i = 0; i < COUNT; i++)
         {
             Vector3 startPos = plotWorldPos + new Vector3(
-                Random.Range(-8f, 8f),
-                Random.Range(8f, 12f),
+                Random.Range(-200f, 200f),   // trải rộng theo chiều ngang
+                Random.Range(100f, 250f),    // rơi từ trên cao xuống
                 -5f);
 
             Vector3 endPos = plotWorldPos + new Vector3(
-                Random.Range(-3f, 3f),
-                Random.Range(0f, 1f),
+                Random.Range(-150f, 150f),
+                Random.Range(0f, 30f),
                 -5f);
 
             // Spawn at scene root — no parent, world scale stays independent

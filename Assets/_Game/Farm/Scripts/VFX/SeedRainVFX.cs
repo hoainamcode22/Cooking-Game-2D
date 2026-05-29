@@ -60,7 +60,9 @@ public class SeedRainVFX : MonoBehaviour
         sr.sortingLayerName = sortingLayerName;
         sr.sortingOrder     = sortingOrder;
 
-        go.transform.localScale = Vector3.one * iconScale;
+        // Dùng lossyScale để đảm bảo world scale = iconScale, bất kể parent chain có scale gì
+        float parentLossy = Mathf.Max(0.0001f, transform.lossyScale.x);
+        go.transform.localScale = Vector3.one * (iconScale / parentLossy);
 
         // Vị trí xuất phát: cao hơn origin, lệch ngang ngẫu nhiên
         float startX = origin.x + Random.Range(spreadXMin, spreadXMax);
@@ -85,8 +87,8 @@ public class SeedRainVFX : MonoBehaviour
 
             go.transform.position = Vector3.Lerp(startPos, endPos, smooth);
 
-            // Scale pulse
-            float scalePulse = iconScale * (1f + 0.25f * Mathf.Sin(Mathf.PI * t));
+            // Scale pulse — giữ nguyên world scale trong khi animate
+            float scalePulse = (iconScale / parentLossy) * (1f + 0.25f * Mathf.Sin(Mathf.PI * t));
             go.transform.localScale = Vector3.one * scalePulse;
 
             // Fade out nửa sau

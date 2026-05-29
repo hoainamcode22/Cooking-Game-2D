@@ -32,35 +32,35 @@ MonoBehaviour:
     BuyPrice: 25
     MinQuantity: 1
     MaxQuantity: 3
-  - ItemID: TODO_SEED_ID_03
+  - ItemID: fishsauce
     BuyPrice: 25
     MinQuantity: 1
     MaxQuantity: 3
-  - ItemID: TODO_SEED_ID_04
+  - ItemID: fishsauce
     BuyPrice: 25
     MinQuantity: 1
     MaxQuantity: 3
-  - ItemID: TODO_SEED_ID_05
+  - ItemID: fishsauce
     BuyPrice: 25
     MinQuantity: 1
     MaxQuantity: 3
-  - ItemID: TODO_SEED_ID_06
+  - ItemID: fishsauce
     BuyPrice: 25
     MinQuantity: 1
     MaxQuantity: 3
-  - ItemID: TODO_SEED_ID_07
+  - ItemID: fishsauce
     BuyPrice: 25
     MinQuantity: 1
     MaxQuantity: 3
-  - ItemID: TODO_SEED_ID_08
+  - ItemID: fishsauce
     BuyPrice: 25
     MinQuantity: 1
     MaxQuantity: 3
-  - ItemID: TODO_SEED_ID_09
+  - ItemID: salt
     BuyPrice: 25
     MinQuantity: 1
     MaxQuantity: 3
-  - ItemID: TODO_SEED_ID_10
+  - ItemID: salt
     BuyPrice: 25
     MinQuantity: 1
     MaxQuantity: 3

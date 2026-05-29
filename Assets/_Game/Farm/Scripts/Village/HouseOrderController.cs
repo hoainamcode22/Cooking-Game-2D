@@ -26,15 +26,24 @@ namespace Village
             myBubble = GetComponentInChildren<HouseOrderBubble>(true);
 
             if (myBubble == null)
-                Debug.LogError($"[HOC] Awake — Không tìm thấy HouseOrderBubble trong children của '{gameObject.name}'. " +
-                               "Đảm bảo OrderPopup2 (có HouseOrderBubble) là child của OrderAnchor bên trong house.");
+                Debug.LogWarning($"[HOC] '{gameObject.name}' không có HouseOrderBubble — nhà này sẽ không hiện bubble order.");
+        }
+
+        private void Start()
+        {
+            // Tự đăng ký nếu chưa được quản lý bởi VillageOrderManager.
+            // Xử lý trường hợp house được đặt sẵn trong scene nhưng không có trong Inspector list.
+            if (VillageOrderManager.Instance != null &&
+                !VillageOrderManager.Instance.IsRegistered(this))
+            {
+                Debug.Log($"[HOC] '{gameObject.name}' tự đăng ký với VillageOrderManager.");
+                Initialize();
+            }
         }
 
         // ── Initialization ────────────────────────────────────────────────────
 
-        // Gọi từ PlacementManager sau khi Instantiate.
-        // KHÔNG gọi Initialize(int) ở đây — RegisterHouse sẽ gọi nó với id đúng.
-        // Chỉ đảm bảo myBubble được tìm trước khi RegisterHouse dùng nó.
+        // Gọi từ PlacementManager hoặc tự động từ Start().
         public void Initialize()
         {
             if (myBubble == null)

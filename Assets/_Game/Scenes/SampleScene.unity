@@ -1725,7 +1725,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 233.85, y: -137.1148}
+  m_AnchoredPosition: {x: 233.85, y: -137.11496}
   m_SizeDelta: {x: 430, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &207288232
@@ -8639,7 +8639,7 @@ MonoBehaviour:
   sequenceText: {fileID: 1758333650}
   guideText: {fileID: 971087707}
   resultText: {fileID: 429551595}
-  timerFill: {fileID: 811344987}
+  timerFill: {fileID: 494519415}
   sequenceLength: 5
   requiredCorrect: 3
   maxWrong: 2
@@ -15895,7 +15895,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1025846864}
   m_Direction: 2
   m_Value: 0
-  m_Size: 1
+  m_Size: 0.99230444
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:

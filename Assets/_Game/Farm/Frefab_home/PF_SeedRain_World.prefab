@@ -46,16 +46,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeedRainVFX
   iconTemplate: {fileID: 4621224380154780342}
-  spawnHeightMin: 1.5
-  spawnHeightMax: 2.8
-  spreadXMin: -0.8
-  spreadXMax: 0.8
+  spawnHeightMin: 8
+  spawnHeightMax: 15
+  spreadXMin: -8
+  spreadXMax: 8
   durationMin: 0.5
   durationMax: 0.9
-  scaleMin: 0.18
-  scaleMax: 0.32
+  iconScale: 100
   sortingLayerName: FX
-  sortingOrder: 200
+  sortingOrder: 570
 --- !u!1 &8366708112303154770
 GameObject:
   m_ObjectHideFlags: 0
@@ -134,8 +133,8 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
-  m_SortingOrder: 200
+  m_SortingLayer: 2
+  m_SortingOrder: 570
   m_MaskInteraction: 0
   m_Sprite: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
