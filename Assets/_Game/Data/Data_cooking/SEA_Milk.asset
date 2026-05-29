@@ -9,10 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a02298ad80f9fbf4986907353d7a0e3c, type: 3}
-  m_Name: Item_Milk
-  m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
-  itemId: milk
+  m_Script: {fileID: 11500000, guid: 6a791c5bd17555a4fb83c11cba2eba68, type: 3}
+  m_Name: SEA_Milk
+  m_EditorClassIdentifier: Assembly-CSharp::IngredientData
+  id: milk
   displayName: "S\u1EEFa"
   icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
-  cookingData: {fileID: 11400000, guid: 7ec4c04aa13cb9f44b904d3efc4a59ea, type: 2}
+  kind: 1
+  tier: 1
+  vector:
+    sweet: 3
+    spicy: 0
+    sour: 0
+    umami: 0
+    texture: 0

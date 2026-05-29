@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
@@ -51,8 +52,7 @@ public class PenMiniPanelUI : MonoBehaviour
     [SerializeField] private Image      progressFill;     // fillAmount 0→1
     [SerializeField] private TMP_Text   progressLabel;    // "1:23"
 
-    [Header("Collider để detect click-outside (BoxCollider2D trên panel)")]
-    [SerializeField] private Collider2D panelCollider;
+    // panelCollider đã bỏ — dùng RectTransform của root canvas để check click-outside
 
     // ─────────────────────────────────────────────────────────────
     //  Runtime State
@@ -60,9 +60,10 @@ public class PenMiniPanelUI : MonoBehaviour
 
     public PenState CurrentState { get; private set; } = PenState.Idle;
 
-    private float   processStartUnix;   // Unix timestamp (giây) lúc bắt đầu nuôi
-    private string  activeFoodId;       // feedItemId đang được nuôi
+    private float   processStartUnix;
+    private string  activeFoodId;
     private Coroutine timerCoroutine;
+    private int     _openedAtFrame = -10; // frame-guard: tránh đóng ngay frame vừa mở
 
     // ─────────────────────────────────────────────────────────────
     //  Unity Lifecycle
@@ -90,19 +91,27 @@ public class PenMiniPanelUI : MonoBehaviour
     {
         if (!IsPanelOpen()) return;
 
-        // Click outside → đóng panel
-        bool clicked = Input.GetMouseButtonDown(0);
-#if UNITY_IOS || UNITY_ANDROID
-        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+        // Frame-guard: bỏ qua frame panel vừa mở, tránh đóng ngay lập tức
+        if (Time.frameCount <= _openedAtFrame) return;
+
+        // Click outside → đóng panel (dùng New Input System, fallback sang legacy)
+        bool clicked = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                    || Input.GetMouseButtonDown(0);
+
+        if (!clicked && Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+        {
             clicked = true;
-#endif
+        }
+
         if (!clicked) return;
 
-        Vector2 screenPos = Input.mousePosition;
-#if UNITY_IOS || UNITY_ANDROID
-        if (Input.touchCount > 0)
-            screenPos = Input.GetTouch(0).position;
-#endif
+        Vector2 screenPos;
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+            screenPos = Touchscreen.current.primaryTouch.position.ReadValue();
+        else if (Mouse.current != null)
+            screenPos = Mouse.current.position.ReadValue();
+        else
+            screenPos = Input.mousePosition;
 
         if (!IsPointerOverPanel(screenPos))
             ClosePanel();
@@ -121,6 +130,7 @@ public class PenMiniPanelUI : MonoBehaviour
             Debug.LogError("[PenMiniPanelUI] config chưa gán!");
             return;
         }
+        _openedAtFrame = Time.frameCount; // đánh dấu frame mở để Update bỏ qua
         panelRoot.SetActive(true);
         RefreshUI();
     }
@@ -189,7 +199,7 @@ public class PenMiniPanelUI : MonoBehaviour
         if (HarvestFeedbackSpawner.Instance != null)
             HarvestFeedbackSpawner.Instance.SpawnExpFly(transform.position, config.expReward);
 
-        // Cộng vào kho
+        // Cộng vào FarmInventoryManager — Kho popup đọc từ đây, rồi user chuyển sang KitchenTransferManager
         FarmInventoryManager.Instance.AddItem(config.productItemId, 1);
         if (!string.IsNullOrEmpty(config.secondProductItemId))
             FarmInventoryManager.Instance.AddItem(config.secondProductItemId, 1);
@@ -275,12 +285,10 @@ public class PenMiniPanelUI : MonoBehaviour
             if (isIdle) RefreshFoodSlot(slot2Icon, slot2Amount, config.food2ItemId, config.food2Icon);
         }
 
-        // Rổ thu hoạch
+        // Rổ thu hoạch — sprite giữ nguyên từ prefab (không ghi đè bằng config)
         if (basketRoot != null)
         {
-            basketRoot.SetActive(true); // luôn hiển thị
-            if (basketIcon != null && config.basketIcon != null)
-                basketIcon.sprite = config.basketIcon;
+            basketRoot.SetActive(true);
             if (basketActiveGlow != null)
                 basketActiveGlow.SetActive(isReady);
         }
@@ -334,11 +342,10 @@ public class PenMiniPanelUI : MonoBehaviour
 
     private bool IsPointerOverPanel(Vector2 screenPos)
     {
-        if (panelCollider == null) return false;
+        RectTransform rt = GetComponent<RectTransform>();
+        if (rt == null) return false;
         Camera cam = Camera.main;
-        if (cam == null) return false;
-        Vector3 world = cam.ScreenToWorldPoint(screenPos);
-        return panelCollider.OverlapPoint(new Vector2(world.x, world.y));
+        return RectTransformUtility.RectangleContainsScreenPoint(rt, screenPos, cam);
     }
 
     // ─────────────────────────────────────────────────────────────

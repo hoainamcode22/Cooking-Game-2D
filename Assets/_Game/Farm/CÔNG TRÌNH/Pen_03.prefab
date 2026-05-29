@@ -93,7 +93,7 @@ SpriteRenderer:
   m_Size: {x: 2.34, y: 3.09}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 --- !u!1 &6444621589404229514
 GameObject:
@@ -196,7 +196,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5697345654682317675}
   - component: {fileID: 7061365699429138985}
-  - component: {fileID: 1765749724426036052}
   - component: {fileID: 5141721763928852795}
   - component: {fileID: -8750096432532591285}
   - component: {fileID: 781902113510030001}
@@ -275,21 +274,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 2.2550812, y: 4.5048447}
   m_EdgeRadius: 0
---- !u!114 &1765749724426036052
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9142124755168808929}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 080ffd54910f5504899e3b60c6425ab5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ChickenPenClickOpen
-  chickenPenPopupUI: {fileID: 0}
-  mainCamera: {fileID: 0}
-  targetCollider: {fileID: 7061365699429138985}
 --- !u!114 &5141721763928852795
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -468,7 +452,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PenClickDetector
   miniPanel: {fileID: 7521015790853042176}
-  mainCamera: {fileID: 1362634386090815505, guid: 44a02c763aa888448a1edfe501e94d28, type: 3}
+  mainCamera: {fileID: 0}
   targetCollider: {fileID: 7061365699429138985}
 --- !u!1001 &4625015770354546006
 PrefabInstance:
@@ -478,6 +462,14 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 5697345654682317675}
     m_Modifications:
+    - target: {fileID: 249679460158116682, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
+    - target: {fileID: 736988142960254716, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
     - target: {fileID: 1037848967059955010, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Size.x
       value: 497.42325
@@ -494,6 +486,10 @@ PrefabInstance:
       propertyPath: m_Offset.y
       value: 141.44795
       objectReference: {fileID: 0}
+    - target: {fileID: 1321998621206274008, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -3810440115334909774, guid: 1bbb08395055ade4f9eb9ee6dd21bf59, type: 3}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -556,11 +552,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: 1.5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 1
+      value: -2
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -586,6 +582,34 @@ PrefabInstance:
       propertyPath: feedDuration
       value: 120
       objectReference: {fileID: 0}
+    - target: {fileID: 3704375995234496229, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704375995234496229, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Color.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704375995234496229, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Color.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3704375995234496229, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Color.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3796745679944943026, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -3810440115334909774, guid: 1bbb08395055ade4f9eb9ee6dd21bf59, type: 3}
+    - target: {fileID: 6056364980241170663, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+    - target: {fileID: 7645119900833754873, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_Sprite
+      value: 
+      objectReference: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
     - target: {fileID: 8075159325001082237, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: feedItemId
       value: ngo

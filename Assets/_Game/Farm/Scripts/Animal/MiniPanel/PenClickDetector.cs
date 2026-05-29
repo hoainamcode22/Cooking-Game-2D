@@ -49,11 +49,12 @@ public class PenClickDetector : MonoBehaviour
 
     private void Update()
     {
-        // Log 1 lần/giây để không spam (60fps → mỗi 60 frame)
+        // Log mỗi giây — nếu bạn thấy wasPressedThisFrame=True khi click → input OK
         if (Time.frameCount % 60 == 0)
             Debug.Log("[PenClickDetector] ALIVE on " + gameObject.name
                 + " | Mouse.current=" + Mouse.current
-                + " | wasPressedThisFrame=" + (Mouse.current != null ? Mouse.current.leftButton.wasPressedThisFrame.ToString() : "N/A"));
+                + " | wasPressedThisFrame=" + (Mouse.current != null ? Mouse.current.leftButton.wasPressedThisFrame.ToString() : "N/A")
+                + " | OldAPI=" + Input.GetMouseButtonDown(0));
 
         if (!TryGetPointerScreenPos(out Vector2 screenPos)) return;
         Debug.Log("[PenClickDetector] Click detected, screenPos=" + screenPos);
@@ -112,12 +113,6 @@ public class PenClickDetector : MonoBehaviour
             return;
         }
 
-        if (IsPointerOverUI(screenPos))
-        {
-            Debug.Log("[PenClickDetector] BLOCKED: IsPointerOverUI = true");
-            return;
-        }
-
         if (mainCamera == null || targetCollider == null || miniPanel == null)
         {
             Debug.Log("[PenClickDetector] BLOCKED: null ref — camera=" + mainCamera + " collider=" + targetCollider + " miniPanel=" + miniPanel);
@@ -157,7 +152,12 @@ public class PenClickDetector : MonoBehaviour
         foreach (RaycastResult r in results)
         {
             Canvas c = r.gameObject.GetComponentInParent<Canvas>();
-            if (c != null && c.name == "Canvas_Popup")
+            if (c == null) continue;
+
+            // Canvas_Popup KHÔNG check ở đây — PopupManager.IsAnyPopupOpen() đã chặn trước đó.
+            // Một element luôn-active trong Canvas_Popup đang phủ toàn màn hình và block mọi click.
+            // Chỉ block khi click trúng UI của mini panel thức ăn đang mở (tránh kéo food slot làm toggle chuồng).
+            if (c.name == "PF_PenMiniPanel")
                 return true;
         }
         return false;

@@ -78,7 +78,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 3
+  m_SortingLayer: 2
   m_SortingOrder: 150
   m_MaskInteraction: 0
   m_Sprite: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
@@ -101,6 +101,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6870120059267115293}
   - component: {fileID: 2979861995369961368}
+  - component: {fileID: -4425150840736472070}
   m_Layer: 5
   m_Name: PF_HarvestFlyItem_World_Clean
   m_TagString: Untagged
@@ -146,3 +147,16 @@ MonoBehaviour:
   startScale: {x: 80, y: 80, z: 80}
   normalScale: {x: 85, y: 85, z: 85}
   destroyOnFinish: 1
+--- !u!210 &-4425150840736472070
+SortingGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5760333426697029183}
+  m_Enabled: 1
+  m_SortingLayerID: 1669604809
+  m_SortingLayer: 2
+  m_SortingOrder: 570
+  m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
