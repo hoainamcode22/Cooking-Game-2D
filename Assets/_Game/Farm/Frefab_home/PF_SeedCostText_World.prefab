@@ -82,7 +82,7 @@ MeshRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 2
+  m_SortingLayer: 0
   m_SortingOrder: 570
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
@@ -133,8 +133,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 5
-  m_fontSizeBase: 5
+  m_fontSize: 15
+  m_fontSizeBase: 15
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -227,14 +227,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeedCostTextVFX
   textTemplate: {fileID: 1437764567935635446}
-  floatHeightMin: 0.6
-  floatHeightMax: 1.2
-  spreadXMin: -0.6
-  spreadXMax: 0.6
+  floatHeightMin: 70
+  floatHeightMax: 140
+  spreadXMin: -80
+  spreadXMax: 80
   durationMin: 0.6
   durationMax: 0.9
   spawnDelay: 0.06
-  fontSize: 5
-  textColor: {r: 1, g: 0.35, b: 0.15, a: 1}
+  fontSize: 15
+  worldScale: 80
+  textColor: {r: 1, g: 1, b: 1, a: 1}
   sortingLayerName: FX
-  sortingOrder: 570
+  sortingOrder: 8100

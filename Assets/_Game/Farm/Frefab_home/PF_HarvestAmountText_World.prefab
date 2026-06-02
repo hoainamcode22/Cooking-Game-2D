@@ -46,17 +46,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HarvestAmountTextVFX
   textTemplate: {fileID: 1116191035752413570}
-  floatHeightMin: 0.8
-  floatHeightMax: 1.6
-  spreadXMin: -0.8
-  spreadXMax: 0.8
+  floatHeightMin: 90
+  floatHeightMax: 170
+  spreadXMin: -100
+  spreadXMax: 100
   durationMin: 0.7
   durationMax: 1.1
   spawnDelay: 0.07
-  fontSize: 6
-  textColor: {r: 0.2, g: 0.95, b: 0.3, a: 1}
+  fontSize: 15
+  worldScale: 80
+  textColor: {r: 1, g: 1, b: 1, a: 1}
   sortingLayerName: FX
-  sortingOrder: 570
+  sortingOrder: 8100
 --- !u!1 &8966931856897743643
 GameObject:
   m_ObjectHideFlags: 0
@@ -139,7 +140,7 @@ MeshRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 2
+  m_SortingLayer: 0
   m_SortingOrder: 570
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
@@ -190,8 +191,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 6
-  m_fontSizeBase: 6
+  m_fontSize: 15
+  m_fontSizeBase: 15
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18

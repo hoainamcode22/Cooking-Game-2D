@@ -5,9 +5,6 @@ public class HarvestFeedbackSpawner : MonoBehaviour
 {
     public static HarvestFeedbackSpawner Instance { get; private set; }
 
-    [Header("Text FX")]
-    [SerializeField] private FloatingHarvestText prefab;
-
     [Header("Fly FX")]
     [SerializeField] private HarvestFlyItemFX harvestFlyPrefab;
     [SerializeField] private Transform warehouseTarget;
@@ -21,13 +18,13 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     [SerializeField] private int minVisualIcons = 2;
     [SerializeField] private int maxVisualIcons = 4;
     [SerializeField] private float spawnGap = 0.06f;
-    [SerializeField] private float spawnScatterRadius = 0.25f;
+    [SerializeField] private float spawnScatterRadius = 70f;
 
     [Header("Tuning (EXP)")]
     [SerializeField] private int minVisualExpOrbs = 1;
     [SerializeField] private int maxVisualExpOrbs = 3;
     [SerializeField] private float expSpawnGap = 0.05f;
-    [SerializeField] private float expSpawnScatterRadius = 0.18f;
+    [SerializeField] private float expSpawnScatterRadius = 55f;
 
     private void Awake()
     {
@@ -46,28 +43,6 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     {
         if (topBarExpUI == null)
             topBarExpUI = FindFirstObjectByType<TopBarExpUI>();
-    }
-
-    public void Spawn(Vector3 worldPosition, string content)
-    {
-        if (prefab == null)
-        {
-            Debug.LogError("[PlantText] SPAWN FAILED — prefab is NULL. Assign PlantCostText_World in Inspector.");
-            return;
-        }
-
-        // z=0 keeps the text in the 2D plane, in front of all sprites
-        Vector3 spawnPos = new Vector3(worldPosition.x, worldPosition.y, -5f);
-        FloatingHarvestText item = Instantiate(prefab, spawnPos, Quaternion.identity);
-
-        item.transform.localScale = Vector3.one * 500f; // scale theo world coords game
-
-        var mr = item.GetComponent<MeshRenderer>();
-        Debug.Log($"[PlantText] Spawned | pos={spawnPos} scale={item.transform.localScale}" +
-                  $" | MeshRenderer layer='{(mr != null ? mr.sortingLayerName : "none")}'" +
-                  $" ID={(mr != null ? mr.sortingLayerID : -1)} order={(mr != null ? mr.sortingOrder : -1)}");
-
-        item.Setup(content);
     }
 
     public void SpawnHarvestFly(Sprite icon, Vector3 worldPosition, int amount)

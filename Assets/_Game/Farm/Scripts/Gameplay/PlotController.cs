@@ -369,19 +369,25 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         EnsureCropVFXRoot();
         Vector3 pos = cropVFXRoot.position;
-        Debug.Log($"[VFX_DEBUG] PlaySeedPlantVFX ENTER | plot={name} | crop={crop?.cropId} | icon={(crop?.icon != null ? crop.icon.name : "NULL")} | root={(cropVFXRoot != null ? cropVFXRoot.name : "NULL")} | rainPrefab={seedRainPrefab != null} | costPrefab={seedCostTextPrefab != null}");
+        SeedRainVFX rainPrefab = seedRainPrefab != null
+            ? seedRainPrefab
+            : FarmCropVFXSpawner.Instance?.seedRainPrefab;
+        SeedCostTextVFX costTextPrefab = seedCostTextPrefab != null
+            ? seedCostTextPrefab
+            : FarmCropVFXSpawner.Instance?.seedCostTextPrefab;
+        Debug.Log($"[VFX_DEBUG] PlaySeedPlantVFX ENTER | plot={name} | crop={crop?.cropId} | icon={(crop?.icon != null ? crop.icon.name : "NULL")} | root={(cropVFXRoot != null ? cropVFXRoot.name : "NULL")} | rainPrefab={rainPrefab != null} | costPrefab={costTextPrefab != null}");
 
-        if (seedRainPrefab != null)
+        if (rainPrefab != null)
         {
-            var rain = Instantiate(seedRainPrefab, pos, Quaternion.identity, cropVFXRoot);
+            var rain = Instantiate(rainPrefab, pos, Quaternion.identity, cropVFXRoot);
             rain.Play(crop != null ? crop.icon : null, pos, 8);
         }
 
-        if (seedCostTextPrefab != null)
+        if (costTextPrefab != null)
         {
             Vector3 textPos = pos + new Vector3(0.15f, 0.35f, 0f);
-            var cost = Instantiate(seedCostTextPrefab, textPos, Quaternion.identity, cropVFXRoot);
-            cost.Play(seedCost, textPos, 5);
+            var cost = Instantiate(costTextPrefab, textPos, Quaternion.identity, cropVFXRoot);
+            cost.Play(seedCost, textPos, 4);
         }
     }
 
@@ -391,10 +397,14 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         Vector3 pos = cropVFXRoot.position + new Vector3(0f, 0.45f, 0f);
         Debug.Log($"[PlotVFX] PlayHarvestAmountTextVFX plot={name} amount={amount}");
 
-        if (harvestAmountTextPrefab != null)
+        HarvestAmountTextVFX amountTextPrefab = harvestAmountTextPrefab != null
+            ? harvestAmountTextPrefab
+            : FarmCropVFXSpawner.Instance?.harvestAmountTextPrefab;
+
+        if (amountTextPrefab != null)
         {
-            var text = Instantiate(harvestAmountTextPrefab, pos, Quaternion.identity, cropVFXRoot);
-            text.Play(amount, pos, 5);
+            var text = Instantiate(amountTextPrefab, pos, Quaternion.identity, cropVFXRoot);
+            text.Play(amount, pos, 4);
         }
     }
 
@@ -415,7 +425,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if (seedCostTextPrefab != null)
         {
             var cost = Instantiate(seedCostTextPrefab, cropVFXRoot.position, Quaternion.identity, cropVFXRoot);
-            cost.Play(1, cropVFXRoot.position, 5);
+            cost.Play(1, cropVFXRoot.position, 4);
         }
         else
         {
@@ -607,11 +617,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             $"harvestSpawnPoint={(harvestSpawnPoint != null ? harvestSpawnPoint.name : "NULL")} | harvestSpawnPointPath={GetTransformPath(harvestSpawnPoint)} | " +
             $"harvestSpawnPoint.position={(harvestSpawnPoint != null ? spawnPointWorldPos.ToString() : "NULL")} | final fxSpawn={fxSpawn} | " +
             $"plotIsRectTransform={plotIsRectTransform} | harvestSpawnPointIsRectTransform={spawnIsRectTransform}"
-        );
-
-        HarvestFeedbackSpawner.Instance?.Spawn(
-            transform.position + new Vector3(0f, 1.2f, 0f),
-            $"+{amount} {harvestedCrop.displayName}"
         );
 
         // Ưu tiên harvestIcon (gán riêng trong CropData), fallback về icon rồi readySprite như cũ

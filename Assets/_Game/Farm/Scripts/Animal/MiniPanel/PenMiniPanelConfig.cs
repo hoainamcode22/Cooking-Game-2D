@@ -16,6 +16,8 @@ public class PenMiniPanelConfig : ScriptableObject
     public string productItemId;          // "beef" / "pork" / "chicken_meat" / "milk"
     public string secondProductItemId;    // "egg" — chỉ gà, để trống nếu không dùng
     public Sprite productIcon;
+    [Min(1)] public int productAmount = 1;
+    [Min(1)] public int secondProductAmount = 1;
     public Sprite secondProductIcon;      // icon trứng
 
     [Header("Rổ thu hoạch")]

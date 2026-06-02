@@ -8,10 +8,13 @@ public class SeedRainVFX : MonoBehaviour
     [SerializeField] private SpriteRenderer iconTemplate;
 
     [Header("RÆ¡i")]
-    [SerializeField] private float spawnHeightMin  = 1.5f;
-    [SerializeField] private float spawnHeightMax  = 2.8f;
-    [SerializeField] private float spreadXMin      = -0.8f;
-    [SerializeField] private float spreadXMax      =  0.8f;
+    [SerializeField] private float spawnHeightMin  = 80f;
+    [SerializeField] private float spawnHeightMax  = 160f;
+    [SerializeField] private float spreadXMin      = -120f;
+    [SerializeField] private float spreadXMax      =  120f;
+    [SerializeField] private float landingSpreadX  = 90f;
+    [SerializeField] private float landingSpreadYMin = -10f;
+    [SerializeField] private float landingSpreadYMax =  30f;
     [SerializeField] private float durationMin     = 0.5f;
     [SerializeField] private float durationMax     = 0.9f;
 
@@ -69,8 +72,8 @@ public class SeedRainVFX : MonoBehaviour
         go.transform.position = new Vector3(startX, startY, origin.z - 0.1f);
 
         // ÄÃ­ch: gáº§n origin
-        float endX = origin.x + Random.Range(-0.3f, 0.3f);
-        float endY = origin.y + Random.Range(-0.1f, 0.2f);
+        float endX = origin.x + Random.Range(-landingSpreadX, landingSpreadX);
+        float endY = origin.y + Random.Range(landingSpreadYMin, landingSpreadYMax);
         Vector3 startPos = go.transform.position;
         Vector3 endPos   = new Vector3(endX, endY, origin.z - 0.1f);
 

@@ -145,7 +145,7 @@ public class PenMiniPanelUI : MonoBehaviour
     /// PenDropTarget gá»i khi user tháº£ thá»©c Äƒn vÃ o collider chuá»“ng.
     /// Tráº£ vá» true náº¿u feed thÃ nh cÃ´ng.
     /// </summary>
-    public bool TryFeed(string foodItemId)
+    public bool TryFeed(string foodItemId, Vector3 vfxWorldPosition)
     {
         if (CurrentState != PenState.Idle)
         {
@@ -163,6 +163,7 @@ public class PenMiniPanelUI : MonoBehaviour
         }
 
         FarmInventoryManager.Instance.RemoveItem(foodItemId, 1);
+        PlayFeedVFX(foodItemId, vfxWorldPosition);
         activeFoodId = foodItemId;
         processStartUnix = (float)GetUnixNow(); // ghi timestamp trÆ°á»›c khi save
         SetState(PenState.Processing);
@@ -177,7 +178,7 @@ public class PenMiniPanelUI : MonoBehaviour
     /// PenDropTarget gá»i khi user tháº£ rá»• vÃ o collider chuá»“ng.
     /// Tráº£ vá» true náº¿u thu hoáº¡ch thÃ nh cÃ´ng.
     /// </summary>
-    public bool TryHarvest()
+    public bool TryHarvest(Vector3 vfxWorldPosition)
     {
         if (CurrentState != PenState.Ready)
         {
@@ -185,20 +186,22 @@ public class PenMiniPanelUI : MonoBehaviour
         }
 
         // Spawn sáº£n pháº©m chÃ­nh
-        SpawnHarvestFX(config.productItemId, config.productIcon);
+        int productAmount = Mathf.Max(1, config.productAmount);
+        SpawnHarvestFX(config.productItemId, config.productIcon, productAmount, vfxWorldPosition);
 
         // Sáº£n pháº©m phá»¥ (chá»‰ gÃ : egg)
         if (!string.IsNullOrEmpty(config.secondProductItemId))
-            SpawnHarvestFX(config.secondProductItemId, config.secondProductIcon);
+            SpawnHarvestFX(config.secondProductItemId, config.secondProductIcon,
+                Mathf.Max(1, config.secondProductAmount), vfxWorldPosition);
 
         // EXP
         if (HarvestFeedbackSpawner.Instance != null)
             HarvestFeedbackSpawner.Instance.SpawnExpFly(transform.position, config.expReward);
 
         // Cá»™ng vÃ o FarmInventoryManager â€” Kho popup Ä‘á»c tá»« Ä‘Ã¢y, rá»“i user chuyá»ƒn sang KitchenTransferManager
-        FarmInventoryManager.Instance.AddItem(config.productItemId, 1);
+        FarmInventoryManager.Instance.AddItem(config.productItemId, productAmount);
         if (!string.IsNullOrEmpty(config.secondProductItemId))
-            FarmInventoryManager.Instance.AddItem(config.secondProductItemId, 1);
+            FarmInventoryManager.Instance.AddItem(config.secondProductItemId, Mathf.Max(1, config.secondProductAmount));
 
         activeFoodId = null;
         SetState(PenState.Idle);
@@ -320,15 +323,26 @@ public class PenMiniPanelUI : MonoBehaviour
     //  Internal â€” Harvest FX
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    private void SpawnHarvestFX(string itemId, Sprite icon)
+    private void PlayFeedVFX(string foodItemId, Vector3 vfxWorldPosition)
     {
-        if (HarvestFeedbackSpawner.Instance == null) return;
+        if (FarmCropVFXSpawner.Instance == null) return;
+
+        Sprite foodIcon = foodItemId == config.food1ItemId
+            ? config.food1Icon
+            : config.food2Icon;
+
+        FarmCropVFXSpawner.Instance.PlayItemDropVFX(foodIcon, vfxWorldPosition, 1);
+    }
+
+    private void SpawnHarvestFX(string itemId, Sprite icon, int amount, Vector3 vfxWorldPosition)
+    {
         if (icon == null)
         {
             Debug.LogWarning($"[PenMiniPanelUI] SpawnHarvestFX: icon null cho itemId='{itemId}'");
             return;
         }
-        HarvestFeedbackSpawner.Instance.SpawnHarvestFly(icon, transform.position, 1);
+        HarvestFeedbackSpawner.Instance?.SpawnHarvestFly(icon, vfxWorldPosition, amount);
+        FarmCropVFXSpawner.Instance?.PlayHarvestAmountVFX(amount, vfxWorldPosition);
     }
 
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

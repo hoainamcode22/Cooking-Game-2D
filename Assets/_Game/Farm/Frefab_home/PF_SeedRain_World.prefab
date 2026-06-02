@@ -46,10 +46,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SeedRainVFX
   iconTemplate: {fileID: 4621224380154780342}
-  spawnHeightMin: 8
-  spawnHeightMax: 15
-  spreadXMin: -8
-  spreadXMax: 8
+  spawnHeightMin: 80
+  spawnHeightMax: 160
+  spreadXMin: -120
+  spreadXMax: 120
+  landingSpreadX: 90
+  landingSpreadYMin: -10
+  landingSpreadYMax: 30
   durationMin: 0.5
   durationMax: 0.9
   iconScale: 100

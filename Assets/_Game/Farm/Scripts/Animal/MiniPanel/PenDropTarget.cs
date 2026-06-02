@@ -22,7 +22,7 @@ public class PenDropTarget : MonoBehaviour
     public bool ReceiveFoodDrop(string foodItemId)
     {
         if (miniPanel == null) return false;
-        bool ok = miniPanel.TryFeed(foodItemId);
+        bool ok = miniPanel.TryFeed(foodItemId, transform.position);
         return ok;
     }
 
@@ -30,7 +30,7 @@ public class PenDropTarget : MonoBehaviour
     public bool ReceiveBasketDrop()
     {
         if (miniPanel == null) return false;
-        bool ok = miniPanel.TryHarvest();
+        bool ok = miniPanel.TryHarvest(transform.position);
         return ok;
     }
 }

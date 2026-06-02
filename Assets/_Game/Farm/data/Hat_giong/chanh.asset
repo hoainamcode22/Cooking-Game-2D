@@ -20,7 +20,7 @@ MonoBehaviour:
   cropCategory: 0
   cropId: lemon
   plantSeedFxIcon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}
-  harvestIcon: {fileID: 3469545249588112995, guid: 8e84e64d916659c44a48c06f87b8972b, type: 3}
+  harvestIcon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}
   sproutSprite: {fileID: -8465288762422185886, guid: 81dedf9a3e556d948b93c8a79dfec7d1, type: 3}
   growingSprite: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
   readySprite: {fileID: 4557763523057362139, guid: 8298defd2814eee43b53c514c1ea254e, type: 3}

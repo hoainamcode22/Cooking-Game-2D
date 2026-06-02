@@ -9,21 +9,22 @@ public class SeedCostTextVFX : MonoBehaviour
     [SerializeField] private TextMeshPro textTemplate;
 
     [Header("Bay lÃªn")]
-    [SerializeField] private float floatHeightMin = 0.6f;
-    [SerializeField] private float floatHeightMax = 1.2f;
-    [SerializeField] private float spreadXMin     = -0.6f;
-    [SerializeField] private float spreadXMax     =  0.6f;
+    [SerializeField] private float floatHeightMin = 70f;
+    [SerializeField] private float floatHeightMax = 140f;
+    [SerializeField] private float spreadXMin     = -80f;
+    [SerializeField] private float spreadXMax     =  80f;
     [SerializeField] private float durationMin    = 0.6f;
     [SerializeField] private float durationMax    = 0.9f;
     [SerializeField] private float spawnDelay     = 0.06f;
 
     [Header("Text Style")]
-    [SerializeField] private float fontSize   = 5f;
+    [SerializeField] private float fontSize   = 15f;
+    [SerializeField] private float worldScale = 80f;
     [SerializeField] private Color textColor  = new Color(1f, 0.35f, 0.15f, 1f);
 
     [Header("Sorting")]
     [SerializeField] private string sortingLayerName = "Default";
-    [SerializeField] private int    sortingOrder     = 300;
+    [SerializeField] private int    sortingOrder     = 8100;
 
     private void Awake()
     {
@@ -31,7 +32,7 @@ public class SeedCostTextVFX : MonoBehaviour
             textTemplate = GetComponentInChildren<TextMeshPro>(true);
     }
 
-    public void Play(int amount, Vector3 worldPosition, int count = 5)
+    public void Play(int amount, Vector3 worldPosition, int count = 4)
     {
 
         if (textTemplate == null)
@@ -61,7 +62,7 @@ public class SeedCostTextVFX : MonoBehaviour
         GameObject go = new GameObject("SeedCostText");
         go.transform.SetParent(transform);
         go.SetActive(true);
-        go.transform.localScale = Vector3.one;
+        go.transform.localScale = GetLocalScaleForWorldSize(worldScale);
 
         float startX = origin.x + Random.Range(spreadXMin, spreadXMax);
         go.transform.position = new Vector3(startX, origin.y + 0.45f, origin.z - 0.1f);
@@ -102,5 +103,15 @@ public class SeedCostTextVFX : MonoBehaviour
 
         if (transform.childCount <= 1)
             Destroy(gameObject);
+    }
+
+    private Vector3 GetLocalScaleForWorldSize(float targetWorldScale)
+    {
+        Vector3 parentScale = transform.lossyScale;
+        return new Vector3(
+            targetWorldScale / Mathf.Max(0.0001f, Mathf.Abs(parentScale.x)),
+            targetWorldScale / Mathf.Max(0.0001f, Mathf.Abs(parentScale.y)),
+            targetWorldScale / Mathf.Max(0.0001f, Mathf.Abs(parentScale.z))
+        );
     }
 }

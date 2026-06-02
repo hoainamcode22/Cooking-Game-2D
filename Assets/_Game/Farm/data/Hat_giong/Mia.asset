@@ -19,7 +19,7 @@ MonoBehaviour:
   diamondPrice: 0
   cropCategory: 0
   cropId: sugarcane
-  plantSeedFxIcon: {fileID: 1718387542394655981, guid: 7dc5ff8dc723b1b4ab020a068a289b66, type: 3}
+  plantSeedFxIcon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
   harvestIcon: {fileID: 1718387542394655981, guid: 7dc5ff8dc723b1b4ab020a068a289b66, type: 3}
   sproutSprite: {fileID: -6759751035301295870, guid: 740facc17f153814ebf4246a65674170, type: 3}
   growingSprite: {fileID: -7236330514469861798, guid: f93177773effa094eb3dfc62b2be5e36, type: 3}

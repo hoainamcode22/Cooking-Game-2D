@@ -174,14 +174,6 @@ public class PlantDragController : MonoBehaviour
         plantedThisDrag.Add(plot);
         plantedAnyThisDrag = true;
 
-        if (currentDragCrop.plantCost > 0)
-        {
-            Vector3 textPos = new Vector3(plot.transform.position.x, plot.transform.position.y + 500f, -5f);
-            Debug.Log($"[PlantText] Spawning '-{currentDragCrop.plantCost}' at {textPos}" +
-                      $" | spawner={(HarvestFeedbackSpawner.Instance != null ? "OK" : "NULL")}");
-            HarvestFeedbackSpawner.Instance?.Spawn(textPos, $"-{currentDragCrop.plantCost}");
-        }
-
         SpawnSeedRain(plot.transform.position);
 
         Debug.Log($"[PlantDrag] Trồng {currentDragCrop.cropId} → {plot.name} | Kho còn {seedStock - 1} hạt");
@@ -206,7 +198,7 @@ public class PlantDragController : MonoBehaviour
     private void SpawnSeedRain(Vector3 plotWorldPos)
     {
         const int   COUNT    = 8;
-        const float SCALE    = 4000f;  // world units
+        const float SCALE    = 200f;  // world units
         const float DUR_MIN  = 0.35f;
         const float DUR_MAX  = 0.55f;
 

@@ -13,8 +13,8 @@ public class ExpFlyToAvatarFX : MonoBehaviour
     [SerializeField] private float flyDuration = 0.65f;
 
     [Header("World Motion")]
-    [SerializeField] private float scatterRadius = 0.28f;
-    [SerializeField] private float dropDownOffset = 0.16f;
+    [SerializeField] private float scatterRadius = 80f;
+    [SerializeField] private float dropDownOffset = 25f;
 
     [Header("Scale")]
     [SerializeField] private Vector3 startScale = new Vector3(0.55f, 0.55f, 0.55f);

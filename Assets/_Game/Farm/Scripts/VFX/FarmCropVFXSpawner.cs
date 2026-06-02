@@ -48,7 +48,7 @@ public class FarmCropVFXSpawner : MonoBehaviour
         {
             Vector3 costPos = plotPos + new Vector3(0f, 0.1f, 0f);
             SeedCostTextVFX cost = Instantiate(seedCostTextPrefab, costPos, Quaternion.identity);
-            cost.Play(seedCost, costPos, count: 5);
+            cost.Play(seedCost, costPos, count: 4);
         }
         else if (seedCostTextPrefab == null)
         {
@@ -57,6 +57,32 @@ public class FarmCropVFXSpawner : MonoBehaviour
     }
 
     // â”€â”€ Thu hoáº¡ch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    public void PlayItemDropVFX(Sprite itemIcon, Vector3 worldPos, int itemCost = 1)
+    {
+        if (itemIcon == null) return;
+
+        if (seedRainPrefab != null)
+        {
+            SeedRainVFX rain = Instantiate(seedRainPrefab, worldPos, Quaternion.identity);
+            rain.Play(itemIcon, worldPos, count: 8);
+        }
+        else
+        {
+            Debug.LogWarning("[VFX] PlayItemDropVFX: seedRainPrefab is NULL.");
+        }
+
+        if (seedCostTextPrefab != null && itemCost > 0)
+        {
+            Vector3 costPos = worldPos + new Vector3(0f, 0.1f, 0f);
+            SeedCostTextVFX cost = Instantiate(seedCostTextPrefab, costPos, Quaternion.identity);
+            cost.Play(itemCost, costPos, count: 4);
+        }
+        else if (seedCostTextPrefab == null)
+        {
+            Debug.LogWarning("[VFX] PlayItemDropVFX: seedCostTextPrefab is NULL.");
+        }
+    }
 
     public void PlayHarvestAmountVFX(int amount, Vector3 plotPos)
     {
@@ -71,6 +97,6 @@ public class FarmCropVFXSpawner : MonoBehaviour
 
         Vector3 spawnPos = plotPos + new Vector3(0f, 0.45f, 0f);
         HarvestAmountTextVFX fx = Instantiate(harvestAmountTextPrefab, spawnPos, Quaternion.identity);
-        fx.Play(amount, spawnPos, count: 5);
+        fx.Play(amount, spawnPos, count: 4);
     }
 }

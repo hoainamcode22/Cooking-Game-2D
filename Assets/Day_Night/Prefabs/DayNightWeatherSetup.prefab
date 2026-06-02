@@ -184,7 +184,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 85
+      - m_Value: 42
         m_Name: RainRate
         m_Overridden: 1
       - m_Value: 5.8
@@ -196,7 +196,7 @@ VisualEffect:
       m_Array: []
     m_Vector4f:
       m_Array:
-      - m_Value: {x: 0.93, y: 0.97, z: 1, w: 0.72}
+      - m_Value: {x: 0.93, y: 0.97, z: 1, w: 0.55}
         m_Name: RainTintColor
         m_Overridden: 1
     m_Uint:
@@ -328,7 +328,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 45
+      - m_Value: 24
         m_Name: RainRate
         m_Overridden: 1
       - m_Value: 4.6
@@ -935,7 +935,7 @@ VisualEffect:
   m_PropertySheet:
     m_Float:
       m_Array:
-      - m_Value: 320
+      - m_Value: 140
         m_Name: RainRate
         m_Overridden: 1
       - m_Value: 5.8
@@ -947,7 +947,7 @@ VisualEffect:
       m_Array: []
     m_Vector4f:
       m_Array:
-      - m_Value: {x: 0.9, y: 0.9, z: 1.25, w: 0.58}
+      - m_Value: {x: 0.9, y: 0.9, z: 1.25, w: 0.48}
         m_Name: RainTintColor
         m_Overridden: 1
     m_Uint:
@@ -1853,13 +1853,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Day_Night.DayNightRainOverlay
   AreaSize: {x: 2600, y: 1600}
-  DropCount: 550
+  DropCount: 220
   FallSpeed: 850
   DropLength: 78
   DropWidth: 2.2
   DropHeadSize: 4.5
   Slant: {x: -0.08, y: -1}
-  DropColor: {r: 0.86, g: 0.96, b: 1, a: 0.72}
+  DropColor: {r: 0.86, g: 0.96, b: 1, a: 0.5}
   SortingLayerName: Foreground
   SortingOrder: 260
   FollowMainCamera: 1
@@ -2913,7 +2913,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5200
+      scalar: 1800
       minScalar: 10
       maxCurve:
         serializedVersion: 2

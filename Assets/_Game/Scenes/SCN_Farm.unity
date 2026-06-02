@@ -118213,7 +118213,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ee384c7198d67354682e4285c5a7b561, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HarvestFeedbackSpawner
-  prefab: {fileID: 1856433409519238351, guid: b7d46a0e51cbdab4b9b5470273b335f9, type: 3}
   harvestFlyPrefab: {fileID: 2979861995369961368, guid: 0ec1f3da7928ece4bbbbcdc5f0364f25, type: 3}
   warehouseTarget: {fileID: 418746457}
   warehousePulseFX: {fileID: 1174840459}
@@ -118222,11 +118221,11 @@ MonoBehaviour:
   minVisualIcons: 2
   maxVisualIcons: 4
   spawnGap: 0.06
-  spawnScatterRadius: 0.25
+  spawnScatterRadius: 70
   minVisualExpOrbs: 1
   maxVisualExpOrbs: 3
   expSpawnGap: 0.05
-  expSpawnScatterRadius: 0.18
+  expSpawnScatterRadius: 55
 --- !u!1 &561648499
 GameObject:
   m_ObjectHideFlags: 0
@@ -305887,13 +305886,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Day_Night.DayNightRainOverlay
   AreaSize: {x: 8032.959, y: 3000}
-  DropCount: 550
+  DropCount: 220
   FallSpeed: 850
   DropLength: 78
   DropWidth: 2.2
   DropHeadSize: 4.5
   Slant: {x: -0.35, y: -1}
-  DropColor: {r: 0.86, g: 0.96, b: 1, a: 0.72}
+  DropColor: {r: 0.86, g: 0.96, b: 1, a: 0.5}
   SortingLayerName: Foreground
   SortingOrder: 260
   FollowMainCamera: 1
@@ -320604,11 +320603,11 @@ MonoBehaviour:
   minVisualIcons: 2
   maxVisualIcons: 4
   spawnGap: 0.06
-  spawnScatterRadius: 0.18
+  spawnScatterRadius: 70
   minVisualExpOrbs: 1
   maxVisualExpOrbs: 3
   expSpawnGap: 0.05
-  expSpawnScatterRadius: 0.18
+  expSpawnScatterRadius: 55
 --- !u!1 &1134903900
 GameObject:
   m_ObjectHideFlags: 0
@@ -338250,7 +338249,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 699791719746932637, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[0].m_Value
-      value: 45
+      value: 24
       objectReference: {fileID: 0}
     - target: {fileID: 699791719746932637, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[1].m_Value
@@ -338262,7 +338261,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 699791719746932637, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Value.w
-      value: 0.58
+      value: 0.48
       objectReference: {fileID: 0}
     - target: {fileID: 699791719746932637, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Value.x
@@ -338462,7 +338461,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4245148228791083937, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[0].m_Value
-      value: 85
+      value: 42
       objectReference: {fileID: 0}
     - target: {fileID: 4245148228791083937, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[1].m_Value
@@ -338470,7 +338469,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4245148228791083937, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Value.w
-      value: 0.72
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 4245148228791083937, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Value.x
@@ -338702,7 +338701,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6795795457602451720, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[0].m_Value
-      value: 320
+      value: 140
       objectReference: {fileID: 0}
     - target: {fileID: 6795795457602451720, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Float.m_Array.Array.data[1].m_Value
@@ -338710,7 +338709,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6795795457602451720, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Value.w
-      value: 0.58
+      value: 0.48
       objectReference: {fileID: 0}
     - target: {fileID: 6795795457602451720, guid: c3dbaa3ffd83ea048b4164b33afe5c64, type: 3}
       propertyPath: m_PropertySheet.m_Vector4f.m_Array.Array.data[0].m_Value.x
@@ -476959,7 +476958,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 5200
+      scalar: 1800
       minScalar: 10
       maxCurve:
         serializedVersion: 2

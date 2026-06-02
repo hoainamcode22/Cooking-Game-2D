@@ -14,8 +14,8 @@ public class HarvestFlyItemFX : MonoBehaviour
     [SerializeField] private float flyDuration = 0.65f;
 
     [Header("World Motion")]
-    [SerializeField] private float scatterRadius = 0.35f;
-    [SerializeField] private float dropDownOffset = 0.18f;
+    [SerializeField] private float scatterRadius = 120f;
+    [SerializeField] private float dropDownOffset = 35f;
 
     [Header("Scale (World)")]
     [SerializeField] private Vector3 startScale = new Vector3(0.55f, 0.55f, 0.55f);
