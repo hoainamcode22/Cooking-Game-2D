@@ -27,7 +27,7 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 60, y: 60, z: 1}
   readyScale: {x: 70, y: 70, z: 1}
-  displayCount: 4
+  displayCount: 6
   seedItemId: seed_nam
   harvestItemId: mushroom
   tier: 1

@@ -1,21 +1,21 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
-/// Quản lý visual cây trồng trong 1 plot.
-/// Script gắn lên CropGroup (parent của CropPoint_1..4).
+/// Quáº£n lÃ½ visual cÃ¢y trá»“ng trong 1 plot.
+/// Script gáº¯n lÃªn CropGroup (parent cá»§a CropPoint_1..4).
 ///
 /// Hierarchy:
-///   CropGroup  ← script này
-///     CropPoint_1  (Transform rỗng, localScale = 1,1,1)
-///       Visual     (SpriteRenderer, tạo tự động)
+///   CropGroup  â† script nÃ y
+///     CropPoint_1  (Transform rá»—ng, localScale = 1,1,1)
+///       Visual     (SpriteRenderer, táº¡o tá»± Ä‘á»™ng)
 ///     CropPoint_2 ...
 ///
-/// Scale cuối: normalizedFromHeight * cropDataStageScale * globalVisualMultiplier
-/// localPosition của Visual luôn = (0,0,0).
+/// Scale cuá»‘i: normalizedFromHeight * cropDataStageScale * globalVisualMultiplier
+/// localPosition cá»§a Visual luÃ´n = (0,0,0).
 /// </summary>
 public class PlotCropVisual : MonoBehaviour
 {
-    [Header("Points — tự tìm, hoặc gán tay")]
+    [Header("Points â€” tá»± tÃ¬m, hoáº·c gÃ¡n tay")]
     [SerializeField] private Transform[] cropPoints = new Transform[0];
 
     [Header("Render")]
@@ -28,7 +28,7 @@ public class PlotCropVisual : MonoBehaviour
     [SerializeField] private float swaySpeed       = 1.4f;
     [SerializeField] private float swayPhaseRange  = 2.0f;
 
-    // ── Internal ──────────────────────────────────────────────────────────────
+    // â”€â”€ Internal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private CropData         currentCrop;
     private SpriteRenderer[] slotRenderers;
     private Transform[]      slotVisuals;
@@ -38,12 +38,11 @@ public class PlotCropVisual : MonoBehaviour
     private bool  isReadySwayActive;
     private bool  isSetupDone;
 
-    // ────────────────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void Awake()
     {
         EnsureSetup();
-        Debug.Log($"CropPoints found: {cropPoints.Length}");
     }
     private void OnValidate() => AutoFindPoints();
 
@@ -64,9 +63,9 @@ public class PlotCropVisual : MonoBehaviour
         }
     }
 
-    // ── Public API ────────────────────────────────────────────────────────────
+    // â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    /// <summary>Hiển thị crop theo progress (0..1).</summary>
+    /// <summary>Hiá»ƒn thá»‹ crop theo progress (0..1).</summary>
     public void ShowCrop(CropData crop, float progress01)
     {
         EnsureSetup();
@@ -89,7 +88,7 @@ public class PlotCropVisual : MonoBehaviour
                 cropPoints[i].gameObject.SetActive(i < crop.displayCount);
     }
 
-    /// <summary>Cập nhật sprite và scale cho stage hiện tại (0=Sprout, 1=Growing, 2=Ready).</summary>
+    /// <summary>Cáº­p nháº­t sprite vÃ  scale cho stage hiá»‡n táº¡i (0=Sprout, 1=Growing, 2=Ready).</summary>
     public void UpdateVisual(int stage)
     {
         if (currentCrop == null || slotRenderers == null) return;
@@ -114,7 +113,7 @@ public class PlotCropVisual : MonoBehaviour
         }
     }
 
-    /// <summary>Tắt toàn bộ visual.</summary>
+    /// <summary>Táº¯t toÃ n bá»™ visual.</summary>
     public void ClearAll()
     {
         EnsureSetup();
@@ -143,7 +142,7 @@ public class PlotCropVisual : MonoBehaviour
         }
     }
 
-    // ── Setup ─────────────────────────────────────────────────────────────────
+    // â”€â”€ Setup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     [ContextMenu("Auto Find Points")]
     public void AutoFindPoints()
@@ -176,10 +175,10 @@ public class PlotCropVisual : MonoBehaviour
             Transform point = cropPoints[i];
             if (point == null) continue;
 
-            // Đảm bảo CropPoint không có scale lạ ảnh hưởng child
+            // Äáº£m báº£o CropPoint khÃ´ng cÃ³ scale láº¡ áº£nh hÆ°á»Ÿng child
             point.localScale = Vector3.one;
 
-            // Tìm hoặc tạo child "Visual"
+            // TÃ¬m hoáº·c táº¡o child "Visual"
             Transform visualTf = point.Find("Visual");
             GameObject go;
             if (visualTf != null)
@@ -195,12 +194,12 @@ public class PlotCropVisual : MonoBehaviour
                 go.transform.localScale    = Vector3.one;
             }
 
-            // Đảm bảo có SpriteRenderer — dùng explicit null check vì Unity ?? không reliable
+            // Äáº£m báº£o cÃ³ SpriteRenderer â€” dÃ¹ng explicit null check vÃ¬ Unity ?? khÃ´ng reliable
             SpriteRenderer sr = go.GetComponent<SpriteRenderer>();
             if (sr == null)
                 sr = go.AddComponent<SpriteRenderer>();
 
-            // Chỉ set properties sau khi sr đã không null
+            // Chá»‰ set properties sau khi sr Ä‘Ã£ khÃ´ng null
             sr.sortingLayerName = sortingLayerName;
             sr.sortingOrder     = sortingOrder;
             sr.sprite           = null;

@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -56,7 +56,7 @@ public class FarmUIManager : MonoBehaviour
 
     private void Start()
     {
-        // Subscribe sau khi tất cả Awake() đã chạy xong — Instance đảm bảo không null
+        // Subscribe sau khi táº¥t cáº£ Awake() Ä‘Ã£ cháº¡y xong â€” Instance Ä‘áº£m báº£o khÃ´ng null
         if (FarmEconomyManager.Instance != null)
             FarmEconomyManager.Instance.OnCurrencyChanged += HandleCurrencyChanged;
 
@@ -84,7 +84,7 @@ public class FarmUIManager : MonoBehaviour
     public void RefreshTopBar()
     {
         if (txtDay != null)
-            txtDay.text = "Ngày 1";
+            txtDay.text = "NgÃ y 1";
 
         if (txtGold != null)
         {
@@ -132,15 +132,15 @@ public class FarmUIManager : MonoBehaviour
             {
                 if (popupObjectsToForceClose[i] == null) continue;
 
-                // Bỏ qua building cố định của map — chúng luôn phải hiện.
+                // Bá» qua building cá»‘ Ä‘á»‹nh cá»§a map â€” chÃºng luÃ´n pháº£i hiá»‡n.
                 if (popupObjectsToForceClose[i].GetComponentInChildren<PermanentBuilding>(true) != null
                  || popupObjectsToForceClose[i].GetComponentInParent<PermanentBuilding>()    != null)
                 {
-                    Debug.LogWarning($"[FarmUI] Bỏ qua HideAllPopups cho '{popupObjectsToForceClose[i].name}' — đây là PermanentBuilding.");
+                    Debug.LogWarning($"[FarmUI] Bá» qua HideAllPopups cho '{popupObjectsToForceClose[i].name}' â€” Ä‘Ã¢y lÃ  PermanentBuilding.");
                     continue;
                 }
 
-                // Bỏ qua Train popup (kể cả khi object trong mảng là Canvas parent chứa chúng).
+                // Bá» qua Train popup (ká»ƒ cáº£ khi object trong máº£ng lÃ  Canvas parent chá»©a chÃºng).
                 if (popupObjectsToForceClose[i].GetComponentInChildren<TrainLoadPopupUI>(true)    != null) continue;
                 if (popupObjectsToForceClose[i].GetComponentInChildren<TrainProcessPopupUI>(true) != null) continue;
 
@@ -149,14 +149,14 @@ public class FarmUIManager : MonoBehaviour
         }
     }
 
-    // Bước 1: click ô chín → chỉ hiện khay (tray), chưa bắt đầu harvest
+    // BÆ°á»›c 1: click Ã´ chÃ­n â†’ chá»‰ hiá»‡n khay (tray), chÆ°a báº¯t Ä‘áº§u harvest
     public void ShowSickleTray()
     {
         if (sickleToolRoot != null)
             sickleToolRoot.SetActive(true);
     }
 
-    // Bước 2: player nhấn giữ icon liềm trong tray → bắt đầu harvest mode
+    // BÆ°á»›c 2: player nháº¥n giá»¯ icon liá»m trong tray â†’ báº¯t Ä‘áº§u harvest mode
     public void ShowSickleTool(Vector3 startWorldPos)
     {
         if (sickleToolRoot != null)
@@ -177,14 +177,13 @@ public class FarmUIManager : MonoBehaviour
 
     /// <summary>
     /// Open seed popup near the clicked plot world position.
-    /// Converts world → screen → canvas local once, then popup stays fixed.
+    /// Converts world â†’ screen â†’ canvas local once, then popup stays fixed.
     /// </summary>
     public void ShowPlantSelectForPlot(PlotController plot)
     {
         if (isCookingMode)
             return;
 
-        Debug.Log("[FarmUI] ShowPlantSelectForPlot CALLED");
 
         HideAllPopups();
 
@@ -194,34 +193,32 @@ public class FarmUIManager : MonoBehaviour
             return;
         }
 
-        // Đảm bảo toàn bộ parent chain của popupSeed đều active
+        // Äáº£m báº£o toÃ n bá»™ parent chain cá»§a popupSeed Ä‘á»u active
         Transform p = popupSeed.transform.parent;
         while (p != null)
         {
             if (!p.gameObject.activeSelf)
             {
-                Debug.LogWarning($"[FarmUI] Parent bị tắt, bật lại: {p.name}");
+                Debug.LogWarning($"[FarmUI] Parent bá»‹ táº¯t, báº­t láº¡i: {p.name}");
                 p.gameObject.SetActive(true);
             }
             p = p.parent;
         }
 
-        // Reset popup về giữa màn hình để đảm bảo luôn hiển thị
+        // Reset popup vá» giá»¯a mÃ n hÃ¬nh Ä‘á»ƒ Ä‘áº£m báº£o luÃ´n hiá»ƒn thá»‹
         RectTransform popupRect = popupSeed.GetComponent<RectTransform>();
         if (popupRect != null)
         {
             popupRect.anchoredPosition = Vector2.zero;
-            Debug.Log($"[FarmUI] popup anchoredPosition reset to (0,0)");
         }
 
         popupSeed.SetActive(true);
-        Debug.Log($"[FarmUI] popupSeed.SetActive(true) | activeInHierarchy={popupSeed.activeInHierarchy}");
         FarmInputLock.IsSeedPopupOpen = true;
 
         if (plot != null)
-            ShowHint($"Kéo hạt giống để trồng vào ô {plot.PlotId}");
+            ShowHint($"KÃ©o háº¡t giá»‘ng Ä‘á»ƒ trá»“ng vÃ o Ã´ {plot.PlotId}");
         else
-            ShowHint("Kéo hạt giống để trồng.");
+            ShowHint("KÃ©o háº¡t giá»‘ng Ä‘á»ƒ trá»“ng.");
     }
 
     public void ShowPlantSelectForFlower(PlotController plot)
@@ -232,7 +229,7 @@ public class FarmUIManager : MonoBehaviour
 
         if (popupSeedFlower == null)
         {
-            Debug.LogError("[FarmUI] popupSeedFlower is NULL — kéo popup hoa vào Inspector.");
+            Debug.LogError("[FarmUI] popupSeedFlower is NULL â€” kÃ©o popup hoa vÃ o Inspector.");
             return;
         }
 
@@ -250,12 +247,12 @@ public class FarmUIManager : MonoBehaviour
         FarmInputLock.IsSeedPopupOpen = true;
 
         if (plot != null)
-            ShowHint($"Kéo hạt giống hoa để trồng vào ô {plot.PlotId}");
+            ShowHint($"KÃ©o háº¡t giá»‘ng hoa Ä‘á»ƒ trá»“ng vÃ o Ã´ {plot.PlotId}");
         else
-            ShowHint("Kéo hạt giống hoa để trồng.");
+            ShowHint("KÃ©o háº¡t giá»‘ng hoa Ä‘á»ƒ trá»“ng.");
     }
 
-    /// <summary>Close seed popup (cả 2 loại) và clear input locks.</summary>
+    /// <summary>Close seed popup (cáº£ 2 loáº¡i) vÃ  clear input locks.</summary>
     public void HidePlantSelectPopup()
     {
         if (popupSeed != null)
@@ -268,10 +265,10 @@ public class FarmUIManager : MonoBehaviour
         FarmInputLock.IsDraggingSeed  = false;
     }
 
-    /// <summary>Hiện floating icon theo chuột khi bắt đầu kéo hạt giống.</summary>
+    /// <summary>Hiá»‡n floating icon theo chuá»™t khi báº¯t Ä‘áº§u kÃ©o háº¡t giá»‘ng.</summary>
     public void ShowFloatingDragIcon(Sprite icon) => floatingDragIcon?.Show(icon);
 
-    /// <summary>Ẩn floating icon khi kết thúc drag.</summary>
+    /// <summary>áº¨n floating icon khi káº¿t thÃºc drag.</summary>
     public void HideFloatingDragIcon() => floatingDragIcon?.Hide();
 
     public void OnClick_CloseAllPopups()
@@ -297,25 +294,25 @@ public class FarmUIManager : MonoBehaviour
     public void OnClick_OpenInventory()
     {
         if (isCookingMode) return;
-        ShowHint("Mở túi đồ.");
+        ShowHint("Má»Ÿ tÃºi Ä‘á»“.");
     }
 
     public void OnClick_OpenWarehouse()
     {
         if (isCookingMode) return;
-        ShowHint("Mở kho.");
+        ShowHint("Má»Ÿ kho.");
     }
 
     public void OnClick_OpenMarket()
     {
         if (isCookingMode) return;
-        ShowHint("Mở chợ.");
+        ShowHint("Má»Ÿ chá»£.");
     }
 
     public void OnClick_OpenRanking()
     {
         if (isCookingMode) return;
-        ShowHint("Mở bảng xếp hạng.");
+        ShowHint("Má»Ÿ báº£ng xáº¿p háº¡ng.");
     }
 
     public void EnterCookingMode()

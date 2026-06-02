@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerWallet : MonoBehaviour
 {
@@ -17,13 +17,11 @@ public class PlayerWallet : MonoBehaviour
     public void AddCoin(int amount)
     {
         Coins += amount;
-        Debug.Log($"[Wallet] +{amount} Coin | Tổng: {Coins}");
     }
 
     public void AddDiamond(int amount)
     {
         Diamonds += amount;
-        Debug.Log($"[Wallet] +{amount} Diamond | Tổng: {Diamonds}");
     }
 
     public bool SpendCoin(int amount)

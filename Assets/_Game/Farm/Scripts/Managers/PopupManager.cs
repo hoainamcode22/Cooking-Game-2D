@@ -1,30 +1,27 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Village;
 
 public class PopupManager : MonoBehaviour
 {
     public static PopupManager Instance;
 
-    // Dùng typed component reference để gọi IsOpen thật sự của từng popup,
-    // tránh lỗi khi parent container luôn activeInHierarchy.
+    // DÃ¹ng typed component reference Ä‘á»ƒ gá»i IsOpen tháº­t sá»± cá»§a tá»«ng popup,
+    // trÃ¡nh lá»—i khi parent container luÃ´n activeInHierarchy.
     [Header("Block Click Popups")]
     [SerializeField] private WarehousePopupUI  warehousePopup;
-    [SerializeField] private PigPenPopupUI     pigPenPopup;
-    [SerializeField] private ChickenPenPopupUI chickenPenPopup;
-    [SerializeField] private CowPenPopupUI     cowPenPopup;
     [SerializeField] private MarketPopupUI     marketPopup;
     [SerializeField] private TrainProcessPopupUI trainProcessPopup;
     [SerializeField] private TrainLoadPopupUI   trainLoadPopup;
     [SerializeField] private HouseOrderPopupUI houseOrderPopup;
     [SerializeField] private ShopManager       shopPopup;
-    // Popup nhiệm vụ tân thủ — đăng ký để BlockMapPan và blockingOverlay hoạt động
+    // Popup nhiá»‡m vá»¥ tÃ¢n thá»§ â€” Ä‘Äƒng kÃ½ Ä‘á»ƒ BlockMapPan vÃ  blockingOverlay hoáº¡t Ä‘á»™ng
     [SerializeField] private PopupEwarManager  ewarPopup;
 
     /// <summary>
-    /// CanvasGroup full-screen trong suốt nằm dưới tất cả popup.
-    /// Khi bật blocksRaycasts=true sẽ chặn click xuyên qua lớp popup xuống world.
-    /// Gán trong Inspector: tạo Image trong Canvas, kéo dài full-screen, alpha=0,
-    /// đặt sort order thấp hơn popup, gắn CanvasGroup vào đây.
+    /// CanvasGroup full-screen trong suá»‘t náº±m dÆ°á»›i táº¥t cáº£ popup.
+    /// Khi báº­t blocksRaycasts=true sáº½ cháº·n click xuyÃªn qua lá»›p popup xuá»‘ng world.
+    /// GÃ¡n trong Inspector: táº¡o Image trong Canvas, kÃ©o dÃ i full-screen, alpha=0,
+    /// Ä‘áº·t sort order tháº¥p hÆ¡n popup, gáº¯n CanvasGroup vÃ o Ä‘Ã¢y.
     /// </summary>
     [Header("Blocking Overlay")]
     [SerializeField] private CanvasGroup blockingOverlay;
@@ -34,9 +31,8 @@ public class PopupManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-        Debug.Log("[PopupManager] Awake");
 
-        // Khởi tạo overlay về trạng thái không chặn
+        // Khá»Ÿi táº¡o overlay vá» tráº¡ng thÃ¡i khÃ´ng cháº·n
         if (blockingOverlay != null)
         {
             blockingOverlay.alpha          = 0f;
@@ -57,16 +53,13 @@ public class PopupManager : MonoBehaviour
 
         _prevAnyOpen = anyOpen;
         blockingOverlay.blocksRaycasts = anyOpen;
-        // alpha giữ = 0 để overlay vô hình nhưng vẫn chặn raycast
+        // alpha giá»¯ = 0 Ä‘á»ƒ overlay vÃ´ hÃ¬nh nhÆ°ng váº«n cháº·n raycast
     }
     
 
     public bool IsAnyPopupOpen()
     {
         return (warehousePopup    != null && warehousePopup.IsOpen)
-            || (pigPenPopup       != null && pigPenPopup.IsOpen)
-            || (chickenPenPopup   != null && chickenPenPopup.IsOpen)
-            || (cowPenPopup       != null && cowPenPopup.IsOpen)
             || (marketPopup       != null && marketPopup.IsOpen)
             || (trainProcessPopup != null && trainProcessPopup.IsOpen)
             || (trainLoadPopup    != null && trainLoadPopup.IsOpen)

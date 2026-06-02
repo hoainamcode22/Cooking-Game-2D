@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class CookingPopupController : MonoBehaviour
@@ -35,7 +35,6 @@ public class CookingPopupController : MonoBehaviour
 
     public void ShowScoreResultPopup(CookingScoreResult result, bool isSuccess, DishData dishData)
     {
-        Debug.Log("CALL SHOW SCORE RESULT POPUP | isSuccess = " + isSuccess);
         StartCoroutine(ShowScoreResultPopupRoutine(result, isSuccess, dishData));
     }
 
@@ -79,7 +78,6 @@ public class CookingPopupController : MonoBehaviour
 
     public IEnumerator ShowScoreResultPopupRoutine(CookingScoreResult result, bool isSuccess, DishData dishData)
     {
-        Debug.Log("CALL SHOW SCORE RESULT POPUP | isSuccess = " + isSuccess);
 
         if (scoreResultBoxUI != null)
         {

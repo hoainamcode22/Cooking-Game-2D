@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
@@ -52,7 +52,7 @@ public class KitchenClickOpen : MonoBehaviour
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;
 
-        // Chặn khi đang bấm lên UI popup farm (Canvas_Popup)
+        // Cháº·n khi Ä‘ang báº¥m lÃªn UI popup farm (Canvas_Popup)
         if (IsPointerOverFarmPopupUI(screenPos))
             return;
 
@@ -63,12 +63,11 @@ public class KitchenClickOpen : MonoBehaviour
         Vector2 world2 = new Vector2(world3.x, world3.y);
 
         bool hit = targetCollider.OverlapPoint(world2);
-        Debug.Log("[KitchenClickOpen] World = " + world2 + " | Hit = " + hit);
 
         if (!hit)
             return;
 
-        // Hit detected — BuildingInteractable.OnMouseDown() handles scene transition.
+        // Hit detected â€” BuildingInteractable.OnMouseDown() handles scene transition.
     }
 
     private bool IsPointerOverFarmPopupUI(Vector2 screenPos)

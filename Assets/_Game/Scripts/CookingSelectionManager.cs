@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
@@ -77,13 +77,11 @@ public class CookingSelectionManager : MonoBehaviour
     public void EnableIngredientSelection()
     {
         canSelectIngredient = true;
-        Debug.Log("[CookingSelectionManager] Đã cho phép chọn nguyên liệu.");
     }
 
     public void DisableIngredientSelection()
     {
         canSelectIngredient = false;
-        Debug.Log("[CookingSelectionManager] Đã khóa chọn nguyên liệu.");
     }
 
     public void TrySelect(SelectableIngredientCard card)
@@ -96,11 +94,9 @@ public class CookingSelectionManager : MonoBehaviour
 
         if (quantity <= 0)
         {
-            Debug.Log("Không còn " + card.GetItemName() + " trong kho.");
             return;
         }
 
-        Debug.Log("Đang chạy TrySelect mới");
 
         if (card.isSeasoning)
         {
@@ -108,12 +104,10 @@ public class CookingSelectionManager : MonoBehaviour
 
             if (selectedSeasonings.Count >= maxSeasonings)
             {
-                Debug.Log("Đã đạt tối đa gia vị.");
                 return;
             }
 
             selectedSeasonings.Add(card);
-            Debug.Log("Đã thêm gia vị: " + card.GetItemName());
 
             AddFlavor(card.GetIngredientData());
         }
@@ -123,14 +117,12 @@ public class CookingSelectionManager : MonoBehaviour
 
             if (selectedIngredients.Count >= maxIngredients)
             {
-                Debug.Log("Đã đạt tối đa nguyên liệu.");
                 return;
             }
 
             selectedIngredients.Add(card);
-            Debug.Log("Đã thêm nguyên liệu: " + card.GetItemName());
 
-            // Nguyên liệu cũng có hương vị nên cũng phải cộng vector
+            // NguyÃªn liá»‡u cÅ©ng cÃ³ hÆ°Æ¡ng vá»‹ nÃªn cÅ©ng pháº£i cá»™ng vector
             AddFlavor(card.GetIngredientData());
         }
 
@@ -154,7 +146,6 @@ public class CookingSelectionManager : MonoBehaviour
             if (!selectedSeasonings.Contains(card)) return;
 
             selectedSeasonings.Remove(card);
-            Debug.Log("Đã bỏ gia vị: " + card.GetItemName());
 
             RemoveFlavor(card.GetIngredientData());
         }
@@ -163,9 +154,8 @@ public class CookingSelectionManager : MonoBehaviour
             if (!selectedIngredients.Contains(card)) return;
 
             selectedIngredients.Remove(card);
-            Debug.Log("Đã bỏ nguyên liệu: " + card.GetItemName());
 
-            // Bỏ nguyên liệu thì phải trừ vector hương vị
+            // Bá» nguyÃªn liá»‡u thÃ¬ pháº£i trá»« vector hÆ°Æ¡ng vá»‹
         RemoveFlavor(card.GetIngredientData());        }
 
         card.SetQuantityFromKitchen(quantity + 1);
@@ -181,10 +171,10 @@ public class CookingSelectionManager : MonoBehaviour
         int seasoningCount = selectedSeasonings.Count;
 
         if (ingredientsCountText != null)
-            ingredientsCountText.text = $"Chọn {ingredientCount}/{maxIngredients}";
+            ingredientsCountText.text = $"Chá»n {ingredientCount}/{maxIngredients}";
 
         if (seasoningsCountText != null)
-            seasoningsCountText.text = $"Chọn {seasoningCount}/{maxSeasonings}";
+            seasoningsCountText.text = $"Chá»n {seasoningCount}/{maxSeasonings}";
     }
 
     private void RebuildPot()
@@ -199,14 +189,14 @@ public class CookingSelectionManager : MonoBehaviour
             SpawnPotCard(potSeasoningsContent, c);
     }
 
-    private void SpawnPotCard(Transform parent, SelectableIngredientCard fromCard)// Tạo một card nhỏ trong nồi dựa trên card đã chọn ở bên trái
+    private void SpawnPotCard(Transform parent, SelectableIngredientCard fromCard)// Táº¡o má»™t card nhá» trong ná»“i dá»±a trÃªn card Ä‘Ã£ chá»n á»Ÿ bÃªn trÃ¡i
     {
         if (potCardPrefab == null || parent == null || fromCard == null) return;
 
-        var newUi = Instantiate(potCardPrefab, parent, false);// Tạo một card nhỏ trong nồi dựa trên card đã chọn ở bên trái
+        var newUi = Instantiate(potCardPrefab, parent, false);// Táº¡o má»™t card nhá» trong ná»“i dá»±a trÃªn card Ä‘Ã£ chá»n á»Ÿ bÃªn trÃ¡i
         newUi.gameObject.SetActive(true);
 
-        RectTransform rt = newUi.GetComponent<RectTransform>();// Đảm bảo scale và position đúng
+        RectTransform rt = newUi.GetComponent<RectTransform>();// Äáº£m báº£o scale vÃ  position Ä‘Ãºng
         if (rt != null)
         {
             rt.localScale = Vector3.one;
@@ -252,7 +242,6 @@ public class CookingSelectionManager : MonoBehaviour
         UpdateCounts();
         ResetFlavor();
 
-        Debug.Log("Đã reset toàn bộ lựa chọn.");
     }
     public void ResetUIAfterCooking()
     {
@@ -274,7 +263,6 @@ public class CookingSelectionManager : MonoBehaviour
         RebuildPot();
         UpdateCounts();
         ResetFlavor();
-        Debug.Log("Đã reset toàn bộ lựa chọn sau khi nấu xong.");
     }
 
 

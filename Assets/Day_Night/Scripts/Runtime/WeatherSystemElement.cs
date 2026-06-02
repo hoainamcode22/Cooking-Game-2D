@@ -1,26 +1,16 @@
-// Disabled: duplicate of HappyHarvest/Scripts/WeatherSystemElement.cs — use Day_Night.DayNightWeatherElement instead
-#if false
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+// Giữ namespace HappyHarvest để tương thích với prefabs cũ (GUID giữ nguyên)
 namespace HappyHarvest
 {
     /// <summary>
-    /// Add this to any object that should be enabled only for a specific set of weathers (e.g. VFX of dripping water
-    /// should have this with Weather type set to Rain and Thunder)
+    /// Legacy component - chỉ giữ để tương thích GUID với prefabs cũ (VFX_Cliffs).
+    /// Không còn phụ thuộc HappyHarvest.WeatherSystem nữa.
     /// </summary>
     [DefaultExecutionOrder(999)]
-    [ExecuteInEditMode]
     public class WeatherSystemElement : MonoBehaviour
     {
-        public WeatherSystem.WeatherType WeatherType;
-
-        private void OnDestroy()
-        {
-            WeatherSystem.UnregisterElement(this);
-        }
+        [Tooltip("0=Sun, 1=Rain, 2=Thunder (legacy, không dùng nữa)")]
+        public int WeatherType;
     }
 }
-#endif // false

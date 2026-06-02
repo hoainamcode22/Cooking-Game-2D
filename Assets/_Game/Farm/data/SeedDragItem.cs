@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
@@ -7,7 +7,7 @@ using TMPro;
 public class SeedDragItem : MonoBehaviour,
     IPointerDownHandler, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    // ── Drag mode ─────────────────────────────────────────────────────────────
+    // â”€â”€ Drag mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private enum DragMode { None, Scroll, Plant }
 
     [Header("Seed Data")]
@@ -26,7 +26,7 @@ public class SeedDragItem : MonoBehaviour,
     private DragMode dragMode             = DragMode.None;
     private bool     scrollBeginForwarded = false;
 
-    // Threshold pixel để phân biệt scroll ngang vs kéo trồng
+    // Threshold pixel Ä‘á»ƒ phÃ¢n biá»‡t scroll ngang vs kÃ©o trá»“ng
 private const float kDragThreshold = 25f;
 
     public string   CropId   => cropData != null ? cropData.cropId   : string.Empty;
@@ -35,7 +35,7 @@ private const float kDragThreshold = 25f;
         ? (!string.IsNullOrEmpty(cropData.displayName) ? cropData.displayName : cropData.cropId)
         : "NULL";
 
-    // ── Vòng đời Unity ───────────────────────────────────────────────────────
+    // â”€â”€ VÃ²ng Ä‘á»i Unity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void Awake()
     {
@@ -43,18 +43,18 @@ private const float kDragThreshold = 25f;
         canvasGroup      = GetComponent<CanvasGroup>();
         parentScrollRect = GetComponentInParent<ScrollRect>();
 
-        // Override iconImage về child "Icon_item" — tránh prefab gán sai Image ẩn
+        // Override iconImage vá» child "Icon_item" â€” trÃ¡nh prefab gÃ¡n sai Image áº©n
         Transform iconChild = transform.Find("Icon_item");
         if (iconChild != null)
         {
             if (iconChild.TryGetComponent(out Image img))
                 iconImage = img;
             else
-                Debug.LogWarning($"[SeedDragItem] '{name}': Icon_item không có Image component!");
+                Debug.LogWarning($"[SeedDragItem] '{name}': Icon_item khÃ´ng cÃ³ Image component!");
         }
         else
         {
-            Debug.LogWarning($"[SeedDragItem] '{name}': Không tìm thấy child 'Icon_item' — giữ iconImage từ inspector.");
+            Debug.LogWarning($"[SeedDragItem] '{name}': KhÃ´ng tÃ¬m tháº¥y child 'Icon_item' â€” giá»¯ iconImage tá»« inspector.");
         }
     }
 
@@ -72,7 +72,7 @@ private const float kDragThreshold = 25f;
             WarehouseManager.Instance.OnWarehouseChanged -= RefreshStockDisplay;
     }
 
-    // ── Public API ────────────────────────────────────────────────────────────
+    // â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public void SetData(CropData data)
     {
@@ -82,7 +82,7 @@ private const float kDragThreshold = 25f;
         {
             iconImage.sprite = data.icon;
             if (data.icon == null)
-                Debug.LogWarning($"[SeedDragItem] CropData '{data.cropId}' thiếu icon sprite.");
+                Debug.LogWarning($"[SeedDragItem] CropData '{data.cropId}' thiáº¿u icon sprite.");
         }
 
         if (txtName != null)
@@ -90,10 +90,9 @@ private const float kDragThreshold = 25f;
 
         RefreshStockDisplay();
 
-        Debug.Log($"[SeedDragItem] SetData OK: {data.cropId} | seedItemId={data.seedItemId}");
     }
 
-    // ── Stock Display ─────────────────────────────────────────────────────────
+    // â”€â”€ Stock Display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public void RefreshStockDisplay()
     {
@@ -107,12 +106,12 @@ private const float kDragThreshold = 25f;
             txtSoLuong.color = stock > 0 ? Color.white : Color.red;
         }
 
-        // Không thay alpha trong lúc đang kéo Plant (alpha đang = 0 để ẩn item)
+        // KhÃ´ng thay alpha trong lÃºc Ä‘ang kÃ©o Plant (alpha Ä‘ang = 0 Ä‘á»ƒ áº©n item)
         if (dragMode != DragMode.Plant && canvasGroup != null)
             canvasGroup.alpha = stock > 0 ? 1f : 0.4f;
     }
 
-    // ── Drag Handlers ─────────────────────────────────────────────────────────
+    // â”€â”€ Drag Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public void OnPointerDown(PointerEventData eventData)
     {
@@ -120,23 +119,20 @@ private const float kDragThreshold = 25f;
         dragMode              = DragMode.None;
         scrollBeginForwarded  = false;
         string cropName = CropLogName;
-        Debug.Log($"[SeedDragItem] PointerDown {name} crop={cropName} pos={eventData.position}");
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
-        // Chưa xác định hướng kéo — chờ OnDrag tính delta
+        // ChÆ°a xÃ¡c Ä‘á»‹nh hÆ°á»›ng kÃ©o â€” chá» OnDrag tÃ­nh delta
         dragMode             = DragMode.None;
         scrollBeginForwarded = false;
         string cropName = CropLogName;
-        Debug.Log($"[SeedDragItem] BeginDrag ENTER {name} crop={cropName}");
     }
 
     public void OnDrag(PointerEventData eventData)
     {
         Vector2 delta = eventData.position - pointerDownPos;
         string cropName = CropLogName;
-        Debug.Log($"[SeedDragItem] Drag {name} crop={cropName} delta={delta} mode={dragMode}");
 
         if (dragMode == DragMode.None)
         {
@@ -145,9 +141,8 @@ private const float kDragThreshold = 25f;
 
             if (ax >= kDragThreshold && ax > ay)
             {
-                // Kéo NGANG → scroll danh sách
+                // KÃ©o NGANG â†’ scroll danh sÃ¡ch
                 dragMode = DragMode.Scroll;
-                Debug.Log($"[SeedDragItem] BeginScrollMode {name} crop={cropName}");
 
                 if (parentScrollRect != null && !scrollBeginForwarded)
                 {
@@ -157,9 +152,8 @@ private const float kDragThreshold = 25f;
             }
             else if (ay >= kDragThreshold && ay > ax)
             {
-                // Kéo DỌC/XUỐNG → bắt đầu trồng
+                // KÃ©o Dá»ŒC/XUá»NG â†’ báº¯t Ä‘áº§u trá»“ng
                 dragMode = DragMode.Plant;
-                Debug.Log($"[SeedDragItem] Mode=Plant {name} crop={cropName}");
                 BeginPlantMode();
             }
         }
@@ -168,13 +162,12 @@ private const float kDragThreshold = 25f;
         {
             parentScrollRect.OnDrag(eventData);
         }
-        // DragMode.Plant: PlantDragController.Update() tự sweep theo PointerWorldPosition
+        // DragMode.Plant: PlantDragController.Update() tá»± sweep theo PointerWorldPosition
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
         string cropName = CropLogName;
-        Debug.Log($"[SeedDragItem] EndDrag {name} crop={cropName} mode={dragMode}");
 
         switch (dragMode)
         {
@@ -183,10 +176,10 @@ private const float kDragThreshold = 25f;
                 break;
 
             case DragMode.Plant:
-                // Mở khóa map pan khi thả seed
+                // Má»Ÿ khÃ³a map pan khi tháº£ seed
                 FarmInputLock.IsDraggingSeed = false;
 
-                // Restore alpha/raycast trước khi EndPlantDrag (tránh RefreshStockDisplay nhầm)
+                // Restore alpha/raycast trÆ°á»›c khi EndPlantDrag (trÃ¡nh RefreshStockDisplay nháº§m)
                 if (canvasGroup != null)
                 {
                     canvasGroup.blocksRaycasts = true;
@@ -196,7 +189,7 @@ private const float kDragThreshold = 25f;
                 break;
 
             case DragMode.None:
-                // Drag không đủ threshold (tap hoặc micro-drag) — không làm gì
+                // Drag khÃ´ng Ä‘á»§ threshold (tap hoáº·c micro-drag) â€” khÃ´ng lÃ m gÃ¬
                 break;
         }
 
@@ -204,12 +197,11 @@ private const float kDragThreshold = 25f;
         scrollBeginForwarded = false;
     }
 
-    // ── Plant mode start ──────────────────────────────────────────────────────
+    // â”€â”€ Plant mode start â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void BeginPlantMode()
     {
         string cropName = CropLogName;
-        Debug.Log($"[SeedDragItem] BeginPlantMode {name} crop={cropName}");
 
         if (cropData == null)
         {
@@ -221,14 +213,13 @@ private const float kDragThreshold = 25f;
         if (GetCurrentStock() <= 0)
         {
             dragMode = DragMode.None;
-            Debug.Log($"[SeedDragItem] Không đủ hạt giống '{cropData.displayName}' để trồng. crop={cropName}");
             return;
         }
 
-        // Khóa map pan khi bắt đầu kéo seed — Scroll mode KHÔNG set cờ này
+        // KhÃ³a map pan khi báº¯t Ä‘áº§u kÃ©o seed â€” Scroll mode KHÃ”NG set cá» nÃ y
         FarmInputLock.IsDraggingSeed = true;
 
-        // Ẩn item gốc — popup vẫn active để OnDrag/OnEndDrag tiếp tục nhận event
+        // áº¨n item gá»‘c â€” popup váº«n active Ä‘á»ƒ OnDrag/OnEndDrag tiáº¿p tá»¥c nháº­n event
         if (canvasGroup != null)
         {
             canvasGroup.alpha          = 0f;
@@ -238,7 +229,7 @@ private const float kDragThreshold = 25f;
         PlantDragController.Instance?.StartPlantDrag(cropData);
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private int GetCurrentStock()
     {

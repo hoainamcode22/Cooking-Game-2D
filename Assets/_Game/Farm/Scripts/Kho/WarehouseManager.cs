@@ -59,7 +59,6 @@ public class WarehouseManager : MonoBehaviour
             items.Add(new WarehouseItemEntry(itemId, displayName, icon, amount));
         }
 
-        Debug.Log($"[Warehouse] AddItem -> {itemId} +{amount}");
         OnWarehouseChanged?.Invoke();
     }
 
@@ -108,7 +107,6 @@ public class WarehouseManager : MonoBehaviour
         found.amount -= amount;
         if (found.amount <= 0) items.Remove(found);
 
-        Debug.Log($"[Warehouse] RemoveItem -> {itemId} -{amount}");
         OnWarehouseChanged?.Invoke();
         return true;
     }

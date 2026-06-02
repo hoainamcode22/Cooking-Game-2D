@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -6,15 +6,15 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// Mini panel hiện cạnh chuồng khi click vào. Chạy trên World Space Canvas.
-/// State machine: Idle → Processing → Ready → Idle.
-/// Save/load tiến độ qua PlayerPrefs (timestamp thực tế).
+/// Mini panel hiá»‡n cáº¡nh chuá»“ng khi click vÃ o. Cháº¡y trÃªn World Space Canvas.
+/// State machine: Idle â†’ Processing â†’ Ready â†’ Idle.
+/// Save/load tiáº¿n Ä‘á»™ qua PlayerPrefs (timestamp thá»±c táº¿).
 /// </summary>
 public class PenMiniPanelUI : MonoBehaviour
 {
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //  Enums & Constants
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public enum PenState { Idle, Processing, Ready }
 
@@ -22,52 +22,52 @@ public class PenMiniPanelUI : MonoBehaviour
     private const string PrefKeyFood      = "PenFood_";
     private const string PrefKeyStartTime = "PenStartTime_";
 
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //  Inspector
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    [Header("Config — gán ScriptableObject đúng loại chuồng")]
+    [Header("Config â€” gÃ¡n ScriptableObject Ä‘Ãºng loáº¡i chuá»“ng")]
     [SerializeField] private PenMiniPanelConfig config;
 
     [Header("Panel Root (World Space Canvas / Container)")]
     [SerializeField] private GameObject panelRoot;
 
-    [Header("Slot thức ăn 1")]
+    [Header("Slot thá»©c Äƒn 1")]
     [SerializeField] private GameObject slot1Root;
     [SerializeField] private Image      slot1Icon;
     [SerializeField] private TMP_Text   slot1Amount;
 
-    [Header("Slot thức ăn 2")]
+    [Header("Slot thá»©c Äƒn 2")]
     [SerializeField] private GameObject slot2Root;
     [SerializeField] private Image      slot2Icon;
     [SerializeField] private TMP_Text   slot2Amount;
 
-    [Header("Slot rổ thu hoạch")]
+    [Header("Slot rá»• thu hoáº¡ch")]
     [SerializeField] private GameObject basketRoot;
     [SerializeField] private Image      basketIcon;
-    [SerializeField] private GameObject basketActiveGlow; // bật/tắt tùy Ready state
+    [SerializeField] private GameObject basketActiveGlow; // báº­t/táº¯t tÃ¹y Ready state
 
-    [Header("Overlay tiến trình (hiện khi Processing)")]
+    [Header("Overlay tiáº¿n trÃ¬nh (hiá»‡n khi Processing)")]
     [SerializeField] private GameObject progressOverlay;
-    [SerializeField] private Image      progressFill;     // fillAmount 0→1
+    [SerializeField] private Image      progressFill;     // fillAmount 0â†’1
     [SerializeField] private TMP_Text   progressLabel;    // "1:23"
 
-    // panelCollider đã bỏ — dùng RectTransform của root canvas để check click-outside
+    // panelCollider Ä‘Ã£ bá» â€” dÃ¹ng RectTransform cá»§a root canvas Ä‘á»ƒ check click-outside
 
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //  Runtime State
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public PenState CurrentState { get; private set; } = PenState.Idle;
 
     private float   processStartUnix;
     private string  activeFoodId;
     private Coroutine timerCoroutine;
-    private int     _openedAtFrame = -10; // frame-guard: tránh đóng ngay frame vừa mở
+    private int     _openedAtFrame = -10; // frame-guard: trÃ¡nh Ä‘Ã³ng ngay frame vá»«a má»Ÿ
 
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //  Unity Lifecycle
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void Awake()
     {
@@ -91,10 +91,10 @@ public class PenMiniPanelUI : MonoBehaviour
     {
         if (!IsPanelOpen()) return;
 
-        // Frame-guard: bỏ qua frame panel vừa mở, tránh đóng ngay lập tức
+        // Frame-guard: bá» qua frame panel vá»«a má»Ÿ, trÃ¡nh Ä‘Ã³ng ngay láº­p tá»©c
         if (Time.frameCount <= _openedAtFrame) return;
 
-        // Click outside → đóng panel (dùng New Input System, fallback sang legacy)
+        // Click outside â†’ Ä‘Ã³ng panel (dÃ¹ng New Input System, fallback sang legacy)
         bool clicked = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
                     || Input.GetMouseButtonDown(0);
 
@@ -117,9 +117,9 @@ public class PenMiniPanelUI : MonoBehaviour
             ClosePanel();
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Public API — gọi từ PenClickDetector và PenDropTarget
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  Public API â€” gá»i tá»« PenClickDetector vÃ  PenDropTarget
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public bool IsPanelOpen() => panelRoot != null && panelRoot.activeSelf;
 
@@ -127,10 +127,10 @@ public class PenMiniPanelUI : MonoBehaviour
     {
         if (config == null)
         {
-            Debug.LogError("[PenMiniPanelUI] config chưa gán!");
+            Debug.LogError("[PenMiniPanelUI] config chÆ°a gÃ¡n!");
             return;
         }
-        _openedAtFrame = Time.frameCount; // đánh dấu frame mở để Update bỏ qua
+        _openedAtFrame = Time.frameCount; // Ä‘Ã¡nh dáº¥u frame má»Ÿ Ä‘á»ƒ Update bá» qua
         panelRoot.SetActive(true);
         RefreshUI();
     }
@@ -142,32 +142,29 @@ public class PenMiniPanelUI : MonoBehaviour
     }
 
     /// <summary>
-    /// PenDropTarget gọi khi user thả thức ăn vào collider chuồng.
-    /// Trả về true nếu feed thành công.
+    /// PenDropTarget gá»i khi user tháº£ thá»©c Äƒn vÃ o collider chuá»“ng.
+    /// Tráº£ vá» true náº¿u feed thÃ nh cÃ´ng.
     /// </summary>
     public bool TryFeed(string foodItemId)
     {
         if (CurrentState != PenState.Idle)
         {
-            Debug.Log($"[PenMiniPanelUI] TryFeed bị từ chối — state={CurrentState}");
             return false;
         }
 
         if (foodItemId != config.food1ItemId && foodItemId != config.food2ItemId)
         {
-            Debug.Log($"[PenMiniPanelUI] foodItemId '{foodItemId}' không khớp config");
             return false;
         }
 
         if (!FarmInventoryManager.Instance.HasItem(foodItemId, 1))
         {
-            Debug.Log($"[PenMiniPanelUI] Không đủ {foodItemId} trong kho");
             return false;
         }
 
         FarmInventoryManager.Instance.RemoveItem(foodItemId, 1);
         activeFoodId = foodItemId;
-        processStartUnix = (float)GetUnixNow(); // ghi timestamp trước khi save
+        processStartUnix = (float)GetUnixNow(); // ghi timestamp trÆ°á»›c khi save
         SetState(PenState.Processing);
         SaveState();
 
@@ -177,21 +174,20 @@ public class PenMiniPanelUI : MonoBehaviour
     }
 
     /// <summary>
-    /// PenDropTarget gọi khi user thả rổ vào collider chuồng.
-    /// Trả về true nếu thu hoạch thành công.
+    /// PenDropTarget gá»i khi user tháº£ rá»• vÃ o collider chuá»“ng.
+    /// Tráº£ vá» true náº¿u thu hoáº¡ch thÃ nh cÃ´ng.
     /// </summary>
     public bool TryHarvest()
     {
         if (CurrentState != PenState.Ready)
         {
-            Debug.Log($"[PenMiniPanelUI] TryHarvest bị từ chối — state={CurrentState}");
             return false;
         }
 
-        // Spawn sản phẩm chính
+        // Spawn sáº£n pháº©m chÃ­nh
         SpawnHarvestFX(config.productItemId, config.productIcon);
 
-        // Sản phẩm phụ (chỉ gà: egg)
+        // Sáº£n pháº©m phá»¥ (chá»‰ gÃ : egg)
         if (!string.IsNullOrEmpty(config.secondProductItemId))
             SpawnHarvestFX(config.secondProductItemId, config.secondProductIcon);
 
@@ -199,7 +195,7 @@ public class PenMiniPanelUI : MonoBehaviour
         if (HarvestFeedbackSpawner.Instance != null)
             HarvestFeedbackSpawner.Instance.SpawnExpFly(transform.position, config.expReward);
 
-        // Cộng vào FarmInventoryManager — Kho popup đọc từ đây, rồi user chuyển sang KitchenTransferManager
+        // Cá»™ng vÃ o FarmInventoryManager â€” Kho popup Ä‘á»c tá»« Ä‘Ã¢y, rá»“i user chuyá»ƒn sang KitchenTransferManager
         FarmInventoryManager.Instance.AddItem(config.productItemId, 1);
         if (!string.IsNullOrEmpty(config.secondProductItemId))
             FarmInventoryManager.Instance.AddItem(config.secondProductItemId, 1);
@@ -211,9 +207,9 @@ public class PenMiniPanelUI : MonoBehaviour
         return true;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Internal — State & Timer
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  Internal â€” State & Timer
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void SetState(PenState newState)
     {
@@ -239,7 +235,6 @@ public class PenMiniPanelUI : MonoBehaviour
         timerCoroutine = null;
         SetState(PenState.Ready);
         SaveState();
-        Debug.Log($"[PenMiniPanelUI] {config.penId} — Process xong, chuyển Ready");
     }
 
     private void StopTimerIfRunning()
@@ -259,9 +254,9 @@ public class PenMiniPanelUI : MonoBehaviour
         return Mathf.Max(0f, config.feedDurationSeconds - elapsed);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Internal — UI Refresh
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  Internal â€” UI Refresh
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void RefreshUI()
     {
@@ -271,21 +266,21 @@ public class PenMiniPanelUI : MonoBehaviour
         bool isProcessing = CurrentState == PenState.Processing;
         bool isReady      = CurrentState == PenState.Ready;
 
-        // Thức ăn slot 1
+        // Thá»©c Äƒn slot 1
         if (slot1Root != null)
         {
             slot1Root.SetActive(isIdle);
             if (isIdle) RefreshFoodSlot(slot1Icon, slot1Amount, config.food1ItemId, config.food1Icon);
         }
 
-        // Thức ăn slot 2
+        // Thá»©c Äƒn slot 2
         if (slot2Root != null)
         {
             slot2Root.SetActive(isIdle);
             if (isIdle) RefreshFoodSlot(slot2Icon, slot2Amount, config.food2ItemId, config.food2Icon);
         }
 
-        // Rổ thu hoạch — sprite giữ nguyên từ prefab (không ghi đè bằng config)
+        // Rá»• thu hoáº¡ch â€” sprite giá»¯ nguyÃªn tá»« prefab (khÃ´ng ghi Ä‘Ã¨ báº±ng config)
         if (basketRoot != null)
         {
             basketRoot.SetActive(true);
@@ -321,9 +316,9 @@ public class PenMiniPanelUI : MonoBehaviour
             amtText.text = "x" + amount;
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Internal — Harvest FX
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  Internal â€” Harvest FX
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void SpawnHarvestFX(string itemId, Sprite icon)
     {
@@ -336,9 +331,9 @@ public class PenMiniPanelUI : MonoBehaviour
         HarvestFeedbackSpawner.Instance.SpawnHarvestFly(icon, transform.position, 1);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Internal — Click-outside Detection
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  Internal â€” Click-outside Detection
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private bool IsPointerOverPanel(Vector2 screenPos)
     {
@@ -348,9 +343,9 @@ public class PenMiniPanelUI : MonoBehaviour
         return RectTransformUtility.RectangleContainsScreenPoint(rt, screenPos, cam);
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Internal — Save / Load
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  Internal â€” Save / Load
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void SaveState()
     {
@@ -380,12 +375,11 @@ public class PenMiniPanelUI : MonoBehaviour
             System.Globalization.CultureInfo.InvariantCulture, out double startUnix);
         processStartUnix = (float)startUnix;
 
-        Debug.Log($"[PenMiniPanelUI] Loaded {id}: state={CurrentState} food='{activeFoodId}'");
     }
 
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //  Helpers
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private static double GetUnixNow() =>
         (System.DateTime.UtcNow - new System.DateTime(1970, 1, 1, 0, 0, 0, System.DateTimeKind.Utc))
@@ -398,9 +392,9 @@ public class PenMiniPanelUI : MonoBehaviour
         return $"{m}:{s:D2}";
     }
 
-    // ─────────────────────────────────────────────────────────────
-    //  Gọi khi bắt đầu nuôi để ghi timestamp
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    //  Gá»i khi báº¯t Ä‘áº§u nuÃ´i Ä‘á»ƒ ghi timestamp
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private void OnFeedStarted()
     {
         processStartUnix = (float)GetUnixNow();

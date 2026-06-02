@@ -154,7 +154,6 @@ public class WarehousePopupUI : MonoBehaviour
             slots.Add(slotUI);
         }
 
-        Debug.Log($"[WarehousePopupUI] Đã tạo {slots.Count} slot.");
     }
 
     private void BuildCropLookup()
@@ -201,7 +200,6 @@ public class WarehousePopupUI : MonoBehaviour
         }
 
         RefreshUI();
-        Debug.Log("[WarehousePopupUI] OpenPopup");
     }
 
     public void ClosePopup()
@@ -211,7 +209,6 @@ public class WarehousePopupUI : MonoBehaviour
         if (popupRoot != null)
             popupRoot.SetActive(false);
 
-        Debug.Log("[WarehousePopupUI] ClosePopup");
     }
 
     public void RefreshUI()
@@ -303,7 +300,6 @@ public class WarehousePopupUI : MonoBehaviour
         //Code Nguyên Thêm: Nếu đây là món ăn đã nấu thì không cho chọn để gửi sang bếp nữa, tránh nhầm lẫn
         if (IsCookedDish(itemId))
         {
-            Debug.Log("[WarehousePopupUI] Đây là món ăn đã nấu, không thể gửi lại sang Cooking: " + itemId);
             return;
         }
         //End code Nguyên thêm
@@ -318,7 +314,6 @@ public class WarehousePopupUI : MonoBehaviour
 
         if (alreadyPending >= totalInInventory)
         {
-            Debug.Log("[WarehousePopupUI] Không còn vật phẩm để chọn thêm: " + itemId);
             return;
         }
 
@@ -392,11 +387,9 @@ public class WarehousePopupUI : MonoBehaviour
             return;
         }
 
-        Debug.Log("[WarehousePopupUI] Số item đang chọn: " + pendingSelection.Count);//Nguyên thêm
 
         foreach (var kv in pendingSelection)
         {
-            Debug.Log($"[WarehousePopupUI] Chuẩn bị gửi: {kv.Key} x{kv.Value}");//Nguyên thêm
             if (kv.Value <= 0)
                 continue;
 
@@ -423,7 +416,6 @@ public class WarehousePopupUI : MonoBehaviour
         lastSelectedItemId = null;
 
         RefreshUI();
-        Debug.Log("[WarehousePopupUI] Đã đưa vật phẩm sang bếp.");
     }
 
     private CropData GetCropByItemId(string itemId)

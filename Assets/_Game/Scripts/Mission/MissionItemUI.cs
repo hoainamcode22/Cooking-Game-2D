@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
@@ -13,7 +13,7 @@ public class MissionItemUI : MonoBehaviour
     [SerializeField] private Image      img_Reward;
     [SerializeField] private TMP_Text   txt_RewardAmount;
 
-    [Header("Trạng thái nút")]
+    [Header("Tráº¡ng thÃ¡i nÃºt")]
     [SerializeField] private GameObject obj_BtnNormal;
     [SerializeField] private GameObject obj_BtnClaimed;
 
@@ -45,13 +45,13 @@ public class MissionItemUI : MonoBehaviour
         if (txt_Progress != null)
             txt_Progress.text = $"{Mathf.Min(currentAmount, _data.targetAmount)}/{_data.targetAmount}";
 
-        // Cập nhật trạng thái nút dựa trên tiến độ nhiệm vụ
+        // Cáº­p nháº­t tráº¡ng thÃ¡i nÃºt dá»±a trÃªn tiáº¿n Ä‘á»™ nhiá»‡m vá»¥
         bool canClaim = currentAmount >= _data.targetAmount;
         btn_Claim.interactable = canClaim;
 
-        // Đổi text nút: "Tiến hành" khi chưa đủ, "Nhận" khi đã hoàn thành
+        // Äá»•i text nÃºt: "Tiáº¿n hÃ nh" khi chÆ°a Ä‘á»§, "Nháº­n" khi Ä‘Ã£ hoÃ n thÃ nh
         if (txt_BtnClaim != null)
-            txt_BtnClaim.text = canClaim ? "Nhận" : "Tiến hành";
+            txt_BtnClaim.text = canClaim ? "Nháº­n" : "Tiáº¿n hÃ nh";
     }
 
     private void OnClaimClicked()
@@ -66,7 +66,6 @@ public class MissionItemUI : MonoBehaviour
         _claimed = true;
         SetClaimedState(true);
 
-        Debug.Log($"[Mission] Đã nhận thưởng: {_data.missionName} — +{_data.rewardAmount} {_data.rewardType}");
     }
 
     private void SetClaimedState(bool claimed)

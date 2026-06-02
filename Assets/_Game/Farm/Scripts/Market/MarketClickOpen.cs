@@ -98,12 +98,10 @@ public class MarketClickOpen : MonoBehaviour
         Vector2 world2 = new Vector2(world3.x, world3.y);
 
         bool hit = targetCollider.OverlapPoint(world2);
-        Debug.Log("[MarketClickOpen] World = " + world2 + " | Hit = " + hit);
 
         if (!hit)
 return;
 
-        Debug.Log("[MarketClickOpen] OPEN POPUP");
         if (marketManager != null)
             marketManager.OpenMarketPopup();
         else

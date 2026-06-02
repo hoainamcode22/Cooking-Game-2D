@@ -1,14 +1,14 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
 /// <summary>
-/// State Machine quản lý Tutorial Level 1-5 (Hay Day style).
+/// State Machine quáº£n lÃ½ Tutorial Level 1-5 (Hay Day style).
 ///
-/// Luồng khởi động:
-///   Start() → PlayIntroAnimation() [mây bay + camera zoom] → StartTutorial() → Step 1…
+/// Luá»“ng khá»Ÿi Ä‘á»™ng:
+///   Start() â†’ PlayIntroAnimation() [mÃ¢y bay + camera zoom] â†’ StartTutorial() â†’ Step 1â€¦
 ///
 /// API cho game systems:
 ///   TutorialManager.Instance.NextStep()
@@ -59,13 +59,13 @@ public class TutorialManager : MonoBehaviour
     }
 
     // =========================================================================
-    // Inspector — Steps
+    // Inspector â€” Steps
     // =========================================================================
-    [Header("Steps (tự động gán bởi TutorialSystemGenerator)")]
+    [Header("Steps (tá»± Ä‘á»™ng gÃ¡n bá»Ÿi TutorialSystemGenerator)")]
     [SerializeField] private List<TutorialStepData> _steps = new();
 
     // =========================================================================
-    // Inspector — Core UI
+    // Inspector â€” Core UI
     // =========================================================================
     [Header("Core UI")]
     [SerializeField] private UnmaskRaycastFilter _dimBackground;
@@ -76,31 +76,31 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private Animator            _handAnimator;
 
     // =========================================================================
-    // Inspector — Intro Animation
+    // Inspector â€” Intro Animation
     // =========================================================================
-    [Header("Intro — Đám Mây")]
+    [Header("Intro â€” ÄÃ¡m MÃ¢y")]
     [SerializeField] private GameObject    _cloudPanel;
     [SerializeField] private RectTransform _cloudLeft;
     [SerializeField] private RectTransform _cloudRight;
 
-    [Tooltip("Số đơn vị canvas mây bay ra ngoài màn hình (>= nửa chiều rộng canvas)")]
+    [Tooltip("Sá»‘ Ä‘Æ¡n vá»‹ canvas mÃ¢y bay ra ngoÃ i mÃ n hÃ¬nh (>= ná»­a chiá»u rá»™ng canvas)")]
     [SerializeField] private float _cloudSlideDistance = 620f;
 
-    [Tooltip("Thời gian animation mây bay (giây)")]
+    [Tooltip("Thá»i gian animation mÃ¢y bay (giÃ¢y)")]
     [SerializeField] private float _introDuration = 1.5f;
 
     [SerializeField] private AnimationCurve _introEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    [Header("Intro — Camera Zoom")]
+    [Header("Intro â€” Camera Zoom")]
     [SerializeField] private TutorialCameraZoom _cameraZoom;
 
     // =========================================================================
-    // Inspector — Settings
+    // Inspector â€” Settings
     // =========================================================================
     [Header("Settings")]
     [SerializeField] private bool _clickToSkipTyping = true;
 
-    [Tooltip("Bỏ qua intro animation khi debug trong Editor")]
+    [Tooltip("Bá» qua intro animation khi debug trong Editor")]
     [SerializeField] private bool _skipIntroInEditor = false;
 
     // =========================================================================
@@ -114,7 +114,7 @@ public class TutorialManager : MonoBehaviour
     private Vector2 _cloudLeftOrigin;
     private Vector2 _cloudRightOrigin;
 
-    // CanvasGroup — tắt blocksRaycasts khi ẩn để UI tàng hình không nuốt click game
+    // CanvasGroup â€” táº¯t blocksRaycasts khi áº©n Ä‘á»ƒ UI tÃ ng hÃ¬nh khÃ´ng nuá»‘t click game
     private CanvasGroup _cloudPanelCG;
     private CanvasGroup _tutorialCanvasCG;
 
@@ -132,11 +132,11 @@ public class TutorialManager : MonoBehaviour
         if (_cloudLeft  != null) _cloudLeftOrigin  = _cloudLeft.anchoredPosition;
         if (_cloudRight != null) _cloudRightOrigin = _cloudRight.anchoredPosition;
 
-        // Cache CanvasGroup để điều khiển blocksRaycasts khi ẩn/hiện
+        // Cache CanvasGroup Ä‘á»ƒ Ä‘iá»u khiá»ƒn blocksRaycasts khi áº©n/hiá»‡n
         if (_cloudPanel != null)
             _cloudPanelCG = _cloudPanel.GetComponent<CanvasGroup>();
 
-        // Tutorial_Canvas là cha của Dim_Background — leo lên tìm CanvasGroup
+        // Tutorial_Canvas lÃ  cha cá»§a Dim_Background â€” leo lÃªn tÃ¬m CanvasGroup
         if (_dimBackground != null)
             _tutorialCanvasCG = _dimBackground.GetComponentInParent<Canvas>()
                                               ?.GetComponent<CanvasGroup>();
@@ -146,7 +146,7 @@ public class TutorialManager : MonoBehaviour
 
         if (_steps.Count == 0)
         {
-            Debug.LogWarning("[TutorialManager] Không có step nào. Hãy gán TutorialStepData vào _steps.");
+            Debug.LogWarning("[TutorialManager] KhÃ´ng cÃ³ step nÃ o. HÃ£y gÃ¡n TutorialStepData vÃ o _steps.");
             return;
         }
 
@@ -162,9 +162,9 @@ public class TutorialManager : MonoBehaviour
     // =========================================================================
 
     /// <summary>
-    /// (1) Lerp mây bay ra hai bên trong _introDuration.
+    /// (1) Lerp mÃ¢y bay ra hai bÃªn trong _introDuration.
     /// (2) Camera zoom in song song.
-    /// (3) Sau khi xong → StartTutorial() → Step 1.
+    /// (3) Sau khi xong â†’ StartTutorial() â†’ Step 1.
     /// </summary>
     private IEnumerator PlayIntroAnimation()
     {
@@ -198,7 +198,7 @@ public class TutorialManager : MonoBehaviour
     // Public API
     // =========================================================================
 
-    /// <summary>Bắt đầu tutorial từ Step 0 (gọi sau intro animation).</summary>
+    /// <summary>Báº¯t Ä‘áº§u tutorial tá»« Step 0 (gá»i sau intro animation).</summary>
     public void StartTutorial()
     {
         _state        = TutorialState.Idle;
@@ -208,10 +208,10 @@ public class TutorialManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Chuyển bước tiếp theo.
-    /// • Đang typewriter → skip text.
-    /// • Đang WaitForClick → advance.
-    /// Gọi từ Button "Tiếp Theo" trên NPC_Dialog_Popup (auto-wired bởi Generator).
+    /// Chuyá»ƒn bÆ°á»›c tiáº¿p theo.
+    /// â€¢ Äang typewriter â†’ skip text.
+    /// â€¢ Äang WaitForClick â†’ advance.
+    /// Gá»i tá»« Button "Tiáº¿p Theo" trÃªn NPC_Dialog_Popup (auto-wired bá»Ÿi Generator).
     /// </summary>
     public void NextStep()
     {
@@ -227,28 +227,28 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
-    /// <summary>Game systems gọi để báo player hoàn thành hành động.</summary>
+    /// <summary>Game systems gá»i Ä‘á»ƒ bÃ¡o player hoÃ n thÃ nh hÃ nh Ä‘á»™ng.</summary>
     public void NotifyAction(TutorialWaitAction action)
     {
         if (_state != TutorialState.WaitingAction) return;
         if (_pendingWait == action) AdvanceToNextStep();
     }
 
-    // Convenience wrappers — từng game system gọi đúng loại
+    // Convenience wrappers â€” tá»«ng game system gá»i Ä‘Ãºng loáº¡i
     public void NotifyPlant()       => NotifyAction(TutorialWaitAction.WaitForPlant);
     public void NotifyHarvest()     => NotifyAction(TutorialWaitAction.WaitForHarvest);
     public void NotifyCook()        => NotifyAction(TutorialWaitAction.WaitForCook);
 
-    /// <summary>Gọi khi player giao hàng thành công cho Nhà Dân (Level 2).</summary>
+    /// <summary>Gá»i khi player giao hÃ ng thÃ nh cÃ´ng cho NhÃ  DÃ¢n (Level 2).</summary>
     public void NotifyDelivery()    => NotifyAction(TutorialWaitAction.WaitForDelivery);
 
-    /// <summary>Gọi khi player mua vật phẩm trong Shop (Level 2 — chuồng gà, gà).</summary>
+    /// <summary>Gá»i khi player mua váº­t pháº©m trong Shop (Level 2 â€” chuá»“ng gÃ , gÃ ).</summary>
     public void NotifyBuyItem()     => NotifyAction(TutorialWaitAction.WaitForBuyItem);
 
-    /// <summary>Gọi khi player mua gia súc (gà, bò…).</summary>
+    /// <summary>Gá»i khi player mua gia sÃºc (gÃ , bÃ²â€¦).</summary>
     public void NotifyBuyAnimal()   => NotifyAction(TutorialWaitAction.WaitForBuyAnimal);
 
-    /// <summary>Gọi khi player giao đủ hàng cho Tàu Hoả (Level 4).</summary>
+    /// <summary>Gá»i khi player giao Ä‘á»§ hÃ ng cho TÃ u Hoáº£ (Level 4).</summary>
     public void NotifyTrainLoad()   => NotifyAction(TutorialWaitAction.WaitForTrainLoad);
 
     // =========================================================================
@@ -298,7 +298,7 @@ public class TutorialManager : MonoBehaviour
         _state = TutorialState.TypingText;
         yield return StartTyping(step.npcText, step.typingSpeed);
 
-        // 6. Chờ action
+        // 6. Chá» action
         _pendingWait = step.waitAction;
 
         if (step.waitAction == TutorialWaitAction.Auto)
@@ -371,7 +371,7 @@ public class TutorialManager : MonoBehaviour
         SetTutorialUIVisible(false);
         _dimBackground.ClearHole();
 
-        // Tắt hoàn toàn Tutorial_Canvas — không để Canvas tàng hình chặn raycast game UI
+        // Táº¯t hoÃ n toÃ n Tutorial_Canvas â€” khÃ´ng Ä‘á»ƒ Canvas tÃ ng hÃ¬nh cháº·n raycast game UI
         if (_tutorialCanvasCG != null)
         {
             _tutorialCanvasCG.alpha          = 0f;
@@ -379,7 +379,6 @@ public class TutorialManager : MonoBehaviour
             _tutorialCanvasCG.blocksRaycasts = false;
         }
 
-        Debug.Log("[TutorialManager] Tutorial hoàn thành! Bảng Xếp Hạng Vàng bắt đầu mở.");
     }
 
     // =========================================================================
@@ -398,7 +397,7 @@ public class TutorialManager : MonoBehaviour
 
         if (_cloudPanelCG != null)
         {
-            // CanvasGroup: ẩn hoàn toàn kể cả raycast — không cần SetActive(false)
+            // CanvasGroup: áº©n hoÃ n toÃ n ká»ƒ cáº£ raycast â€” khÃ´ng cáº§n SetActive(false)
             _cloudPanelCG.alpha          = visible ? 1f : 0f;
             _cloudPanelCG.interactable   = visible;
             _cloudPanelCG.blocksRaycasts = visible;

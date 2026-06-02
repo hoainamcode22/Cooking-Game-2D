@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class DeliveryCharacterMover : MonoBehaviour
@@ -35,7 +35,6 @@ public class DeliveryCharacterMover : MonoBehaviour
 
     public void MoveFromCookingToWarehouse()
     {
-        Debug.Log("[DeliveryCharacterMover] Bắt đầu gọi delivery.");
 
         if (deliveryRoot != null)
         {
@@ -44,7 +43,7 @@ public class DeliveryCharacterMover : MonoBehaviour
 
         if (character == null || cookingPoint == null || warehousePoint == null)
         {
-            Debug.LogWarning("[DeliveryCharacterMover] Chưa kéo đủ character / cookingPoint / warehousePoint.");
+            Debug.LogWarning("[DeliveryCharacterMover] ChÆ°a kÃ©o Ä‘á»§ character / cookingPoint / warehousePoint.");
             return;
         }
 
@@ -58,7 +57,6 @@ public class DeliveryCharacterMover : MonoBehaviour
 
     private IEnumerator MoveRoutine()
     {
-        Debug.Log("[DeliveryCharacterMover] Coroutine chạy rồi.");
 
         character.gameObject.SetActive(true);
 
@@ -90,6 +88,5 @@ public class DeliveryCharacterMover : MonoBehaviour
 
         moveRoutine = null;
 
-        Debug.Log("[DeliveryCharacterMover] Di chuyển xong.");
     }
 }

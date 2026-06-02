@@ -413,8 +413,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlotCropVisual
   cropPoints:
   - {fileID: 8276700118490703515}
-  sortingLayerName: Crop
-  sortingOrder: 20
+  sortingLayerName: CongTrinh
+  sortingOrder: 560
   enableReadySway: 1
   swayAngle: 4.5
   swaySpeed: 1.4

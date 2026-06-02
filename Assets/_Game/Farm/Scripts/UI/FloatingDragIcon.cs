@@ -1,13 +1,13 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Self-contained floating drag icon — tạo Screen Space Overlay canvas riêng,
-/// không phụ thuộc canvas cha hay Inspector. Gọi Show/Hide từ PlantDragController.
+/// Self-contained floating drag icon â€” táº¡o Screen Space Overlay canvas riÃªng,
+/// khÃ´ng phá»¥ thuá»™c canvas cha hay Inspector. Gá»i Show/Hide tá»« PlantDragController.
 /// </summary>
 public class FloatingDragIcon : MonoBehaviour
 {
-    // Inspector field giữ nguyên để không break serialization cũ
+    // Inspector field giá»¯ nguyÃªn Ä‘á»ƒ khÃ´ng break serialization cÅ©
     [SerializeField] private Image iconImage;
 
     private Canvas        ghostCanvas;
@@ -16,13 +16,13 @@ public class FloatingDragIcon : MonoBehaviour
 
     public void Show(Sprite icon)
     {
-        Hide(); // dọn cũ nếu có
+        Hide(); // dá»n cÅ© náº¿u cÃ³
 
-        // Tạo overlay canvas riêng — luôn đúng bất kể canvas cha là gì
+        // Táº¡o overlay canvas riÃªng â€” luÃ´n Ä‘Ãºng báº¥t ká»ƒ canvas cha lÃ  gÃ¬
         var go = new GameObject("_FloatingDragCanvas");
         ghostCanvas               = go.AddComponent<Canvas>();
         ghostCanvas.renderMode    = RenderMode.ScreenSpaceOverlay;
-        ghostCanvas.sortingOrder  = 9999; // luôn hiện trên cùng mọi canvas
+        ghostCanvas.sortingOrder  = 9999; // luÃ´n hiá»‡n trÃªn cÃ¹ng má»i canvas
 
         var imgGo    = new GameObject("Icon");
         imgGo.transform.SetParent(go.transform, false);
@@ -43,14 +43,13 @@ public class FloatingDragIcon : MonoBehaviour
         cg.blocksRaycasts     = false;
 
         isFollowing = true;
-        gameObject.SetActive(true); // bật Update() để ghost di chuyển theo cursor
-        Debug.Log($"[FloatingDragIcon] Show icon={(icon != null ? icon.name : "NULL")}");
+        gameObject.SetActive(true); // báº­t Update() Ä‘á»ƒ ghost di chuyá»ƒn theo cursor
     }
 
     public void Hide()
     {
         isFollowing = false;
-        gameObject.SetActive(false); // tắt Update()
+        gameObject.SetActive(false); // táº¯t Update()
 
         if (ghostCanvas != null)
         {
@@ -59,7 +58,6 @@ public class FloatingDragIcon : MonoBehaviour
             ghostRect   = null;
         }
 
-        Debug.Log("[FloatingDragIcon] Hide");
     }
 
     private void Update()

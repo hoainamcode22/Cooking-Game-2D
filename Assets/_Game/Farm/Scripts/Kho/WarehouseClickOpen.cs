@@ -19,7 +19,6 @@ public class WarehouseClickOpen : MonoBehaviour
         if (targetCollider == null)
             targetCollider = GetComponent<Collider2D>();
 
-        Debug.Log("[WarehouseClickOpen] Awake");
     }
 
     private void Update()
@@ -91,12 +90,10 @@ public class WarehouseClickOpen : MonoBehaviour
         Vector2 world2 = new Vector2(world3.x, world3.y);
 
         bool hit = targetCollider.OverlapPoint(world2);
-        Debug.Log("[WarehouseClickOpen] World = " + world2 + " | Hit = " + hit);
 
         if (!hit)
             return;
 
-        Debug.Log("[WarehouseClickOpen] OPEN POPUP");
         warehousePopupUI.OpenPopup();
     }
 

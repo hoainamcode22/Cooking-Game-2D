@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -21,7 +21,7 @@ public class SeedPopupController : MonoBehaviour
 
     private bool popupInputLockHeld;
 
-    // ── Vòng đời Unity ───────────────────────────────────────────────────────
+    // â”€â”€ VÃ²ng Ä‘á»i Unity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void OnEnable()
     {
@@ -38,7 +38,7 @@ public class SeedPopupController : MonoBehaviour
 
     private void Update()
     {
-        // Re-assert mỗi frame trong khi popup đang mở, phòng code bên ngoài
+        // Re-assert má»—i frame trong khi popup Ä‘ang má»Ÿ, phÃ²ng code bÃªn ngoÃ i
         // (VD: PlantDragController.CleanupPlantDragState) clear flag sai.
         FarmInputLock.IsSeedPopupOpen = true;
 
@@ -47,7 +47,6 @@ public class SeedPopupController : MonoBehaviour
 
         bool onPopup = IsPointerOnThisPopup();
 
-        Debug.Log($"[SeedPopup] ClickOutside check | onPopup={onPopup} | topUI={InputBridge.GetTopUINameUnderPointer()}");
 
         if (onPopup) return;
 
@@ -77,33 +76,32 @@ public class SeedPopupController : MonoBehaviour
         return false;
     }
 
-    // ── Spawn items ───────────────────────────────────────────────────────────
+    // â”€â”€ Spawn items â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public void SpawnAllItems()
     {
         if (content == null)
         {
-            Debug.LogError("[SeedPopup] content chưa gán!");
+            Debug.LogError("[SeedPopup] content chÆ°a gÃ¡n!");
             return;
         }
 
-        // DestroyImmediate: xóa item cũ đồng bộ trước khi spawn mới.
+        // DestroyImmediate: xÃ³a item cÅ© Ä‘á»“ng bá»™ trÆ°á»›c khi spawn má»›i.
         for (int i = content.childCount - 1; i >= 0; i--)
             DestroyImmediate(content.GetChild(i).gameObject);
 
         if (seedItemPrefab == null)
         {
-            Debug.LogError("[SeedPopup] seedItemPrefab chưa gán!");
+            Debug.LogError("[SeedPopup] seedItemPrefab chÆ°a gÃ¡n!");
             return;
         }
 
         if (cropDataList == null || cropDataList.Length == 0)
         {
-            Debug.LogWarning("[SeedPopup] cropDataList rỗng — gán CropData trong inspector SeedPopupController.");
+            Debug.LogWarning("[SeedPopup] cropDataList rá»—ng â€” gÃ¡n CropData trong inspector SeedPopupController.");
             return;
         }
 
-        Debug.Log($"[SeedPopup] Spawn {cropDataList.Length} items...");
 
         int count = 0;
         foreach (var data in cropDataList)
@@ -112,7 +110,7 @@ public class SeedPopupController : MonoBehaviour
 
             GameObject go = Instantiate(seedItemPrefab, content);
 
-            // Inject LayoutElement để HorizontalLayoutGroup không set item width = 0.
+            // Inject LayoutElement Ä‘á»ƒ HorizontalLayoutGroup khÃ´ng set item width = 0.
             LayoutElement le = go.GetComponent<LayoutElement>();
             if (le == null) le = go.AddComponent<LayoutElement>();
             le.preferredWidth  = itemPreferredWidth;
@@ -123,15 +121,13 @@ public class SeedPopupController : MonoBehaviour
             {
                 item.SetData(data);
                 count++;
-                Debug.Log($"[SeedPopup] #{count} crop={data.cropId} | icon={(data.icon != null ? data.icon.name : "NULL")}");
             }
             else
             {
-                Debug.LogError($"[SeedPopup] Prefab thiếu SeedDragItem!");
+                Debug.LogError($"[SeedPopup] Prefab thiáº¿u SeedDragItem!");
             }
         }
 
-        Debug.Log($"[SeedPopup] Xong: {count}/{cropDataList.Length} items.");
     }
 
     private void AcquirePopupInputBlock()

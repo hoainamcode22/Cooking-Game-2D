@@ -1,89 +1,89 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 /// <summary>
-/// State machine trung tâm — quản lý logic 2 tàu:
+/// State machine trung tÃ¢m â€” quáº£n lÃ½ logic 2 tÃ u:
 ///
-///   TrainVisualRoot  (Reward Train  / tàu CŨ)
-///     → xuất hiện từ hầm, chạy về ga, trả reward cho user
+///   TrainVisualRoot  (Reward Train  / tÃ u CÅ¨)
+///     â†’ xuáº¥t hiá»‡n tá»« háº§m, cháº¡y vá» ga, tráº£ reward cho user
 ///
-///   TrainVisualRoot2 (Shipping Train / tàu MỚI)
-///     → đứng ga chờ user nạp hàng, rồi chạy vào hầm và ẩn
+///   TrainVisualRoot2 (Shipping Train / tÃ u Má»šI)
+///     â†’ Ä‘á»©ng ga chá» user náº¡p hÃ ng, rá»“i cháº¡y vÃ o háº§m vÃ  áº©n
 ///
 /// 6-state machine:
-///   WaitingForLoad       → tàu MỚI snap tại ga, user nạp hàng
-///   ShipDeparting        → tàu MỚI: ga → hầm → (teleport về pointHiddenShip) → ẩn
-///   Processing           → 2 tàu ẩn, timer chạy
-///   RewardArriving       → tàu CŨ snap tại hầm, chạy về ga
-///   RewardReadyToCollect → tàu CŨ tại ga, user thu reward
-///   RewardDeparting      → tàu CŨ: ga → pointHiddenReward → (teleport về hầm) → ẩn
-///                          → tàu MỚI snap thẳng về ga → WaitingForLoad
+///   WaitingForLoad       â†’ tÃ u Má»šI snap táº¡i ga, user náº¡p hÃ ng
+///   ShipDeparting        â†’ tÃ u Má»šI: ga â†’ háº§m â†’ (teleport vá» pointHiddenShip) â†’ áº©n
+///   Processing           â†’ 2 tÃ u áº©n, timer cháº¡y
+///   RewardArriving       â†’ tÃ u CÅ¨ snap táº¡i háº§m, cháº¡y vá» ga
+///   RewardReadyToCollect â†’ tÃ u CÅ¨ táº¡i ga, user thu reward
+///   RewardDeparting      â†’ tÃ u CÅ¨: ga â†’ pointHiddenReward â†’ (teleport vá» háº§m) â†’ áº©n
+///                          â†’ tÃ u Má»šI snap tháº³ng vá» ga â†’ WaitingForLoad
 /// </summary>
 public class TrainManager : MonoBehaviour
 {
     public static TrainManager Instance { get; private set; }
 
-    // ─── Inspector ───────────────────────────────────────────────
+    // â”€â”€â”€ Inspector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     [Header("Data (ScriptableObjects)")]
     [SerializeField] private TrainCargoData  cargoData;
     [SerializeField] private TrainRewardData rewardData;
 
-    [Header("Shipping Train — tàu MỚI (TrainVisualRoot2) nhận hàng đi")]
-    [Tooltip("TrainPathFollower gắn trên ShippingTrain GO (quản lý TrainVisualRoot2)")]
+    [Header("Shipping Train â€” tÃ u Má»šI (TrainVisualRoot2) nháº­n hÃ ng Ä‘i")]
+    [Tooltip("TrainPathFollower gáº¯n trÃªn ShippingTrain GO (quáº£n lÃ½ TrainVisualRoot2)")]
     [SerializeField] private TrainPathFollower shippingPathFollower;
 
-    [Header("Reward Train — tàu CŨ (TrainVisualRoot) mang reward về")]
-    [Tooltip("TrainPathFollower gắn trên RewardTrain GO (quản lý TrainVisualRoot)")]
+    [Header("Reward Train â€” tÃ u CÅ¨ (TrainVisualRoot) mang reward vá»")]
+    [Tooltip("TrainPathFollower gáº¯n trÃªn RewardTrain GO (quáº£n lÃ½ TrainVisualRoot)")]
     [SerializeField] private TrainPathFollower rewardPathFollower;
 
-    [Header("Waypoints — Shipping Train (tàu MỚI)")]
-    [Tooltip("Off-screen trái — nơi tàu MỚI spawn vào đầu chuyến (trừ chuyến 1)")]
+    [Header("Waypoints â€” Shipping Train (tÃ u Má»šI)")]
+    [Tooltip("Off-screen trÃ¡i â€” nÆ¡i tÃ u Má»šI spawn vÃ o Ä‘áº§u chuyáº¿n (trá»« chuyáº¿n 1)")]
     [SerializeField] private Transform pointHiddenShip;
-    [Tooltip("Trên ga — nơi tàu MỚI đứng chờ user nạp hàng")]
+    [Tooltip("TrÃªn ga â€” nÆ¡i tÃ u Má»šI Ä‘á»©ng chá» user náº¡p hÃ ng")]
     [SerializeField] private Transform pointStationShip;
-    [Tooltip("Cửa hầm — nơi tàu MỚI chạy tới rồi ẩn")]
+    [Tooltip("Cá»­a háº§m â€” nÆ¡i tÃ u Má»šI cháº¡y tá»›i rá»“i áº©n")]
     [SerializeField] private Transform pointTunnelShip;
 
-    [Header("Waypoints — Reward Train (tàu CŨ)")]
-    [Tooltip("Cửa hầm — nơi tàu CŨ xuất hiện sau khi timer xong")]
+    [Header("Waypoints â€” Reward Train (tÃ u CÅ¨)")]
+    [Tooltip("Cá»­a háº§m â€” nÆ¡i tÃ u CÅ¨ xuáº¥t hiá»‡n sau khi timer xong")]
     [SerializeField] private Transform pointTunnelReward;
-    [Tooltip("Trên ga — nơi tàu CŨ dừng để user thu reward")]
+    [Tooltip("TrÃªn ga â€” nÆ¡i tÃ u CÅ¨ dá»«ng Ä‘á»ƒ user thu reward")]
     [SerializeField] private Transform pointStationReward;
-    [Tooltip("Off-screen phải — nơi tàu CŨ chạy ra rồi ẩn sau khi user thu xong")]
+    [Tooltip("Off-screen pháº£i â€” nÆ¡i tÃ u CÅ¨ cháº¡y ra rá»“i áº©n sau khi user thu xong")]
     [SerializeField] private Transform pointHiddenReward;
 
-    [Header("Wagon Slots — Shipping Train (4 toa tàu MỚI)")]
-    [Tooltip("4 TrainWagonSlot gắn trên wagon của TrainVisualRoot2, theo thứ tự 0..3")]
+    [Header("Wagon Slots â€” Shipping Train (4 toa tÃ u Má»šI)")]
+    [Tooltip("4 TrainWagonSlot gáº¯n trÃªn wagon cá»§a TrainVisualRoot2, theo thá»© tá»± 0..3")]
     [SerializeField] private TrainWagonSlot[] shippingWagonSlots;
 
-    [Header("Wagon Slots — Reward Train (4 toa tàu CŨ)")]
-    [Tooltip("4 TrainWagonSlot gắn trên wagon của TrainVisualRoot, theo thứ tự 0..3")]
+    [Header("Wagon Slots â€” Reward Train (4 toa tÃ u CÅ¨)")]
+    [Tooltip("4 TrainWagonSlot gáº¯n trÃªn wagon cá»§a TrainVisualRoot, theo thá»© tá»± 0..3")]
     [SerializeField] private TrainWagonSlot[] rewardWagonSlots;
 
     [Header("Popups")]
-    [Tooltip("Popup nạp hàng — Popup_item_Train")]
+    [Tooltip("Popup náº¡p hÃ ng â€” Popup_item_Train")]
     [SerializeField] private TrainLoadPopupUI    loadPopup;
-    [Tooltip("Popup trạng thái / timer — Popup_train")]
+    [Tooltip("Popup tráº¡ng thÃ¡i / timer â€” Popup_train")]
     [SerializeField] private TrainProcessPopupUI processPopup;
 
-    [Header("FX — Reward Collection")]
-    [Tooltip("Prefab HarvestFlyItemFX — bay từ toa tàu CŨ về kho")]
+    [Header("FX â€” Reward Collection")]
+    [Tooltip("Prefab HarvestFlyItemFX â€” bay tá»« toa tÃ u CÅ¨ vá» kho")]
     [SerializeField] private GameObject itemFlyFXPrefab;
-    [Tooltip("Prefab ExpFlyToAvatarFX — bay từ toa tàu CŨ về avatar")]
+    [Tooltip("Prefab ExpFlyToAvatarFX â€” bay tá»« toa tÃ u CÅ¨ vá» avatar")]
     [SerializeField] private GameObject expFlyFXPrefab;
-    [Tooltip("Vị trí icon kho trên HUD (đích của item FX)")]
+    [Tooltip("Vá»‹ trÃ­ icon kho trÃªn HUD (Ä‘Ã­ch cá»§a item FX)")]
     [SerializeField] private Transform  warehouseTargetTransform;
-    [Tooltip("Vị trí icon avatar/EXP trên HUD (đích của exp FX)")]
+    [Tooltip("Vá»‹ trÃ­ icon avatar/EXP trÃªn HUD (Ä‘Ã­ch cá»§a exp FX)")]
     [SerializeField] private Transform  expTargetTransform;
 
     [Header("Config")]
-    [Tooltip("EXP thưởng mỗi lần thu 1 slot reward")]
+    [Tooltip("EXP thÆ°á»Ÿng má»—i láº§n thu 1 slot reward")]
     [SerializeField] private int   expPerReward        = 10;
-    [Tooltip("Thời gian xử lý trong hầm (giây). KHÔNG tính thời gian tàu di chuyển.")]
+    [Tooltip("Thá»i gian xá»­ lÃ½ trong háº§m (giÃ¢y). KHÃ”NG tÃ­nh thá»i gian tÃ u di chuyá»ƒn.")]
     [SerializeField] private float tripDurationSeconds = 4f;
 
-    // ─── Runtime ─────────────────────────────────────────────────
+    // â”€â”€â”€ Runtime â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public TrainState          State    { get; private set; }
     public TrainWagonSlotData[] SlotData { get; private set; }
@@ -93,10 +93,10 @@ public class TrainManager : MonoBehaviour
     private float             _tripEndTime;
     private bool              _timerActive    = false;
 
-    /// Thời gian còn lại của Processing timer (giây).
+    /// Thá»i gian cÃ²n láº¡i cá»§a Processing timer (giÃ¢y).
     public float TripRemainingTime => Mathf.Max(0f, _tripEndTime - Time.time);
 
-    // ─────────────────────────────────────────────────────────────
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     void Awake()
     {
@@ -106,37 +106,37 @@ public class TrainManager : MonoBehaviour
 
     void Start()
     {
-        // Auto-find popup kể cả khi inactive
+        // Auto-find popup ká»ƒ cáº£ khi inactive
         if (loadPopup == null)
             loadPopup = FindFirstObjectByType<TrainLoadPopupUI>(FindObjectsInactive.Include);
         if (processPopup == null)
             processPopup = FindFirstObjectByType<TrainProcessPopupUI>(FindObjectsInactive.Include);
 
         if (loadPopup == null)
-            Debug.LogError("[Train] Không tìm thấy TrainLoadPopupUI! Kéo Popup_Item_Train vào Inspector.");
+            Debug.LogError("[Train] KhÃ´ng tÃ¬m tháº¥y TrainLoadPopupUI! KÃ©o Popup_Item_Train vÃ o Inspector.");
 
         bool hasError = false;
-        if (shippingPathFollower == null) { Debug.LogError("[Train] shippingPathFollower chưa gán!"); hasError = true; }
-        if (rewardPathFollower   == null) { Debug.LogError("[Train] rewardPathFollower chưa gán!");   hasError = true; }
+        if (shippingPathFollower == null) { Debug.LogError("[Train] shippingPathFollower chÆ°a gÃ¡n!"); hasError = true; }
+        if (rewardPathFollower   == null) { Debug.LogError("[Train] rewardPathFollower chÆ°a gÃ¡n!");   hasError = true; }
         if (shippingPathFollower != null && shippingPathFollower == rewardPathFollower)
-        { Debug.LogError("[Train] BUG: shippingPathFollower và rewardPathFollower trỏ cùng 1 object!"); hasError = true; }
-        if (pointHiddenShip    == null) { Debug.LogError("[Train] pointHiddenShip chưa gán!");    hasError = true; }
-        if (pointStationShip   == null) { Debug.LogError("[Train] pointStationShip chưa gán!");   hasError = true; }
-        if (pointTunnelShip    == null) { Debug.LogError("[Train] pointTunnelShip chưa gán!");    hasError = true; }
-        if (pointTunnelReward  == null) { Debug.LogError("[Train] pointTunnelReward chưa gán!");  hasError = true; }
-        if (pointStationReward == null) { Debug.LogError("[Train] pointStationReward chưa gán!"); hasError = true; }
-        if (pointHiddenReward  == null) { Debug.LogError("[Train] pointHiddenReward chưa gán!");  hasError = true; }
+        { Debug.LogError("[Train] BUG: shippingPathFollower vÃ  rewardPathFollower trá» cÃ¹ng 1 object!"); hasError = true; }
+        if (pointHiddenShip    == null) { Debug.LogError("[Train] pointHiddenShip chÆ°a gÃ¡n!");    hasError = true; }
+        if (pointStationShip   == null) { Debug.LogError("[Train] pointStationShip chÆ°a gÃ¡n!");   hasError = true; }
+        if (pointTunnelShip    == null) { Debug.LogError("[Train] pointTunnelShip chÆ°a gÃ¡n!");    hasError = true; }
+        if (pointTunnelReward  == null) { Debug.LogError("[Train] pointTunnelReward chÆ°a gÃ¡n!");  hasError = true; }
+        if (pointStationReward == null) { Debug.LogError("[Train] pointStationReward chÆ°a gÃ¡n!"); hasError = true; }
+        if (pointHiddenReward  == null) { Debug.LogError("[Train] pointHiddenReward chÆ°a gÃ¡n!");  hasError = true; }
 
         if (hasError)
         {
-            Debug.LogError("[Train] Khởi tạo bị huỷ vì thiếu references. Kiểm tra Inspector rồi nhấn 'Reset Train' (chuột phải TrainManager).");
+            Debug.LogError("[Train] Khá»Ÿi táº¡o bá»‹ huá»· vÃ¬ thiáº¿u references. Kiá»ƒm tra Inspector rá»“i nháº¥n 'Reset Train' (chuá»™t pháº£i TrainManager).");
             return;
         }
 
         StartCoroutine(InitAfterFrame());
     }
 
-    [ContextMenu("Reset Train / Hiện lại tàu")]
+    [ContextMenu("Reset Train / Hiá»‡n láº¡i tÃ u")]
     public void ResetTrain()
     {
         StopAllCoroutines();
@@ -150,17 +150,16 @@ public class TrainManager : MonoBehaviour
             ChangeState(TrainState.WaitingForLoad);
             RefreshAllShippingSlots();
         });
-        Debug.Log("[Train] Reset hoàn tất — tàu đang chạy ra ga.");
     }
 
     private IEnumerator InitAfterFrame()
     {
         yield return null;
 
-        // Đảm bảo tàu MỚI hiện trước khi HideTrain() làm bất cứ điều gì
+        // Äáº£m báº£o tÃ u Má»šI hiá»‡n trÆ°á»›c khi HideTrain() lÃ m báº¥t cá»© Ä‘iá»u gÃ¬
         shippingPathFollower.ShowTrain();
 
-        // Tàu CŨ ẩn hoàn toàn lúc đầu
+        // TÃ u CÅ¨ áº©n hoÃ n toÃ n lÃºc Ä‘áº§u
         rewardPathFollower.HideTrain();
         HideAllRewardSlots();
 
@@ -175,7 +174,7 @@ public class TrainManager : MonoBehaviour
 
     void Update()
     {
-        // Timer tạm tắt — flow chạy liền không đợi
+        // Timer táº¡m táº¯t â€” flow cháº¡y liá»n khÃ´ng Ä‘á»£i
         // if (!_timerActive) return;
         // processPopup?.UpdateTimer(TripRemainingTime);
         // if (TripRemainingTime <= 0f)
@@ -185,10 +184,10 @@ public class TrainManager : MonoBehaviour
         // }
     }
 
-    // ─── Public API (gọi từ TrainWagonSlot & TrainLoadPopupUI) ───
+    // â”€â”€â”€ Public API (gá»i tá»« TrainWagonSlot & TrainLoadPopupUI) â”€â”€â”€
 
-    /// Điểm vào duy nhất từ TrainWagonSlot.OnMouseDown().
-    /// Routing theo state — TrainManager tự quyết định làm gì với click đó.
+    /// Äiá»ƒm vÃ o duy nháº¥t tá»« TrainWagonSlot.OnMouseDown().
+    /// Routing theo state â€” TrainManager tá»± quyáº¿t Ä‘á»‹nh lÃ m gÃ¬ vá»›i click Ä‘Ã³.
     public void OnWagonSlotClicked(TrainWagonSlot slot)
     {
         int idx = slot.slotIndex;
@@ -210,12 +209,11 @@ public class TrainManager : MonoBehaviour
                 break;
 
             default:
-                Debug.Log($"[Train] Slot {idx} click bỏ qua — state={State}");
                 break;
         }
     }
 
-    /// Người chơi click toa của tàu MỚI → mở popup nạp hàng.
+    /// NgÆ°á»i chÆ¡i click toa cá»§a tÃ u Má»šI â†’ má»Ÿ popup náº¡p hÃ ng.
     public void OnCargoSlotClicked(int slotIndex)
     {
         if (State != TrainState.WaitingForLoad) return;
@@ -227,15 +225,14 @@ public class TrainManager : MonoBehaviour
 
         if (loadPopup == null)
         {
-            Debug.LogWarning("[Train] loadPopup == null — kéo Popup_item_Train vào Inspector.");
+            Debug.LogWarning("[Train] loadPopup == null â€” kÃ©o Popup_item_Train vÃ o Inspector.");
             return;
         }
 
-        Debug.Log($"[Train] Mở popup toa {slotIndex} — {slot.displayName} {slot.currentAmount}/{slot.requiredAmount}");
         loadPopup.OpenForCargoSlot(slotIndex, slot);
     }
 
-    /// Nút "Thêm" trong popup nạp hàng — trừ 1 item kho, tăng currentAmount.
+    /// NÃºt "ThÃªm" trong popup náº¡p hÃ ng â€” trá»« 1 item kho, tÄƒng currentAmount.
     public void TryAddOneItemToSlot(int slotIndex)
     {
         if (State != TrainState.WaitingForLoad) return;
@@ -247,14 +244,13 @@ public class TrainManager : MonoBehaviour
 
         if (!TrainInventoryAdapter.HasItem(slot.itemId, 1))
         {
-            Debug.LogWarning($"[Train] Không đủ '{slot.displayName}' trong kho.");
-            return; // Popup vẫn mở để user tự đóng
+            Debug.LogWarning($"[Train] KhÃ´ng Ä‘á»§ '{slot.displayName}' trong kho.");
+            return; // Popup váº«n má»Ÿ Ä‘á»ƒ user tá»± Ä‘Ã³ng
         }
 
         if (!TrainInventoryAdapter.RemoveItem(slot.itemId, 1)) return;
 
         slot.currentAmount++;
-        Debug.Log($"[Train] Nạp toa {slotIndex}: {slot.displayName} {slot.currentAmount}/{slot.requiredAmount}");
 
         loadPopup?.RefreshPopup();
         RefreshShippingSlotUI(slotIndex);
@@ -266,7 +262,7 @@ public class TrainManager : MonoBehaviour
         }
     }
 
-    /// Người chơi click toa của tàu CŨ để thu reward.
+    /// NgÆ°á»i chÆ¡i click toa cá»§a tÃ u CÅ¨ Ä‘á»ƒ thu reward.
     public void CollectReward(int slotIndex)
     {
         if (State != TrainState.RewardReadyToCollect) return;
@@ -276,7 +272,7 @@ public class TrainManager : MonoBehaviour
         if (slot.mode != TrainWagonSlotMode.Reward) return;
         if (slot.isCollected)                       return;
 
-        // Đánh dấu trước — ngăn double-click trong lúc FX đang chạy
+        // ÄÃ¡nh dáº¥u trÆ°á»›c â€” ngÄƒn double-click trong lÃºc FX Ä‘ang cháº¡y
         slot.isCollected = true;
 
         TrainInventoryAdapter.AddItem(slot.itemId, slot.displayName, slot.icon, slot.rewardAmount);
@@ -284,7 +280,6 @@ public class TrainManager : MonoBehaviour
         if (PlayerProgressManager.Instance != null)
             PlayerProgressManager.Instance.AddExp(expPerReward);
 
-        Debug.Log($"[Train] Thu reward toa {slotIndex}: {slot.displayName} x{slot.rewardAmount} (+{expPerReward} EXP)");
 
         SpawnItemFlyFX(slotIndex, slot);
         SpawnExpFlyFX(slotIndex);
@@ -292,7 +287,7 @@ public class TrainManager : MonoBehaviour
         CheckAllCollected();
     }
 
-    // ─── Flow: WaitingForLoad → ShipDeparting ────────────────────
+    // â”€â”€â”€ Flow: WaitingForLoad â†’ ShipDeparting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void CheckAllLoaded()
     {
@@ -300,43 +295,41 @@ public class TrainManager : MonoBehaviour
         foreach (var s in SlotData)
             if (s.mode == TrainWagonSlotMode.CargoRequest && !s.IsCargoComplete) return;
 
-        Debug.Log("[Train] Tất cả toa đầy → tàu MỚI khởi hành vào hầm");
 
-        // Tắt collider (giữ visual cargo trên toa suốt hành trình)
+        // Táº¯t collider (giá»¯ visual cargo trÃªn toa suá»‘t hÃ nh trÃ¬nh)
         DisableAllShippingSlotInteractions();
         ChangeState(TrainState.ShipDeparting);
 
-        // Chặng 2: StationShip → TunnelShip
+        // Cháº·ng 2: StationShip â†’ TunnelShip
         SendShippingFromStationToTunnel();
     }
 
-    // ─── Flow: ShipDeparting → Processing ────────────────────────
+    // â”€â”€â”€ Flow: ShipDeparting â†’ Processing â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void OnShippingReachedTunnel()
     {
-        Debug.Log("[Train] Tàu MỚI tới hầm → ẩn, teleport về HiddenShip, tàu CŨ xuất hiện ngay");
 
-        // 1. Ẩn tàu shipping
+        // 1. áº¨n tÃ u shipping
         shippingPathFollower.HideTrain();
         HideAllShippingSlots();
 
-        // 2. Teleport shipping về vị trí ẩn (sẵn sàng chuyến sau)
+        // 2. Teleport shipping vá» vá»‹ trÃ­ áº©n (sáºµn sÃ ng chuyáº¿n sau)
         Vector3 hiddenPos   = pointHiddenShip.position;
         Vector3 stationPos  = pointStationShip.position;
         Vector3 backwardDir = (hiddenPos - stationPos).normalized;
         shippingPathFollower.SnapToPosition(hiddenPos, backwardDir);
 
-        // 3. Áp reward vào slot data
+        // 3. Ãp reward vÃ o slot data
         ApplyRewardsToSlots();
 
-        // 4. Tàu reward xuất hiện từ hầm chạy về ga NGAY LẬP TỨC
+        // 4. TÃ u reward xuáº¥t hiá»‡n tá»« háº§m cháº¡y vá» ga NGAY Láº¬P Tá»¨C
         ChangeState(TrainState.RewardArriving);
         RefreshAllRewardSlots();
         DisableAllRewardSlotInteractions();
         ShowRewardAtTunnelThenMoveToStation(OnRewardArrivedAtStation);
     }
 
-    // StartProcessingTimer() — tạm giữ để bật lại nếu cần timer sau này
+    // StartProcessingTimer() â€” táº¡m giá»¯ Ä‘á»ƒ báº­t láº¡i náº¿u cáº§n timer sau nÃ y
     // private void StartProcessingTimer()
     // {
     //     _tripEndTime = Time.time + tripDurationSeconds;
@@ -344,40 +337,38 @@ public class TrainManager : MonoBehaviour
     //     processPopup?.Show(tripDurationSeconds);
     // }
 
-    // ─── Flow: Processing → RewardArriving ───────────────────────
+    // â”€â”€â”€ Flow: Processing â†’ RewardArriving â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void OnProcessingTimerExpired()
     {
-        Debug.Log("[Train] Timer hết → tàu CŨ xuất hiện từ hầm");
 
         processPopup?.Hide();
 
-        // Áp reward vào SlotData trước khi tàu hiện
+        // Ãp reward vÃ o SlotData trÆ°á»›c khi tÃ u hiá»‡n
         ApplyRewardsToSlots();
 
         ChangeState(TrainState.RewardArriving);
 
-        // Refresh reward slots nhưng tắt collider (tàu đang di chuyển)
+        // Refresh reward slots nhÆ°ng táº¯t collider (tÃ u Ä‘ang di chuyá»ƒn)
         RefreshAllRewardSlots();
         DisableAllRewardSlotInteractions();
 
-        // Chặng 3: TunnelReward → StationReward
+        // Cháº·ng 3: TunnelReward â†’ StationReward
         ShowRewardAtTunnelThenMoveToStation(OnRewardArrivedAtStation);
     }
 
-    // ─── Flow: RewardArriving → RewardReadyToCollect ─────────────
+    // â”€â”€â”€ Flow: RewardArriving â†’ RewardReadyToCollect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void OnRewardArrivedAtStation()
     {
-        Debug.Log("[Train] Tàu CŨ về ga → RewardReadyToCollect");
 
         ChangeState(TrainState.RewardReadyToCollect);
 
-        // Refresh lại để bật collider cho user click
+        // Refresh láº¡i Ä‘á»ƒ báº­t collider cho user click
         RefreshAllRewardSlots();
     }
 
-    // ─── Flow: RewardReadyToCollect → RewardDeparting ────────────
+    // â”€â”€â”€ Flow: RewardReadyToCollect â†’ RewardDeparting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void CheckAllCollected()
     {
@@ -385,36 +376,34 @@ public class TrainManager : MonoBehaviour
         foreach (var s in SlotData)
             if (s.mode == TrainWagonSlotMode.Reward && !s.isCollected) return;
 
-        Debug.Log("[Train] Thu hết reward → tàu CŨ rời ga");
 
         HideAllRewardSlots();
         ChangeState(TrainState.RewardDeparting);
 
-        // Chặng 4: StationReward → HiddenReward
+        // Cháº·ng 4: StationReward â†’ HiddenReward
         SendRewardFromStationToHidden();
     }
 
-    // ─── Flow: RewardDeparting → WaitingForLoad ──────────────────
+    // â”€â”€â”€ Flow: RewardDeparting â†’ WaitingForLoad â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void OnRewardReachedHidden()
     {
-        Debug.Log("[Train] Tàu CŨ đã khuất → ẩn, teleport về TunnelReward, tàu MỚI xuất hiện");
 
-        // 1. Ẩn tàu reward
+        // 1. áº¨n tÃ u reward
         rewardPathFollower.HideTrain();
         HideAllRewardSlots();
 
-        // 2. Teleport reward về hầm (sẵn sàng chuyến sau)
+        // 2. Teleport reward vá» háº§m (sáºµn sÃ ng chuyáº¿n sau)
         Vector3 tunnelPos   = pointTunnelReward.position;
         Vector3 stationPos  = pointStationReward.position;
         Vector3 backwardDir = (tunnelPos - stationPos).normalized;
         rewardPathFollower.SnapToPosition(tunnelPos, backwardDir);
 
-        // 3. Tạo chuyến mới
+        // 3. Táº¡o chuyáº¿n má»›i
         _tripIndex++;
         GenerateNewTrip();
 
-        // 4. Tàu shipping xuất hiện từ HiddenShip chạy về ga NGAY
+        // 4. TÃ u shipping xuáº¥t hiá»‡n tá»« HiddenShip cháº¡y vá» ga NGAY
         ShowShippingAtHiddenThenMoveToStation(() =>
         {
             ChangeState(TrainState.WaitingForLoad);
@@ -422,10 +411,10 @@ public class TrainManager : MonoBehaviour
         });
     }
 
-    // ─── Point-role helpers (4 chặng gameplay) ───────────────────
+    // â”€â”€â”€ Point-role helpers (4 cháº·ng gameplay) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    /// Chặng 1 — Shipping spawn: HiddenShip → StationShip
-    /// Tàu MỚI xuất hiện kín đáo tại HiddenShip rồi chạy ra ga chờ nạp hàng.
+    /// Cháº·ng 1 â€” Shipping spawn: HiddenShip â†’ StationShip
+    /// TÃ u Má»šI xuáº¥t hiá»‡n kÃ­n Ä‘Ã¡o táº¡i HiddenShip rá»“i cháº¡y ra ga chá» náº¡p hÃ ng.
     private void ShowShippingAtHiddenThenMoveToStation(System.Action onArrived = null)
     {
         if (shippingPathFollower == null) return;
@@ -433,25 +422,25 @@ public class TrainManager : MonoBehaviour
         Vector3 hiddenPos  = pointHiddenShip  != null ? pointHiddenShip.position  : transform.position;
         Vector3 stationPos = pointStationShip != null ? pointStationShip.position : transform.position;
 
-        // backwardDir = ngược chiều chạy (HiddenShip → StationShip)
-        // wagon trải về phía sau HiddenShip, khuất tầm nhìn
+        // backwardDir = ngÆ°á»£c chiá»u cháº¡y (HiddenShip â†’ StationShip)
+        // wagon tráº£i vá» phÃ­a sau HiddenShip, khuáº¥t táº§m nhÃ¬n
         Vector3 backwardDir = (hiddenPos - stationPos).normalized;
 
-        // ShowTrain TRƯỚC để GO active, sau đó SnapToPosition + MoveTo mới hoạt động
+        // ShowTrain TRÆ¯á»šC Ä‘á»ƒ GO active, sau Ä‘Ã³ SnapToPosition + MoveTo má»›i hoáº¡t Ä‘á»™ng
         shippingPathFollower.ShowTrain();
         shippingPathFollower.SnapToPosition(hiddenPos, backwardDir);
         shippingPathFollower.MoveTo(stationPos, onArrived);
     }
 
-    /// Chặng 2 — Shipping depart: StationShip → TunnelShip
-    /// Tàu MỚI rời ga chạy vào hầm rồi ẩn.
+    /// Cháº·ng 2 â€” Shipping depart: StationShip â†’ TunnelShip
+    /// TÃ u Má»šI rá»i ga cháº¡y vÃ o háº§m rá»“i áº©n.
     private void SendShippingFromStationToTunnel()
     {
         shippingPathFollower.MoveTo(pointTunnelShip.position, OnShippingReachedTunnel);
     }
 
-    /// Chặng 3 — Reward arrive: TunnelReward → StationReward
-    /// Tàu CŨ xuất hiện tại cửa hầm rồi chạy về ga để user nhận reward.
+    /// Cháº·ng 3 â€” Reward arrive: TunnelReward â†’ StationReward
+    /// TÃ u CÅ¨ xuáº¥t hiá»‡n táº¡i cá»­a háº§m rá»“i cháº¡y vá» ga Ä‘á»ƒ user nháº­n reward.
     private void ShowRewardAtTunnelThenMoveToStation(System.Action onArrived = null)
     {
         if (rewardPathFollower == null) return;
@@ -459,26 +448,26 @@ public class TrainManager : MonoBehaviour
         Vector3 tunnelPos  = pointTunnelReward  != null ? pointTunnelReward.position  : transform.position;
         Vector3 stationPos = pointStationReward != null ? pointStationReward.position : transform.position;
 
-        // backwardDir = ngược chiều chạy (TunnelReward → StationReward)
+        // backwardDir = ngÆ°á»£c chiá»u cháº¡y (TunnelReward â†’ StationReward)
         Vector3 backwardDir = (tunnelPos - stationPos).normalized;
 
-        // ShowTrain TRƯỚC để GO active, sau đó SnapToPosition + MoveTo mới hoạt động
+        // ShowTrain TRÆ¯á»šC Ä‘á»ƒ GO active, sau Ä‘Ã³ SnapToPosition + MoveTo má»›i hoáº¡t Ä‘á»™ng
         rewardPathFollower.ShowTrain();
         rewardPathFollower.SnapToPosition(tunnelPos, backwardDir);
         rewardPathFollower.MoveTo(stationPos, onArrived);
     }
 
-    /// Chặng 4 — Reward leave: StationReward → HiddenReward
-    /// Tàu CŨ rời ga chạy ra điểm khuất rồi ẩn.
+    /// Cháº·ng 4 â€” Reward leave: StationReward â†’ HiddenReward
+    /// TÃ u CÅ¨ rá»i ga cháº¡y ra Ä‘iá»ƒm khuáº¥t rá»“i áº©n.
     private void SendRewardFromStationToHidden()
     {
         rewardPathFollower.MoveTo(pointHiddenReward.position, OnRewardReachedHidden);
     }
 
-    // ─── Trip generation ─────────────────────────────────────────
+    // â”€â”€â”€ Trip generation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    /// Tạo SlotData và _pendingRewards từ preset.
-    /// Chỉ setup data, không đổi state, không refresh UI.
+    /// Táº¡o SlotData vÃ  _pendingRewards tá»« preset.
+    /// Chá»‰ setup data, khÃ´ng Ä‘á»•i state, khÃ´ng refresh UI.
     private void GenerateNewTrip()
     {
         var cargoPre  = GetCargoPreset(_tripIndex);
@@ -514,7 +503,7 @@ public class TrainManager : MonoBehaviour
         }
     }
 
-    /// Chuyển SlotData từ CargoRequest → Reward dùng _pendingRewards.
+    /// Chuyá»ƒn SlotData tá»« CargoRequest â†’ Reward dÃ¹ng _pendingRewards.
     private void ApplyRewardsToSlots()
     {
         if (SlotData == null || _pendingRewards == null) return;
@@ -533,20 +522,19 @@ public class TrainManager : MonoBehaviour
         }
     }
 
-    // ─── State ───────────────────────────────────────────────────
+    // â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void ChangeState(TrainState newState)
     {
         State = newState;
-        Debug.Log($"[Train] ── State: {newState} ──");
 
-        // Ẩn process popup mọi state ngoại trừ Processing
-        // (Processing tự show trong StartProcessing)
+        // áº¨n process popup má»i state ngoáº¡i trá»« Processing
+        // (Processing tá»± show trong StartProcessing)
         if (newState != TrainState.Processing)
             processPopup?.Hide();
     }
 
-    // ─── UI helpers — Shipping slots ─────────────────────────────
+    // â”€â”€â”€ UI helpers â€” Shipping slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void RefreshAllShippingSlots()
     {
@@ -578,7 +566,7 @@ public class TrainManager : MonoBehaviour
         foreach (var s in shippingWagonSlots) s?.DisableInteraction();
     }
 
-    // ─── UI helpers — Reward slots ───────────────────────────────
+    // â”€â”€â”€ UI helpers â€” Reward slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void RefreshAllRewardSlots()
     {
@@ -610,7 +598,7 @@ public class TrainManager : MonoBehaviour
         foreach (var s in rewardWagonSlots) s?.DisableInteraction();
     }
 
-    // ─── FX ──────────────────────────────────────────────────────
+    // â”€â”€â”€ FX â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void SpawnItemFlyFX(int slotIndex, TrainWagonSlotData slot)
     {
@@ -639,7 +627,7 @@ public class TrainManager : MonoBehaviour
         return transform.position;
     }
 
-    // ─── Helpers ─────────────────────────────────────────────────
+    // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private bool IsValidSlot(int i) =>
         SlotData != null && i >= 0 && i < SlotData.Length && SlotData[i] != null;
@@ -649,15 +637,15 @@ public class TrainManager : MonoBehaviour
         if (cargoData?.presets?.Count > 0)
             return cargoData.presets[index % cargoData.presets.Count];
 
-        Debug.LogWarning("[Train] Chưa gán TrainCargoData — dùng fallback preset.");
+        Debug.LogWarning("[Train] ChÆ°a gÃ¡n TrainCargoData â€” dÃ¹ng fallback preset.");
         return new TrainCargoPreset
         {
             slots = new TrainCargoRequirement[]
             {
-                new TrainCargoRequirement { itemId = "lua",   displayName = "Lúa",   requiredAmount = 4 },
-                new TrainCargoRequirement { itemId = "bap",   displayName = "Bắp",   requiredAmount = 3 },
-                new TrainCargoRequirement { itemId = "trung", displayName = "Trứng", requiredAmount = 2 },
-                new TrainCargoRequirement { itemId = "nam",   displayName = "Nấm",   requiredAmount = 2 },
+                new TrainCargoRequirement { itemId = "lua",   displayName = "LÃºa",   requiredAmount = 4 },
+                new TrainCargoRequirement { itemId = "bap",   displayName = "Báº¯p",   requiredAmount = 3 },
+                new TrainCargoRequirement { itemId = "trung", displayName = "Trá»©ng", requiredAmount = 2 },
+                new TrainCargoRequirement { itemId = "nam",   displayName = "Náº¥m",   requiredAmount = 2 },
             }
         };
     }
@@ -667,14 +655,14 @@ public class TrainManager : MonoBehaviour
         if (rewardData?.presets?.Count > 0)
             return rewardData.presets[index % rewardData.presets.Count];
 
-        Debug.LogWarning("[Train] Chưa gán TrainRewardData — dùng fallback preset.");
+        Debug.LogWarning("[Train] ChÆ°a gÃ¡n TrainRewardData â€” dÃ¹ng fallback preset.");
         return new TrainRewardPreset
         {
             slots = new TrainRewardItem[]
             {
-                new TrainRewardItem { itemId = "da",   displayName = "Đá",   rewardAmount = 2 },
-                new TrainRewardItem { itemId = "gach", displayName = "Gạch", rewardAmount = 1 },
-                new TrainRewardItem { itemId = "dinh", displayName = "Đinh", rewardAmount = 3 },
+                new TrainRewardItem { itemId = "da",   displayName = "ÄÃ¡",   rewardAmount = 2 },
+                new TrainRewardItem { itemId = "gach", displayName = "Gáº¡ch", rewardAmount = 1 },
+                new TrainRewardItem { itemId = "dinh", displayName = "Äinh", rewardAmount = 3 },
                 new TrainRewardItem { itemId = "kim",  displayName = "Kim",  rewardAmount = 1 },
             }
         };

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 802bb15584c8c3242af7d18a0bb170f1
+guid: 70d84b2a31b315e44bf3caa61b8dd45f
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -14,5 +14,5 @@ AssetOrigin:
   productId: 259218
   packageName: Happy Harvest - 2D Sample Project
   packageVersion: 1.61
-  assetPath: Assets/Day_Night/Scripts/Runtime/WeatherSystemElement.cs
+  assetPath: Assets/HappyHarvest/Scripts/WeatherSystemElement.cs
   uploadId: 722366

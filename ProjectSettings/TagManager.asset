@@ -2,9 +2,8 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!78 &1
 TagManager:
-  serializedVersion: 3
-  tags:
-  - Audio
+  serializedVersion: 2
+  tags: []
   layers:
   - Default
   - TransparentFX
@@ -45,12 +44,6 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: Water
-    uniqueID: 3124881317
-    locked: 0
-  - name: CongTrinh
-    uniqueID: 1669604809
-    locked: 0
   - name: Objects
     uniqueID: 1471039481
     locked: 0
@@ -60,5 +53,3 @@ TagManager:
   - name: Foreground
     uniqueID: 1304480043
     locked: 0
-  m_RenderingLayers:
-  - Default

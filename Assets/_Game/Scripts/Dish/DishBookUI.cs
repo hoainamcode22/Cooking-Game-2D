@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -73,7 +73,7 @@ public class DishBookUI : MonoBehaviour
 
         if (listDishData == null || listDishData.allDishes == null)
         {
-            Debug.LogWarning("Chưa gắn ListDishData cho DishBookUI.");
+            Debug.LogWarning("ChÆ°a gáº¯n ListDishData cho DishBookUI.");
             return;
         }
 
@@ -91,14 +91,14 @@ public class DishBookUI : MonoBehaviour
     }
     public void ShowDishList()
     {
-        // Hiện lại 2 trang danh sách
+        // Hiá»‡n láº¡i 2 trang danh sÃ¡ch
         if (leftPageRoot != null)
             leftPageRoot.SetActive(true);
 
         if (rightPageRoot != null)
             rightPageRoot.SetActive(true);
 
-        // Hiện lại nút chuyển trang
+        // Hiá»‡n láº¡i nÃºt chuyá»ƒn trang
         if (btnPreviousPage != null)
             btnPreviousPage.gameObject.SetActive(true);
 
@@ -108,14 +108,13 @@ public class DishBookUI : MonoBehaviour
         if (txtPageNumber != null)
             txtPageNumber.gameObject.SetActive(true);
 
-        // Ẩn chi tiết món
+        // áº¨n chi tiáº¿t mÃ³n
         if (detailPanelRoot != null)
             detailPanelRoot.SetActive(false);
 
-        // Load lại đúng trang hiện tại
+        // Load láº¡i Ä‘Ãºng trang hiá»‡n táº¡i
         ShowCurrentPage();
 
-        Debug.Log("[DishBookUI] Back về danh sách ở trang: " + (currentPageIndex + 1));
     }
 
     private void SpawnDishesToSide(Transform parent, List<DishData> dishes, int startIndex, int count)
@@ -149,24 +148,22 @@ public class DishBookUI : MonoBehaviour
 
         selectedDish = dish;
 
-        Debug.Log("Đã chọn món: " + selectedDish.dishName);
 
-        // Gửi dữ liệu qua HintsBoxUI
+        // Gá»­i dá»¯ liá»‡u qua HintsBoxUI
         if (hintsBoxUI != null)
         {
-            Debug.Log("Cập nhật HintsBoxUI với món: " + selectedDish.dishName);
             hintsBoxUI.BindDish(selectedDish);
         }
         else
         {
-            Debug.LogWarning("Chưa gắn HintsBoxUI vào DishBookUI.");
+            Debug.LogWarning("ChÆ°a gáº¯n HintsBoxUI vÃ o DishBookUI.");
         }
 
-        // Gửi món đang chọn qua CookingManager
+        // Gá»­i mÃ³n Ä‘ang chá»n qua CookingManager
         if (cookingManager != null)
             cookingManager.SetCurrentDish(selectedDish);
 
-        // Ẩn danh sách
+        // áº¨n danh sÃ¡ch
         if (leftPageRoot != null)
             leftPageRoot.SetActive(false);
 
@@ -182,7 +179,7 @@ public class DishBookUI : MonoBehaviour
         if (txtPageNumber != null)
             txtPageNumber.gameObject.SetActive(false);
 
-        // Hiện chi tiết món
+        // Hiá»‡n chi tiáº¿t mÃ³n
         if (detailPanelRoot != null)
             detailPanelRoot.SetActive(true);
     }
@@ -199,7 +196,6 @@ public class DishBookUI : MonoBehaviour
     private void NextPage()
     {
         int maxPageIndex = GetMaxPageIndex();
-        Debug.Log("[DishBookUI] Next clicked. Current = " + currentPageIndex + ", Max = " + maxPageIndex);
         if (currentPageIndex >= maxPageIndex)
             return;
 

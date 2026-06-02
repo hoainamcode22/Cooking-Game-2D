@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
@@ -68,7 +68,6 @@ public class CookingTimingMiniGameUI : MonoBehaviour
 
         if (IsStopKeyPressed())
         {
-            Debug.Log("Người chơi nhấn phím dừng mini game.");
             StopMiniGame();
             return;
         }
@@ -78,14 +77,12 @@ public class CookingTimingMiniGameUI : MonoBehaviour
 
         if (remainingTime <= 0f)
         {
-            Debug.Log("Mini game hết thời gian, tự tắt.");
             TimeoutMiniGame();
             return;
         }
     }
     public void StartMiniGame(DishDifficulty difficulty, Action<bool> callback)
     {
-        Debug.Log("StartMiniGame được gọi. Difficulty = " + difficulty);
 
         onMiniGameFinished = callback;
 
@@ -119,8 +116,6 @@ public class CookingTimingMiniGameUI : MonoBehaviour
             EventSystem.current.SetSelectedGameObject(null);
         }
 
-        Debug.Log("Marker Speed = " + currentMarkerSpeed);
-        Debug.Log("Zone Speed = " + currentZoneSpeed);
     }
 
     private void ApplyDifficulty(DishDifficulty difficulty)
@@ -208,7 +203,6 @@ public class CookingTimingMiniGameUI : MonoBehaviour
     {
         bool isSuccess = IsMarkerInsideSuccessZone();
 
-        Debug.Log("Kết quả mini game = " + isSuccess);
 
         FinishMiniGame(isSuccess);
     }
@@ -225,8 +219,6 @@ public class CookingTimingMiniGameUI : MonoBehaviour
         float zoneMinX = zoneCenterX - zoneHalfWidth;
         float zoneMaxX = zoneCenterX + zoneHalfWidth;
 
-        Debug.Log("Marker X = " + markerX);
-        Debug.Log("Zone Min = " + zoneMinX + " | Zone Max = " + zoneMaxX);
 
         return markerX >= zoneMinX && markerX <= zoneMaxX;
     }

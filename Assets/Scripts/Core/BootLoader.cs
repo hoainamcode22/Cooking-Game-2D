@@ -6,7 +6,10 @@ public class BootLoader : MonoBehaviour
 {
     private IEnumerator Start()
     {
-        // Cho Unity hoàn tất frame khởi động trước khi load
+#if !UNITY_EDITOR
+        // Tắt toàn bộ Debug.Log trong build để giảm lag
+        Debug.unityLogger.logEnabled = false;
+#endif
         yield return null;
 
         AsyncOperation op = SceneManager.LoadSceneAsync("SCN_Home");

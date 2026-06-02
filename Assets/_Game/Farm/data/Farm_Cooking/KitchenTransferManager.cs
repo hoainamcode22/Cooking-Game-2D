@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -167,7 +167,7 @@ public class KitchenTransferManager : MonoBehaviour
             transferredItems[entry.itemId] = entry.amount;
         }
     }
-    //File này của Nguyên thêm vào
+    //File nÃ y cá»§a NguyÃªn thÃªm vÃ o
     public void SetAfterCooking(string itemId)
     {
         if (string.IsNullOrEmpty(itemId))
@@ -175,18 +175,16 @@ public class KitchenTransferManager : MonoBehaviour
 
         if (!transferredItems.ContainsKey(itemId))
         {
-            Debug.LogWarning("[KitchenTransferManager] Không tìm thấy itemId để trừ: " + itemId);
+            Debug.LogWarning("[KitchenTransferManager] KhÃ´ng tÃ¬m tháº¥y itemId Ä‘á»ƒ trá»«: " + itemId);
             return;
         }
 
         transferredItems[itemId] -= 1;
 
-        Debug.Log("[KitchenTransferManager] Sau nấu trừ: " + itemId + " còn " + transferredItems[itemId]);
 
         if (transferredItems[itemId] <= 0)
         {
             transferredItems.Remove(itemId);
-            Debug.Log("[KitchenTransferManager] Đã hết và xóa khỏi danh sách: " + itemId);
         }
 
         SaveTransferData();

@@ -42,7 +42,6 @@ public class CookingBoot : MonoBehaviour
         }
         else
         {
-            Debug.Log("[CookingBoot] Test Mode bật: không lọc theo kho, giữ toàn bộ card đã spawn.");
         }
 
         selection.RegisterAllLeftCards(
@@ -68,7 +67,6 @@ public class CookingBoot : MonoBehaviour
 
     private void FillOldCardsFromTransferredItems()
     {
-        Debug.Log("[CookingBoot] Điền dữ liệu từ KitchenTransferManager vào card cũ.");
         
         List<CookingTransferredItem> ingredientItems = new List<CookingTransferredItem>();
         List<CookingTransferredItem> seasoningItems = new List<CookingTransferredItem>();
@@ -80,7 +78,6 @@ public class CookingBoot : MonoBehaviour
 
             foreach (var kv in transferred)
             {
-                Debug.Log($"[CookingBoot] Transferred Item: {kv.Key} x{kv.Value}");
                 
                 if (!inventoryLookup.TryGetValue(kv.Key, out InventoryItemData inventoryItem))
                     continue;
@@ -179,6 +176,5 @@ public class CookingBoot : MonoBehaviour
             leftRefs.seasoningsContent
         );
 
-        Debug.Log("[CookingBoot] Đã refresh lại card nguyên liệu.");
     }
 }

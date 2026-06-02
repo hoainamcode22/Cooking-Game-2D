@@ -27,7 +27,7 @@ MonoBehaviour:
   sproutScale: {x: 40, y: 40, z: 1}
   growingScale: {x: 45, y: 45, z: 1}
   readyScale: {x: 45, y: 45, z: 1}
-  displayCount: 12
+  displayCount: 6
   seedItemId: khoai_tay
   harvestItemId: khoaitay
   tier: 0

@@ -206,7 +206,7 @@ public class PlantDragController : MonoBehaviour
     private void SpawnSeedRain(Vector3 plotWorldPos)
     {
         const int   COUNT    = 8;
-        const float SCALE    = 12000f;  // world units
+        const float SCALE    = 4000f;  // world units
         const float DUR_MIN  = 0.35f;
         const float DUR_MAX  = 0.55f;
 

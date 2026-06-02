@@ -188,7 +188,6 @@ public class FarmManager : MonoBehaviour
             cropMap[crop.cropId] = crop;
         }
 
-        Debug.Log($"[FarmManager] RebuildCropMap: {cropMap.Count} crops (normal={cropDatabase.Count}, flower={flowerCropDatabase.Count})");
     }
 
     private void RebuildSeedStockMap()

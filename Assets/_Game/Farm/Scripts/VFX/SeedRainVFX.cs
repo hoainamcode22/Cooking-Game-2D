@@ -1,13 +1,13 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class SeedRainVFX : MonoBehaviour
 {
     [Header("Template")]
-    [Tooltip("Child IconTemplate (SpriteRenderer). Nếu null sẽ tự tìm.")]
+    [Tooltip("Child IconTemplate (SpriteRenderer). Náº¿u null sáº½ tá»± tÃ¬m.")]
     [SerializeField] private SpriteRenderer iconTemplate;
 
-    [Header("Rơi")]
+    [Header("RÆ¡i")]
     [SerializeField] private float spawnHeightMin  = 1.5f;
     [SerializeField] private float spawnHeightMax  = 2.8f;
     [SerializeField] private float spreadXMin      = -0.8f;
@@ -30,11 +30,10 @@ public class SeedRainVFX : MonoBehaviour
 
     public void Play(Sprite seedIcon, Vector3 worldPosition, int count = 8)
     {
-        Debug.Log($"[VFX_DEBUG] SeedRainVFX Play ENTER | icon={(seedIcon != null ? seedIcon.name : "NULL")} | pos={worldPosition} | count={count} | iconTemplate={iconTemplate != null}");
 
         if (iconTemplate == null)
         {
-            Debug.LogWarning("[VFX_DEBUG] SeedRainVFX: iconTemplate NULL — gán SpriteRenderer child vào slot IconTemplate trong prefab.");
+            Debug.LogWarning("[VFX_DEBUG] SeedRainVFX: iconTemplate NULL â€” gÃ¡n SpriteRenderer child vÃ o slot IconTemplate trong prefab.");
             Destroy(gameObject, 1f);
             return;
         }
@@ -48,7 +47,7 @@ public class SeedRainVFX : MonoBehaviour
 
     private IEnumerator SpawnOne(Sprite icon, Vector3 origin)
     {
-        // Clone iconTemplate — SetActive(true) bắt buộc để icon hiện
+        // Clone iconTemplate â€” SetActive(true) báº¯t buá»™c Ä‘á»ƒ icon hiá»‡n
         GameObject go = Instantiate(iconTemplate.gameObject, transform);
         go.SetActive(true);
 
@@ -60,16 +59,16 @@ public class SeedRainVFX : MonoBehaviour
         sr.sortingLayerName = sortingLayerName;
         sr.sortingOrder     = sortingOrder;
 
-        // Dùng lossyScale để đảm bảo world scale = iconScale, bất kể parent chain có scale gì
+        // DÃ¹ng lossyScale Ä‘á»ƒ Ä‘áº£m báº£o world scale = iconScale, báº¥t ká»ƒ parent chain cÃ³ scale gÃ¬
         float parentLossy = Mathf.Max(0.0001f, transform.lossyScale.x);
         go.transform.localScale = Vector3.one * (iconScale / parentLossy);
 
-        // Vị trí xuất phát: cao hơn origin, lệch ngang ngẫu nhiên
+        // Vá»‹ trÃ­ xuáº¥t phÃ¡t: cao hÆ¡n origin, lá»‡ch ngang ngáº«u nhiÃªn
         float startX = origin.x + Random.Range(spreadXMin, spreadXMax);
         float startY = origin.y + Random.Range(spawnHeightMin, spawnHeightMax);
         go.transform.position = new Vector3(startX, startY, origin.z - 0.1f);
 
-        // Đích: gần origin
+        // ÄÃ­ch: gáº§n origin
         float endX = origin.x + Random.Range(-0.3f, 0.3f);
         float endY = origin.y + Random.Range(-0.1f, 0.2f);
         Vector3 startPos = go.transform.position;
@@ -87,11 +86,11 @@ public class SeedRainVFX : MonoBehaviour
 
             go.transform.position = Vector3.Lerp(startPos, endPos, smooth);
 
-            // Scale pulse — giữ nguyên world scale trong khi animate
+            // Scale pulse â€” giá»¯ nguyÃªn world scale trong khi animate
             float scalePulse = (iconScale / parentLossy) * (1f + 0.25f * Mathf.Sin(Mathf.PI * t));
             go.transform.localScale = Vector3.one * scalePulse;
 
-            // Fade out nửa sau
+            // Fade out ná»­a sau
             float alpha = t < 0.5f ? 1f : 1f - (t - 0.5f) * 2f;
             sr.color = new Color(1f, 1f, 1f, alpha);
 
@@ -101,7 +100,7 @@ public class SeedRainVFX : MonoBehaviour
 
         if (go != null) Destroy(go);
 
-        // Tự hủy khi hết icon (chỉ còn template inactive)
+        // Tá»± há»§y khi háº¿t icon (chá»‰ cÃ²n template inactive)
         if (transform.childCount <= 1)
             Destroy(gameObject);
     }

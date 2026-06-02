@@ -1,14 +1,14 @@
-using System.Collections;
+﻿using System.Collections;
 using TMPro;
 using UnityEngine;
 
 public class HarvestAmountTextVFX : MonoBehaviour
 {
     [Header("Template")]
-    [Tooltip("Child TextTemplate (TextMeshPro). Nếu null sẽ tự tìm.")]
+    [Tooltip("Child TextTemplate (TextMeshPro). Náº¿u null sáº½ tá»± tÃ¬m.")]
     [SerializeField] private TextMeshPro textTemplate;
 
-    [Header("Bay lên")]
+    [Header("Bay lÃªn")]
     [SerializeField] private float floatHeightMin = 0.8f;
     [SerializeField] private float floatHeightMax = 1.6f;
     [SerializeField] private float spreadXMin     = -0.8f;
@@ -33,11 +33,10 @@ public class HarvestAmountTextVFX : MonoBehaviour
 
     public void Play(int amount, Vector3 worldPosition, int count = 5)
     {
-        Debug.Log($"[VFX_DEBUG] HarvestAmountTextVFX Play ENTER | amount={amount} | pos={worldPosition} | textTemplate={textTemplate != null}");
 
         if (textTemplate == null)
         {
-            Debug.LogWarning("[VFX_DEBUG] HarvestAmountTextVFX: textTemplate NULL — gán TextMeshPro child vào slot TextTemplate trong prefab.");
+            Debug.LogWarning("[VFX_DEBUG] HarvestAmountTextVFX: textTemplate NULL â€” gÃ¡n TextMeshPro child vÃ o slot TextTemplate trong prefab.");
             Destroy(gameObject, 1f);
             return;
         }

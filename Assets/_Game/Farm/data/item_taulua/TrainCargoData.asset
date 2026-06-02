@@ -16,34 +16,34 @@ MonoBehaviour:
   - slots:
     - itemId: rice
       displayName: "L\xFAa"
-      icon: {fileID: 7469862485501457946, guid: c146cf6e2a9488841864077192a7280e, type: 3}
+      icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
       requiredAmount: 4
     - itemId: ngo
       displayName: "Ng\xF4"
-      icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
+      icon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
       requiredAmount: 6
     - itemId: egg
       displayName: "Tr\u1EE9ng"
-      icon: {fileID: -8307804571547316847, guid: 20cfa699d7411b0499297e423fec3d8a, type: 3}
+      icon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}
       requiredAmount: 5
     - itemId: beef
       displayName: "Th\u1ECBt B\xF2"
-      icon: {fileID: 6282751622250221668, guid: d1edf61082fb8db4c950bf561adef9bd, type: 3}
+      icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
       requiredAmount: 5
   - slots:
     - itemId: rice
       displayName: "L\xFAa"
-      icon: {fileID: 7469862485501457946, guid: c146cf6e2a9488841864077192a7280e, type: 3}
+      icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
       requiredAmount: 7
     - itemId: beef
       displayName: "Th\u1ECBt b\xF2"
-      icon: {fileID: 6282751622250221668, guid: d1edf61082fb8db4c950bf561adef9bd, type: 3}
+      icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
       requiredAmount: 5
     - itemId: sugarcane
       displayName: "M\xEDa"
-      icon: {fileID: 1718387542394655981, guid: 7dc5ff8dc723b1b4ab020a068a289b66, type: 3}
+      icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
       requiredAmount: 4
     - itemId: egg
       displayName: "Tr\u1EE9ng"
-      icon: {fileID: -8307804571547316847, guid: 20cfa699d7411b0499297e423fec3d8a, type: 3}
+      icon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}
       requiredAmount: 4

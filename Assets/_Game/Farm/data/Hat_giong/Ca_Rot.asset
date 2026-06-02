@@ -27,7 +27,7 @@ MonoBehaviour:
   sproutScale: {x: 35, y: 35, z: 1}
   growingScale: {x: 40, y: 40, z: 1}
   readyScale: {x: 50, y: 50, z: 1}
-  displayCount: 12
+  displayCount: 6
   seedItemId: ca_rot
   harvestItemId: carot
   tier: 0

@@ -113,7 +113,6 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
         if (cachedMain == null && ingredientData != null)
             cachedMain = ingredientData.icon;
 
-        Debug.Log($"[CARD CACHE] {cachedName} | main={(cachedMain != null ? cachedMain.name : "NULL")} | top={(cachedTop != null ? cachedTop.name : "NULL")}");
     }
 
     public string GetItemName() => cachedName;

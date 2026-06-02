@@ -1,9 +1,9 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.InputSystem;
 
 /// <summary>
-/// Gắn lên GameObject gataulua (nhà ga, world-space, KHÔNG phải UI).
-/// Khi người chơi click vào nhà ga trong lúc tàu đang đi/về → toggle Popup_train.
+/// Gáº¯n lÃªn GameObject gataulua (nhÃ  ga, world-space, KHÃ”NG pháº£i UI).
+/// Khi ngÆ°á»i chÆ¡i click vÃ o nhÃ  ga trong lÃºc tÃ u Ä‘ang Ä‘i/vá» â†’ toggle Popup_train.
 /// </summary>
 [RequireComponent(typeof(BoxCollider2D))]
 [RequireComponent(typeof(PermanentBuilding))]
@@ -20,11 +20,11 @@ public class TrainStationBuilding : MonoBehaviour
         if (processPopup == null)
             processPopup = FindFirstObjectByType<TrainProcessPopupUI>(FindObjectsInactive.Include);
         if (processPopup == null)
-            Debug.LogError("[Station] Không tìm thấy TrainProcessPopupUI! Kéo Popup_train vào Inspector.");
+            Debug.LogError("[Station] KhÃ´ng tÃ¬m tháº¥y TrainProcessPopupUI! KÃ©o Popup_train vÃ o Inspector.");
     }
 
-    // ─── World-space click (BoxCollider2D + Physics2D.OverlapPoint) ─────────────
-    // Giống hệt TrainWagonSlot.cs — phải đặt Z = nearClipPlane trước ScreenToWorldPoint.
+    // â”€â”€â”€ World-space click (BoxCollider2D + Physics2D.OverlapPoint) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // Giá»‘ng há»‡t TrainWagonSlot.cs â€” pháº£i Ä‘áº·t Z = nearClipPlane trÆ°á»›c ScreenToWorldPoint.
 
     void Update()
     {
@@ -40,10 +40,10 @@ public class TrainStationBuilding : MonoBehaviour
 
         if (_col == null || !_col.OverlapPoint(worldPos)) return;
 
-        // Không mở khi Edit Mode đang bật
+        // KhÃ´ng má»Ÿ khi Edit Mode Ä‘ang báº­t
         if (EditModeManager.IsEditMode) return;
 
-        // Không mở khi đang có popup khác mở
+        // KhÃ´ng má»Ÿ khi Ä‘ang cÃ³ popup khÃ¡c má»Ÿ
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;
 
@@ -52,7 +52,6 @@ public class TrainStationBuilding : MonoBehaviour
 
   private void HandleClick()
 {
-    Debug.Log("[Station] HandleClick called!");
     
     if (processPopup == null)
     {

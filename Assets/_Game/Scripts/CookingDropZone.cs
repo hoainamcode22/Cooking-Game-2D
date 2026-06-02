@@ -23,7 +23,6 @@ public class CookingDropZone : MonoBehaviour, IDropHandler
         // kiểm tra đúng loại
         if (card.isSeasoning != isSeasoning)
         {
-            Debug.Log("Sai loại item. Không thả vào vùng này.");
             return;
         }
 

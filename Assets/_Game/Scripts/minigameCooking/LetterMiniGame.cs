@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -80,7 +80,7 @@ public class LetterMiniGame : MonoBehaviour
         }
         isPlaying = true;
 
-        guideText.text = "Nhấn đúng các chữ cái theo thứ tự";
+        guideText.text = "Nháº¥n Ä‘Ãºng cÃ¡c chá»¯ cÃ¡i theo thá»© tá»±";
         UpdateUI();
     }
 
@@ -88,7 +88,6 @@ public class LetterMiniGame : MonoBehaviour
     {
         if (!isPlaying) return;
 
-        Debug.Log("Letter mini game is playing");
 
         currentTime -= Time.deltaTime;
 
@@ -110,7 +109,6 @@ public class LetterMiniGame : MonoBehaviour
     {
         if (TryGetPressedLetter(out char pressedChar))
         {
-            Debug.Log("Pressed Letter: " + pressedChar);
             CheckInput(pressedChar);
         }
     }
@@ -182,7 +180,7 @@ public class LetterMiniGame : MonoBehaviour
 
         sequenceText.text = builder.ToString();
 
-        resultText.text = $"Đúng: {correctCount}/{sequenceLength} | Sai: {wrongCount}/{maxWrong + 1}";
+        resultText.text = $"ÄÃºng: {correctCount}/{sequenceLength} | Sai: {wrongCount}/{maxWrong + 1}";
     }
 
     private void FinishMiniGame(bool isSuccess)

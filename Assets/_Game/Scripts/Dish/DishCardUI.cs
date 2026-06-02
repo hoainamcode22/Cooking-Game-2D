@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -37,11 +37,10 @@ public class DishCardUI : MonoBehaviour
 
         if (dishData == null)
         {
-            Debug.LogWarning("DishCardUI chưa có DishData.");
+            Debug.LogWarning("DishCardUI chÆ°a cÃ³ DishData.");
             return;
         }
 
-        Debug.Log("Click Dish Card: " + dishData.dishName);
         onSelected?.Invoke(dishData);
     }
 }

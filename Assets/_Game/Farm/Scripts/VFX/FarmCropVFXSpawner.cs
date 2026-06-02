@@ -1,17 +1,17 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
-/// Singleton quản lý 3 loại VFX bổ sung cho trồng/thu hoạch.
-/// Đặt 1 object có component này trong scene, kéo 3 prefab vào Inspector.
+/// Singleton quáº£n lÃ½ 3 loáº¡i VFX bá»• sung cho trá»“ng/thu hoáº¡ch.
+/// Äáº·t 1 object cÃ³ component nÃ y trong scene, kÃ©o 3 prefab vÃ o Inspector.
 ///
-/// Không thay thế HarvestFeedbackSpawner hay logic cũ —
-/// chỉ chạy song song thêm hiệu ứng visual.
+/// KhÃ´ng thay tháº¿ HarvestFeedbackSpawner hay logic cÅ© â€”
+/// chá»‰ cháº¡y song song thÃªm hiá»‡u á»©ng visual.
 /// </summary>
 public class FarmCropVFXSpawner : MonoBehaviour
 {
     public static FarmCropVFXSpawner Instance { get; private set; }
 
-    [Header("VFX Prefabs — kéo prefab vào sau khi tạo xong")]
+    [Header("VFX Prefabs â€” kÃ©o prefab vÃ o sau khi táº¡o xong")]
     public SeedRainVFX           seedRainPrefab;
     public SeedCostTextVFX       seedCostTextPrefab;
     public HarvestAmountTextVFX  harvestAmountTextPrefab;
@@ -20,19 +20,17 @@ public class FarmCropVFXSpawner : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("[VFX] FarmCropVFXSpawner: duplicate Instance destroyed — chỉ giữ 1 instance trong scene.");
+            Debug.LogWarning("[VFX] FarmCropVFXSpawner: duplicate Instance destroyed â€” chá»‰ giá»¯ 1 instance trong scene.");
             Destroy(gameObject);
             return;
         }
         Instance = this;
-        Debug.Log($"[VFX] FarmCropVFXSpawner Instance ready | rainPrefab={seedRainPrefab != null} | costPrefab={seedCostTextPrefab != null} | harvestPrefab={harvestAmountTextPrefab != null}");
     }
 
-    // ── Gieo hạt ─────────────────────────────────────────────────────────────
+    // â”€â”€ Gieo háº¡t â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public void PlaySeedPlantVFX(CropData crop, Vector3 plotPos, int seedCost = 1)
     {
-        Debug.Log($"[VFX] PlaySeedPlantVFX called | crop={crop?.cropId} | icon={(crop?.icon != null ? crop.icon.name : "NULL")} | pos={plotPos} | seedCost={seedCost} | rainPrefab={seedRainPrefab != null} | costPrefab={seedCostTextPrefab != null}");
 
         if (crop == null) return;
 
@@ -43,7 +41,7 @@ public class FarmCropVFXSpawner : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[VFX] PlaySeedPlantVFX: seedRainPrefab là NULL — kéo PF_SeedRain_World vào slot seedRainPrefab của FarmCropVFXSpawner trong Inspector.");
+            Debug.LogWarning("[VFX] PlaySeedPlantVFX: seedRainPrefab lÃ  NULL â€” kÃ©o PF_SeedRain_World vÃ o slot seedRainPrefab cá»§a FarmCropVFXSpawner trong Inspector.");
         }
 
         if (seedCostTextPrefab != null && seedCost > 0)
@@ -54,19 +52,18 @@ public class FarmCropVFXSpawner : MonoBehaviour
         }
         else if (seedCostTextPrefab == null)
         {
-            Debug.LogWarning("[VFX] PlaySeedPlantVFX: seedCostTextPrefab là NULL — kéo PF_SeedCostText_World vào slot seedCostTextPrefab của FarmCropVFXSpawner trong Inspector.");
+            Debug.LogWarning("[VFX] PlaySeedPlantVFX: seedCostTextPrefab lÃ  NULL â€” kÃ©o PF_SeedCostText_World vÃ o slot seedCostTextPrefab cá»§a FarmCropVFXSpawner trong Inspector.");
         }
     }
 
-    // ── Thu hoạch ─────────────────────────────────────────────────────────────
+    // â”€â”€ Thu hoáº¡ch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public void PlayHarvestAmountVFX(int amount, Vector3 plotPos)
     {
-        Debug.Log($"[VFX] PlayHarvestAmountTextVFX called | amount={amount} | pos={plotPos} | prefab={harvestAmountTextPrefab != null}");
 
         if (harvestAmountTextPrefab == null)
         {
-            Debug.LogWarning("[VFX] PlayHarvestAmountVFX: harvestAmountTextPrefab là NULL — kéo PF_HarvestAmountText_World vào slot harvestAmountTextPrefab của FarmCropVFXSpawner trong Inspector.");
+            Debug.LogWarning("[VFX] PlayHarvestAmountVFX: harvestAmountTextPrefab lÃ  NULL â€” kÃ©o PF_HarvestAmountText_World vÃ o slot harvestAmountTextPrefab cá»§a FarmCropVFXSpawner trong Inspector.");
             return;
         }
 
