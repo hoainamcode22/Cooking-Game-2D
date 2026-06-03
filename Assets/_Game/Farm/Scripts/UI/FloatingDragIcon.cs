@@ -22,6 +22,7 @@ public class FloatingDragIcon : MonoBehaviour
         var go = new GameObject("_FloatingDragCanvas");
         ghostCanvas               = go.AddComponent<Canvas>();
         ghostCanvas.renderMode    = RenderMode.ScreenSpaceOverlay;
+        ghostCanvas.overrideSorting = true;
         ghostCanvas.sortingOrder  = 9999; // luÃ´n hiá»‡n trÃªn cÃ¹ng má»i canvas
 
         var imgGo    = new GameObject("Icon");
@@ -43,13 +44,16 @@ public class FloatingDragIcon : MonoBehaviour
         cg.blocksRaycasts     = false;
 
         isFollowing = true;
-        gameObject.SetActive(true); // báº­t Update() Ä‘á»ƒ ghost di chuyá»ƒn theo cursor
+        Canvas.willRenderCanvases -= FollowPointer;
+        Canvas.willRenderCanvases += FollowPointer;
+        gameObject.SetActive(true);
     }
 
     public void Hide()
     {
         isFollowing = false;
-        gameObject.SetActive(false); // táº¯t Update()
+        Canvas.willRenderCanvases -= FollowPointer;
+        gameObject.SetActive(false);
 
         if (ghostCanvas != null)
         {
@@ -57,10 +61,14 @@ public class FloatingDragIcon : MonoBehaviour
             ghostCanvas = null;
             ghostRect   = null;
         }
-
     }
 
-    private void Update()
+    private void OnDestroy()
+    {
+        Canvas.willRenderCanvases -= FollowPointer;
+    }
+
+    private void FollowPointer()
     {
         if (!isFollowing || ghostRect == null) return;
         ghostRect.position = InputBridge.PointerPosition;

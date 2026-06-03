@@ -65,6 +65,7 @@ public class MissionItemUI : MonoBehaviour
 
         _claimed = true;
         SetClaimedState(true);
+        AvatarProfilePopupUI.AddAchievementCount();
 
     }
 

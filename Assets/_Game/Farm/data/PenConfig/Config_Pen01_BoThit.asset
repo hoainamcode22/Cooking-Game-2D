@@ -20,8 +20,8 @@ MonoBehaviour:
   productItemId: beef
   secondProductItemId: 
   productIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-  productAmount: 1
-  secondProductAmount: 1
+  productAmount: 4
+  secondProductAmount: 4
   secondProductIcon: {fileID: 0}
   basketIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
   feedDurationSeconds: 30

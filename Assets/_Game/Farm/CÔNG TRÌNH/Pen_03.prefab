@@ -334,6 +334,8 @@ MonoBehaviour:
   localPosition: {x: -0.06, y: 2.11, z: 0}
   localScale: {x: 0.8, y: 0.8, z: 0.8}
   sortingOrderOffset: 10
+  animalCount: 2
+  horizontalSpacing: 1.4
 --- !u!114 &8589652062898984983
 MonoBehaviour:
   m_ObjectHideFlags: 0

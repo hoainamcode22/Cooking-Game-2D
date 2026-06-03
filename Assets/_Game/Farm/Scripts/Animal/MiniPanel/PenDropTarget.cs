@@ -8,6 +8,7 @@
 public class PenDropTarget : MonoBehaviour
 {
     [SerializeField] private PenMiniPanelUI miniPanel;
+    [SerializeField] private float vfxYOffset = 250f;
 
     private void Start()
     {
@@ -22,7 +23,7 @@ public class PenDropTarget : MonoBehaviour
     public bool ReceiveFoodDrop(string foodItemId)
     {
         if (miniPanel == null) return false;
-        bool ok = miniPanel.TryFeed(foodItemId, transform.position);
+        bool ok = miniPanel.TryFeed(foodItemId, GetVFXWorldPosition());
         return ok;
     }
 
@@ -30,8 +31,13 @@ public class PenDropTarget : MonoBehaviour
     public bool ReceiveBasketDrop()
     {
         if (miniPanel == null) return false;
-        bool ok = miniPanel.TryHarvest(transform.position);
+        bool ok = miniPanel.TryHarvest(GetVFXWorldPosition());
         return ok;
+    }
+
+    private Vector3 GetVFXWorldPosition()
+    {
+        return transform.position + Vector3.up * vfxYOffset;
     }
 }
 

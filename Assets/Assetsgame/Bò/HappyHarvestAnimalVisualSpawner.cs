@@ -10,11 +10,13 @@ namespace Assetsgame.Animals
         [SerializeField] private Vector3 localPosition;
         [SerializeField] private Vector3 localScale = Vector3.one;
         [SerializeField] private int sortingOrderOffset = 10;
+        [SerializeField, Min(1)] private int animalCount = 1;
+        [SerializeField] private float horizontalSpacing = 1.4f;
 
         private void Awake()
         {
             DisableLegacyVisual();
-            SpawnVisual();
+            SpawnVisuals();
         }
 
         private void DisableLegacyVisual()
@@ -30,18 +32,28 @@ namespace Assetsgame.Animals
                 renderer.enabled = false;
         }
 
-        private void SpawnVisual()
+        private void SpawnVisuals()
         {
-            if (animalPrefab == null || transform.Find(spawnedChildName) != null)
+            if (animalPrefab == null)
                 return;
 
-            GameObject visual = Instantiate(animalPrefab, transform);
-            visual.name = spawnedChildName;
-            visual.transform.localPosition = localPosition;
-            visual.transform.localRotation = Quaternion.identity;
-            visual.transform.localScale = localScale;
+            int count = Mathf.Max(1, animalCount);
+            for (int i = 0; i < count; i++)
+            {
+                string childName = count == 1 ? spawnedChildName : $"{spawnedChildName}_{i + 1}";
+                if (transform.Find(childName) != null)
+                    continue;
 
-            ApplySorting(visual);
+                GameObject visual = Instantiate(animalPrefab, transform);
+                visual.name = childName;
+
+                float centeredIndex = i - (count - 1) * 0.5f;
+                visual.transform.localPosition = localPosition + Vector3.right * (centeredIndex * horizontalSpacing);
+                visual.transform.localRotation = Quaternion.identity;
+                visual.transform.localScale = localScale;
+
+                ApplySorting(visual);
+            }
         }
 
         private const string AnimalSortingLayer = "CongTrinh";
