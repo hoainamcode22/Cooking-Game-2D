@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem.EnhancedTouch;
 
@@ -72,7 +72,6 @@ public class ObjectDragHandler : MonoBehaviour
         _sprite = GetComponent<SpriteRenderer>();
 
         if (_col == null)
-            Debug.LogError($"[ObjectDragHandler] {name} thiếu Collider2D!");
 
         _originalPos   = transform.position;
         _originalScale = transform.localScale;

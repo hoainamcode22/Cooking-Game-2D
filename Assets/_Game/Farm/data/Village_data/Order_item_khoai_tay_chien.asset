@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: "Khoai t\xE2y chi\xEAn"
   icon: {fileID: 559135169309301806, guid: 506edd55eb19ec34b9dcdd1aa28fb2e5, type: 3}
   category: 3
-  unlockLevel: 1
-  weight: 10
+  unlockLevel: 5
+  weight: 8
   minAmount: 1
-  maxAmount: 5
-  goldPerUnit: 10
-  expPerUnit: 5
+  maxAmount: 2
+  goldPerUnit: 115
+  expPerUnit: 10

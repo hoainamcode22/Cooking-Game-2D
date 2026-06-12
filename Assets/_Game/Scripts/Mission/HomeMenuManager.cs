@@ -3,6 +3,9 @@ using UnityEngine.UI;
 
 public class HomeMenuManager : MonoBehaviour
 {
+    public static HomeMenuManager Instance { get; private set; }
+    public bool IsOpen => panel_Items != null && panel_Items.activeSelf;
+
     [Header("Home Button")]
     [SerializeField] private Button     btn_Home;
 
@@ -18,6 +21,9 @@ public class HomeMenuManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this) { Destroy(this); return; }
+        Instance = this;
+
         btn_Home.onClick.AddListener(OnHomeClicked);
         btn_Ewar.onClick.AddListener(OnEwarClicked);
 

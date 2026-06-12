@@ -149,6 +149,9 @@ public class WarehousePopupUI : MonoBehaviour
 
     private void Start()
     {
+        // Đảm bảo popup đóng khi scene load — tránh tự mở ở Play Mode
+        if (popupRoot != null) popupRoot.SetActive(false);
+
         if (FarmInventoryManager.Instance != null)
             FarmInventoryManager.Instance.OnInventoryChanged += RefreshUI;
 
@@ -455,7 +458,6 @@ public class WarehousePopupUI : MonoBehaviour
     {
         if (slotPrefab == null || itemGridContainer == null)
         {
-            Debug.LogWarning("[WarehousePopupUI] Chưa gán slotPrefab hoặc itemGridContainer. Bỏ qua generate slot.");
             return;
         }
 
@@ -474,7 +476,6 @@ public class WarehousePopupUI : MonoBehaviour
 
             if (slotUI == null)
             {
-                Debug.LogError("[WarehousePopupUI] slotPrefab thiếu component WarehouseSlotUI!");
                 continue;
             }
 
@@ -1083,13 +1084,11 @@ public class WarehousePopupUI : MonoBehaviour
     {
         if (KitchenTransferManager.Instance == null)
         {
-            Debug.LogWarning("[WarehousePopupUI] Chưa có KitchenTransferManager trong scene.");
             return;
         }
 
         if (FarmInventoryManager.Instance == null)
         {
-            Debug.LogWarning("[WarehousePopupUI] Chưa có FarmInventoryManager.");
             return;
         }
 
@@ -1102,7 +1101,6 @@ public class WarehousePopupUI : MonoBehaviour
             // chỉ chuyển nếu kho thật còn đủ
             if (!FarmInventoryManager.Instance.HasItem(kv.Key, kv.Value))
             {
-                Debug.LogWarning("[WarehousePopupUI] Không đủ vật phẩm trong kho: " + kv.Key);
                 continue;
             }
 
@@ -1110,7 +1108,6 @@ public class WarehousePopupUI : MonoBehaviour
             bool removed = FarmInventoryManager.Instance.RemoveItem(kv.Key, kv.Value);
             if (!removed)
             {
-                Debug.LogWarning("[WarehousePopupUI] Trừ kho thất bại: " + kv.Key);
                 continue;
             }
 
@@ -1221,7 +1218,7 @@ public class WarehousePopupUI : MonoBehaviour
         label.color = color;
         label.alignment = alignment;
         label.raycastTarget = false;
-        label.enableWordWrapping = true;
+        label.textWrappingMode = TextWrappingModes.Normal;
         return label;
     }
 

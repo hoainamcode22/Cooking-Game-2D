@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -79,9 +79,7 @@ public class PenBasketDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
         PenDropTarget target = FindDropTarget(eventData.position);
         if (target != null)
         {
-            bool ok = target.ReceiveBasketDrop();
-            if (!ok)
-                Debug.Log("[PenBasketDragItem] Drop rổ bị từ chối — chuồng chưa sẵn sàng");
+            target.ReceiveBasketDrop();
         }
     }
 

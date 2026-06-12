@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -65,7 +65,6 @@ public class FarmInventoryManager : MonoBehaviour
         items[key] += amount;
 
         SaveInventory();
-        Debug.Log($"[FarmInventory] AddItem: {key} = {items[key]}");
         OnInventoryChanged?.Invoke();
     }
 
@@ -131,8 +130,8 @@ public class FarmInventoryManager : MonoBehaviour
     public void DebugPrintInventory()
     {
         if (items.Count == 0) { Debug.Log("[FarmInventory] Inventory rỗng."); return; }
-        foreach (var kv in items)
-            Debug.Log($"[FarmInventory] Item: {kv.Key} | Amount: {kv.Value}");
+        foreach (var kv in items) ;
+        
     }
 
     // ── Persistence ───────────────────────────────────────────────────────────

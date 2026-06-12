@@ -62,6 +62,9 @@ public class FarmManager : MonoBehaviour
     // Fired every time a plot is actively planted by the player (not on scene load).
     public static event System.Action<PlotController> OnPlotPlantedEvent;
 
+    // Fired every time a plot is successfully harvested (via sickle or direct call).
+    public static event System.Action<PlotController> OnPlotHarvestedEvent;
+
     private readonly Dictionary<string, CropData> cropMap = new Dictionary<string, CropData>();
     private readonly Dictionary<string, int> seedStockMap = new Dictionary<string, int>();
 
@@ -360,6 +363,8 @@ public class FarmManager : MonoBehaviour
         string finalName = string.IsNullOrEmpty(cropName) ? "Nông sản" : cropName;
         FarmUIManager.Instance?.ShowHint($"Đã thu hoạch {finalName} ở ô {plot.PlotId}");
         FarmUIManager.Instance?.HideAllPopups();
+
+        OnPlotHarvestedEvent?.Invoke(plot);
     }
 
     public bool TryPlantSelectedCropById(string cropId)

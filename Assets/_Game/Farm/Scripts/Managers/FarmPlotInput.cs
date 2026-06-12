@@ -24,37 +24,29 @@ public class FarmPlotInput : MonoBehaviour
         // hoặc đang kéo/đặt công trình — hai hệ thống này không được dẫm chân nhau.
         if (EditModeManager.IsEditMode || PlacementManager.IsPlacingNewObject)
         {
-            Debug.Log("[PlotClick] ignored — EditMode or PlacingNewObject active");
             return;
         }
 
         if (FarmInputLock.BlockMapPan)
         {
-            Debug.Log("[PlotClick] ignored — FarmInputLock.BlockMapPan=true");
             return;
         }
 
         // Không xử lý trong khi đang kéo hạt giống
         if (FarmInputLock.IsDraggingSeed)
         {
-            Debug.Log("[PlotClick] ignored — IsDraggingSeed=true");
             return;
         }
 
         // Không xử lý plot khi đang có popup mở
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
         {
-            Debug.Log("[PlotClick] ignored — IsAnyPopupOpen=true");
             return;
         }
 
         // Nếu đang bấm UI thì không xử lý world plot.
         if (IsPointerOverUI())
         {
-            Debug.Log("[PlotClick] ignored — IsPointerOverUI=true" +
-                      $" | topUI={InputBridge.GetTopUINameUnderPointer()}" +
-                      $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}" +
-                      $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}");
             return;
         }
 
@@ -69,7 +61,6 @@ public class FarmPlotInput : MonoBehaviour
         Collider2D hit = Physics2D.OverlapCircle(worldPos, kTouchRadius, plotMask);
         if (hit == null)
         {
-            Debug.Log($"[PlotClick] no collider hit at worldPos={worldPos}");
             return;
         }
 
@@ -79,13 +70,9 @@ public class FarmPlotInput : MonoBehaviour
 
         if (plot == null)
         {
-            Debug.Log($"[PlotClick] hit '{hit.name}' — no PlotController found");
             return;
         }
 
-        Debug.Log($"[PlotClick] opening handler | plot={plot.PlotId} IsEmpty={plot.IsEmpty}" +
-                  $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}" +
-                  $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}");
 
         plot.HandlePlotClick();
     }

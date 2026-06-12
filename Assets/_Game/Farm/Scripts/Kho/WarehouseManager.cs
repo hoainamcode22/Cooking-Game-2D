@@ -100,7 +100,6 @@ public class WarehouseManager : MonoBehaviour
         WarehouseItemEntry found = items.Find(x => x.itemId == itemId);
         if (found == null || found.amount < amount)
         {
-            Debug.LogWarning($"[Warehouse] Không đủ {itemId} để trừ (cần {amount}, có {(found?.amount ?? 0)})");
             return false;
         }
 

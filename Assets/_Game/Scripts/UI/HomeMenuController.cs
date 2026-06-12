@@ -2,12 +2,17 @@ using UnityEngine;
 
 public class HomeMenuController : MonoBehaviour
 {
+    public static HomeMenuController Instance { get; private set; }
+    public bool IsOpen => panelItems != null && panelItems.activeSelf;
+
     [Header("Kéo dải băng rôn (Panel_Items) vào đây")]
     public GameObject panelItems;
     private bool popupInputLockHeld;
 
     void Start()
     {
+        if (Instance != null && Instance != this) { Destroy(this); return; }
+        Instance = this;
         // Đảm bảo khi mới chạy game, menu băng rôn luôn ở trạng thái đóng
         if (panelItems != null)
         {

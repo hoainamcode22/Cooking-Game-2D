@@ -10,6 +10,9 @@ public class MarketPopupUI : MonoBehaviour
 
     private void Start()
     {
+        // Đảm bảo popup đóng khi scene load — tránh tự mở ở Play Mode
+        if (popupRoot != null) popupRoot.SetActive(false);
+
         if (btnClose != null)
         {
             btnClose.onClick.RemoveAllListeners();

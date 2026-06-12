@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: "Ng\xF4"
   icon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
   category: 0
-  unlockLevel: 1
-  weight: 18
-  minAmount: 2
-  maxAmount: 5
-  goldPerUnit: 6
-  expPerUnit: 1
+  unlockLevel: 2
+  weight: 16
+  minAmount: 3
+  maxAmount: 7
+  goldPerUnit: 16
+  expPerUnit: 3

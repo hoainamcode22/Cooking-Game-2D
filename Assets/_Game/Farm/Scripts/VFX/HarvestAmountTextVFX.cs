@@ -74,7 +74,7 @@ public class HarvestAmountTextVFX : MonoBehaviour
         tmp.alignment          = TextAlignmentOptions.Center;
         tmp.sortingLayerID     = SortingLayer.NameToID(sortingLayerName);
         tmp.sortingOrder       = sortingOrder;
-        tmp.enableWordWrapping = false;
+        tmp.textWrappingMode = TextWrappingModes.NoWrap;
 
         Vector3 startPos = go.transform.position;
         float   riseY    = Random.Range(floatHeightMin, floatHeightMax);

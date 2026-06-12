@@ -17,8 +17,8 @@ MonoBehaviour:
   icon: {fileID: -842988855527424611, guid: b0b144ddc7537a348b0c7d8ec7c4b7e4, type: 3}
   category: 0
   unlockLevel: 1
-  weight: 14
-  minAmount: 1
-  maxAmount: 4
-  goldPerUnit: 7
-  expPerUnit: 2
+  weight: 18
+  minAmount: 2
+  maxAmount: 6
+  goldPerUnit: 18
+  expPerUnit: 3

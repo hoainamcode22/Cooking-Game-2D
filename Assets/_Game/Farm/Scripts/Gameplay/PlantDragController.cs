@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -15,13 +15,15 @@ public class PlantDragController : MonoBehaviour
     [Header("Detection")]
     [SerializeField] private LayerMask plotLayerMask = ~0;
 
+#pragma warning disable 0414
     [Header("Seed Rain FX")]
     [SerializeField] private int   seedRainCount    = 5;
     [SerializeField] private float seedRainDurMin   = 0.18f;
     [SerializeField] private float seedRainDurMax   = 0.28f;
     [SerializeField] private float seedRainSpread   = 1.8f;
     [SerializeField] private float seedRainSpawnY   = 1.8f;
-    [SerializeField] private float seedRainScale    = 0.6f;   // debug: 0.6f  final: 0.22-0.35f
+    [SerializeField] private float seedRainScale    = 0.6f;
+#pragma warning restore 0414
     [SerializeField] private Sprite debugSeedSprite;
 
     private bool             isPlantDragging;
@@ -60,13 +62,10 @@ public class PlantDragController : MonoBehaviour
         // Popup sẽ được đóng bởi EndPlantDrag sau khi drag kết thúc.
         FarmUIManager.Instance?.ShowFloatingDragIcon(crop.icon);
 
-        Debug.Log($"[PlantDrag] BEGIN | crop={crop.cropId} | IsDraggingSeed={FarmInputLock.IsDraggingSeed}");
     }
 
     public void EndPlantDrag()
     {
-        Debug.Log($"[PlantDrag] END requested | isPlantDragging={isPlantDragging}" +
-                  $" | plantedAny={plantedAnyThisDrag} | count={plantedThisDrag.Count}");
 
         if (!isPlantDragging) return;
 
@@ -84,7 +83,6 @@ public class PlantDragController : MonoBehaviour
         else
         {
             // Drag cancelled without planting — popup already closed, nothing to reopen.
-            Debug.Log("[PlantDrag] No plots planted this drag.");
         }
     }
 
@@ -103,11 +101,6 @@ public class PlantDragController : MonoBehaviour
 
         FarmUIManager.Instance?.HideFloatingDragIcon();
 
-        Debug.Log($"[PlantDrag] CLEANUP DONE" +
-                  $" | isPlantDragging={isPlantDragging}" +
-                  $" | currentDragCrop={currentDragCrop}" +
-                  $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}" +
-                  $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}");
     }
 
     // ── Update sweep ──────────────────────────────────────────────────────────
@@ -124,7 +117,6 @@ public class PlantDragController : MonoBehaviour
         bool mouseUp = Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame;
         if (mouseUp)
         {
-            Debug.Log("[PlantDrag] failsafe mouse-up detected in Update");
             EndPlantDrag();
         }
     }
@@ -160,7 +152,6 @@ public class PlantDragController : MonoBehaviour
 
         if (seedStock <= 0)
         {
-            Debug.Log($"[PlantDrag] Hết hạt giống '{currentDragCrop.displayName}' (seedId={seedId}) — dừng trồng.");
             EndPlantDrag();
             return;
         }
@@ -176,7 +167,6 @@ public class PlantDragController : MonoBehaviour
 
         SpawnSeedRain(plot.transform.position);
 
-        Debug.Log($"[PlantDrag] Trồng {currentDragCrop.cropId} → {plot.name} | Kho còn {seedStock - 1} hạt");
     }
 
     // ── Seed Rain FX ──────────────────────────────────────────────────────────
@@ -229,11 +219,6 @@ public class PlantDragController : MonoBehaviour
             sr.sortingLayerName = "FX";
             sr.sortingOrder     = 8000;
 
-            Debug.Log($"[SeedRain] #{i}" +
-                      $" | sprite='{(sr.sprite != null ? sr.sprite.name : "NULL")}'" +
-                      $" | localScale={go.transform.localScale}" +
-                      $" | start={startPos} end={endPos}" +
-                      $" | layer='{sr.sortingLayerName}' ID={sr.sortingLayerID} order={sr.sortingOrder}");
 
             StartCoroutine(CoFallNoFade(go, endPos, Random.Range(DUR_MIN, DUR_MAX)));
         }

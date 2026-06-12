@@ -1,4 +1,4 @@
-using TMPro;
+﻿using TMPro;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -20,7 +20,6 @@ public static class JudgeAvatarHierarchyBuilder
         var scene = EditorSceneManager.OpenScene(FarmScenePath, OpenSceneMode.Single);
         BuildInCurrentScene();
         EditorSceneManager.SaveScene(scene);
-        Debug.Log("[JudgeAvatarHierarchyBuilder] Built Task 1 avatar hierarchy in SCN_Farm.");
     }
 
     [MenuItem("Tools/Farm UI/Avatar/Build Task 2 Popup In Current Scene")]
@@ -36,7 +35,6 @@ public static class JudgeAvatarHierarchyBuilder
         BuildInCurrentScene();
         BuildPopupInCurrentScene();
         EditorSceneManager.SaveScene(scene);
-        Debug.Log("[JudgeAvatarHierarchyBuilder] Built Task 2 avatar popup in SCN_Farm.");
     }
 
     public static void BuildInCurrentScene()
@@ -44,14 +42,12 @@ public static class JudgeAvatarHierarchyBuilder
         GameObject judgePanel = GameObject.Find("JudgePanel");
         if (judgePanel == null)
         {
-            Debug.LogError("[JudgeAvatarHierarchyBuilder] Không tìm thấy JudgePanel trong scene.");
             return;
         }
 
         RectTransform judgeAvatar = FindDeepChild(judgePanel.transform, "JudgeAvatar") as RectTransform;
         if (judgeAvatar == null)
         {
-            Debug.LogError("[JudgeAvatarHierarchyBuilder] Không tìm thấy JudgeAvatar trong JudgePanel.");
             return;
         }
 
@@ -115,7 +111,6 @@ public static class JudgeAvatarHierarchyBuilder
 
         EditorUtility.SetDirty(judgePanel);
         EditorUtility.SetDirty(judgeAvatar.gameObject);
-        Debug.Log("[JudgeAvatarHierarchyBuilder] JudgePanel avatar Task 1 hierarchy is ready.");
     }
 
     public static void BuildPopupInCurrentScene()
@@ -123,14 +118,12 @@ public static class JudgeAvatarHierarchyBuilder
         GameObject judgePanel = GameObject.Find("JudgePanel");
         if (judgePanel == null)
         {
-            Debug.LogError("[JudgeAvatarHierarchyBuilder] Cannot find JudgePanel in scene.");
             return;
         }
 
         RectTransform judgeAvatar = FindDeepChild(judgePanel.transform, "JudgeAvatar") as RectTransform;
         if (judgeAvatar == null)
         {
-            Debug.LogError("[JudgeAvatarHierarchyBuilder] Cannot find JudgeAvatar in JudgePanel.");
             return;
         }
 
@@ -155,7 +148,6 @@ public static class JudgeAvatarHierarchyBuilder
 
         EditorUtility.SetDirty(popup.gameObject);
         EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
-        Debug.Log("[JudgeAvatarHierarchyBuilder] Avatar profile popup hierarchy is ready.");
     }
 
     private static RectTransform GetOrCreateUIChild(Transform parent, string childName)

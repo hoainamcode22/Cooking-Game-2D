@@ -59,7 +59,7 @@ namespace Village
         private static void FindInstanceAfterLoad()
         {
             if (Instance != null) return;
-            Instance = UnityEngine.Object.FindObjectOfType<HouseOrderPopupUI>(true);
+            Instance = UnityEngine.Object.FindFirstObjectByType<HouseOrderPopupUI>(FindObjectsInactive.Include);
             if (Instance != null)
                 Debug.Log("[HouseOrderPopupUI] Instance found via RuntimeInitializeOnLoadMethod.");
             else

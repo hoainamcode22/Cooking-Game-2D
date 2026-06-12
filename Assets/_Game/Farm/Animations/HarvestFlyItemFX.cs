@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -84,7 +84,6 @@ public class HarvestFlyItemFX : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[HarvestFlyItemFX] Missing SpriteRenderer reference (child Icon)");
         }
 
         onArrived = arrivedCallback;
@@ -140,7 +139,7 @@ public class HarvestFlyItemFX : MonoBehaviour
         transform.position = worldTargetPos;
 
         try { onArrived?.Invoke(); }
-        catch (Exception ex) { Debug.LogException(ex); }
+        catch (Exception) { }
 
         routine = null;
 

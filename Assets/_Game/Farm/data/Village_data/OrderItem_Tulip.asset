@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: Tulip
   icon: {fileID: -9055938408451778832, guid: ee879aad837187b4aa8c50051bbdae2a, type: 3}
   category: 1
-  unlockLevel: 3
-  weight: 10
-  minAmount: 1
-  maxAmount: 3
-  goldPerUnit: 12
-  expPerUnit: 3
+  unlockLevel: 9
+  weight: 8
+  minAmount: 2
+  maxAmount: 5
+  goldPerUnit: 20
+  expPerUnit: 4

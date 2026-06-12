@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: "Th\u1ECBt heo"
   icon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}
   category: 2
-  unlockLevel: 3
-  weight: 9
-  minAmount: 1
-  maxAmount: 2
-  goldPerUnit: 16
-  expPerUnit: 4
+  unlockLevel: 5
+  weight: 12
+  minAmount: 2
+  maxAmount: 4
+  goldPerUnit: 25
+  expPerUnit: 6

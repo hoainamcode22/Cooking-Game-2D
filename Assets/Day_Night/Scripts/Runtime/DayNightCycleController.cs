@@ -449,7 +449,7 @@ namespace Day_Night
 
             source.loop = true;
 
-            if (Application.isPlaying && !source.isPlaying)
+            if (Application.isPlaying && source.isActiveAndEnabled && !source.isPlaying)
             {
                 source.Play();
             }

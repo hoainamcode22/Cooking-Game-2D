@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Adapter kết nối hệ thống tàu với FarmInventoryManager.
@@ -11,7 +11,6 @@ public static class TrainInventoryAdapter
     {
         if (FarmInventoryManager.Instance == null)
         {
-            Debug.LogWarning("[TrainInventory] FarmInventoryManager.Instance == null");
             return false;
         }
         return FarmInventoryManager.Instance.HasItem(itemId, amount);

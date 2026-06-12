@@ -48,14 +48,26 @@ public class PopupManager : MonoBehaviour
             return;
 
         bool anyOpen = IsAnyPopupOpen();
+
+        // Self-healing: nếu popupLockCount bị kẹt > 0 nhưng không có popup nào thực sự mở,
+        // reset để tránh block click mãi mãi.
+        if (!anyOpen
+            && FarmInputLock.IsPopupOpen
+            && !FarmInputLock.IsSeedPopupOpen
+            && !FarmInputLock.IsMarketPopupOpen
+            && !FarmInputLock.IsDraggingSeed
+            && !FarmInputLock.IsDraggingSickle)
+        {
+            FarmInputLock.ResetAll();
+        }
+
         if (anyOpen == _prevAnyOpen)
             return;
 
         _prevAnyOpen = anyOpen;
         blockingOverlay.blocksRaycasts = anyOpen;
-        // alpha giá»¯ = 0 Ä‘á»ƒ overlay vÃ´ hÃ¬nh nhÆ°ng váº«n cháº·n raycast
     }
-    
+
 
     public bool IsAnyPopupOpen()
     {
@@ -65,7 +77,14 @@ public class PopupManager : MonoBehaviour
             || (trainLoadPopup    != null && trainLoadPopup.IsOpen)
             || (houseOrderPopup   != null && HouseOrderPopupUI.IsOpen)
             || (shopPopup         != null && shopPopup.IsOpen)
-            || (ewarPopup         != null && ewarPopup.IsOpen);
+            || (ewarPopup         != null && ewarPopup.IsOpen)
+            // Popup managers truy cập qua Singleton, không cần kéo vào Inspector
+            || (WelfareEventManager.Instance  != null && WelfareEventManager.Instance.IsOpen)
+            || (AttendanceManager.Instance    != null && AttendanceManager.Instance.IsOpen)
+            || (AvatarProfilePopupUI.Instance != null && AvatarProfilePopupUI.Instance.IsOpen)
+            || (HomeMenuController.Instance   != null && HomeMenuController.Instance.IsOpen)
+            || (HomeMenuManager.Instance      != null && HomeMenuManager.Instance.IsOpen)
+            || CropProcessPopupUI.AnyOpen;
     }
     
 }

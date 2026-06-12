@@ -37,13 +37,11 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("[VFX] HarvestFeedbackSpawner: duplicate Instance — destroying extra copy.");
             Destroy(gameObject);
             return;
         }
 
         Instance = this;
-        Debug.Log("[VFX] HarvestFeedbackSpawner Instance ready");
     }
 
     private void Start()
@@ -58,26 +56,21 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     {
         bool warehouseIsRectTransform = warehouseTarget != null && warehouseTarget is RectTransform;
 
-        Debug.Log($"[HarvestFX] SpawnHarvestFly | amount={amount} | icon={(icon != null ? icon.name : "NULL")} | spawn={worldPosition} | warehouseTarget={(warehouseTarget != null ? warehouseTarget.name : "NULL")} | warehouseTarget.position={(warehouseTarget != null ? warehouseTarget.position.ToString() : "NULL")} | warehouseTargetIsRectTransform={warehouseIsRectTransform}");
 
         if (warehouseIsRectTransform)
-            Debug.LogWarning("[HarvestFX] warehouseTarget is RectTransform (UI). Please assign a WORLD Transform.");
 
         if (harvestFlyPrefab == null)
         {
-            Debug.LogWarning("[HarvestFX] harvestFlyPrefab NULL");
             return;
         }
 
         if (warehouseTarget == null)
         {
-            Debug.LogWarning("[HarvestFX] warehouseTarget NULL");
             return;
         }
 
         if (icon == null)
         {
-            Debug.LogWarning("[HarvestFX] icon NULL");
             return;
         }
 
@@ -106,7 +99,6 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         int visualCount = Mathf.Clamp(amount, minVisualIcons, maxVisualIcons);
         int arrivedCount = 0;
 
-        Debug.Log($"[HarvestFX] Begin spawn fly icons | visualCount={visualCount} | spawnCenter={worldPosition} | warehouseTarget={(warehouseTarget != null ? warehouseTarget.position.ToString() : "NULL")}");
 
         for (int i = 0; i < visualCount; i++)
         {
@@ -117,26 +109,22 @@ public class HarvestFeedbackSpawner : MonoBehaviour
 
             if (fx == null)
             {
-                Debug.LogError("[HarvestFX] Instantiate fx returned NULL");
                 continue;
             }
 
             // Defensive: clear any prefab default sprite to prevent flashing/incorrect default icon
             fx.ClearIconImmediate();
 
-            Debug.Log($"[HarvestFX] Spawned fly fx #{i + 1}/{visualCount} | pos={spawnPos} | target={(warehouseTarget != null ? warehouseTarget.position.ToString() : "NULL")} | icon={icon.name}");
 
             if (warehouseTarget == null) continue;
             fx.Play(icon, spawnPos, warehouseTarget.position, () =>
             {
                 arrivedCount++;
-                Debug.Log($"[HarvestFX] Fly arrived | arrivedCount={arrivedCount}/{visualCount} | target={(warehouseTarget != null ? warehouseTarget.position.ToString() : "NULL")}");
 
                 if (arrivedCount >= visualCount)
                 {
                     if (warehousePulseFX == null)
                     {
-                        Debug.LogWarning("[HarvestFX] warehousePulseFX NULL (cannot pulse)");
                         return;
                     }
 

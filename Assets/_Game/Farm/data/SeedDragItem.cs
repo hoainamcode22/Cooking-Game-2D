@@ -49,12 +49,6 @@ private const float kDragThreshold = 25f;
         {
             if (iconChild.TryGetComponent(out Image img))
                 iconImage = img;
-            else
-                Debug.LogWarning($"[SeedDragItem] '{name}': Icon_item khÃ´ng cÃ³ Image component!");
-        }
-        else
-        {
-            Debug.LogWarning($"[SeedDragItem] '{name}': KhÃ´ng tÃ¬m tháº¥y child 'Icon_item' â€” giá»¯ iconImage tá»« inspector.");
         }
     }
 
@@ -81,8 +75,6 @@ private const float kDragThreshold = 25f;
         if (iconImage != null)
         {
             iconImage.sprite = data.icon;
-            if (data.icon == null)
-                Debug.LogWarning($"[SeedDragItem] CropData '{data.cropId}' thiáº¿u icon sprite.");
         }
 
         if (txtName != null)
@@ -206,7 +198,6 @@ private const float kDragThreshold = 25f;
         if (cropData == null)
         {
             dragMode = DragMode.None;
-            Debug.LogWarning($"[SeedDragItem] BeginPlantMode: cropData null crop={cropName}");
             return;
         }
 

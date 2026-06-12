@@ -75,13 +75,11 @@ public class MarketClickOpen : MonoBehaviour
 
         if (mainCamera == null)
         {
-            Debug.LogError("[MarketClickOpen] mainCamera null");
             return;
         }
 
         if (targetCollider == null)
         {
-            Debug.LogError("[MarketClickOpen] targetCollider null");
             return;
         }
 
@@ -90,7 +88,6 @@ public class MarketClickOpen : MonoBehaviour
 
         if (marketManager == null && marketPopupUI == null)
         {
-            Debug.LogError("[MarketClickOpen] marketManager and marketPopupUI are null");
             return;
         }
 

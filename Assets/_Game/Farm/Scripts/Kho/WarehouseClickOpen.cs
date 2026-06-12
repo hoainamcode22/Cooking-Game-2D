@@ -70,19 +70,16 @@ public class WarehouseClickOpen : MonoBehaviour
 
         if (mainCamera == null)
         {
-            Debug.LogError("[WarehouseClickOpen] mainCamera null");
             return;
         }
 
         if (targetCollider == null)
         {
-            Debug.LogError("[WarehouseClickOpen] targetCollider null");
             return;
         }
 
         if (warehousePopupUI == null)
         {
-            Debug.LogError("[WarehouseClickOpen] warehousePopupUI null");
             return;
         }
 

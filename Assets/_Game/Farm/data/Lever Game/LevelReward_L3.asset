@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L3
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 3
+  giftGold: 100
+  giftGems: 0
+  giftItems:
+  - itemId: chicken_coop
+    displayName: "Chu\u1ED3ng g\xE0"
+    icon: {fileID: 0}
+    amount: 1
+  unlockDescriptions:
+  - "M\u1EDF kh\xF3a chu\u1ED3ng g\xE0"
+  - "H\u01B0\u1EDBng d\u1EABn cho g\xE0 \u0103n"
+  - "C\xF3 th\u1EC3 thu tr\u1EE9ng t\u1EEB g\xE0"
+  hintText: "T\u1EEB c\u1EA5p 3, b\u1EA1n c\xF3 th\u1EC3 b\u1EAFt \u0111\u1EA7u ch\u0103m
+    s\xF3c g\xE0 v\xE0 thu ho\u1EA1ch tr\u1EE9ng."

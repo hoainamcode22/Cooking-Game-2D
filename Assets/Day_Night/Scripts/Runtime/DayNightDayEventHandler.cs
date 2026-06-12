@@ -33,7 +33,7 @@ namespace Day_Night
 
         private void OnEnable()
         {
-            controller = FindObjectOfType<DayNightCycleController>();
+            controller = FindFirstObjectByType<DayNightCycleController>();
             eventStates = new bool[Events == null ? 0 : Events.Length];
 
             for (int i = 0; i < eventStates.Length; i++)
@@ -68,7 +68,7 @@ namespace Day_Night
         {
             if (controller == null)
             {
-                controller = FindObjectOfType<DayNightCycleController>();
+                controller = FindFirstObjectByType<DayNightCycleController>();
             }
 
             return controller != null ? controller.CurrentDayRatio : 0.5f;

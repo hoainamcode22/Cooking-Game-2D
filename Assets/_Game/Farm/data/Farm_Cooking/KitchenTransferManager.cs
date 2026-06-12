@@ -175,7 +175,6 @@ public class KitchenTransferManager : MonoBehaviour
 
         if (!transferredItems.ContainsKey(itemId))
         {
-            Debug.LogWarning("[KitchenTransferManager] KhÃ´ng tÃ¬m tháº¥y itemId Ä‘á»ƒ trá»«: " + itemId);
             return;
         }
 

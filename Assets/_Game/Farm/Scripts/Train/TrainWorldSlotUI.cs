@@ -18,13 +18,13 @@ using UnityEngine.UI;
 [System.Obsolete("Use TrainWagonSlot instead.")]
 public class TrainWorldSlotUI : MonoBehaviour
 {
-#pragma warning disable 0649
+#pragma warning disable 0414, 0649
     [Header("DEPRECATED — use TrainWagonSlot instead")]
     [SerializeField] private Image    iconImage;
     [SerializeField] private TMP_Text txtLabel;
     [SerializeField] private Button   clickButton;
     [SerializeField] private int      slotIndex = 0;
-#pragma warning restore 0649
+#pragma warning restore 0414, 0649
 
     void Awake()
     {

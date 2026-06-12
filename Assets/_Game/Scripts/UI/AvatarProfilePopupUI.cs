@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 public class AvatarProfilePopupUI : MonoBehaviour
 {
+    public static AvatarProfilePopupUI Instance { get; private set; }
+    public bool IsOpen => popupRoot != null && popupRoot.activeSelf;
+
     private const string PrefName = "PLAYER_PROFILE_NAME";
     private const string PrefAvatarIndex = "PLAYER_PROFILE_AVATAR_INDEX";
     private const string PrefWarehouseLevel = "PLAYER_PROFILE_WAREHOUSE_LEVEL";
@@ -85,6 +88,9 @@ public class AvatarProfilePopupUI : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
+        Instance = this;
+
         AutoWire();
         BindButtons();
 

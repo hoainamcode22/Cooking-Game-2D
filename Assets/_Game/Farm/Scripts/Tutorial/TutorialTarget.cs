@@ -23,4 +23,12 @@ public class TutorialTarget : MonoBehaviour
 
     void OnEnable()  => TutorialManager.RegisterTarget(targetID, this);
     void OnDisable() => TutorialManager.UnregisterTarget(targetID);
+
+    /// <summary>Set ID at runtime and re-register. Used by TutorialRuntimeTargetResolver.</summary>
+    public void SetTargetId(string id)
+    {
+        targetID = id;
+        if (!string.IsNullOrEmpty(id))
+            TutorialManager.RegisterTarget(id, this);
+    }
 }

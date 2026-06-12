@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 /// <summary>
 /// Gắn lên MapRoot object.
@@ -57,7 +57,6 @@ public class MapBoundary : MonoBehaviour
             cameraController = mainCam.GetComponent<CameraController>();
 
         if (cameraController == null)
-            Debug.LogWarning("[MapBoundary] Không tìm thấy CameraController trên Main Camera!");
 
         // Áp dụng bounds khởi đầu cho camera
         ApplyBounds();

@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: "C\u01A1m chi\xEAn tr\u1EE9ng"
   icon: {fileID: -4455380416464841545, guid: 627c44244ff1a36449a7de95b38c0aef, type: 3}
   category: 3
-  unlockLevel: 1
-  weight: 10
+  unlockLevel: 5
+  weight: 8
   minAmount: 1
-  maxAmount: 5
-  goldPerUnit: 10
-  expPerUnit: 5
+  maxAmount: 2
+  goldPerUnit: 130
+  expPerUnit: 10

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
@@ -98,7 +98,6 @@ public class ShopManager : MonoBehaviour
             case 1: currentActiveList = buildingList; break;
             case 2: currentActiveList = decorList;    break;
             default:
-                Debug.LogWarning($"[ShopManager] Tab {tabIndex} không tồn tại");
                 return;
         }
 

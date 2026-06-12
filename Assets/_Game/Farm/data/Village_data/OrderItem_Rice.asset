@@ -18,7 +18,7 @@ MonoBehaviour:
   category: 0
   unlockLevel: 1
   weight: 20
-  minAmount: 2
-  maxAmount: 6
-  goldPerUnit: 5
-  expPerUnit: 1
+  minAmount: 3
+  maxAmount: 8
+  goldPerUnit: 15
+  expPerUnit: 3

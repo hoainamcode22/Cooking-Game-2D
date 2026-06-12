@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: "Canh chua c\xE1"
   icon: {fileID: 1069272278625557564, guid: f3e94879d572b7849bb9e19fb686300c, type: 3}
   category: 3
-  unlockLevel: 1
-  weight: 10
+  unlockLevel: 5
+  weight: 8
   minAmount: 1
-  maxAmount: 5
-  goldPerUnit: 10
-  expPerUnit: 5
+  maxAmount: 2
+  goldPerUnit: 140
+  expPerUnit: 10

@@ -30,4 +30,5 @@ public class BaseItemData : ScriptableObject
 
     // Giá Kim Cương — 0 nghĩa là item này không bán bằng kim cương
     public int diamondPrice;
+
 }

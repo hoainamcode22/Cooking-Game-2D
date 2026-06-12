@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -109,7 +109,7 @@ public class ExpFlyToAvatarFX : MonoBehaviour
         transform.position = worldTargetPos;
 
         try { onArrived?.Invoke(); }
-        catch (Exception ex) { Debug.LogException(ex); }
+        catch (Exception) { }
 
         routine = null;
 

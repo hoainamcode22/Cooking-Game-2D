@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -130,7 +130,6 @@ public class MarketManager : MonoBehaviour
 
         if (content == null || shopItemPrefab == null)
         {
-            Debug.LogWarning("[MarketManager] Missing Content or ShopItem_Prefab reference.");
             return;
         }
 
@@ -163,13 +162,11 @@ public class MarketManager : MonoBehaviour
 
         if (!CanSpendGold(totalPrice))
         {
-            Debug.LogWarning("[MarketManager] Not enough gold to buy " + itemID);
             return;
         }
 
         if (FarmInventoryManager.Instance == null)
         {
-            Debug.LogWarning("[MarketManager] FarmInventoryManager.Instance is null. Cannot add item: " + itemID);
             return;
         }
 
@@ -187,7 +184,6 @@ public class MarketManager : MonoBehaviour
     {
         if (!CanSpendGems(gemRefreshCost))
         {
-            Debug.LogWarning("[MarketManager] Not enough gems to refresh market.");
             return;
         }
 

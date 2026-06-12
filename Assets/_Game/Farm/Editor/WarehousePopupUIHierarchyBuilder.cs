@@ -1,4 +1,4 @@
-#if UNITY_EDITOR
+﻿#if UNITY_EDITOR
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -11,7 +11,6 @@ public static class WarehousePopupUIHierarchyBuilder
         WarehousePopupUI warehousePopup = Object.FindFirstObjectByType<WarehousePopupUI>(FindObjectsInactive.Include);
         if (warehousePopup == null)
         {
-            Debug.LogWarning("[WarehousePopupUIHierarchyBuilder] Không tìm thấy WarehousePopupUI trong scene.");
             return;
         }
 
@@ -20,7 +19,6 @@ public static class WarehousePopupUIHierarchyBuilder
 
         EditorUtility.SetDirty(warehousePopup);
         EditorSceneManager.MarkSceneDirty(warehousePopup.gameObject.scene);
-        Debug.Log("[WarehousePopupUIHierarchyBuilder] Đã tạo/cập nhật UI nâng cấp kho trong hierarchy.");
     }
 }
 #endif

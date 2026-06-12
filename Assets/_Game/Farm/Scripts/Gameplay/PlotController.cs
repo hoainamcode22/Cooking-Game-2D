@@ -87,7 +87,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         plotId = newId;
         gameObject.name = $"Plot_{plotId:00}";
-        Debug.Log($"[PlotController] SetPlotId {gameObject.name} = {plotId}");
     }
     public bool IsRarePlot => isRarePlot;
     public bool IsUnlocked => state != PlotState.Locked;
@@ -124,7 +123,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     private void Start()
     {
         if (processPopup == null)
-            processPopup = FindObjectOfType<CropProcessPopupUI>(true);
+            processPopup = FindFirstObjectByType<CropProcessPopupUI>(FindObjectsInactive.Include);
 
         if (_skipLoad)
         {
@@ -187,13 +186,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if (FarmInputLock.IsDraggingSeed)
             return;
 
-        Debug.Log($"[PlotClick] {name} clicked | state={state}" +
-                  $" | IsDraggingSeed={FarmInputLock.IsDraggingSeed}" +
-                  $" | IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen}");
 
         if (FarmManager.Instance == null)
         {
-            Debug.LogError("FarmManager.Instance NULL");
             return;
         }
 
@@ -362,7 +357,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         go.transform.SetParent(transform);
         go.transform.localPosition = new Vector3(0f, 0.35f, 0f);
         cropVFXRoot = go.transform;
-        Debug.Log($"[VFX_DEBUG] Auto created CropVFXRoot for {name}");
     }
 
     private void PlaySeedPlantVFX(CropData crop, int seedCost)
@@ -375,7 +369,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         SeedCostTextVFX costTextPrefab = seedCostTextPrefab != null
             ? seedCostTextPrefab
             : FarmCropVFXSpawner.Instance?.seedCostTextPrefab;
-        Debug.Log($"[VFX_DEBUG] PlaySeedPlantVFX ENTER | plot={name} | crop={crop?.cropId} | icon={(crop?.icon != null ? crop.icon.name : "NULL")} | root={(cropVFXRoot != null ? cropVFXRoot.name : "NULL")} | rainPrefab={rainPrefab != null} | costPrefab={costTextPrefab != null}");
 
         if (rainPrefab != null)
         {
@@ -395,7 +388,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         EnsureCropVFXRoot();
         Vector3 pos = cropVFXRoot.position + new Vector3(0f, 0.45f, 0f);
-        Debug.Log($"[PlotVFX] PlayHarvestAmountTextVFX plot={name} amount={amount}");
 
         HarvestAmountTextVFX amountTextPrefab = harvestAmountTextPrefab != null
             ? harvestAmountTextPrefab
@@ -419,7 +411,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         }
         else
         {
-            Debug.LogWarning($"[VFX_DEBUG] TEST: seedRainPrefab NULL on {name}");
         }
 
         if (seedCostTextPrefab != null)
@@ -429,7 +420,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         }
         else
         {
-            Debug.LogWarning($"[VFX_DEBUG] TEST: seedCostTextPrefab NULL on {name}");
         }
     }
 
@@ -449,7 +439,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             cropVisual.ClearAll();
 
         RefreshVisual();
-        Debug.Log("Cleared save for: " + SaveKey);
     }
 
     public void SetUnlocked(bool value)
@@ -482,31 +471,25 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         if (crop == null)
         {
-            Debug.LogWarning($"[CanPlantCrop] FAIL: crop null | plot={name}");
             return false;
         }
 
         if (state != PlotState.Empty)
         {
-            Debug.LogWarning($"[CanPlantCrop] FAIL: plot not empty | plot={name} state={state}");
             return false;
         }
 
         // Chặn trồng sai loại: plot hoa chỉ nhận Flower, plot thường chỉ nhận Normal.
         if ((int)crop.cropCategory != (int)plotCategory)
         {
-            Debug.LogWarning($"[CanPlantCrop] FAIL category mismatch | plot={name} plotCategory={plotCategory} | crop={crop.cropId} cropCategory={crop.cropCategory}" +
-                             $"\n=> Nếu crop.cropCategory=Normal nhưng crop là hoa: mở inspector CropData, đặt cropCategory=Flower");
             return false;
         }
 
-        Debug.Log($"[CanPlantCrop] OK | plot={name} | plotCategory={plotCategory} | crop={crop.cropId} | cropCategory={crop.cropCategory} | seedItemId={crop.seedItemId} | warehouseStock={WarehouseManager.Instance?.GetAmount(crop.seedItemId)}");
         return true;
     }
 
     public bool TryPlant(CropData crop)
     {
-        Debug.Log($"[TryPlant] Plot={name}, State={state}, Crop={(crop != null ? crop.displayName : "NULL")}");
 
         if (crop == null)
             return false;
@@ -529,7 +512,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         Save();
         RefreshVisual();
-        Debug.Log($"[VFX_DEBUG] Plant success hook reached | plot={name} | crop={plantedCrop?.cropId} | icon={(plantedCrop?.icon != null ? plantedCrop.icon.name : "NULL")}");
         PlaySeedPlantVFX(crop, 1);
         return true;
     }
@@ -612,19 +594,12 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         Vector3 fxSpawn = GetHarvestSpawnPosition();
 
-        Debug.Log(
-            $"[Harvest] WorldPos Debug | plot={name} | plotPath={GetTransformPath(transform)} | plot.transform.position={plotWorldPos} | " +
-            $"harvestSpawnPoint={(harvestSpawnPoint != null ? harvestSpawnPoint.name : "NULL")} | harvestSpawnPointPath={GetTransformPath(harvestSpawnPoint)} | " +
-            $"harvestSpawnPoint.position={(harvestSpawnPoint != null ? spawnPointWorldPos.ToString() : "NULL")} | final fxSpawn={fxSpawn} | " +
-            $"plotIsRectTransform={plotIsRectTransform} | harvestSpawnPointIsRectTransform={spawnIsRectTransform}"
-        );
 
         // Ưu tiên harvestIcon (gán riêng trong CropData), fallback về icon rồi readySprite như cũ
         Sprite fxIcon = harvestedCrop.harvestIcon != null
             ? harvestedCrop.harvestIcon
             : (harvestedCrop.icon != null ? harvestedCrop.icon : harvestedCrop.readySprite);
 
-        Debug.Log($"[Harvest] SpawnHarvestFly | plot={name} | crop={harvestedCrop.displayName} | cropId={harvestedCrop.cropId} | amount={amount} | icon={(fxIcon != null ? fxIcon.name : "NULL")} | fxSpawn={fxSpawn}");
 
         HarvestFeedbackSpawner.Instance?.SpawnHarvestFly(
             fxIcon,
@@ -668,19 +643,16 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         if (state != PlotState.Growing)
         {
-            Debug.LogWarning($"[PlotController] InstantGrow bị gọi nhưng state={state} (không phải Growing). Plot={name}");
             return;
         }
 
         if (FarmEconomyManager.Instance == null)
         {
-            Debug.LogError("[PlotController] InstantGrow: FarmEconomyManager.Instance NULL.");
             return;
         }
 
         if (FarmEconomyManager.Instance.Gems < 1)
         {
-            Debug.Log("[PlotController] InstantGrow: không đủ Gem.");
             return;
         }
 
@@ -693,7 +665,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         Save();
         RefreshVisual();
 
-        Debug.Log($"[PlotController] InstantGrow OK — Plot={name}, state={state}");
     }
 
     /// <summary>Xóa sạch toàn bộ save của các ô đất (PLOT_NORMAL_* và PLOT_RARE_*) khỏi PlayerPrefs.
@@ -716,7 +687,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             removed++;
         }
         PlayerPrefs.Save();
-        Debug.Log($"[PlotController] DebugClearData: đã xóa {removed} key(s). Reload scene để áp dụng.");
     }
 
     public void ApplyWaterBonus(int reduceSeconds)
@@ -744,7 +714,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         TryResolvePlantedCrop();
 
-        Debug.Log($"[RefreshVisual] {name} | state={state} | plantedCrop={plantedCrop?.cropId ?? "NULL"} | plantedCropId={plantedCropId}");
 
         if (groundSprite != null)
             groundSprite.enabled = true;
@@ -821,12 +790,10 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         if (FarmManager.Instance == null)
         {
-            Debug.LogWarning($"[ResolveCrop] {name} | FarmManager.Instance == NULL | cropId={plantedCropId}");
             return;
         }
 
         CropData resolved = FarmManager.Instance.GetCropById(plantedCropId);
-        Debug.Log($"[ResolveCrop] {name} | Looking for cropId={plantedCropId} | DB count={FarmManager.Instance.CropDatabaseCount} | resolved={(resolved != null ? resolved.cropId : "NULL")}");
         plantedCrop = resolved;
     }
 

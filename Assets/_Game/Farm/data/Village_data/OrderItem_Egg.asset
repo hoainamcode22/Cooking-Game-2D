@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: "Tr\u1EE9ng"
   icon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}
   category: 2
-  unlockLevel: 2
+  unlockLevel: 3
   weight: 14
-  minAmount: 1
-  maxAmount: 4
-  goldPerUnit: 10
-  expPerUnit: 2
+  minAmount: 3
+  maxAmount: 8
+  goldPerUnit: 18
+  expPerUnit: 4

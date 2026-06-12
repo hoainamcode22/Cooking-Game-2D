@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -73,6 +73,9 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         if (txtQuantity != null) txtQuantity.gameObject.SetActive(!isPlaceable);
 
         UpdateUI();
+
+        // Cập nhật trạng thái lock theo level — ShopLevelLockUI tự ẩn/hiện overlay
+        GetComponent<ShopLevelLockUI>()?.Refresh(data);
     }
 
     // ── Tăng / Giảm số lượng ─────────────────────────────────────────────────
@@ -110,8 +113,6 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
         if (!success)
         {
-            Debug.Log($"[Shop] Không đủ {(isDiamondItem ? "Kim Cương" : "Vàng")} " +
-                      $"để mua {currentData.itemName} (cần {totalCost})");
             return;
         }
 
@@ -120,7 +121,6 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         {
             ShopManager.Instance.CloseShop();
             PlacementManager.Instance.StartPlacingNewObject(placeable);
-            Debug.Log($"[Shop] Mua {currentData.itemName} → bắt đầu đặt lên map");
             return;
         }
 
@@ -131,8 +131,6 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             currentData.itemIcon,
             currentQuantity
         );
-        Debug.Log($"[Shop] Mua thành công: {currentData.itemName} x{currentQuantity} " +
-                  $"({(isDiamondItem ? "Kim Cương" : "Vàng")} -{totalCost})");
     }
 
     // ── Button Feedback ───────────────────────────────────────────────────────

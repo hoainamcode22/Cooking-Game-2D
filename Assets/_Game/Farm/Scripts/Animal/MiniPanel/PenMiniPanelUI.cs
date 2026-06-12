@@ -127,7 +127,6 @@ public class PenMiniPanelUI : MonoBehaviour
     {
         if (config == null)
         {
-            Debug.LogError("[PenMiniPanelUI] config chÆ°a gÃ¡n!");
             return;
         }
         _openedAtFrame = Time.frameCount; // Ä‘Ã¡nh dáº¥u frame má»Ÿ Ä‘á»ƒ Update bá» qua
@@ -338,7 +337,6 @@ public class PenMiniPanelUI : MonoBehaviour
     {
         if (icon == null)
         {
-            Debug.LogWarning($"[PenMiniPanelUI] SpawnHarvestFX: icon null cho itemId='{itemId}'");
             return;
         }
         HarvestFeedbackSpawner.Instance?.SpawnHarvestFly(icon, vfxWorldPosition, amount);

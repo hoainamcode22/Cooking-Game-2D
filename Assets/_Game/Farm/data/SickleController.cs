@@ -164,7 +164,6 @@ public class SickleController : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[Sickle] plot.Harvest() failed: {plot.name}");
         }
     }
 

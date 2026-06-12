@@ -70,7 +70,7 @@ namespace Day_Night
                 return;
             }
 
-            elements.AddRange(FindObjectsOfType<DayNightWeatherElement>(true));
+            elements.AddRange(FindObjectsByType<DayNightWeatherElement>(FindObjectsInactive.Include, FindObjectsSortMode.None));
         }
 
         private void ApplyWeather()

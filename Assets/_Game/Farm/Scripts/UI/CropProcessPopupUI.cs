@@ -25,6 +25,10 @@ public class CropProcessPopupUI : MonoBehaviour
 
     public bool IsOpen => gameObject.activeSelf;
 
+    private static readonly System.Collections.Generic.HashSet<CropProcessPopupUI> _openInstances
+        = new System.Collections.Generic.HashSet<CropProcessPopupUI>();
+    public static bool AnyOpen => _openInstances.Count > 0;
+
     private PlotController currentPlot;
     private bool popupInputLockHeld;
 
@@ -176,6 +180,7 @@ public class CropProcessPopupUI : MonoBehaviour
         if (popupInputLockHeld) return;
         FarmInputLock.RegisterPopupOpen();
         popupInputLockHeld = true;
+        _openInstances.Add(this);
     }
 
     private void ReleasePopupInputBlock()
@@ -185,6 +190,12 @@ public class CropProcessPopupUI : MonoBehaviour
         if (!popupInputLockHeld) return;
         FarmInputLock.RegisterPopupClose();
         popupInputLockHeld = false;
+        _openInstances.Remove(this);
+    }
+
+    private void OnDestroy()
+    {
+        _openInstances.Remove(this);
     }
 
     private bool IsPointerOverPopupUI(Vector2 screenPos)

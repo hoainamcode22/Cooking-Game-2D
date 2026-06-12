@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
+  m_Name: 8_TutorialDone
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
+  npcText: "B\u1EA1n \u0111\xE3 hi\u1EC3u c\xE1ch ch\u01A1i r\u1ED3i \u0111\xF3!\nH\xE3y
+    m\u1EDF r\u1ED9ng n\xF4ng tr\u1EA1i, mua th\xEAm h\u1EA1t gi\u1ED1ng, v\xE0 giao
+    th\u1EADt nhi\u1EC1u \u0111\u01A1n h\xE0ng!\nCh\xFAc b\u1EA1n ch\u01A1i vui!
+    \U0001F33E"
+  npcPortrait: {fileID: 0}
+  typingSpeed: 0.035
+  targetID: 
+  useCircleHole: 1
+  holePaddingPx: 16
+  waitAction: 0
+  showHandPointer: 0
+  handOffset: {x: 0, y: 0}

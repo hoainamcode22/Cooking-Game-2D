@@ -12,8 +12,6 @@ public class PenDropTarget : MonoBehaviour
 
     private void Start()
     {
-        if (miniPanel == null)
-            Debug.LogError("[PenDropTarget] miniPanel chÆ°a Ä‘Æ°á»£c gÃ¡n!");
     }
 
     public PenMiniPanelUI.PenState CurrentState =>

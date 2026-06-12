@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -136,7 +136,6 @@ public class PlacementManager : MonoBehaviour
     {
         if (itemData == null || itemData.prefabToBuild == null)
         {
-            Debug.LogWarning("[PlacementManager] itemData hoặc prefabToBuild bị null.");
             return;
         }
 
@@ -174,18 +173,13 @@ public class PlacementManager : MonoBehaviour
         Transform ringT = currentGhost.transform.Find("Selection_Ring");
         if (ringT != null)
             ringRenderer = ringT.GetComponent<SpriteRenderer>();
-        else
-            Debug.LogWarning("[PlacementManager] Không tìm thấy 'Selection_Ring' trong Ghost prefab.");
 
         // ── Set Event Camera cho World Space Canvas — bắt buộc để GraphicRaycaster hoạt động ──
         Canvas ghostCanvas = currentGhost.GetComponentInChildren<Canvas>(true);
         if (ghostCanvas != null)
         {
             ghostCanvas.worldCamera = Camera.main;
-            Debug.Log($"[PlacementManager] Set worldCamera cho Ghost Canvas: {(Camera.main != null ? Camera.main.name : "null")}");
         }
-        else
-            Debug.LogWarning("[PlacementManager] Không tìm thấy Canvas trong Ghost prefab!");
 
         // ── Tự động bind nút V / X / Rotate — gán RectTransform cho cả 3 để freeze logic hoạt động ──
         int boundCount = 0;
@@ -206,11 +200,10 @@ public class PlacementManager : MonoBehaviour
             }
         }
         if (boundCount == 0)
-            Debug.LogWarning("[PlacementManager] Không tìm thấy Btn_Confirm / Btn_Cancel trong Ghost!");
+            Debug.LogWarning("[PlacementManager] Ghost không tìm thấy Btn_Confirm / Btn_Cancel — kiểm tra prefab.");
 
         isPlacing          = true;
         IsPlacingNewObject = true;  // CameraController tự khóa pan
-        Debug.Log($"[PlacementManager] Bắt đầu đặt: {itemData.itemName}");
     }
 
     // ── Edit Building ────────────────────────────────────────────────────────
@@ -290,7 +283,6 @@ public class PlacementManager : MonoBehaviour
         if (houseRenderer != null)
             StartCoroutine(AnimatePickup(houseRenderer.transform, footprintTransform));
 
-        Debug.Log($"[PlacementManager] Edit: bắt đầu di chuyển '{target.name}'");
     }
 
     /// <summary>
@@ -463,14 +455,12 @@ public class PlacementManager : MonoBehaviour
             }
             SaveBuildings();
 
-            Debug.Log($"[PlacementManager] Di chuyển '{currentlyEditingBuilding.name}' → {pos}");
             Cleanup(refund: false);
             return;
         }
 
         // ── Nhánh đặt mới (luồng cũ từ Shop) ──
         GameObject spawnedObj = Instantiate(currentItem.prefabToBuild, pos, Quaternion.identity);
-        Debug.Log($"[PlacementManager] Đặt thành công: {currentItem.itemName} tại {pos}");
 
         FixBuildingRenderSorting(spawnedObj);
         FixAnimalVisibility(spawnedObj);
@@ -528,7 +518,6 @@ public class PlacementManager : MonoBehaviour
             PlaceableItemData itemData = FindItemById(entry.itemId);
             if (itemData == null || itemData.prefabToBuild == null)
             {
-                Debug.LogWarning($"[PlacementManager] LoadBuildings: không tìm thấy itemId='{entry.itemId}' trong ShopManager.");
                 continue;
             }
 
@@ -562,7 +551,6 @@ public class PlacementManager : MonoBehaviour
             }
 
             placedBuildings.Add(entry);
-            Debug.Log($"[PlacementManager] Loaded '{entry.itemId}' tại {pos} | plotId={entry.plotId}");
         }
 
         // Nếu có entry nào được cấp plotId mới (save cũ không có), ghi lại ngay
@@ -582,7 +570,6 @@ public class PlacementManager : MonoBehaviour
             if (hoc.gameObject.name == prefabName)          // exact name = chưa có "(Clone)"
             {
                 hoc.gameObject.SetActive(false);
-                Debug.Log($"[PlacementManager] Đã tắt scene placeholder: '{prefabName}'");
             }
         }
     }
@@ -593,7 +580,6 @@ public class PlacementManager : MonoBehaviour
         PlayerPrefs.DeleteKey(BuildingsSaveKey);
         PlayerPrefs.Save();
         placedBuildings.Clear();
-        Debug.Log("[PlacementManager] ClearBuildingData: đã xóa toàn bộ dữ liệu nhà đã đặt.");
     }
 
     private PlaceableItemData FindItemById(string itemId)
@@ -624,7 +610,6 @@ public class PlacementManager : MonoBehaviour
                 // Cancel Edit Mode: trả công trình về vị trí gốc và hiện lại
                 currentlyEditingBuilding.transform.position = originalEditPosition;
                 currentlyEditingBuilding.gameObject.SetActive(true);
-                Debug.Log($"[PlacementManager] Hủy edit, trả '{currentlyEditingBuilding.name}' về {originalEditPosition}");
             }
             else if (currentItem != null)
             {
@@ -634,8 +619,6 @@ public class PlacementManager : MonoBehaviour
                 else
                     FarmEconomyManager.Instance.AddGold(currentItem.goldPrice);
 
-                Debug.Log($"[PlacementManager] Hoàn tiền: " +
-                          $"{(currentItem.diamondPrice > 0 ? $"{currentItem.diamondPrice} Kim Cương" : $"{currentItem.goldPrice} Vàng")}");
             }
         }
 
@@ -645,7 +628,6 @@ public class PlacementManager : MonoBehaviour
         {
             currentlyEditingBuilding.transform.position = originalEditPosition;
             currentlyEditingBuilding.gameObject.SetActive(true);
-            Debug.LogWarning($"[PlacementManager] Safety restore: '{currentlyEditingBuilding.name}' về {originalEditPosition}");
         }
 
         if (currentGhost != null) Destroy(currentGhost);
@@ -679,7 +661,7 @@ public class PlacementManager : MonoBehaviour
     private int GetNextPlotId()
     {
         int maxId = 0;
-        foreach (var p in FindObjectsOfType<PlotController>(true))
+        foreach (var p in FindObjectsByType<PlotController>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
             if (p.PlotId > maxId)
                 maxId = p.PlotId;

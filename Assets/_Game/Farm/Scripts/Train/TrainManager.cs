@@ -81,7 +81,9 @@ public class TrainManager : MonoBehaviour
     [Tooltip("EXP thÆ°á»Ÿng má»—i láº§n thu 1 slot reward")]
     [SerializeField] private int   expPerReward        = 10;
     [Tooltip("Thá»i gian xá»­ lÃ½ trong háº§m (giÃ¢y). KHÃ”NG tÃ­nh thá»i gian tÃ u di chuyá»ƒn.")]
+#pragma warning disable 0414
     [SerializeField] private float tripDurationSeconds = 4f;
+#pragma warning restore 0414
 
     // â”€â”€â”€ Runtime â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -91,7 +93,9 @@ public class TrainManager : MonoBehaviour
     private int               _tripIndex      = 0;
     private TrainRewardItem[] _pendingRewards;
     private float             _tripEndTime;
+#pragma warning disable 0414
     private bool              _timerActive    = false;
+#pragma warning restore 0414
 
     /// Thá»i gian cÃ²n láº¡i cá»§a Processing timer (giÃ¢y).
     public float TripRemainingTime => Mathf.Max(0f, _tripEndTime - Time.time);

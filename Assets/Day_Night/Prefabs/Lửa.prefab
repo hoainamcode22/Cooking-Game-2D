@@ -119,9 +119,9 @@ VFXRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 1471039481
+  m_SortingLayerID: 1304480043
   m_SortingLayer: 3
-  m_SortingOrder: 0
+  m_SortingOrder: 95
   m_MaskInteraction: 0
 --- !u!1 &1004427458033512542
 GameObject:

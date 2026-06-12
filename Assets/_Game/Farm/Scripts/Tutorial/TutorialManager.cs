@@ -4,24 +4,6 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-/// <summary>
-/// State Machine quáº£n lÃ½ Tutorial Level 1-5 (Hay Day style).
-///
-/// Luá»“ng khá»Ÿi Ä‘á»™ng:
-///   Start() â†’ PlayIntroAnimation() [mÃ¢y bay + camera zoom] â†’ StartTutorial() â†’ Step 1â€¦
-///
-/// API cho game systems:
-///   TutorialManager.Instance.NextStep()
-///   TutorialManager.Instance.NotifyPlant()
-///   TutorialManager.Instance.NotifyHarvest()
-///   TutorialManager.Instance.NotifyCook()
-///   TutorialManager.Instance.NotifyDelivery()
-///   TutorialManager.Instance.NotifyBuyItem()
-///   TutorialManager.Instance.NotifyBuyAnimal()
-///   TutorialManager.Instance.NotifyTrainLoad()
-///   TutorialManager.Instance.NotifyAction(TutorialWaitAction)
-///   TutorialManager.RegisterTarget / UnregisterTarget
-/// </summary>
 public class TutorialManager : MonoBehaviour
 {
     // =========================================================================
@@ -58,6 +40,16 @@ public class TutorialManager : MonoBehaviour
         if (!string.IsNullOrEmpty(id)) _targetRegistry.Remove(id);
     }
 
+    /// <summary>Returns the RectTransform for a registered tutorial target, or null.</summary>
+    public static RectTransform GetTargetRect(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return null;
+        return _targetRegistry.TryGetValue(id, out var t) ? t?.RectTransform : null;
+    }
+
+    /// <summary>Exposes hand pointer for TutorialDragHintAnimator to control.</summary>
+    public RectTransform HandPointerRT => _handPointer;
+
     // =========================================================================
     // Inspector â€” Steps
     // =========================================================================
@@ -75,8 +67,18 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private RectTransform       _handPointer;
     [SerializeField] private Animator            _handAnimator;
 
+    [Header("Guide Board (4-step popup)")]
+    [SerializeField] private TutorialGuideBoardUI _guideBoardUI;
+
+    [Header("Camera Focus")]
+    [SerializeField] private TutorialCameraFocus _cameraFocus;
+
+    [Header("Runtime Target & Drag Hint")]
+    [SerializeField] private TutorialRuntimeTargetResolver _runtimeTargetResolver;
+    [SerializeField] private TutorialDragHintAnimator      _dragHintAnimator;
+
     // =========================================================================
-    // Inspector â€” Intro Animation
+    // Inspectorâ€” Intro Animation
     // =========================================================================
     [Header("Intro â€” ÄÃ¡m MÃ¢y")]
     [SerializeField] private GameObject    _cloudPanel;
@@ -204,6 +206,13 @@ public class TutorialManager : MonoBehaviour
         _state        = TutorialState.Idle;
         _currentIndex = -1;
         SetTutorialUIVisible(true);
+
+        // Focus camera vào 6 ô lúa ngay khi tutorial bắt đầu
+        var bridge = GetComponent<TutorialStepTriggerBridge>();
+        if (_cameraFocus != null && bridge != null)
+            _cameraFocus.FocusOnRice(bridge);
+
+        Debug.Log($"[Tutorial] StartTutorial — total steps: {_steps.Count}");
         AdvanceToNextStep();
     }
 
@@ -251,9 +260,20 @@ public class TutorialManager : MonoBehaviour
     /// <summary>Gá»i khi player giao Ä‘á»§ hÃ ng cho TÃ u Hoáº£ (Level 4).</summary>
     public void NotifyTrainLoad()   => NotifyAction(TutorialWaitAction.WaitForTrainLoad);
 
+    public void NotifyAllPlotsPlanted()         => NotifyAction(TutorialWaitAction.WaitForAllPlotsPlanted);
+    public void NotifyAllPlotsHarvested()       => NotifyAction(TutorialWaitAction.WaitForAllPlotsHarvested);
+    public void NotifyAllFlowerPlotsPlanted()   => NotifyAction(TutorialWaitAction.WaitForAllFlowerPlotsPlanted);
+    public void NotifyAllFlowerPlotsHarvested() => NotifyAction(TutorialWaitAction.WaitForAllFlowerPlotsHarvested);
+    public void NotifyOpenCropProcess()         => NotifyAction(TutorialWaitAction.WaitForOpenCropProcess);
+    public void NotifySpeedUp()                 => NotifyAction(TutorialWaitAction.WaitForSpeedUp);
+    public void NotifySickleShown()             => NotifyAction(TutorialWaitAction.WaitForSickleShown);
+
     // =========================================================================
     // State Machine Core
     // =========================================================================
+    // Index bắt đầu phase hoa (L1L2_11_TransitionFlower = index 10, zero-based)
+    private const int FLOWER_PHASE_START_INDEX = 10;
+
     private void AdvanceToNextStep()
     {
         _currentIndex++;
@@ -264,18 +284,37 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
+        var step = _steps[_currentIndex];
+        Debug.Log($"[Tutorial] Step [{_currentIndex}/{_steps.Count - 1}] {step.name} — waitAction={step.waitAction} showGuideBoard={step.showGuideBoard}");
+
+        // Khi bắt đầu phase hoa: focus camera vào chậu hoa
+        // Re-focus camera when reaching rice planting phase (L1L2_04_FocusPlots = index 3)
+        if (_currentIndex == 3 && _cameraFocus != null)
+        {
+            var bridge = GetComponent<TutorialStepTriggerBridge>();
+            _cameraFocus.FocusOnRice(bridge);
+        }
+
+        if (_currentIndex == FLOWER_PHASE_START_INDEX && _cameraFocus != null)
+        {
+            var bridge = GetComponent<TutorialStepTriggerBridge>();
+            if (bridge != null) _cameraFocus.FocusOnFlower(bridge);
+        }
+
         _state = TutorialState.Transitioning;
-        StartCoroutine(PlayStep(_steps[_currentIndex]));
+        StartCoroutine(PlayStep(step));
     }
 
     private IEnumerator PlayStep(TutorialStepData step)
     {
         // 1. Resolve target
         RectTransform targetRect = null;
-        if (!string.IsNullOrEmpty(step.targetID) &&
-            _targetRegistry.TryGetValue(step.targetID, out var tutTarget))
+        if (!string.IsNullOrEmpty(step.targetID))
         {
-            targetRect = tutTarget.RectTransform;
+            if (_targetRegistry.TryGetValue(step.targetID, out var tutTarget))
+                targetRect = tutTarget.RectTransform;
+            else
+                Debug.Log($"[Tutorial] Hand pointer target '{step.targetID}' chua dang ky — hand pointer se an.");
         }
 
         // 2. Dim / highlight
@@ -286,6 +325,14 @@ public class TutorialManager : MonoBehaviour
 
         // 3. Hand Pointer
         UpdateHandPointer(step, targetRect);
+        if (step.showHandPointer)
+            Debug.Log($"[Tutorial] Hand pointer target: {(targetRect != null ? targetRect.name : "NONE")}");
+
+        // Drag hint animation
+        if (!string.IsNullOrEmpty(step.dragToTargetId))
+            _dragHintAnimator?.StartDragHint(step.targetID, step.dragToTargetId);
+        else
+            _dragHintAnimator?.StopDragHint();
 
         // 4. NPC Portrait
         if (_npcPortrait != null)
@@ -294,12 +341,29 @@ public class TutorialManager : MonoBehaviour
             _npcPortrait.gameObject.SetActive(step.npcPortrait != null);
         }
 
+        // 4b. Guide Board
+        if (step.showGuideBoard && _guideBoardUI != null)
+        {
+            Debug.Log("[Tutorial] Showing guide board.");
+            if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+            _guideBoardUI.Show();
+            _state       = TutorialState.WaitingAction;
+            _pendingWait = TutorialWaitAction.WaitForClick;
+            yield break;
+        }
+        else
+        {
+            if (_guideBoardUI != null) _guideBoardUI.Hide();
+            if (_npcDialogPopup != null) _npcDialogPopup.SetActive(true);
+        }
+
         // 5. Typewriter
         _state = TutorialState.TypingText;
         yield return StartTyping(step.npcText, step.typingSpeed);
 
         // 6. Chá» action
         _pendingWait = step.waitAction;
+        Debug.Log($"[Tutorial] Waiting for: {step.waitAction}");
 
         if (step.waitAction == TutorialWaitAction.Auto)
         {
@@ -351,6 +415,8 @@ public class TutorialManager : MonoBehaviour
     private void UpdateHandPointer(TutorialStepData step, RectTransform targetRect)
     {
         if (_handPointer == null) return;
+        // Drag hint animator owns hand pointer position when running
+        if (_dragHintAnimator != null && _dragHintAnimator.IsRunning) return;
 
         bool show = step.showHandPointer && targetRect != null;
         _handPointer.gameObject.SetActive(show);
@@ -368,8 +434,11 @@ public class TutorialManager : MonoBehaviour
     private void FinishTutorial()
     {
         _state = TutorialState.Finished;
+        Debug.Log("[Tutorial] Tutorial FINISHED — restoring camera and closing UI.");
         SetTutorialUIVisible(false);
         _dimBackground.ClearHole();
+        _cameraFocus?.RestoreCamera();
+        _dragHintAnimator?.StopDragHint();
 
         // Táº¯t hoÃ n toÃ n Tutorial_Canvas â€” khÃ´ng Ä‘á»ƒ Canvas tÃ ng hÃ¬nh cháº·n raycast game UI
         if (_tutorialCanvasCG != null)

@@ -24,7 +24,7 @@ namespace Day_Night
         {
             if (controller == null)
             {
-                controller = FindObjectOfType<DayNightCycleController>();
+                controller = FindFirstObjectByType<DayNightCycleController>();
             }
 
             SetRatio(controller != null ? controller.CurrentDayRatio : 0.5f);
