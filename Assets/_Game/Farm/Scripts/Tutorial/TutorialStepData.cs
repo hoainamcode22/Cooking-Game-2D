@@ -18,6 +18,7 @@ public enum TutorialWaitAction
     WaitForOpenCropProcess,         // NotifyOpenCropProcess() — player mở CropProcessPopup
     WaitForSpeedUp,                 // NotifySpeedUp() — player dùng gem speed-up
     WaitForSickleShown,             // NotifySickleShown() — liềm tray đã hiện
+    WaitForSeedPanel,
 }
 
 [CreateAssetMenu(fileName = "TutorialStep_00", menuName = "FarmGame/Tutorial/Tutorial Step")]

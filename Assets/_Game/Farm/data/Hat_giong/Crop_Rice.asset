@@ -33,7 +33,7 @@ MonoBehaviour:
   tier: 1
   unlockLevel: 1
   growSeconds: 180
-  sellGold: 3
+  sellGold: 7
   harvestAmount: 4
   plantCost: 1
   expReward: 5

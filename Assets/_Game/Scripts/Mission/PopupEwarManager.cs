@@ -18,8 +18,14 @@ public class PopupEwarManager : MonoBehaviour
     [Header("Data")]
     [SerializeField] private MissionDatabase missionDatabase;
 
+    // TODO (Daily): MissionDatabase_Daily + 6 mission isDaily=true đã có data
+    // (Assets/_Game/Farm/data/Data_Ewa/MissionDatabase_Daily.asset) nhưng popup
+    // hiện chỉ có 1 list — cần thiết kế tab/section riêng trước khi nối daily vào UI.
+    [SerializeField] private MissionDatabase dailyMissionDatabase;
+
     private readonly List<MissionItemUI> _spawnedItems = new List<MissionItemUI>();
     private bool _initialized;
+    private int  _lastSpawnLevel = -1;
     private bool _popupInputLockHeld;
 
     // PopupManager.IsAnyPopupOpen() đọc property này để biết có đang mở không
@@ -40,6 +46,14 @@ public class PopupEwarManager : MonoBehaviour
         canvasGroup.interactable   = false;
 
         popup_Ewar.SetActive(false);
+
+        // UI cập nhật realtime khi tiến độ đổi (hết code chết NotifyProgressChanged)
+        MissionProgressTracker.OnProgressChanged += HandleProgressChanged;
+    }
+
+    private void OnDestroy()
+    {
+        MissionProgressTracker.OnProgressChanged -= HandleProgressChanged;
     }
 
     public void OpenPopup()
@@ -54,10 +68,13 @@ public class PopupEwarManager : MonoBehaviour
         // FarmInputLock.BlockMapPan tự động = true vì PopupManager.IsAnyPopupOpen()
         // sẽ trả về true → CameraController ngừng nhận input kéo map
 
-        if (!_initialized)
+        // Respawn khi mở lần đầu hoặc khi level đổi (mission mới mở khoá theo level)
+        int playerLevel = GetPlayerLevel();
+        if (!_initialized || playerLevel != _lastSpawnLevel)
         {
-            SpawnMissionItems();
-            _initialized = true;
+            SpawnMissionItems(playerLevel);
+            _initialized    = true;
+            _lastSpawnLevel = playerLevel;
         }
 
         RefreshAllProgress();
@@ -103,7 +120,7 @@ public class PopupEwarManager : MonoBehaviour
         }
     }
 
-    private void SpawnMissionItems()
+    private void SpawnMissionItems(int playerLevel)
     {
         if (missionDatabase == null || missionDatabase.missions == null) return;
 
@@ -115,6 +132,10 @@ public class PopupEwarManager : MonoBehaviour
         foreach (var data in missionDatabase.missions)
         {
             if (data == null) continue;
+
+            // List chính: chỉ mission đã mở khoá theo level, không lấy mission daily
+            if (data.isDaily) continue;
+            if (data.requiredLevel > playerLevel) continue;
 
             var go   = Instantiate(missionItemPrefab, contentTransform);
             var item = go.GetComponent<MissionItemUI>();
@@ -130,19 +151,26 @@ public class PopupEwarManager : MonoBehaviour
         foreach (var item in _spawnedItems)
         {
             if (item == null || item.Data == null) continue;
-            int current = MissionProgressTracker.Instance != null
-                ? MissionProgressTracker.Instance.GetProgress(item.Data.missionName)
-                : 0;
-            item.UpdateProgress(current);
+            item.UpdateProgress(MissionProgressTracker.GetProgressFor(item.Data));
         }
     }
 
-    public void NotifyProgressChanged(string missionName, int newValue)
+    private void HandleProgressChanged(string key, int newValue)
     {
-        foreach (var item in _spawnedItems)
-        {
-            if (item != null && item.Data != null && item.Data.missionName == missionName)
-                item.UpdateProgress(newValue);
-        }
+        if (!IsOpen) return;
+        NotifyProgressChanged();
+    }
+
+    /// <summary>Refresh tiến độ mọi item đang hiển thị (gọi từ event tracker).</summary>
+    public void NotifyProgressChanged()
+    {
+        RefreshAllProgress();
+    }
+
+    private static int GetPlayerLevel()
+    {
+        if (PlayerProgressManager.Instance != null) return PlayerProgressManager.Instance.Level;
+        if (FarmLevelManager.Instance != null)      return FarmLevelManager.Instance.CurrentLevel;
+        return 1;
     }
 }

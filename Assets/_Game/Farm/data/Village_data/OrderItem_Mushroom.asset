@@ -12,13 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86e861be00e538046af1b12d7d4bdec0, type: 3}
   m_Name: OrderItem_Mushroom
   m_EditorClassIdentifier: Assembly-CSharp::Village.OrderItemDefinition
-  itemId: nam
-  displayName: "N\u1EA5m"
+  itemId: mushroom
+  displayName: "Nấm"
   icon: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}
   category: 0
   unlockLevel: 6
   weight: 10
   minAmount: 2
   maxAmount: 5
-  goldPerUnit: 22
+  goldPerUnit: 50
   expPerUnit: 5

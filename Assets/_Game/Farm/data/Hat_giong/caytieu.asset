@@ -31,12 +31,12 @@ MonoBehaviour:
   seedItemId: seed_pepper
   harvestItemId: pepper
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 10
   growSeconds: 660
-  sellGold: 3
+  sellGold: 55
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 14
   sweet: 0
   spicy: 2
   sour: 0

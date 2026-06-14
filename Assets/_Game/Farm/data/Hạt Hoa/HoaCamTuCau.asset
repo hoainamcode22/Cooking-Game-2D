@@ -31,9 +31,9 @@ MonoBehaviour:
   seedItemId: seed_hoa_cam_tu_cau
   harvestItemId: hoa_cam_tu_cau
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 10
   growSeconds: 180
-  sellGold: 3
+  sellGold: 30
   harvestAmount: 4
   plantCost: 1
   expReward: 5

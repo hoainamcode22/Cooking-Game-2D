@@ -20,5 +20,5 @@ MonoBehaviour:
   weight: 10
   minAmount: 2
   maxAmount: 5
-  goldPerUnit: 15
+  goldPerUnit: 20
   expPerUnit: 3

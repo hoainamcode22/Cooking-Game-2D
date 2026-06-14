@@ -116,6 +116,12 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             return;
         }
 
+        // Tiến độ nhiệm vụ mua hàng (chuồng heo=108, chuồng bò=106...);
+        // mua CropData = mua hạt giống → tính thêm BuySeed
+        MissionProgressTracker.ReportEvent(MissionEventType.BuyShopItem, currentData.itemID, currentQuantity);
+        if (currentData is CropData)
+            MissionProgressTracker.ReportEvent(MissionEventType.BuySeed, currentData.itemID, currentQuantity);
+
         // Vật phẩm xây dựng / trang trí → đóng Shop và chuyển sang chế độ đặt
         if (currentData is PlaceableItemData placeable && placeable.prefabToBuild != null)
         {

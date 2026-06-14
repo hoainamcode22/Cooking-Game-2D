@@ -12,9 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_05_DragFirstRice
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: O day co 6 o dat. Hay keo hat lua tu bang hat giong vao o dat!
+  npcText: "Tuy\u1EC7t! Gi\u1EDD k\xE9o h\u1EA1t l\xFAa v\xE0o \xF4 \u0111\u1EA5t
+    \u0111\u1EC3 gieo nh\xE9!"
   npcPortrait: {fileID: 0}
-  typingSpeed: 0.04
+  typingSpeed: 0.02
   targetID: seed_rice
   useCircleHole: 1
   holePaddingPx: 16

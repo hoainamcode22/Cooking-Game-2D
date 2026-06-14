@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
@@ -45,13 +46,16 @@ public static class SetupTutorialL1L2Tool
     }
 
     /// <summary>
-    /// 18 bước tutorial L1→L2.
-    /// Phase 1: Intro (01-04)
+    /// 19 bước tutorial L1→L2 — phong cách Hay Day: THU HOẠCH TRƯỚC, TRỒNG SAU.
+    /// Phase 1: Intro (01-04) + Thu hoạch mở màn (04b — ô lúa chín sẵn do TutorialPrePlant)
     /// Phase 2: Lúa trồng (05-08)
     /// Phase 3: Lúa thu hoạch (09-10)
     /// Phase 4: Hoa hướng dương trồng (11-14)
     /// Phase 5: Hoa thu hoạch + Level Up (15-18)
-    /// EXP: 6 lúa×5=30 + 2 hoa×5=10 = 40 EXP = Level 2 exactly
+    /// EXP: 1 intro-harvest×5=5 + 6 lúa×5=30 + 2 hoa×5=10 = 45 ≥ 40 (cần L2)
+    ///      → vẫn lên cấp đúng lúc thu hoạch hoa, dư 5 EXP giữ lại.
+    /// LƯU Ý: TutorialPrePlant gọi bridge.ResetCounters() sau intro-harvest
+    ///        nên 6 ô lúa của WaitForAllPlotsHarvested vẫn đếm từ 0.
     /// </summary>
     private static readonly StepSpec[] Steps = new StepSpec[]
     {
@@ -59,24 +63,24 @@ public static class SetupTutorialL1L2Tool
         new StepSpec
         {
             fileName       = "L1L2_01_Welcome",
-            npcText        = "Chao mung ban da den voi nong trai!",
+            npcText        = "Chào mừng bạn đến với nông trại!",
             targetID       = "",
             waitAction     = TutorialWaitAction.WaitForClick,
             showHandPointer= false,
             showGuideBoard = false,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
             fileName       = "L1L2_02_ReadyQuestion",
-            npcText        = "Ban da san sang xay dung mot nong trai that dep cho rieng minh chua?",
+            npcText        = "Sẵn sàng xây nông trại trong mơ của riêng bạn chưa?",
             targetID       = "",
             waitAction     = TutorialWaitAction.WaitForClick,
             showHandPointer= false,
             showGuideBoard = false,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
@@ -87,182 +91,227 @@ public static class SetupTutorialL1L2Tool
             showHandPointer= false,
             showGuideBoard = true,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
             fileName       = "L1L2_04_FocusPlots",
-            npcText        = "Bat dau nhe! Truoc tien, chung ta se gieo hat lua tren nhung o dat nay.",
-            targetID       = "",
-            waitAction     = TutorialWaitAction.WaitForClick,
-            showHandPointer= false,
+            npcText        = "Đây là khu ruộng của bạn. Ơ kìa, có lúa chín sẵn rồi!",
+            targetID       = "tutorial_plot_01",
+            waitAction     = TutorialWaitAction.WaitForSeedPanel,
+            showHandPointer= true,
             showGuideBoard = false,
-            handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            handOffset     = new Vector2(40f, -30f),
+            typingSpeed    = 0.02f,
+        },
+        // ── Hay Day opening: thu hoạch TRƯỚC khi trồng (ô chín sẵn) ──────────
+        new StepSpec
+        {
+            fileName       = "L1L2_04b_FirstHarvest",
+            npcText        = "Chạm vào ô lúa chín để thu hoạch nào!",
+            targetID       = "tutorial_plot_01",
+            waitAction     = TutorialWaitAction.WaitForHarvest,
+            showHandPointer= true,
+            showGuideBoard = false,
+            handOffset     = new Vector2(40f, -30f),
+            typingSpeed    = 0.02f,
         },
 
         // ── Phase 2: Lúa trồng ───────────────────────────────────────────────
         new StepSpec
         {
             fileName       = "L1L2_05_DragFirstRice",
-            npcText        = "O day co 6 o dat. Hay keo hat lua tu bang hat giong vao o dat!",
+            npcText        = "Tuyệt! Giờ kéo hạt lúa vào ô đất để gieo nhé!",
             targetID       = "seed_rice",
             waitAction     = TutorialWaitAction.WaitForPlant,
             showHandPointer= true,
             showGuideBoard = false,
             handOffset     = new Vector2(40f, -30f),
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
             dragToTargetId = "tutorial_plot_01",
         },
         new StepSpec
         {
             fileName       = "L1L2_06_PlantAllRice",
-            npcText        = "Tot lam! Hay gieo hat cho ca 6 o dat nhe.",
+            npcText        = "Giỏi lắm! Gieo nốt cho đủ 6 ô nhé.",
             targetID       = "",
             waitAction     = TutorialWaitAction.WaitForAllPlotsPlanted,
             showHandPointer= false,
             showGuideBoard = false,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
+        },
+        new StepSpec
+        {
+            fileName       = "L1L2_06b_GuideSpeedUp",
+            npcText        = "",
+            targetID       = "",
+            waitAction     = TutorialWaitAction.WaitForClick,
+            showHandPointer= false,
+            showGuideBoard = true,
+            handOffset     = Vector2.zero,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
             fileName       = "L1L2_07_OpenCropProgress",
-            npcText        = "Bam vao o dat de xem cay dang lon.",
+            npcText        = "Chạm vào ô đất để xem cây lớn nhé.",
             targetID       = "tutorial_plot_01",
-            waitAction     = TutorialWaitAction.WaitForClick,
+            waitAction     = TutorialWaitAction.WaitForOpenCropProcess,
             showHandPointer= true,
             showGuideBoard = false,
             handOffset     = new Vector2(30f, -20f),
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
             fileName       = "L1L2_08_SpeedUpTip",
-            npcText        = "Ban co the dung kim cuong de hoan tat nhanh qua trinh nay.",
+            npcText        = "Mẹo nhỏ: dùng kim cương để cây chín ngay lập tức!",
             targetID       = "",
-            waitAction     = TutorialWaitAction.WaitForClick,
+            waitAction     = TutorialWaitAction.WaitForSpeedUp,
             showHandPointer= false,
             showGuideBoard = false,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
+        },
+        new StepSpec
+        {
+            fileName       = "L1L2_08b_GuideHarvest",
+            npcText        = "",
+            targetID       = "",
+            waitAction     = TutorialWaitAction.WaitForClick,
+            showHandPointer= false,
+            showGuideBoard = true,
+            handOffset     = Vector2.zero,
+            typingSpeed    = 0.02f,
         },
 
         // ── Phase 3: Lúa thu hoạch ───────────────────────────────────────────
         new StepSpec
         {
             fileName       = "L1L2_09_HarvestFirstRice",
-            npcText        = "Lua da chin roi! Hay dung liem de thu hoach.",
+            npcText        = "Lúa chín vàng rồi! Thu hoạch thôi!",
             targetID       = "tutorial_plot_01",
             waitAction     = TutorialWaitAction.WaitForHarvest,
-            showHandPointer= true,
+            showHandPointer= false,
             showGuideBoard = false,
             handOffset     = new Vector2(40f, -30f),
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
+        },
+        new StepSpec
+        {
+            fileName       = "L1L2_09b_HarvestResult",
+            npcText        = "",
+            targetID       = "",
+            waitAction     = TutorialWaitAction.WaitForClick,
+            showHandPointer= false,
+            showGuideBoard = true,
+            handOffset     = Vector2.zero,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
             fileName       = "L1L2_10_HarvestAllRice",
-            npcText        = "Tuyet voi! Ban da thu hoach xong vu lua dau tien.",
+            npcText        = "Thu hoạch hết 6 ô để nhận EXP nào!",
             targetID       = "",
             waitAction     = TutorialWaitAction.WaitForAllPlotsHarvested,
             showHandPointer= false,
             showGuideBoard = false,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
 
         // ── Phase 4: Hoa hướng dương trồng ──────────────────────────────────
         new StepSpec
         {
             fileName       = "L1L2_11_TransitionFlower",
-            npcText        = "Minh trong them hoa huong duong de nong trai dep hon nhe!",
+            npcText        = "Trồng thêm hoa cho nông trại thật xinh nhé!",
             targetID       = "",
             waitAction     = TutorialWaitAction.WaitForClick,
             showHandPointer= false,
             showGuideBoard = false,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
             fileName       = "L1L2_12_FocusFlowerPots",
-            npcText        = "Day la khu trong hoa. Hay keo hat hoa huong duong vao chau hoa!",
-            targetID       = "seed_huong_duong",
-            waitAction     = TutorialWaitAction.WaitForClick,
+            npcText        = "Đây là khu vườn hoa của bạn đó!",
+            targetID       = "tutorial_flower_01",
+            waitAction     = TutorialWaitAction.WaitForSeedPanel,
             showHandPointer= true,
             showGuideBoard = false,
             handOffset     = new Vector2(40f, -30f),
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
             fileName       = "L1L2_13_DragFirstFlower",
-            npcText        = "Hay keo hat hoa huong duong vao chau hoa nao!",
+            npcText        = "Kéo hạt hướng dương vào chậu hoa nào!",
             targetID       = "seed_huong_duong",
             waitAction     = TutorialWaitAction.WaitForPlant,
             showHandPointer= true,
             showGuideBoard = false,
             handOffset     = new Vector2(40f, -30f),
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
             dragToTargetId = "tutorial_flower_01",
         },
         new StepSpec
         {
             fileName       = "L1L2_14_PlantAllFlowers",
-            npcText        = "Trong them vao cac chau hoa con lai nua nhe!",
+            npcText        = "Trồng nốt chậu còn lại nhé!",
             targetID       = "",
             waitAction     = TutorialWaitAction.WaitForAllFlowerPlotsPlanted,
             showHandPointer= false,
             showGuideBoard = false,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
             fileName       = "L1L2_15_FlowerSpeedUp",
-            npcText        = "Dung kim cuong de hoan tat nhanh neu ban muon.",
+            npcText        = "Muốn hoa nở ngay? Dùng kim cương nhé!",
             targetID       = "",
-            waitAction     = TutorialWaitAction.WaitForClick,
+            waitAction     = TutorialWaitAction.WaitForSpeedUp,
             showHandPointer= false,
             showGuideBoard = false,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
 
         // ── Phase 5: Hoa thu hoạch + Level Up ────────────────────────────────
         new StepSpec
         {
             fileName       = "L1L2_16_HarvestFirstFlower",
-            npcText        = "Hoa huong duong da no roi! Hay thu hoach nao.",
+            npcText        = "Hướng dương nở rực rỡ rồi! Thu hoạch nào!",
             targetID       = "tutorial_flower_01",
             waitAction     = TutorialWaitAction.WaitForHarvest,
-            showHandPointer= true,
+            showHandPointer= false,
             showGuideBoard = false,
             handOffset     = new Vector2(40f, -30f),
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
             fileName       = "L1L2_17_HarvestAllFlowers",
-            npcText        = "Thu hoach het cac chau hoa con lai de nhan EXP nhe!",
+            npcText        = "Thu nốt các chậu hoa còn lại nhé!",
             targetID       = "",
             waitAction     = TutorialWaitAction.WaitForAllFlowerPlotsHarvested,
             showHandPointer= false,
             showGuideBoard = false,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
         new StepSpec
         {
             fileName       = "L1L2_18_LevelUpCelebration",
-            npcText        = "Gioi qua! Ban da du kinh nghiem de len cap 2. Nong trai cua ban dang phat trien roi!",
+            npcText        = "LÊN CẤP 2 RỒI! Bạn đúng là nông dân tài ba!",
             targetID       = "",
             waitAction     = TutorialWaitAction.WaitForClick,
             showHandPointer= false,
             showGuideBoard = false,
             handOffset     = Vector2.zero,
-            typingSpeed    = 0.04f,
+            typingSpeed    = 0.02f,
         },
     };
 
@@ -272,19 +321,31 @@ public static class SetupTutorialL1L2Tool
     [MenuItem(MENU)]
     public static void RunSetup()
     {
+        RunSetupInternal(true);
+    }
+
+    public static void RunSetupSilent()
+    {
+        RunSetupInternal(false);
+    }
+
+    private static void RunSetupInternal(bool showDialog)
+    {
         int stepsMade = CreateStepAssets();   // 1. Tao file .asset
-        AssignStepsToManager();               // 2. Gan 18 steps vao TutorialManager._steps
-        SetupTutorialHierarchy();             // 3. GuideBoard, Bridge, plots
+        AssignStepsToManager();               // 2. Gan steps vao TutorialManager._steps
+        SetupTutorialHierarchy();             // 3. GuideBoard, Bridge, plots, PrePlant, camera
         SetupStarterInventory();              // 4. Hat giong starter
         LevelUpPopupSetupTool.EnsureExists(); // 5. LevelUp popup
         PrintExpReport();
         PrintFinalReport(stepsMade);
+        EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+        EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene());
 
-        EditorUtility.DisplayDialog("Setup Tutorial L1-L2",
+        if (showDialog) EditorUtility.DisplayDialog("Setup Tutorial L1-L2",
             $"Hoan thanh!\n\n" +
-            $"Step assets: {stepsMade}/18\n" +
-            $"18 steps da gan vao TutorialManager._steps\n" +
-            $"EXP: 6 lua x5=30 + 2 hoa x5=10 = 40 -> Level 2\n\n" +
+            $"Step assets: {stepsMade}/{Steps.Length}\n" +
+            $"{Steps.Length} steps da gan vao TutorialManager._steps (Hay Day opening: thu hoach truoc)\n" +
+            $"EXP: 1 intro x5=5 + 6 lua x5=30 + 2 hoa x5=10 = 45 >= 40 -> Level 2\n\n" +
             "Van can gan tay:\n" +
             "1. NPC portrait sprite\n" +
             "2. 4 anh minh hoa trong GuideBoard\n" +
@@ -312,6 +373,7 @@ public static class SetupTutorialL1L2Tool
         int count = 0;
         foreach (var spec in Steps)
         {
+            if (spec.fileName == "L1L2_04b_FirstHarvest") continue;
             string path  = $"{STEPS_FOLDER}/{spec.fileName}.asset";
             var    step  = AssetDatabase.LoadAssetAtPath<TutorialStepData>(path);
             bool   isNew = (step == null);
@@ -375,6 +437,7 @@ public static class SetupTutorialL1L2Tool
         int assigned = 0;
         foreach (var spec in Steps)
         {
+            if (spec.fileName == "L1L2_04b_FirstHarvest") continue;
             string path  = $"{STEPS_FOLDER}/{spec.fileName}.asset";
             var    asset = AssetDatabase.LoadAssetAtPath<TutorialStepData>(path);
             if (asset == null)
@@ -446,6 +509,26 @@ public static class SetupTutorialL1L2Tool
             Debug.LogWarning("[TutorialSetup] TutorialManager._cameraFocus field khong tim thay — kiem tra ten field?");
         }
 
+        // Camera tutorial zoom GAN hon (Hay Day style): 5 -> 3.5, pan nhanh hon
+        var camSO = new SerializedObject(cameraFocus);
+        var riceZoomProp   = camSO.FindProperty("_riceZoom");
+        var flowerZoomProp = camSO.FindProperty("_flowerZoom");
+        var panDurProp     = camSO.FindProperty("_panDuration");
+        if (riceZoomProp != null)   riceZoomProp.floatValue   = 3.5f;
+        if (flowerZoomProp != null) flowerZoomProp.floatValue = 3.5f;
+        if (panDurProp != null)     panDurProp.floatValue     = 0.6f;
+        camSO.ApplyModifiedProperties();
+        EditorUtility.SetDirty(cameraFocus);
+        Debug.Log("[TutorialSetup] Camera tutorial: riceZoom=3.5, flowerZoom=3.5, panDuration=0.6");
+
+        // TutorialPrePlant — Hay Day opening: 1 o lua chin san de thu hoach truoc khi trong
+        var prePlant = tutMgr.GetComponent<TutorialPrePlant>();
+        if (prePlant != null)
+        {
+            Undo.DestroyObjectImmediate(prePlant);
+            Debug.Log("[TutorialSetup] Removed obsolete TutorialPrePlant.");
+        }
+
         // TutorialRuntimeTargetResolver
         var resolver = tutMgr.GetComponent<TutorialRuntimeTargetResolver>();
         if (resolver == null)
@@ -478,7 +561,7 @@ public static class SetupTutorialL1L2Tool
 
         // Assign plots to bridge
         AssignFirst6PlotsTobridge(bridge);
-        AssignFirst2FlowerPotsTobridge(bridge);
+        AssignFirst6FlowerPotsTobridge(bridge);
 
         // Setup GuideBoard UI
         Canvas tutCanvas = FindOrCreateGuideBoardCanvas();
@@ -601,6 +684,7 @@ public static class SetupTutorialL1L2Tool
         if (existingAll.Length > 0)
         {
             var existingGb = existingAll[0];
+            NormalizeGuideBoard(existingGb);
             Debug.Log($"[TutorialSetup] Tutorial_GuideBoard da co tren canvas '{existingGb.transform.parent?.name}' — wire reference.");
             TryWireGuideBoardReference(tutMgr, existingGb);
             return;
@@ -611,7 +695,9 @@ public static class SetupTutorialL1L2Tool
         if (existingByName != null)
         {
             Debug.Log("[TutorialSetup] Tutorial_GuideBoard da co (by name) — wire reference.");
-            TryWireGuideBoardReference(tutMgr, existingByName.GetComponent<TutorialGuideBoardUI>());
+            var existingGb = existingByName.GetComponent<TutorialGuideBoardUI>();
+            NormalizeGuideBoard(existingGb);
+            TryWireGuideBoardReference(tutMgr, existingGb);
             return;
         }
 
@@ -712,7 +798,7 @@ public static class SetupTutorialL1L2Tool
         btnTxtRT.anchorMin = Vector2.zero; btnTxtRT.anchorMax = Vector2.one;
         btnTxtRT.offsetMin = Vector2.zero; btnTxtRT.offsetMax = Vector2.zero;
         var btnTxt = btnTxtGo.GetComponent<TextMeshProUGUI>();
-        btnTxt.text             = "Bat dau trong!";
+        btnTxt.text             = "Da hieu";
         btnTxt.fontSize         = 26;
         btnTxt.fontStyle        = FontStyles.Bold;
         btnTxt.alignment        = TextAlignmentOptions.Center;
@@ -752,6 +838,17 @@ public static class SetupTutorialL1L2Tool
         }
     }
 
+    private static void NormalizeGuideBoard(TutorialGuideBoardUI guideBoard)
+    {
+        if (guideBoard == null) return;
+        var texts = guideBoard.GetComponentsInChildren<TextMeshProUGUI>(true);
+        foreach (var text in texts)
+            if (text.transform.parent != null && text.transform.parent.name == "ConfirmButton")
+                text.text = "Da hieu";
+        guideBoard.gameObject.SetActive(false);
+        EditorUtility.SetDirty(guideBoard.gameObject);
+    }
+
     // =========================================================================
     // Plot / Flower Pot Assignment
     // =========================================================================
@@ -782,7 +879,7 @@ public static class SetupTutorialL1L2Tool
         foreach (var p in first6) Debug.Log($"  - {p.gameObject.name} (id={p.PlotId})");
     }
 
-    private static void AssignFirst2FlowerPotsTobridge(TutorialStepTriggerBridge bridge)
+    private static void AssignFirst6FlowerPotsTobridge(TutorialStepTriggerBridge bridge)
     {
         var allPlots = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
         if (allPlots.Length == 0) return;
@@ -792,7 +889,7 @@ public static class SetupTutorialL1L2Tool
         foreach (var p in allPlots)
         {
             if (p.Category == PlotCategory.Flower) flowerPots.Add(p);
-            if (flowerPots.Count >= 2) break;
+            if (flowerPots.Count >= 6) break;
         }
 
         if (flowerPots.Count == 0)
@@ -811,6 +908,10 @@ public static class SetupTutorialL1L2Tool
             listProp.InsertArrayElementAtIndex(i);
             listProp.GetArrayElementAtIndex(i).objectReferenceValue = flowerPots[i];
         }
+        var plantCount = so.FindProperty("targetFlowerPlantCount");
+        var harvestCount = so.FindProperty("targetFlowerHarvestCount");
+        if (plantCount != null) plantCount.intValue = 6;
+        if (harvestCount != null) harvestCount.intValue = 6;
         so.ApplyModifiedProperties();
         Debug.Log($"[TutorialSetup] {flowerPots.Count} chau hoa gan vao bridge:");
         foreach (var p in flowerPots) Debug.Log($"  - {p.gameObject.name} (id={p.PlotId})");
@@ -872,10 +973,12 @@ public static class SetupTutorialL1L2Tool
         const int EXP_PER_FLOWER   = 5;
         const int RICE_PLOTS       = 6;
         const int FLOWER_POTS      = 2;
-        int total = RICE_PLOTS * EXP_PER_RICE + FLOWER_POTS * EXP_PER_FLOWER;
+        const int INTRO_HARVEST_EXP = 5; // 1 o lua chin san (TutorialPrePlant, step 04b)
+        int total = INTRO_HARVEST_EXP + RICE_PLOTS * EXP_PER_RICE + FLOWER_POTS * EXP_PER_FLOWER;
 
         Debug.Log("═══ EXP REPORT L1→L2 ═══");
         Debug.Log($"  EXP can len Level 2        : {EXP_NEEDED}");
+        Debug.Log($"  EXP intro-harvest (04b)    : 1×{INTRO_HARVEST_EXP} = {INTRO_HARVEST_EXP}");
         Debug.Log($"  EXP 6 o lua harvest        : {RICE_PLOTS}×{EXP_PER_RICE} = {RICE_PLOTS * EXP_PER_RICE}");
         Debug.Log($"  EXP 2 chau hoa harvest     : {FLOWER_POTS}×{EXP_PER_FLOWER} = {FLOWER_POTS * EXP_PER_FLOWER}");
         Debug.Log($"  Tong EXP                   : {total}");

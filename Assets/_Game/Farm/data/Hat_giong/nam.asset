@@ -31,12 +31,12 @@ MonoBehaviour:
   seedItemId: seed_nam
   harvestItemId: mushroom
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 6
   growSeconds: 600
-  sellGold: 3
+  sellGold: 30
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 10
   sweet: 0
   spicy: 0
   sour: 0

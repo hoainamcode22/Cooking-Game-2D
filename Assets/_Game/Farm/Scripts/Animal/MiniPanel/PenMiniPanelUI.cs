@@ -162,6 +162,7 @@ public class PenMiniPanelUI : MonoBehaviour
         }
 
         FarmInventoryManager.Instance.RemoveItem(foodItemId, 1);
+        MissionProgressTracker.ReportEvent(MissionEventType.FeedAnimal, foodItemId, 1);
         PlayFeedVFX(foodItemId, vfxWorldPosition);
         activeFoodId = foodItemId;
         processStartUnix = (float)GetUnixNow(); // ghi timestamp trÆ°á»›c khi save
@@ -199,8 +200,12 @@ public class PenMiniPanelUI : MonoBehaviour
 
         // Cá»™ng vÃ o FarmInventoryManager â€” Kho popup Ä‘á»c tá»« Ä‘Ã¢y, rá»“i user chuyá»ƒn sang KitchenTransferManager
         FarmInventoryManager.Instance.AddItem(config.productItemId, productAmount);
+        MissionProgressTracker.ReportEvent(MissionEventType.CollectAnimalProduct, config.productItemId, productAmount);
         if (!string.IsNullOrEmpty(config.secondProductItemId))
+        {
             FarmInventoryManager.Instance.AddItem(config.secondProductItemId, Mathf.Max(1, config.secondProductAmount));
+            MissionProgressTracker.ReportEvent(MissionEventType.CollectAnimalProduct, config.secondProductItemId, Mathf.Max(1, config.secondProductAmount));
+        }
 
         activeFoodId = null;
         SetState(PenState.Idle);

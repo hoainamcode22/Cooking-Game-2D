@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_bapcai
   itemName: "B\u1EAFp C\u1EA3i"
   itemIcon: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}
-  goldPrice: 60
+  goldPrice: 45
   diamondPrice: 0
   cropCategory: 0
   cropId: bapcai
@@ -33,10 +33,10 @@ MonoBehaviour:
   tier: 1
   unlockLevel: 1
   growSeconds: 300
-  sellGold: 3
+  sellGold: 15
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 6
   sweet: 0
   spicy: 0
   sour: 0

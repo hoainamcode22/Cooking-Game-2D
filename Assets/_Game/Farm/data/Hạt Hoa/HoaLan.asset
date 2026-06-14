@@ -31,9 +31,9 @@ MonoBehaviour:
   seedItemId: seed_hoa_lan
   harvestItemId: hoa_lan
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 7
   growSeconds: 180
-  sellGold: 3
+  sellGold: 22
   harvestAmount: 4
   plantCost: 1
   expReward: 5

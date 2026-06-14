@@ -172,6 +172,12 @@ public class MarketManager : MonoBehaviour
 
         SpendGold(totalPrice);
         FarmInventoryManager.Instance.AddItem(itemID, quantity);
+
+        // Tiến độ nhiệm vụ: chợ hiện bán nông sản/nguyên liệu; nếu sau này bán hạt giống
+        // (itemID dạng "seed_*") thì tự tính vào BuySeed
+        if (itemID.StartsWith("seed", System.StringComparison.OrdinalIgnoreCase))
+            MissionProgressTracker.ReportEvent(MissionEventType.BuySeed, itemID, quantity);
+
         itemUI.MarkSoldOut();
     }
 

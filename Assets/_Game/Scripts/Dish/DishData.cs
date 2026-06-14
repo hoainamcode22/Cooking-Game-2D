@@ -34,6 +34,9 @@ public class DishData : ScriptableObject
     public Sprite dishSprite;
     public DishDifficulty difficulty = DishDifficulty.Normal;
 
+    [Tooltip("Player level required to cook this dish (Demo L1-L10)")]
+    public int unlockLevel = 5;
+
     [Header("Target Flavor")]
     public FlavorVector targetFlavor;
 

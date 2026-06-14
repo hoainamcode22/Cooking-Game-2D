@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_17_HarvestAllFlowers
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: Thu hoach het cac chau hoa con lai de nhan EXP nhe!
+  npcText: "Thu n\u1ED1t c\xE1c ch\u1EADu hoa c\xF2n l\u1EA1i nh\xE9!"
   npcPortrait: {fileID: 0}
-  typingSpeed: 0.04
+  typingSpeed: 0.02
   targetID: 
   useCircleHole: 1
   holePaddingPx: 16

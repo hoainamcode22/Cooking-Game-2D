@@ -12,7 +12,7 @@ namespace Day_Night
         [SerializeField, HideInInspector] private int presetVersion;
 
         [Header("Time")]
-        [Min(1f)] public float DayDurationInSeconds = 120f;
+        [Min(1f)] public float DayDurationInSeconds = 300f;
         [Range(0f, 1f)] public float StartingTime = 0.5f;
         public bool RunInPlayMode = true;
         public bool PreviewInEditMode = true;
@@ -38,13 +38,13 @@ namespace Day_Night
         [Header("Weather")]
         public DayNightWeatherSystem WeatherSystem;
         public bool UseAutomaticWeather = true;
-        [Range(0f, 1f)] public float DayRainStartMin = 0.36f;
-        [Range(0f, 1f)] public float DayRainStartMax = 0.56f;
-        [Range(0f, 1f)] public float NightRainStartMin = 0.78f;
-        [Range(0f, 1f)] public float NightRainStartMax = 0.92f;
-        [Min(1f)] public float MinRainDurationSeconds = 10f;
-        [Min(1f)] public float MaxRainDurationSeconds = 18f;
-        [Range(0f, 1f)] public float ThunderChance = 0.12f;
+        [Range(0f, 1f)] public float DayRainStartMin = 0.42f;
+        [Range(0f, 1f)] public float DayRainStartMax = 0.52f;
+        [Range(0f, 1f)] public float NightRainStartMin = 0.82f;
+        [Range(0f, 1f)] public float NightRainStartMax = 0.88f;
+        [Min(1f)] public float MinRainDurationSeconds = 8f;
+        [Min(1f)] public float MaxRainDurationSeconds = 12f;
+        [Range(0f, 1f)] public float ThunderChance = 0.08f;
         [Range(0.4f, 1.5f)] public float RainLightMultiplier = 1f;
         [Range(0.25f, 1.5f)] public float ThunderLightMultiplier = 0.85f;
 
@@ -147,16 +147,16 @@ namespace Day_Night
         public void ResetToHappyHarvestDefaults()
         {
             presetVersion = CurrentPresetVersion;
-            DayDurationInSeconds = 120f;
+            DayDurationInSeconds = 300f;
             StartingTime = 0.5f;
             UseAutomaticWeather = true;
-            DayRainStartMin = 0.36f;
-            DayRainStartMax = 0.56f;
-            NightRainStartMin = 0.78f;
-            NightRainStartMax = 0.92f;
-            MinRainDurationSeconds = 10f;
-            MaxRainDurationSeconds = 18f;
-            ThunderChance = 0.12f;
+            DayRainStartMin = 0.42f;
+            DayRainStartMax = 0.52f;
+            NightRainStartMin = 0.82f;
+            NightRainStartMax = 0.88f;
+            MinRainDurationSeconds = 8f;
+            MaxRainDurationSeconds = 12f;
+            ThunderChance = 0.08f;
 
             DayLightGradient = CreateGradient(
                 new Color(0f, 0f, 0f, 1f), 0.1900f,

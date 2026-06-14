@@ -13,16 +13,15 @@ MonoBehaviour:
   m_Name: LevelReward_L3
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 3
-  giftGold: 100
-  giftGems: 0
+  giftGold: 200
+  giftGems: 2
   giftItems:
-  - itemId: chicken_coop
-    displayName: "Chu\u1ED3ng g\xE0"
-    icon: {fileID: 0}
-    amount: 1
+  - itemId: seed_cachua
+    displayName: "H\u1EA1t C\xE0 chua"
+    icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+    amount: 3
   unlockDescriptions:
-  - "M\u1EDF kh\xF3a chu\u1ED3ng g\xE0"
-  - "H\u01B0\u1EDBng d\u1EABn cho g\xE0 \u0103n"
-  - "C\xF3 th\u1EC3 thu tr\u1EE9ng t\u1EEB g\xE0"
-  hintText: "T\u1EEB c\u1EA5p 3, b\u1EA1n c\xF3 th\u1EC3 b\u1EAFt \u0111\u1EA7u ch\u0103m
-    s\xF3c g\xE0 v\xE0 thu ho\u1EA1ch tr\u1EE9ng."
+  - "M\u1EDF kh\xF3a C\xE0 chua v\xE0 C\xE0 r\u1ED1t"
+  - "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
+  hintText: "Tr\u1ED3ng C\xE0 chua v\xE0 C\xE0 r\u1ED1t \u0111\u1EC3 ho\xE0n th\xE0nh
+    \u0111\u01A1n h\xE0ng t\u1EEB nh\xE0 d\xE2n m\u1EDBi nh\xE9!"

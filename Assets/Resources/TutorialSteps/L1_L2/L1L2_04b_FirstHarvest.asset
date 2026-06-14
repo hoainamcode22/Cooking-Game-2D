@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
+  m_Name: L1L2_04b_FirstHarvest
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
+  npcText: "Ch\u1EA1m v\xE0o \xF4 l\xFAa ch\xEDn \u0111\u1EC3 thu ho\u1EA1ch n\xE0o!"
+  npcPortrait: {fileID: 0}
+  typingSpeed: 0.02
+  targetID: tutorial_plot_01
+  useCircleHole: 1
+  holePaddingPx: 16
+  waitAction: 1
+  showGuideBoard: 0
+  showHandPointer: 1
+  handOffset: {x: 40, y: -30}
+  dragToTargetId: 

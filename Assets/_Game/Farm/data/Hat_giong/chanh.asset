@@ -31,12 +31,12 @@ MonoBehaviour:
   seedItemId: seed_lemon
   harvestItemId: lemon
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 8
   growSeconds: 780
-  sellGold: 3
+  sellGold: 38
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 12
   sweet: 0
   spicy: 0
   sour: 0

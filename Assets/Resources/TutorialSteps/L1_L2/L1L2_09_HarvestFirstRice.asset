@@ -12,14 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_09_HarvestFirstRice
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: Lua da chin roi! Hay dung liem de thu hoach.
+  npcText: "L\xFAa ch\xEDn v\xE0ng r\u1ED3i! Thu ho\u1EA1ch th\xF4i!"
   npcPortrait: {fileID: 0}
-  typingSpeed: 0.04
+  typingSpeed: 0.02
   targetID: tutorial_plot_01
   useCircleHole: 1
   holePaddingPx: 16
   waitAction: 1
   showGuideBoard: 0
-  showHandPointer: 1
+  showHandPointer: 0
   handOffset: {x: 40, y: -30}
   dragToTargetId: 

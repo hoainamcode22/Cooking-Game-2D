@@ -7100,7 +7100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Day_Night.DayNightCycleController
   presetVersion: 3
-  DayDurationInSeconds: 120
+  DayDurationInSeconds: 300
   StartingTime: 0.5
   RunInPlayMode: 1
   PreviewInEditMode: 1
@@ -7589,13 +7589,13 @@ MonoBehaviour:
     m_RotationOrder: 4
   WeatherSystem: {fileID: 1379236838402414735}
   UseAutomaticWeather: 1
-  DayRainStartMin: 0.36
-  DayRainStartMax: 0.56
-  NightRainStartMin: 0.78
-  NightRainStartMax: 0.92
-  MinRainDurationSeconds: 10
-  MaxRainDurationSeconds: 18
-  ThunderChance: 0.12
+  DayRainStartMin: 0.42
+  DayRainStartMax: 0.52
+  NightRainStartMin: 0.82
+  NightRainStartMax: 0.88
+  MinRainDurationSeconds: 8
+  MaxRainDurationSeconds: 12
+  ThunderChance: 0.08
   RainLightMultiplier: 1
   ThunderLightMultiplier: 0.85
   DayAmbience: {fileID: 5291702909218813742}

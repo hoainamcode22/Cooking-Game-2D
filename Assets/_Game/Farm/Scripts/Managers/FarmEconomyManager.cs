@@ -8,13 +8,16 @@ public class FarmEconomyManager : MonoBehaviour
     private const string GoldKey = "FARM_ECONOMY_GOLD";
     private const string GemsKey = "FARM_ECONOMY_GEMS";
 
-    [SerializeField] private int startGold = 1250;
-    [SerializeField] private int startGems = 10;
+    [SerializeField] private int startGold = 400;
+    [SerializeField] private int startGems = 15;
 
     public int Gold { get; private set; }
     public int Gems { get; private set; }
 
     public event Action<int, int> OnCurrencyChanged;
+
+    // FX: bắn khi cộng vàng để UI chạy hiệu ứng "coin bay về ví" (xem CoinFlyFX)
+    public static event Action<int> OnGoldAddedFx;
 
     private void Awake()
     {
@@ -25,6 +28,7 @@ public class FarmEconomyManager : MonoBehaviour
         }
 
         Instance = this;
+        transform.SetParent(null); // Tách ra root để DontDestroyOnLoad hoạt động (fix warning)
         DontDestroyOnLoad(gameObject);
 
         LoadCurrency();
@@ -32,11 +36,6 @@ public class FarmEconomyManager : MonoBehaviour
 
     private void Start()
     {
-#if UNITY_EDITOR
-        Gold = 1000;
-        Gems = 1000;
-        SaveCurrency();
-#endif
         NotifyCurrencyChanged();
     }
 
@@ -87,6 +86,7 @@ public class FarmEconomyManager : MonoBehaviour
         Gold += amount;
         SaveCurrency();
         NotifyCurrencyChanged();
+        OnGoldAddedFx?.Invoke(amount);
     }
 
     public void AddGems(int amount)

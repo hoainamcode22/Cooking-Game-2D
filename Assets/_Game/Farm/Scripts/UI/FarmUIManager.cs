@@ -37,6 +37,9 @@ public class FarmUIManager : MonoBehaviour
 
     private bool isCookingMode;
 
+    public RectTransform SickleTrayRect =>
+        sickleToolRoot != null ? sickleToolRoot.GetComponent<RectTransform>() : null;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -154,6 +157,8 @@ public class FarmUIManager : MonoBehaviour
     {
         if (sickleToolRoot != null)
             sickleToolRoot.SetActive(true);
+
+        TutorialManager.Instance?.NotifySickleShown();
     }
 
     // BÆ°á»›c 2: player nháº¥n giá»¯ icon liá»m trong tray â†’ báº¯t Ä‘áº§u harvest mode
@@ -214,6 +219,7 @@ public class FarmUIManager : MonoBehaviour
 
         popupSeed.SetActive(true);
         FarmInputLock.IsSeedPopupOpen = true;
+        TutorialManager.Instance?.NotifySeedPanelOpened();
 
         if (plot != null)
             ShowHint($"KÃ©o háº¡t giá»‘ng Ä‘á»ƒ trá»“ng vÃ o Ã´ {plot.PlotId}");
@@ -245,6 +251,7 @@ public class FarmUIManager : MonoBehaviour
 
         popupSeedFlower.SetActive(true);
         FarmInputLock.IsSeedPopupOpen = true;
+        TutorialManager.Instance?.NotifySeedPanelOpened();
 
         if (plot != null)
             ShowHint($"KÃ©o háº¡t giá»‘ng hoa Ä‘á»ƒ trá»“ng vÃ o Ã´ {plot.PlotId}");

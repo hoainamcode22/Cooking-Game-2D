@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_11_TransitionFlower
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: Minh trong them hoa huong duong de nong trai dep hon nhe!
+  npcText: "Tr\u1ED3ng th\xEAm hoa cho n\xF4ng tr\u1EA1i th\u1EADt xinh nh\xE9!"
   npcPortrait: {fileID: 0}
-  typingSpeed: 0.04
+  typingSpeed: 0.02
   targetID: 
   useCircleHole: 1
   holePaddingPx: 16

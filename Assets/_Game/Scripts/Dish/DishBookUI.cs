@@ -136,6 +136,11 @@ public class DishBookUI : MonoBehaviour
 
             DishCardUI card = Instantiate(dishCardPrefab, parent);
             card.Bind(dish, OnDishSelected);
+
+            // Khóa món chưa đủ level (null = scene nấu ăn chạy riêng, hiện tất cả)
+            bool unlocked = PlayerProgressManager.Instance == null
+                || PlayerProgressManager.Instance.Level >= dish.unlockLevel;
+            card.SetLocked(!unlocked);
         }
     }
 

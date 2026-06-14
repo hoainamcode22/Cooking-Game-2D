@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L10
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 10
+  giftGold: 600
+  giftGems: 8
+  giftItems:
+  - itemId: seed_pepper
+    displayName: "H\u1EA1t Ti\xEAu"
+    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
+    amount: 3
+  unlockDescriptions:
+  - "M\u1EDF kh\xF3a Ti\xEAu v\xE0 c\xE1c lo\u1EA1i hoa c\xF2n l\u1EA1i"
+  - "B\u1EA1n \u0111\xE3 ho\xE0n th\xE0nh h\xE0nh tr\xECnh C\u1EA5p 1-10!"
+  hintText: "Ch\xFAc m\u1EEBng! B\u1EA1n \u0111\xE3 ho\xE0n th\xE0nh h\xE0nh tr\xECnh
+    C\u1EA5p 1-10. H\xE3y ti\u1EBFp t\u1EE5c ph\xE1t tri\u1EC3n n\xF4ng tr\u1EA1i
+    nh\xE9!"

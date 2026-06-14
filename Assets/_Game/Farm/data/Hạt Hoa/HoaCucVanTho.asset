@@ -31,9 +31,9 @@ MonoBehaviour:
   seedItemId: seed_hoa_cuc_van_tho
   harvestItemId: hoa_cuc_van_tho
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 9
   growSeconds: 180
-  sellGold: 3
+  sellGold: 26
   harvestAmount: 4
   plantCost: 1
   expReward: 5

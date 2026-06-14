@@ -23,8 +23,22 @@ namespace Village
         [SerializeField] private float cooldownDuration       = 60f;
         [SerializeField] private float replenishCheckInterval = 5f;
 
-        [Tooltip("Chance (0–1) that an order contains 2 items instead of 1")]
-        [SerializeField] [Range(0f, 1f)] private float twoItemChance = 0.5f;
+        [Tooltip("Chance (0–1) that an order contains 2 items — per level band (Demo L1-L10)")]
+        [SerializeField] [Range(0f, 1f)] private float twoItemChanceL1     = 0f;
+        [SerializeField] [Range(0f, 1f)] private float twoItemChanceL2to3  = 0.2f;
+        [SerializeField] [Range(0f, 1f)] private float twoItemChanceL4to6  = 0.35f;
+        [SerializeField] [Range(0f, 1f)] private float twoItemChanceL7plus = 0.5f;
+
+        [Header("House Unlock By Level (Demo L1-L10)")]
+        [Tooltip("Số nhà tối đa được nhận đơn theo level. Nhà có HouseId ngoài giới hạn sẽ không nhận đơn (không bubble). Mặc định: L1=4, L3=5, L5=6, L7=7, L9=8.")]
+        [SerializeField] private List<HouseUnlockStep> houseUnlockSteps = new List<HouseUnlockStep>
+        {
+            new HouseUnlockStep { level = 1, activeHouses = 4 },
+            new HouseUnlockStep { level = 3, activeHouses = 5 },
+            new HouseUnlockStep { level = 5, activeHouses = 6 },
+            new HouseUnlockStep { level = 7, activeHouses = 7 },
+            new HouseUnlockStep { level = 9, activeHouses = 8 },
+        };
 
         // ── Mock Fallback ─────────────────────────────────────────────────────
 
@@ -114,10 +128,11 @@ namespace Village
 
         public void ReplenishOrders()
         {
-            // Mọi nhà Idle đều nhận order — user cần thấy yêu cầu của tất cả nhà
-            // để quyết định đi farm nguyên liệu nào rồi giao.
+            // Demo L1-L10: chỉ những nhà trong giới hạn active theo level mới nhận order.
+            // Nhà ngoài giới hạn giữ trạng thái Idle (không bubble) cho tới khi lên cấp.
+            int maxHouses = GetMaxActiveHousesForLevel(GetPlayerLevel());
             var eligible = houses
-                .Where(h => h != null && h.CurrentState == OrderState.Idle)
+                .Where(h => h != null && h.CurrentState == OrderState.Idle && IsHouseActiveForOrders(h, maxHouses))
                 .ToList();
 
             if (eligible.Count == 0) return;
@@ -164,11 +179,15 @@ namespace Village
             int totalExp  = amount1 * def1.expPerUnit;
 
             OrderItemLine item2  = null;
-            bool          tryTwo = pool.Count > 1 && UnityEngine.Random.value < twoItemChance;
+            bool          tryTwo = pool.Count > 1 && UnityEngine.Random.value < GetTwoItemChance(playerLevel);
 
             if (tryTwo)
             {
-                var pool2 = pool.Where(i => NormalizeKey(i.itemId) != item1.itemId).ToList();
+                // Tối đa 1 món nấu (Cooking) mỗi đơn — nếu item1 đã là món nấu thì item2 phải là nông sản.
+                bool item1IsDish = def1.category == OrderCategory.Cooking;
+                var pool2 = pool.Where(i => NormalizeKey(i.itemId) != item1.itemId
+                                            && (!item1IsDish || i.category != OrderCategory.Cooking))
+                                .ToList();
                 if (pool2.Count > 0)
                 {
                     var def2    = WeightedRandom(pool2);
@@ -261,6 +280,11 @@ namespace Village
                 : $"{order.item1.requiredAmount}x '{order.item1.itemId}'";
             Debug.Log($"[VillageOrderManager] ✓ DELIVERY SUCCESS [{items}] → +{order.rewardGold}g +{order.rewardExp}xp  house='{house.gameObject.name}'");
 
+            // ── Mission progress: "DeliverOrder:*" đếm SỐ ĐƠN (item2 chỉ cộng key item riêng) ──
+            MissionProgressTracker.ReportEvent(MissionEventType.DeliverOrder, order.item1.itemId, 1);
+            if (order.HasSecondItem)
+                MissionProgressTracker.ReportEvent(MissionEventType.DeliverOrder, order.item2.itemId, 1, includeTypeWide: false);
+
             // ── Post-delivery: start cooldown, then auto-assign new order ─────
             house.StartCooldown(cooldownDuration, completedHouse =>
             {
@@ -283,11 +307,13 @@ namespace Village
             houses.Add(house);
             Debug.Log($"[VillageOrderManager] Registered new house: '{house.gameObject.name}' id={house.HouseId}");
 
-            // Gán order trực tiếp cho nhà mới — ReplenishOrders có thể skip do needed==0
-            // khi số order hiện tại đã đạt maxActiveOrders.
-            var order = GenerateOrder(house.HouseId);
-            if (order != null)
-                house.AssignOrder(order);
+            // Gán order trực tiếp cho nhà mới — nhưng tôn trọng giới hạn nhà active theo level.
+            if (IsHouseActiveForOrders(house, GetMaxActiveHousesForLevel(GetPlayerLevel())))
+            {
+                var order = GenerateOrder(house.HouseId);
+                if (order != null)
+                    house.AssignOrder(order);
+            }
 
             // Cân bằng lại các nhà cũ sau 1 giây (frame đầu tiên đã ổn định)
             Invoke(nameof(ReplenishOrders), 1f);
@@ -316,6 +342,33 @@ namespace Village
 
         private int CountActiveOrders() =>
             houses.Count(h => h != null && h.CurrentState == OrderState.Active);
+
+        /// <summary>Số nhà tối đa được nhận đơn ở level hiện tại (Demo L1-L10).</summary>
+        private int GetMaxActiveHousesForLevel(int level)
+        {
+            int max = houses.Count; // không cấu hình step nào → mở tất cả (hành vi cũ)
+            if (houseUnlockSteps != null && houseUnlockSteps.Count > 0)
+            {
+                max = 0;
+                foreach (var step in houseUnlockSteps)
+                    if (step != null && level >= step.level && step.activeHouses > max)
+                        max = step.activeHouses;
+                if (max <= 0) max = 1; // an toàn: luôn có ít nhất 1 nhà nhận đơn
+            }
+            return Mathf.Min(max, Mathf.Max(houses.Count, 1));
+        }
+
+        private bool IsHouseActiveForOrders(HouseOrderController house, int maxHouses) =>
+            house != null && house.HouseId < maxHouses;
+
+        /// <summary>Tỉ lệ đơn 2-item theo level: L1=0%, L2-3=20%, L4-6=35%, L7+=50% (mặc định).</summary>
+        private float GetTwoItemChance(int level)
+        {
+            if (level <= 1) return twoItemChanceL1;
+            if (level <= 3) return twoItemChanceL2to3;
+            if (level <= 6) return twoItemChanceL4to6;
+            return twoItemChanceL7plus;
+        }
 
         private OrderItemDefinition WeightedRandom(List<OrderItemDefinition> pool)
         {
@@ -562,5 +615,15 @@ namespace Village
     {
         public string itemId;
         public int    amount;
+    }
+
+    [Serializable]
+    public class HouseUnlockStep
+    {
+        [Tooltip("Từ level này trở lên…")]
+        public int level = 1;
+
+        [Tooltip("…cho phép tối đa bằng này nhà nhận đơn (theo HouseId)")]
+        public int activeHouses = 4;
     }
 }

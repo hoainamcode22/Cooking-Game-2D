@@ -31,9 +31,9 @@ MonoBehaviour:
   seedItemId: seed_hoa_hong
   harvestItemId: hoa_hong
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 4
   growSeconds: 180
-  sellGold: 3
+  sellGold: 24
   harvestAmount: 4
   plantCost: 1
   expReward: 5

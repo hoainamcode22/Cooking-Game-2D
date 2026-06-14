@@ -24,6 +24,8 @@ public class CropProcessPopupUI : MonoBehaviour
     [SerializeField] private int speedUpGemCost = 1;
 
     public bool IsOpen => gameObject.activeSelf;
+    public RectTransform SpeedUpButtonRect =>
+        btnSpeedUp != null ? btnSpeedUp.GetComponent<RectTransform>() : null;
 
     private static readonly System.Collections.Generic.HashSet<CropProcessPopupUI> _openInstances
         = new System.Collections.Generic.HashSet<CropProcessPopupUI>();
@@ -37,9 +39,6 @@ public class CropProcessPopupUI : MonoBehaviour
     private void Awake()
     {
         bool startOpen = gameObject.activeSelf;
-
-        if (btnSpeedUp != null)
-            btnSpeedUp.onClick.AddListener(OnSpeedUpClicked);
 
         if (!startOpen) gameObject.SetActive(false);
     }
@@ -82,6 +81,7 @@ public class CropProcessPopupUI : MonoBehaviour
         RefreshDisplay();
         gameObject.SetActive(true);
         AcquirePopupInputBlock();
+        TutorialManager.Instance?.NotifyOpenCropProcess();
     }
 
     public void ClosePopup()
@@ -128,6 +128,7 @@ public class CropProcessPopupUI : MonoBehaviour
 
         // InstantGrow tự trừ gem + ép trạng thái Ready
         currentPlot.InstantGrow();
+        TutorialManager.Instance?.NotifySpeedUp();
         ReleasePopupInputBlock();
         gameObject.SetActive(false);
         currentPlot = null;

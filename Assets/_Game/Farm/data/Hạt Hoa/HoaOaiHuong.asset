@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_hoa_oai_huong
   itemName: "Hoa O\u1EA3i H\u01B0\u01A1ng"
   itemIcon: {fileID: -4118618964313991323, guid: 26647bd056cabc64595625b3fe52a382, type: 3}
-  goldPrice: 140
+  goldPrice: 100
   diamondPrice: 0
   cropCategory: 1
   cropId: hoa_oai_huong
@@ -31,9 +31,9 @@ MonoBehaviour:
   seedItemId: seed_hoa_oai_huong
   harvestItemId: hoa_oai_huong
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 4
   growSeconds: 180
-  sellGold: 3
+  sellGold: 30
   harvestAmount: 4
   plantCost: 1
   expReward: 5

@@ -31,9 +31,9 @@ MonoBehaviour:
   seedItemId: seed_tulip
   harvestItemId: tulip
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 9
   growSeconds: 180
-  sellGold: 3
+  sellGold: 20
   harvestAmount: 4
   plantCost: 1
   expReward: 5

@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: "S\xFAp ng\xF4 n\u1EA5m"
   icon: {fileID: 5016252123938005860, guid: 7882b075d127ef14593abbb381d7b90a, type: 3}
   category: 3
-  unlockLevel: 5
+  unlockLevel: 6
   weight: 8
   minAmount: 1
   maxAmount: 2

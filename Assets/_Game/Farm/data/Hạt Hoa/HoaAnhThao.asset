@@ -31,9 +31,9 @@ MonoBehaviour:
   seedItemId: seed_hoa_anh_thao
   harvestItemId: hoa_anh_thao
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 10
   growSeconds: 180
-  sellGold: 3
+  sellGold: 32
   harvestAmount: 4
   plantCost: 1
   expReward: 5

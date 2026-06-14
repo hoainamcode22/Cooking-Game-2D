@@ -11,6 +11,13 @@ public class TutorialManager : MonoBehaviour
     // =========================================================================
     public static TutorialManager Instance { get; private set; }
 
+    /// <summary>Tên step hiện tại (asset name), null nếu tutorial chưa chạy.
+    /// Dùng cho failsafe của TutorialPrePlant (bỏ qua step 04b khi không có ô chín sẵn).</summary>
+    public string CurrentStepName =>
+        (_currentIndex >= 0 && _currentIndex < _steps.Count && _steps[_currentIndex] != null)
+            ? _steps[_currentIndex].name
+            : null;
+
     // =========================================================================
     // State
     // =========================================================================
@@ -76,6 +83,7 @@ public class TutorialManager : MonoBehaviour
     [Header("Runtime Target & Drag Hint")]
     [SerializeField] private TutorialRuntimeTargetResolver _runtimeTargetResolver;
     [SerializeField] private TutorialDragHintAnimator      _dragHintAnimator;
+    [SerializeField] private TutorialActionHandGuide       _actionHandGuide;
 
     // =========================================================================
     // Inspectorâ€” Intro Animation
@@ -112,6 +120,9 @@ public class TutorialManager : MonoBehaviour
     private Coroutine          _typingCoroutine;
     private bool               _typingDone;
     private TutorialWaitAction _pendingWait;
+    private bool               _hasQueuedAction;
+    private TutorialWaitAction _queuedAction;
+    private bool               _interactionDialogDismissed;
 
     private Vector2 _cloudLeftOrigin;
     private Vector2 _cloudRightOrigin;
@@ -145,6 +156,7 @@ public class TutorialManager : MonoBehaviour
 
         SetTutorialUIVisible(false);
         SetCloudPanelVisible(true);
+        _guideBoardUI?.Hide();
 
         if (_steps.Count == 0)
         {
@@ -224,6 +236,8 @@ public class TutorialManager : MonoBehaviour
     /// </summary>
     public void NextStep()
     {
+        if (TryDismissInteractionDialog()) return;
+
         if (_state == TutorialState.TypingText && _clickToSkipTyping)
         {
             SkipTyping();
@@ -236,11 +250,38 @@ public class TutorialManager : MonoBehaviour
         }
     }
 
+    public void ConfirmGuidePopup()
+    {
+        if (_state != TutorialState.WaitingAction
+            || _pendingWait != TutorialWaitAction.WaitForClick
+            || _currentIndex < 0
+            || _currentIndex >= _steps.Count
+            || _steps[_currentIndex] == null
+            || !_steps[_currentIndex].showGuideBoard)
+            return;
+
+        _guideBoardUI?.Hide();
+        AdvanceToNextStep();
+    }
+
     /// <summary>Game systems gá»i Ä‘á»ƒ bÃ¡o player hoÃ n thÃ nh hÃ nh Ä‘á»™ng.</summary>
     public void NotifyAction(TutorialWaitAction action)
     {
-        if (_state != TutorialState.WaitingAction) return;
-        if (_pendingWait == action) AdvanceToNextStep();
+        if (_state == TutorialState.WaitingAction && _pendingWait == action)
+        {
+            AdvanceToNextStep();
+            return;
+        }
+
+        if (_state == TutorialState.TypingText || _state == TutorialState.Transitioning)
+        {
+            if (_currentIndex < 0 || _currentIndex >= _steps.Count
+                || _steps[_currentIndex] == null
+                || _steps[_currentIndex].waitAction != action)
+                return;
+            _hasQueuedAction = true;
+            _queuedAction = action;
+        }
     }
 
     // Convenience wrappers â€” tá»«ng game system gá»i Ä‘Ãºng loáº¡i
@@ -267,15 +308,20 @@ public class TutorialManager : MonoBehaviour
     public void NotifyOpenCropProcess()         => NotifyAction(TutorialWaitAction.WaitForOpenCropProcess);
     public void NotifySpeedUp()                 => NotifyAction(TutorialWaitAction.WaitForSpeedUp);
     public void NotifySickleShown()             => NotifyAction(TutorialWaitAction.WaitForSickleShown);
+    public void NotifySeedPanelOpened()          => NotifyAction(TutorialWaitAction.WaitForSeedPanel);
 
     // =========================================================================
     // State Machine Core
     // =========================================================================
-    // Index bắt đầu phase hoa (L1L2_11_TransitionFlower = index 10, zero-based)
-    private const int FLOWER_PHASE_START_INDEX = 10;
+    // Index bắt đầu phase hoa (L1L2_11_TransitionFlower = index 11, zero-based —
+    // đã +1 sau khi chèn L1L2_04b_FirstHarvest ở index 4, Hay Day opening)
+    // Camera transitions are keyed by step name so inserting guide popups is safe.
 
     private void AdvanceToNextStep()
     {
+        _actionHandGuide?.StopGuide();
+        _dragHintAnimator?.StopDragHint();
+        _interactionDialogDismissed = false;
         _currentIndex++;
 
         if (_currentIndex >= _steps.Count)
@@ -289,13 +335,13 @@ public class TutorialManager : MonoBehaviour
 
         // Khi bắt đầu phase hoa: focus camera vào chậu hoa
         // Re-focus camera when reaching rice planting phase (L1L2_04_FocusPlots = index 3)
-        if (_currentIndex == 3 && _cameraFocus != null)
+        if (step.name == "L1L2_04_FocusPlots" && _cameraFocus != null)
         {
             var bridge = GetComponent<TutorialStepTriggerBridge>();
             _cameraFocus.FocusOnRice(bridge);
         }
 
-        if (_currentIndex == FLOWER_PHASE_START_INDEX && _cameraFocus != null)
+        if (step.name == "L1L2_11_TransitionFlower" && _cameraFocus != null)
         {
             var bridge = GetComponent<TutorialStepTriggerBridge>();
             if (bridge != null) _cameraFocus.FocusOnFlower(bridge);
@@ -307,6 +353,9 @@ public class TutorialManager : MonoBehaviour
 
     private IEnumerator PlayStep(TutorialStepData step)
     {
+        if (_dimBackground != null)
+            _dimBackground.gameObject.SetActive(true);
+
         // 1. Resolve target
         RectTransform targetRect = null;
         if (!string.IsNullOrEmpty(step.targetID))
@@ -334,6 +383,26 @@ public class TutorialManager : MonoBehaviour
         else
             _dragHintAnimator?.StopDragHint();
 
+        if (IsActionOnlyStep(step.name))
+        {
+            HideBlockingTutorialUI();
+            _pendingWait = step.waitAction;
+            _state = TutorialState.WaitingAction;
+
+            if (step.name == "L1L2_07_OpenCropProgress"
+                || step.name == "L1L2_08_SpeedUpTip")
+                _actionHandGuide?.GuideSpeedUp("tutorial_plot_01");
+            else if (step.name == "L1L2_09_HarvestFirstRice")
+                _actionHandGuide?.GuideHarvest("tutorial_plot_01");
+            else if (step.name == "L1L2_10_HarvestAllRice")
+                _actionHandGuide?.GuideHarvest("tutorial_plot_01");
+            else if (step.name == "L1L2_17_HarvestAllFlowers")
+                _actionHandGuide?.GuideHarvest("tutorial_flower_01");
+
+            ConsumeQueuedAction();
+            yield break;
+        }
+
         // 4. NPC Portrait
         if (_npcPortrait != null)
         {
@@ -346,9 +415,9 @@ public class TutorialManager : MonoBehaviour
         {
             Debug.Log("[Tutorial] Showing guide board.");
             if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
-            _guideBoardUI.Show();
+            _guideBoardUI.ShowForStep(step.name);
             _state       = TutorialState.WaitingAction;
-            _pendingWait = TutorialWaitAction.WaitForClick;
+            _pendingWait = step.waitAction;
             yield break;
         }
         else
@@ -373,6 +442,7 @@ public class TutorialManager : MonoBehaviour
         else
         {
             _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction();
         }
     }
 
@@ -436,9 +506,10 @@ public class TutorialManager : MonoBehaviour
         _state = TutorialState.Finished;
         Debug.Log("[Tutorial] Tutorial FINISHED — restoring camera and closing UI.");
         SetTutorialUIVisible(false);
-        _dimBackground.ClearHole();
+        _dimBackground?.ClearHole();
         _cameraFocus?.RestoreCamera();
         _dragHintAnimator?.StopDragHint();
+        _actionHandGuide?.StopGuide();
 
         // Táº¯t hoÃ n toÃ n Tutorial_Canvas â€” khÃ´ng Ä‘á»ƒ Canvas tÃ ng hÃ¬nh cháº·n raycast game UI
         if (_tutorialCanvasCG != null)
@@ -458,6 +529,85 @@ public class TutorialManager : MonoBehaviour
         if (_dimBackground  != null) _dimBackground.gameObject.SetActive(visible);
         if (_npcDialogPopup != null) _npcDialogPopup.SetActive(visible);
         if (_handPointer    != null) _handPointer.gameObject.SetActive(false);
+    }
+
+    private bool TryDismissInteractionDialog()
+    {
+        if (_currentIndex < 0 || _currentIndex >= _steps.Count) return false;
+        var step = _steps[_currentIndex];
+        if (step == null || _interactionDialogDismissed || !IsInteractionStep(step.name))
+            return false;
+        if (_state != TutorialState.TypingText && _state != TutorialState.WaitingAction)
+            return false;
+
+        if (_typingCoroutine != null) StopCoroutine(_typingCoroutine);
+        if (_npcDialogText != null) _npcDialogText.text = step.npcText;
+        _typingDone = true;
+        _interactionDialogDismissed = true;
+        _pendingWait = step.waitAction;
+        _state = TutorialState.WaitingAction;
+        HideBlockingTutorialUI();
+
+        switch (step.name)
+        {
+            case "L1L2_07_OpenCropProgress":
+            case "L1L2_15_FlowerSpeedUp":
+                _actionHandGuide?.GuideSpeedUp(
+                    step.name == "L1L2_15_FlowerSpeedUp"
+                        ? "tutorial_flower_01"
+                        : "tutorial_plot_01");
+                break;
+            case "L1L2_09_HarvestFirstRice":
+                _actionHandGuide?.GuideHarvest("tutorial_plot_01");
+                break;
+            case "L1L2_16_HarvestFirstFlower":
+                _actionHandGuide?.GuideHarvest("tutorial_flower_01");
+                break;
+            case "L1L2_12_FocusFlowerPots":
+                UpdateHandPointer(step, TutorialManager.GetTargetRect(step.targetID));
+                break;
+        }
+
+        ConsumeQueuedAction();
+        return true;
+    }
+
+    private void HideBlockingTutorialUI()
+    {
+        if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+        if (_dimBackground != null)
+        {
+            _dimBackground.ClearHole();
+            _dimBackground.gameObject.SetActive(false);
+        }
+    }
+
+    private void ConsumeQueuedAction()
+    {
+        if (!_hasQueuedAction || _queuedAction != _pendingWait) return;
+        _hasQueuedAction = false;
+        AdvanceToNextStep();
+    }
+
+    private static bool IsInteractionStep(string stepName)
+    {
+        return stepName == "L1L2_12_FocusFlowerPots"
+            || stepName == "L1L2_15_FlowerSpeedUp"
+            || stepName == "L1L2_16_HarvestFirstFlower";
+    }
+
+    private static bool IsActionOnlyStep(string stepName)
+    {
+        return stepName == "L1L2_04_FocusPlots"
+            || stepName == "L1L2_05_DragFirstRice"
+            || stepName == "L1L2_06_PlantAllRice"
+            || stepName == "L1L2_07_OpenCropProgress"
+            || stepName == "L1L2_08_SpeedUpTip"
+            || stepName == "L1L2_09_HarvestFirstRice"
+            || stepName == "L1L2_10_HarvestAllRice"
+            || stepName == "L1L2_13_DragFirstFlower"
+            || stepName == "L1L2_14_PlantAllFlowers"
+            || stepName == "L1L2_17_HarvestAllFlowers";
     }
 
     private void SetCloudPanelVisible(bool visible)

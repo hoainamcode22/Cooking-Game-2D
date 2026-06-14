@@ -13,25 +13,17 @@ MonoBehaviour:
   m_Name: LevelReward_L5
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 5
-  giftGold: 100
-  giftGems: 10
+  giftGold: 300
+  giftGems: 3
   giftItems:
-  - itemId: rice
-    displayName: "L\xFAa"
-    icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
+  - itemId: khoai_tay
+    displayName: "Khoai t\xE2y gi\u1ED1ng"
+    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
     amount: 5
-  - itemId: ngo
-    displayName: "Ng\xF4"
-    icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
-    amount: 5
-  - itemId: egg
-    displayName: "Tr\u1EE9ng"
-    icon: {fileID: -8307804571547316847, guid: 20cfa699d7411b0499297e423fec3d8a, type: 3}
-    amount: 3
   unlockDescriptions:
-  - "M\u1EDF kh\xF3a b\u1EBFp n\u1EA5u \u0103n"
-  - "M\u1EDF 10 m\xF3n \u0103n \u0111\u1EA7u ti\xEAn"
-  - "C\xF3 th\u1EC3 n\u1EA5u m\xF3n r\u1ED3i \u0111em giao \u0111\u01A1n h\xE0ng"
+  - "M\u1EDE KH\xD3A NH\xC0 B\u1EBEP \u2014 n\u1EA5u \u0103n ngay!"
+  - "M\u1EDF kh\xF3a Khoai t\xE2y"
+  - "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
   hintText: "B\u1EBFp n\u1EA5u \u0103n \u0111\xE3 m\u1EDF! H\xE3y n\u1EA5u m\xF3n
     \u0111\u1EA7u ti\xEAn r\u1ED3i mang v\u1EC1 kho \u0111\u1EC3 giao cho d\xE2n
     l\xE0ng."

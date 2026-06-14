@@ -13,18 +13,16 @@ MonoBehaviour:
   m_Name: LevelReward_L6
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 6
-  giftGold: 50
-  giftGems: 0
+  giftGold: 350
+  giftGems: 3
   giftItems:
-  - itemId: mushroom
-    displayName: "N\u1EA5m"
+  - itemId: seed_nam
+    displayName: "H\u1EA1t N\u1EA5m"
     icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
-    amount: 5
+    amount: 3
   unlockDescriptions:
-  - "M\u1EDF th\xEAm nguy\xEAn li\u1EC7u n\u1EA5u \u0103n m\u1EDBi"
-  - "M\u1EDF th\xEAm \u0111\u01A1n h\xE0ng m\xF3n \u0103n d\u1EC5"
-  - "Tutorial ch\xEDnh k\u1EBFt th\xFAc, ng\u01B0\u1EDDi ch\u01A1i c\xF3 th\u1EC3
-    t\u1EF1 c\xE0y \u0111\u01A1n h\xE0ng"
-  hintText: "B\u1EA1n \u0111\xE3 n\u1EAFm \u0111\u01B0\u1EE3c c\xE1ch ch\u01A1i c\u01A1
-    b\u1EA3n. H\xE3y ti\u1EBFp t\u1EE5c tr\u1ED3ng tr\u1ECDt, n\u1EA5u \u0103n v\xE0
-    giao \u0111\u01A1n h\xE0ng!"
+  - "M\u1EDF kh\xF3a N\u1EA5m"
+  - "Chu\u1ED3ng b\xF2 \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+  - "Nhi\u1EC7m v\u1EE5 h\u1EB1ng ng\xE0y \u0111\xE3 m\u1EDF"
+  hintText: "N\u1EA5m \u0111\xE3 c\xF3 trong Shop. \u0110\u1EEBng qu\xEAn l\xE0m
+    nhi\u1EC7m v\u1EE5 h\u1EB1ng ng\xE0y \u0111\u1EC3 nh\u1EADn th\xEAm th\u01B0\u1EDFng!"

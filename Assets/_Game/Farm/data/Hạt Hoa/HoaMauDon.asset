@@ -31,9 +31,9 @@ MonoBehaviour:
   seedItemId: seed_hoa_mau_don
   harvestItemId: hoa_mau_don
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 10
   growSeconds: 180
-  sellGold: 3
+  sellGold: 28
   harvestAmount: 4
   plantCost: 1
   expReward: 5

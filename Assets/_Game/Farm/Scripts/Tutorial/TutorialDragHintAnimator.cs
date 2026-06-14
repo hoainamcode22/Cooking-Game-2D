@@ -17,7 +17,7 @@ public class TutorialDragHintAnimator : MonoBehaviour
     [SerializeField] private AnimationCurve _ease  = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     [SerializeField] private float _tapScale        = 0.82f;
 
-    private RectTransform _hand;
+    [SerializeField] private RectTransform _hand;
     private Coroutine     _loop;
     private string        _fromId;
     private string        _toId;

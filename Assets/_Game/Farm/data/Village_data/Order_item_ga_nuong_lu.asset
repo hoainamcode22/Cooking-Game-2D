@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: "G\xE0 n\u01B0\u1EDBng lu m\u1EADt m\xEDa"
   icon: {fileID: -3516681434692363129, guid: ce0dd0b7e0b7528409da91ffa79eecd3, type: 3}
   category: 3
-  unlockLevel: 5
+  unlockLevel: 7
   weight: 8
   minAmount: 1
   maxAmount: 2

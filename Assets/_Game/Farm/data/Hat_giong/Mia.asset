@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_sugarcane
   itemName: "M\xEDa"
   itemIcon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
-  goldPrice: 150
+  goldPrice: 120
   diamondPrice: 0
   cropCategory: 0
   cropId: sugarcane
@@ -31,12 +31,12 @@ MonoBehaviour:
   seedItemId: seed_sugarcane
   harvestItemId: sugarcane
   tier: 1
-  unlockLevel: 1
+  unlockLevel: 7
   growSeconds: 420
-  sellGold: 3
+  sellGold: 36
   harvestAmount: 4
   plantCost: 1
-  expReward: 8
+  expReward: 10
   sweet: 3
   spicy: 0
   sour: 0

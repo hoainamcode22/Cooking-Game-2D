@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: "Chu\u1ED3ng G\xE0"
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   itemID: 107
-  itemName: "Chu\u1ED3ng Heo"
+  itemName: "Chu\u1ED3ng G\xE0"
   itemIcon: {fileID: -2620742005826080342, guid: 8abebd8dfaa54124796f6c3653c28a3f, type: 3}
   goldPrice: 100
   diamondPrice: 0
+  unlockLevel: 2
   prefabToBuild: {fileID: 9142124755168808929, guid: 7047e157c1ad550409f24e104f97cfb9, type: 3}

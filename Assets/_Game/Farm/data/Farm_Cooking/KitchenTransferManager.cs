@@ -34,6 +34,7 @@ public class KitchenTransferManager : MonoBehaviour
         }
 
         Instance = this;
+        transform.SetParent(null); // Tách ra root để DontDestroyOnLoad hoạt động (fix warning)
         DontDestroyOnLoad(gameObject);
 
         LoadTransferData();

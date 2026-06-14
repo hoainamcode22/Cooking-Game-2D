@@ -16,7 +16,7 @@ MonoBehaviour:
   displayName: "Canh khoai t\xE2y th\u1ECBt heo"
   icon: {fileID: 1279224124731815791, guid: 3a66e1bf706ec9145a4296552e0d9ab4, type: 3}
   category: 0
-  unlockLevel: 5
+  unlockLevel: 6
   weight: 8
   minAmount: 1
   maxAmount: 2

@@ -13,16 +13,15 @@ MonoBehaviour:
   m_Name: LevelReward_L4
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 4
-  giftGold: 50
-  giftGems: 0
+  giftGold: 250
+  giftGems: 3
   giftItems:
-  - itemId: seed_cachua
-    displayName: "C\xE0 Chua"
-    icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
-    amount: 5
+  - itemId: seed_hoa_hong
+    displayName: "H\u1EA1t Hoa h\u1ED3ng"
+    icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
+    amount: 2
   unlockDescriptions:
-  - "M\u1EDF kh\xF3a c\xE0 chua"
-  - "M\u1EDF th\xEAm \u0111\u01A1n h\xE0ng combo \u0111\u01A1n gi\u1EA3n"
-  - "M\u1EDF th\xEAm v\u1EADt ph\u1EA9m trang tr\xED/hoa"
-  hintText: "C\u1EA5p 4 m\u1EDF th\xEAm nguy\xEAn li\u1EC7u m\u1EDBi \u0111\u1EC3
-    giao \u0111\u01A1n h\xE0ng ki\u1EBFm nhi\u1EC1u v\xE0ng h\u01A1n."
+  - "M\u1EDF kh\xF3a Hoa h\u1ED3ng v\xE0 O\u1EA3i h\u01B0\u01A1ng"
+  - "Chu\u1ED3ng heo \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+  hintText: "Hoa h\u1ED3ng v\xE0 O\u1EA3i h\u01B0\u01A1ng \u0111\xE3 c\xF3 trong
+    Shop. Gh\xE9 xem chu\u1ED3ng heo m\u1EDBi nh\xE9!"

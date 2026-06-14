@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_18_LevelUpCelebration
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: Gioi qua! Ban da du kinh nghiem de len cap 2. Nong trai cua ban dang phat
-    trien roi!
+  npcText: "L\xCAN C\u1EA4P 2 R\u1ED2I! B\u1EA1n \u0111\xFAng l\xE0 n\xF4ng d\xE2n
+    t\xE0i ba!"
   npcPortrait: {fileID: 0}
-  typingSpeed: 0.04
+  typingSpeed: 0.02
   targetID: 
   useCircleHole: 1
   holePaddingPx: 16

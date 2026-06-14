@@ -31,6 +31,7 @@ public class FarmInventoryManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+        transform.SetParent(null); // Tách ra root để DontDestroyOnLoad hoạt động (fix warning)
         DontDestroyOnLoad(gameObject);
         LoadInventory();
     }

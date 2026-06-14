@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27da4e0963ef8a14bba5b6535e1c8d80, type: 3}
+  m_Name: Mission_daily_collect_8
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionIcon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}
+  missionName: "Thu 8 s\u1EA3n ph\u1EA9m v\u1EADt nu\xF4i"
+  targetAmount: 8
+  rewardIcon: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
+  rewardAmount: 120
+  rewardType: 0
+  missionId: daily_collect_8
+  requiredLevel: 6
+  eventType: 4
+  targetItemId: 
+  isDaily: 1

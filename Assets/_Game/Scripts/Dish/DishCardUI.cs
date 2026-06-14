@@ -32,6 +32,16 @@ public class DishCardUI : MonoBehaviour
         }
     }
 
+    // Khóa/mở card theo level người chơi: khóa thì xám hình và không bấm được
+    public void SetLocked(bool locked)
+    {
+        if (btnSelect != null)
+            btnSelect.interactable = !locked;
+
+        if (imgDish != null)
+            imgDish.color = locked ? new Color(0.45f, 0.45f, 0.45f, 1f) : Color.white;
+    }
+
     private void OnClick()
     {
 

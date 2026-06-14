@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: "C\xE0 Chua"
   icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
   category: 0
-  unlockLevel: 2
+  unlockLevel: 3
   weight: 15
   minAmount: 2
   maxAmount: 5
-  goldPerUnit: 20
+  goldPerUnit: 34
   expPerUnit: 4

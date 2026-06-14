@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_14_PlantAllFlowers
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: Trong them vao cac chau hoa con lai nua nhe!
+  npcText: "Tr\u1ED3ng n\u1ED1t ch\u1EADu c\xF2n l\u1EA1i nh\xE9!"
   npcPortrait: {fileID: 0}
-  typingSpeed: 0.04
+  typingSpeed: 0.02
   targetID: 
   useCircleHole: 1
   holePaddingPx: 16

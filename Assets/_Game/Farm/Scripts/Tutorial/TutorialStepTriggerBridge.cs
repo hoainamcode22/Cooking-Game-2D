@@ -29,8 +29,8 @@ public class TutorialStepTriggerBridge : MonoBehaviour
     [Tooltip("Để trống = đếm mọi Flower plot. Gán để chỉ đếm đúng chậu tutorial.")]
     [SerializeField] private List<PlotController> tutorialFlowerPots = new List<PlotController>();
 
-    [SerializeField] private int targetFlowerPlantCount   = 2;
-    [SerializeField] private int targetFlowerHarvestCount = 2;
+    [SerializeField] private int targetFlowerPlantCount   = 6;
+    [SerializeField] private int targetFlowerHarvestCount = 6;
 
     // =========================================================================
     // Runtime counters

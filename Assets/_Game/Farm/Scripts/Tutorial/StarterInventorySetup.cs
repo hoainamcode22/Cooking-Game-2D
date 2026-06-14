@@ -2,19 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Cấp vật phẩm starter cho người chơi mới — chạy đúng 1 lần duy nhất.
-///
-/// Setup:
-///   1. Attach component này lên Tutorial_Manager hoặc một GameObject tồn tại lâu dài.
-///   2. Thêm các mục vào starterItems (itemId, displayName, sprite, amount).
-///   3. Chạy Tools/Farm Game/Setup Tutorial L1-L2 để tự cấu hình mặc định.
-///
-/// Logic:
-///   - Kiểm tra PlayerPrefs key "STARTER_ITEMS_GIVEN"
-///   - Nếu chưa có: gọi WarehouseManager.AddItem cho từng entry, set flag
-///   - Nếu đã có: bỏ qua (không cấp lại)
-/// </summary>
+
 public class StarterInventorySetup : MonoBehaviour
 {
     private const string PREF_KEY = "STARTER_ITEMS_GIVEN";
@@ -51,8 +39,6 @@ public class StarterInventorySetup : MonoBehaviour
         }
 #endif
 
-        if (PlayerPrefs.HasKey(PREF_KEY)) return;
-
         GiveStarterItems();
     }
 
@@ -65,12 +51,19 @@ public class StarterInventorySetup : MonoBehaviour
             return;
         }
 
+        if (FarmLevelManager.Instance != null && FarmLevelManager.Instance.CurrentLevel > 1)
+            return;
+
         int given = 0;
         foreach (var entry in starterItems)
         {
             if (string.IsNullOrEmpty(entry.itemId)) continue;
-            WarehouseManager.Instance.AddItem(entry.itemId, entry.displayName, entry.icon, entry.amount);
-            Debug.Log($"[StarterInventory] +{entry.amount}x {entry.displayName} ({entry.itemId})");
+            int current = WarehouseManager.Instance.GetAmount(entry.itemId);
+            int missing = Mathf.Max(0, entry.amount - current);
+            if (missing <= 0) continue;
+
+            WarehouseManager.Instance.AddItem(entry.itemId, entry.displayName, entry.icon, missing);
+            Debug.Log($"[StarterInventory] +{missing}x {entry.displayName} ({entry.itemId})");
             given++;
         }
 

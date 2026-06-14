@@ -31,12 +31,12 @@ MonoBehaviour:
   seedItemId: ca_rot
   harvestItemId: carot
   tier: 0
-  unlockLevel: 1
+  unlockLevel: 3
   growSeconds: 400
-  sellGold: 3
+  sellGold: 16
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 7
   sweet: 0
   spicy: 0
   sour: 0

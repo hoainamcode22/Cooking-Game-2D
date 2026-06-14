@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_04_FocusPlots
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: Bat dau nhe! Truoc tien, chung ta se gieo hat lua tren nhung o dat nay.
+  npcText: "\u0110\xE2y l\xE0 khu ru\u1ED9ng c\u1EE7a b\u1EA1n. \u01A0 k\xECa, c\xF3
+    l\xFAa ch\xEDn s\u1EB5n r\u1ED3i!"
   npcPortrait: {fileID: 0}
-  typingSpeed: 0.04
-  targetID: 
+  typingSpeed: 0.02
+  targetID: tutorial_plot_01
   useCircleHole: 1
   holePaddingPx: 16
-  waitAction: 0
+  waitAction: 16
   showGuideBoard: 0
-  showHandPointer: 0
-  handOffset: {x: 0, y: 0}
+  showHandPointer: 1
+  handOffset: {x: 40, y: -30}
   dragToTargetId: 

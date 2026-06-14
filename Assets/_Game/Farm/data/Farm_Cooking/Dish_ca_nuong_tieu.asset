@@ -17,6 +17,7 @@ MonoBehaviour:
   dishSubTitle: "C\xE1 \xB7 Ti\xEAu"
   dishSprite: {fileID: 7005514672714901730, guid: d197209a165418540bf98d74d7fca7a2, type: 3}
   difficulty: 2
+  unlockLevel: 99
   targetFlavor:
     sweet: 0
     spicy: 1

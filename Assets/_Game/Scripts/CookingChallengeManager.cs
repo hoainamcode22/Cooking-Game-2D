@@ -328,6 +328,14 @@ public class CookingChallengeManager : MonoBehaviour
     {
         cookedDishOnPlate = currentDishData;
 
+        // Cộng EXP khi nấu thành công (chạy đúng 1 lần cho mỗi lần nấu thành công)
+        if (PlayerProgressManager.Instance != null)
+            PlayerProgressManager.Instance.AddExp(8);
+
+        // Tiến độ nhiệm vụ nấu ăn
+        MissionProgressTracker.ReportEvent(MissionEventType.CookDish,
+            currentDishData != null ? currentDishData.dishId : "", 1);
+
         if (cookingPopupController != null)
         {
             cookingPopupController.ShowScoreResultPopup(result, true, currentDishData);

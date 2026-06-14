@@ -16,9 +16,9 @@ MonoBehaviour:
   displayName: "M\xEDa"
   icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
   category: 0
-  unlockLevel: 8
+  unlockLevel: 7
   weight: 8
   minAmount: 3
   maxAmount: 7
-  goldPerUnit: 14
+  goldPerUnit: 60
   expPerUnit: 3

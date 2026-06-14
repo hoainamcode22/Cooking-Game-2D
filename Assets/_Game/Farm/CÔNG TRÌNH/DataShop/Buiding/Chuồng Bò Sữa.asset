@@ -15,6 +15,7 @@ MonoBehaviour:
   itemID: 113
   itemName: "Chuồng B\xF2 Sữa"
   itemIcon: {fileID: 3939136077963233266, guid: 8b583cc7808b2d44da70fbe84e2b5c31, type: 3}
-  goldPrice: 100
+  goldPrice: 2000
   diamondPrice: 0
+  unlockLevel: 8
   prefabToBuild: {fileID: 9142124755168808929, guid: 3291a22199454cf4cb96c126ebc7fee8, type: 3}

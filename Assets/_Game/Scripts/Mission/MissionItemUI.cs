@@ -23,7 +23,7 @@ public class MissionItemUI : MonoBehaviour
     public void Setup(MissionData data)
     {
         _data   = data;
-        _claimed = false;
+        _claimed = PlayerPrefs.GetInt(ClaimedPrefsKey(data), 0) == 1; // persist giữa các phiên
 
         if (img_Icon    != null && data.missionIcon  != null) img_Icon.sprite    = data.missionIcon;
         if (img_Reward  != null && data.rewardIcon   != null) img_Reward.sprite  = data.rewardIcon;
@@ -34,8 +34,17 @@ public class MissionItemUI : MonoBehaviour
         btn_Claim.onClick.RemoveAllListeners();
         btn_Claim.onClick.AddListener(OnClaimClicked);
 
-        SetClaimedState(false);
-        UpdateProgress(0);
+        SetClaimedState(_claimed);
+
+        if (_claimed)
+        {
+            if (txt_Progress != null)
+                txt_Progress.text = $"{data.targetAmount}/{data.targetAmount}";
+        }
+        else
+        {
+            UpdateProgress(0);
+        }
     }
 
     public void UpdateProgress(int currentAmount)
@@ -64,9 +73,22 @@ public class MissionItemUI : MonoBehaviour
             PlayerWallet.Instance?.AddDiamond(_data.rewardAmount);
 
         _claimed = true;
+        PlayerPrefs.SetInt(ClaimedPrefsKey(_data), 1); // lưu trạng thái đã nhận
+        PlayerPrefs.Save();
+
         SetClaimedState(true);
         AvatarProfilePopupUI.AddAchievementCount();
 
+        Debug.Log($"[MissionItemUI] Claimed '{_data.MissionId}' → +{_data.rewardAmount} {_data.rewardType}");
+    }
+
+    /// <summary>Key PlayerPrefs lưu claimed. Mission daily kèm ngày → tự "reset" sang ngày mới.</summary>
+    private static string ClaimedPrefsKey(MissionData data)
+    {
+        string id = data.MissionId;
+        return data.isDaily
+            ? $"MISSION_CLAIMED_DAILY_{System.DateTime.Now:yyyyMMdd}_{id}"
+            : $"MISSION_CLAIMED_{id}";
     }
 
     private void SetClaimedState(bool claimed)

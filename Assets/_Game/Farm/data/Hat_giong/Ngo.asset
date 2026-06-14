@@ -31,12 +31,12 @@ MonoBehaviour:
   seedItemId: seed_ngo
   harvestItemId: ngo
   tier: 1
-  unlockLevel: 1
-  growSeconds: 600
-  sellGold: 3
+  unlockLevel: 2
+  growSeconds: 360
+  sellGold: 13
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 7
   sweet: 0
   spicy: 0
   sour: 0

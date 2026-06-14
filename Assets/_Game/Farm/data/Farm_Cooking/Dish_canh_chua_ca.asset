@@ -17,6 +17,7 @@ MonoBehaviour:
   dishSubTitle: "C\xE1 \xB7 C\xE0 chua \xB7 Chanh \xB7 \u1EDAt"
   dishSprite: {fileID: 1069272278625557564, guid: f3e94879d572b7849bb9e19fb686300c, type: 3}
   difficulty: 2
+  unlockLevel: 99
   targetFlavor:
     sweet: 0
     spicy: 0

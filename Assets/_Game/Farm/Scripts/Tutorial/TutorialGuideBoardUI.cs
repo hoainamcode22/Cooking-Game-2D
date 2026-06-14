@@ -1,76 +1,118 @@
+using System;
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
-/// <summary>
-/// Popup bảng hướng dẫn 4 bước nông trại.
-/// Hiện khi TutorialStepData.showGuideBoard = true.
-/// Nút "Bắt đầu trồng" → Hide() + TutorialManager.NextStep().
-///
-/// QUAN TRỌNG — rootPanel thường = chính gameObject này (self-reference).
-/// KHÔNG gọi rootPanel.SetActive(false) trong Awake():
-///   - Awake() được Unity kích hoạt TRONG lúc Show() gọi rootPanel.SetActive(true)
-///   - Nếu Awake SetActive(false) lại → Board bị tắt ngay, không bao giờ hiện
-///   - Setup tool đã gọi SetActive(false) khi tạo — Awake không cần làm lại
-/// </summary>
 public class TutorialGuideBoardUI : MonoBehaviour
 {
-    [Header("Root Panel (self-reference: chính là Tutorial_GuideBoard)")]
+    [Serializable]
+    public class PopupPage
+    {
+        public string stepName;
+        public GameObject root;
+        public RectTransform animatedHand;
+        public RectTransform handFrom;
+        public RectTransform handTo;
+        public float travelDuration = 0.65f;
+        public float pauseDuration = 0.45f;
+    }
+
+    [Header("Root")]
     [SerializeField] private GameObject rootPanel;
 
-    [Header("4 Step Image Slots (gán ảnh minh họa sau)")]
-    [Tooltip("[TutorialSetup] Gắn ảnh minh họa bước 1 - Gieo Hạt tại đây")]
+    [Header("Legacy Image Slots")]
     [SerializeField] private Image step1Icon;
-
-    [Tooltip("[TutorialSetup] Gắn ảnh minh họa bước 2 - Tăng Tốc tại đây")]
     [SerializeField] private Image step2Icon;
-
-    [Tooltip("[TutorialSetup] Gắn ảnh minh họa bước 3 - Thu Hoạch tại đây")]
     [SerializeField] private Image step3Icon;
-
-    [Tooltip("[TutorialSetup] Gắn ảnh minh họa bước 4 - Kết Quả tại đây")]
     [SerializeField] private Image step4Icon;
 
     [Header("Button")]
     [SerializeField] private Button confirmButton;
 
+    [Header("Four Popup Pages")]
+    [SerializeField] private PopupPage[] popupPages = Array.Empty<PopupPage>();
+
+    private Coroutine _handRoutine;
+
     private void Awake()
     {
-        // KHÔNG gọi rootPanel.SetActive(false) ở đây.
-        // Gọi SetActive(false) trong Awake sẽ cancel ngay tác dụng của Show()
-        // vì Awake() được trigger TRONG lúc Show() đang gọi rootPanel.SetActive(true).
-        // SetActive(false) ban đầu được xử lý bởi Setup Tool (rootGo.SetActive(false)).
         if (confirmButton != null)
             confirmButton.onClick.AddListener(OnConfirmClicked);
     }
 
-    /// <summary>
-    /// Hiện board. Gọi được dù gameObject đang inactive
-    /// (C# method call không bị block bởi inactive state).
-    /// </summary>
-    public void Show()
+    public void Show() => ShowForStep(string.Empty);
+
+    public void ShowForStep(string stepName)
     {
         var target = rootPanel != null ? rootPanel : gameObject;
         target.SetActive(true);
 
-        // Đưa board lên trên cùng trong Canvas — render trên mọi UI khác
-        transform.SetAsLastSibling();
+        PopupPage selected = null;
+        foreach (var page in popupPages)
+        {
+            if (page?.root == null) continue;
+            bool active = selected == null
+                && (string.IsNullOrEmpty(page.stepName) || page.stepName == stepName);
+            page.root.SetActive(active);
+            if (active) selected = page;
+        }
 
-        Debug.Log($"[TutorialGuideBoardUI] Show() — rootPanel={(rootPanel != null ? rootPanel.name : "NULL (dùng gameObject)")}");
+        StopPageAnimation();
+        if (selected?.animatedHand != null && selected.handFrom != null)
+            _handRoutine = StartCoroutine(AnimatePageHand(selected));
+
+        transform.SetAsLastSibling();
+        Debug.Log($"[TutorialGuideBoardUI] ShowForStep('{stepName}')");
     }
 
-    /// <summary>Ẩn board.</summary>
     public void Hide()
     {
+        StopPageAnimation();
         var target = rootPanel != null ? rootPanel : gameObject;
         target.SetActive(false);
-        Debug.Log("[TutorialGuideBoardUI] Hide()");
     }
 
     private void OnConfirmClicked()
     {
-        Debug.Log("[TutorialGuideBoardUI] Start button clicked — hiding board, advancing tutorial.");
-        Hide();
-        TutorialManager.Instance?.NextStep();
+        TutorialManager.Instance?.ConfirmGuidePopup();
     }
+
+    private IEnumerator AnimatePageHand(PopupPage page)
+    {
+        RectTransform hand = page.animatedHand;
+        hand.gameObject.SetActive(true);
+        Vector3 baseScale = hand.localScale == Vector3.zero ? Vector3.one : hand.localScale;
+        var wait = new WaitForSecondsRealtime(Mathf.Max(0.1f, page.pauseDuration));
+
+        while (true)
+        {
+            RectTransform destination = page.handTo != null ? page.handTo : page.handFrom;
+            Vector3 start = page.handFrom.position;
+            Vector3 end = destination.position;
+            float elapsed = 0f;
+            float duration = Mathf.Max(0.1f, page.travelDuration);
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                hand.position = Vector3.Lerp(start, end, t);
+                hand.localScale = baseScale * (1f + Mathf.Sin(t * Mathf.PI) * 0.12f);
+                yield return null;
+            }
+
+            hand.position = end;
+            hand.localScale = baseScale;
+            yield return wait;
+        }
+    }
+
+    private void StopPageAnimation()
+    {
+        if (_handRoutine != null) StopCoroutine(_handRoutine);
+        _handRoutine = null;
+    }
+
+    private void OnDisable() => StopPageAnimation();
 }

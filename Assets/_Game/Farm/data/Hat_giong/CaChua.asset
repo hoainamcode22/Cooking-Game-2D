@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_cachua
   itemName: "C\xE0 Chua"
   itemIcon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
-  goldPrice: 80
+  goldPrice: 65
   diamondPrice: 0
   cropCategory: 0
   cropId: cachua
@@ -31,12 +31,12 @@ MonoBehaviour:
   seedItemId: seed_cachua
   harvestItemId: cachua
   tier: 1
-  unlockLevel: 1
-  growSeconds: 900
-  sellGold: 3
+  unlockLevel: 3
+  growSeconds: 480
+  sellGold: 20
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 8
   sweet: 0
   spicy: 0
   sour: 0

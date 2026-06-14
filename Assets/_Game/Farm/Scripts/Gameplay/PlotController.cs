@@ -513,6 +513,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         Save();
         RefreshVisual();
         PlaySeedPlantVFX(crop, 1);
+
+        // Tiến độ nhiệm vụ trồng cây (đếm theo ô đất, 1 lần trồng = 1)
+        MissionProgressTracker.ReportEvent(MissionEventType.PlantCrop, crop.cropId, 1);
         return true;
     }
 
@@ -580,8 +583,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if (FarmInventoryManager.Instance != null)
             FarmInventoryManager.Instance.AddItem(harvestItemId, amount);
 
-        // Cập nhật tiến độ nhiệm vụ tân thủ theo loại nông sản vừa thu hoạch
-        MissionProgressTracker.Instance?.AddProgress(harvestItemId, amount);
+        // Cập nhật tiến độ nhiệm vụ theo loại nông sản vừa thu hoạch
+        MissionProgressTracker.ReportEvent(MissionEventType.HarvestItem, harvestItemId, amount);
 
         AutoFindHarvestSpawnPoint();
         AutoFindExpSpawnPoint();

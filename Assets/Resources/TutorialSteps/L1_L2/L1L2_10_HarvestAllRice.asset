@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_10_HarvestAllRice
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: Tuyet voi! Ban da thu hoach xong vu lua dau tien.
+  npcText: "Thu ho\u1EA1ch h\u1EBFt 6 \xF4 \u0111\u1EC3 nh\u1EADn EXP n\xE0o!"
   npcPortrait: {fileID: 0}
-  typingSpeed: 0.04
+  typingSpeed: 0.02
   targetID: 
   useCircleHole: 1
   holePaddingPx: 16
