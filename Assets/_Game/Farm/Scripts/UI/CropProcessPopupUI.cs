@@ -33,6 +33,8 @@ public class CropProcessPopupUI : MonoBehaviour
 
     private PlotController currentPlot;
     private bool popupInputLockHeld;
+    // Thanh XANH thật = Image con của progressFill (type Filled). progressFill chính nó là KHUNG gỗ tĩnh.
+    private Image _fillImage;
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
@@ -78,6 +80,7 @@ public class CropProcessPopupUI : MonoBehaviour
         if (txtGemCost != null)
             txtGemCost.text = speedUpGemCost.ToString();
 
+        ResolveFillImage();
         RefreshDisplay();
         gameObject.SetActive(true);
         AcquirePopupInputBlock();
@@ -136,6 +139,31 @@ public class CropProcessPopupUI : MonoBehaviour
 
     // ── Internal ─────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Xác định thanh XANH thật để fill: là Image con của progressFill (đã set type Filled, màu xanh,
+    /// sprite trống). progressFill chính nó là KHUNG gỗ (khungprocess) → GIỮ TĨNH, không fill.
+    /// Nhờ vậy chỉ phần xanh chảy theo thời gian, viền khung đứng yên.
+    /// </summary>
+    private void ResolveFillImage()
+    {
+        if (progressFill == null) { _fillImage = null; return; }
+
+        _fillImage = progressFill;
+        foreach (var img in progressFill.GetComponentsInChildren<Image>(true))
+        {
+            if (img == progressFill) continue;
+            _fillImage = img;   // ưu tiên thanh xanh (Image con)
+            break;
+        }
+
+        if (_fillImage != null)
+        {
+            _fillImage.type       = Image.Type.Filled;
+            _fillImage.fillMethod = Image.FillMethod.Horizontal;
+            _fillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
+        }
+    }
+
     private void RefreshDisplay()
     {
         if (currentPlot == null) return;
@@ -148,8 +176,10 @@ public class CropProcessPopupUI : MonoBehaviour
         if (txtTimeRemaining != null)
             txtTimeRemaining.text = currentPlot.GetRemainingTimeText();
 
-        if (progressFill != null)
-            progressFill.fillAmount = currentPlot.GetGrowProgress01();
+        // Chỉ fill thanh XANH (Image con). Viền khung gỗ (progressFill) giữ tĩnh.
+        if (_fillImage == null) ResolveFillImage();
+        if (_fillImage != null)
+            _fillImage.fillAmount = currentPlot.GetGrowProgress01();
     }
 
     private void OnSpeedUpClicked()

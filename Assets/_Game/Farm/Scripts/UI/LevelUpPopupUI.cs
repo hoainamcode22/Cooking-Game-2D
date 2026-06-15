@@ -60,6 +60,24 @@ public class LevelUpPopupUI : MonoBehaviour
     [SerializeField] private Transform  vfxLeftPoint;
     [SerializeField] private Transform  vfxRightPoint;
 
+    [Header("VFX Screen Composition")]
+    [SerializeField] private float vfxTopPanelGap = 70f;
+    [SerializeField] private float vfxSidePanelGap = 130f;
+    [SerializeField] private float vfxSideVerticalOffset = 70f;
+    [SerializeField] private float vfxTopDemoScale = 0.5f;
+    [SerializeField] private float vfxSideDemoScale = 0.38f;
+    [SerializeField] private float vfxLifetime = 4f;
+
+    [Header("VFX Intensity — bùm bùm rầm rộ tới khi nhận quà")]
+    [Tooltip("Phóng to pháo hoa (confetti) phía trên")]
+    [SerializeField] private float vfxScaleBoost        = 2.0f;
+    [Tooltip("Phóng to Lana03 hai bên (to hơn confetti)")]
+    [SerializeField] private float vfxSideScaleBoost    = 2.8f;
+    [Tooltip("Nhân số lượng particle (nhiều hơn)")]
+    [SerializeField] private float vfxEmissionMultiplier = 2.5f;
+    [Tooltip("Khoảng cách giữa các lần bùm (giây). Lặp tới khi user bấm Nhận Quà.")]
+    [SerializeField] private float vfxBurstInterval      = 0.6f;
+
     [Header("Animation")]
     [SerializeField] private float fadeInDuration  = 0.25f;
     [SerializeField] private float scaleInDuration = 0.3f;
@@ -74,6 +92,8 @@ public class LevelUpPopupUI : MonoBehaviour
     private int                 _lastKnownLevel;
     private LevelRewardConfig   _currentConfig;
     private bool                _inputLockHeld;
+    private GameObject          _activeVfxRoot;
+    private Coroutine           _vfxLoop;
 
     // =========================================================================
     // Unity Lifecycle
@@ -103,7 +123,13 @@ public class LevelUpPopupUI : MonoBehaviour
         if (PlayerProgressManager.Instance != null)
             PlayerProgressManager.Instance.OnLevelChanged -= HandleLevelChanged;
 
+        StopVFX();
         ReleaseInputLock();
+    }
+
+    private void OnDisable()
+    {
+        StopVFX();
     }
 
     // =========================================================================
@@ -112,8 +138,9 @@ public class LevelUpPopupUI : MonoBehaviour
 
     private void HandleLevelChanged(int newLevel)
     {
-        // Bỏ qua lần gọi đầu tiên khi Start() đồng bộ UI (không phải lên cấp thật)
-        if (newLevel <= _lastKnownLevel) return;
+        // Bỏ qua lần gọi đầu tiên khi Start() đồng bộ UI; và khi reset xuống (vd về L1)
+        // → đồng bộ lại mốc để lần lên cấp sau vẫn hiện popup + pháo hoa.
+        if (newLevel <= _lastKnownLevel) { _lastKnownLevel = newLevel; return; }
 
         _lastKnownLevel = newLevel;
         _levelUpQueue.Enqueue(newLevel);
@@ -223,8 +250,10 @@ public class LevelUpPopupUI : MonoBehaviour
     private void ClaimAndClose()
     {
         GrantRewards(_currentConfig);
+        StopVFX(); // bấm Nhận Quà → tắt pháo hoa NGAY rồi mới đóng popup
         StartCoroutine(AnimateOut(() =>
         {
+            StopVFX();
             if (popupRoot != null) popupRoot.SetActive(false);
             ReleaseInputLock();
             ShowNextPopup();
@@ -322,17 +351,189 @@ public class LevelUpPopupUI : MonoBehaviour
 
     private void SpawnVFX()
     {
+        StopVFX();
+
+        Camera renderCamera = Camera.main;
+        if (renderCamera == null)
+        {
+            Debug.LogWarning("[LevelUpPopupUI] Main Camera not found. Lana VFX cannot be placed from UI screen space.");
+            return;
+        }
+
+        _activeVfxRoot = new GameObject("LevelUpPopup_VFX_Runtime");
+
         if (vfxConfettiPrefab != null)
         {
-            Vector3 pos = vfxSpawnPoint != null ? vfxSpawnPoint.position : transform.position;
-            Destroy(Instantiate(vfxConfettiPrefab, pos, Quaternion.identity), 4f);
+            // Pháo hoa: bắn 3 điểm phía trên (giữa + 2 góc) cho rầm rộ
+            SpawnWorldVfx(vfxConfettiPrefab, "LevelUp_Confetti_Top",
+                GetVfxScreenPoint(VfxPlacement.Top),      renderCamera, 15.09f, vfxTopDemoScale * vfxScaleBoost);
+            SpawnWorldVfx(vfxConfettiPrefab, "LevelUp_Confetti_TopLeft",
+                GetVfxScreenPoint(VfxPlacement.TopLeft),  renderCamera, 15.09f, vfxTopDemoScale * vfxScaleBoost);
+            SpawnWorldVfx(vfxConfettiPrefab, "LevelUp_Confetti_TopRight",
+                GetVfxScreenPoint(VfxPlacement.TopRight), renderCamera, 15.09f, vfxTopDemoScale * vfxScaleBoost);
         }
 
         if (vfxSidePrefab != null)
         {
-            if (vfxLeftPoint  != null) Destroy(Instantiate(vfxSidePrefab, vfxLeftPoint.position,  Quaternion.identity), 4f);
-            if (vfxRightPoint != null) Destroy(Instantiate(vfxSidePrefab, vfxRightPoint.position, Quaternion.identity), 4f);
+            // Lana03 hai bên — to hơn confetti
+            SpawnWorldVfx(vfxSidePrefab, "LevelUp_Flash_Lana03_Left",
+                GetVfxScreenPoint(VfxPlacement.Left),  renderCamera, 20f, vfxSideDemoScale * vfxSideScaleBoost);
+            SpawnWorldVfx(vfxSidePrefab, "LevelUp_Flash_Lana03_Right",
+                GetVfxScreenPoint(VfxPlacement.Right), renderCamera, 20f, vfxSideDemoScale * vfxSideScaleBoost);
         }
+
+        // KHÔNG tự huỷ sau vài giây nữa — lặp "bùm bùm bùm" tới khi user bấm Nhận Quà (StopVFX dừng).
+        if (_vfxLoop != null) StopCoroutine(_vfxLoop);
+        _vfxLoop = StartCoroutine(VfxBurstLoop());
+    }
+
+    private enum VfxPlacement
+    {
+        Top,
+        TopLeft,
+        TopRight,
+        Left,
+        Right
+    }
+
+    private Vector2 GetVfxScreenPoint(VfxPlacement placement)
+    {
+        Canvas rootCanvas = GetComponentInParent<Canvas>();
+        float scaleFactor = rootCanvas != null ? rootCanvas.scaleFactor : 1f;
+
+        if (contentPanel != null)
+        {
+            Vector3[] corners = new Vector3[4];
+            contentPanel.GetWorldCorners(corners);
+
+            Vector2 bottomLeft = RectTransformUtility.WorldToScreenPoint(null, corners[0]);
+            Vector2 topLeft = RectTransformUtility.WorldToScreenPoint(null, corners[1]);
+            Vector2 topRight = RectTransformUtility.WorldToScreenPoint(null, corners[2]);
+            Vector2 bottomRight = RectTransformUtility.WorldToScreenPoint(null, corners[3]);
+
+            if (placement == VfxPlacement.Top)
+                return Vector2.Lerp(topLeft, topRight, 0.5f)
+                    + Vector2.up * (vfxTopPanelGap * scaleFactor);
+
+            if (placement == VfxPlacement.TopLeft)
+                return topLeft
+                    + Vector2.up   * (vfxTopPanelGap * scaleFactor)
+                    + Vector2.left * (vfxSidePanelGap * 0.5f * scaleFactor);
+
+            if (placement == VfxPlacement.TopRight)
+                return topRight
+                    + Vector2.up    * (vfxTopPanelGap * scaleFactor)
+                    + Vector2.right * (vfxSidePanelGap * 0.5f * scaleFactor);
+
+            Vector2 sideCenter = placement == VfxPlacement.Left
+                ? Vector2.Lerp(bottomLeft, topLeft, 0.5f)
+                : Vector2.Lerp(bottomRight, topRight, 0.5f);
+            Vector2 horizontalOffset =
+                (placement == VfxPlacement.Left ? Vector2.left : Vector2.right)
+                * (vfxSidePanelGap * scaleFactor);
+
+            return sideCenter
+                + horizontalOffset
+                + Vector2.up * (vfxSideVerticalOffset * scaleFactor);
+        }
+
+        Transform fallback =
+            (placement == VfxPlacement.Top || placement == VfxPlacement.TopLeft || placement == VfxPlacement.TopRight)
+            ? vfxSpawnPoint
+            : placement == VfxPlacement.Left ? vfxLeftPoint : vfxRightPoint;
+        return fallback != null
+            ? RectTransformUtility.WorldToScreenPoint(null, fallback.position)
+            : new Vector2(Screen.width * 0.5f, Screen.height * 0.5f);
+    }
+
+    private void SpawnWorldVfx(
+        GameObject prefab,
+        string instanceName,
+        Vector2 screenPoint,
+        Camera renderCamera,
+        float demoOrthoSize,
+        float demoScale)
+    {
+        float cameraDistance = renderCamera.nearClipPlane + 1f;
+        Vector3 worldPosition = renderCamera.ScreenToWorldPoint(
+            new Vector3(screenPoint.x, screenPoint.y, cameraDistance));
+
+        GameObject instance = Instantiate(
+            prefab,
+            worldPosition,
+            Quaternion.identity,
+            _activeVfxRoot.transform);
+        instance.name = instanceName;
+
+        float worldScale = renderCamera.orthographic
+            ? (renderCamera.orthographicSize / demoOrthoSize) * demoScale
+            : demoScale;
+        instance.transform.localScale = Vector3.one * worldScale;
+
+        foreach (ParticleSystem particleSystem in instance.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            var main = particleSystem.main;
+            main.useUnscaledTime = true;
+
+            // Nhiều particle hơn: nhân rate + số lượng burst
+            var emission = particleSystem.emission;
+            emission.rateOverTimeMultiplier *= vfxEmissionMultiplier;
+            int burstCount = emission.burstCount;
+            if (burstCount > 0)
+            {
+                var bursts = new ParticleSystem.Burst[burstCount];
+                emission.GetBursts(bursts);
+                for (int b = 0; b < bursts.Length; b++)
+                {
+                    var c = bursts[b].count;
+                    c.constantMin *= vfxEmissionMultiplier;
+                    c.constantMax *= vfxEmissionMultiplier;
+                    bursts[b].count = c;
+                }
+                emission.SetBursts(bursts);
+            }
+
+            particleSystem.Clear(true);
+            particleSystem.Play(true);
+        }
+
+        int sortingOffset = 0;
+        foreach (ParticleSystemRenderer particleRenderer in
+                 instance.GetComponentsInChildren<ParticleSystemRenderer>(true))
+        {
+            particleRenderer.sortingLayerName = "Foreground";
+            particleRenderer.sortingOrder = 1000 + sortingOffset++;
+        }
+    }
+
+    // Lặp bùm tới khi user bấm Nhận Quà.
+    private IEnumerator VfxBurstLoop()
+    {
+        var wait = new WaitForSecondsRealtime(Mathf.Max(0.15f, vfxBurstInterval));
+        while (_activeVfxRoot != null)
+        {
+            yield return wait;
+            if (_activeVfxRoot == null) yield break;
+
+            // Bùm lại tất cả emitter → cảm giác "bùm bùm bùm" liên tục
+            foreach (ParticleSystem ps in _activeVfxRoot.GetComponentsInChildren<ParticleSystem>(true))
+                ps.Play(false);
+        }
+    }
+
+    private void StopVFX()
+    {
+        if (_vfxLoop != null) { StopCoroutine(_vfxLoop); _vfxLoop = null; }
+        if (_activeVfxRoot == null) return;
+
+        foreach (ParticleSystem particleSystem in
+                 _activeVfxRoot.GetComponentsInChildren<ParticleSystem>(true))
+        {
+            particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+        }
+
+        Destroy(_activeVfxRoot);
+        _activeVfxRoot = null;
     }
 
     // =========================================================================

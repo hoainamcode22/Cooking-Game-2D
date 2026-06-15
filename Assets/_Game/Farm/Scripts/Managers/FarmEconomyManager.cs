@@ -99,6 +99,30 @@ public class FarmEconomyManager : MonoBehaviour
         NotifyCurrencyChanged();
     }
 
+    /// <summary>
+    /// Reset tiền & kim cương về mặc định (startGold/startGems).
+    /// Dùng cho tool/nút "Reset Level 1" — vì manager là DontDestroyOnLoad nên xoá PlayerPrefs
+    /// thôi KHÔNG đủ (instance còn sống sẽ ghi đè lại giá trị cũ). Phải reset cả bộ nhớ.
+    /// </summary>
+    public void ResetCurrency()
+    {
+        Gold = startGold;
+        Gems = startGems;
+        SaveCurrency();
+        NotifyCurrencyChanged();
+        Debug.Log($"[FarmEconomyManager] Reset tiền/kim cương về mặc định: {startGold} vàng, {startGems} gem.");
+    }
+
+    /// <summary>Đặt thẳng số vàng/gem (dùng cho tool test khi đang dựng game).</summary>
+    public void SetCurrency(int gold, int gems)
+    {
+        Gold = Mathf.Max(0, gold);
+        Gems = Mathf.Max(0, gems);
+        SaveCurrency();
+        NotifyCurrencyChanged();
+        Debug.Log($"[FarmEconomyManager] Set currency: {Gold} vàng, {Gems} gem.");
+    }
+
     private void NotifyCurrencyChanged()
     {
         OnCurrencyChanged?.Invoke(Gold, Gems);

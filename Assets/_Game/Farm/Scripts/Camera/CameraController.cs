@@ -26,6 +26,11 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float panSmoothTime  = 0.12f; // Thời gian giảm tốc khi thả tay (pan)
     [SerializeField] private float zoomSmoothTime = 0.1f;  // Thời gian giảm tốc khi thả tay (zoom)
 
+    [Header("Cinematic (Tutorial)")]
+    [SerializeField] private float cinematicSmoothTime = 0.45f; // Mượt khi tutorial lia/zoom camera
+    private bool _cinematicActive;                              // True khi tutorial đang điều khiển camera
+    public  bool IsCinematic => _cinematicActive;
+
     [Header("Drag Detection")]
     [SerializeField] private float dragThreshold = 40f; // Pixel tối thiểu phải di chuyển để tính là drag (không phải tap)
 
@@ -85,12 +90,17 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        // Runtime detection: nếu có touch thật (mobile/simulator) → dùng touch path.
-        // Nếu không → dùng mouse path (Editor desktop / standalone).
-        if (Touchscreen.current != null && InputTouch.activeTouches.Count > 0)
-            HandleTouchInput();
-        else
-            HandleMouseInput();
+        // Khi tutorial đang điều khiển camera (cinematic) → bỏ qua input người chơi,
+        // chỉ chạy smooth movement để camera tự lia tới target. Tránh tranh chấp.
+        if (!_cinematicActive)
+        {
+            // Runtime detection: nếu có touch thật (mobile/simulator) → dùng touch path.
+            // Nếu không → dùng mouse path (Editor desktop / standalone).
+            if (Touchscreen.current != null && InputTouch.activeTouches.Count > 0)
+                HandleTouchInput();
+            else
+                HandleMouseInput();
+        }
 
         ApplySmoothMovement();
     }
@@ -432,13 +442,16 @@ public class CameraController : MonoBehaviour
 
     private void ApplySmoothMovement()
     {
+        float posTime  = _cinematicActive ? cinematicSmoothTime : panSmoothTime;
+        float zoomTime = _cinematicActive ? cinematicSmoothTime : zoomSmoothTime;
+
         // Smooth damp vị trí camera về targetPosition
         transform.position = Vector3.SmoothDamp(
-            transform.position, targetPosition, ref panVelocity, panSmoothTime);
+            transform.position, targetPosition, ref panVelocity, posTime);
 
         // Smooth damp zoom về targetSize
         cam.orthographicSize = Mathf.SmoothDamp(
-            cam.orthographicSize, targetSize, ref zoomVelocity, zoomSmoothTime);
+            cam.orthographicSize, targetSize, ref zoomVelocity, zoomTime);
     }
 
     // ── PUBLIC API ───────────────────────────────────────────────────────
@@ -450,6 +463,27 @@ public class CameraController : MonoBehaviour
         // Kẹp lại vị trí đích nếu đang nằm ngoài bounds mới
         targetPosition = ClampToBounds(targetPosition);
     }
+
+    /// <summary>Vị trí camera hiện tại (cho tutorial save/restore).</summary>
+    public Vector3 CurrentPosition => transform.position;
+
+    /// <summary>Orthographic size hiện tại.</summary>
+    public float CurrentSize => cam != null ? cam.orthographicSize : defaultSize;
+
+    /// <summary>
+    /// Tutorial gọi: lia + zoom camera tới 1 điểm world. Khi lockInput=true sẽ khoá
+    /// pan/zoom của người chơi cho tới khi EndCinematic(). CameraController là CHỦ DUY
+    /// NHẤT điều khiển camera → không còn tranh chấp với script tutorial.
+    /// </summary>
+    public void CinematicFocus(Vector3 worldPos, float orthoSize, bool lockInput = true)
+    {
+        targetPosition   = ClampToBounds(new Vector3(worldPos.x, worldPos.y, transform.position.z));
+        targetSize       = Mathf.Clamp(orthoSize, minSize, maxSize);
+        _cinematicActive = lockInput;
+    }
+
+    /// <summary>Kết thúc cinematic, trả quyền pan/zoom cho người chơi.</summary>
+    public void EndCinematic() => _cinematicActive = false;
 
     // ── HELPERS ──────────────────────────────────────────────────────────
 

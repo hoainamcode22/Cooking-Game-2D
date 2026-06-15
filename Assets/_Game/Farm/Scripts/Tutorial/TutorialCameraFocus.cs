@@ -1,69 +1,60 @@
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Di chuyển camera đến vùng trọng tâm tutorial (ô lúa / chậu hoa).
+/// Lia camera đến vùng trọng tâm tutorial (6 ô lúa / chậu hoa).
 /// Gắn cùng GameObject với TutorialManager.
 ///
+/// QUAN TRỌNG:
+///  - Không tự ghi orthographicSize/position. Toàn bộ đi qua
+///    CameraController.CinematicFocus() để camera có 1 chủ duy nhất → hết giật.
+///  - Tâm focus tính theo TÂM NHÌN THẤY của ô (collider/renderer bounds center),
+///    KHÔNG dùng transform.position vì gốc transform nằm dưới đáy tile → lệch.
+///
 /// TutorialManager gọi:
-///   _cameraFocus.FocusOnRice(bridge)    — khi tutorial bắt đầu phase lúa
+///   _cameraFocus.FocusOnRice(bridge)    — khi tới bước trồng lúa (L1L2_04)
 ///   _cameraFocus.FocusOnFlower(bridge)  — khi chuyển sang phase hoa
 ///   _cameraFocus.RestoreCamera()        — khi tutorial kết thúc
 /// </summary>
 public class TutorialCameraFocus : MonoBehaviour
 {
-    [Tooltip("Để trống → Camera.main")]
-    [SerializeField] private Camera _camera;
+    [Tooltip("Để trống → tự lấy CameraController trên Camera.main")]
+    [SerializeField] private CameraController _camController;
 
-    [Header("Zoom targets")]
-    [Tooltip("OrthoSize khi focus vào ô lúa (nhỏ hơn = zoom in hơn)")]
-    [SerializeField] private float _riceZoom   = 5f;
+    [Header("Zoom sizes (theo scale thật: default 750 / min 400 / max 1500)")]
+    [Tooltip("OrthoSize khi focus vào 6 ô lúa (nhỏ hơn = zoom gần hơn)")]
+    [SerializeField] private float _riceZoom   = 460f;
     [Tooltip("OrthoSize khi focus vào chậu hoa")]
-    [SerializeField] private float _flowerZoom = 5f;
+    [SerializeField] private float _flowerZoom = 460f;
 
-    [Header("Pan settings")]
-    [SerializeField] private float _panDuration = 0.7f;
-    [SerializeField] private AnimationCurve _ease = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+    // Giá trị scale cũ (vd 3.5) có thể còn sót trong Inspector → nếu < ngưỡng này thì bỏ qua.
+    private const float MIN_VALID_ZOOM = 50f;
+    private const float DEFAULT_ZOOM   = 460f;
 
-    [Header("Z Offset (2D — giữ nguyên độ sâu camera)")]
-    [SerializeField] private float _cameraZ = -10f;
-
-    // Trạng thái gốc trước khi tutorial focus
+    // Trạng thái gốc trước khi tutorial focus (để restore khi kết thúc)
     private Vector3 _originalPosition;
     private float   _originalZoom;
     private bool    _savedOriginal;
 
-    private Coroutine _panCoroutine;
-
     // =========================================================================
     void Awake()
     {
-        if (_camera == null) _camera = Camera.main;
+        if (_camController == null && Camera.main != null)
+            _camController = Camera.main.GetComponent<CameraController>();
     }
 
     // =========================================================================
     // Public API
     // =========================================================================
 
-    /// <summary>Focus vào trung tâm 6 ô lúa.</summary>
+    /// <summary>Lia camera vào trung tâm 6 ô lúa (theo tâm nhìn thấy) và zoom hợp lý.</summary>
     public void FocusOnRice(TutorialStepTriggerBridge bridge)
     {
-        Vector3 center = Vector3.zero;
-        if (bridge != null) center = bridge.GetRicePlotsWorldCenter();
+        // Center theo TẤT CẢ ô Normal (8 ô) để khung hình + mask khớp với tay quét.
+        Vector3 center = AverageVisualCenter(FindPlots(PlotCategory.Normal));
 
-        // Fallback: find any Normal PlotController
-        if (center == Vector3.zero)
-        {
-            var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
-            System.Array.Sort(all, (a, b) => a.PlotId.CompareTo(b.PlotId));
-            Vector3 sum = Vector3.zero; int cnt = 0;
-            foreach (var p in all)
-            {
-                if (p.Category == PlotCategory.Normal) { sum += p.transform.position; cnt++; }
-                if (cnt >= 6) break;
-            }
-            if (cnt > 0) center = sum / cnt;
-        }
+        if (center == Vector3.zero && bridge != null)
+            center = bridge.GetRicePlotsWorldCenter();
 
         if (center == Vector3.zero)
         {
@@ -72,69 +63,97 @@ public class TutorialCameraFocus : MonoBehaviour
         }
 
         SaveOriginal();
-        PanToWorld(center, _riceZoom);
-        Debug.Log($"[TutorialCameraFocus] FocusOnRice center={center} zoom={_riceZoom}");
+        float zoom = SanitizeZoom(_riceZoom);
+        Focus(center, zoom);
+        Debug.Log($"[TutorialCameraFocus] FocusOnRice center={center} zoom={zoom}");
     }
 
-    /// <summary>Focus vào trung tâm 2 chậu hoa.</summary>
+    /// <summary>Lia camera vào trung tâm các chậu hoa.</summary>
     public void FocusOnFlower(TutorialStepTriggerBridge bridge)
     {
-        if (bridge == null) return;
-        Vector3 center = bridge.GetFlowerPotsWorldCenter();
+        // Center theo TẤT CẢ chậu hoa (6 chậu) — không chỉ 1 chậu như trước.
+        Vector3 center = AverageVisualCenter(FindPlots(PlotCategory.Flower));
+
+        if (center == Vector3.zero && bridge != null)
+            center = bridge.GetFlowerPotsWorldCenter();
+
         if (center == Vector3.zero)
         {
-            Debug.LogWarning("[TutorialCameraFocus] Flower pots center = zero — bridge chua assign flower pots?");
+            Debug.LogWarning("[TutorialCameraFocus] Flower pots not found — skipping focus.");
             return;
         }
-        PanToWorld(center, _flowerZoom);
-        Debug.Log($"[TutorialCameraFocus] Focus on flower pots center: {center}");
+        SaveOriginal();
+        float zoom = SanitizeZoom(_flowerZoom);
+        Focus(center, zoom);
+        Debug.Log($"[TutorialCameraFocus] Focus on flower pots center: {center} zoom={zoom}");
     }
 
-    /// <summary>Trả camera về vị trí/zoom ban đầu khi tutorial kết thúc.</summary>
+    /// <summary>Trả camera về vị trí/zoom ban đầu và trả input cho người chơi.</summary>
     public void RestoreCamera()
     {
-        if (!_savedOriginal) return;
-        PanToWorld(_originalPosition, _originalZoom);
-        Debug.Log("[TutorialCameraFocus] Restoring camera to original position.");
+        if (_camController == null) return;
+
+        if (_savedOriginal)
+            _camController.CinematicFocus(_originalPosition, _originalZoom, false);
+
+        _camController.EndCinematic();
+        Debug.Log("[TutorialCameraFocus] Restoring camera + trả input cho người chơi.");
     }
 
     // =========================================================================
     // Internal
     // =========================================================================
+    private void Focus(Vector3 worldPos, float zoom)
+    {
+        if (_camController == null)
+        {
+            Debug.LogWarning("[TutorialCameraFocus] Không tìm thấy CameraController trên Camera.main.");
+            return;
+        }
+        _camController.CinematicFocus(worldPos, zoom, true);
+    }
+
+    private static float SanitizeZoom(float z) => z < MIN_VALID_ZOOM ? DEFAULT_ZOOM : z;
+
+    /// <summary>Trung bình tâm-nhìn-thấy của danh sách ô. Vector3.zero nếu rỗng.</summary>
+    private static Vector3 AverageVisualCenter(List<Transform> plots)
+    {
+        if (plots == null || plots.Count == 0) return Vector3.zero;
+        Vector3 sum = Vector3.zero; int n = 0;
+        foreach (var t in plots)
+        {
+            if (t == null) continue;
+            sum += PlotVisualCenter(t);
+            n++;
+        }
+        return n > 0 ? sum / n : Vector3.zero;
+    }
+
+    /// <summary>Tìm mọi PlotController transform theo category.</summary>
+    private static List<Transform> FindPlots(PlotCategory cat)
+    {
+        var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
+        var list = new List<Transform>();
+        foreach (var p in all) if (p != null && p.Category == cat) list.Add(p.transform);
+        return list;
+    }
+
+    /// <summary>Tâm nhìn thấy của 1 ô = tâm collider/renderer (đã gồm offset+scale).</summary>
+    private static Vector3 PlotVisualCenter(Transform t)
+    {
+        if (t == null) return Vector3.zero;
+        var col = t.GetComponent<Collider2D>();
+        if (col != null) return col.bounds.center;
+        var rend = t.GetComponentInChildren<Renderer>();
+        if (rend != null) return rend.bounds.center;
+        return t.position;
+    }
+
     private void SaveOriginal()
     {
-        if (_savedOriginal) return;
-        if (_camera == null) return;
-        _originalPosition = _camera.transform.position;
-        _originalZoom     = _camera.orthographicSize;
+        if (_savedOriginal || _camController == null) return;
+        _originalPosition = _camController.CurrentPosition;
+        _originalZoom     = _camController.CurrentSize;
         _savedOriginal    = true;
-    }
-
-    private void PanToWorld(Vector3 worldPos, float zoom)
-    {
-        if (_camera == null) return;
-        Vector3 target = new Vector3(worldPos.x, worldPos.y, _cameraZ);
-        if (_panCoroutine != null) StopCoroutine(_panCoroutine);
-        _panCoroutine = StartCoroutine(PanRoutine(target, zoom));
-    }
-
-    private IEnumerator PanRoutine(Vector3 targetPos, float targetZoom)
-    {
-        Vector3 startPos  = _camera.transform.position;
-        float   startZoom = _camera.orthographicSize;
-        float   elapsed   = 0f;
-
-        while (elapsed < _panDuration)
-        {
-            elapsed += Time.deltaTime;
-            float t = _ease.Evaluate(Mathf.Clamp01(elapsed / _panDuration));
-            _camera.transform.position = Vector3.Lerp(startPos, targetPos, t);
-            _camera.orthographicSize   = Mathf.Lerp(startZoom, targetZoom, t);
-            yield return null;
-        }
-
-        _camera.transform.position = targetPos;
-        _camera.orthographicSize   = targetZoom;
-        _panCoroutine = null;
     }
 }

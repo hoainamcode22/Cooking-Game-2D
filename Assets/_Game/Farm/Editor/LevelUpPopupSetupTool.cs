@@ -12,6 +12,17 @@ using UnityEditor;
 public static class LevelUpPopupSetupTool
 {
     private const string MENU = "Tools/Farm Game/Setup Level Up Popup";
+    private const string MENU_LANA_VFX = MENU + "/Integrate Lana VFX";
+    private const string LANA_CONFETTI_SOURCE =
+        "Assets/Lana Studio/Hyper Casual FX/Prefabs/Confetti/Confetti_blast_multicolor.prefab";
+    private const string LANA_FLASH_SOURCE =
+        "Assets/Lana Studio/Hyper Casual FX/Prefabs/Flash/Flash_magic_blue_pink.prefab";
+    private const string LEVEL_UP_VFX_FOLDER =
+        "Assets/_Game/Farm/Prefabs/VFX/LevelUp";
+    private const string LEVEL_UP_CONFETTI =
+        LEVEL_UP_VFX_FOLDER + "/LevelUp_Confetti_Lana02.prefab";
+    private const string LEVEL_UP_FLASH =
+        LEVEL_UP_VFX_FOLDER + "/LevelUp_Flash_Lana03.prefab";
 
     // =========================================================================
     // Menu entry (có dialog xác nhận)
@@ -33,11 +44,13 @@ public static class LevelUpPopupSetupTool
         var existingAll = Object.FindObjectsByType<LevelUpPopupUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
         if (existingAll.Length > 0)
         {
-            bool replace = EditorUtility.DisplayDialog("Level Up Popup Setup",
-                "LevelUpPopup da ton tai trong Canvas!\n\nBan co muon xoa va tao lai khong?",
-                "Tao lai", "Huy");
-            if (!replace) return;
-            Undo.DestroyObjectImmediate(existingAll[0].gameObject);
+            IntegrateLanaVfx(existingAll[0]);
+            Selection.activeGameObject = existingAll[0].gameObject;
+            EditorUtility.DisplayDialog("Level Up Popup Setup",
+                "LevelUpPopup da ton tai.\n\n" +
+                "Tool da giu nguyen popup va chi cap nhat hierarchy Lana VFX.",
+                "OK");
+            return;
         }
 
         var rootGo = CreatePopupHierarchy(targetCanvas);
@@ -58,6 +71,33 @@ public static class LevelUpPopupSetupTool
     [MenuItem(MENU, true)]
     private static bool ValidateSetup() => !EditorApplication.isPlaying;
 
+    [MenuItem(MENU_LANA_VFX)]
+    public static void IntegrateLanaVfxMenu()
+    {
+        var popups = Object.FindObjectsByType<LevelUpPopupUI>(
+            FindObjectsInactive.Include,
+            FindObjectsSortMode.None);
+        if (popups.Length != 1)
+        {
+            EditorUtility.DisplayDialog(
+                "Integrate Lana VFX",
+                $"Can dung 1 LevelUpPopupUI trong scene, hien tim thay: {popups.Length}.",
+                "OK");
+            return;
+        }
+
+        IntegrateLanaVfx(popups[0]);
+        Selection.activeGameObject = popups[0].gameObject;
+        EditorUtility.DisplayDialog(
+            "Integrate Lana VFX",
+            "Da cap nhat LanaDemo02 tren dau va LanaDemo03 hai ben popup.\n" +
+            "Khong thay the LevelUpPopup va khong sua reward data.",
+            "OK");
+    }
+
+    [MenuItem(MENU_LANA_VFX, true)]
+    private static bool ValidateIntegrateLanaVfx() => !EditorApplication.isPlaying;
+
     // =========================================================================
     // EnsureExists: gọi từ SetupTutorialL1L2Tool — không dialog, không force replace
     // =========================================================================
@@ -67,7 +107,7 @@ public static class LevelUpPopupSetupTool
         if (existingAll.Length > 0)
         {
             Debug.Log("[LevelUpPopupSetupTool] LevelUpPopupUI da co: " + existingAll[0].gameObject.name);
-            // Popup đã tồn tại nhưng vẫn thử gán L2 config nếu chưa có
+            IntegrateLanaVfx(existingAll[0]);
             TryWireLevelRewardL2(existingAll[0]);
             return;
         }
@@ -98,12 +138,32 @@ public static class LevelUpPopupSetupTool
         var canvasGroup = rootGo.AddComponent<CanvasGroup>();
         var popupUI     = rootGo.AddComponent<LevelUpPopupUI>();
 
-        // VFX spawn points
-        var vfxPoint = CreateUIObject("VFX_SpawnPoint",   rootGo.transform, new Vector2(0.5f, 0.8f), new Vector2(0.5f, 0.8f));
+        // VFX background hierarchy. Runtime converts these UI anchors to camera space.
+        var vfxBackground = CreateUIObject(
+            "VFX_Background",
+            rootGo.transform,
+            Vector2.zero,
+            Vector2.one);
+        var vfxPoint = CreateUIObject(
+            "VFX_Top_Lana02",
+            vfxBackground.transform,
+            new Vector2(0.5f, 0.5f),
+            new Vector2(0.5f, 0.5f));
+        vfxPoint.GetComponent<RectTransform>().anchoredPosition = new Vector2(0f, 370f);
         vfxPoint.GetComponent<RectTransform>().sizeDelta = new Vector2(20, 20);
-        var vfxLeft  = CreateUIObject("VFX_Left_Lana03",  rootGo.transform, new Vector2(0.1f, 0.5f), new Vector2(0.1f, 0.5f));
+        var vfxLeft = CreateUIObject(
+            "VFX_Left_Lana03",
+            vfxBackground.transform,
+            new Vector2(0.5f, 0.5f),
+            new Vector2(0.5f, 0.5f));
+        vfxLeft.GetComponent<RectTransform>().anchoredPosition = new Vector2(-390f, 70f);
         vfxLeft.GetComponent<RectTransform>().sizeDelta  = new Vector2(20, 20);
-        var vfxRight = CreateUIObject("VFX_Right_Lana03", rootGo.transform, new Vector2(0.9f, 0.5f), new Vector2(0.9f, 0.5f));
+        var vfxRight = CreateUIObject(
+            "VFX_Right_Lana03",
+            vfxBackground.transform,
+            new Vector2(0.5f, 0.5f),
+            new Vector2(0.5f, 0.5f));
+        vfxRight.GetComponent<RectTransform>().anchoredPosition = new Vector2(390f, 70f);
         vfxRight.GetComponent<RectTransform>().sizeDelta = new Vector2(20, 20);
 
         // Content panel
@@ -242,7 +302,7 @@ public static class LevelUpPopupSetupTool
         // Gán LevelReward_L2 config
         TryWireLevelRewardL2(popupUI);
 
-        rootGo.SetActive(false);
+        rootGo.SetActive(true);
         return rootGo;
     }
 
@@ -251,31 +311,176 @@ public static class LevelUpPopupSetupTool
     // =========================================================================
     private static void TryWireLanaVfx(LevelUpPopupUI popupUI)
     {
-        const string LANA_CONFETTI = "Assets/Lana Studio/Hyper Casual FX/Prefabs/Confetti/Confetti_blast_multicolor.prefab";
-        const string LANA_FLASH    = "Assets/Lana Studio/Hyper Casual FX/Prefabs/Flash/Flash_magic_blue_pink.prefab";
+        EnsureGameOwnedVfxCopies();
 
         var so = new SerializedObject(popupUI);
         bool dirty = false;
 
-        var confettiPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(LANA_CONFETTI);
+        var confettiPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(LEVEL_UP_CONFETTI);
         if (confettiPrefab != null)
         {
             var p = so.FindProperty("vfxConfettiPrefab");
-            if (p != null && p.objectReferenceValue == null) { p.objectReferenceValue = confettiPrefab; dirty = true; }
-            Debug.Log("[LevelUpPopupSetupTool] Wire vfxConfettiPrefab (Lana Demo02) OK");
+            if (p != null && p.objectReferenceValue != confettiPrefab)
+            {
+                p.objectReferenceValue = confettiPrefab;
+                dirty = true;
+            }
+            Debug.Log("[LevelUpPopupSetupTool] Wire game-owned LanaDemo02 confetti OK");
         }
-        else Debug.LogWarning("[LevelUpPopupSetupTool] [WARN] Khong tim thay Lana Confetti — can gan thu cong: " + LANA_CONFETTI);
+        else Debug.LogWarning("[LevelUpPopupSetupTool] [WARN] Khong tim thay Lana Confetti: " + LEVEL_UP_CONFETTI);
 
-        var flashPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(LANA_FLASH);
+        var flashPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(LEVEL_UP_FLASH);
         if (flashPrefab != null)
         {
             var p = so.FindProperty("vfxSidePrefab");
-            if (p != null && p.objectReferenceValue == null) { p.objectReferenceValue = flashPrefab; dirty = true; }
-            Debug.Log("[LevelUpPopupSetupTool] Wire vfxSidePrefab (Lana Demo03) OK");
+            if (p != null && p.objectReferenceValue != flashPrefab)
+            {
+                p.objectReferenceValue = flashPrefab;
+                dirty = true;
+            }
+            Debug.Log("[LevelUpPopupSetupTool] Wire game-owned LanaDemo03 flash OK");
         }
-        else Debug.LogWarning("[LevelUpPopupSetupTool] [WARN] Khong tim thay Lana Flash — can gan thu cong: " + LANA_FLASH);
+        else Debug.LogWarning("[LevelUpPopupSetupTool] [WARN] Khong tim thay Lana Flash: " + LEVEL_UP_FLASH);
 
         if (dirty) so.ApplyModifiedProperties();
+    }
+
+    private static void IntegrateLanaVfx(LevelUpPopupUI popupUI)
+    {
+        Undo.IncrementCurrentGroup();
+        int undoGroup = Undo.GetCurrentGroup();
+        Undo.SetCurrentGroupName("Integrate Level Up Lana VFX");
+
+        RectTransform root = popupUI.GetComponent<RectTransform>();
+        RectTransform background = FindDirectChild(root, "VFX_Background");
+        if (background == null)
+        {
+            GameObject go = CreateUIObject("VFX_Background", root, Vector2.zero, Vector2.one);
+            Undo.RegisterCreatedObjectUndo(go, "Create VFX Background");
+            background = go.GetComponent<RectTransform>();
+        }
+
+        RectTransform top = EnsureVfxAnchor(
+            root,
+            background,
+            "VFX_Top_Lana02",
+            "VFX_SpawnPoint",
+            new Vector2(0f, 370f));
+        RectTransform left = EnsureVfxAnchor(
+            root,
+            background,
+            "VFX_Left_Lana03",
+            null,
+            new Vector2(-390f, 70f));
+        RectTransform right = EnsureVfxAnchor(
+            root,
+            background,
+            "VFX_Right_Lana03",
+            null,
+            new Vector2(390f, 70f));
+
+        background.SetSiblingIndex(0);
+        RectTransform content = FindDirectChild(root, "ContentPanel");
+        if (content != null)
+            content.SetSiblingIndex(1);
+
+        var so = new SerializedObject(popupUI);
+        so.FindProperty("vfxSpawnPoint").objectReferenceValue = top;
+        so.FindProperty("vfxLeftPoint").objectReferenceValue = left;
+        so.FindProperty("vfxRightPoint").objectReferenceValue = right;
+        so.ApplyModifiedProperties();
+
+        TryWireLanaVfx(popupUI);
+        EditorUtility.SetDirty(popupUI);
+        Undo.CollapseUndoOperations(undoGroup);
+    }
+
+    private static RectTransform EnsureVfxAnchor(
+        RectTransform popupRoot,
+        RectTransform background,
+        string desiredName,
+        string legacyName,
+        Vector2 anchoredPosition)
+    {
+        RectTransform anchor = FindDirectChild(background, desiredName);
+        if (anchor == null)
+            anchor = FindDirectChild(popupRoot, desiredName);
+        if (anchor == null && !string.IsNullOrEmpty(legacyName))
+            anchor = FindDirectChild(popupRoot, legacyName);
+
+        if (anchor == null)
+        {
+            GameObject go = CreateUIObject(
+                desiredName,
+                background,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f));
+            Undo.RegisterCreatedObjectUndo(go, "Create " + desiredName);
+            anchor = go.GetComponent<RectTransform>();
+        }
+        else
+        {
+            if (anchor.parent != background)
+                Undo.SetTransformParent(anchor, background, "Move " + desiredName);
+            if (anchor.name != desiredName)
+            {
+                Undo.RecordObject(anchor.gameObject, "Rename " + desiredName);
+                anchor.name = desiredName;
+            }
+        }
+
+        Undo.RecordObject(anchor, "Position " + desiredName);
+        anchor.anchorMin = new Vector2(0.5f, 0.5f);
+        anchor.anchorMax = new Vector2(0.5f, 0.5f);
+        anchor.anchoredPosition = anchoredPosition;
+        anchor.sizeDelta = new Vector2(20f, 20f);
+        return anchor;
+    }
+
+    private static RectTransform FindDirectChild(Transform parent, string childName)
+    {
+        if (parent == null) return null;
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform child = parent.GetChild(i);
+            if (child.name == childName)
+                return child as RectTransform;
+        }
+        return null;
+    }
+
+    private static void EnsureGameOwnedVfxCopies()
+    {
+        EnsureAssetFolder("Assets/_Game/Farm/Prefabs/VFX");
+        EnsureAssetFolder(LEVEL_UP_VFX_FOLDER);
+
+        CopyAssetIfMissing(LANA_CONFETTI_SOURCE, LEVEL_UP_CONFETTI);
+        CopyAssetIfMissing(LANA_FLASH_SOURCE, LEVEL_UP_FLASH);
+        AssetDatabase.SaveAssets();
+    }
+
+    private static void EnsureAssetFolder(string path)
+    {
+        if (AssetDatabase.IsValidFolder(path)) return;
+
+        int separator = path.LastIndexOf('/');
+        string parent = path.Substring(0, separator);
+        string folderName = path.Substring(separator + 1);
+        EnsureAssetFolder(parent);
+        AssetDatabase.CreateFolder(parent, folderName);
+    }
+
+    private static void CopyAssetIfMissing(string source, string destination)
+    {
+        if (AssetDatabase.LoadAssetAtPath<Object>(destination) != null) return;
+        if (AssetDatabase.LoadAssetAtPath<Object>(source) == null)
+        {
+            Debug.LogWarning("[LevelUpPopupSetupTool] Source VFX not found: " + source);
+            return;
+        }
+
+        if (!AssetDatabase.CopyAsset(source, destination))
+            Debug.LogError("[LevelUpPopupSetupTool] Failed to copy VFX: " + destination);
     }
 
     // =========================================================================

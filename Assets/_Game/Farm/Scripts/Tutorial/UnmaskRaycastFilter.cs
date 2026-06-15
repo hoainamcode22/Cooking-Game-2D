@@ -17,6 +17,11 @@ public class UnmaskRaycastFilter : MonoBehaviour, ICanvasRaycastFilter
     private bool          _useCircle;
     private float         _paddingPx;
 
+    // Chế độ "lỗ theo screen-rect tường minh" (px) — dùng cho vùng bao quanh nhiều ô (6 ô đất).
+    private bool    _useScreenRect;
+    private Vector2 _screenRectCenterPx;
+    private Vector2 _screenRectSizePx;
+
     private static readonly int ID_HoleCenter = Shader.PropertyToID("_HoleCenter");
     private static readonly int ID_HoleSize   = Shader.PropertyToID("_HoleSize");
     private static readonly int ID_CircleHole = Shader.PropertyToID("_CircleHole");
@@ -42,14 +47,26 @@ public class UnmaskRaycastFilter : MonoBehaviour, ICanvasRaycastFilter
 
     public void SetTarget(RectTransform target, bool useCircle, float paddingPx)
     {
+        _useScreenRect = false;
         _currentTarget = target;
         _useCircle     = useCircle;
         _paddingPx     = paddingPx;
     }
 
+    /// <summary>Khoét lỗ theo 1 vùng screen-space tường minh (px). Dùng cho vùng bao quanh 6 ô đất.</summary>
+    public void SetScreenRect(Vector2 centerPx, Vector2 sizePx, bool useCircle)
+    {
+        _useScreenRect      = true;
+        _currentTarget      = null;
+        _screenRectCenterPx = centerPx;
+        _screenRectSizePx   = sizePx;
+        _useCircle          = useCircle;
+    }
+
     public void ClearHole()
     {
         _currentTarget = null;
+        _useScreenRect = false;
         if (_matInstance == null) return;
         _matInstance.SetVector(ID_HoleCenter, new Vector4(-9f, -9f, 0f, 0f));
         _matInstance.SetVector(ID_HoleSize,   Vector4.zero);
@@ -57,7 +74,22 @@ public class UnmaskRaycastFilter : MonoBehaviour, ICanvasRaycastFilter
 
     void LateUpdate()
     {
-        if (_matInstance == null || _currentTarget == null) return;
+        if (_matInstance == null) return;
+
+        // Chế độ vùng bao tường minh (6 ô đất) — tính UV trực tiếp từ screen px.
+        if (_useScreenRect)
+        {
+            float sw0 = Screen.width;
+            float sh0 = Screen.height;
+            var cUV = new Vector2(_screenRectCenterPx.x / sw0, _screenRectCenterPx.y / sh0);
+            var sUV = new Vector2(_screenRectSizePx.x   / sw0, _screenRectSizePx.y   / sh0);
+            _matInstance.SetVector(ID_HoleCenter, new Vector4(cUV.x, cUV.y, 0f, 0f));
+            _matInstance.SetVector(ID_HoleSize,   new Vector4(sUV.x, sUV.y, 0f, 0f));
+            _matInstance.SetFloat(ID_CircleHole,  _useCircle ? 1f : 0f);
+            return;
+        }
+
+        if (_currentTarget == null) return;
         if (!_currentTarget.gameObject.activeInHierarchy) return;
 
         Camera cam = _rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay
@@ -93,6 +125,10 @@ public class UnmaskRaycastFilter : MonoBehaviour, ICanvasRaycastFilter
     // true  = element chặn raycast (click bị giữ lại ở lớp tối).
     public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
     {
+        // Vùng bao nhiều ô (screen-rect) CHỈ là hiệu ứng tối — KHÔNG chặn click ở đâu cả,
+        // để user vẫn click ô + bảng chọn hạt + liềm bình thường khi đang trồng/thu hoạch.
+        if (_useScreenRect) return false;
+
         if (_currentTarget == null) return true;
 
         return !RectTransformUtility.RectangleContainsScreenPoint(

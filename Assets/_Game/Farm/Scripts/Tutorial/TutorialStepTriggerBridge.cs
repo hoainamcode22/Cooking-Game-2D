@@ -60,6 +60,15 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         FarmManager.OnPlotHarvestedEvent -= HandlePlotHarvested;
     }
 
+    // Số ô (đã mở khoá) của 1 loại — dùng làm mốc "đã xong TẤT CẢ" (vd 8 ô đất, 6 chậu hoa).
+    private static int CountUnlocked(PlotCategory cat)
+    {
+        int n = 0;
+        var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
+        foreach (var p in all) if (p != null && p.Category == cat && p.IsUnlocked) n++;
+        return n;
+    }
+
     // =========================================================================
     // Event Handlers
     // =========================================================================
@@ -72,10 +81,9 @@ public class TutorialStepTriggerBridge : MonoBehaviour
 
         if (plot.Category == PlotCategory.Flower)
         {
-            bool count = tutorialFlowerPots.Count == 0 || tutorialFlowerPots.Contains(plot);
-            if (count) _flowerPlantedIds.Add(plot.PlotId);
+            _flowerPlantedIds.Add(plot.PlotId);
 
-            if (!_allFlowerPlantsNotified && _flowerPlantedIds.Count >= targetFlowerPlantCount)
+            if (!_allFlowerPlantsNotified && _flowerPlantedIds.Count >= CountUnlocked(PlotCategory.Flower))
             {
                 _allFlowerPlantsNotified = true;
                 TutorialManager.Instance?.NotifyAllFlowerPlotsPlanted();
@@ -83,10 +91,9 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         }
         else
         {
-            bool count = tutorialPlots.Count == 0 || tutorialPlots.Contains(plot);
-            if (count) _ricePlantedIds.Add(plot.PlotId);
+            _ricePlantedIds.Add(plot.PlotId);
 
-            if (!_allRicePlantsNotified && _ricePlantedIds.Count >= targetPlantCount)
+            if (!_allRicePlantsNotified && _ricePlantedIds.Count >= CountUnlocked(PlotCategory.Normal))
             {
                 _allRicePlantsNotified = true;
                 TutorialManager.Instance?.NotifyAllPlotsPlanted();
@@ -103,10 +110,9 @@ public class TutorialStepTriggerBridge : MonoBehaviour
 
         if (plot.Category == PlotCategory.Flower)
         {
-            bool count = tutorialFlowerPots.Count == 0 || tutorialFlowerPots.Contains(plot);
-            if (count) _flowerHarvestedIds.Add(plot.PlotId);
+            _flowerHarvestedIds.Add(plot.PlotId);
 
-            if (!_allFlowerHarvestsNotified && _flowerHarvestedIds.Count >= targetFlowerHarvestCount)
+            if (!_allFlowerHarvestsNotified && _flowerHarvestedIds.Count >= CountUnlocked(PlotCategory.Flower))
             {
                 _allFlowerHarvestsNotified = true;
                 TutorialManager.Instance?.NotifyAllFlowerPlotsHarvested();
@@ -114,10 +120,9 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         }
         else
         {
-            bool count = tutorialPlots.Count == 0 || tutorialPlots.Contains(plot);
-            if (count) _riceHarvestedIds.Add(plot.PlotId);
+            _riceHarvestedIds.Add(plot.PlotId);
 
-            if (!_allRiceHarvestsNotified && _riceHarvestedIds.Count >= targetHarvestCount)
+            if (!_allRiceHarvestsNotified && _riceHarvestedIds.Count >= CountUnlocked(PlotCategory.Normal))
             {
                 _allRiceHarvestsNotified = true;
                 TutorialManager.Instance?.NotifyAllPlotsHarvested();
@@ -149,6 +154,23 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         foreach (var p in tutorialPlots) { if (p != null) return p.transform; }
         var found = FindNormalPlotsByName();
         return found.Count > 0 ? found[0].transform : null;
+    }
+
+    /// <summary>Danh sách Transform của các ô lúa tutorial, sắp theo PlotId (cho proxy plot_01..06 + mask).</summary>
+    public List<Transform> GetRicePlotTransforms()
+    {
+        var src = (tutorialPlots != null && tutorialPlots.Count > 0)
+            ? new List<PlotController>(tutorialPlots)
+            : FindNormalPlotsByName();
+
+        if (src != null)
+            src.Sort((a, b) => (a == null ? 0 : a.PlotId).CompareTo(b == null ? 0 : b.PlotId));
+
+        var result = new List<Transform>();
+        if (src != null)
+            foreach (var p in src)
+                if (p != null) result.Add(p.transform);
+        return result;
     }
 
     /// <summary>Trả về tọa độ world trung tâm của 2 chậu hoa (cho TutorialCameraFocus).</summary>

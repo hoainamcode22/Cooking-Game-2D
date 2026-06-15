@@ -16,6 +16,16 @@ public static class FarmResetTool
 
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
+
+        // Đang Play: manager là DontDestroyOnLoad nên còn sống → phải reset bộ nhớ luôn,
+        // nếu không vàng/kim cương (và level) sẽ bị ghi đè lại giá trị cũ.
+        if (Application.isPlaying)
+        {
+            if (FarmEconomyManager.Instance != null)
+                FarmEconomyManager.Instance.ResetCurrency();
+            if (PlayerProgressManager.Instance != null)
+                PlayerProgressManager.Instance.ForceSetLevelExp(1, 0);
+        }
     }
 }
 #endif

@@ -639,6 +639,17 @@ public static class DemoL1L10Tool
             return;
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
+
+        // Đang Play: reset cả bộ nhớ manager (DontDestroyOnLoad) — nếu không vàng/gem/level
+        // sẽ bị instance còn sống ghi đè lại giá trị cũ.
+        if (Application.isPlaying)
+        {
+            if (FarmEconomyManager.Instance != null)
+                FarmEconomyManager.Instance.ResetCurrency();
+            if (PlayerProgressManager.Instance != null)
+                PlayerProgressManager.Instance.ForceSetLevelExp(1, 0);
+        }
+
         Debug.Log("[DemoL1L10] Đã xoá PlayerPrefs — vào Play Mode để bắt đầu New Game L1.");
     }
 

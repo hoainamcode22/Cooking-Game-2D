@@ -184,28 +184,63 @@ public class TutorialManager : MonoBehaviour
     {
         _state = TutorialState.Intro;
 
-        _cameraZoom?.ResetZoom();
-        if (_cameraZoom != null) StartCoroutine(_cameraZoom.ZoomIn());
+        // KHÔNG zoom camera trong intro (theo yêu cầu) — camera giữ khung gameplay.
 
-        float elapsed   = 0f;
-        var   leftEnd   = _cloudLeftOrigin  + new Vector2(-_cloudSlideDistance, 0f);
-        var   rightEnd  = _cloudRightOrigin + new Vector2( _cloudSlideDistance, 0f);
+        var leftCG  = EnsureCanvasGroup(_cloudLeft);
+        var rightCG = EnsureCanvasGroup(_cloudRight);
 
+        Vector3 leftScale0  = _cloudLeft  != null ? _cloudLeft.localScale  : Vector3.one;
+        Vector3 rightScale0 = _cloudRight != null ? _cloudRight.localScale : Vector3.one;
+
+        var leftEnd  = _cloudLeftOrigin  + new Vector2(-_cloudSlideDistance, 0f);
+        var rightEnd = _cloudRightOrigin + new Vector2( _cloudSlideDistance, 0f);
+
+        // Giữ mây 1 nhịp ngắn cho cảm giác "bình minh ló dạng" trước khi tách
+        yield return new WaitForSeconds(0.25f);
+
+        float elapsed = 0f;
         while (elapsed < _introDuration)
         {
             elapsed += Time.deltaTime;
             float t = _introEase.Evaluate(Mathf.Clamp01(elapsed / _introDuration));
 
-            if (_cloudLeft  != null) _cloudLeft.anchoredPosition  = Vector2.Lerp(_cloudLeftOrigin,  leftEnd,  t);
-            if (_cloudRight != null) _cloudRight.anchoredPosition = Vector2.Lerp(_cloudRightOrigin, rightEnd, t);
+            // Trượt ra hai bên + phóng to nhẹ + mờ dần nửa sau → mượt, bắt mắt
+            if (_cloudLeft != null)
+            {
+                _cloudLeft.anchoredPosition = Vector2.Lerp(_cloudLeftOrigin, leftEnd, t);
+                _cloudLeft.localScale       = Vector3.Lerp(leftScale0, leftScale0 * 1.15f, t);
+            }
+            if (_cloudRight != null)
+            {
+                _cloudRight.anchoredPosition = Vector2.Lerp(_cloudRightOrigin, rightEnd, t);
+                _cloudRight.localScale       = Vector3.Lerp(rightScale0, rightScale0 * 1.15f, t);
+            }
+
+            float fade = Mathf.InverseLerp(0.45f, 1f, t); // bắt đầu mờ từ 45% thời lượng
+            if (leftCG  != null) leftCG.alpha  = 1f - fade;
+            if (rightCG != null) rightCG.alpha = 1f - fade;
 
             yield return null;
         }
 
         SetCloudPanelVisible(false);
-        yield return null;
 
+        // Reset trạng thái mây để lần replay sau vẫn đẹp
+        if (leftCG  != null) leftCG.alpha  = 1f;
+        if (rightCG != null) rightCG.alpha = 1f;
+        if (_cloudLeft  != null) _cloudLeft.localScale  = leftScale0;
+        if (_cloudRight != null) _cloudRight.localScale = rightScale0;
+
+        yield return null;
         StartTutorial();
+    }
+
+    private CanvasGroup EnsureCanvasGroup(RectTransform rt)
+    {
+        if (rt == null) return null;
+        var cg = rt.GetComponent<CanvasGroup>();
+        if (cg == null) cg = rt.gameObject.AddComponent<CanvasGroup>();
+        return cg;
     }
 
     // =========================================================================
@@ -219,10 +254,8 @@ public class TutorialManager : MonoBehaviour
         _currentIndex = -1;
         SetTutorialUIVisible(true);
 
-        // Focus camera vào 6 ô lúa ngay khi tutorial bắt đầu
-        var bridge = GetComponent<TutorialStepTriggerBridge>();
-        if (_cameraFocus != null && bridge != null)
-            _cameraFocus.FocusOnRice(bridge);
+        // KHÔNG focus camera ở màn chào mừng — camera chỉ lia vào 6 ô đất
+        // khi tới bước L1L2_04_FocusPlots (sau khi player bấm "ĐÃ RÕ").
 
         Debug.Log($"[Tutorial] StartTutorial — total steps: {_steps.Count}");
         AdvanceToNextStep();
@@ -321,6 +354,7 @@ public class TutorialManager : MonoBehaviour
     {
         _actionHandGuide?.StopGuide();
         _dragHintAnimator?.StopDragHint();
+        _runtimeTargetResolver?.EnableAreaMask(TutorialAreaKind.None, null); // tắt nền xám (nếu đang bật)
         _interactionDialogDismissed = false;
         _currentIndex++;
 
@@ -356,6 +390,38 @@ public class TutorialManager : MonoBehaviour
         if (_dimBackground != null)
             _dimBackground.gameObject.SetActive(true);
 
+        // ─── GUIDE THÔNG MINH: nền xám bao vùng + tay CHỈ quét ô CÒN VIỆC (theo tiến độ user) ───
+        // Ô đất — trồng: chờ user kéo hạt đủ tất cả ô; tay chỉ vào ô còn trống.
+        if (step.name == "L1L2_04_FocusPlots" || step.name == "L1L2_06_PlantAllRice")
+        {
+            SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: false);
+            _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+        // Ô đất — thu hoạch: tay chỉ vào ô đã chín, chờ thu hoạch hết.
+        if (step.name == "L1L2_10_HarvestAllRice")
+        {
+            SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: true);
+            _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+        // Chậu hoa — trồng.
+        if (step.name == "L1L2_12_FocusFlowerPots" || step.name == "L1L2_14_PlantAllFlowers")
+        {
+            if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
+            SetupSmartGuide(TutorialAreaKind.Flower, harvestMode: false);
+            _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+        // Chậu hoa — thu hoạch.
+        if (step.name == "L1L2_17_HarvestAllFlowers")
+        {
+            if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
+            SetupSmartGuide(TutorialAreaKind.Flower, harvestMode: true);
+            _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+
         // 1. Resolve target
         RectTransform targetRect = null;
         if (!string.IsNullOrEmpty(step.targetID))
@@ -388,6 +454,14 @@ public class TutorialManager : MonoBehaviour
             HideBlockingTutorialUI();
             _pendingWait = step.waitAction;
             _state = TutorialState.WaitingAction;
+
+            // Các bước có action-guide (speedup/harvest) phải TẮT tay tĩnh để không hiện 2 bàn tay.
+            bool startsGuide =
+                step.name == "L1L2_07_OpenCropProgress" || step.name == "L1L2_08_SpeedUpTip"  ||
+                step.name == "L1L2_09_HarvestFirstRice" || step.name == "L1L2_10_HarvestAllRice" ||
+                step.name == "L1L2_17_HarvestAllFlowers";
+            if (startsGuide && _handPointer != null)
+                _handPointer.gameObject.SetActive(false);
 
             if (step.name == "L1L2_07_OpenCropProgress"
                 || step.name == "L1L2_08_SpeedUpTip")
@@ -524,6 +598,31 @@ public class TutorialManager : MonoBehaviour
     // =========================================================================
     // Helpers
     // =========================================================================
+
+    /// <summary>
+    /// Bật guide thông minh cho 1 vùng: ẩn dialog/tay tĩnh, bật nền xám bao vùng,
+    /// và cho bàn tay quét CHỈ những ô còn việc (trồng = ô trống, harvest = ô chín).
+    /// </summary>
+    private void SetupSmartGuide(TutorialAreaKind kind, bool harvestMode)
+    {
+        if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+        _guideBoardUI?.Hide();
+        if (_handPointer != null) _handPointer.gameObject.SetActive(false); // tránh 2 bàn tay
+
+        if (_dimBackground != null) _dimBackground.gameObject.SetActive(true);
+        _runtimeTargetResolver?.EnableAreaMask(kind, _dimBackground);
+
+        string[] ids = kind == TutorialAreaKind.Flower
+            ? new[] {
+                "tutorial_flower_01", "tutorial_flower_02", "tutorial_flower_03",
+                "tutorial_flower_04", "tutorial_flower_05", "tutorial_flower_06" }
+            : new[] {
+                "tutorial_plot_01", "tutorial_plot_02", "tutorial_plot_03", "tutorial_plot_04",
+                "tutorial_plot_05", "tutorial_plot_06", "tutorial_plot_07", "tutorial_plot_08" };
+
+        _actionHandGuide?.GuideSweepPlots(ids, harvestMode);
+    }
+
     private void SetTutorialUIVisible(bool visible)
     {
         if (_dimBackground  != null) _dimBackground.gameObject.SetActive(visible);
@@ -591,8 +690,8 @@ public class TutorialManager : MonoBehaviour
 
     private static bool IsInteractionStep(string stepName)
     {
-        return stepName == "L1L2_12_FocusFlowerPots"
-            || stepName == "L1L2_15_FlowerSpeedUp"
+        // L1L2_12_FocusFlowerPots giờ xử lý như bước sweep (giống L1L2_04), không còn là interaction.
+        return stepName == "L1L2_15_FlowerSpeedUp"
             || stepName == "L1L2_16_HarvestFirstFlower";
     }
 

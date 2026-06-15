@@ -53,6 +53,30 @@ public static class Phase1TestTool
         Debug.Log($"[Phase1Test] Level {prevLevel} → {level}  (EXP reset to 0)");
     }
 
+    // ── Test Currency (đang dựng game) ────────────────────────────────────────
+
+    [MenuItem(BASE + "Give Test Currency (1000 Gold / 1000 Gems)")]
+    private static void GiveTestCurrency()
+    {
+        const int gold = 1000;
+        const int gems = 1000;
+
+        if (Application.isPlaying && FarmEconomyManager.Instance != null)
+        {
+            // Đang Play: nạp thẳng vào manager đang sống (DontDestroyOnLoad)
+            FarmEconomyManager.Instance.SetCurrency(gold, gems);
+            Debug.Log($"[Phase1Test] ✅ Đã nạp {gold} vàng / {gems} gem (live).");
+        }
+        else
+        {
+            // Edit Mode: ghi PlayerPrefs để lần Play sau load đúng
+            PlayerPrefs.SetInt("FARM_ECONOMY_GOLD", gold);
+            PlayerPrefs.SetInt("FARM_ECONOMY_GEMS", gems);
+            PlayerPrefs.Save();
+            Debug.Log($"[Phase1Test] ✅ Đã set PlayerPrefs {gold} vàng / {gems} gem — nhấn Play để áp dụng.");
+        }
+    }
+
     // ── Status Report ─────────────────────────────────────────────────────────
 
     [MenuItem(BASE + "Print Player Status")]
