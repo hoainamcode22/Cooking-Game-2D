@@ -28,6 +28,9 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     // ── Biến logic nội bộ ────────────────────────────────────────────────────
     private BaseItemData currentData;       // Data của item đang hiển thị
+
+    /// <summary>Data item đang hiển thị (cho tutorial tìm đúng item Ngô để chỉ tay + bao xám).</summary>
+    public BaseItemData Data => currentData;
     private int          currentQuantity = 1;
     private bool         isDiamondItem;     // true = trả bằng Kim Cương, false = Vàng
 
@@ -137,6 +140,10 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             currentData.itemIcon,
             currentQuantity
         );
+
+        // Tutorial L2: báo đã mua hạt giống (bước "mua ngô")
+        if (currentData is CropData)
+            TutorialManager.Instance?.NotifyBuyItem();
     }
 
     // ── Button Feedback ───────────────────────────────────────────────────────

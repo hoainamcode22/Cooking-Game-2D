@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 /// <summary>
@@ -49,6 +50,9 @@ public class PlacementManager : MonoBehaviour
     private Button            btnConfirm;
     private RectTransform     confirmRect;
     private RectTransform     cancelRect;
+    private Transform         ghostVisualCloneRoot;
+    private PlacementGhostVisualController ghostVisual;
+    private static Sprite     ghostActionBarSprite;
     private PlaceableItemData currentItem;
     private bool              isValidPos;
 
@@ -122,6 +126,9 @@ public class PlacementManager : MonoBehaviour
                 ? new Color(0f, 1f, 0f, 0.5f)
                 : new Color(1f, 0f, 0f, 0.5f);
 
+        if (ghostVisual != null)
+            ghostVisual.SetValid(isValidPos);
+
         if (btnConfirm != null)
             btnConfirm.interactable = isValidPos;
     }
@@ -149,23 +156,19 @@ public class PlacementManager : MonoBehaviour
         foreach (var col in currentGhost.GetComponentsInChildren<Collider2D>(true))
             col.enabled = false;
 
-        // ── Tìm SpriteRenderer của ngôi nhà (bỏ qua Selection_Ring) ──
-        foreach (SpriteRenderer sr in currentGhost.GetComponentsInChildren<SpriteRenderer>(true))
-        {
-            if (sr.gameObject.name == "Selection_Ring") continue;
-            houseRenderer = sr;
-            break;
-        }
+        SetupGhostVisualController(showLiftArrow: false);
 
-        // Gán sprite từ prefab thật để Ghost trông đúng món vừa mua
+        // ── Tìm SpriteRenderer của ngôi nhà ──
+        houseRenderer = FindBuildingVisualRenderer(currentGhost);
+
+        // Clone toàn bộ visual sprite từ prefab thật để công trình nhiều phần vẫn hiện đủ.
         if (houseRenderer != null)
         {
-            SpriteRenderer prefabSR = itemData.prefabToBuild.GetComponentInChildren<SpriteRenderer>();
+            BuildGhostVisualFromSource(itemData.prefabToBuild.transform);
+            SpriteRenderer prefabSR = FindBestSourceRenderer(itemData.prefabToBuild);
             if (prefabSR != null)
             {
-                houseRenderer.sprite = prefabSR.sprite;
-                // Điều chỉnh thảm xanh khớp footprint công trình
-                SetupFootprint(prefabSR);
+                SetupFootprint(itemData.prefabToBuild.transform);
             }
         }
 
@@ -202,6 +205,8 @@ public class PlacementManager : MonoBehaviour
         if (boundCount == 0)
             Debug.LogWarning("[PlacementManager] Ghost không tìm thấy Btn_Confirm / Btn_Cancel — kiểm tra prefab.");
 
+        StartCoroutine(AnimateGhostActionBar());
+
         isPlacing          = true;
         IsPlacingNewObject = true;  // CameraController tự khóa pan
     }
@@ -231,22 +236,18 @@ public class PlacementManager : MonoBehaviour
         foreach (var col in currentGhost.GetComponentsInChildren<Collider2D>(true))
             col.enabled = false;
 
+        SetupGhostVisualController(showLiftArrow: true);
+
         // ── Gán sprite từ công trình gốc vào Ghost ──
-        foreach (SpriteRenderer sr in currentGhost.GetComponentsInChildren<SpriteRenderer>(true))
-        {
-            if (sr.gameObject.name == "Selection_Ring") continue;
-            houseRenderer = sr;
-            break;
-        }
+        houseRenderer = FindBuildingVisualRenderer(currentGhost);
 
         if (houseRenderer != null)
         {
-            SpriteRenderer targetSR = target.GetComponentInChildren<SpriteRenderer>(true);
+            BuildGhostVisualFromSource(target.transform);
+            SpriteRenderer targetSR = FindBestSourceRenderer(target.gameObject);
             if (targetSR != null)
             {
-                houseRenderer.sprite = targetSR.sprite;
-                // Điều chỉnh thảm xanh khớp footprint công trình
-                SetupFootprint(targetSR);
+                SetupFootprint(target.transform);
             }
         }
 
@@ -276,12 +277,15 @@ public class PlacementManager : MonoBehaviour
             }
         }
 
+        StartCoroutine(AnimateGhostActionBar());
+
         isPlacing          = true;
         IsPlacingNewObject = true;
 
         // Hiệu ứng nhấc lên: chỉ tác động visual, footprint giữ nguyên mặt đất
-        if (houseRenderer != null)
-            StartCoroutine(AnimatePickup(houseRenderer.transform, footprintTransform));
+        Transform pickupVisual = ghostVisualCloneRoot != null ? ghostVisualCloneRoot : houseRenderer != null ? houseRenderer.transform : null;
+        if (pickupVisual != null)
+            StartCoroutine(AnimatePickup(pickupVisual, footprintTransform));
 
     }
 
@@ -294,24 +298,45 @@ public class PlacementManager : MonoBehaviour
     {
         Vector3 startScale = visual.localScale;
         Vector3 startPos   = visual.localPosition;
+        Vector3 overshootScale = startScale * 1.18f;
         Vector3 endScale   = startScale * 1.1f;
         Vector3 endPos     = startPos + new Vector3(0f, 30f, 0f);
+        Vector3 overshootPos = startPos + new Vector3(0f, 36f, 0f);
 
         // Ghi nhớ cả scale lẫn localPosition của footprint — đóng băng hoàn toàn trong lúc nhấc
         Vector3 frozenScale = footprintToFreeze != null ? footprintToFreeze.localScale    : Vector3.one;
         Vector3 frozenPos   = footprintToFreeze != null ? footprintToFreeze.localPosition : Vector3.zero;
 
-        float duration = 0.15f;
         float elapsed  = 0f;
+        const float upDuration = 0.16f;
 
-        while (elapsed < duration)
+        while (elapsed < upDuration)
         {
-            float t      = elapsed / duration;
-            float smooth = 1f - (1f - t) * (1f - t); // ease-out quad
-            visual.localScale    = Vector3.LerpUnclamped(startScale, endScale, smooth);
-            visual.localPosition = Vector3.LerpUnclamped(startPos,   endPos,   smooth);
+            float t      = elapsed / upDuration;
+            float smooth = 1f - Mathf.Pow(1f - t, 3f);
+            visual.localScale    = Vector3.LerpUnclamped(startScale, overshootScale, smooth);
+            visual.localPosition = Vector3.LerpUnclamped(startPos,   overshootPos,   smooth);
 
             // Ép footprint về đúng vị trí và scale mỗi frame — thảm xanh không bay theo
+            if (footprintToFreeze != null)
+            {
+                footprintToFreeze.localScale    = frozenScale;
+                footprintToFreeze.localPosition = frozenPos;
+            }
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        elapsed = 0f;
+        const float settleDuration = 0.12f;
+        while (elapsed < settleDuration)
+        {
+            float t = elapsed / settleDuration;
+            float smooth = 1f - (1f - t) * (1f - t);
+            visual.localScale = Vector3.LerpUnclamped(overshootScale, endScale, smooth);
+            visual.localPosition = Vector3.LerpUnclamped(overshootPos, endPos, smooth);
+
             if (footprintToFreeze != null)
             {
                 footprintToFreeze.localScale    = frozenScale;
@@ -336,10 +361,10 @@ public class PlacementManager : MonoBehaviour
     /// Tìm "Grid_Footprint" trong Ghost hiện tại và scale nó khớp với số ô lưới mà sprite chiếm.
     /// Dùng mapGrid.cellSize nếu đã gán, fallback về gridSize.
     /// </summary>
-    private void SetupFootprint(SpriteRenderer sourceRenderer)
+    private void SetupFootprint(Transform sourceRoot)
     {
         footprintTransform = currentGhost.transform.Find("Grid_Footprint");
-        if (footprintTransform == null || sourceRenderer == null || sourceRenderer.sprite == null) return;
+        if (footprintTransform == null || sourceRoot == null) return;
 
         float cellW = (mapGrid != null && mapGrid.cellSize.x > 0f) ? mapGrid.cellSize.x : gridSize;
         float cellH = (mapGrid != null && mapGrid.cellSize.y > 0f) ? mapGrid.cellSize.y : gridSize;
@@ -353,13 +378,12 @@ public class PlacementManager : MonoBehaviour
             if (fpSR != null) fpSR.sprite = footprintSprite;
         }
 
-        Vector3 sourceScale = sourceRenderer.transform.lossyScale;
-        Vector2 spriteSize = sourceRenderer.sprite.bounds.size;
-        float worldW = Mathf.Abs(spriteSize.x * sourceScale.x);
-        float worldH = Mathf.Abs(spriteSize.y * sourceScale.y);
+        Bounds sourceBounds = CalculateSourceVisualBounds(sourceRoot);
+        if (sourceBounds.size.x <= 0f || sourceBounds.size.y <= 0f)
+            return;
 
-        float targetW = Mathf.Max(cellW, Mathf.Round(worldW / cellW) * cellW) * footprintPadding;
-        float targetH = Mathf.Max(cellH, Mathf.Round(worldH / cellH) * cellH) * footprintPadding;
+        float targetW = Mathf.Max(cellW, Mathf.Ceil(sourceBounds.size.x / cellW) * cellW) * 1.08f;
+        float targetH = Mathf.Max(cellH, Mathf.Ceil(sourceBounds.size.y / cellH) * cellH) * 1.08f;
 
         Vector2 footprintSpriteSize = footprintSourceSprite != null ? footprintSourceSprite.bounds.size : Vector2.one;
         float scaleX = footprintSpriteSize.x > 0f ? targetW / footprintSpriteSize.x : targetW;
@@ -368,6 +392,14 @@ public class PlacementManager : MonoBehaviour
 
         // Luôn hiện footprint ngay sau khi setup — prefab có thể để inactive mặc định
         footprintTransform.gameObject.SetActive(true);
+        if (fpSR != null && ghostVisual != null)
+            fpSR.enabled = false;
+
+        if (ghostVisual != null)
+        {
+            ghostVisual.SetTileSprite(footprintSourceSprite);
+            ghostVisual.ConfigureFromWorldSize(sourceBounds.size.x * 1.12f, sourceBounds.size.y * 1.12f);
+        }
     }
 
     /// <summary>
@@ -641,6 +673,8 @@ public class PlacementManager : MonoBehaviour
         currentItem              = null;
         currentlyEditingBuilding = null;
         footprintTransform       = null;
+        ghostVisualCloneRoot     = null;
+        ghostVisual              = null;
         isPlacing                = false;
         IsPlacingNewObject       = false;  // Mở khóa CameraController
     }
@@ -697,5 +731,331 @@ public class PlacementManager : MonoBehaviour
             Mathf.Round(worldPos.y / gridSize) * gridSize,
             0f
         );
+    }
+
+    private void SetupGhostVisualController(bool showLiftArrow)
+    {
+        if (currentGhost == null) return;
+
+        SortingGroup sortingGroup = currentGhost.GetComponent<SortingGroup>();
+        if (sortingGroup == null)
+            sortingGroup = currentGhost.AddComponent<SortingGroup>();
+        sortingGroup.sortingLayerName = BuildingSortingLayerName;
+        sortingGroup.sortingOrder = PlacementGhostVisualController.BaseOrder;
+
+        ghostVisual = currentGhost.GetComponent<PlacementGhostVisualController>();
+        if (ghostVisual == null)
+            ghostVisual = currentGhost.AddComponent<PlacementGhostVisualController>();
+
+        ghostVisual.SetTileSprite(footprintSprite);
+        ghostVisual.EnsureBuilt();
+        ghostVisual.ShowLiftArrow(showLiftArrow);
+        ghostVisual.PlaySpawnPop(showLiftArrow);
+    }
+
+    private void BuildGhostVisualFromSource(Transform sourceRoot)
+    {
+        if (currentGhost == null || sourceRoot == null) return;
+
+        if (ghostVisualCloneRoot != null)
+            Destroy(ghostVisualCloneRoot.gameObject);
+
+        if (houseRenderer != null)
+            houseRenderer.enabled = false;
+
+        GameObject cloneRoot = new GameObject("Building_Visual_Clone");
+        cloneRoot.layer = currentGhost.layer;
+        ghostVisualCloneRoot = cloneRoot.transform;
+        ghostVisualCloneRoot.SetParent(currentGhost.transform, false);
+        ghostVisualCloneRoot.localPosition = Vector3.zero;
+        ghostVisualCloneRoot.localRotation = Quaternion.identity;
+        // FIX: trước đây để cứng 1.03 → BỎ QUA scale gốc của prefab. Nếu prefab thật được
+        // thu nhỏ cho vừa map (root scale < 1) thì ghost phình to gấp nhiều lần, che cả map.
+        // Áp scale gốc của nguồn (chia cho scale ghost để không nhân kép) → ghost = đúng cỡ vật thật.
+        ghostVisualCloneRoot.localScale =
+            DivideVector(sourceRoot.lossyScale, currentGhost.transform.lossyScale) * 1.03f;
+
+        SpriteRenderer[] sourceRenderers = sourceRoot.GetComponentsInChildren<SpriteRenderer>(true);
+        int visualIndex = 0;
+        for (int i = 0; i < sourceRenderers.Length; i++)
+        {
+            SpriteRenderer source = sourceRenderers[i];
+            if (!IsValidSourceVisualRenderer(source))
+                continue;
+
+            GameObject visualGo = new GameObject($"Sprite_{visualIndex:00}_{source.gameObject.name}");
+            visualGo.layer = currentGhost.layer;
+            Transform visual = visualGo.transform;
+            visual.SetParent(ghostVisualCloneRoot, false);
+            visual.localPosition = sourceRoot.InverseTransformPoint(source.transform.position);
+            visual.localRotation = Quaternion.Inverse(sourceRoot.rotation) * source.transform.rotation;
+            visual.localScale = DivideVector(source.transform.lossyScale, sourceRoot.lossyScale);
+
+            SpriteRenderer target = visualGo.AddComponent<SpriteRenderer>();
+            target.sprite = source.sprite;
+            target.color = source.color;
+            target.flipX = source.flipX;
+            target.flipY = source.flipY;
+            target.drawMode = source.drawMode;
+            target.size = source.size;
+            target.maskInteraction = source.maskInteraction;
+            target.sortingLayerName = BuildingSortingLayerName;
+            target.sortingOrder = PlacementGhostVisualController.BuildingOrder + visualIndex;
+            visualIndex++;
+        }
+    }
+
+    private static Vector3 DivideVector(Vector3 value, Vector3 divisor)
+    {
+        return new Vector3(
+            Mathf.Abs(divisor.x) > 0.0001f ? value.x / divisor.x : value.x,
+            Mathf.Abs(divisor.y) > 0.0001f ? value.y / divisor.y : value.y,
+            Mathf.Abs(divisor.z) > 0.0001f ? value.z / divisor.z : value.z);
+    }
+
+    private static Bounds CalculateSourceVisualBounds(Transform sourceRoot)
+    {
+        Bounds bounds = new Bounds(Vector3.zero, Vector3.zero);
+        bool hasBounds = false;
+        foreach (SpriteRenderer sr in sourceRoot.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (!IsValidSourceVisualRenderer(sr))
+                continue;
+
+            Bounds localBounds = sr.bounds;
+            if (!hasBounds)
+            {
+                bounds = localBounds;
+                hasBounds = true;
+            }
+            else
+            {
+                bounds.Encapsulate(localBounds);
+            }
+        }
+
+        return bounds;
+    }
+
+    private static bool IsValidSourceVisualRenderer(SpriteRenderer sr)
+    {
+        if (sr == null || sr.sprite == null)
+            return false;
+
+        string n = sr.gameObject.name;
+        if (n == "Selection_Ring" ||
+            n == "Grid_Footprint" ||
+            n.Contains("Footprint") ||
+            n.Contains("Shadow") ||
+            n.StartsWith("Marker_") ||
+            n.StartsWith("Arrow_") ||
+            n.StartsWith("Placement_") ||
+            n == "Designed_Placement_Frame" ||
+            n == "Lift_Arrow_Effect")
+            return false;
+
+        return true;
+    }
+
+    private IEnumerator AnimateGhostActionBar()
+    {
+        if (currentGhost == null) yield break;
+
+        Transform row = FindDeepChild(currentGhost.transform, "Button_Row");
+        if (row == null)
+            yield break;
+
+        StyleGhostActionBar(row);
+
+        Vector3 finalScale = row.localScale;
+        row.localScale = finalScale * 0.45f;
+
+        float elapsed = 0f;
+        const float popDuration = 0.18f;
+        while (elapsed < popDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / popDuration);
+            float overshoot = BackOut(t);
+            row.localScale = Vector3.LerpUnclamped(finalScale * 0.45f, finalScale * 1.08f, overshoot);
+            yield return null;
+        }
+
+        elapsed = 0f;
+        const float settleDuration = 0.08f;
+        Vector3 start = row.localScale;
+        while (elapsed < settleDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / settleDuration);
+            row.localScale = Vector3.LerpUnclamped(start, finalScale, t);
+            yield return null;
+        }
+
+        row.localScale = finalScale;
+    }
+
+    private static float BackOut(float t)
+    {
+        const float c1 = 1.70158f;
+        const float c3 = c1 + 1f;
+        return 1f + c3 * Mathf.Pow(t - 1f, 3f) + c1 * Mathf.Pow(t - 1f, 2f);
+    }
+
+    private static void StyleGhostActionBar(Transform row)
+    {
+        if (row == null) return;
+
+        RectTransform rect = row as RectTransform;
+        if (rect != null)
+        {
+            rect.sizeDelta = new Vector2(430f, 126f);
+        }
+
+        Image bg = row.GetComponent<Image>();
+        if (bg == null)
+            bg = row.gameObject.AddComponent<Image>();
+
+        bg.sprite = GetGhostActionBarSprite();
+        bg.type = Image.Type.Sliced;
+        bg.color = new Color(0.78f, 0.92f, 0.72f, 0.68f);
+        bg.raycastTarget = false;
+
+        Shadow shadow = row.GetComponent<Shadow>();
+        if (shadow == null)
+            shadow = row.gameObject.AddComponent<Shadow>();
+        shadow.effectColor = new Color(0f, 0f, 0f, 0.24f);
+        shadow.effectDistance = new Vector2(0f, -5f);
+    }
+
+    private static Sprite GetGhostActionBarSprite()
+    {
+        if (ghostActionBarSprite != null)
+            return ghostActionBarSprite;
+
+        const int width = 128;
+        const int height = 48;
+        const int radius = 21;
+        Texture2D tex = new Texture2D(width, height, TextureFormat.RGBA32, false);
+        tex.name = "Placement_ActionBar_Rounded_BG";
+        tex.wrapMode = TextureWrapMode.Clamp;
+        tex.filterMode = FilterMode.Bilinear;
+
+        Color clear = new Color(1f, 1f, 1f, 0f);
+        Color fill = Color.white;
+        Color[] pixels = new Color[width * height];
+
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                bool inside =
+                    x >= radius && x < width - radius ||
+                    IsInsideCorner(x, y, radius, radius, radius) ||
+                    IsInsideCorner(x, y, width - radius - 1, radius, radius) ||
+                    IsInsideCorner(x, y, radius, height - radius - 1, radius) ||
+                    IsInsideCorner(x, y, width - radius - 1, height - radius - 1, radius);
+
+                bool middleY = y >= radius && y < height - radius;
+                if (middleY)
+                    inside = true;
+
+                pixels[y * width + x] = inside ? fill : clear;
+            }
+        }
+
+        tex.SetPixels(pixels);
+        tex.Apply();
+
+        ghostActionBarSprite = Sprite.Create(
+            tex,
+            new Rect(0, 0, width, height),
+            new Vector2(0.5f, 0.5f),
+            100f,
+            0,
+            SpriteMeshType.FullRect,
+            new Vector4(radius, radius, radius, radius));
+        ghostActionBarSprite.name = "Placement_ActionBar_Rounded_BG";
+        return ghostActionBarSprite;
+    }
+
+    private static bool IsInsideCorner(int x, int y, int cx, int cy, int radius)
+    {
+        float dx = x - cx;
+        float dy = y - cy;
+        return dx * dx + dy * dy <= radius * radius;
+    }
+
+    private static Transform FindDeepChild(Transform parent, string childName)
+    {
+        if (parent == null) return null;
+
+        foreach (Transform child in parent)
+        {
+            if (child.name == childName)
+                return child;
+
+            Transform found = FindDeepChild(child, childName);
+            if (found != null)
+                return found;
+        }
+
+        return null;
+    }
+
+    private static SpriteRenderer FindBuildingVisualRenderer(GameObject ghost)
+    {
+        if (ghost == null) return null;
+
+        Transform visual = ghost.transform.Find("Building_Visual");
+        if (visual != null && visual.TryGetComponent(out SpriteRenderer directRenderer))
+            return directRenderer;
+
+        foreach (SpriteRenderer sr in ghost.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (sr == null) continue;
+
+            string n = sr.gameObject.name;
+            if (n == "Selection_Ring" ||
+                n == "Grid_Footprint" ||
+                n.StartsWith("Corner_") ||
+                n.StartsWith("Edge_") ||
+                n.StartsWith("Marker_") ||
+                n.StartsWith("Tile_") ||
+                n.StartsWith("Soft_") ||
+                n.StartsWith("Arrow_") ||
+                n.StartsWith("Placement_") ||
+                n == "Designed_Placement_Frame" ||
+                n == "Lift_Arrow_Effect")
+                continue;
+
+            return sr;
+        }
+
+        return null;
+    }
+
+    private static SpriteRenderer FindBestSourceRenderer(GameObject source)
+    {
+        if (source == null) return null;
+
+        SpriteRenderer best = null;
+        float bestArea = -1f;
+        foreach (SpriteRenderer sr in source.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (!IsValidSourceVisualRenderer(sr))
+                continue;
+
+            Vector3 scale = sr.transform.lossyScale;
+            Vector2 size = sr.sprite.bounds.size;
+            float area = Mathf.Abs(size.x * scale.x * size.y * scale.y);
+            if (area > bestArea)
+            {
+                bestArea = area;
+                best = sr;
+            }
+        }
+
+        return best;
     }
 }

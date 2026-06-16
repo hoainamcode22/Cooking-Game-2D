@@ -60,6 +60,15 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         FarmManager.OnPlotHarvestedEvent -= HandlePlotHarvested;
     }
 
+    /// <summary>Reset đếm trồng/thu hoạch ô đất — để TÁI SỬ DỤNG 8 ô cho cây mới (vd trồng Ngô ở L2).</summary>
+    public void ResetRiceTracking()
+    {
+        _ricePlantedIds.Clear();
+        _riceHarvestedIds.Clear();
+        _allRicePlantsNotified   = false;
+        _allRiceHarvestsNotified = false;
+    }
+
     // Số ô (đã mở khoá) của 1 loại — dùng làm mốc "đã xong TẤT CẢ" (vd 8 ô đất, 6 chậu hoa).
     private static int CountUnlocked(PlotCategory cat)
     {

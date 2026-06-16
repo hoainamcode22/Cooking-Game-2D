@@ -121,6 +121,17 @@ public class PenMiniPanelUI : MonoBehaviour
     //  Public API â€” gá»i tá»« PenClickDetector vÃ  PenDropTarget
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+    [Tooltip("Kéo thịt/trứng/EXP spawn LÊN CAO (world units) — tránh nằm sát panel thức ăn (sorting C)")]
+    [SerializeField] private float harvestSpawnUpOffset = 120f;
+
+    [Tooltip("Số kim cương để hoàn tất NGAY quá trình nuôi (nút Gem trên pen panel gọi TrySpeedUpGem)")]
+    [SerializeField] private int speedUpGemCost = 1;
+
+    [Header("Sorting (C) — process thấp hơn vật phẩm")]
+    [Tooltip("(C) Canvas của process overlay — GÁN để ép sortingOrder THẤP hơn vật phẩm chuồng. Trống = chỉ dùng sibling order.")]
+    [SerializeField] private Canvas processOverlayCanvas;
+    [SerializeField] private int processSortingOrder = -10;
+
     public bool IsPanelOpen() => panelRoot != null && panelRoot.activeSelf;
 
     public void OpenPanel()
@@ -132,6 +143,7 @@ public class PenMiniPanelUI : MonoBehaviour
         _openedAtFrame = Time.frameCount; // Ä‘Ã¡nh dáº¥u frame má»Ÿ Ä‘á»ƒ Update bá» qua
         panelRoot.SetActive(true);
         RefreshUI();
+        TutorialManager.Instance?.NotifyOpenPen();   // tutorial L2: bước "mở chuồng"
     }
 
     public void ClosePanel()
@@ -171,6 +183,7 @@ public class PenMiniPanelUI : MonoBehaviour
 
         StopTimerIfRunning();
         timerCoroutine = StartCoroutine(ProcessTimerCoroutine(config.feedDurationSeconds));
+        TutorialManager.Instance?.NotifyFeed();   // tutorial L2: đã cho ăn
         return true;
     }
 
@@ -186,17 +199,18 @@ public class PenMiniPanelUI : MonoBehaviour
         }
 
         // Spawn sáº£n pháº©m chÃ­nh
+        Vector3 productSpawn = vfxWorldPosition + Vector3.up * harvestSpawnUpOffset; // kéo lên cao, tránh panel thức ăn (C)
         int productAmount = Mathf.Max(1, config.productAmount);
-        SpawnHarvestFX(config.productItemId, config.productIcon, productAmount, vfxWorldPosition);
+        SpawnHarvestFX(config.productItemId, config.productIcon, productAmount, productSpawn);
 
         // Sáº£n pháº©m phá»¥ (chá»‰ gÃ : egg)
         if (!string.IsNullOrEmpty(config.secondProductItemId))
             SpawnHarvestFX(config.secondProductItemId, config.secondProductIcon,
-                Mathf.Max(1, config.secondProductAmount), vfxWorldPosition);
+                Mathf.Max(1, config.secondProductAmount), productSpawn);
 
         // EXP
         if (HarvestFeedbackSpawner.Instance != null)
-            HarvestFeedbackSpawner.Instance.SpawnExpFly(transform.position, config.expReward);
+            HarvestFeedbackSpawner.Instance.SpawnExpFly(transform.position + Vector3.up * harvestSpawnUpOffset, config.expReward);
 
         // Cá»™ng vÃ o FarmInventoryManager â€” Kho popup Ä‘á»c tá»« Ä‘Ã¢y, rá»“i user chuyá»ƒn sang KitchenTransferManager
         FarmInventoryManager.Instance.AddItem(config.productItemId, productAmount);
@@ -211,6 +225,22 @@ public class PenMiniPanelUI : MonoBehaviour
         SetState(PenState.Idle);
         SaveState();
         RefreshUI();
+        TutorialManager.Instance?.NotifyPenHarvest();   // tutorial L2: đã thu hoạch chuồng
+        return true;
+    }
+
+    /// <summary>Dùng kim cương hoàn tất NGAY quá trình nuôi (chuyển sang Ready).
+    /// Gắn vào nút Gem trên pen panel: OnClick → PenMiniPanelUI.TrySpeedUpGem.</summary>
+    public bool TrySpeedUpGem()
+    {
+        if (CurrentState != PenState.Processing) return false;
+        if (FarmEconomyManager.Instance == null) return false;
+        if (!FarmEconomyManager.Instance.SpendGems(speedUpGemCost)) return false;
+
+        StopTimerIfRunning();
+        SetState(PenState.Ready);
+        SaveState();
+        TutorialManager.Instance?.NotifyPenSpeedUp();   // tutorial L2: đã dùng gem hoàn tất
         return true;
     }
 
@@ -301,6 +331,12 @@ public class PenMiniPanelUI : MonoBehaviour
             progressOverlay.SetActive(isProcessing);
             if (isProcessing)
             {
+                progressOverlay.transform.SetAsFirstSibling();   // (C) render dưới vật phẩm cùng panel
+                if (processOverlayCanvas != null)
+                {
+                    processOverlayCanvas.overrideSorting = true;
+                    processOverlayCanvas.sortingOrder    = processSortingOrder;
+                }
                 float remaining = GetRemainingSeconds();
                 if (progressFill != null)
                     progressFill.fillAmount = 1f - remaining / config.feedDurationSeconds;

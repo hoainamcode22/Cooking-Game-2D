@@ -28,6 +28,10 @@ public class TutorialActionHandGuide : MonoBehaviour
     /// <summary>Tay pulse liên tục chỉ vào 1 target, bám theo target mỗi frame.</summary>
     public void GuidePoint(string targetId) => StartGuide(PointRoutine(targetId));
 
+    /// <summary>Chỉ vào target ĐANG HIỆN đầu tiên trong danh sách (vd ["btn_store","btn_home"]):
+    /// tay tự nhảy từ Home sang Store khi menu mở ra.</summary>
+    public void GuidePointFirstActive(string[] targetIds) => StartGuide(PointFirstActiveRoutine(targetIds));
+
     /// <summary>Tay quét qua các ô CÒN VIỆC theo thứ tự (bỏ qua ô user đã làm xong).
     /// needReady=false → chỉ ô trống (để trồng); needReady=true → chỉ ô chín (để thu hoạch).</summary>
     public void GuideSweepPlots(string[] targetIds, bool needReady = false)
@@ -103,6 +107,24 @@ public class TutorialActionHandGuide : MonoBehaviour
         while (true)
         {
             PointAt(TutorialManager.GetTargetRect(targetId));
+            Pulse();
+            yield return null;
+        }
+    }
+
+    // Chỉ vào target đang hiện đầu tiên trong list (Home→Store: tay tự nhảy khi menu mở).
+    private IEnumerator PointFirstActiveRoutine(string[] ids)
+    {
+        while (true)
+        {
+            RectTransform target = null;
+            if (ids != null)
+                foreach (var id in ids)
+                {
+                    var rt = TutorialManager.GetTargetRect(id);
+                    if (rt != null && rt.gameObject.activeInHierarchy) { target = rt; break; }
+                }
+            PointAt(target);
             Pulse();
             yield return null;
         }

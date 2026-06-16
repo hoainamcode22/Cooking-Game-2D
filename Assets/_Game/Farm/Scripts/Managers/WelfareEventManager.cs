@@ -6,7 +6,7 @@ public class WelfareEventManager : MonoBehaviour
 {
     public static WelfareEventManager Instance { get; private set; }
 
-    [SerializeField] private RectTransform popupRect;
+/*  */    [SerializeField] private RectTransform popupRect;
 
     public bool IsOpen => popupRect != null && popupRect.gameObject.activeSelf;
     private bool popupInputLockHeld;

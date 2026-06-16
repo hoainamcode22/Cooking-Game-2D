@@ -342,6 +342,12 @@ public class TutorialManager : MonoBehaviour
     public void NotifySpeedUp()                 => NotifyAction(TutorialWaitAction.WaitForSpeedUp);
     public void NotifySickleShown()             => NotifyAction(TutorialWaitAction.WaitForSickleShown);
     public void NotifySeedPanelOpened()          => NotifyAction(TutorialWaitAction.WaitForSeedPanel);
+    public void NotifyOpenShop()                 => NotifyAction(TutorialWaitAction.WaitForOpenShop);
+    public void NotifyCloseShop()                => NotifyAction(TutorialWaitAction.WaitForCloseShop);
+    public void NotifyOpenPen()                  => NotifyAction(TutorialWaitAction.WaitForOpenPen);
+    public void NotifyFeed()                     => NotifyAction(TutorialWaitAction.WaitForFeed);
+    public void NotifyPenSpeedUp()               => NotifyAction(TutorialWaitAction.WaitForPenSpeedUp);
+    public void NotifyPenHarvest()               => NotifyAction(TutorialWaitAction.WaitForPenHarvest);
 
     // =========================================================================
     // State Machine Core
@@ -419,6 +425,115 @@ public class TutorialManager : MonoBehaviour
             if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
             SetupSmartGuide(TutorialAreaKind.Flower, harvestMode: true);
             _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+
+        // ═══ TUTORIAL L2 — SHOP & TRỒNG NGÔ (B1–B7) ═══
+        // L2_01: tay chỉ Home→Store (tự nhảy khi menu mở), chờ shop mở.
+        if (step.name == "L2_01_GotoShop")
+        {
+            if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+            _guideBoardUI?.Hide();
+            if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+            _dimBackground?.ClearHole();
+            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+            _actionHandGuide?.GuidePointFirstActive(new[] { "btn_store", "btn_home" });
+            _pendingWait = step.waitAction;   // WaitForOpenShop
+            _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+        // L2_03: bao xám quanh item Ngô + tay chỉ Ngô/＋, chờ mua.
+        if (step.name == "L2_03_BuyCorn")
+        {
+            if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+            _guideBoardUI?.Hide();
+            if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+            var cornRect = GetTargetRect("shop_corn");
+            if (_dimBackground != null)
+            {
+                _dimBackground.gameObject.SetActive(true);
+                if (cornRect != null) _dimBackground.SetTarget(cornRect, false, 24f);
+                else _dimBackground.ClearHole();
+            }
+            _actionHandGuide?.GuidePointFirstActive(new[] { "shop_corn_plus", "shop_corn" });
+            _pendingWait = step.waitAction;   // WaitForBuyItem
+            _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+        // L2_04: tay chỉ Btn_Close, chờ đóng shop.
+        if (step.name == "L2_04_CloseShop")
+        {
+            if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+            _guideBoardUI?.Hide();
+            if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+            _dimBackground?.ClearHole();
+            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+            _actionHandGuide?.GuidePoint("btn_close");
+            _pendingWait = step.waitAction;   // WaitForCloseShop
+            _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+        // L2_05: trồng ngô 8 ô (tái dùng 8 ô — reset đếm), tay quét ô trống.
+        if (step.name == "L2_05_PlantCorn")
+        {
+            GetComponent<TutorialStepTriggerBridge>()?.ResetRiceTracking();
+            if (_cameraFocus != null) _cameraFocus.FocusOnRice(GetComponent<TutorialStepTriggerBridge>());
+            SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: false);
+            _pendingWait = step.waitAction;   // WaitForAllPlotsPlanted
+            _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+
+        // ═══ TUTORIAL L2 — CHĂN NUÔI (B8–B13) ═══
+        // L2_07: zoom Pen_03 + tay chỉ giữa chuồng, chờ mở chuồng.
+        if (step.name == "L2_07_FocusPen")
+        {
+            if (_cameraFocus != null) _cameraFocus.FocusOnPen("Pen_03");
+            if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+            _guideBoardUI?.Hide();
+            _dragHintAnimator?.StopDragHint();
+            _dimBackground?.ClearHole();
+            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+            if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+            _actionHandGuide?.GuidePoint("tutorial_pen");
+            _pendingWait = step.waitAction;   // WaitForOpenPen
+            _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+        // L2_08: kéo thức ăn (lúa) vào chuồng — tay drag-guide feed→pen, chờ cho ăn.
+        if (step.name == "L2_08_FeedPen")
+        {
+            _actionHandGuide?.StopGuide();
+            if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+            _guideBoardUI?.Hide();
+            _dimBackground?.ClearHole();
+            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+            _dragHintAnimator?.StartDragHint("tutorial_feed", "tutorial_pen");
+            _pendingWait = step.waitAction;   // WaitForFeed
+            _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+        // L2_09: tay chỉ nút Gem hoàn tất, chờ speed-up.
+        if (step.name == "L2_09_PenSpeedUp")
+        {
+            _dragHintAnimator?.StopDragHint();
+            if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+            if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+            _actionHandGuide?.GuidePoint("tutorial_pen_gem");
+            _pendingWait = step.waitAction;   // WaitForPenSpeedUp
+            _state = TutorialState.WaitingAction;
+            ConsumeQueuedAction(); yield break;
+        }
+        // L2_10: cầm rổ kéo vào chuồng thu hoạch — tay drag-guide basket→pen (bám theo), chờ thu hoạch.
+        if (step.name == "L2_10_HarvestPen")
+        {
+            _actionHandGuide?.StopGuide();
+            if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+            _dimBackground?.ClearHole();
+            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+            _dragHintAnimator?.StartDragHint("tutorial_basket", "tutorial_pen");
+            _pendingWait = step.waitAction;   // WaitForPenHarvest
+            _state = TutorialState.WaitingAction;
             ConsumeQueuedAction(); yield break;
         }
 

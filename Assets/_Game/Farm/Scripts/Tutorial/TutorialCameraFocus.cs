@@ -88,6 +88,21 @@ public class TutorialCameraFocus : MonoBehaviour
         Debug.Log($"[TutorialCameraFocus] Focus on flower pots center: {center} zoom={zoom}");
     }
 
+    /// <summary>Lia camera vào 1 chuồng (vd Pen_03) theo tâm collider/renderer.</summary>
+    public void FocusOnPen(string penName = "Pen_03")
+    {
+        var pen = GameObject.Find(penName);
+        if (pen == null)
+        {
+            Debug.LogWarning($"[TutorialCameraFocus] Không tìm thấy '{penName}' trong scene.");
+            return;
+        }
+        SaveOriginal();
+        float zoom = SanitizeZoom(_flowerZoom);
+        Focus(PlotVisualCenter(pen.transform), zoom);
+        Debug.Log($"[TutorialCameraFocus] FocusOnPen '{penName}' zoom={zoom}");
+    }
+
     /// <summary>Trả camera về vị trí/zoom ban đầu và trả input cho người chơi.</summary>
     public void RestoreCamera()
     {

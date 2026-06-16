@@ -32,6 +32,7 @@ public class LevelUpPopupUI : MonoBehaviour
 
     [Header("Text")]
     [SerializeField] private TextMeshProUGUI titleText;
+    [SerializeField] private TextMeshProUGUI levelNumberText;
     [SerializeField] private TextMeshProUGUI hintText;
 
     [Header("Gold / Gems Display")]
@@ -178,12 +179,15 @@ public class LevelUpPopupUI : MonoBehaviour
     {
         // Title
         if (titleText != null)
-            titleText.text = $"Lên cấp {level}!";
+            titleText.text = "LÊN CẤP!";
+        if (levelNumberText != null)
+            levelNumberText.text = Mathf.Clamp(level, 1, 30).ToString();
 
         // Clear gift slots
         if (giftItemsContainer != null)
             foreach (Transform child in giftItemsContainer)
-                Destroy(child.gameObject);
+                if (child.GetComponent<LevelUpGiftSlotUI>() != null)
+                    Destroy(child.gameObject);
 
         if (cfg != null)
         {

@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
+  m_Name: L2_06_AnimalIntro
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
+  npcText: "B\u1EA1n \u0111\xE3 l\xE0m t\u1ED1t l\u1EAFm! Tr\u1ED3ng tr\u1ECDt xong
+    r\u1ED3i \u2014 gi\u1EDD m\xECnh t\u1EADp ch\u0103n nu\xF4i gia s\xFAc nh\xE9!"
+  npcPortrait: {fileID: 0}
+  typingSpeed: 0.02
+  targetID: 
+  useCircleHole: 1
+  holePaddingPx: 16
+  waitAction: 0
+  showGuideBoard: 0
+  showHandPointer: 0
+  handOffset: {x: 40, y: -30}
+  dragToTargetId: 

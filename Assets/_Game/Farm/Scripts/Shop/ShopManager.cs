@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
@@ -42,9 +43,19 @@ public class ShopManager : MonoBehaviour
         if (!IsOpen) return;
         if (!Input.GetMouseButtonDown(0)) return;
 
+        // Tutorial L2 đang điều khiển shop → chỉ Btn_Close mới đóng (không auto-close khi click ngoài/dim/dialog).
+        if (IsShopTutorialStep()) return;
+
         // Nếu click KHÔNG trúng UI nào trong Canvas_Popup → đóng Shop
         if (!IsPointerOverPopupUI(Input.mousePosition))
             CloseShop();
+    }
+
+    private static bool IsShopTutorialStep()
+    {
+        var n = TutorialManager.Instance != null ? TutorialManager.Instance.CurrentStepName : null;
+        return n == "L2_01_GotoShop" || n == "L2_02_UnlockCorn"
+            || n == "L2_03_BuyCorn"  || n == "L2_04_CloseShop";
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -55,12 +66,14 @@ public class ShopManager : MonoBehaviour
         AcquirePopupInputBlock();
         if (searchBar != null) searchBar.text = "";
         ShowTab(0);
+        TutorialManager.Instance?.NotifyOpenShop();   // tutorial L2: bước "mở shop"
     }
 
     public void CloseShop()
     {
         ReleasePopupInputBlock();
         shopPanel.SetActive(false);
+        TutorialManager.Instance?.NotifyCloseShop();  // tutorial L2: bước "đóng shop"
     }
 
     private void OnDisable()
@@ -118,7 +131,9 @@ public class ShopManager : MonoBehaviour
 
         string keyLower = keyword.ToLower();
 
-        foreach (BaseItemData item in currentActiveList)
+        // Sắp xếp theo cấp mở khoá: cái mở TRƯỚC (cấp thấp) hiện TRƯỚC.
+        // OrderBy của LINQ là sort ỔN ĐỊNH → cùng cấp giữ nguyên thứ tự gốc.
+        foreach (BaseItemData item in currentActiveList.OrderBy(GetUnlockLevel))
         {
             bool match = string.IsNullOrEmpty(keyword)
                       || item.itemName.ToLower().Contains(keyLower);
@@ -128,6 +143,19 @@ public class ShopManager : MonoBehaviour
             GameObject go = Instantiate(itemPrefab, contentParent);
             go.GetComponent<ShopItemUI>().Setup(item);
         }
+    }
+
+    /// <summary>Đọc unlockLevel của item (qua reflection — field nằm ở lớp con). Không có = 1.</summary>
+    private static int GetUnlockLevel(BaseItemData item)
+    {
+        if (item == null) return 1;
+        var f = item.GetType().GetField("unlockLevel",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.NonPublic);
+        if (f != null && f.FieldType == typeof(int))
+            return Mathf.Max(1, (int)f.GetValue(item));
+        return 1;
     }
 
     // ── UI Raycast (y hệt PigPenClickOpen) ───────────────────────────────────

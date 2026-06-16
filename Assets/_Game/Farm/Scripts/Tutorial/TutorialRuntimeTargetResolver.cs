@@ -87,6 +87,86 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
 
         StartCoroutine(SetupPlotProxiesNextFrame());
         StartCoroutine(SeedScanLoop());
+        StartCoroutine(ShopCornScanLoop());
+        StartCoroutine(PenScanLoop());
+    }
+
+    // =========================================================================
+    // Tutorial L2 — chuồng Pen_03 + thức ăn + rổ + nút Gem (B8–B13)
+    // =========================================================================
+    private IEnumerator PenScanLoop()
+    {
+        var wait = new WaitForSeconds(0.3f);
+        while (true)
+        {
+            // Pen_03 (world object luôn có trong scene) → world-proxy để tay chỉ giữa chuồng
+            if (TutorialManager.GetTargetRect("tutorial_pen") == null)
+            {
+                var pen = GameObject.Find("Pen_03");
+                if (pen != null) CreateWorldProxy("tutorial_pen", pen.transform);
+            }
+
+            // Thức ăn kéo-thả (sinh khi mở panel chuồng, state Idle)
+            if (TutorialManager.GetTargetRect("tutorial_feed") == null)
+                foreach (var f in Object.FindObjectsByType<DraggableFeedItem>(FindObjectsSortMode.None))
+                    if (f != null && f.gameObject.activeInHierarchy)
+                    { AddRuntimeTarget(f.gameObject, "tutorial_feed"); break; }
+
+            // Rổ thu hoạch (sinh khi state Ready)
+            if (TutorialManager.GetTargetRect("tutorial_basket") == null)
+                foreach (var b in Object.FindObjectsByType<PenBasketDragItem>(FindObjectsSortMode.None))
+                    if (b != null && b.gameObject.activeInHierarchy)
+                    { AddRuntimeTarget(b.gameObject, "tutorial_basket"); break; }
+
+            // Nút Gem hoàn tất (prefab cần đặt tên 'btn_PenGem' + OnClick → PenMiniPanelUI.TrySpeedUpGem)
+            if (TutorialManager.GetTargetRect("tutorial_pen_gem") == null)
+            {
+                var g = GameObject.Find("btn_PenGem");
+                if (g != null) AddRuntimeTarget(g, "tutorial_pen_gem");
+            }
+
+            yield return wait;
+        }
+    }
+
+    // =========================================================================
+    // Tutorial L2 — đăng ký item Ngô trong shop (sinh runtime khi shop mở)
+    // =========================================================================
+    private IEnumerator ShopCornScanLoop()
+    {
+        var wait = new WaitForSeconds(0.3f);
+        while (true)
+        {
+            if (ShopManager.Instance != null && ShopManager.Instance.IsOpen
+                && TutorialManager.GetTargetRect("shop_corn") == null)
+                TryRegisterCornShopItem();
+            yield return wait;
+        }
+    }
+
+    private void TryRegisterCornShopItem()
+    {
+        foreach (var item in Object.FindObjectsByType<ShopItemUI>(FindObjectsSortMode.None))
+        {
+            var data = item.Data;
+            if (data == null) continue;
+            bool isCorn = data.itemID == "seed_ngo" || (data is CropData c && c.cropId == "ngo");
+            if (!isCorn) continue;
+
+            AddRuntimeTarget(item.gameObject, "shop_corn");
+            if (item.btnPlus != null) AddRuntimeTarget(item.btnPlus.gameObject, "shop_corn_plus");
+            if (item.btnBuy  != null) AddRuntimeTarget(item.btnBuy.gameObject,  "shop_corn_buy");
+            Debug.Log("[TutorialTargetResolver] Registered shop_corn (Ngô) + ＋/Mua.");
+            return;
+        }
+    }
+
+    private static void AddRuntimeTarget(GameObject go, string id)
+    {
+        if (go == null) return;
+        var tt = go.GetComponent<TutorialTarget>();
+        if (tt == null) tt = go.AddComponent<TutorialTarget>();
+        tt.SetTargetId(id);
     }
 
     void LateUpdate()

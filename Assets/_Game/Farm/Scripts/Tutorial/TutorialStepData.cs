@@ -19,6 +19,12 @@ public enum TutorialWaitAction
     WaitForSpeedUp,                 // NotifySpeedUp() — player dùng gem speed-up
     WaitForSickleShown,             // NotifySickleShown() — liềm tray đã hiện
     WaitForSeedPanel,
+    WaitForOpenShop,            // ShopManager.OpenShop() — tutorial L2: mở shop
+    WaitForCloseShop,           // ShopManager.CloseShop() — tutorial L2: đóng shop
+    WaitForOpenPen,             // PenMiniPanelUI.OpenPanel() — tutorial L2: mở chuồng
+    WaitForFeed,                // PenMiniPanelUI.TryFeed() OK — đã cho ăn
+    WaitForPenSpeedUp,          // PenMiniPanelUI.TrySpeedUpGem() OK — dùng gem hoàn tất chuồng
+    WaitForPenHarvest,          // PenMiniPanelUI.TryHarvest() OK — đã thu hoạch chuồng
 }
 
 [CreateAssetMenu(fileName = "TutorialStep_00", menuName = "FarmGame/Tutorial/Tutorial Step")]
