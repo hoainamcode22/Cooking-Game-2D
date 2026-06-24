@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27da4e0963ef8a14bba5b6535e1c8d80, type: 3}
+  m_Name: Mission_main_l6_collect_milk
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionIcon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
+  missionName: "Thu 3 s\u1EEFa b\xF2"
+  targetAmount: 3
+  rewardIcon: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
+  rewardAmount: 140
+  rewardType: 0
+  missionId: main_l6_collect_milk
+  requiredLevel: 6
+  eventType: 4
+  targetItemId: milk
+  isDaily: 0

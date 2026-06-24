@@ -13,14 +13,16 @@ MonoBehaviour:
   m_Name: LevelReward_L15
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 15
-  giftGold: 1100
-  giftGems: 6
+  giftGold: 1000
+  giftGems: 10
   giftItems:
   - itemId: seed_nam
     displayName: "H\u1EA1t N\u1EA5m"
     icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
-    amount: 4
+    amount: 3
   unlockDescriptions:
-  - "M\u1EDF r\u1ED9ng n\xF4ng tr\u1EA1i (s\u1EAFp ra m\u1EAFt)"
-  hintText: "Ti\u1EBFp t\u1EE5c thu ho\u1EA1ch v\xE0 giao \u0111\u01A1n \u0111\u1EC3
-    m\u1EDF c\xE1c t\xEDnh n\u0103ng s\u1EAFp ra m\u1EAFt nh\xE9!"
+  - "M\xE1y Ph\xF4 Mai \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+  - "M\u1EDF kh\xF3a ph\xF4 mai"
+  - "\U0001F3C5 Danh hi\u1EC7u \"\u0110\u1EA7u b\u1EBFp kh\xE9o\""
+  hintText: "M\xE1y Ph\xF4 Mai \u0111\xE3 c\xF3 trong Shop \u2014 l\xE0m ph\xF4 mai
+    t\u1EEB s\u1EEFa b\xF2!"

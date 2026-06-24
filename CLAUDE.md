@@ -45,6 +45,19 @@ See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
 > **First session?** If the project has no engine configured and no game concept,
 > run `/start` to begin the guided onboarding flow.
 
+## Autopilot & Autonomy Mode
+
+When the user runs **`/autopilot`** (or says **"tiếp tục roadmap"**), the team builds the
+game from the master plan with minimal interruptions. In this mode the per-step approval of the
+Collaboration Protocol is relaxed into **batch approval with hard safety rails**: additive code/
+tool/data/doc work proceeds automatically; anything in the AUTONOMY "STOP LIST" (editing/deleting
+scenes, prefabs, key `.asset` data or core logic; commits; spending money/accounts; ambiguous
+design calls) still pauses and is collected into a single **"CẦN BẠN"** (needs-you) list.
+
+- Master build plan (A→Z, single source of truth): `production/AUTOPILOT_BACKLOG.md`
+- Autonomy rules & safety rails (always obey): @production/AUTONOMY.md
+- Complete quest/mission data: `production/MISSIONS_MASTER_LIST.md`
+
 ## Coding Standards
 
 @.claude/docs/coding-standards.md

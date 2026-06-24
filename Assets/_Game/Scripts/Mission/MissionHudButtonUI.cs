@@ -31,6 +31,9 @@ public class MissionHudButtonUI : MonoBehaviour
     private const string DefaultAction = "\u0110\u1ebfn";
     private const string EmptyMission = "Ch\u01b0a c\u00f3 nhi\u1ec7m v\u1ee5";
 
+    // Cho UnifiedTaskPopupUI lấy database nếu cần.
+    public MissionDatabase MissionDatabaseRef => missionDatabase;
+
     private MissionData _currentMission;
     private bool _bubbleVisible;
     private Coroutine _bubbleRoutine;
@@ -79,7 +82,9 @@ public class MissionHudButtonUI : MonoBehaviour
         if (Time.unscaledTime < _nextRefreshTime)
             return;
 
-        _nextRefreshTime = Time.unscaledTime + 1f;
+        // 0.3s: sau khi claim 1 nhiệm vụ (không đổi tiến độ nên OnProgressChanged không bắn),
+        // thanh nhảy sang nhiệm vụ kế nhanh → cảm giác bám sát game.
+        _nextRefreshTime = Time.unscaledTime + 0.3f;
         RefreshNow();
     }
 
@@ -100,14 +105,9 @@ public class MissionHudButtonUI : MonoBehaviour
 
     private void OpenMissionPopup()
     {
-        if (popupEwarManager == null)
-            popupEwarManager = FindFirstObjectByType<PopupEwarManager>(FindObjectsInactive.Include);
-
-        if (popupEwarManager != null)
-        {
-            SetBubbleVisible(false, false);
-            popupEwarManager.OpenPopup();
-        }
+        // Btn_GoMission ("Đi" trên bong bóng nhiệm vụ) → mở POPUP GỘP, tab Nhiệm vụ.
+        SetBubbleVisible(false, false);
+        UnifiedTaskPopupUI.OpenMission();
     }
 
     private void RefreshNow()
@@ -154,8 +154,8 @@ public class MissionHudButtonUI : MonoBehaviour
             return null;
 
         int playerLevel = GetPlayerLevel();
-        MissionData completedButUnclaimed = null;
-        MissionData fallback = null;
+        MissionData completedUnclaimed = null;
+        MissionData firstInProgress = null;
 
         foreach (MissionData mission in missionDatabase.missions)
         {
@@ -165,14 +165,19 @@ public class MissionHudButtonUI : MonoBehaviour
                 continue;
 
             int current = MissionProgressTracker.GetProgressFor(mission);
-            if (current < mission.targetAmount)
-                return mission;
-
-            completedButUnclaimed ??= mission;
-            fallback ??= mission;
+            if (current >= Mathf.Max(1, mission.targetAmount))
+            {
+                if (completedUnclaimed == null) completedUnclaimed = mission;
+            }
+            else if (firstInProgress == null)
+            {
+                firstInProgress = mission;
+            }
         }
 
-        return completedButUnclaimed != null ? completedButUnclaimed : fallback;
+        // ƯU TIÊN nhiệm vụ HOÀN THÀNH CHỜ NHẬN → thanh hiện nó (icon đồng bộ) để user bấm Nhận ngay;
+        // chưa có cái nào xong thì hiện nhiệm vụ đang làm đầu tiên.
+        return completedUnclaimed != null ? completedUnclaimed : firstInProgress;
     }
 
     private static bool IsVisibleMainMission(MissionData mission, int playerLevel)

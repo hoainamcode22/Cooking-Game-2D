@@ -16,11 +16,12 @@ MonoBehaviour:
   giftGold: 700
   giftGems: 5
   giftItems:
-  - itemId: seed_chili
-    displayName: "H\u1EA1t \u1EDAt"
-    icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
+  - itemId: seed_sugarcane
+    displayName: "H\u1EA1t M\xEDa"
+    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
     amount: 3
   unlockDescriptions:
-  - "Ph\u1EA7n th\u01B0\u1EDFng c\u1EA5p cao"
-  hintText: "Ti\u1EBFp t\u1EE5c thu ho\u1EA1ch v\xE0 giao \u0111\u01A1n \u0111\u1EC3
-    m\u1EDF c\xE1c t\xEDnh n\u0103ng s\u1EAFp ra m\u1EAFt nh\xE9!"
+  - "M\xE1y Xay B\u1ED9t \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+  - "M\u1EDF kh\xF3a b\u1ED9t g\u1EA1o"
+  hintText: "M\xE1y Xay B\u1ED9t \u0111\xE3 c\xF3 trong Shop \u2014 xay l\xFAa th\xE0nh
+    b\u1ED9t g\u1EA1o \u0111\u1EC3 b\xE1n ho\u1EB7c n\u1EA5u \u0103n!"

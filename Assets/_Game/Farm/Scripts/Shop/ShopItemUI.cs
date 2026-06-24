@@ -32,6 +32,9 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     /// <summary>Data item đang hiển thị (cho tutorial tìm đúng item Ngô để chỉ tay + bao xám).</summary>
     public BaseItemData Data => currentData;
     private int          currentQuantity = 1;
+
+    /// <summary>Số lượng đang chọn (cho tutorial biết user đã bấm + đủ 8 chưa).</summary>
+    public int CurrentQuantity => currentQuantity;
     private bool         isDiamondItem;     // true = trả bằng Kim Cương, false = Vàng
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
@@ -142,8 +145,8 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         );
 
         // Tutorial L2: báo đã mua hạt giống (bước "mua ngô")
-        if (currentData is CropData)
-            TutorialManager.Instance?.NotifyBuyItem();
+        if (currentData is CropData crop)
+            TutorialManager.Instance?.NotifyBuySeed(currentData.itemID, crop.cropId, currentQuantity);
     }
 
     // ── Button Feedback ───────────────────────────────────────────────────────

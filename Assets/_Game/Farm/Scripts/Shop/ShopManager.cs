@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 using TMPro;
 
 public class ShopManager : MonoBehaviour
@@ -118,6 +120,56 @@ public class ShopManager : MonoBehaviour
             OnSearchTextChanged(searchBar.text);
         else
             OnSearchTextChanged("");
+    }
+
+    // ── Cuộn tới item (cho tutorial mua Ngô) ─────────────────────────────────
+
+    /// <summary>Cuộn ScrollRect để item (theo itemID) hiện TRỌN ở giữa viewport —
+    /// dùng cho bước tutorial mua Ngô (nút ＋/－/Mua đang bị cắt ngoài mép).</summary>
+    public void ScrollItemIntoView(string itemId)
+    {
+        if (!IsOpen || contentParent == null || string.IsNullOrEmpty(itemId)) return;
+        var sr = contentParent.GetComponentInParent<ScrollRect>();
+        if (sr == null) return;
+
+        foreach (Transform child in contentParent)
+        {
+            var ui = child.GetComponent<ShopItemUI>();
+            if (ui != null && ui.Data != null && ui.Data.itemID == itemId)
+            {
+                StartCoroutine(CoScrollTo(sr, child as RectTransform));
+                return;
+            }
+        }
+    }
+
+    private IEnumerator CoScrollTo(ScrollRect sr, RectTransform target)
+    {
+        yield return null;                 // chờ 1 frame cho layout dựng xong
+        Canvas.ForceUpdateCanvases();
+
+        RectTransform content  = sr.content;
+        RectTransform viewport = sr.viewport != null ? sr.viewport : (RectTransform)sr.transform;
+        if (content == null || target == null) yield break;
+
+        // Dịch content sao cho TÂM item về giữa viewport (chỉ theo trục đang bật).
+        Vector3 tw    = target.TransformPoint(target.rect.center);
+        Vector2 tInVp = viewport.InverseTransformPoint(tw);
+        Vector2 delta = viewport.rect.center - tInVp;
+
+        Vector2 from = content.anchoredPosition;
+        Vector2 to   = from;
+        if (sr.horizontal) to.x += delta.x;
+        if (sr.vertical)   to.y += delta.y;
+
+        float t = 0f; const float dur = 0.3f;
+        while (t < dur)
+        {
+            t += Time.unscaledDeltaTime;
+            content.anchoredPosition = Vector2.Lerp(from, to, Mathf.SmoothStep(0f, 1f, t / dur));
+            yield return null;
+        }
+        content.anchoredPosition = to;
     }
 
     // ── Tìm kiếm & Render ────────────────────────────────────────────────────

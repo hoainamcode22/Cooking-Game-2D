@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: LevelReward_L16
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 16
-  giftGold: 1200
+  giftGold: 1100
   giftGems: 6
   giftItems:
-  - itemId: seed_chili
-    displayName: "H\u1EA1t \u1EDAt"
-    icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
-    amount: 4
+  - itemId: seed_cachua
+    displayName: "H\u1EA1t C\xE0 chua"
+    icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+    amount: 3
   unlockDescriptions:
-  - "Ph\u1EA7n th\u01B0\u1EDFng c\u1EA5p cao"
-  hintText: "Ti\u1EBFp t\u1EE5c thu ho\u1EA1ch v\xE0 giao \u0111\u01A1n \u0111\u1EC3
-    m\u1EDF c\xE1c t\xEDnh n\u0103ng s\u1EAFp ra m\u1EAFt nh\xE9!"
+  - "H\u1ED3 C\xE1 \u0111\xE3 m\u1EDF \u2014 b\u1EAFt \u0111\u1EA7u c\xE2u c\xE1"
+  - "M\u1EDF kh\xF3a c\xE1c m\xF3n c\xE1"
+  hintText: "H\u1ED3 C\xE1 \u0111\xE3 m\u1EDF! Th\u1EA3 c\u1EA7n c\xE2u \u0111\u1EC3
+    b\u1EAFt c\xE1 cho c\xE1c m\xF3n m\u1EDBi."

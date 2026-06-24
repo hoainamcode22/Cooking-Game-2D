@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Mission_main_l1_plant_flower
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
   missionIcon: {fileID: -7696085379610616033, guid: c36c76047753b414093b747a43aecc75, type: 3}
-  missionName: "Tr\u1ED3ng 2 \xF4 hoa h\u01B0\u1EDBng d\u01B0\u01A1ng"
-  targetAmount: 2
+  missionName: "Tr\u1ED3ng 6 \xF4 hoa h\u01B0\u1EDBng d\u01B0\u01A1ng"
+  targetAmount: 6
   rewardIcon: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
   rewardAmount: 50
   rewardType: 0

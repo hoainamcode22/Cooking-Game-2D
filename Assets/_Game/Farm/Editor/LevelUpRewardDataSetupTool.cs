@@ -247,51 +247,101 @@ public static class LevelUpRewardDataSetupTool
         },
     };
 
-    // ─── L11-L30: sinh tự động (bảng mở rộng tới maxLevel=30) ─────────────────
-    //     Gold 700 → 2600 (+100/cấp) · Gems tăng theo band · quà xoay vòng hạt cấp cao.
-    //     Unlock text = teaser roadmap các tính năng sắp ra mắt.
+    // ─── L11-L30: bảng tường minh khớp REWARDS_MASTER_LIST §1 ────────────────
+    //     Vàng/Gem = ĐÚNG số master (760/820/.../2600 — không còn công thức xấp xỉ).
+    //     unlockDescriptions = cột "MỞ KHOÁ" của master (chỉ hiển thị).
+    //     gifts = 1 hạt giống THẬT/cấp (id đã verify trong CropData: seed_sugarcane=mía,
+    //       seed_lemon=chanh, seed_pepper/seed_chili/seed_nam...). Quà placeholder phi-chức-năng
+    //       của master (booster/pet/skin/decor/fishing) CHƯA thêm — chờ bạn duyệt (xem báo cáo).
+
+    private static readonly LevelDef[] REWARD_TABLE_L11_L30 =
+    {
+        new LevelDef { level = 11, gold = 700,  gems = 5,
+            gifts = new[] { new GiftDef("seed_sugarcane", "Hạt Mía", 3) },
+            unlocks = new[] { "Máy Xay Bột đã mở bán trong Shop", "Mở khóa bột gạo" },
+            hint = "Máy Xay Bột đã có trong Shop — xay lúa thành bột gạo để bán hoặc nấu ăn!" },
+        new LevelDef { level = 12, gold = 760,  gems = 5,
+            gifts = new[] { new GiftDef("seed_ngo", "Hạt Ngô", 3) },
+            unlocks = new[] { "Nâng cấp kho lần 1", "Mở thêm cây trồng mới" },
+            hint = "Kho đã có thể nâng cấp — chứa được nhiều nông sản hơn." },
+        new LevelDef { level = 13, gold = 820,  gems = 5,
+            gifts = new[] { new GiftDef("seed_lemon", "Hạt Chanh", 3) },
+            unlocks = new[] { "Máy Ép Mía đã mở bán trong Shop", "Mở khóa nước mía" },
+            hint = "Máy Ép Mía đã có trong Shop — ép mía thành nước mía giải khát!" },
+        new LevelDef { level = 14, gold = 880,  gems = 5,
+            gifts = new[] { new GiftDef("seed_hoa_hong", "Hạt Hoa hồng", 2) },
+            unlocks = new[] { "Đơn 2 món xuất hiện nhiều hơn", "Mở thêm hoa mới" },
+            hint = "Dân làng bắt đầu đặt nhiều đơn 2 món hơn — chuẩn bị nguyên liệu nhé!" },
+        new LevelDef { level = 15, gold = 1000, gems = 10,
+            gifts = new[] { new GiftDef("seed_nam", "Hạt Nấm", 3) },
+            unlocks = new[] { "Máy Phô Mai đã mở bán trong Shop", "Mở khóa phô mai", "🏅 Danh hiệu \"Đầu bếp khéo\"" },
+            hint = "Máy Phô Mai đã có trong Shop — làm phô mai từ sữa bò!" },
+        new LevelDef { level = 16, gold = 1100, gems = 6,
+            gifts = new[] { new GiftDef("seed_cachua", "Hạt Cà chua", 3) },
+            unlocks = new[] { "Hồ Cá đã mở — bắt đầu câu cá", "Mở khóa các món cá" },
+            hint = "Hồ Cá đã mở! Thả cần câu để bắt cá cho các món mới." },
+        new LevelDef { level = 17, gold = 1200, gems = 6,
+            gifts = new[] { new GiftDef("seed_chili", "Hạt Ớt", 3) },
+            unlocks = new[] { "Món cá vào pool đơn hàng", "Mở khóa loại cá mới" },
+            hint = "Các món cá đã xuất hiện trong đơn hàng của dân làng." },
+        new LevelDef { level = 18, gold = 1300, gems = 6,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[] { "Mở rộng đất khu 2 (ô 9–14)" },
+            hint = "Đã mở rộng đất khu 2 — thêm nhiều ô để trồng trọt!" },
+        new LevelDef { level = 19, gold = 1400, gems = 6,
+            gifts = new[] { new GiftDef("seed_sugarcane", "Hạt Mía", 3) },
+            unlocks = new[] { "Pet đi quanh trại (nhặt xu rơi)", "Mở khóa decor cho pet" },
+            hint = "Thú cưng đầu tiên đã xuất hiện — đi quanh trại nhặt xu giúp bạn!" },
+        new LevelDef { level = 20, gold = 1600, gems = 15,
+            gifts = new[] { new GiftDef("seed_lemon", "Hạt Chanh", 3) },
+            unlocks = new[] { "Cây & đơn hàng cao cấp", "Trang trí cấp 2", "🏅 Danh hiệu \"Chủ trại giỏi\"" },
+            hint = "Chúc mừng cấp 20! Nội dung cao cấp và trang trí mới đã mở." },
+        new LevelDef { level = 21, gold = 1700, gems = 7,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[] { "Nâng cấp kho lần 2", "Thêm slot sản xuất" },
+            hint = "Kho đã nâng cấp lần 2 — sản xuất nhiều hơn cùng lúc!" },
+        new LevelDef { level = 22, gold = 1800, gems = 7,
+            gifts = new[] { new GiftDef("seed_chili", "Hạt Ớt", 3) },
+            unlocks = new[] { "Đơn cá nhiều hơn", "Mở khóa cây hiếm" },
+            hint = "Dân làng đặt nhiều món cá hơn — câu cá đều tay nhé!" },
+        new LevelDef { level = 23, gold = 1950, gems = 7,
+            gifts = new[] { new GiftDef("seed_sugarcane", "Hạt Mía", 3) },
+            unlocks = new[] { "Bến Tàu Du Lịch đã mở" },
+            hint = "Bến Tàu Du Lịch đã mở — phục vụ khách du lịch để kiếm lớn!" },
+        new LevelDef { level = 24, gold = 2050, gems = 7,
+            gifts = new[] { new GiftDef("seed_lemon", "Hạt Chanh", 3) },
+            unlocks = new[] { "Nhà hàng ven biển", "Đơn tàu cao cấp" },
+            hint = "Nhà hàng ven biển đã mở — đón các đơn tàu giá trị cao." },
+        new LevelDef { level = 25, gold = 2200, gems = 15,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[] { "Trang trí cấp 3", "Đơn combo 3 món", "🏅 Danh hiệu \"Ông/Bà chủ lớn\"" },
+            hint = "Cấp 25! Combo 3 món và trang trí cấp 3 đã mở khóa." },
+        new LevelDef { level = 26, gold = 2300, gems = 8,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[] { "Công thức cao cấp", "Trang trí theo mùa" },
+            hint = "Các công thức nấu cao cấp đã mở — thử món mới nhé!" },
+        new LevelDef { level = 27, gold = 2400, gems = 8,
+            gifts = new[] { new GiftDef("seed_chili", "Hạt Ớt", 3) },
+            unlocks = new[] { "Đơn tàu khó (payout x3)", "Mở khóa cây cao cấp" },
+            hint = "Đơn tàu khó trả thưởng gấp 3 — đáng để thử sức!" },
+        new LevelDef { level = 28, gold = 2480, gems = 8,
+            gifts = new[] { new GiftDef("seed_sugarcane", "Hạt Mía", 3) },
+            unlocks = new[] { "Sự kiện mùa (placeholder)", "Decor hiếm" },
+            hint = "Sự kiện theo mùa sắp ra mắt — tiếp tục phát triển nông trại!" },
+        new LevelDef { level = 29, gold = 2550, gems = 8,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[] { "Mở toàn bộ pool nội dung", "Trang trí top" },
+            hint = "Gần tới đỉnh cao! Toàn bộ nội dung sắp trong tầm tay." },
+        new LevelDef { level = 30, gold = 2600, gems = 30,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 5) },
+            unlocks = new[] { "Đạt nội dung tối đa của bản demo", "🏅 Danh hiệu \"BẬC THẦY NÔNG TRẠI\"" },
+            hint = "BẬC THẦY NÔNG TRẠI! Nông trại của bạn thật huyền thoại — cảm ơn bạn đã chơi!" },
+    };
 
     private static List<LevelDef> GetFullTable()
     {
         var table = new List<LevelDef>(REWARD_TABLE);
-
-        var seedCycle = new (string id, string name)[]
-        {
-            ("seed_chili", "Hạt Ớt"), ("seed_pepper", "Hạt Tiêu"), ("seed_lemon", "Hạt Chanh"),
-            ("seed_sugarcane", "Hạt Mía"), ("seed_nam", "Hạt Nấm"),
-        };
-
-        for (int lv = 11; lv <= 30; lv++)
-        {
-            var seed   = seedCycle[(lv - 11) % seedCycle.Length];
-            int amount = lv <= 12 ? 3 : (lv <= 17 ? 4 : 5);
-            int gems   = lv <= 13 ? 5 : lv <= 16 ? 6 : lv <= 19 ? 7 : lv <= 22 ? 8 : lv <= 25 ? 9 : lv <= 29 ? 10 : 15;
-
-            string teaser;
-            switch (lv)
-            {
-                case 14: teaser = "Máy chế biến nông sản (sắp ra mắt)"; break;
-                case 15: teaser = "Mở rộng nông trại (sắp ra mắt)"; break;
-                case 17: teaser = "Hồ cá (sắp ra mắt)"; break;
-                case 18: teaser = "Sẵn sàng cho 2 món cá khi có hồ cá"; break;
-                case 20: teaser = "Bến tàu du lịch (sắp ra mắt)"; break;
-                case 25: teaser = "Sự kiện mùa vụ (sắp ra mắt)"; break;
-                case 30: teaser = "Bạn đã đạt cấp tối đa — cảm ơn bạn đã chơi!"; break;
-                default: teaser = "Phần thưởng cấp cao"; break;
-            }
-
-            table.Add(new LevelDef
-            {
-                level   = lv,
-                gold    = 700 + (lv - 11) * 100,
-                gems    = gems,
-                gifts   = new[] { new GiftDef(seed.id, seed.name, amount) },
-                unlocks = new[] { teaser },
-                hint    = lv == 30
-                    ? "Cấp tối đa! Nông trại của bạn thật tuyệt vời."
-                    : "Tiếp tục thu hoạch và giao đơn để mở các tính năng sắp ra mắt nhé!",
-            });
-        }
+        table.AddRange(REWARD_TABLE_L11_L30);
         return table;
     }
 

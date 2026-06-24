@@ -19,6 +19,8 @@ public enum TutorialAreaKind { None, Rice, Flower }
 /// </summary>
 public class TutorialRuntimeTargetResolver : MonoBehaviour
 {
+    private static readonly Vector2 ShopCloseTargetPosition = new Vector2(857.7f, 266.8f);
+
     // Crop ID aliases — khớp với CropData.cropId (không phải seed itemId)
     private static readonly string[] RICE_ALIASES = {
         "rice", "Rice", "lua", "Lua", "hat_lua", "seed_rice"
@@ -106,23 +108,54 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
                 if (pen != null) CreateWorldProxy("tutorial_pen", pen.transform);
             }
 
-            // Thức ăn kéo-thả (sinh khi mở panel chuồng, state Idle)
-            if (TutorialManager.GetTargetRect("tutorial_feed") == null)
-                foreach (var f in Object.FindObjectsByType<DraggableFeedItem>(FindObjectsSortMode.None))
-                    if (f != null && f.gameObject.activeInHierarchy)
-                    { AddRuntimeTarget(f.gameObject, "tutorial_feed"); break; }
+            // Thức ăn + rổ: lấy TRỰC TIẾP từ chuồng ĐANG MỞ (slot UI THẬT đang hiển thị).
+            // Trước đây quét toàn cục DraggableFeedItem — nhưng item đó có thể nằm ở popup khác
+            // (inactive) → không bắt được → drag hint THIẾU ĐÍCH → KHÔNG HIỆN TAY. Dùng slot của
+            // chuồng đang mở là chắc nhất; chỉ fallback quét DraggableFeedItem khi không có chuồng mở.
+            PenMiniPanelUI openPen = null;
+            foreach (var p in Object.FindObjectsByType<PenMiniPanelUI>(FindObjectsSortMode.None))
+                if (p != null && p.IsPanelOpen()) { openPen = p; break; }
 
-            // Rổ thu hoạch (sinh khi state Ready)
-            if (TutorialManager.GetTargetRect("tutorial_basket") == null)
-                foreach (var b in Object.FindObjectsByType<PenBasketDragItem>(FindObjectsSortMode.None))
-                    if (b != null && b.gameObject.activeInHierarchy)
-                    { AddRuntimeTarget(b.gameObject, "tutorial_basket"); break; }
-
-            // Nút Gem hoàn tất (prefab cần đặt tên 'btn_PenGem' + OnClick → PenMiniPanelUI.TrySpeedUpGem)
-            if (TutorialManager.GetTargetRect("tutorial_pen_gem") == null)
+            // tutorial_feed = ô thức ăn ĐẦU (lúa) của chuồng đang mở (state Idle → slot1 active).
+            if (openPen != null && openPen.FirstFeedSlotRect != null
+                && openPen.FirstFeedSlotRect.gameObject.activeInHierarchy)
             {
-                var g = GameObject.Find("btn_PenGem");
-                if (g != null) AddRuntimeTarget(g, "tutorial_pen_gem");
+                RetargetIfNeeded("tutorial_feed", openPen.FirstFeedSlotRect.gameObject);
+            }
+            else
+            {
+                DraggableFeedItem rice = null, leftmost = null;
+                float bestX = float.MaxValue;
+                foreach (var f in Object.FindObjectsByType<DraggableFeedItem>(FindObjectsSortMode.None))
+                {
+                    if (f == null || !f.gameObject.activeInHierarchy) continue;
+                    string id = (f.feedItemId ?? "").ToLowerInvariant();
+                    if (rice == null && (id.Contains("rice") || id.Contains("lua"))) rice = f;
+                    float x = f.transform.position.x;
+                    if (x < bestX) { bestX = x; leftmost = f; }
+                }
+                var pick = rice != null ? rice : leftmost;
+                if (pick != null) RetargetIfNeeded("tutorial_feed", pick.gameObject);
+            }
+
+            // tutorial_basket = rổ thu hoạch của chuồng đang mở (state Ready → basket active).
+            if (openPen != null && openPen.BasketSlotRect != null
+                && openPen.BasketSlotRect.gameObject.activeInHierarchy)
+            {
+                RetargetIfNeeded("tutorial_basket", openPen.BasketSlotRect.gameObject);
+            }
+            else
+            {
+                PenBasketDragItem pick = null;
+                foreach (var b in Object.FindObjectsByType<PenBasketDragItem>(FindObjectsSortMode.None))
+                    if (b != null && b.gameObject.activeInHierarchy) { pick = b; break; }
+                if (pick != null) RetargetIfNeeded("tutorial_basket", pick.gameObject);
+            }
+
+            // Nút Gem hoàn tất ('btn_PenGem' + OnClick → PenMiniPanelUI.TrySpeedUpGem) — chỉ cái ĐANG ACTIVE.
+            {
+                var g = GameObject.Find("btn_PenGem");   // Find chỉ trả object đang active
+                if (g != null) RetargetIfNeeded("tutorial_pen_gem", g);
             }
 
             yield return wait;
@@ -137,10 +170,26 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
         var wait = new WaitForSeconds(0.3f);
         while (true)
         {
-            if (ShopManager.Instance != null && ShopManager.Instance.IsOpen
-                && TutorialManager.GetTargetRect("shop_corn") == null)
-                TryRegisterCornShopItem();
+            RefreshShopTargets();
             yield return wait;
+        }
+    }
+
+    public void RefreshShopTargets()
+    {
+        if (ShopManager.Instance == null || !ShopManager.Instance.IsOpen)
+            return;
+
+        if (TutorialManager.GetTargetRect("shop_corn") == null
+            || TutorialManager.GetTargetRect("shop_corn_plus") == null
+            || TutorialManager.GetTargetRect("shop_corn_buy") == null)
+            TryRegisterCornShopItem();
+
+        // Nút đóng CỦA SHOP — tìm trong shopPanel để chỉ tay chính xác (tránh trùng "Btn_Close" khác).
+        if (TutorialManager.GetTargetRect("shop_close") == null && ShopManager.Instance.shopPanel != null)
+        {
+            var closeGo = FindCloseButton(ShopManager.Instance.shopPanel.transform);
+            if (closeGo != null) AddRuntimeTarget(closeGo, "shop_close");
         }
     }
 
@@ -150,7 +199,8 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
         {
             var data = item.Data;
             if (data == null) continue;
-            bool isCorn = data.itemID == "seed_ngo" || (data is CropData c && c.cropId == "ngo");
+            bool isCorn = string.Equals(data.itemID, "seed_ngo", System.StringComparison.OrdinalIgnoreCase)
+                || (data is CropData c && string.Equals(c.cropId, "ngo", System.StringComparison.OrdinalIgnoreCase));
             if (!isCorn) continue;
 
             AddRuntimeTarget(item.gameObject, "shop_corn");
@@ -161,12 +211,49 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
         }
     }
 
+    // Tìm nút đóng trong shopPanel: Button có tên chứa "close"/"dong"/"x" (robust với Btn_Close, BtnClose...).
+    private static GameObject FindCloseButton(Transform root)
+    {
+        if (root == null) return null;
+        UnityEngine.UI.Button best = null;
+        float bestScore = float.MaxValue;
+
+        foreach (var btn in root.GetComponentsInChildren<UnityEngine.UI.Button>(true))
+        {
+            string n = btn.name.ToLowerInvariant();
+            if (!n.Contains("close") && !n.Contains("dong") && n != "btn_x" && n != "x")
+                continue;
+
+            float score = 0f;
+            RectTransform rt = btn.transform as RectTransform;
+            if (rt != null)
+                score = (rt.anchoredPosition - ShopCloseTargetPosition).sqrMagnitude;
+
+            if (best == null || score < bestScore)
+            {
+                best = btn;
+                bestScore = score;
+            }
+        }
+        return best != null ? best.gameObject : null;
+    }
+
     private static void AddRuntimeTarget(GameObject go, string id)
     {
         if (go == null) return;
         var tt = go.GetComponent<TutorialTarget>();
         if (tt == null) tt = go.AddComponent<TutorialTarget>();
         tt.SetTargetId(id);
+    }
+
+    /// <summary>Trỏ id → go, NHƯNG chỉ đăng ký lại khi cần: target hiện tại chưa có / đã inactive
+    /// (chuồng đóng) / khác go đang active. Tránh giữ target cũ làm bàn tay trỏ sai chỗ.</summary>
+    private static void RetargetIfNeeded(string id, GameObject go)
+    {
+        if (go == null) return;
+        var cur = TutorialManager.GetTargetRect(id);
+        if (cur != null && cur.gameObject == go && cur.gameObject.activeInHierarchy) return;
+        AddRuntimeTarget(go, id);
     }
 
     void LateUpdate()
@@ -317,10 +404,25 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
     private static Vector3 PlotVisualCenter(Transform t)
     {
         if (t == null) return Vector3.zero;
+
+        // Ô đất: collider ngay trên gốc → tâm chuẩn (giữ nguyên hành vi cũ).
         var col = t.GetComponent<Collider2D>();
         if (col != null) return col.bounds.center;
-        var rend = t.GetComponentInChildren<Renderer>();
-        if (rend != null) return rend.bounds.center;
+
+        // Chuồng & vật thể nhiều mảnh (hàng rào): GỘP bounds TẤT CẢ renderer con → tâm hình học.
+        // Tránh lấy renderer đầu tiên (1 cọc rào) làm tâm → tay chỉ bị lệch ra mép chuồng.
+        var rends = t.GetComponentsInChildren<Renderer>();
+        if (rends != null && rends.Length > 0)
+        {
+            Bounds b = rends[0].bounds;
+            for (int i = 1; i < rends.Length; i++) b.Encapsulate(rends[i].bounds);
+            return b.center;
+        }
+
+        // Dự phòng: collider ở con (vùng click chuồng) rồi transform.
+        var childCol = t.GetComponentInChildren<Collider2D>();
+        if (childCol != null) return childCol.bounds.center;
+
         return t.position;
     }
 

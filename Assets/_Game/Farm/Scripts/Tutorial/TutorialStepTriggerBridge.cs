@@ -69,13 +69,56 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         _allRiceHarvestsNotified = false;
     }
 
-    // Số ô (đã mở khoá) của 1 loại — dùng làm mốc "đã xong TẤT CẢ" (vd 8 ô đất, 6 chậu hoa).
-    private static int CountUnlocked(PlotCategory cat)
+    // Lúa coi là trồng xong khi mọi Ô RUỘNG (Normal, KHÔNG phải chậu hoa) đã có cây.
+    // Loại trừ chậu hoa (Chauhoa) — trước đây gate tính cả chậu trống nên kẹt mãi.
+    private static bool AllRiceFieldPlanted()
     {
-        int n = 0;
         var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
-        foreach (var p in all) if (p != null && p.Category == cat && p.IsUnlocked) n++;
-        return n;
+        int total = 0;
+        var empties = new System.Text.StringBuilder();
+        foreach (var p in all)
+        {
+            if (p == null || p.Category != PlotCategory.Normal || !p.IsUnlocked) continue;
+            string n = p.name.ToLower();
+            if (n.Contains("chau") || n.Contains("pot") || n.Contains("hoa")) continue; // bỏ chậu hoa
+            total++;
+            if (p.IsEmpty) empties.Append(p.name).Append(' ');
+        }
+        if (empties.Length > 0)
+        {
+            Debug.Log($"[Tutorial] Lúa: còn ô RUỘNG trống → {empties}(chưa qua bước)");
+            return false;
+        }
+        Debug.Log($"[Tutorial] Lúa: ĐỦ {total} ô ruộng đã trồng → QUA bước!");
+        return total > 0;
+    }
+
+    // "Đã TRỒNG hết" = KHÔNG còn ô trống nào (unlocked). Chắc hơn đếm số → tránh kẹt vì lệch số ô.
+    private static bool AllUnlockedNonEmpty(PlotCategory cat)
+    {
+        var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
+        bool any = false;
+        foreach (var p in all)
+        {
+            if (p == null || p.Category != cat || !p.IsUnlocked) continue;
+            any = true;
+            if (p.IsEmpty) return false;   // còn ô trống → chưa trồng xong
+        }
+        return any;
+    }
+
+    // "Đã THU HOẠCH hết" = KHÔNG còn ô nào đang có cây (unlocked) → tất cả đã về Empty.
+    private static bool NoUnlockedPlanted(PlotCategory cat)
+    {
+        var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
+        bool any = false;
+        foreach (var p in all)
+        {
+            if (p == null || p.Category != cat || !p.IsUnlocked) continue;
+            any = true;
+            if (p.IsPlanted) return false;  // còn cây → chưa thu hoạch xong
+        }
+        return any;
     }
 
     // =========================================================================
@@ -92,7 +135,7 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         {
             _flowerPlantedIds.Add(plot.PlotId);
 
-            if (!_allFlowerPlantsNotified && _flowerPlantedIds.Count >= CountUnlocked(PlotCategory.Flower))
+            if (!_allFlowerPlantsNotified && AllUnlockedNonEmpty(PlotCategory.Flower))
             {
                 _allFlowerPlantsNotified = true;
                 TutorialManager.Instance?.NotifyAllFlowerPlotsPlanted();
@@ -102,10 +145,11 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         {
             _ricePlantedIds.Add(plot.PlotId);
 
-            if (!_allRicePlantsNotified && _ricePlantedIds.Count >= CountUnlocked(PlotCategory.Normal))
+            if (!_allRicePlantsNotified && AllRiceFieldPlanted())
             {
                 _allRicePlantsNotified = true;
                 TutorialManager.Instance?.NotifyAllPlotsPlanted();
+                Debug.Log("[Tutorial] >>> NotifyAllPlotsPlanted FIRED (qua L1L2_06)");
             }
         }
     }
@@ -121,7 +165,7 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         {
             _flowerHarvestedIds.Add(plot.PlotId);
 
-            if (!_allFlowerHarvestsNotified && _flowerHarvestedIds.Count >= CountUnlocked(PlotCategory.Flower))
+            if (!_allFlowerHarvestsNotified && NoUnlockedPlanted(PlotCategory.Flower))
             {
                 _allFlowerHarvestsNotified = true;
                 TutorialManager.Instance?.NotifyAllFlowerPlotsHarvested();
@@ -131,7 +175,7 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         {
             _riceHarvestedIds.Add(plot.PlotId);
 
-            if (!_allRiceHarvestsNotified && _riceHarvestedIds.Count >= CountUnlocked(PlotCategory.Normal))
+            if (!_allRiceHarvestsNotified && NoUnlockedPlanted(PlotCategory.Normal))
             {
                 _allRiceHarvestsNotified = true;
                 TutorialManager.Instance?.NotifyAllPlotsHarvested();

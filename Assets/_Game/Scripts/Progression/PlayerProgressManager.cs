@@ -11,7 +11,7 @@ public class PlayerProgressManager : MonoBehaviour
     [Header("Config")]
     [SerializeField] private int startLevel = 1;
     [SerializeField] private int startExp = 0;
-    [SerializeField] private int maxLevel = 30;
+    [SerializeField] private int maxLevel = 100;
 
     public int Level { get; private set; }
     public int CurrentExp { get; private set; }
@@ -44,11 +44,11 @@ public class PlayerProgressManager : MonoBehaviour
         level = Mathf.Clamp(level, 1, maxLevel);
         int n = level - 1;
 
-        // Rebalanced for max level 30.
-        // A smooth quadratic-ish curve that ramps up noticeably toward level 30,
-        // without exploding like the 100-level curve.
-        // L1 ~ 40, L10 ~ 150, L20 ~ 410, L30 ~ 820
-        return 40 + (n * 10) + (n * n);
+        // Đường cong cho MAX LEVEL 100 — nhẹ hơn nhiều so với bản cũ (n²) để không "nổ" về cuối.
+        // GIỮ Required(L1) = 40 (đúng tutorial: 8 lúa × 5 EXP = 40 → lên cấp 2).
+        // Mốc: L1=40, L2=50, L5≈82, L10≈142, L20≈284, L30≈456, L50≈890, L100=2500.
+        // Tổng tới L30 ≈ 6.8k (NHANH HƠN bản cũ ~12.9k); tổng tới L100 ≈ 100k (nội dung dài hạn).
+        return 40 + (n * 10) + (n * n * 3) / 20;
     }
 
     public int RequiredExpCurrentLevel => RequiredExpForLevel(Level);

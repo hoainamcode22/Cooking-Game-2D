@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: LevelReward_L24
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 24
-  giftGold: 2000
-  giftGems: 9
+  giftGold: 2050
+  giftGems: 7
   giftItems:
-  - itemId: seed_sugarcane
-    displayName: "H\u1EA1t M\xEDa"
-    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
-    amount: 5
+  - itemId: seed_lemon
+    displayName: "H\u1EA1t Chanh"
+    icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
+    amount: 3
   unlockDescriptions:
-  - "Ph\u1EA7n th\u01B0\u1EDFng c\u1EA5p cao"
-  hintText: "Ti\u1EBFp t\u1EE5c thu ho\u1EA1ch v\xE0 giao \u0111\u01A1n \u0111\u1EC3
-    m\u1EDF c\xE1c t\xEDnh n\u0103ng s\u1EAFp ra m\u1EAFt nh\xE9!"
+  - "Nh\xE0 h\xE0ng ven bi\u1EC3n"
+  - "\u0110\u01A1n t\xE0u cao c\u1EA5p"
+  hintText: "Nh\xE0 h\xE0ng ven bi\u1EC3n \u0111\xE3 m\u1EDF \u2014 \u0111\xF3n c\xE1c
+    \u0111\u01A1n t\xE0u gi\xE1 tr\u1ECB cao."

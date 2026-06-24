@@ -14,13 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 20
   giftGold: 1600
-  giftGems: 8
+  giftGems: 15
   giftItems:
-  - itemId: seed_nam
-    displayName: "H\u1EA1t N\u1EA5m"
-    icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
-    amount: 5
+  - itemId: seed_lemon
+    displayName: "H\u1EA1t Chanh"
+    icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
+    amount: 3
   unlockDescriptions:
-  - "B\u1EBFn t\xE0u du l\u1ECBch (s\u1EAFp ra m\u1EAFt)"
-  hintText: "Ti\u1EBFp t\u1EE5c thu ho\u1EA1ch v\xE0 giao \u0111\u01A1n \u0111\u1EC3
-    m\u1EDF c\xE1c t\xEDnh n\u0103ng s\u1EAFp ra m\u1EAFt nh\xE9!"
+  - "C\xE2y & \u0111\u01A1n h\xE0ng cao c\u1EA5p"
+  - "Trang tr\xED c\u1EA5p 2"
+  - "\U0001F3C5 Danh hi\u1EC7u \"Ch\u1EE7 tr\u1EA1i gi\u1ECFi\""
+  hintText: "Ch\xFAc m\u1EEBng c\u1EA5p 20! N\u1ED9i dung cao c\u1EA5p v\xE0 trang
+    tr\xED m\u1EDBi \u0111\xE3 m\u1EDF."

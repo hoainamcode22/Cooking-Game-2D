@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: LevelReward_L29
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 29
-  giftGold: 2500
-  giftGems: 10
+  giftGold: 2550
+  giftGems: 8
   giftItems:
-  - itemId: seed_sugarcane
-    displayName: "H\u1EA1t M\xEDa"
-    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
-    amount: 5
+  - itemId: seed_pepper
+    displayName: "H\u1EA1t Ti\xEAu"
+    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
+    amount: 3
   unlockDescriptions:
-  - "Ph\u1EA7n th\u01B0\u1EDFng c\u1EA5p cao"
-  hintText: "Ti\u1EBFp t\u1EE5c thu ho\u1EA1ch v\xE0 giao \u0111\u01A1n \u0111\u1EC3
-    m\u1EDF c\xE1c t\xEDnh n\u0103ng s\u1EAFp ra m\u1EAFt nh\xE9!"
+  - "M\u1EDF to\xE0n b\u1ED9 pool n\u1ED9i dung"
+  - "Trang tr\xED top"
+  hintText: "G\u1EA7n t\u1EDBi \u0111\u1EC9nh cao! To\xE0n b\u1ED9 n\u1ED9i dung
+    s\u1EAFp trong t\u1EA7m tay."

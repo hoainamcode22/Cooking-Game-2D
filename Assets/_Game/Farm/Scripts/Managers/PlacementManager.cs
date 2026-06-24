@@ -12,8 +12,21 @@ using UnityEngine.UI;
 public class PlacementManager : MonoBehaviour
 {
     public static PlacementManager Instance { get; private set; }
-    private const string BuildingSortingLayerName = "CongTrinh";
+    private const string PreferredBuildingSortingLayerName = "CongTrinh";
+    private const string FallbackBuildingSortingLayerName = "Objects";
     private const int BuildingSortingOrder = 500;
+    private static string resolvedBuildingSortingLayerName;
+    private static string BuildingSortingLayerName
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(resolvedBuildingSortingLayerName))
+                resolvedBuildingSortingLayerName = ResolveSortingLayerName(
+                    PreferredBuildingSortingLayerName,
+                    FallbackBuildingSortingLayerName);
+            return resolvedBuildingSortingLayerName;
+        }
+    }
 
     /// <summary>CameraController đọc flag này để block pan khi user đang bưng vật phẩm.</summary>
     public static bool IsPlacingNewObject { get; private set; }
@@ -106,6 +119,14 @@ public class PlacementManager : MonoBehaviour
             if (IsMouseOverRect(cancelRect))  { CancelPlacement();  return; }
         }
 
+        // DEV/Edit: phím Delete hoặc Backspace → XÓA HẲN vật đang sửa (chỉ khi đang edit vật có sẵn).
+        if (currentlyEditingBuilding != null &&
+            (Input.GetKeyDown(KeyCode.Delete) || Input.GetKeyDown(KeyCode.Backspace)))
+        {
+            DeleteEditingBuilding();
+            return;
+        }
+
         // Ghost chỉ di chuyển KHI ĐANG GIỮ chuột trái.
         // Khi thả chuột, Ghost đứng yên → user tự do rê chuột xuống bấm nút V / X / Rotate.
         if (Input.GetMouseButton(0))
@@ -162,27 +183,22 @@ public class PlacementManager : MonoBehaviour
         houseRenderer = FindBuildingVisualRenderer(currentGhost);
 
         // Clone toàn bộ visual sprite từ prefab thật để công trình nhiều phần vẫn hiện đủ.
-        if (houseRenderer != null)
-        {
-            BuildGhostVisualFromSource(itemData.prefabToBuild.transform);
-            SpriteRenderer prefabSR = FindBestSourceRenderer(itemData.prefabToBuild);
-            if (prefabSR != null)
-            {
-                SetupFootprint(itemData.prefabToBuild.transform);
-            }
-        }
+        BuildGhostVisualFromSource(itemData.prefabToBuild.transform);
+        if (ghostVisualCloneRoot == null || ghostVisualCloneRoot.childCount == 0)
+            BuildGhostVisualFromSource(itemData.prefabToBuild.transform, relaxed: true);
+
+        ConfigureGhostFrame(itemData.prefabToBuild.transform);
+
+        SpriteRenderer prefabSR = FindBestSourceRenderer(itemData.prefabToBuild);
+        if (prefabSR != null)
+            SetupFootprint(itemData.prefabToBuild.transform);
 
         // ── Tìm Selection_Ring ──
         Transform ringT = currentGhost.transform.Find("Selection_Ring");
         if (ringT != null)
             ringRenderer = ringT.GetComponent<SpriteRenderer>();
 
-        // ── Set Event Camera cho World Space Canvas — bắt buộc để GraphicRaycaster hoạt động ──
-        Canvas ghostCanvas = currentGhost.GetComponentInChildren<Canvas>(true);
-        if (ghostCanvas != null)
-        {
-            ghostCanvas.worldCamera = Camera.main;
-        }
+        ConfigureGhostCanvas();
 
         // ── Tự động bind nút V / X / Rotate — gán RectTransform cho cả 3 để freeze logic hoạt động ──
         int boundCount = 0;
@@ -227,8 +243,7 @@ public class PlacementManager : MonoBehaviour
         currentlyEditingBuilding = target;
         originalEditPosition     = target.transform.position;
 
-        // Ẩn công trình gốc — Ghost đóng vai trò "placeholder" trong khi kéo
-        target.gameObject.SetActive(false);
+        // Clone visual khi công trình gốc vẫn active; ẩn sau khi đã đo xong để tránh bounds/renders rỗng.
 
         currentGhost = Instantiate(placementGhostPrefab, originalEditPosition, Quaternion.identity);
 
@@ -241,25 +256,26 @@ public class PlacementManager : MonoBehaviour
         // ── Gán sprite từ công trình gốc vào Ghost ──
         houseRenderer = FindBuildingVisualRenderer(currentGhost);
 
-        if (houseRenderer != null)
-        {
-            BuildGhostVisualFromSource(target.transform);
-            SpriteRenderer targetSR = FindBestSourceRenderer(target.gameObject);
-            if (targetSR != null)
-            {
-                SetupFootprint(target.transform);
-            }
-        }
+        // LUÔN clone visual của ô đất/công trình gốc (đừng phụ thuộc houseRenderer).
+        BuildGhostVisualFromSource(target.transform);
+        // FIX biến mất: nếu clone RỖNG (sprite bị lọc tên / null) → clone NỚI LỎNG để vật vẫn hiện.
+        if (ghostVisualCloneRoot == null || ghostVisualCloneRoot.childCount == 0)
+            BuildGhostVisualFromSource(target.transform, relaxed: true);
+        ConfigureGhostFrame(target.transform);   // FIX: luôn scale/layout frame xanh + mũi tên vàng
+
+        SpriteRenderer targetSR = FindBestSourceRenderer(target.gameObject);
+        if (targetSR != null)
+            SetupFootprint(target.transform);
+
+        // Ẩn công trình gốc — Ghost đóng vai trò "placeholder" trong khi kéo
+        target.gameObject.SetActive(false);
 
         // ── Tìm Selection_Ring ──
         Transform ringT = currentGhost.transform.Find("Selection_Ring");
         if (ringT != null)
             ringRenderer = ringT.GetComponent<SpriteRenderer>();
 
-        // ── Set worldCamera cho Canvas — bắt buộc để IsMouseOverRect hoạt động đúng ──
-        Canvas ghostCanvas = currentGhost.GetComponentInChildren<Canvas>(true);
-        if (ghostCanvas != null)
-            ghostCanvas.worldCamera = Camera.main;
+        ConfigureGhostCanvas();
 
         // ── Bind nút V / X / Rotate + gán RectTransform cho freeze logic ──
         foreach (Button btn in currentGhost.GetComponentsInChildren<Button>(true))
@@ -274,6 +290,10 @@ public class PlacementManager : MonoBehaviour
             {
                 cancelRect = btn.GetComponent<RectTransform>();
                 btn.onClick.AddListener(CancelPlacement);
+            }
+            else if (btn.name == "Btn_Delete")     // tùy chọn: nút thùng rác trên Ghost (edit mode)
+            {
+                btn.onClick.AddListener(DeleteEditingBuilding);
             }
         }
 
@@ -300,8 +320,11 @@ public class PlacementManager : MonoBehaviour
         Vector3 startPos   = visual.localPosition;
         Vector3 overshootScale = startScale * 1.18f;
         Vector3 endScale   = startScale * 1.1f;
-        Vector3 endPos     = startPos + new Vector3(0f, 30f, 0f);
-        Vector3 overshootPos = startPos + new Vector3(0f, 36f, 0f);
+        float ghostScaleY = currentGhost != null ? Mathf.Max(0.0001f, Mathf.Abs(currentGhost.transform.lossyScale.y)) : 1f;
+        Vector3 liftOffset = new Vector3(0f, 30f / ghostScaleY, 0f);
+        Vector3 overshootOffset = new Vector3(0f, 36f / ghostScaleY, 0f);
+        Vector3 endPos     = startPos + liftOffset;
+        Vector3 overshootPos = startPos + overshootOffset;
 
         // Ghi nhớ cả scale lẫn localPosition của footprint — đóng băng hoàn toàn trong lúc nhấc
         Vector3 frozenScale = footprintToFreeze != null ? footprintToFreeze.localScale    : Vector3.one;
@@ -378,17 +401,33 @@ public class PlacementManager : MonoBehaviour
             if (fpSR != null) fpSR.sprite = footprintSprite;
         }
 
-        Bounds sourceBounds = CalculateSourceVisualBounds(sourceRoot);
+        Transform measure = (ghostVisualCloneRoot != null && ghostVisualCloneRoot.childCount > 0)
+            ? ghostVisualCloneRoot
+            : sourceRoot;
+
+        Bounds sourceBounds = CalculateSourceVisualBounds(measure);
         if (sourceBounds.size.x <= 0f || sourceBounds.size.y <= 0f)
+        {
+            if (fpSR != null && ghostVisual != null)
+                fpSR.enabled = false;
             return;
+        }
 
         float targetW = Mathf.Max(cellW, Mathf.Ceil(sourceBounds.size.x / cellW) * cellW) * 1.08f;
         float targetH = Mathf.Max(cellH, Mathf.Ceil(sourceBounds.size.y / cellH) * cellH) * 1.08f;
 
+        float ghostScaleX = Mathf.Max(0.0001f, Mathf.Abs(currentGhost.transform.lossyScale.x));
+        float ghostScaleY = Mathf.Max(0.0001f, Mathf.Abs(currentGhost.transform.lossyScale.y));
+        float localTargetW = targetW / ghostScaleX;
+        float localTargetH = targetH / ghostScaleY;
+
         Vector2 footprintSpriteSize = footprintSourceSprite != null ? footprintSourceSprite.bounds.size : Vector2.one;
-        float scaleX = footprintSpriteSize.x > 0f ? targetW / footprintSpriteSize.x : targetW;
-        float scaleY = footprintSpriteSize.y > 0f ? targetH / footprintSpriteSize.y : targetH;
+        float scaleX = footprintSpriteSize.x > 0f ? localTargetW / footprintSpriteSize.x : localTargetW;
+        float scaleY = footprintSpriteSize.y > 0f ? localTargetH / footprintSpriteSize.y : localTargetH;
         footprintTransform.localScale = new Vector3(scaleX, scaleY, 1f);
+        Vector3 localCenter = currentGhost.transform.InverseTransformPoint(sourceBounds.center);
+        localCenter.z = 0f;
+        footprintTransform.localPosition = localCenter;
 
         // Luôn hiện footprint ngay sau khi setup — prefab có thể để inactive mặc định
         footprintTransform.gameObject.SetActive(true);
@@ -398,8 +437,31 @@ public class PlacementManager : MonoBehaviour
         if (ghostVisual != null)
         {
             ghostVisual.SetTileSprite(footprintSourceSprite);
-            ghostVisual.ConfigureFromWorldSize(sourceBounds.size.x * 1.12f, sourceBounds.size.y * 1.12f);
+            ghostVisual.ConfigureFromWorldBounds(sourceBounds);
         }
+    }
+
+    /// <summary>
+    /// LUÔN scale + layout frame xanh + mũi tên vàng theo cỡ visual của vật.
+    /// FIX: trước đây Configure chỉ chạy trong SetupFootprint — mà SetupFootprint return sớm
+    /// nếu ghost prefab THIẾU child "Grid_Footprint" → frame/mũi tên dồn ở gốc, vô hình.
+    /// Gọi hàm này độc lập để frame luôn hiện đúng cỡ ô, kể cả khi không có Grid_Footprint.
+    /// </summary>
+    private void ConfigureGhostFrame(Transform sourceRoot)
+    {
+        if (ghostVisual == null) return;
+
+        // QUAN TRỌNG: edit mode SetActive(false) vật gốc → sr.bounds = 0 → frame tí hon, vô hình.
+        // Đo trên CLONE (đang active + đã scale đúng) mới ra kích thước thật của ô.
+        Transform measure = (ghostVisualCloneRoot != null && ghostVisualCloneRoot.childCount > 0)
+            ? ghostVisualCloneRoot
+            : sourceRoot;
+
+        Bounds b = measure != null ? CalculateSourceVisualBounds(measure) : new Bounds();
+        if (b.size.x > 0.01f && b.size.y > 0.01f)
+            ghostVisual.ConfigureFromWorldBounds(b);
+        else
+            ghostVisual.ConfigureFromWorldSize(1.5f, 1.0f);
     }
 
     /// <summary>
@@ -464,6 +526,13 @@ public class PlacementManager : MonoBehaviour
     /// <summary>Gắn vào Btn_Confirm. Đặt công trình xuống map (mới hoặc edit), xóa Ghost.</summary>
     private void ConfirmPlacement()
     {
+        if (!isValidPos)
+        {
+            if (ghostVisual != null)
+                ghostVisual.SetValid(false);
+            return;
+        }
+
         // Ghost đứng yên khi user thả chuột → vị trí ghost chính là vị trí đặt công trình
         Vector3 pos = currentGhost.transform.position;
         pos.z = 0f;
@@ -630,6 +699,32 @@ public class PlacementManager : MonoBehaviour
     /// <summary>Gắn vào Btn_Cancel (và có thể gọi từ ngoài, vd: phím Escape). Hoàn tiền + xóa Ghost.</summary>
     public void CancelPlacement() => Cleanup(refund: true);
 
+    /// <summary>Xóa HẲN vật đang sửa khỏi map + khỏi save (không spawn lại lần Play sau).
+    /// Gắn vào Btn_Delete trên Ghost, hoặc bấm phím Delete/Backspace khi đang edit 1 vật.</summary>
+    public void DeleteEditingBuilding()
+    {
+        if (currentlyEditingBuilding == null)
+        {
+            Debug.LogWarning("[Placement] DeleteEditingBuilding: không có vật nào đang sửa — chỉ xóa được khi đang Edit 1 công trình.");
+            return;
+        }
+
+        // 1) Xóa entry khớp vị trí gốc khỏi save → lần Play sau KHÔNG còn spawn lại
+        int removed = placedBuildings.RemoveAll(e =>
+            Mathf.Approximately(e.x, originalEditPosition.x) &&
+            Mathf.Approximately(e.y, originalEditPosition.y));
+        SaveBuildings();
+
+        // 2) Hủy object gốc khỏi map; clear ref TRƯỚC để Cleanup không "hồi sinh" nó
+        var go = currentlyEditingBuilding.gameObject;
+        currentlyEditingBuilding = null;
+        if (go != null) Destroy(go);
+
+        // 3) Dọn Ghost + reset state (không refund, không restore)
+        Cleanup(refund: false);
+        Debug.Log($"[Placement] Đã XÓA vật thể khỏi map + {removed} entry khỏi save.");
+    }
+
     // ── Nội bộ ──────────────────────────────────────────────────────────────
 
     /// <summary>Dọn dẹp sau Confirm hoặc Cancel. refund = true → hoàn tiền / trả building về cũ.</summary>
@@ -686,6 +781,19 @@ public class PlacementManager : MonoBehaviour
     {
         if (rt == null || !rt.gameObject.activeInHierarchy) return false;
         return RectTransformUtility.RectangleContainsScreenPoint(rt, Input.mousePosition, Camera.main);
+    }
+
+    private static string ResolveSortingLayerName(string preferred, string fallback)
+    {
+        foreach (SortingLayer layer in SortingLayer.layers)
+            if (layer.name == preferred)
+                return preferred;
+
+        foreach (SortingLayer layer in SortingLayer.layers)
+            if (layer.name == fallback)
+                return fallback;
+
+        return "Default";
     }
 
     /// <summary>
@@ -753,7 +861,20 @@ public class PlacementManager : MonoBehaviour
         ghostVisual.PlaySpawnPop(showLiftArrow);
     }
 
-    private void BuildGhostVisualFromSource(Transform sourceRoot)
+    private void ConfigureGhostCanvas()
+    {
+        if (currentGhost == null) return;
+
+        Canvas ghostCanvas = currentGhost.GetComponentInChildren<Canvas>(true);
+        if (ghostCanvas == null) return;
+
+        ghostCanvas.worldCamera = Camera.main;
+        ghostCanvas.overrideSorting = true;
+        ghostCanvas.sortingLayerName = BuildingSortingLayerName;
+        ghostCanvas.sortingOrder = PlacementGhostVisualController.BuildingOrder + 140;
+    }
+
+    private void BuildGhostVisualFromSource(Transform sourceRoot, bool relaxed = false)
     {
         if (currentGhost == null || sourceRoot == null) return;
 
@@ -780,8 +901,10 @@ public class PlacementManager : MonoBehaviour
         for (int i = 0; i < sourceRenderers.Length; i++)
         {
             SpriteRenderer source = sourceRenderers[i];
-            if (!IsValidSourceVisualRenderer(source))
-                continue;
+            // relaxed = clone mọi sprite (chỉ bỏ sprite null) → dùng làm fallback khi clone thường rỗng.
+            bool skip = relaxed ? (source == null || source.sprite == null)
+                                : !IsValidSourceVisualRenderer(source);
+            if (skip) continue;
 
             GameObject visualGo = new GameObject($"Sprite_{visualIndex:00}_{source.gameObject.name}");
             visualGo.layer = currentGhost.layer;

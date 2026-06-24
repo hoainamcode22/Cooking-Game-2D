@@ -18,15 +18,18 @@ public class TutorialTarget : MonoBehaviour
 
     void OnDestroy()
     {
-        TutorialManager.UnregisterTarget(targetID);
+        TutorialManager.UnregisterTarget(targetID, this);
     }
 
     void OnEnable()  => TutorialManager.RegisterTarget(targetID, this);
-    void OnDisable() => TutorialManager.UnregisterTarget(targetID);
+    void OnDisable() => TutorialManager.UnregisterTarget(targetID, this);
 
     /// <summary>Set ID at runtime and re-register. Used by TutorialRuntimeTargetResolver.</summary>
     public void SetTargetId(string id)
     {
+        if (!string.IsNullOrEmpty(targetID) && targetID != id)
+            TutorialManager.UnregisterTarget(targetID, this);
+
         targetID = id;
         if (!string.IsNullOrEmpty(id))
             TutorialManager.RegisterTarget(id, this);

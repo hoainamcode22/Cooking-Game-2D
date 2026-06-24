@@ -13,14 +13,16 @@ MonoBehaviour:
   m_Name: LevelReward_L25
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 25
-  giftGold: 2100
-  giftGems: 9
+  giftGold: 2200
+  giftGems: 15
   giftItems:
-  - itemId: seed_nam
-    displayName: "H\u1EA1t N\u1EA5m"
-    icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
-    amount: 5
+  - itemId: seed_pepper
+    displayName: "H\u1EA1t Ti\xEAu"
+    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
+    amount: 3
   unlockDescriptions:
-  - "S\u1EF1 ki\u1EC7n m\xF9a v\u1EE5 (s\u1EAFp ra m\u1EAFt)"
-  hintText: "Ti\u1EBFp t\u1EE5c thu ho\u1EA1ch v\xE0 giao \u0111\u01A1n \u0111\u1EC3
-    m\u1EDF c\xE1c t\xEDnh n\u0103ng s\u1EAFp ra m\u1EAFt nh\xE9!"
+  - "Trang tr\xED c\u1EA5p 3"
+  - "\u0110\u01A1n combo 3 m\xF3n"
+  - "\U0001F3C5 Danh hi\u1EC7u \"\xD4ng/B\xE0 ch\u1EE7 l\u1EDBn\""
+  hintText: "C\u1EA5p 25! Combo 3 m\xF3n v\xE0 trang tr\xED c\u1EA5p 3 \u0111\xE3
+    m\u1EDF kh\xF3a."

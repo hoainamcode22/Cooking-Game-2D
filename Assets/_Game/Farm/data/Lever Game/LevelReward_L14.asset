@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: LevelReward_L14
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 14
-  giftGold: 1000
-  giftGems: 6
+  giftGold: 880
+  giftGems: 5
   giftItems:
-  - itemId: seed_sugarcane
-    displayName: "H\u1EA1t M\xEDa"
-    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
-    amount: 4
+  - itemId: seed_hoa_hong
+    displayName: "H\u1EA1t Hoa h\u1ED3ng"
+    icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
+    amount: 2
   unlockDescriptions:
-  - "M\xE1y ch\u1EBF bi\u1EBFn n\xF4ng s\u1EA3n (s\u1EAFp ra m\u1EAFt)"
-  hintText: "Ti\u1EBFp t\u1EE5c thu ho\u1EA1ch v\xE0 giao \u0111\u01A1n \u0111\u1EC3
-    m\u1EDF c\xE1c t\xEDnh n\u0103ng s\u1EAFp ra m\u1EAFt nh\xE9!"
+  - "\u0110\u01A1n 2 m\xF3n xu\u1EA5t hi\u1EC7n nhi\u1EC1u h\u01A1n"
+  - "M\u1EDF th\xEAm hoa m\u1EDBi"
+  hintText: "D\xE2n l\xE0ng b\u1EAFt \u0111\u1EA7u \u0111\u1EB7t nhi\u1EC1u \u0111\u01A1n
+    2 m\xF3n h\u01A1n \u2014 chu\u1EA9n b\u1ECB nguy\xEAn li\u1EC7u nh\xE9!"

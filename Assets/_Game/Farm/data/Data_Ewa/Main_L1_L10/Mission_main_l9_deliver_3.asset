@@ -13,10 +13,10 @@ MonoBehaviour:
   m_Name: Mission_main_l9_deliver_3
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
   missionIcon: {fileID: 0}
-  missionName: "Giao 3 \u0111\u01A1n h\xE0ng"
+  missionName: "Giao 3 \u0111\u01A1n combo"
   targetAmount: 3
   rewardIcon: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
-  rewardAmount: 350
+  rewardAmount: 300
   rewardType: 0
   missionId: main_l9_deliver_3
   requiredLevel: 9

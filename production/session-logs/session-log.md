@@ -732,3 +732,129 @@ Assets/maptitle/Design_Map/HappyHarvest_NatureDecor/VFX/Fire/VFX_Fire.prefab
 ProjectSettings/EditorBuildSettings.asset
 ---
 
+## Session End: 20260623_140101
+### Uncommitted Changes
+Assets/Day_Night/Scripts/Runtime/DayNightProceduralFire.cs
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Farm/Editor/LevelUpRewardDataSetupTool.cs
+Assets/_Game/Farm/Editor/MissionSetupTool.cs
+Assets/_Game/Farm/Scripts/Managers/AttendanceManager.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementGhostVisualController.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Shop/ShopItemUI.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialActionHandGuide.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialRuntimeTargetResolver.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialStepTriggerBridge.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialTarget.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scripts/Mission/MissionHudButtonUI.cs
+Assets/_Game/Scripts/Mission/PopupEwarManager.cs
+CLAUDE.md
+PHASE2_SHOP_ANIMAL_TUTORIAL.md
+production/session-logs/agent-audit.log
+---
+
+## Session End: 20260623_144459
+### Uncommitted Changes
+Assets/Day_Night/Scripts/Runtime/DayNightProceduralFire.cs
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Farm/Editor/LevelUpRewardDataSetupTool.cs
+Assets/_Game/Farm/Editor/MissionSetupTool.cs
+Assets/_Game/Farm/Scripts/Managers/AttendanceManager.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementGhostVisualController.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Shop/ShopItemUI.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialActionHandGuide.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialRuntimeTargetResolver.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialStepTriggerBridge.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialTarget.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/data/Data_Ewa/MissionDatabase_Daily.asset
+Assets/_Game/Farm/data/Data_Ewa/MissionDatabase_Main.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scripts/Mission/MissionHudButtonUI.cs
+Assets/_Game/Scripts/Mission/PopupEwarManager.cs
+CLAUDE.md
+PHASE2_SHOP_ANIMAL_TUTORIAL.md
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Session End: 20260623_152434
+### Uncommitted Changes
+Assets/Day_Night/Scripts/Runtime/DayNightProceduralFire.cs
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Farm/Editor/LevelUpRewardDataSetupTool.cs
+Assets/_Game/Farm/Editor/MissionSetupTool.cs
+Assets/_Game/Farm/Scripts/Managers/AttendanceManager.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementGhostVisualController.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Shop/ShopItemUI.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialActionHandGuide.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialRuntimeTargetResolver.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialStepTriggerBridge.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialTarget.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/data/Data_Ewa/Main_L1_L10/Mission_main_l9_deliver_3.asset
+Assets/_Game/Farm/data/Data_Ewa/MissionDatabase_Daily.asset
+Assets/_Game/Farm/data/Data_Ewa/MissionDatabase_Main.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scripts/Mission/MissionHudButtonUI.cs
+Assets/_Game/Scripts/Mission/PopupEwarManager.cs
+CLAUDE.md
+PHASE2_SHOP_ANIMAL_TUTORIAL.md
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+

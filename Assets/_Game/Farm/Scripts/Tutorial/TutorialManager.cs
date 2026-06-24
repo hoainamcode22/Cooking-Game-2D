@@ -42,9 +42,17 @@ public class TutorialManager : MonoBehaviour
     {
         if (!string.IsNullOrEmpty(id)) _targetRegistry[id] = t;
     }
-    public static void UnregisterTarget(string id)
+    public static void UnregisterTarget(string id, TutorialTarget target = null)
     {
-        if (!string.IsNullOrEmpty(id)) _targetRegistry.Remove(id);
+        if (string.IsNullOrEmpty(id)) return;
+        if (target == null)
+        {
+            _targetRegistry.Remove(id);
+            return;
+        }
+
+        if (_targetRegistry.TryGetValue(id, out var current) && current == target)
+            _targetRegistry.Remove(id);
     }
 
     /// <summary>Returns the RectTransform for a registered tutorial target, or null.</summary>
@@ -123,6 +131,7 @@ public class TutorialManager : MonoBehaviour
     private bool               _hasQueuedAction;
     private TutorialWaitAction _queuedAction;
     private bool               _interactionDialogDismissed;
+    private bool               _penOpenSubActionReceived;
 
     private Vector2 _cloudLeftOrigin;
     private Vector2 _cloudRightOrigin;
@@ -302,6 +311,9 @@ public class TutorialManager : MonoBehaviour
     {
         if (_state == TutorialState.WaitingAction && _pendingWait == action)
         {
+            if (TryConsumePenOpenSubAction(action))
+                return;
+
             AdvanceToNextStep();
             return;
         }
@@ -327,6 +339,16 @@ public class TutorialManager : MonoBehaviour
 
     /// <summary>Gá»i khi player mua váº­t pháº©m trong Shop (Level 2 â€” chuá»“ng gÃ , gÃ ).</summary>
     public void NotifyBuyItem()     => NotifyAction(TutorialWaitAction.WaitForBuyItem);
+
+    /// <summary>Gọi khi player mua hạt giống. Riêng bước mua Ngô L2 yêu cầu đúng Ngô và đủ 8 hạt.</summary>
+    public void NotifyBuySeed(string itemId, string cropId, int quantity)
+    {
+        if (CurrentStepName == "L2_03_BuyCorn"
+            && (!IsCornSeed(itemId, cropId) || quantity < 8))
+            return;
+
+        NotifyAction(TutorialWaitAction.WaitForBuyItem);
+    }
 
     /// <summary>Gá»i khi player mua gia sÃºc (gÃ , bÃ²â€¦).</summary>
     public void NotifyBuyAnimal()   => NotifyAction(TutorialWaitAction.WaitForBuyAnimal);
@@ -362,6 +384,7 @@ public class TutorialManager : MonoBehaviour
         _dragHintAnimator?.StopDragHint();
         _runtimeTargetResolver?.EnableAreaMask(TutorialAreaKind.None, null); // tắt nền xám (nếu đang bật)
         _interactionDialogDismissed = false;
+        _penOpenSubActionReceived = false;
         _currentIndex++;
 
         if (_currentIndex >= _steps.Count)
@@ -381,11 +404,8 @@ public class TutorialManager : MonoBehaviour
             _cameraFocus.FocusOnRice(bridge);
         }
 
-        if (step.name == "L1L2_11_TransitionFlower" && _cameraFocus != null)
-        {
-            var bridge = GetComponent<TutorialStepTriggerBridge>();
-            if (bridge != null) _cameraFocus.FocusOnFlower(bridge);
-        }
+        // L1L2_11_TransitionFlower: KHÔNG focus hoa ở đây nữa — phải chờ user bấm "Nhận"
+        // ở popup lên cấp 2 trước (xử lý trong PlayStep → WaitForLevelUpClaim).
 
         _state = TutorialState.Transitioning;
         StartCoroutine(PlayStep(step));
@@ -393,6 +413,16 @@ public class TutorialManager : MonoBehaviour
 
     private IEnumerator PlayStep(TutorialStepData step)
     {
+        // ─── Nhường "sân khấu" cho popup LÊN CẤP ───
+        // Thu hoạch xong 8 ô lúa = đúng 40 EXP → lên cấp 2. Bước chuyển sang trồng hoa
+        // phải ĐỢI popup lên cấp hiện ra + user bấm "Nhận" rồi mới bắt đầu (focus hoa + tay quét).
+        if (step.name == "L1L2_11_TransitionFlower")
+        {
+            yield return WaitForLevelUpClaim();
+            if (_cameraFocus != null)
+                _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
+        }
+
         if (_dimBackground != null)
             _dimBackground.gameObject.SetActive(true);
 
@@ -448,14 +478,20 @@ public class TutorialManager : MonoBehaviour
             if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
             _guideBoardUI?.Hide();
             if (_handPointer != null) _handPointer.gameObject.SetActive(false);
-            var cornRect = GetTargetRect("shop_corn");
+            // Cuộn shop để item Ngô hiện TRỌN (kèm ＋/－/Mua) rồi mới set vùng sáng + tay.
+            ShopManager.Instance?.ScrollItemIntoView("seed_ngo");
+            yield return new WaitForSecondsRealtime(0.4f);
+
+            _runtimeTargetResolver?.RefreshShopTargets();
+            var cornRect = GetTargetRect("shop_corn_plus") ?? GetTargetRect("shop_corn");
             if (_dimBackground != null)
             {
                 _dimBackground.gameObject.SetActive(true);
-                if (cornRect != null) _dimBackground.SetTarget(cornRect, false, 24f);
+                if (cornRect != null) _dimBackground.SetTarget(cornRect, false, 18f);
                 else _dimBackground.ClearHole();
             }
-            _actionHandGuide?.GuidePointFirstActive(new[] { "shop_corn_plus", "shop_corn" });
+            // Tay chỉ nút ＋ tới khi chọn đủ 8 ngô → nhảy sang nút Mua.
+            _actionHandGuide?.GuideShopBuy("shop_corn_plus", "shop_corn_buy", "shop_corn", 8, _dimBackground);
             _pendingWait = step.waitAction;   // WaitForBuyItem
             _state = TutorialState.WaitingAction;
             ConsumeQueuedAction(); yield break;
@@ -466,9 +502,16 @@ public class TutorialManager : MonoBehaviour
             if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
             _guideBoardUI?.Hide();
             if (_handPointer != null) _handPointer.gameObject.SetActive(false);
-            _dimBackground?.ClearHole();
-            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
-            _actionHandGuide?.GuidePoint("btn_close");
+            _runtimeTargetResolver?.RefreshShopTargets();
+            var closeRect = GetTargetRect("shop_close") ?? GetTargetRect("btn_close");
+            if (_dimBackground != null)
+            {
+                _dimBackground.gameObject.SetActive(true);
+                if (closeRect != null) _dimBackground.SetTarget(closeRect, false, 18f);
+                else _dimBackground.ClearHole();
+            }
+            // Ưu tiên nút đóng CỦA SHOP (shop_close, đăng ký scoped trong shopPanel) — tránh trùng "Btn_Close" của popup khác.
+            _actionHandGuide?.GuidePointFirstActive(new[] { "shop_close", "btn_close" });
             _pendingWait = step.waitAction;   // WaitForCloseShop
             _state = TutorialState.WaitingAction;
             ConsumeQueuedAction(); yield break;
@@ -513,24 +556,46 @@ public class TutorialManager : MonoBehaviour
             _state = TutorialState.WaitingAction;
             ConsumeQueuedAction(); yield break;
         }
-        // L2_09: tay chỉ nút Gem hoàn tất, chờ speed-up.
+        // L2_09: sau khi feed xong, chỉ chuồng -> user click mở process -> chỉ nút Gem.
         if (step.name == "L2_09_PenSpeedUp")
         {
             _dragHintAnimator?.StopDragHint();
             if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+            _guideBoardUI?.Hide();
+            _dimBackground?.ClearHole();
+            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
             if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+
+            _penOpenSubActionReceived = IsTargetActive("tutorial_pen_gem");
+            _actionHandGuide?.GuidePoint("tutorial_pen");
+            _pendingWait = TutorialWaitAction.WaitForOpenPen;
+            _state = TutorialState.WaitingAction;
+            yield return new WaitUntil(() =>
+                _penOpenSubActionReceived || IsTargetActive("tutorial_pen_gem"));
+
             _actionHandGuide?.GuidePoint("tutorial_pen_gem");
             _pendingWait = step.waitAction;   // WaitForPenSpeedUp
             _state = TutorialState.WaitingAction;
             ConsumeQueuedAction(); yield break;
         }
-        // L2_10: cầm rổ kéo vào chuồng thu hoạch — tay drag-guide basket→pen (bám theo), chờ thu hoạch.
+        // L2_10: bubble Ready hiện -> chỉ giữa chuồng -> user click mở rổ -> drag-guide basket→pen.
         if (step.name == "L2_10_HarvestPen")
         {
             _actionHandGuide?.StopGuide();
+            _dragHintAnimator?.StopDragHint();
             if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+            _guideBoardUI?.Hide();
             _dimBackground?.ClearHole();
             if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+
+            _penOpenSubActionReceived = IsTargetActive("tutorial_basket");
+            _actionHandGuide?.GuidePoint("tutorial_pen");
+            _pendingWait = TutorialWaitAction.WaitForOpenPen;
+            _state = TutorialState.WaitingAction;
+            yield return new WaitUntil(() =>
+                _penOpenSubActionReceived || IsTargetActive("tutorial_basket"));
+
+            _actionHandGuide?.StopGuide();
             _dragHintAnimator?.StartDragHint("tutorial_basket", "tutorial_pen");
             _pendingWait = step.waitAction;   // WaitForPenHarvest
             _state = TutorialState.WaitingAction;
@@ -738,6 +803,53 @@ public class TutorialManager : MonoBehaviour
         _actionHandGuide?.GuideSweepPlots(ids, harvestMode);
     }
 
+    /// <summary>
+    /// Chờ popup LÊN CẤP xuất hiện rồi chờ user bấm "Nhận" đóng hẳn — để bước trồng hoa
+    /// "nhường sân khấu" cho popup. EXP bay về avatar mất ~1 nhịp nên popup hiện trễ →
+    /// cho cửa sổ chờ xuất hiện tối đa 4 giây. Nếu không có popup (vd chơi lại ở cấp cao)
+    /// thì sau 4 giây tự bỏ qua, tutorial chạy tiếp bình thường.
+    /// </summary>
+    private IEnumerator WaitForLevelUpClaim()
+    {
+        // Chỉ "nhường sân khấu" nếu user đang ở CẤP 1 — tức sắp lên cấp 2 nhờ thu hoạch lúa
+        // (8 ô lúa = đúng 40 EXP = mốc cấp 2). Nếu đã ≥ cấp 2 (vd chơi lại) → bỏ qua, vào hoa ngay.
+        bool expectLevelUp = PlayerProgressManager.Instance == null
+                             || PlayerProgressManager.Instance.Level < 2;
+        if (!expectLevelUp)
+        {
+            Debug.Log("[Tutorial] WaitForLevelUpClaim: đã ≥ cấp 2 → bỏ qua chờ, vào trồng hoa ngay.");
+            yield break;
+        }
+
+        // Ẩn UI tutorial khi đang đợi để không che/đè popup lên cấp.
+        if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
+        _guideBoardUI?.Hide();
+        if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+        _dimBackground?.ClearHole();
+        if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+
+        // 1) Chờ popup hiện. EXP "bay" về avatar mất ~2.8s (orb nằm đất 2s rồi mới bay) →
+        //    mới cộng EXP → lên cấp → bật popup. Cho cửa sổ chờ tối đa 12s cho an toàn.
+        float t = 0f;
+        while (!LevelUpPopupUI.IsActive && t < 12f)
+        {
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        bool popupShown = LevelUpPopupUI.IsActive;
+
+        // 2) Popup đã hiện → chờ user bấm "Nhận" cho tới khi đóng hoàn toàn (KHÔNG giới hạn).
+        while (LevelUpPopupUI.IsActive)
+            yield return null;
+
+        // 3) Nhịp thở nhỏ cho mượt trước khi vào hướng dẫn trồng hoa.
+        if (popupShown)
+            yield return new WaitForSecondsRealtime(0.25f);
+
+        Debug.Log($"[Tutorial] WaitForLevelUpClaim xong (popupShown={popupShown}) → bắt đầu hướng dẫn trồng hoa.");
+    }
+
     private void SetTutorialUIVisible(bool visible)
     {
         if (_dimBackground  != null) _dimBackground.gameObject.SetActive(visible);
@@ -803,11 +915,36 @@ public class TutorialManager : MonoBehaviour
         AdvanceToNextStep();
     }
 
+    private bool TryConsumePenOpenSubAction(TutorialWaitAction action)
+    {
+        if (action != TutorialWaitAction.WaitForOpenPen)
+            return false;
+
+        string step = CurrentStepName;
+        if (step != "L2_09_PenSpeedUp" && step != "L2_10_HarvestPen")
+            return false;
+
+        _penOpenSubActionReceived = true;
+        return true;
+    }
+
+    private static bool IsTargetActive(string targetId)
+    {
+        RectTransform rt = GetTargetRect(targetId);
+        return rt != null && rt.gameObject.activeInHierarchy;
+    }
+
     private static bool IsInteractionStep(string stepName)
     {
         // L1L2_12_FocusFlowerPots giờ xử lý như bước sweep (giống L1L2_04), không còn là interaction.
         return stepName == "L1L2_15_FlowerSpeedUp"
             || stepName == "L1L2_16_HarvestFirstFlower";
+    }
+
+    private static bool IsCornSeed(string itemId, string cropId)
+    {
+        return string.Equals(itemId, "seed_ngo", System.StringComparison.OrdinalIgnoreCase)
+            || string.Equals(cropId, "ngo", System.StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsActionOnlyStep(string stepName)

@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: LevelReward_L13
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 13
-  giftGold: 900
+  giftGold: 820
   giftGems: 5
   giftItems:
   - itemId: seed_lemon
     displayName: "H\u1EA1t Chanh"
     icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
-    amount: 4
+    amount: 3
   unlockDescriptions:
-  - "Ph\u1EA7n th\u01B0\u1EDFng c\u1EA5p cao"
-  hintText: "Ti\u1EBFp t\u1EE5c thu ho\u1EA1ch v\xE0 giao \u0111\u01A1n \u0111\u1EC3
-    m\u1EDF c\xE1c t\xEDnh n\u0103ng s\u1EAFp ra m\u1EAFt nh\xE9!"
+  - "M\xE1y \xC9p M\xEDa \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+  - "M\u1EDF kh\xF3a n\u01B0\u1EDBc m\xEDa"
+  hintText: "M\xE1y \xC9p M\xEDa \u0111\xE3 c\xF3 trong Shop \u2014 \xE9p m\xEDa
+    th\xE0nh n\u01B0\u1EDBc m\xEDa gi\u1EA3i kh\xE1t!"

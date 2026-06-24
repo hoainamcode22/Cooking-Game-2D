@@ -1,201 +1,142 @@
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.VFX;
 
 namespace Day_Night
 {
+    /// <summary>
+    /// Ngọn lửa vẽ bằng SpriteRenderer (render chắc chắn trong URP 2D — y như cỏ/cây).
+    /// Tự sinh sprite ngọn lửa (gradient cam→vàng), material UNLIT (luôn sáng, không bị đèn làm tối),
+    /// kích thước theo đơn vị world. KHÔNG tạo object trong OnValidate (Unity cấm).
+    /// </summary>
     [ExecuteAlways]
     public class DayNightProceduralFire : MonoBehaviour
     {
-        [Min(0.05f)] public float Width = 1.1f;
-        [Min(0.05f)] public float Height = 1.1f;
-        [Range(0.1f, 4f)] public float FlickerSpeed = 1.8f;
-        [Range(0f, 1f)] public float FlickerAmount = 0.22f;
-        public Texture2D FlameTexture;
+        [Min(0.05f)] public float Width = 50f;
+        [Min(0.05f)] public float Height = 75f;
+        [Range(0.1f, 4f)] public float FlickerSpeed = 2.2f;
+        [Range(0f, 1f)] public float FlickerAmount = 0.18f;
+        public Texture2D FlameTexture;                 // (tùy chọn — không bắt buộc)
         public string SortingLayerName = "Foreground";
-        public int SortingOrder = 80;
+        public int SortingOrder = 1000;                // PHẢI cao hơn decor map (logpile=700)
 
-        private static readonly Color GlowColor = new Color(1f, 0.88f, 0.06f, 0.34f);
-        private static readonly Color OuterColor = new Color(1f, 0.25f, 0.02f, 0.72f);
-        private static readonly Color MidColor = new Color(1f, 0.58f, 0.04f, 0.86f);
-        private static readonly Color InnerColor = new Color(1f, 0.96f, 0.33f, 0.95f);
+        private const string ChildName = "FireSprite";
 
-        private MeshFilter meshFilter;
-        private MeshRenderer meshRenderer;
-        private Mesh mesh;
-        private Material material;
-        private VisualEffect visualEffect;
+        private Transform _child;
+        private SpriteRenderer _sr;
+        private VisualEffect _vfx;
+        private static Sprite _flame;
+        private static Material _unlitMat;
+        private float _baseX, _baseY;
 
-        private void OnEnable()
-        {
-            EnsureSetup();
-            PlayVfx();
-            UpdateFire();
-        }
-
-        private void OnValidate()
-        {
-            EnsureSetup();
-            UpdateFire();
-        }
+        private void OnEnable() => Build();   // OnEnable ĐƯỢC PHÉP tạo object (khác OnValidate)
 
         private void Update()
         {
-            PlayVfx();
-            UpdateFire();
+            if (_sr == null) Build();
+            Apply();
+            if (_vfx != null && _vfx.enabled) _vfx.Play();
+            Flicker();
         }
 
-        private void EnsureSetup()
+        private void Build()
         {
-            visualEffect = GetComponent<VisualEffect>();
+            _vfx = GetComponent<VisualEffect>();
 
-            meshFilter = GetComponent<MeshFilter>();
-            if (meshFilter == null)
+            // Tắt MeshRenderer rác cũ (URP 2D không vẽ được, có Font Material).
+            var oldMr = GetComponent<MeshRenderer>();
+            if (oldMr != null) oldMr.enabled = false;
+
+            if (_child == null)
             {
-                meshFilter = gameObject.AddComponent<MeshFilter>();
+                Transform found = transform.Find(ChildName);
+                _child = found != null ? found : new GameObject(ChildName).transform;
+                _child.SetParent(transform, false);
+                _child.localPosition = Vector3.zero;
+                _child.localRotation = Quaternion.identity;
             }
 
-            meshRenderer = GetComponent<MeshRenderer>();
-            if (meshRenderer == null)
-            {
-                meshRenderer = gameObject.AddComponent<MeshRenderer>();
-            }
+            _sr = _child.GetComponent<SpriteRenderer>();
+            if (_sr == null) _sr = _child.gameObject.AddComponent<SpriteRenderer>();
 
-            if (mesh == null)
-            {
-                mesh = new Mesh();
-                mesh.name = "DayNight Procedural Fire";
-                mesh.hideFlags = HideFlags.DontSave;
-                meshFilter.sharedMesh = mesh;
-            }
+            if (_flame == null) _flame = BuildFlameSprite();
+            _sr.sprite = _flame;
+            _sr.color = Color.white;
 
-            if (material == null)
+            // UNLIT → lửa luôn sáng rực, không bị đèn 2D làm tối.
+            if (_unlitMat == null)
             {
-                Shader shader = Shader.Find("Universal Render Pipeline/Particles/Unlit");
-                if (shader == null)
+                Shader sh = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+                if (sh == null) sh = Shader.Find("Sprites/Default");
+                if (sh != null) _unlitMat = new Material(sh) { hideFlags = HideFlags.DontSave };
+            }
+            if (_unlitMat != null) _sr.sharedMaterial = _unlitMat;
+        }
+
+        private void Apply()
+        {
+            if (_sr == null) return;
+            _sr.sortingLayerName = SortingLayerName;
+            _sr.sortingOrder = SortingOrder;
+
+            Vector3 pls = transform.lossyScale;
+            _baseX = Width  / Mathf.Max(Mathf.Abs(pls.x), 1e-4f);
+            _baseY = Height / Mathf.Max(Mathf.Abs(pls.y), 1e-4f);
+        }
+
+        private void Flicker()
+        {
+            if (_child == null) return;
+            float t = Application.isPlaying ? Time.time : Time.realtimeSinceStartup;
+            float wx = 1f + Mathf.Sin(t * FlickerSpeed * 6.2f)        * FlickerAmount * 0.45f;
+            float wy = 1f + Mathf.Sin(t * FlickerSpeed * 8.1f + 1.3f) * FlickerAmount;
+            _child.localScale = new Vector3(_baseX * wx, _baseY * wy, 1f);
+
+            if (_sr != null)
+            {
+                Color c = _sr.color;
+                c.a = Mathf.Clamp01(0.9f + Mathf.Sin(t * FlickerSpeed * 5f) * 0.1f);
+                _sr.color = c;
+            }
+        }
+
+        // Texture ngọn lửa hình giọt: phình dưới, nhọn trên, gradient đỏ-cam→vàng, lõi sáng, viền mềm.
+        private static Sprite BuildFlameSprite()
+        {
+            const int S = 96;
+            var tex = new Texture2D(S, S, TextureFormat.RGBA32, false)
+            { hideFlags = HideFlags.DontSave, wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
+
+            float cx = (S - 1) * 0.5f;
+            for (int y = 0; y < S; y++)
+            {
+                float ny = y / (float)(S - 1);
+                float prof = Mathf.Sin(Mathf.Pow(ny, 0.62f) * Mathf.PI);
+                float halfW = prof * 0.44f * S;
+
+                Color baseCol;
+                if (ny < 0.35f)
+                    baseCol = Color.Lerp(new Color(1f, 0.22f, 0.03f), new Color(1f, 0.5f, 0.05f), ny / 0.35f);
+                else if (ny < 0.72f)
+                    baseCol = Color.Lerp(new Color(1f, 0.5f, 0.05f), new Color(1f, 0.82f, 0.2f), (ny - 0.35f) / 0.37f);
+                else
+                    baseCol = Color.Lerp(new Color(1f, 0.82f, 0.2f), new Color(1f, 0.97f, 0.62f), (ny - 0.72f) / 0.28f);
+
+                for (int x = 0; x < S; x++)
                 {
-                    shader = Shader.Find("Sprites/Default");
+                    float dx = Mathf.Abs(x - cx);
+                    float alpha = halfW <= 0.5f ? 0f : Mathf.Clamp01((halfW - dx) / (S * 0.06f));
+                    float core = Mathf.Clamp01((halfW * 0.5f - dx) / (S * 0.1f)) * Mathf.Clamp01((0.55f - ny) / 0.45f);
+                    Color px = Color.Lerp(baseCol, new Color(1f, 0.98f, 0.82f), core * 0.7f);
+                    px.a = alpha;
+                    tex.SetPixel(x, y, px);
                 }
-
-                material = new Material(shader);
-                material.name = "DayNight Procedural Fire Material";
-                material.hideFlags = HideFlags.DontSave;
-                material.SetFloat("_Surface", 1f);
-                material.SetFloat("_Blend", 1f);
-                material.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
-                material.SetInt("_DstBlend", (int)BlendMode.One);
-                material.SetInt("_ZWrite", 0);
-                material.renderQueue = (int)RenderQueue.Transparent;
             }
+            tex.Apply();
 
-            meshRenderer.sharedMaterial = material;
-            meshRenderer.sortingLayerName = SortingLayerName;
-            meshRenderer.sortingOrder = SortingOrder;
-
-            if (FlameTexture != null)
-            {
-                material.SetTexture("_BaseMap", FlameTexture);
-                material.SetTexture("_MainTex", FlameTexture);
-            }
-        }
-
-        private void PlayVfx()
-        {
-            if (visualEffect == null)
-            {
-                return;
-            }
-
-            if (!visualEffect.enabled)
-            {
-                visualEffect.enabled = true;
-            }
-
-            visualEffect.Play();
-        }
-
-        private void UpdateFire()
-        {
-            if (mesh == null)
-            {
-                return;
-            }
-
-            float time = Application.isPlaying ? Time.time : Time.realtimeSinceStartup;
-            float wobbleA = Mathf.Sin(time * FlickerSpeed * 5.1f) * FlickerAmount;
-            float wobbleB = Mathf.Sin(time * FlickerSpeed * 7.3f + 1.7f) * FlickerAmount;
-
-            Vector3 lossyScale = transform.lossyScale;
-            float scaleX = Mathf.Max(Mathf.Abs(lossyScale.x), 0.0001f);
-            float scaleY = Mathf.Max(Mathf.Abs(lossyScale.y), 0.0001f);
-            float invX = 1f / scaleX;
-            float invY = 1f / scaleY;
-
-            Vector3[] vertices = new Vector3[32];
-            Vector2[] uv = new Vector2[32];
-            Color[] colors = new Color[32];
-            int[] triangles = new int[48];
-            int quad = 0;
-
-            AddBlob(vertices, uv, colors, triangles, ref quad, new Vector2(0f, 0.17f), Width * 1.25f, Height * 0.55f, GlowColor, invX, invY);
-            AddBlob(vertices, uv, colors, triangles, ref quad, new Vector2(-0.2f + wobbleA * 0.08f, 0.3f), Width * 0.72f, Height * 0.82f, OuterColor, invX, invY);
-            AddBlob(vertices, uv, colors, triangles, ref quad, new Vector2(0.18f + wobbleB * 0.08f, 0.34f), Width * 0.68f, Height * 0.78f, OuterColor, invX, invY);
-            AddBlob(vertices, uv, colors, triangles, ref quad, new Vector2(0.02f - wobbleA * 0.08f, 0.48f), Width * 0.58f, Height * 0.96f, MidColor, invX, invY);
-            AddBlob(vertices, uv, colors, triangles, ref quad, new Vector2(-0.12f + wobbleB * 0.06f, 0.43f), Width * 0.44f, Height * 0.7f, MidColor, invX, invY);
-            AddBlob(vertices, uv, colors, triangles, ref quad, new Vector2(0.1f - wobbleB * 0.05f, 0.38f), Width * 0.38f, Height * 0.58f, InnerColor, invX, invY);
-            AddBlob(vertices, uv, colors, triangles, ref quad, new Vector2(0f + wobbleA * 0.05f, 0.58f), Width * 0.28f, Height * 0.58f, InnerColor, invX, invY);
-            AddBlob(vertices, uv, colors, triangles, ref quad, new Vector2(0f, 0.18f), Width * 0.55f, Height * 0.28f, InnerColor, invX, invY);
-
-            mesh.Clear();
-            mesh.vertices = vertices;
-            mesh.uv = uv;
-            mesh.triangles = triangles;
-            mesh.colors = colors;
-            mesh.RecalculateBounds();
-        }
-
-        private static void AddBlob(
-            Vector3[] vertices,
-            Vector2[] uv,
-            Color[] colors,
-            int[] triangles,
-            ref int quad,
-            Vector2 center,
-            float width,
-            float height,
-            Color color,
-            float inverseScaleX,
-            float inverseScaleY)
-        {
-            int vertexIndex = quad * 4;
-            int triangleIndex = quad * 6;
-            float halfWidth = width * 0.5f * inverseScaleX;
-            float halfHeight = height * 0.5f * inverseScaleY;
-            Vector3 localCenter = new Vector3(center.x * inverseScaleX, center.y * inverseScaleY, -0.001f * quad);
-
-            vertices[vertexIndex] = localCenter + new Vector3(-halfWidth, -halfHeight, 0f);
-            vertices[vertexIndex + 1] = localCenter + new Vector3(-halfWidth, halfHeight, 0f);
-            vertices[vertexIndex + 2] = localCenter + new Vector3(halfWidth, halfHeight, 0f);
-            vertices[vertexIndex + 3] = localCenter + new Vector3(halfWidth, -halfHeight, 0f);
-
-            uv[vertexIndex] = new Vector2(0f, 0f);
-            uv[vertexIndex + 1] = new Vector2(0f, 1f);
-            uv[vertexIndex + 2] = new Vector2(1f, 1f);
-            uv[vertexIndex + 3] = new Vector2(1f, 0f);
-
-            colors[vertexIndex] = color;
-            colors[vertexIndex + 1] = color;
-            colors[vertexIndex + 2] = color;
-            colors[vertexIndex + 3] = color;
-
-            triangles[triangleIndex] = vertexIndex;
-            triangles[triangleIndex + 1] = vertexIndex + 1;
-            triangles[triangleIndex + 2] = vertexIndex + 2;
-            triangles[triangleIndex + 3] = vertexIndex;
-            triangles[triangleIndex + 4] = vertexIndex + 2;
-            triangles[triangleIndex + 5] = vertexIndex + 3;
-
-            quad++;
+            var sp = Sprite.Create(tex, new Rect(0, 0, S, S), new Vector2(0.5f, 0f), S);
+            sp.name = "ProceduralFlame";
+            sp.hideFlags = HideFlags.DontSave;
+            return sp;
         }
     }
 }

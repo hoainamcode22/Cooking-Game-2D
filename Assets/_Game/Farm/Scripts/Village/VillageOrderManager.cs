@@ -270,9 +270,11 @@ namespace Village
             }
 
             // ── Add rewards ───────────────────────────────────────────────────
-            Debug.Log($"[Deliver] +Gold: {order.rewardGold}  +EXP: {order.rewardExp}");
+            // EXP đơn làng ×2: giao đơn tốn nhiều công (gom nguyên liệu) → thưởng EXP cao hơn.
+            int deliverExp = order.rewardExp * 2;
+            Debug.Log($"[Deliver] +Gold: {order.rewardGold}  +EXP: {deliverExp}");
             AddGold(order.rewardGold);
-            AddExp(order.rewardExp);
+            AddExp(deliverExp);
 
             // ── Log success ───────────────────────────────────────────────────
             string items = order.HasSecondItem

@@ -328,9 +328,10 @@ public class CookingChallengeManager : MonoBehaviour
     {
         cookedDishOnPlate = currentDishData;
 
-        // Cộng EXP khi nấu thành công (chạy đúng 1 lần cho mỗi lần nấu thành công)
+        // Cộng EXP khi nấu thành công (chạy đúng 1 lần cho mỗi lần nấu thành công).
+        // 8 → 20: nấu ăn nhiều bước/lâu hơn trồng cây nên EXP cao hơn (cân bằng cấp 1-100).
         if (PlayerProgressManager.Instance != null)
-            PlayerProgressManager.Instance.AddExp(8);
+            PlayerProgressManager.Instance.AddExp(20);
 
         // Tiến độ nhiệm vụ nấu ăn
         MissionProgressTracker.ReportEvent(MissionEventType.CookDish,

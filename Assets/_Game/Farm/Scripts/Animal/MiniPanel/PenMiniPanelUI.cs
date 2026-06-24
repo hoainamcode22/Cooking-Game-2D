@@ -85,6 +85,7 @@ public class PenMiniPanelUI : MonoBehaviour
             else
                 timerCoroutine = StartCoroutine(ProcessTimerCoroutine(remaining));
         }
+        UpdateReadyBubble();   // hiện bubble nếu nạp lại lúc đang Ready
     }
 
     private void Update()
@@ -132,7 +133,30 @@ public class PenMiniPanelUI : MonoBehaviour
     [SerializeField] private Canvas processOverlayCanvas;
     [SerializeField] private int processSortingOrder = -10;
 
+    [Header("Tutorial — nút Gem (process) + bubble 'sẵn sàng' (tự dựng nếu trống, gán ảnh sau)")]
+    [Tooltip("Nền nút kim cương — để trống dùng bo góc tự vẽ.")]
+    [SerializeField] private Sprite gemButtonBgSprite;
+    [Tooltip("Icon kim cương — để trống dùng hình thoi tự vẽ.")]
+    [SerializeField] private Sprite gemIconSprite;
+    [Tooltip("Nền bubble sẵn sàng — để trống dùng bo góc tự vẽ.")]
+    [SerializeField] private Sprite readyBubbleBgSprite;
+    [Tooltip("Vị trí bubble 'sẵn sàng' so với chuồng (local) — đặt CAO trên đầu con vật.")]
+    [SerializeField] private Vector2 readyBubbleLocalPos = new Vector2(0f, 420f);
+    [Tooltip("Sorting order của bubble — cao hơn chuồng & con vật để luôn nổi trên cùng.")]
+    [SerializeField] private int readyBubbleSortingOrder = 1300;
+
     public bool IsPanelOpen() => panelRoot != null && panelRoot.activeSelf;
+    public RectTransform FirstFeedSlotRect => slot1Root != null ? slot1Root.GetComponent<RectTransform>() : null;
+    public RectTransform BasketSlotRect => basketRoot != null ? basketRoot.GetComponent<RectTransform>() : null;
+    public RectTransform SpeedUpButtonRect
+    {
+        get
+        {
+            EnsureGemButton();
+            PlaceGemButton();
+            return _gemButtonGO != null ? _gemButtonGO.GetComponent<RectTransform>() : null;
+        }
+    }
 
     public void OpenPanel()
     {
@@ -183,6 +207,10 @@ public class PenMiniPanelUI : MonoBehaviour
 
         StopTimerIfRunning();
         timerCoroutine = StartCoroutine(ProcessTimerCoroutine(config.feedDurationSeconds));
+
+        if (IsPenTutorialStep("L2_08_FeedPen"))
+            ClosePanel();
+
         TutorialManager.Instance?.NotifyFeed();   // tutorial L2: đã cho ăn
         return true;
     }
@@ -229,8 +257,10 @@ public class PenMiniPanelUI : MonoBehaviour
         return true;
     }
 
-    /// <summary>Dùng kim cương hoàn tất NGAY quá trình nuôi (chuyển sang Ready).
-    /// Gắn vào nút Gem trên pen panel: OnClick → PenMiniPanelUI.TrySpeedUpGem.</summary>
+    /// <summary>Dùng kim cương hoàn tất NGAY quá trình nuôi.
+    /// Gắn vào nút Gem trên pen panel: OnClick → PenMiniPanelUI.TrySpeedUpGem.
+    /// • Trong game thường: bấm gem = hoàn tất + THU HOẠCH gia súc luôn (về Idle).
+    /// • Trong tutorial chuồng (L2_09/L2_10): chỉ chuyển Ready để bước "kéo rổ" còn dạy được.</summary>
     public bool TrySpeedUpGem()
     {
         if (CurrentState != PenState.Processing) return false;
@@ -240,8 +270,32 @@ public class PenMiniPanelUI : MonoBehaviour
         StopTimerIfRunning();
         SetState(PenState.Ready);
         SaveState();
+
+        bool penTutorialActive = IsPenTutorialActive();
+        if (penTutorialActive)
+            ClosePanel();
+
         TutorialManager.Instance?.NotifyPenSpeedUp();   // tutorial L2: đã dùng gem hoàn tất
+
+        // Ngoài tutorial chuồng → thu hoạch ngay (không cần kéo rổ).
+        if (!penTutorialActive)
+            TryHarvest(transform.position);
+
         return true;
+    }
+
+    /// <summary>Đang ở bước tutorial chuồng (gem-speedup / kéo rổ)? Khi đó GIỮ luồng dạy:
+    /// gem chỉ chuyển Ready, để bước L2_10 dạy kéo rổ thu hoạch.</summary>
+    private static bool IsPenTutorialActive()
+    {
+        string step = TutorialManager.Instance != null ? TutorialManager.Instance.CurrentStepName : null;
+        return step == "L2_09_PenSpeedUp" || step == "L2_10_HarvestPen";
+    }
+
+    private static bool IsPenTutorialStep(string stepName)
+    {
+        return TutorialManager.Instance != null
+            && TutorialManager.Instance.CurrentStepName == stepName;
     }
 
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -252,6 +306,7 @@ public class PenMiniPanelUI : MonoBehaviour
     {
         CurrentState = newState;
         RefreshUI();
+        UpdateReadyBubble();   // bubble 'sẵn sàng' bật/tắt theo state (kể cả khi panel đóng)
     }
 
     private IEnumerator ProcessTimerCoroutine(float duration)
@@ -317,10 +372,10 @@ public class PenMiniPanelUI : MonoBehaviour
             if (isIdle) RefreshFoodSlot(slot2Icon, slot2Amount, config.food2ItemId, config.food2Icon);
         }
 
-        // Rá»• thu hoáº¡ch â€” sprite giá»¯ nguyÃªn tá»« prefab (khÃ´ng ghi Ä‘Ã¨ báº±ng config)
+        // Rá»• thu hoạch chỉ hiện khi đã sẵn sàng, nhường chỗ cho nút gem lúc đang Processing.
         if (basketRoot != null)
         {
-            basketRoot.SetActive(true);
+            basketRoot.SetActive(isReady);
             if (basketActiveGlow != null)
                 basketActiveGlow.SetActive(isReady);
         }
@@ -343,6 +398,15 @@ public class PenMiniPanelUI : MonoBehaviour
                 if (progressLabel != null)
                     progressLabel.text = FormatTime(remaining);
             }
+        }
+
+        // Nút Gem: dựng 1 lần (kể cả khi chưa gán progressOverlay), chỉ hiện khi đang Processing.
+        EnsureGemButton();
+        PlaceGemButton();
+        if (_gemButtonGO != null)
+        {
+            _gemButtonGO.SetActive(isProcessing);
+            if (isProcessing) _gemButtonGO.transform.SetAsLastSibling();
         }
     }
 
@@ -451,5 +515,233 @@ public class PenMiniPanelUI : MonoBehaviour
     private void OnFeedStarted()
     {
         processStartUnix = (float)GetUnixNow();
+    }
+
+    // =========================================================================
+    //  Tutorial L2 — Nút Gem (trên ô process) + Bubble "sẵn sàng thu hoạch"
+    // =========================================================================
+
+    private GameObject _gemButtonGO;
+    private GameObject _readyBubble;
+    private static Sprite _roundSprite;
+    private static Sprite _diamondSprite;
+
+    /// <summary>Dựng nút kim cương trên ô process (nếu chưa có). Đặt tên 'btn_PenGem' để tutorial
+    /// (tutorial_pen_gem) chỉ tay vào được. OnClick → TrySpeedUpGem (hoàn tất ngay).</summary>
+    private void EnsureGemButton()
+    {
+        // Gắn trên panelRoot để không bị progressOverlay clipping/sorting che mất.
+        Transform host = panelRoot != null ? panelRoot.transform : transform;
+        if (host == null) return;
+        if (_gemButtonGO != null)
+        {
+            if (_gemButtonGO.transform.parent != host)
+                _gemButtonGO.transform.SetParent(host, false);
+            return;
+        }
+
+        Transform existing = FindDeepChild(host, "btn_PenGem");
+        if (existing != null)
+        {
+            _gemButtonGO = existing.gameObject;
+            if (_gemButtonGO.transform.parent != host)
+                _gemButtonGO.transform.SetParent(host, false);
+            return;
+        }
+
+        Vector2 refSize = ReferenceSlotSize();
+        var go = new GameObject("btn_PenGem", typeof(RectTransform), typeof(Image), typeof(Button));
+        go.transform.SetParent(host, false);
+        var rt = (RectTransform)go.transform;
+        rt.sizeDelta = new Vector2(refSize.x * 1.25f, refSize.y * 0.72f);
+
+        var img = go.GetComponent<Image>();
+        img.sprite = gemButtonBgSprite != null ? gemButtonBgSprite : GetRoundSprite();
+        img.type = Image.Type.Sliced;
+        img.color = gemButtonBgSprite != null ? Color.white : new Color32(74, 154, 236, 255);
+        var btn = go.GetComponent<Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(() => TrySpeedUpGem());
+
+        // icon kim cương (placeholder hình thoi — gán ảnh thật sau)
+        var gemGO = new GameObject("Img_Gem", typeof(RectTransform), typeof(Image));
+        gemGO.transform.SetParent(rt, false);
+        var gemRt = (RectTransform)gemGO.transform;
+        gemRt.sizeDelta = new Vector2(rt.sizeDelta.y * 0.7f, rt.sizeDelta.y * 0.7f);
+        gemRt.anchoredPosition = new Vector2(-rt.sizeDelta.x * 0.24f, 0f);
+        var gemImg = gemGO.GetComponent<Image>();
+        gemImg.sprite = gemIconSprite != null ? gemIconSprite : GetDiamondSprite();
+        gemImg.color = gemIconSprite != null ? Color.white : new Color32(150, 228, 255, 255);
+        gemImg.preserveAspect = true;
+        gemImg.raycastTarget = false;
+
+        var txtGO = new GameObject("Txt_Cost", typeof(RectTransform));
+        txtGO.transform.SetParent(rt, false);
+        var txtRt = (RectTransform)txtGO.transform;
+        txtRt.sizeDelta = new Vector2(rt.sizeDelta.x * 0.5f, rt.sizeDelta.y * 0.82f);
+        txtRt.anchoredPosition = new Vector2(rt.sizeDelta.x * 0.18f, 0f);
+        var t = txtGO.AddComponent<TextMeshProUGUI>();
+        t.text = "x" + speedUpGemCost;
+        t.color = Color.white;
+        t.alignment = TextAlignmentOptions.Center;
+        t.fontStyle = FontStyles.Bold;
+        t.enableAutoSizing = true; t.fontSizeMin = 8; t.fontSizeMax = 80;
+        t.raycastTarget = false;
+
+        _gemButtonGO = go;
+        PlaceGemButton();
+    }
+
+    private void PlaceGemButton()
+    {
+        if (_gemButtonGO == null) return;
+
+        RectTransform rt = _gemButtonGO.GetComponent<RectTransform>();
+        if (rt == null) return;
+
+        RectTransform basketRt = BasketSlotRect;
+        RectTransform progressRt = progressOverlay != null ? progressOverlay.GetComponent<RectTransform>() : null;
+        Vector2 refSize = ReferenceSlotSize();
+
+        if (basketRt != null)
+            rt.anchoredPosition = basketRt.anchoredPosition;
+        else if (progressRt != null)
+            rt.anchoredPosition = progressRt.anchoredPosition + new Vector2(refSize.x * 0.95f, 0f);
+        else
+            rt.anchoredPosition = new Vector2(refSize.x * 0.95f, 0f);
+
+        rt.sizeDelta = new Vector2(refSize.x * 1.25f, refSize.y * 0.72f);
+    }
+
+    /// <summary>Bật/tắt bubble 'sẵn sàng thu hoạch' theo state (Ready = hiện).</summary>
+    private void UpdateReadyBubble()
+    {
+        if (config == null) return;
+        EnsureReadyBubble();
+        if (_readyBubble != null) _readyBubble.SetActive(CurrentState == PenState.Ready);
+    }
+
+    /// <summary>Bubble nổi trên chuồng (kiểu đơn hàng dân làng) hiện icon sản phẩm khi process xong.
+    /// Gà: thịt + trứng; Heo/Bò: thịt; Bò sữa: sữa — tất cả lấy theo config từng chuồng. Tự dựng 1 lần.</summary>
+    private void EnsureReadyBubble()
+    {
+        if (_readyBubble != null) return;
+        RectTransform host = GetComponent<RectTransform>();
+        if (host == null) return;
+
+        Vector2 refSize = ReferenceSlotSize();
+        bool two = !string.IsNullOrEmpty(config.secondProductItemId) && config.secondProductIcon != null;
+        float w = refSize.x * (two ? 2.1f : 1.35f);
+        float h = refSize.y * 1.3f;
+
+        var go = new GameObject("PenReadyBubble", typeof(RectTransform), typeof(Image));
+        go.transform.SetParent(host, false);
+        var rt = (RectTransform)go.transform;
+        rt.sizeDelta = new Vector2(w, h);
+        rt.anchoredPosition = readyBubbleLocalPos;
+
+        // Canvas riêng overrideSorting → bubble luôn NỔI TRÊN cùng (trên chuồng + con vật).
+        var bubbleCanvas = go.AddComponent<Canvas>();
+        bubbleCanvas.overrideSorting = true;
+        bubbleCanvas.sortingLayerName = "Foreground";
+        bubbleCanvas.sortingOrder = readyBubbleSortingOrder;
+
+        var bg = go.GetComponent<Image>();
+        bg.sprite = readyBubbleBgSprite != null ? readyBubbleBgSprite : GetRoundSprite();
+        bg.type = Image.Type.Sliced;
+        bg.color = readyBubbleBgSprite != null ? Color.white : new Color32(255, 252, 240, 245);
+        bg.raycastTarget = false;
+
+        float iconSize = refSize.y * 0.8f;
+        AddBubbleIcon(rt, config.productIcon, two ? new Vector2(-w * 0.24f, 6f) : new Vector2(0f, 6f), iconSize);
+        if (two) AddBubbleIcon(rt, config.secondProductIcon, new Vector2(w * 0.24f, 6f), iconSize);
+
+        // Đuôi bubble chỉ xuống chuồng (placeholder hình vuông xoay 45°).
+        var tail = new GameObject("Tail", typeof(RectTransform), typeof(Image));
+        tail.transform.SetParent(rt, false);
+        var tailRt = (RectTransform)tail.transform;
+        tailRt.sizeDelta = new Vector2(refSize.x * 0.32f, refSize.x * 0.32f);
+        tailRt.anchoredPosition = new Vector2(0f, -h * 0.5f);
+        tailRt.localRotation = Quaternion.Euler(0f, 0f, 45f);
+        var tailImg = tail.GetComponent<Image>();
+        tailImg.sprite = GetRoundSprite();
+        tailImg.color = bg.color;
+        tailImg.raycastTarget = false;
+
+        _readyBubble = go;
+        _readyBubble.SetActive(false);
+    }
+
+    private static void AddBubbleIcon(RectTransform parent, Sprite icon, Vector2 pos, float size)
+    {
+        var go = new GameObject("Img_Product", typeof(RectTransform), typeof(Image));
+        go.transform.SetParent(parent, false);
+        var rt = (RectTransform)go.transform;
+        rt.sizeDelta = new Vector2(size, size);
+        rt.anchoredPosition = pos;
+        var img = go.GetComponent<Image>();
+        img.sprite = icon;
+        img.color = icon != null ? Color.white : new Color(1f, 1f, 1f, 0f);   // chưa có icon → ẩn
+        img.preserveAspect = true;
+        img.raycastTarget = false;
+    }
+
+    private Vector2 ReferenceSlotSize()
+    {
+        GameObject r = slot1Root != null ? slot1Root : (basketRoot != null ? basketRoot : panelRoot);
+        if (r != null)
+        {
+            var rt = r.GetComponent<RectTransform>();
+            if (rt != null && rt.rect.width > 1f) return rt.rect.size;
+        }
+        return new Vector2(120f, 120f);
+    }
+
+    private static Transform FindDeepChild(Transform parent, string childName)
+    {
+        foreach (Transform c in parent)
+        {
+            if (c.name == childName) return c;
+            Transform found = FindDeepChild(c, childName);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private static Sprite GetRoundSprite()
+    {
+        if (_roundSprite != null) return _roundSprite;
+        const int s = 48; const int rad = 14;
+        var tex = new Texture2D(s, s, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+        for (int y = 0; y < s; y++)
+            for (int x = 0; x < s; x++)
+            {
+                float dx = x < rad ? rad - x : x >= s - rad ? x - (s - rad - 1) : 0f;
+                float dy = y < rad ? rad - y : y >= s - rad ? y - (s - rad - 1) : 0f;
+                bool inside = (dx <= 0f && dy <= 0f) || dx * dx + dy * dy <= (float)rad * rad;
+                tex.SetPixel(x, y, inside ? Color.white : Color.clear);
+            }
+        tex.Apply();
+        _roundSprite = Sprite.Create(tex, new Rect(0, 0, s, s), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(rad, rad, rad, rad));
+        _roundSprite.hideFlags = HideFlags.HideAndDontSave;
+        return _roundSprite;
+    }
+
+    private static Sprite GetDiamondSprite()
+    {
+        if (_diamondSprite != null) return _diamondSprite;
+        const int s = 48;
+        var tex = new Texture2D(s, s, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+        float c = (s - 1) * 0.5f;
+        for (int y = 0; y < s; y++)
+            for (int x = 0; x < s; x++)
+            {
+                float dx = Mathf.Abs(x - c) / c, dy = Mathf.Abs(y - c) / c;
+                tex.SetPixel(x, y, (dx + dy) <= 1f ? Color.white : Color.clear);   // hình thoi
+            }
+        tex.Apply();
+        _diamondSprite = Sprite.Create(tex, new Rect(0, 0, s, s), new Vector2(0.5f, 0.5f), 100f);
+        _diamondSprite.hideFlags = HideFlags.HideAndDontSave;
+        return _diamondSprite;
     }
 }

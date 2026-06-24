@@ -13,14 +13,15 @@ MonoBehaviour:
   m_Name: LevelReward_L17
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 17
-  giftGold: 1300
-  giftGems: 7
+  giftGold: 1200
+  giftGems: 6
   giftItems:
-  - itemId: seed_pepper
-    displayName: "H\u1EA1t Ti\xEAu"
-    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
-    amount: 4
+  - itemId: seed_chili
+    displayName: "H\u1EA1t \u1EDAt"
+    icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
+    amount: 3
   unlockDescriptions:
-  - "H\u1ED3 c\xE1 (s\u1EAFp ra m\u1EAFt)"
-  hintText: "Ti\u1EBFp t\u1EE5c thu ho\u1EA1ch v\xE0 giao \u0111\u01A1n \u0111\u1EC3
-    m\u1EDF c\xE1c t\xEDnh n\u0103ng s\u1EAFp ra m\u1EAFt nh\xE9!"
+  - "M\xF3n c\xE1 v\xE0o pool \u0111\u01A1n h\xE0ng"
+  - "M\u1EDF kh\xF3a lo\u1EA1i c\xE1 m\u1EDBi"
+  hintText: "C\xE1c m\xF3n c\xE1 \u0111\xE3 xu\u1EA5t hi\u1EC7n trong \u0111\u01A1n
+    h\xE0ng c\u1EE7a d\xE2n l\xE0ng."

@@ -23,6 +23,10 @@ public class PopupEwarManager : MonoBehaviour
     // hiện chỉ có 1 list — cần thiết kế tab/section riêng trước khi nối daily vào UI.
     [SerializeField] private MissionDatabase dailyMissionDatabase;
 
+    // Database thành tựu — tool "Setup Missions L1-L30" tự gán (MissionDatabase_Achievement).
+    // UnifiedTaskPopupUI tab "Thành tựu" đọc qua AchievementMissionDatabaseRef.
+    [SerializeField] private MissionDatabase achievementMissionDatabase;
+
     private readonly List<MissionItemUI> _spawnedItems = new List<MissionItemUI>();
     private bool _initialized;
     private int  _lastSpawnLevel = -1;
@@ -30,6 +34,11 @@ public class PopupEwarManager : MonoBehaviour
 
     // PopupManager.IsAnyPopupOpen() đọc property này để biết có đang mở không
     public bool IsOpen => popup_Ewar != null && popup_Ewar.activeSelf;
+
+    // Cho UnifiedTaskPopupUI lấy database mà không phải gán lại tay trong Inspector.
+    public MissionDatabase MissionDatabaseRef => missionDatabase;
+    public MissionDatabase DailyMissionDatabaseRef => dailyMissionDatabase;
+    public MissionDatabase AchievementMissionDatabaseRef => achievementMissionDatabase;
 
     private void Awake()
     {
@@ -56,28 +65,11 @@ public class PopupEwarManager : MonoBehaviour
         MissionProgressTracker.OnProgressChanged -= HandleProgressChanged;
     }
 
+    // Btn_Ewar gọi hàm này (onClick trong scene). Redirect sang POPUP GỘP — tab Thành tựu.
+    // Khung cũ popup_Ewar không còn hiển thị nữa (logic spawn item cũ giữ lại nhưng không gọi).
     public void OpenPopup()
     {
-        popup_Ewar.SetActive(true);
-        AcquirePopupInputBlock();
-
-        // Bật chặn raycast trên popup — ngăn click xuyên xuống các collider phía sau
-        canvasGroup.blocksRaycasts = true;
-        canvasGroup.interactable   = true;
-
-        // FarmInputLock.BlockMapPan tự động = true vì PopupManager.IsAnyPopupOpen()
-        // sẽ trả về true → CameraController ngừng nhận input kéo map
-
-        // Respawn khi mở lần đầu hoặc khi level đổi (mission mới mở khoá theo level)
-        int playerLevel = GetPlayerLevel();
-        if (!_initialized || playerLevel != _lastSpawnLevel)
-        {
-            SpawnMissionItems(playerLevel);
-            _initialized    = true;
-            _lastSpawnLevel = playerLevel;
-        }
-
-        RefreshAllProgress();
+        UnifiedTaskPopupUI.OpenAchievement();
     }
 
     public void ClosePopup()

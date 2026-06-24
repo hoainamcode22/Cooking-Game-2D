@@ -5,12 +5,18 @@ using UnityEngine.UI;
 public class TutorialActionHandGuide : MonoBehaviour
 {
     [SerializeField] private RectTransform _hand;
-    [SerializeField] private Vector2 _offset = new Vector2(42f, -34f);
+    [Tooltip("Vị trí ĐẦU NGÓN TAY trên ảnh hand, chuẩn hoá 0..1 (x: trái→phải, y: dưới→trên). " +
+             "Ảnh tutorial_hand chỉ XUỐNG → đầu ngón ở đáy-hơi trái ≈ (0.36, 0.1).")]
+    [SerializeField] private Vector2 _fingertipNormalized = new Vector2(0.36f, 0.1f);
+    [Tooltip("Tinh chỉnh thêm vài px nếu vẫn lệch (thường để 0,0).")]
+    [SerializeField] private Vector2 _nudge = Vector2.zero;
     [SerializeField] private float _pulseSpeed = 4f;
     [SerializeField] private float _pulseAmount = 0.12f;
 
     private Coroutine _routine;
     private Vector3 _baseScale = Vector3.one;
+    private Vector3 _lastFingertipWorld;
+    private bool _hasLastFingertipWorld;
 
     public void Configure(RectTransform hand)
     {
@@ -32,6 +38,11 @@ public class TutorialActionHandGuide : MonoBehaviour
     /// tay tự nhảy từ Home sang Store khi menu mở ra.</summary>
     public void GuidePointFirstActive(string[] targetIds) => StartGuide(PointFirstActiveRoutine(targetIds));
 
+    /// <summary>Mua shop: tay chỉ nút ＋ tới khi số lượng item đạt requiredQty, rồi NHẢY sang nút Mua.
+    /// itemId = target của ShopItemUI (để đọc số lượng đang chọn).</summary>
+    public void GuideShopBuy(string plusId, string buyId, string itemId, int requiredQty, UnmaskRaycastFilter dim = null)
+        => StartGuide(ShopBuyRoutine(plusId, buyId, itemId, requiredQty, dim));
+
     /// <summary>Tay quét qua các ô CÒN VIỆC theo thứ tự (bỏ qua ô user đã làm xong).
     /// needReady=false → chỉ ô trống (để trồng); needReady=true → chỉ ô chín (để thu hoạch).</summary>
     public void GuideSweepPlots(string[] targetIds, bool needReady = false)
@@ -41,6 +52,7 @@ public class TutorialActionHandGuide : MonoBehaviour
     {
         if (_routine != null) StopCoroutine(_routine);
         _routine = null;
+        _hasLastFingertipWorld = false;
         if (_hand == null) return;
         _hand.localScale = _baseScale;
         _hand.gameObject.SetActive(false);
@@ -85,15 +97,15 @@ public class TutorialActionHandGuide : MonoBehaviour
             }
 
             _hand.gameObject.SetActive(true);
-            Vector3 from = sickle.position;
-            Vector3 to = plot.position;
+            Vector3 from = TargetCenter(sickle);
+            Vector3 to = TargetCenter(plot);
             float elapsed = 0f;
             const float duration = 0.8f;
             while (elapsed < duration)
             {
                 elapsed += Time.unscaledDeltaTime;
                 float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
-                _hand.position = Vector3.Lerp(from, to, t);
+                PlaceHandFingertipAt(Vector3.Lerp(from, to, t));
                 Pulse();
                 yield return null;
             }
@@ -110,6 +122,35 @@ public class TutorialActionHandGuide : MonoBehaviour
             Pulse();
             yield return null;
         }
+    }
+
+    // Mua shop: ＋ tới khi đủ số lượng → Mua. Đọc số lượng mỗi frame nên tay tự nhảy đúng lúc.
+    private IEnumerator ShopBuyRoutine(string plusId, string buyId, string itemId, int requiredQty, UnmaskRaycastFilter dim)
+    {
+        while (true)
+        {
+            int qty = ReadShopItemQuantity(itemId);
+            string id = qty >= requiredQty ? buyId : plusId;
+            RectTransform target = TutorialManager.GetTargetRect(id);
+            if (target == null) target = TutorialManager.GetTargetRect(itemId); // fallback: chỉ vào item
+            if (dim != null)
+            {
+                dim.gameObject.SetActive(true);
+                if (target != null) dim.SetTarget(target, false, 18f);
+                else dim.ClearHole();
+            }
+            PointAt(target);
+            Pulse();
+            yield return null;
+        }
+    }
+
+    private static int ReadShopItemQuantity(string itemId)
+    {
+        RectTransform rt = TutorialManager.GetTargetRect(itemId);
+        if (rt == null) return 0;
+        var item = rt.GetComponent<ShopItemUI>();
+        return item != null ? item.CurrentQuantity : 0;
     }
 
     // Chỉ vào target đang hiện đầu tiên trong list (Home→Store: tay tự nhảy khi menu mở).
@@ -170,14 +211,15 @@ public class TutorialActionHandGuide : MonoBehaviour
             if (nxtRT != null && nxt != cur)
             {
                 _hand.gameObject.SetActive(true);
+                Vector3 fromC = TargetCenter(curRT);
+                Vector3 toC   = TargetCenter(nxtRT);
                 float elapsed = 0f;
                 const float dur = 0.45f;
                 while (elapsed < dur)
                 {
                     elapsed += Time.unscaledDeltaTime;
                     float t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / dur));
-                    _hand.position          = Vector3.Lerp(curRT.position, nxtRT.position, t);
-                    _hand.anchoredPosition += _offset;
+                    PlaceHandFingertipAt(Vector3.Lerp(fromC, toC, t));
                     Pulse();
                     yield return null;
                 }
@@ -211,13 +253,40 @@ public class TutorialActionHandGuide : MonoBehaviour
         return null;
     }
 
+    private static readonly Vector3[] _cornerBuf = new Vector3[4];
+
     private void PointAt(RectTransform target)
     {
         bool show = target != null && target.gameObject.activeInHierarchy;
         _hand.gameObject.SetActive(show);
         if (!show) return;
-        _hand.position = target.position;
-        _hand.anchoredPosition += _offset;
+        PlaceHandFingertipAt(TargetCenter(target));
+    }
+
+    /// <summary>Tâm hình học world-space của 1 RectTransform (đã gồm width/height) —
+    /// tránh lệch do pivot nút không nằm giữa.</summary>
+    private static Vector3 TargetCenter(RectTransform rt)
+    {
+        rt.GetWorldCorners(_cornerBuf);
+        return (_cornerBuf[0] + _cornerBuf[2]) * 0.5f;
+    }
+
+    /// <summary>Đặt hand sao cho ĐẦU NGÓN TAY (tính theo width/height của ảnh hand) trùng worldCenter.</summary>
+    private void PlaceHandFingertipAt(Vector3 worldCenter)
+    {
+        _lastFingertipWorld = worldCenter;
+        _hasLastFingertipWorld = true;
+
+        _hand.position = worldCenter;
+        Rect r = _hand.rect;
+        Vector2 fingerFromPivot = new Vector2(
+            (_fingertipNormalized.x - _hand.pivot.x) * r.width,
+            (_fingertipNormalized.y - _hand.pivot.y) * r.height);
+        Vector2 scaledFingerFromPivot = new Vector2(
+            fingerFromPivot.x * _hand.localScale.x,
+            fingerFromPivot.y * _hand.localScale.y);
+        _hand.anchoredPosition -= scaledFingerFromPivot;   // kéo đầu ngón tay về đúng tâm nút
+        _hand.anchoredPosition += _nudge;            // tinh chỉnh nhỏ (Inspector)
     }
 
     private void Pulse()
@@ -225,6 +294,8 @@ public class TutorialActionHandGuide : MonoBehaviour
         if (!_hand.gameObject.activeSelf) return;
         float scale = 1f + Mathf.Sin(Time.unscaledTime * _pulseSpeed) * _pulseAmount;
         _hand.localScale = _baseScale * scale;
+        if (_hasLastFingertipWorld)
+            PlaceHandFingertipAt(_lastFingertipWorld);
     }
 
     private void OnDisable() => StopGuide();

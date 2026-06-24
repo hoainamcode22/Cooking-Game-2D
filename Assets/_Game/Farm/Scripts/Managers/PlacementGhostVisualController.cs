@@ -12,19 +12,25 @@ public class PlacementGhostVisualController : MonoBehaviour
     [SerializeField] private Sprite tileSprite;
 
     [Header("Colors")]
-    [SerializeField] private Color validFillColor = new Color(0.08f, 1f, 0.18f, 0.10f);
-    [SerializeField] private Color validEdgeColor = new Color(0.00f, 1f, 0.12f, 1f);
-    [SerializeField] private Color validEdgeDarkColor = new Color(0.00f, 0.55f, 0.08f, 0.92f);
-    [SerializeField] private Color validEdgeHighlightColor = new Color(0.58f, 1f, 0.48f, 0.92f);
-    [SerializeField] private Color invalidFillColor = new Color(1f, 0.08f, 0.08f, 0.12f);
-    [SerializeField] private Color invalidEdgeColor = new Color(1f, 0.05f, 0.05f, 1f);
+    [SerializeField] private Color validFillColor = new Color(0.10f, 0.95f, 0.30f, 0.16f);
+    [SerializeField] private Color validEdgeColor = new Color(0.13f, 1f, 0.34f, 0.96f);
+    [SerializeField] private Color validEdgeDarkColor = new Color(0.00f, 0.48f, 0.08f, 0.78f);
+    [SerializeField] private Color validEdgeHighlightColor = new Color(0.70f, 1f, 0.42f, 0.95f);
+    [SerializeField] private Color invalidFillColor = new Color(1f, 0.08f, 0.08f, 0.18f);
+    [SerializeField] private Color invalidEdgeColor = new Color(1f, 0.18f, 0.18f, 0.96f);
     [SerializeField] private Color invalidEdgeDarkColor = new Color(0.62f, 0f, 0f, 0.92f);
     [SerializeField] private Color invalidEdgeHighlightColor = new Color(1f, 0.42f, 0.35f, 0.9f);
     [SerializeField] private Color shadowColor = new Color(0f, 0.28f, 0f, 0.22f);
-    [SerializeField] private Color arrowColor = new Color(1f, 0.86f, 0.12f, 1f);
-    [SerializeField] private Color arrowRimColor = new Color(0.78f, 0.43f, 0.03f, 1f);
+    [SerializeField] private Color arrowColor = new Color(1f, 0.84f, 0.12f, 1f);
+    [SerializeField] private Color arrowRimColor = new Color(0.70f, 0.36f, 0.02f, 1f);
     [SerializeField] private Color arrowHighlightColor = new Color(1f, 0.98f, 0.5f, 1f);
     [SerializeField] private Color arrowShadowColor = new Color(0.45f, 0.23f, 0.02f, 0.42f);
+
+    [Header("Custom Sprites — gắn art CỦA BẠN để ra i hệt mẫu (assets tự gắn)")]
+    [Tooltip("Sprite GÓC VUÔNG XANH (corner bracket). Gắn để 4 góc dùng đúng art của bạn.")]
+    [SerializeField] private Sprite cornerBracketSprite;
+    [Tooltip("Chỉ hiện 4 góc vuông, ẩn các cạnh viền — gọn giống mẫu.")]
+    [SerializeField] private bool cornerBracketsOnly = true;
 
     private Transform _frameRoot;
     private Transform _arrowRoot;
@@ -38,6 +44,7 @@ public class PlacementGhostVisualController : MonoBehaviour
     private Sprite _markerSprite;
     private Sprite _arrowSprite;
     private Sprite _circleSprite;
+    private Sprite _bracketSprite;
     private Coroutine _arrowPulse;
     private Coroutine _framePulse;
     private Coroutine _spawnPop;
@@ -49,7 +56,18 @@ public class PlacementGhostVisualController : MonoBehaviour
 
     private const string VisualRootName = "Designed_Placement_Frame";
     private const string ArrowRootName = "Lift_Arrow_Effect";
-    private const string SortingLayerName = "CongTrinh";
+    private const string PreferredSortingLayerName = "CongTrinh";
+    private const string FallbackSortingLayerName = "Objects";
+    private static string _resolvedSortingLayerName;
+    private static string SortingLayerName
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(_resolvedSortingLayerName))
+                _resolvedSortingLayerName = ResolveSortingLayerName(PreferredSortingLayerName, FallbackSortingLayerName);
+            return _resolvedSortingLayerName;
+        }
+    }
     public const int BaseOrder = 1600;
     public const int BuildingOrder = BaseOrder + 80;
 
@@ -120,6 +138,11 @@ public class PlacementGhostVisualController : MonoBehaviour
             CreateOrGetRenderer(_frameRoot, "Corner_Left", _diamondSprite, BaseOrder + 5)
         };
 
+        // Góc vuông: nếu có gắn sprite tuỳ chỉnh thì dùng, KHÔNG thì dùng L-bracket VẼ BẰNG CODE.
+        Sprite cornerSpr = cornerBracketSprite != null ? cornerBracketSprite : _bracketSprite;
+        if (cornerSpr != null)
+            foreach (var c in _corners) if (c != null) c.sprite = cornerSpr;
+
         BuildArrow();
         ApplyVisualState(_lastValid);
 
@@ -138,7 +161,7 @@ public class PlacementGhostVisualController : MonoBehaviour
         if (_frameRoot == null)
             return;
 
-        ConfigureFromWorldSize(Mathf.Abs(footprintScale.x), Mathf.Abs(footprintScale.y));
+        ConfigureFromLocalSize(Mathf.Abs(footprintScale.x), Mathf.Abs(footprintScale.y));
     }
 
     public void ConfigureFromWorldSize(float worldWidth, float worldHeight)
@@ -147,17 +170,56 @@ public class PlacementGhostVisualController : MonoBehaviour
         if (_frameRoot == null)
             return;
 
-        float width = Mathf.Max(1.35f, worldWidth);
-        float height = Mathf.Max(0.95f, worldHeight);
+        float scaleX = Mathf.Max(0.0001f, Mathf.Abs(transform.lossyScale.x));
+        float scaleY = Mathf.Max(0.0001f, Mathf.Abs(transform.lossyScale.y));
+        ConfigureFromLocalBounds(Vector3.zero, worldWidth / scaleX, worldHeight / scaleY);
+    }
+
+    public void ConfigureFromWorldBounds(Bounds worldBounds, float paddingMultiplier = 1.12f)
+    {
+        EnsureBuilt();
+        if (_frameRoot == null)
+            return;
+
+        if (worldBounds.size.x <= 0.01f || worldBounds.size.y <= 0.01f)
+        {
+            ConfigureFromWorldSize(1.5f, 1.0f);
+            return;
+        }
+
+        float scaleX = Mathf.Max(0.0001f, Mathf.Abs(transform.lossyScale.x));
+        float scaleY = Mathf.Max(0.0001f, Mathf.Abs(transform.lossyScale.y));
+        Vector3 localCenter = transform.InverseTransformPoint(worldBounds.center);
+        localCenter.z = 0f;
+        ConfigureFromLocalBounds(
+            localCenter,
+            worldBounds.size.x * paddingMultiplier / scaleX,
+            worldBounds.size.y * paddingMultiplier / scaleY);
+    }
+
+    private void ConfigureFromLocalSize(float localWidth, float localHeight)
+    {
+        ConfigureFromLocalBounds(Vector3.zero, localWidth, localHeight);
+    }
+
+    private void ConfigureFromLocalBounds(Vector3 localCenter, float localWidth, float localHeight)
+    {
+        EnsureBuilt();
+        if (_frameRoot == null)
+            return;
+
+        float width = Mathf.Max(1.35f, localWidth);
+        float height = Mathf.Max(0.95f, localHeight);
         float edgeThickness = Mathf.Clamp(Mathf.Min(width, height) * 0.11f, 0.12f, 0.28f);
-        float cornerSize = Mathf.Clamp(Mathf.Min(width, height) * 0.16f, 0.16f, 0.36f);
+
+        _frameRoot.localPosition = localCenter;
 
         Transform shadow = _frameRoot.Find("Soft_Shadow");
         if (shadow != null)
-            shadow.localScale = new Vector3(width * 0.96f, height * 0.96f, 1f);
+            shadow.localScale = new Vector3(width * 0.82f, height * 0.78f, 1f);
 
         if (_fill != null)
-            _fill.transform.localScale = new Vector3(width * 0.9f, height * 0.9f, 1f);
+            _fill.transform.localScale = new Vector3(width * 0.78f, height * 0.74f, 1f);
 
         float sideMarkerW = Mathf.Clamp(width * 0.44f, 0.55f, 1.45f);
         float sideMarkerH = Mathf.Clamp(height * 0.44f, 0.40f, 1.05f);
@@ -187,14 +249,21 @@ public class PlacementGhostVisualController : MonoBehaviour
             SetMarker(_edgeHighlights[i], markerPositions[i] + new Vector3(0f, markerThickness * 0.16f, 0f), new Vector3(markerScales[i].x * 0.82f, markerScales[i].y * 0.28f, 1f), markerRotations[i]);
         }
 
-        SetCorner(_corners[0], new Vector3(0f, height * 0.79f, 0f), cornerSize, 45f);
-        SetCorner(_corners[1], new Vector3(width * 0.79f, 0f, 0f), cornerSize, 45f);
-        SetCorner(_corners[2], new Vector3(0f, -height * 0.79f, 0f), cornerSize, 45f);
-        SetCorner(_corners[3], new Vector3(-width * 0.79f, 0f, 0f), cornerSize, 45f);
+        // 4 GÓC VUÔNG ở 4 góc khung chữ nhật, xoay ôm vào trong (kiểu corner-bracket như mẫu).
+        float cornerX = width * 0.44f;
+        float cornerY = height * 0.47f;
+        float cornerW = Mathf.Clamp(width * 0.30f, 0.46f, 1.25f);
+        float cornerH = Mathf.Clamp(height * 0.22f, 0.18f, 0.52f);
+        SetCornerMarker(_corners[0], new Vector3(-cornerX,  cornerY, 0f), cornerW, cornerH, -35f);
+        SetCornerMarker(_corners[1], new Vector3( cornerX,  cornerY, 0f), cornerW, cornerH, -145f);
+        SetCornerMarker(_corners[2], new Vector3(-cornerX, -cornerY, 0f), cornerW, cornerH,  35f);
+        SetCornerMarker(_corners[3], new Vector3( cornerX, -cornerY, 0f), cornerW, cornerH, 145f);
+
+        SetEdgesVisible(!cornerBracketsOnly);
 
         if (_arrowRoot != null)
         {
-            _arrowBaseLocalPosition = new Vector3(0f, height * 0.72f + 0.55f, 0f);
+            _arrowBaseLocalPosition = localCenter + new Vector3(0f, height * 0.62f + 0.60f, 0f);
             _arrowRoot.localPosition = _arrowBaseLocalPosition;
         }
     }
@@ -350,6 +419,15 @@ public class PlacementGhostVisualController : MonoBehaviour
                 foreach (SpriteRenderer sr in _edgeHighlights)
                     if (sr != null) sr.color = highlight;
 
+            if (_corners != null)
+                foreach (SpriteRenderer sr in _corners)
+                    if (sr != null)
+                    {
+                        Color c = edge;
+                        c.a *= Mathf.Lerp(0.78f, 1f, wave);
+                        sr.color = c;
+                    }
+
             yield return null;
         }
     }
@@ -465,6 +543,19 @@ public class PlacementGhostVisualController : MonoBehaviour
         return sr;
     }
 
+    private static string ResolveSortingLayerName(string preferred, string fallback)
+    {
+        foreach (SortingLayer layer in SortingLayer.layers)
+            if (layer.name == preferred)
+                return preferred;
+
+        foreach (SortingLayer layer in SortingLayer.layers)
+            if (layer.name == fallback)
+                return fallback;
+
+        return "Default";
+    }
+
     private static void SetMarker(SpriteRenderer sr, Vector3 position, Vector3 scale, float rotation)
     {
         if (sr == null) return;
@@ -479,6 +570,28 @@ public class PlacementGhostVisualController : MonoBehaviour
         sr.transform.localPosition = position;
         sr.transform.localScale = new Vector3(size, size * 0.42f, 1f);
         sr.transform.localRotation = Quaternion.Euler(0f, 0f, rotation);
+    }
+
+    private static void SetCornerMarker(SpriteRenderer sr, Vector3 position, float width, float height, float rotation)
+    {
+        if (sr == null) return;
+        sr.transform.localPosition = position;
+        sr.transform.localScale = new Vector3(width, height, 1f);
+        sr.transform.localRotation = Quaternion.Euler(0f, 0f, rotation);
+    }
+
+    // Bật/tắt các cạnh viền (để chế độ "chỉ 4 góc" giống mẫu).
+    private void SetEdgesVisible(bool on)
+    {
+        ToggleArray(_edges, on);
+        ToggleArray(_edgeShadows, on);
+        ToggleArray(_edgeHighlights, on);
+    }
+
+    private static void ToggleArray(SpriteRenderer[] arr, bool on)
+    {
+        if (arr == null) return;
+        foreach (var r in arr) if (r != null) r.enabled = on;
     }
 
     private static Sprite FindAnyFootprintSprite()
@@ -544,6 +657,22 @@ public class PlacementGhostVisualController : MonoBehaviour
 
         if (_circleSprite == null)
             _circleSprite = CreateCircleSprite("Placement_Arrow_Dot", 64);
+
+        if (_bracketSprite == null)
+        {
+            _bracketSprite = CreatePolygonSprite(
+                "Placement_Corner_Wedge",
+                64,
+                new[]
+                {
+                    new Vector2(0.04f, 0.20f),
+                    new Vector2(0.78f, 0.20f),
+                    new Vector2(0.98f, 0.50f),
+                    new Vector2(0.78f, 0.80f),
+                    new Vector2(0.04f, 0.80f),
+                    new Vector2(0.24f, 0.50f)
+                });
+        }
     }
 
     private static Sprite CreatePolygonSprite(string name, int size, Vector2[] points)

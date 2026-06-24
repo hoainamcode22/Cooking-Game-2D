@@ -4,19 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-/// <summary>
-/// Popup lên cấp — hiển thị khi PlayerProgressManager.OnLevelChanged fires.
-///
-/// Cách setup trong Unity:
-///   1. Chạy menu Tools/Farm Game/Setup Level Up Popup để tạo hierarchy.
-///   2. Kéo các LevelRewardConfig asset (mỗi asset cho 1 level) vào levelRewardConfigs.
-///   3. Kéo VFX prefab (Confetti_blast_multicolor từ Lana Studio) vào vfxConfettiPrefab.
-///   4. Đặt component này trên root GameObject của popup.
-///
-/// Flow:
-///   PlayerProgressManager.OnLevelChanged → HandleLevelChanged() → queue → ShowNextPopup()
-///   Nhấn "Nhận Quà" → ClaimAndClose() → grant rewards → ShowNextPopup() hoặc đóng
-/// </summary>
+
 public class LevelUpPopupUI : MonoBehaviour
 {
     // =========================================================================
@@ -88,6 +76,10 @@ public class LevelUpPopupUI : MonoBehaviour
     // Runtime
     // =========================================================================
 
+    /// <summary>TRUE khi đang có popup lên cấp hiển thị (từ lúc bật tới khi user bấm "Nhận" đóng hẳn).
+    /// Tutorial dùng cờ này để "nhường sân khấu" — chờ user nhận quà rồi mới chạy bước tiếp.</summary>
+    public static bool IsActive { get; private set; }
+
     private readonly Queue<int> _levelUpQueue = new Queue<int>();
     private bool                _isShowing    = false;
     private int                 _lastKnownLevel;
@@ -124,6 +116,7 @@ public class LevelUpPopupUI : MonoBehaviour
         if (PlayerProgressManager.Instance != null)
             PlayerProgressManager.Instance.OnLevelChanged -= HandleLevelChanged;
 
+        IsActive = false;   // tránh kẹt cờ nếu popup bị huỷ giữa chừng
         StopVFX();
         ReleaseInputLock();
     }
@@ -159,11 +152,13 @@ public class LevelUpPopupUI : MonoBehaviour
         if (_levelUpQueue.Count == 0)
         {
             _isShowing = false;
+            IsActive   = false;          // hết popup → tutorial được phép chạy tiếp
             return;
         }
 
         int level = _levelUpQueue.Dequeue();
         _isShowing    = true;
+        IsActive      = true;            // có popup đang hiện → tutorial chờ
         _currentConfig = levelRewardConfigs.Find(c => c != null && c.levelReached == level);
 
         PopulateUI(level, _currentConfig);
@@ -202,13 +197,22 @@ public class LevelUpPopupUI : MonoBehaviour
             if (gemRewardText != null) gemRewardText.text = $"+{cfg.giftGems}";
 
             // Gift item slots
-            if (giftItemsContainer != null && giftItemSlotPrefab != null)
+            if (giftItemsContainer != null && cfg.giftItems != null)
             {
-                foreach (var gift in cfg.giftItems)
+                if (giftItemSlotPrefab != null)
                 {
-                    var go   = Instantiate(giftItemSlotPrefab, giftItemsContainer);
-                    var slot = go.GetComponent<LevelUpGiftSlotUI>();
-                    if (slot != null) slot.Setup(gift);
+                    // Có prefab thật → dùng prefab
+                    foreach (var gift in cfg.giftItems)
+                    {
+                        var go   = Instantiate(giftItemSlotPrefab, giftItemsContainer);
+                        var slot = go.GetComponent<LevelUpGiftSlotUI>();
+                        if (slot != null) slot.Setup(gift);
+                    }
+                }
+                else
+                {
+                    // Chưa có prefab → DỰNG NỀN ô quà bằng code (placeholder, thay sprite sau)
+                    BuildProceduralGiftSlots(cfg.giftItems);
                 }
             }
 
@@ -244,6 +248,38 @@ public class LevelUpPopupUI : MonoBehaviour
 
             Debug.Log($"[LevelUpPopupUI] Không tìm thấy LevelRewardConfig cho level {level}. " +
                       "Tạo asset và kéo vào levelRewardConfigs list.");
+        }
+    }
+
+    /// <summary>Dựng ô quà bằng code khi chưa gán giftItemSlotPrefab.
+    /// Ẩn các ô placeholder tĩnh (QUÀ 1-5) trong prefab, rồi tạo 1 ô/quà, dàn ngang giữa.</summary>
+    private void BuildProceduralGiftSlots(List<LevelRewardConfig.ItemGift> gifts)
+    {
+        // Ẩn ô placeholder tĩnh có sẵn trong prefab (không có LevelUpGiftSlotUI)
+        foreach (Transform child in giftItemsContainer)
+            if (child.gameObject.activeSelf && child.GetComponent<LevelUpGiftSlotUI>() == null)
+                child.gameObject.SetActive(false);
+
+        int n = gifts.Count;
+        const float spacing = 118f;
+        float startX = -(n - 1) * 0.5f * spacing;
+
+        for (int i = 0; i < n; i++)
+        {
+            var go = new GameObject($"GiftSlot_{i}", typeof(RectTransform));
+            var rt = (RectTransform)go.transform;
+            rt.SetParent(giftItemsContainer, false);
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = new Vector2(startX + i * spacing, 0f);
+
+            // LayoutElement để nếu container có LayoutGroup thì vẫn dàn đẹp
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredWidth  = 108f;
+            le.preferredHeight = 120f;
+
+            var slot = go.AddComponent<LevelUpGiftSlotUI>();
+            slot.BuildProcedural(gifts[i]);
         }
     }
 

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Mission_main_l1_plant_rice
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
   missionIcon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
-  missionName: "Tr\u1ED3ng 6 \xF4 l\xFAa"
-  targetAmount: 6
+  missionName: "Tr\u1ED3ng 8 \xF4 l\xFAa"
+  targetAmount: 8
   rewardIcon: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
   rewardAmount: 50
   rewardType: 0

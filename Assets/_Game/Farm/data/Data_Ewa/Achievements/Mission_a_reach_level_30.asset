@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27da4e0963ef8a14bba5b6535e1c8d80, type: 3}
+  m_Name: Mission_a_reach_level_30
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionIcon: {fileID: 0}
+  missionName: "N\xF4ng d\xE2n c\u1EA5p 30"
+  targetAmount: 30
+  rewardIcon: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
+  rewardAmount: 3000
+  rewardType: 0
+  missionId: a_reach_level_30
+  requiredLevel: 1
+  eventType: 7
+  targetItemId: 
+  isDaily: 0

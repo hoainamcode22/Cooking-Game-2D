@@ -14,14 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 30
   giftGold: 2600
-  giftGems: 15
+  giftGems: 30
   giftItems:
-  - itemId: seed_nam
-    displayName: "H\u1EA1t N\u1EA5m"
-    icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
+  - itemId: seed_pepper
+    displayName: "H\u1EA1t Ti\xEAu"
+    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 5
   unlockDescriptions:
-  - "B\u1EA1n \u0111\xE3 \u0111\u1EA1t c\u1EA5p t\u1ED1i \u0111a \u2014 c\u1EA3m
-    \u01A1n b\u1EA1n \u0111\xE3 ch\u01A1i!"
-  hintText: "C\u1EA5p t\u1ED1i \u0111a! N\xF4ng tr\u1EA1i c\u1EE7a b\u1EA1n th\u1EADt
-    tuy\u1EC7t v\u1EDDi."
+  - "\u0110\u1EA1t n\u1ED9i dung t\u1ED1i \u0111a c\u1EE7a b\u1EA3n demo"
+  - "\U0001F3C5 Danh hi\u1EC7u \"B\u1EACC TH\u1EA6Y N\xD4NG TR\u1EA0I\""
+  hintText: "B\u1EACC TH\u1EA6Y N\xD4NG TR\u1EA0I! N\xF4ng tr\u1EA1i c\u1EE7a b\u1EA1n
+    th\u1EADt huy\u1EC1n tho\u1EA1i \u2014 c\u1EA3m \u01A1n b\u1EA1n \u0111\xE3 ch\u01A1i!"

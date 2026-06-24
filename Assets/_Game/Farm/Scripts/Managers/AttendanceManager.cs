@@ -38,13 +38,11 @@ public class AttendanceManager : MonoBehaviour
 
     // ── Public API ────────────────────────────────────────────────────────────
 
+    // Btn_Lich gọi hàm này (onClick trong scene). Redirect sang POPUP GỘP — tab Hằng ngày.
+    // Khung lịch cũ (popupRect) không còn hiển thị nữa.
     public void OpenPopup()
     {
-        if (popupRect != null)
-        {
-            popupRect.gameObject.SetActive(true);
-            AcquirePopupInputBlock();
-        }
+        UnifiedTaskPopupUI.OpenDaily();
     }
 
     public void ClosePopup()
