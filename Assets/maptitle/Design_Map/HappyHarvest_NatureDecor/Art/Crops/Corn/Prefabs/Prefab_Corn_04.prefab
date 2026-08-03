@@ -9,16 +9,40 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: 41044916706355138, guid: e9780eb646244048965a9f91cc859a5e, type: 3}
+      propertyPath: m_labelHash
+      value: 0.00048130596
+      objectReference: {fileID: 0}
+    - target: {fileID: 41044916706355138, guid: e9780eb646244048965a9f91cc859a5e, type: 3}
       propertyPath: m_SpriteHash
       value: 410752505
+      objectReference: {fileID: 0}
+    - target: {fileID: 41044916706355138, guid: e9780eb646244048965a9f91cc859a5e, type: 3}
+      propertyPath: m_CategoryHash
+      value: 0.01363296
+      objectReference: {fileID: 0}
+    - target: {fileID: 142037360570545346, guid: e9780eb646244048965a9f91cc859a5e, type: 3}
+      propertyPath: m_labelHash
+      value: 0.00048130596
       objectReference: {fileID: 0}
     - target: {fileID: 142037360570545346, guid: e9780eb646244048965a9f91cc859a5e, type: 3}
       propertyPath: m_SpriteHash
       value: 410752505
       objectReference: {fileID: 0}
+    - target: {fileID: 142037360570545346, guid: e9780eb646244048965a9f91cc859a5e, type: 3}
+      propertyPath: m_CategoryHash
+      value: 0.01363296
+      objectReference: {fileID: 0}
+    - target: {fileID: 397823859674832285, guid: e9780eb646244048965a9f91cc859a5e, type: 3}
+      propertyPath: m_labelHash
+      value: 0.00048130596
+      objectReference: {fileID: 0}
     - target: {fileID: 397823859674832285, guid: e9780eb646244048965a9f91cc859a5e, type: 3}
       propertyPath: m_SpriteHash
       value: 410752505
+      objectReference: {fileID: 0}
+    - target: {fileID: 397823859674832285, guid: e9780eb646244048965a9f91cc859a5e, type: 3}
+      propertyPath: m_CategoryHash
+      value: 0.01363296
       objectReference: {fileID: 0}
     - target: {fileID: 6393031248553476976, guid: e9780eb646244048965a9f91cc859a5e, type: 3}
       propertyPath: m_Sprite

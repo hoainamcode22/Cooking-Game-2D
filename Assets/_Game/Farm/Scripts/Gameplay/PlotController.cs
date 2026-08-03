@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -154,8 +154,20 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         PlayerPrefs.DeleteKey(SaveKey);   // Xóa luôn để không còn "vết tích" cũ
     }
 
+    private float wiggleTimer = 0f;
+
     private void Update()
     {
+        if (state == PlotState.Ready)
+        {
+            wiggleTimer -= Time.deltaTime;
+            if (wiggleTimer <= 0f)
+            {
+                wiggleTimer = UnityEngine.Random.Range(3f, 6f);
+                if (cropVisual != null) cropVisual.PlayWiggleAnimation();
+            }
+        }
+
         if (state != PlotState.Growing)
             return;
 
@@ -186,6 +198,10 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if (FarmInputLock.IsDraggingSeed)
             return;
 
+        if (state == PlotState.Growing || state == PlotState.Ready)
+        {
+            if (cropVisual != null) cropVisual.PlayWiggleAnimation();
+        }
 
         if (FarmManager.Instance == null)
         {
@@ -609,6 +625,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             fxSpawn,
             amount
         );
+        
+        HarvestSlashFX.Spawn(fxSpawn);
 
         PlayHarvestAmountTextVFX(amount);
 

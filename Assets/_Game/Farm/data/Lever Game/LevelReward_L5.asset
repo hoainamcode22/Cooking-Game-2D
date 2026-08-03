@@ -20,6 +20,13 @@ MonoBehaviour:
     displayName: "Khoai t\xE2y gi\u1ED1ng"
     icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
     amount: 5
+  unlockEntries:
+  - label: "M\u1EDE KH\xD3A NH\xC0 B\u1EBEP \u2014 n\u1EA5u \u0103n ngay!"
+    icon: {fileID: -5775399491718878476, guid: 7b314202f7e3b20499171246a1b4a97c, type: 3}
+  - label: "M\u1EDF kh\xF3a Khoai t\xE2y"
+    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
+  - label: "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
+    icon: {fileID: 950524911477112507, guid: 0772edf2be2709a42bc3f4e453c8fec2, type: 3}
   unlockDescriptions:
   - "M\u1EDE KH\xD3A NH\xC0 B\u1EBEP \u2014 n\u1EA5u \u0103n ngay!"
   - "M\u1EDF kh\xF3a Khoai t\xE2y"

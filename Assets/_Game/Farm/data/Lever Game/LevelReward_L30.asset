@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t Ti\xEAu"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 5
+  unlockEntries:
+  - label: "\u0110\u1EA1t n\u1ED9i dung t\u1ED1i \u0111a c\u1EE7a b\u1EA3n demo"
+    icon: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}
+  - label: "\U0001F3C5 Danh hi\u1EC7u \"B\u1EACC TH\u1EA6Y N\xD4NG TR\u1EA0I\""
+    icon: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}
   unlockDescriptions:
   - "\u0110\u1EA1t n\u1ED9i dung t\u1ED1i \u0111a c\u1EE7a b\u1EA3n demo"
   - "\U0001F3C5 Danh hi\u1EC7u \"B\u1EACC TH\u1EA6Y N\xD4NG TR\u1EA0I\""

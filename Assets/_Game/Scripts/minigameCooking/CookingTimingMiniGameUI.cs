@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
@@ -147,11 +147,22 @@ public class CookingTimingMiniGameUI : MonoBehaviour
     private void MoveMarker()
     {
         MoveRectInsideBar(movingMarker, ref markerDirection, currentMarkerSpeed);
+        if (movingMarker != null)
+        {
+            float scaleX = 1f + 0.15f * Mathf.Sin(Time.time * 25f);
+            float scaleY = 1f - 0.15f * Mathf.Sin(Time.time * 25f);
+            movingMarker.localScale = new Vector3(scaleX, scaleY, 1f);
+        }
     }
 
     private void MoveSuccessZone()
     {
         MoveRectInsideBar(successZone, ref zoneDirection, currentZoneSpeed);
+        if (successZone != null)
+        {
+            var img = successZone.GetComponent<UnityEngine.UI.Image>();
+            if(img != null) img.color = Color.Lerp(Color.white, Color.green, (Mathf.Sin(Time.time * 10f) + 1f) / 2f);
+        }
     }
 
     private void MoveRectInsideBar(RectTransform target, ref float direction, float speed)

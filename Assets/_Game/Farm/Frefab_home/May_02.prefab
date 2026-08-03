@@ -199,14 +199,10 @@ MonoBehaviour:
   dragScaleMultiplier: 1.1
   shadowSprite: {fileID: 0}
   shadowAlphaActive: 0.6
-  gridSize: 50
   collisionCheckSize: {x: 50, y: 50}
   obstacleLayerMask:
     serializedVersion: 2
     m_Bits: 64
-  groundLayerMask:
-    serializedVersion: 2
-    m_Bits: 128
   placementIndicator: {fileID: 0}
   validPlacementColor: {r: 0, g: 1, b: 0, a: 1}
   invalidPlacementColor: {r: 1, g: 0, b: 0, a: 1}

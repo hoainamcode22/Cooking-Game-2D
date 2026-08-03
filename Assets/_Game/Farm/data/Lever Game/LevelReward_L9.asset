@@ -20,6 +20,13 @@ MonoBehaviour:
     displayName: "H\u1EA1t \u1EDAt"
     icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
     amount: 2
+  unlockEntries:
+  - label: "M\u1EDF kh\xF3a \u1EDAt"
+    icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
+  - label: "M\u1EDF kh\xF3a Tulip, C\xFAc v\u1EA1n th\u1ECD"
+    icon: {fileID: -9055938408451778832, guid: ee879aad837187b4aa8c50051bbdae2a, type: 3}
+  - label: "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
+    icon: {fileID: 950524911477112507, guid: 0772edf2be2709a42bc3f4e453c8fec2, type: 3}
   unlockDescriptions:
   - "M\u1EDF kh\xF3a \u1EDAt"
   - "M\u1EDF kh\xF3a Tulip, C\xFAc v\u1EA1n th\u1ECD"

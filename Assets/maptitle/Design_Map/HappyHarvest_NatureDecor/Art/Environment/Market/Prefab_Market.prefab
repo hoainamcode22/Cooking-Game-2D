@@ -293,6 +293,7 @@ SortingGroup:
   m_SortingLayer: 1
   m_SortingOrder: 0
   m_SortAtRoot: 0
+  m_Sort3DAs2D: 0
 --- !u!95 &1391481390244464415
 Animator:
   serializedVersion: 7

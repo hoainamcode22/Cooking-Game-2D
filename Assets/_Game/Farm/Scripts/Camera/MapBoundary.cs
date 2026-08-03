@@ -56,7 +56,16 @@ public class MapBoundary : MonoBehaviour
         if (mainCam != null)
             cameraController = mainCam.GetComponent<CameraController>();
 
+        // BUG CŨ: `if (cameraController == null)` bị treo, thiếu {} nên nuốt luôn
+        // dòng ApplyBounds() bên dưới → bounds CHỈ được áp dụng khi KHÔNG tìm thấy
+        // CameraController, tức là gần như không bao giờ chạy. Trước đây không lộ ra
+        // vì giá trị trong prefab tình cờ trùng với initialMinX/MaxX/MinY/MaxY.
         if (cameraController == null)
+        {
+            Debug.LogWarning("[MapBoundary] Không tìm thấy CameraController trên Camera.main — " +
+                             "bounds sẽ không được áp dụng.");
+            return;
+        }
 
         // Áp dụng bounds khởi đầu cho camera
         ApplyBounds();

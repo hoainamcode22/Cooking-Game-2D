@@ -29,7 +29,6 @@ public class PopupEwarManager : MonoBehaviour
 
     private readonly List<MissionItemUI> _spawnedItems = new List<MissionItemUI>();
     private bool _initialized;
-    private int  _lastSpawnLevel = -1;
     private bool _popupInputLockHeld;
 
     // PopupManager.IsAnyPopupOpen() đọc property này để biết có đang mở không
@@ -65,8 +64,7 @@ public class PopupEwarManager : MonoBehaviour
         MissionProgressTracker.OnProgressChanged -= HandleProgressChanged;
     }
 
-    // Btn_Ewar gọi hàm này (onClick trong scene). Redirect sang POPUP GỘP — tab Thành tựu.
-    // Khung cũ popup_Ewar không còn hiển thị nữa (logic spawn item cũ giữ lại nhưng không gọi).
+
     public void OpenPopup()
     {
         UnifiedTaskPopupUI.OpenAchievement();
@@ -75,14 +73,10 @@ public class PopupEwarManager : MonoBehaviour
     public void ClosePopup()
     {
         ReleasePopupInputBlock();
-        // Tắt chặn raycast — cho phép click xuyên trở lại khi popup đóng
         canvasGroup.blocksRaycasts = false;
         canvasGroup.interactable   = false;
 
         popup_Ewar.SetActive(false);
-
-        // FarmInputLock.BlockMapPan tự động = false vì IsOpen đã là false
-        // → CameraController nhận lại input kéo map bình thường
     }
 
     private void OnDisable()

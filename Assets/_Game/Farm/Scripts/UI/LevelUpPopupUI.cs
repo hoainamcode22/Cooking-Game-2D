@@ -36,6 +36,30 @@ public class LevelUpPopupUI : MonoBehaviour
     [Header("Unlock Descriptions")]
     [SerializeField] private TextMeshProUGUI unlockDescText;
 
+    // ─────────────────────────────────────────────────────────────────────────
+    //  DẢI Ô "VỪA MỞ KHOÁ"
+    //  VÌ SAO CÓ CẢ container LẪN mảng?
+    //  ---------------------------------------------------------------------
+    //  Ưu tiên 1 = unlockSlotsContainer (tự dò UnlockSlotUI bên trong).
+    //     BỀN HƠN vì: tool LevelUpPopupTownshipTool dựng lại popup là DestroyImmediate
+    //     toàn bộ cây cũ → mọi phần tử trong mảng thành null "mồ côi", còn 1 tham chiếu
+    //     container thì chỉ cần gán lại 1 lần. Designer thêm/bớt ô trong Hierarchy
+    //     cũng KHÔNG phải sửa mảng, chạy vẫn đúng.
+    //  Ưu tiên 2 = unlockSlots[] (dự phòng): dùng khi các ô không có 1 cha chung,
+    //     hoặc designer muốn tự quyết định thứ tự hiện.
+    // ─────────────────────────────────────────────────────────────────────────
+    [Header("Unlock Slots — dải ô tròn 'vừa mở khoá'")]
+    [Tooltip("Cha của các ô mở khoá (thường là Dai_MoKhoa/ScrollView/Viewport/Content). " +
+             "Script tự dò UnlockSlotUI bên trong — ƯU TIÊN cách này.")]
+    [SerializeField] private Transform unlockSlotsContainer;
+
+    [Tooltip("Danh sách ô mở khoá gán tay. CHỈ dùng khi unlockSlotsContainer để trống.")]
+    [SerializeField] private UnlockSlotUI[] unlockSlots;
+
+    [Tooltip("Nền cả dải mở khoá (Dai_MoKhoa). Tự ẩn khi level không mở khoá gì " +
+             "→ không để lại thanh nền tối rỗng. Có thể để trống.")]
+    [SerializeField] private GameObject unlockStripRoot;
+
     [Header("Buttons")]
     [SerializeField] private Button claimButton;
 
@@ -55,7 +79,8 @@ public class LevelUpPopupUI : MonoBehaviour
     [SerializeField] private float vfxSideVerticalOffset = 70f;
     [SerializeField] private float vfxTopDemoScale = 0.5f;
     [SerializeField] private float vfxSideDemoScale = 0.38f;
-    [SerializeField] private float vfxLifetime = 4f;
+    // vfxLifetime đã bỏ: VFX sống theo vòng đời popup (destroy khi popup đóng),
+    // không tự hết hạn theo giây nữa.
 
     [Header("VFX Intensity — bùm bùm rầm rộ tới khi nhận quà")]
     [Tooltip("Phóng to pháo hoa (confetti) phía trên")]
@@ -87,6 +112,13 @@ public class LevelUpPopupUI : MonoBehaviour
     private bool                _inputLockHeld;
     private GameObject          _activeVfxRoot;
     private Coroutine           _vfxLoop;
+
+    // Danh sách ô mở khoá đã dò xong (tránh GetComponentsInChildren mỗi lần mở popup).
+    private UnlockSlotUI[]      _unlockSlotsCache;
+    // Số ô cần chạy hiệu ứng "bung ra". Phải HOÃN tới sau khi popupRoot bật —
+    // xem PlayUnlockPops() để biết lý do.
+    private int                 _pendingUnlockPopCount;
+    private bool                _warnedNoUnlockSlots;
 
     // =========================================================================
     // Unity Lifecycle
@@ -157,17 +189,66 @@ public class LevelUpPopupUI : MonoBehaviour
         }
 
         int level = _levelUpQueue.Dequeue();
-        _isShowing    = true;
-        IsActive      = true;            // có popup đang hiện → tutorial chờ
         _currentConfig = levelRewardConfigs.Find(c => c != null && c.levelReached == level);
 
-        PopulateUI(level, _currentConfig);
+        // ── CHỐT 1: popupRoot chưa gán ───────────────────────────────────
+        if (popupRoot == null)
+        {
+            Debug.LogError("[LevelUpPopupUI] popupRoot = NULL → popup không thể hiện. " +
+                           "Dựng lại bằng Tools ▸ Farm ▸ Popup Lên Cấp (Township).");
+            _isShowing = false; IsActive = false;
+            return;
+        }
 
-        if (popupRoot != null) popupRoot.SetActive(true);
+        _isShowing    = true;
+        IsActive      = true;            // có popup đang hiện → tutorial chờ
+
+        PopulateUI(level, _currentConfig);
+        popupRoot.SetActive(true);
+
+        // ── CHỐT 2: có tổ tiên đang TẮT → SetActive(true) vô nghĩa ───────
+        // Đây là lỗi đã từng xảy ra: popup bị dựng vào Canvas World Space nằm trong
+        // prefab nhà, mà HouseOrderBubble.Awake() tắt object đó → activeInHierarchy
+        // luôn false → coroutine không chạy, popup vô hình. Tuyệt đối KHÔNG được
+        // để _isShowing/IsActive kẹt true, nếu không lần gọi sau sẽ im lặng hoàn toàn
+        // và tutorial bị chặn vĩnh viễn.
+        if (!popupRoot.activeInHierarchy)
+        {
+            Transform bad = transform;
+            while (bad != null && bad.gameObject.activeSelf) bad = bad.parent;
+
+            var cv = GetComponentInParent<Canvas>(true);
+
+            Debug.LogError(
+                $"[LevelUpPopupUI] '{popupRoot.name}' đã SetActive(true) nhưng activeInHierarchy = FALSE.\n" +
+                $"   • Tổ tiên đang TẮT : '{(bad != null ? bad.name : "?")}'\n" +
+                $"   • Canvas gần nhất  : '{(cv != null ? cv.name : "KHÔNG CÓ")}'" +
+                $" (renderMode = {(cv != null ? cv.renderMode.ToString() : "?")})\n" +
+                $"   • Đường dẫn        : {HierarchyPath(transform)}\n" +
+                $"   • lossyScale       : {transform.lossyScale} (phải ≈ 1,1,1)\n" +
+                "→ Popup đang nằm sai chỗ. Dựng lại vào Canvas_Popup (Screen Space Overlay).");
+
+            popupRoot.SetActive(false);
+            _isShowing = false; IsActive = false;
+            return;   // KHÔNG AcquireInputLock — tránh kẹt luôn thao tác kéo map
+        }
 
         AcquireInputLock();
         SpawnVFX();
+
+        // Chỉ tới ĐÂY các ô mở khoá mới thật sự activeInHierarchy → mới chạy được
+        // coroutine hiệu ứng. Gọi sớm hơn (trong PopulateUI) là vô tác dụng.
+        PlayUnlockPops();
+
         StartCoroutine(AnimateIn());
+    }
+
+    /// <summary>Đường dẫn hierarchy đầy đủ, dùng cho log lỗi.</summary>
+    private static string HierarchyPath(Transform t)
+    {
+        string p = t.name;
+        while (t.parent != null) { t = t.parent; p = t.name + " / " + p; }
+        return p;
     }
 
     private void PopulateUI(int level, LevelRewardConfig cfg)
@@ -183,6 +264,10 @@ public class LevelUpPopupUI : MonoBehaviour
             foreach (Transform child in giftItemsContainer)
                 if (child.GetComponent<LevelUpGiftSlotUI>() != null)
                     Destroy(child.gameObject);
+
+        // Dải ô "vừa mở khoá" — gọi cho CẢ hai trường hợp cfg có / không có:
+        // cfg == null vẫn phải vào để ẩn hết ô, nếu không sẽ còn lại ô trắng trơn.
+        ApplyUnlockSlots(cfg);
 
         if (cfg != null)
         {
@@ -281,6 +366,168 @@ public class LevelUpPopupUI : MonoBehaviour
             var slot = go.AddComponent<LevelUpGiftSlotUI>();
             slot.BuildProcedural(gifts[i]);
         }
+    }
+
+    // =========================================================================
+    // Dải ô "VỪA MỞ KHOÁ"
+    // =========================================================================
+
+    /// <summary>
+    /// Nạp icon vào các ô mở khoá và ẨN mọi ô thừa.
+    ///
+    /// Prefab dựng CỨNG 9 ô, còn mỗi level chỉ mở 1–3 thứ → phần lớn ô sẽ bị ẩn,
+    /// đó là ĐÚNG. Không ẩn thì người chơi thấy 6–8 khung tròn trắng trơn.
+    /// </summary>
+    private void ApplyUnlockSlots(LevelRewardConfig cfg)
+    {
+        var slots = ResolveUnlockSlots();
+        if (slots.Length == 0)
+        {
+            _pendingUnlockPopCount = 0;
+            return;
+        }
+
+        // GetUnlockEntries() theo hợp đồng của DEV-A: LUÔN != null (có thể rỗng)
+        // → không cần "?? new List<>()". cfg == null thì mới phải tự lo.
+        // UnlockEntry là class LỒNG trong LevelRewardConfig → phải viết đủ tên.
+        List<LevelRewardConfig.UnlockEntry> entries =
+            cfg != null ? cfg.GetUnlockEntries() : null;
+
+        int wanted = entries != null ? entries.Count : 0;   // số mục level này mở
+        int used   = Mathf.Min(wanted, slots.Length);       // số ô thật sự hiện được
+
+        int withIcon = 0;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            var slot = slots[i];
+            if (slot == null) continue;      // phần tử mồ côi trong mảng gán tay
+
+            bool inUse = i < used;
+
+            // BẮT BUỘC: ô thừa phải TẮT hẳn. HorizontalLayoutGroup bỏ qua con đang tắt
+            // nên dải icon tự co lại vừa số ô — không để khoảng trống.
+            if (slot.gameObject.activeSelf != inUse)
+                slot.gameObject.SetActive(inUse);
+
+            if (!inUse) continue;
+
+            var   entry = entries[i];
+            Sprite icon = entry != null ? entry.icon : null;
+            if (icon != null) withIcon++;
+
+            // caption để rỗng: nhãn chữ đã hiện gộp ở dòng "Mở khóa: ..." (unlockDescText),
+            // nhồi thêm chữ vào ô 190px sẽ tràn khung.
+            slot.Setup(icon, true, "");
+        }
+
+        // Hiệu ứng "bung ra" phải hoãn — xem PlayUnlockPops().
+        _pendingUnlockPopCount = used;
+
+        // Level không mở gì (hoặc chưa có asset) → ẩn cả dải, tránh thanh nền tối rỗng.
+        if (unlockStripRoot != null && unlockStripRoot.activeSelf != (used > 0))
+            unlockStripRoot.SetActive(used > 0);
+
+        if (wanted > slots.Length)
+            Debug.LogWarning($"[LevelUpPopupUI] Level mở {wanted} thứ nhưng popup chỉ có {slots.Length} ô → " +
+                             $"{wanted - slots.Length} mục KHÔNG hiện. Tăng 'Số ô mở khoá' rồi dựng lại " +
+                             "bằng Tools ▸ Farm ▸ Popup Lên Cấp (Township).");
+
+        if (used - withIcon > 0)
+            Debug.LogWarning($"[LevelUpPopupUI] {used - withIcon}/{used} ô mở khoá có icon = NULL → " +
+                             "ô chỉ còn khung tròn. Chạy Tools ▸ Farm ▸ Điền Icon Unlock (Level Reward) " +
+                             "để điền unlockEntries.");
+
+        Debug.Log($"[LevelUpPopupUI] Ô mở khoá: bật {used}/{slots.Length}, có icon {withIcon}/{used}.");
+    }
+
+    /// <summary>
+    /// Chạy hiệu ứng "bung ra" cho các ô đang bật.
+    ///
+    /// VÌ SAO TÁCH RIÊNG KHỎI ApplyUnlockSlots: PopulateUI() được gọi TRƯỚC
+    /// popupRoot.SetActive(true), nên lúc đó ô mở khoá chưa activeInHierarchy.
+    /// UnlockSlotUI.PlayPop() có chốt `if (!isActiveAndEnabled) return;`
+    /// (StartCoroutine trên object đang tắt sẽ bị Unity từ chối) → gọi sớm là mất animation.
+    /// </summary>
+    private void PlayUnlockPops()
+    {
+        if (_pendingUnlockPopCount <= 0) return;
+
+        var slots = ResolveUnlockSlots();
+        int n = Mathf.Min(_pendingUnlockPopCount, slots.Length);
+        for (int i = 0; i < n; i++)
+            if (slots[i] != null && slots[i].gameObject.activeInHierarchy)
+                slots[i].PlayPop(i);
+
+        _pendingUnlockPopCount = 0;
+    }
+
+    /// <summary>
+    /// Trả về danh sách ô mở khoá theo thứ tự hiển thị. LUÔN != null.
+    /// Ưu tiên tự dò trong <see cref="unlockSlotsContainer"/>; nếu container để trống
+    /// thì mới dùng mảng <see cref="unlockSlots"/> gán tay.
+    /// </summary>
+    private UnlockSlotUI[] ResolveUnlockSlots()
+    {
+        // Cache còn dùng được? Phần tử null = ô đã bị Destroy (tool dựng lại popup) → dò lại.
+        if (_unlockSlotsCache != null)
+        {
+            bool valid = true;
+            for (int i = 0; i < _unlockSlotsCache.Length; i++)
+                if (_unlockSlotsCache[i] == null) { valid = false; break; }
+            if (valid) return _unlockSlotsCache;
+            _unlockSlotsCache = null;
+        }
+
+        // 1) Tự dò trong container — luôn khớp Hierarchy thật.
+        //    includeInactive = TRUE vì từ lần mở popup thứ 2, các ô thừa đang bị TẮT,
+        //    nếu bỏ qua ô tắt thì mảng ngắn dần và không bao giờ bật lại được.
+        if (unlockSlotsContainer != null)
+        {
+            _unlockSlotsCache = unlockSlotsContainer.GetComponentsInChildren<UnlockSlotUI>(true);
+            if (_unlockSlotsCache.Length > 0) return _unlockSlotsCache;
+        }
+
+        // 2) Dự phòng: mảng gán tay (bỏ phần tử null).
+        if (unlockSlots != null && unlockSlots.Length > 0)
+        {
+            var picked = new List<UnlockSlotUI>(unlockSlots.Length);
+            foreach (var s in unlockSlots)
+                if (s != null) picked.Add(s);
+
+            if (picked.Count > 0)
+            {
+                _unlockSlotsCache = picked.ToArray();
+                return _unlockSlotsCache;
+            }
+        }
+
+        // 3) CỨU CÁNH CUỐI: quét cả cây popup.
+        //    BẮT BUỘC PHẢI CÓ vì scene hiện tại được dựng bằng bản tool CŨ (chưa biết
+        //    2 field ở trên) → nếu thiếu bước này thì phải mở Unity bấm "DỰNG POPUP"
+        //    lại mới thấy icon, mà đúng lúc đó không ai bấm được.
+        Transform searchRoot = popupRoot != null ? popupRoot.transform : transform;
+        _unlockSlotsCache = searchRoot.GetComponentsInChildren<UnlockSlotUI>(true);
+        if (_unlockSlotsCache.Length > 0)
+        {
+            if (!_warnedNoUnlockSlots)
+            {
+                _warnedNoUnlockSlots = true;
+                Debug.Log($"[LevelUpPopupUI] Chưa nối dây ô mở khoá, đã TỰ TÌM được " +
+                          $"{_unlockSlotsCache.Length} ô dưới '{searchRoot.name}'. " +
+                          "Chạy lại Tools ▸ Farm ▸ Popup Lên Cấp (Township) để nối dây cho chắc.");
+            }
+            return _unlockSlotsCache;
+        }
+
+        _unlockSlotsCache = System.Array.Empty<UnlockSlotUI>();
+        if (!_warnedNoUnlockSlots)
+        {
+            _warnedNoUnlockSlots = true;   // cảnh báo 1 lần, tránh spam Console mỗi lần lên cấp
+            Debug.LogWarning("[LevelUpPopupUI] Không tìm thấy UnlockSlotUI nào (cả 'unlockSlotsContainer', " +
+                             "'unlockSlots' và cây con của popupRoot đều trống) → không có ô mở khoá nào " +
+                             "để nạp icon. Dựng lại popup bằng Tools ▸ Farm ▸ Popup Lên Cấp (Township).");
+        }
+        return _unlockSlotsCache;
     }
 
     // =========================================================================

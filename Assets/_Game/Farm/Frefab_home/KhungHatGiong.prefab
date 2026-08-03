@@ -349,6 +349,7 @@ GameObject:
   - component: {fileID: 5103477570340155943}
   - component: {fileID: 7747537795704269382}
   - component: {fileID: 7737087796249244253}
+  - component: {fileID: 5367954828886316738}
   m_Layer: 5
   m_Name: Mua
   m_TagString: Untagged
@@ -458,6 +459,25 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5367954828886316738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 858733458145646899}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41b2b3ff7754b5943a398d62e7c1fd1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIJuiceFeedback
+  target: {fileID: 0}
+  soundType: 1
+  pressScale: 0.9
+  bounceScale: 1.1
+  pressTime: 0.05
+  bounceTime: 0.07
+  settleTime: 0.06
 --- !u!1 &2045579538003093485
 GameObject:
   m_ObjectHideFlags: 0
@@ -1031,6 +1051,7 @@ GameObject:
   - component: {fileID: 5021039451081872302}
   - component: {fileID: 7681332896577985739}
   - component: {fileID: 6454451723739513178}
+  - component: {fileID: 1163998457430689652}
   m_Layer: 5
   m_Name: "T\u0103ngSL"
   m_TagString: Untagged
@@ -1140,6 +1161,25 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1163998457430689652
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6094196995120142637}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41b2b3ff7754b5943a398d62e7c1fd1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIJuiceFeedback
+  target: {fileID: 0}
+  soundType: 1
+  pressScale: 0.9
+  bounceScale: 1.1
+  pressTime: 0.05
+  bounceTime: 0.07
+  settleTime: 0.06
 --- !u!1 &6232896053917101795
 GameObject:
   m_ObjectHideFlags: 0
@@ -1639,6 +1679,7 @@ GameObject:
   - component: {fileID: 3984723010510856224}
   - component: {fileID: 4106826246291542384}
   - component: {fileID: 2290533022087473756}
+  - component: {fileID: 3043827198522670071}
   m_Layer: 5
   m_Name: GiamSL
   m_TagString: Untagged
@@ -1748,3 +1789,22 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &3043827198522670071
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8886831625118606325}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41b2b3ff7754b5943a398d62e7c1fd1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIJuiceFeedback
+  target: {fileID: 0}
+  soundType: 1
+  pressScale: 0.9
+  bounceScale: 1.1
+  pressTime: 0.05
+  bounceTime: 0.07
+  settleTime: 0.06

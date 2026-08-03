@@ -79,7 +79,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1471039481
-  m_SortingLayer: 3
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: b404f3c428b742a69c8d50f59e3d94fc, type: 3}
@@ -92,6 +92,23 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!114 &8100000000000000007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 929070828165467677}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb6ed498cb0fb92469c620272bf0502d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  swayAngle: 3.2
+  swaySpeed: 1.15
+  positionAmplitude: 0.035
+  positionAxis: {x: 1, y: 0}
+  scaleAmplitude: 0.006
 --- !u!1 &3975615672681144654
 GameObject:
   m_ObjectHideFlags: 0
@@ -184,20 +201,3 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &8100000000000000007
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 929070828165467677}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb6ed498cb0fb92469c620272bf0502d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  swayAngle: 3.2
-  swaySpeed: 1.15
-  positionAmplitude: 0.035
-  positionAxis: {x: 1, y: 0}
-  scaleAmplitude: 0.006

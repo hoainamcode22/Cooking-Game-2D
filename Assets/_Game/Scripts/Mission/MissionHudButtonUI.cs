@@ -82,8 +82,6 @@ public class MissionHudButtonUI : MonoBehaviour
         if (Time.unscaledTime < _nextRefreshTime)
             return;
 
-        // 0.3s: sau khi claim 1 nhiệm vụ (không đổi tiến độ nên OnProgressChanged không bắn),
-        // thanh nhảy sang nhiệm vụ kế nhanh → cảm giác bám sát game.
         _nextRefreshTime = Time.unscaledTime + 0.3f;
         RefreshNow();
     }
@@ -174,9 +172,6 @@ public class MissionHudButtonUI : MonoBehaviour
                 firstInProgress = mission;
             }
         }
-
-        // ƯU TIÊN nhiệm vụ HOÀN THÀNH CHỜ NHẬN → thanh hiện nó (icon đồng bộ) để user bấm Nhận ngay;
-        // chưa có cái nào xong thì hiện nhiệm vụ đang làm đầu tiên.
         return completedUnclaimed != null ? completedUnclaimed : firstInProgress;
     }
 

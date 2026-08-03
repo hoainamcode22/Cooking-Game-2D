@@ -1040,7 +1040,15 @@ MonoBehaviour:
   progressOverlay: {fileID: 3875434522597948574}
   progressFill: {fileID: 3970777739552942347}
   progressLabel: {fileID: 2074648036896692960}
-  panelCollider: {fileID: 1037848967059955010}
+  harvestSpawnUpOffset: 120
+  speedUpGemCost: 1
+  processOverlayCanvas: {fileID: 0}
+  processSortingOrder: -10
+  gemButtonBgSprite: {fileID: 0}
+  gemIconSprite: {fileID: 0}
+  readyBubbleBgSprite: {fileID: 0}
+  readyBubbleLocalPos: {x: 0, y: 420}
+  readyBubbleSortingOrder: 1300
 --- !u!1 &8620300294450432131
 GameObject:
   m_ObjectHideFlags: 0

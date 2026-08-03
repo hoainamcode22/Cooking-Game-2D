@@ -75,7 +75,7 @@ public class LevelUpGiftSlotUI : MonoBehaviour
         t.alignment = TextAlignmentOptions.Center;
         t.fontStyle = FontStyles.Bold;
         t.raycastTarget = false;
-        t.enableWordWrapping = true;
+        t.textWrappingMode = TextWrappingModes.Normal;
         t.overflowMode = TextOverflowModes.Ellipsis;
         return t;
     }

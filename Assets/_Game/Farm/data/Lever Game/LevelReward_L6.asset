@@ -20,6 +20,13 @@ MonoBehaviour:
     displayName: "H\u1EA1t N\u1EA5m"
     icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "M\u1EDF kh\xF3a N\u1EA5m"
+    icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
+  - label: "Chu\u1ED3ng b\xF2 \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+    icon: {fileID: 3939136077963233266, guid: 8b583cc7808b2d44da70fbe84e2b5c31, type: 3}
+  - label: "Nhi\u1EC7m v\u1EE5 h\u1EB1ng ng\xE0y \u0111\xE3 m\u1EDF"
+    icon: {fileID: -2858330702786226967, guid: 6f085ae258ca6204ab9f38c88778590d, type: 3}
   unlockDescriptions:
   - "M\u1EDF kh\xF3a N\u1EA5m"
   - "Chu\u1ED3ng b\xF2 \u0111\xE3 m\u1EDF b\xE1n trong Shop"

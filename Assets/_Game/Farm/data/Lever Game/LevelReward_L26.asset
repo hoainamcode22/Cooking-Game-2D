@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t Ti\xEAu"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "C\xF4ng th\u1EE9c cao c\u1EA5p"
+    icon: {fileID: -8761267228683204362, guid: f9dc232488c93e14eb290d9028afcb23, type: 3}
+  - label: "Trang tr\xED theo m\xF9a"
+    icon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}
   unlockDescriptions:
   - "C\xF4ng th\u1EE9c cao c\u1EA5p"
   - "Trang tr\xED theo m\xF9a"

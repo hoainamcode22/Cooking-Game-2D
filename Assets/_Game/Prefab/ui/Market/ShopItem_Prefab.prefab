@@ -247,6 +247,7 @@ GameObject:
   - component: {fileID: 7763731408471303093}
   - component: {fileID: 9132535959454933802}
   - component: {fileID: 4100876519302055380}
+  - component: {fileID: 654025545143129171}
   m_Layer: 0
   m_Name: Button_Buy
   m_TagString: Untagged
@@ -356,6 +357,25 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &654025545143129171
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1842734180252415849}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41b2b3ff7754b5943a398d62e7c1fd1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIJuiceFeedback
+  target: {fileID: 0}
+  soundType: 1
+  pressScale: 0.9
+  bounceScale: 1.1
+  pressTime: 0.05
+  bounceTime: 0.07
+  settleTime: 0.06
 --- !u!1 &2079642766601159441
 GameObject:
   m_ObjectHideFlags: 0

@@ -136,7 +136,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 2
+  m_SortingLayer: 0
   m_SortingOrder: 570
   m_MaskInteraction: 0
   m_Sprite: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}

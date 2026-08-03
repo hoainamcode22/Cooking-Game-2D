@@ -121,7 +121,7 @@ VFXRenderer:
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1304480043
   m_SortingLayer: 3
-  m_SortingOrder: 95
+  m_SortingOrder: 1000
   m_MaskInteraction: 0
 --- !u!1 &1004427458033512542
 GameObject:

@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t M\xEDa"
     icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "S\u1EF1 ki\u1EC7n m\xF9a (placeholder)"
+    icon: {fileID: -2858330702786226967, guid: 6f085ae258ca6204ab9f38c88778590d, type: 3}
+  - label: "Decor hi\u1EBFm"
+    icon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}
   unlockDescriptions:
   - "S\u1EF1 ki\u1EC7n m\xF9a (placeholder)"
   - "Decor hi\u1EBFm"

@@ -82,7 +82,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1471039481
-  m_SortingLayer: 3
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_Sprite: {fileID: 21300000, guid: 115451981acf40d3b0e244604ebc40b0, type: 3}
@@ -141,6 +141,23 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.88313234, y: 0.3343821}
   m_EdgeRadius: 0
+--- !u!114 &8100000000000000006
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3838970799755907619}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cb6ed498cb0fb92469c620272bf0502d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  swayAngle: 3.2
+  swaySpeed: 1.15
+  positionAmplitude: 0.035
+  positionAxis: {x: 1, y: 0}
+  scaleAmplitude: 0.006
 --- !u!1 &8298222359587187870
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,20 +875,3 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 650208495533673117, guid: 063abfe9ba9f4f89b2dad75bdc751c2c, type: 3}
   m_PrefabInstance: {fileID: 6659166170103900254}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8100000000000000006
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3838970799755907619}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cb6ed498cb0fb92469c620272bf0502d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  swayAngle: 3.2
-  swaySpeed: 1.15
-  positionAmplitude: 0.035
-  positionAxis: {x: 1, y: 0}
-  scaleAmplitude: 0.006

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using System.Collections.Generic;
@@ -129,8 +129,78 @@ public class CookingSelectionManager : MonoBehaviour
         card.SetQuantityFromKitchen(quantity - 1);
         card.SetSelected(true);
 
+        AnimateThrow(card);
+
         RebuildPot();
         UpdateCounts();
+    }
+
+    private void AnimateThrow(SelectableIngredientCard card)
+    {
+        GameObject flyingObj = new GameObject("FlyingIngredient");
+        flyingObj.transform.SetParent(this.transform, false);
+        Image img = flyingObj.AddComponent<Image>();
+        img.sprite = card.GetMainSprite();
+        flyingObj.transform.position = card.transform.position;
+        Vector3 targetPos = (card.isSeasoning ? potSeasoningsContent.position : potIngredientsContent.position);
+        StartCoroutine(ParabolaRoutine(flyingObj, flyingObj.transform.position, targetPos));
+    }
+
+    private System.Collections.IEnumerator ParabolaRoutine(GameObject obj, Vector3 start, Vector3 end)
+    {
+        float t = 0;
+        float duration = 0.4f;
+        while(t < duration)
+        {
+            t += Time.deltaTime;
+            float normalizedT = t / duration;
+            Vector3 lerpPos = Vector3.Lerp(start, end, normalizedT);
+            lerpPos.y += Mathf.Sin(normalizedT * Mathf.PI) * 200f; // Parabola height
+            if(obj != null)
+                obj.transform.position = lerpPos;
+            yield return null;
+        }
+        if (obj != null) Destroy(obj);
+        CreateWaterSplash(end);
+    }
+
+    private void CreateWaterSplash(Vector3 pos)
+    {
+        for (int i = 0; i < 6; i++)
+        {
+            GameObject splash = new GameObject("Splash");
+            splash.transform.SetParent(this.transform, false);
+            splash.transform.position = pos;
+            Image img = splash.AddComponent<Image>();
+            img.color = new Color(0.2f, 0.8f, 1f, 0.8f);
+            splash.transform.localScale = Vector3.one * 0.4f;
+            StartCoroutine(SplashRoutine(splash));
+        }
+    }
+
+    private System.Collections.IEnumerator SplashRoutine(GameObject obj)
+    {
+        Vector3 start = obj.transform.position;
+        Vector3 randomOffset = new Vector3(Random.Range(-80f, 80f), Random.Range(50f, 150f), 0);
+        Vector3 end = start + randomOffset;
+        float t = 0;
+        float duration = 0.4f;
+        while (t < duration)
+        {
+            t += Time.deltaTime;
+            float normalizedT = t / duration;
+            Vector3 lerpPos = Vector3.Lerp(start, end, normalizedT);
+            lerpPos.y -= Mathf.Pow(normalizedT, 2) * 150f; // Gravity approximation
+            if(obj != null) {
+                obj.transform.position = lerpPos;
+                Image img = obj.GetComponent<Image>();
+                Color c = img.color;
+                c.a = 1f - normalizedT;
+                img.color = c;
+            }
+            yield return null;
+        }
+        if (obj != null) Destroy(obj);
     }
 
     public void TryDeselect(SelectableIngredientCard card)

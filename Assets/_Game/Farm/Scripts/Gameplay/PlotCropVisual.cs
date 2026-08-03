@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 /// <summary>
 /// Quáº£n lÃ½ visual cÃ¢y trá»“ng trong 1 plot.
@@ -64,6 +64,56 @@ public class PlotCropVisual : MonoBehaviour
     }
 
     // â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    private Coroutine wiggleRoutine;
+
+    public void PlayWiggleAnimation()
+    {
+        if (wiggleRoutine != null) StopCoroutine(wiggleRoutine);
+        wiggleRoutine = StartCoroutine(CoWiggle());
+    }
+
+    private System.Collections.IEnumerator CoWiggle()
+    {
+        if (slotVisuals == null) yield break;
+        
+        bool wasSwayActive = isReadySwayActive;
+        isReadySwayActive = false;
+
+        float elapsed = 0f;
+        float duration = 0.35f;
+        
+        Vector3[] startScales = new Vector3[slotVisuals.Length];
+        for (int i = 0; i < slotVisuals.Length; i++) {
+            if (slotVisuals[i] != null) startScales[i] = slotVisuals[i].localScale;
+        }
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            float sin = Mathf.Sin(t * Mathf.PI);
+            float angle = sin * 8f;
+            float scaleMulti = 1f + sin * 0.15f;
+
+            for (int i = 0; i < slotVisuals.Length; i++)
+            {
+                if (slotVisuals[i] == null) continue;
+                slotVisuals[i].localRotation = Quaternion.Euler(0f, 0f, angle * ((i % 2 == 0) ? 1 : -1));
+                slotVisuals[i].localScale = startScales[i] * scaleMulti;
+            }
+            yield return null;
+        }
+
+        for (int i = 0; i < slotVisuals.Length; i++)
+        {
+            if (slotVisuals[i] == null) continue;
+            slotVisuals[i].localRotation = Quaternion.identity;
+            slotVisuals[i].localScale = startScales[i];
+        }
+        
+        isReadySwayActive = wasSwayActive;
+    }
 
     /// <summary>Hiá»ƒn thá»‹ crop theo progress (0..1).</summary>
     public void ShowCrop(CropData crop, float progress01)

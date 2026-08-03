@@ -20,6 +20,13 @@ MonoBehaviour:
     displayName: "H\u1EA1t Ti\xEAu"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "Trang tr\xED c\u1EA5p 3"
+    icon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}
+  - label: "\u0110\u01A1n combo 3 m\xF3n"
+    icon: {fileID: -6116058755252793876, guid: 6fa3ebb28106006499981cca0d210947, type: 3}
+  - label: "\U0001F3C5 Danh hi\u1EC7u \"\xD4ng/B\xE0 ch\u1EE7 l\u1EDBn\""
+    icon: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}
   unlockDescriptions:
   - "Trang tr\xED c\u1EA5p 3"
   - "\u0110\u01A1n combo 3 m\xF3n"

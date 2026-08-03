@@ -326,6 +326,7 @@ GameObject:
   - component: {fileID: 2391685208734727723}
   - component: {fileID: 424295197552645090}
   - component: {fileID: 6078096349634122219}
+  - component: {fileID: 6248734988067393871}
   m_Layer: 5
   m_Name: Btn_thunhap
   m_TagString: Untagged
@@ -435,6 +436,25 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6248734988067393871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4602336364236239672}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41b2b3ff7754b5943a398d62e7c1fd1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIJuiceFeedback
+  target: {fileID: 0}
+  soundType: 1
+  pressScale: 0.9
+  bounceScale: 1.1
+  pressTime: 0.05
+  bounceTime: 0.07
+  settleTime: 0.06
 --- !u!1 &4983401266886068615
 GameObject:
   m_ObjectHideFlags: 0

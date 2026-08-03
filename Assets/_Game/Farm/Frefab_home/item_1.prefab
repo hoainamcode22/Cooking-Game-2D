@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3665330056134209290}
   - component: {fileID: 3425000273273453866}
   - component: {fileID: 8712116800999637371}
+  - component: {fileID: 6522704446102409889}
   m_Layer: 5
   m_Name: item_1
   m_TagString: Untagged
@@ -139,6 +140,25 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &6522704446102409889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1706149215430300920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41b2b3ff7754b5943a398d62e7c1fd1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIJuiceFeedback
+  target: {fileID: 0}
+  soundType: 1
+  pressScale: 0.9
+  bounceScale: 1.1
+  pressTime: 0.05
+  bounceTime: 0.07
+  settleTime: 0.06
 --- !u!1 &3670650934503543754
 GameObject:
   m_ObjectHideFlags: 0

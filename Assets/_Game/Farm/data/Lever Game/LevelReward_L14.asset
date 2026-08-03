@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t Hoa h\u1ED3ng"
     icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
     amount: 2
+  unlockEntries:
+  - label: "\u0110\u01A1n 2 m\xF3n xu\u1EA5t hi\u1EC7n nhi\u1EC1u h\u01A1n"
+    icon: {fileID: -6116058755252793876, guid: 6fa3ebb28106006499981cca0d210947, type: 3}
+  - label: "M\u1EDF th\xEAm hoa m\u1EDBi"
+    icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
   unlockDescriptions:
   - "\u0110\u01A1n 2 m\xF3n xu\u1EA5t hi\u1EC7n nhi\u1EC1u h\u01A1n"
   - "M\u1EDF th\xEAm hoa m\u1EDBi"

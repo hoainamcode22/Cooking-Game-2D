@@ -78,7 +78,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 2
+  m_SortingLayer: 0
   m_SortingOrder: 150
   m_MaskInteraction: 0
   m_Sprite: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
@@ -144,6 +144,7 @@ MonoBehaviour:
   flyDuration: 1
   scatterRadius: 120
   dropDownOffset: 35
+  popHeight: 100
   startScale: {x: 80, y: 80, z: 80}
   normalScale: {x: 85, y: 85, z: 85}
   destroyOnFinish: 1
@@ -156,7 +157,7 @@ SortingGroup:
   m_GameObject: {fileID: 5760333426697029183}
   m_Enabled: 1
   m_SortingLayerID: 1669604809
-  m_SortingLayer: 2
+  m_SortingLayer: 0
   m_SortingOrder: 570
   m_SortAtRoot: 0
   m_Sort3DAs2D: 0

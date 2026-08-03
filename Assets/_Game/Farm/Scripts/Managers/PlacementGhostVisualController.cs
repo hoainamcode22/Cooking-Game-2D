@@ -1,5 +1,7 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Runtime visual polish for Placement_Ghost.
@@ -53,6 +55,7 @@ public class PlacementGhostVisualController : MonoBehaviour
     private bool _lastValid = true;
     private bool _suppressFramePulse;
     private bool _isBuildingVisuals;
+    private bool _priceBarChecked;          // đã thử dựng dải giá chưa (chỉ làm 1 lần / Ghost)
 
     private const string VisualRootName = "Designed_Placement_Frame";
     private const string ArrowRootName = "Lift_Arrow_Effect";
@@ -144,6 +147,7 @@ public class PlacementGhostVisualController : MonoBehaviour
             foreach (var c in _corners) if (c != null) c.sprite = cornerSpr;
 
         BuildArrow();
+        EnsurePriceBar();
         ApplyVisualState(_lastValid);
 
         if (_arrowRoot != null)
@@ -523,6 +527,139 @@ public class PlacementGhostVisualController : MonoBehaviour
         _frameRoot.localScale = baseScale;
         _suppressFramePulse = wasSuppressingFramePulse;
         _invalidPulse = null;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // N4 — DẢI GIÁ TRONG THANH XÁC NHẬN  (ảnh 1, 3: "KAUFEN FÜR 🪙 <giá>")
+    // ══════════════════════════════════════════════════════════════════════
+
+    private const string PriceBarName = "Price_Bar";
+
+    /// <summary>
+    /// Dựng dải "MUA VỚI GIÁ 🪙 &lt;giá&gt;" NGAY TRÊN hàng nút ✕ ↻ ✓.
+    ///
+    /// DỰNG BẰNG CODE, KHÔNG SỬA PREFAB: prefab `Placement_Ghost` là file YAML dùng chung
+    /// với DEV-1 (hàng nút, canvas, footprint đều nằm trong đó) — thêm node bằng tay dễ
+    /// đụng độ merge, mà Edric cũng không phải mở prefab chỉnh gì. Chạy runtime thì mọi
+    /// công trình đều tự có dải giá, kể cả prefab ghost sau này bị thay.
+    ///
+    /// ĐƠN VỊ: canvas `Placement_UI` có localScale 0.01 nằm dưới root scale 100 ⇒ tích = 1,
+    /// nên 1 "pixel" UI ở đây đúng bằng 1 world unit. Hàng nút cao 126, tâm ở y = 0
+    /// (xem PlacementManager.StyleGhostActionBar) ⇒ đặt dải giá ở y = 104 là vừa sát trên.
+    ///
+    /// Giá lấy từ `PlaceableItemData.goldPrice` / `diamondPrice` của item Ghost đang cầm.
+    /// Đang SỬA công trình cũ (không mua gì) thì `currentItem` = null ⇒ không hiện dải giá.
+    /// </summary>
+    private void EnsurePriceBar()
+    {
+        if (_priceBarChecked) return;
+        _priceBarChecked = true;
+
+        PlaceableItemData data = ConstructionBridge.GetGhostItem();
+        if (data == null) return;
+
+        bool useGem = data.goldPrice <= 0 && data.diamondPrice > 0;
+        int  price  = useGem ? data.diamondPrice : data.goldPrice;
+        if (price <= 0) return;   // item miễn phí → không cần dải giá
+
+        Canvas canvas = GetComponentInChildren<Canvas>(true);
+        if (canvas == null) return;
+
+        Transform existing = canvas.transform.Find(PriceBarName);
+        if (existing != null) Destroy(existing.gameObject);
+
+        // ── Nền tối bo góc ───────────────────────────────────────────────
+        var barGo = new GameObject(PriceBarName, typeof(RectTransform));
+        barGo.transform.SetParent(canvas.transform, false);
+        barGo.layer = canvas.gameObject.layer;
+
+        var barRect = (RectTransform)barGo.transform;
+        barRect.anchorMin        = new Vector2(0.5f, 0.5f);
+        barRect.anchorMax        = new Vector2(0.5f, 0.5f);
+        barRect.pivot            = new Vector2(0.5f, 0.5f);
+        barRect.anchoredPosition = new Vector2(0f, 104f);
+        barRect.sizeDelta        = new Vector2(360f, 66f);
+
+        // Ô art `PriceBarBg`: chưa gán thì dùng panel vẽ bằng code, tô MÀU NHẬN DẠNG
+        // (đen) để Edric biết chỗ này thả nền thanh giá vào.
+        ConstructionArtKit kit = ConstructionManager.Instance != null
+                               ? ConstructionManager.Instance.ArtKit : null;
+
+        ConstructionArtKit.ResolveSafe(kit, ConstructionArtKit.Slot.PriceBarBg,
+                                       ConstructionSpriteFactory.Panel(96, 64, 24),
+                                       out Sprite barSpr, out Color barCol);
+
+        var bg = barGo.AddComponent<Image>();
+        bg.sprite        = barSpr;
+        bg.type          = Image.Type.Sliced;
+        bg.color         = barCol;
+        bg.raycastTarget = false;
+
+        if (ConstructionArtKit.WantLabels(kit))
+            ConstructionSiteVisuals.AttachSlotLabel(barGo.transform,
+                                                    ConstructionArtKit.Slot.PriceBarBg, kit);
+
+        // Bề rộng tự co theo độ dài chữ (tiếng Việt dài hơn tiếng Đức trong ảnh mẫu).
+        var layout = barGo.AddComponent<HorizontalLayoutGroup>();
+        layout.padding                = new RectOffset(26, 26, 6, 6);
+        layout.spacing                = 10f;
+        layout.childAlignment         = TextAnchor.MiddleCenter;
+        layout.childControlWidth      = true;
+        layout.childControlHeight     = false;
+        layout.childForceExpandWidth  = false;
+        layout.childForceExpandHeight = false;
+
+        var fitter = barGo.AddComponent<ContentSizeFitter>();
+        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+        fitter.verticalFit   = ContentSizeFitter.FitMode.Unconstrained;
+
+        // ── Chữ + icon tiền + số ─────────────────────────────────────────
+        MakePriceLabel(barRect, "Text_MuaVoiGia", "MUA VỚI GIÁ", 38f);
+
+        var iconGo = new GameObject("Icon_Tien", typeof(RectTransform));
+        iconGo.transform.SetParent(barRect, false);
+        iconGo.layer = barGo.layer;
+
+        var icon = iconGo.AddComponent<Image>();
+        icon.sprite        = useGem
+            ? ConstructionSpriteFactory.GemIcon()
+            : ConstructionSpriteFactory.CoinIcon();
+        icon.raycastTarget = false;
+
+        var iconLayout = iconGo.AddComponent<LayoutElement>();
+        iconLayout.preferredWidth  = 44f;
+        iconLayout.preferredHeight = 44f;
+        ((RectTransform)iconGo.transform).sizeDelta = new Vector2(44f, 44f);
+
+        MakePriceLabel(barRect, "Text_Gia", price.ToString(), 40f);
+    }
+
+    private static void MakePriceLabel(Transform parent, string name, string content, float size)
+    {
+        var go = new GameObject(name, typeof(RectTransform));
+        go.transform.SetParent(parent, false);
+        go.layer = parent.gameObject.layer;
+
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        if (tmp.font == null && TMP_Settings.defaultFontAsset != null)
+            tmp.font = TMP_Settings.defaultFontAsset;
+
+        tmp.text          = content;
+        tmp.fontSize      = size;
+        tmp.fontStyle     = FontStyles.Bold;
+        tmp.color         = Color.white;
+        tmp.alignment     = TextAlignmentOptions.Center;
+        tmp.overflowMode  = TextOverflowModes.Overflow;
+        tmp.raycastTarget = false;
+
+        ((RectTransform)go.transform).sizeDelta = new Vector2(tmp.preferredWidth, 52f);
+
+        // Viền đậm giống nhãn Township (cùng cách với LevelUpPopupTownshipTool.AddTextOutline)
+        Material mat = tmp.fontMaterial;
+        if (mat != null) mat.EnableKeyword(ShaderUtilities.Keyword_Outline);
+        tmp.outlineColor = new Color(0.07f, 0.05f, 0.02f, 1f);
+        tmp.outlineWidth = 0.26f;
+        tmp.UpdateMeshPadding();
     }
 
     private SpriteRenderer CreateOrGetRenderer(Transform parent, string name, Sprite sprite, int order)

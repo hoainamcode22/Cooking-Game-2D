@@ -908,10 +908,8 @@ public static class SetupTutorialL1L2Tool
             listProp.InsertArrayElementAtIndex(i);
             listProp.GetArrayElementAtIndex(i).objectReferenceValue = flowerPots[i];
         }
-        var plantCount = so.FindProperty("targetFlowerPlantCount");
-        var harvestCount = so.FindProperty("targetFlowerHarvestCount");
-        if (plantCount != null) plantCount.intValue = 6;
-        if (harvestCount != null) harvestCount.intValue = 6;
+        // targetFlowerPlantCount/HarvestCount đã bị bỏ khỏi bridge — gate giờ kiểm tra
+        // "hết ô trống / hết cây" thay vì đếm số, nên không cần set gì thêm.
         so.ApplyModifiedProperties();
         Debug.Log($"[TutorialSetup] {flowerPots.Count} chau hoa gan vao bridge:");
         foreach (var p in flowerPots) Debug.Log($"  - {p.gameObject.name} (id={p.PlotId})");

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -9,13 +9,14 @@ public class HarvestFlyItemFX : MonoBehaviour
     [SerializeField] private Transform visualRoot;
 
     [Header("Timing")]
-    [SerializeField] private float dropDuration = 0.12f;
-    [SerializeField] private float groundStayDuration = 2.0f;
+    [SerializeField] private float dropDuration = 0.4f;
+    [SerializeField] private float groundStayDuration = 0.3f;
     [SerializeField] private float flyDuration = 0.65f;
 
     [Header("World Motion")]
     [SerializeField] private float scatterRadius = 120f;
     [SerializeField] private float dropDownOffset = 35f;
+    [SerializeField] private float popHeight = 100f;
 
     [Header("Scale (World)")]
     [SerializeField] private Vector3 startScale = new Vector3(0.55f, 0.55f, 0.55f);
@@ -106,12 +107,14 @@ public class HarvestFlyItemFX : MonoBehaviour
         {
             timer += Time.deltaTime;
             float t = dropDuration <= 0f ? 1f : Mathf.Clamp01(timer / dropDuration);
-            float ease = Mathf.SmoothStep(0f, 1f, t);
-
-            transform.position = Vector3.LerpUnclamped(worldSpawnPos, groundPos, ease);
+            
+            Vector3 basePos = Vector3.LerpUnclamped(worldSpawnPos, groundPos, t);
+            float heightOffset = Mathf.Sin(t * Mathf.PI) * popHeight;
+            
+            transform.position = basePos + new Vector3(0f, heightOffset, 0f);
 
             if (visualRoot != null)
-                visualRoot.localScale = Vector3.LerpUnclamped(startScale, normalScale, ease);
+                visualRoot.localScale = Vector3.LerpUnclamped(startScale, normalScale, t);
 
             yield return null;
         }

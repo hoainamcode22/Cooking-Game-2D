@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t Chanh"
     icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "M\xE1y \xC9p M\xEDa \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+    icon: {fileID: -5178242575216520492, guid: bfc7fe251655c4146a2c2dafad2c57d3, type: 3}
+  - label: "M\u1EDF kh\xF3a n\u01B0\u1EDBc m\xEDa"
+    icon: {fileID: 6062651183374977786, guid: fcbf07e621aaf0f4d86841f67367c8be, type: 3}
   unlockDescriptions:
   - "M\xE1y \xC9p M\xEDa \u0111\xE3 m\u1EDF b\xE1n trong Shop"
   - "M\u1EDF kh\xF3a n\u01B0\u1EDBc m\xEDa"

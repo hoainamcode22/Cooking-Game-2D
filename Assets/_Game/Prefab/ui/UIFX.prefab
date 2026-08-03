@@ -101,4 +101,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 59c361b8a8e13034d9720e845ec2096b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HarvestFlyItemUI
-  imgIcon: {fileID: 3504527067389378000}
+  iconRenderer: {fileID: 0}
+  visualRoot: {fileID: 0}
+  dropDuration: 0.4
+  groundStayDuration: 0.3
+  flyDuration: 0.65
+  scatterRadius: 120
+  dropDownOffset: 35
+  popHeight: 100
+  startScale: {x: 0.55, y: 0.55, z: 0.55}
+  normalScale: {x: 0.85, y: 0.85, z: 0.85}
+  destroyOnFinish: 1

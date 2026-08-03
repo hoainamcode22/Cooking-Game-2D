@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t M\xEDa"
     icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "M\xE1y Xay B\u1ED9t \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+    icon: {fileID: -5178242575216520492, guid: bfc7fe251655c4146a2c2dafad2c57d3, type: 3}
+  - label: "M\u1EDF kh\xF3a b\u1ED9t g\u1EA1o"
+    icon: {fileID: -6555384466431497376, guid: a8558baac0cb3864f9c6ea7f19b5fdaa, type: 3}
   unlockDescriptions:
   - "M\xE1y Xay B\u1ED9t \u0111\xE3 m\u1EDF b\xE1n trong Shop"
   - "M\u1EDF kh\xF3a b\u1ED9t g\u1EA1o"

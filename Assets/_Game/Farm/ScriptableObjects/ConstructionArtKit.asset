@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f89e12a44283c0148a79bde863d564f2, type: 3}
+  m_Name: ConstructionArtKit
+  m_EditorClassIdentifier: Assembly-CSharp::ConstructionArtKit
+  showSlotLabels: 0
+  forcePlaceholderColors: 0
+  groundPatch: {fileID: 0}
+  scaffoldPost: {fileID: 0}
+  scaffoldRail: {fileID: 0}
+  scaffoldBrace: {fileID: 0}
+  leaningBoard: {fileID: 0}
+  worker: {fileID: 0}
+  workerPrefab: {fileID: 0}
+  dustParticle: {fileID: 0}
+  namePlateBg: {fileID: 0}
+  timerBarBg: {fileID: 0}
+  clockIcon: {fileID: 0}
+  rushButtonBg: {fileID: 0}
+  coinIcon: {fileID: 0}
+  gemIcon: {fileID: 0}
+  priceBarBg: {fileID: 0}
+  giftBoxSide: {fileID: 0}
+  ribbon: {fileID: 0}
+  rosette: {fileID: 0}
+  balloon: {fileID: 0}
+  hardHatDone: {fileID: 0}

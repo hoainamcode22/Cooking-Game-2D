@@ -130,7 +130,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     public static bool IsOpenStatic =>
         _instance != null && _instance._root != null && _instance._root.gameObject.activeSelf;
 
-    // Entry points — không tham số. Database tự resolve (Inspector hoặc lấy từ manager cũ trong scene).
+   
     public static void OpenMission()     => EnsureInstance().OpenInternal(Tab.Mission);
     public static void OpenDaily()       => EnsureInstance().OpenInternal(Tab.Daily);
     public static void OpenAchievement() => EnsureInstance().OpenInternal(Tab.Achievement);
@@ -218,9 +218,6 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (_root != null)
             _root.gameObject.SetActive(false);
     }
-
-    /// <summary>Lấy database: ưu tiên gán trong Inspector, nếu trống thì tự tìm trong scene
-    /// (PopupEwarManager / MissionHudButtonUI) để không phải gán tay.</summary>
     private void ResolveDatabases()
     {
         if (missionDatabase != null) _missionDatabase = missionDatabase;
@@ -298,17 +295,15 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
     private void BuildIfNeeded()
     {
-        // Luôn bảo đảm ref lõi (kể cả khi _built=true nhưng ref bị mất) → tránh MissingComponentException.
+       
         if (_root == null)
             _root = GetComponent<RectTransform>();
         if (_canvasGroup == null)
             _canvasGroup = gameObject.GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
 
-        // Đã dựng xong và còn nguyên (board còn) → thôi.
         if (_built && _board != null)
             return;
 
-        // (Re)build sạch: xóa con cũ để không nhân đôi nếu phải dựng lại.
         for (int i = _root.childCount - 1; i >= 0; i--)
         {
             GameObject child = _root.GetChild(i).gameObject;
@@ -384,7 +379,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         AddOutline(root.gameObject, new Color32(132, 78, 32, 255), new Vector2(2f, -2f));
 
         Image tabBg = root.GetComponent<Image>();
-        tabBg.raycastTarget = true;                    // BẮT BUỘC: để tab nhận click
+        tabBg.raycastTarget = true;                   
 
         Button button = root.gameObject.AddComponent<Button>();
         button.transition = Selectable.Transition.ColorTint;
@@ -726,13 +721,10 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     private List<MissionData> GetVisibleMissions(int maxCount)
         => GetVisibleFrom(_missionDatabase, maxCount);
 
-    /// <summary>Thành tựu lấy từ MissionDatabase_Achievement (requiredLevel=1 nên luôn hiện);
-    /// nếu chưa gán thì fallback về mission DB để không vỡ UI.</summary>
     private List<MissionData> GetVisibleAchievements(int maxCount)
         => GetVisibleFrom(_achievementDatabase != null ? _achievementDatabase : _missionDatabase, maxCount);
 
-    /// <summary>Thành tựu SẮP THỨ TỰ ưu tiên: (0) hoàn thành CHỜ NHẬN → (1) đang làm → (2) đã nhận.
-    /// Trong mỗi nhóm xếp theo targetAmount TĂNG DẦN (mốc sớm/nhỏ lên đầu, vd "Nông dân cấp 2" trước cấp 3).</summary>
+
     private List<MissionData> GetOrderedAchievements(int maxCount)
     {
         var db = _achievementDatabase != null ? _achievementDatabase : _missionDatabase;
@@ -844,8 +836,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         le.flexibleHeight = 0f;
     }
 
-    /// <summary>Mọi nhiệm vụ chính (không phải daily), SẮP THỨ TỰ:
-    /// (0) đang làm → (1) hoàn thành chờ nhận → (2) đã nhận → (3) khoá theo cấp tăng dần.</summary>
+   
     private List<MissionData> GetOrderedMissions()
     {
         var b0 = new List<MissionData>(); var b1 = new List<MissionData>();
@@ -868,8 +859,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             b3.Sort((a, b) => a.requiredLevel.CompareTo(b.requiredLevel));
         }
 
-        // ƯU TIÊN: (1) HOÀN THÀNH CHỜ NHẬN lên ĐẦU để user bấm Nhận ngay → (0) đang làm
-        //          → (2) đã nhận → (3) khoá theo cấp.
+
         var result = new List<MissionData>(b0.Count + b1.Count + b2.Count + b3.Count);
         result.AddRange(b1); result.AddRange(b0); result.AddRange(b2); result.AddRange(b3);
         return result;
@@ -877,11 +867,11 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
     private int MissionBucket(MissionData m, int level)
     {
-        if (m.requiredLevel > level) return 3;                 // khoá theo cấp
+        if (m.requiredLevel > level) return 3;           
         int cur = MissionProgressTracker.GetProgressFor(m);
         bool complete = cur >= Mathf.Max(1, m.targetAmount);
-        if (!complete) return 0;                               // đang làm
-        return IsMissionClaimed(m) ? 2 : 1;                    // 2=đã nhận, 1=chờ nhận
+        if (!complete) return 0;                              
+        return IsMissionClaimed(m) ? 2 : 1;               
     }
 
     private void BuildProgressBar(RectTransform parent, string name, Vector2 position, Vector2 size, float fillAmount, string label)
@@ -1302,7 +1292,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         tmp.color = color;
         tmp.alignment = alignment;
         tmp.fontStyle = style;
-        tmp.enableWordWrapping = true;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
         tmp.overflowMode = TextOverflowModes.Ellipsis;
         tmp.raycastTarget = false;
         return tmp;

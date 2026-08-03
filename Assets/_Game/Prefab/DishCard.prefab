@@ -223,6 +223,7 @@ GameObject:
   - component: {fileID: 3238993099159278260}
   - component: {fileID: 7168566890699276758}
   - component: {fileID: 702344842462349400}
+  - component: {fileID: 2605621961205262639}
   m_Layer: 5
   m_Name: DishCard
   m_TagString: Untagged
@@ -310,3 +311,22 @@ MonoBehaviour:
   imgDish: {fileID: 1882634342600355771}
   txtDishName: {fileID: 3234764224666182439}
   btnSelect: {fileID: 7168566890699276758}
+--- !u!114 &2605621961205262639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4258497138034433351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41b2b3ff7754b5943a398d62e7c1fd1b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIJuiceFeedback
+  target: {fileID: 0}
+  soundType: 1
+  pressScale: 0.9
+  bounceScale: 1.1
+  pressTime: 0.05
+  bounceTime: 0.07
+  settleTime: 0.06

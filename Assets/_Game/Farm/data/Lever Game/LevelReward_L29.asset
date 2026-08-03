@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t Ti\xEAu"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "M\u1EDF to\xE0n b\u1ED9 pool n\u1ED9i dung"
+    icon: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}
+  - label: "Trang tr\xED top"
+    icon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}
   unlockDescriptions:
   - "M\u1EDF to\xE0n b\u1ED9 pool n\u1ED9i dung"
   - "Trang tr\xED top"

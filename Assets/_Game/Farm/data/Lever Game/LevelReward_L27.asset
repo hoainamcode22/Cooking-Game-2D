@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t \u1EDAt"
     icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "\u0110\u01A1n t\xE0u kh\xF3 (payout x3)"
+    icon: {fileID: 4580813103884654232, guid: 25ad36064caef954bb6f485d1b7fd6f2, type: 3}
+  - label: "M\u1EDF kh\xF3a c\xE2y cao c\u1EA5p"
+    icon: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}
   unlockDescriptions:
   - "\u0110\u01A1n t\xE0u kh\xF3 (payout x3)"
   - "M\u1EDF kh\xF3a c\xE2y cao c\u1EA5p"

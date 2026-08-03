@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t M\xEDa"
     icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "Pet \u0111i quanh tr\u1EA1i (nh\u1EB7t xu r\u01A1i)"
+    icon: {fileID: -4124955473789098222, guid: bc358f291943afe42aef17b45f1291a9, type: 3}
+  - label: "M\u1EDF kh\xF3a decor cho pet"
+    icon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}
   unlockDescriptions:
   - "Pet \u0111i quanh tr\u1EA1i (nh\u1EB7t xu r\u01A1i)"
   - "M\u1EDF kh\xF3a decor cho pet"

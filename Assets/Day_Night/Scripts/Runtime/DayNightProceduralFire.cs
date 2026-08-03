@@ -1,3 +1,4 @@
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -26,6 +27,8 @@ namespace Day_Night
         private VisualEffect _vfx;
         private static Sprite _flame;
         private static Material _unlitMat;
+        private static readonly PropertyInfo VfxSortingLayerNameProperty = typeof(VisualEffect).GetProperty("sortingLayerName");
+        private static readonly PropertyInfo VfxSortingOrderProperty = typeof(VisualEffect).GetProperty("sortingOrder");
         private float _baseX, _baseY;
 
         private void OnEnable() => Build();   // OnEnable ĐƯỢC PHÉP tạo object (khác OnValidate)
@@ -77,10 +80,28 @@ namespace Day_Night
             if (_sr == null) return;
             _sr.sortingLayerName = SortingLayerName;
             _sr.sortingOrder = SortingOrder;
+            ApplyVfxSorting();
 
             Vector3 pls = transform.lossyScale;
             _baseX = Width  / Mathf.Max(Mathf.Abs(pls.x), 1e-4f);
             _baseY = Height / Mathf.Max(Mathf.Abs(pls.y), 1e-4f);
+        }
+
+        private void ApplyVfxSorting()
+        {
+            if (_vfx == null) return;
+
+            // VFX Graph serializes renderer sorting separately from the fallback sprite,
+            // so keep the particle sparks on the same layer/order as the flame sprite.
+            SetVisualEffectProperty(VfxSortingLayerNameProperty, SortingLayerName);
+            SetVisualEffectProperty(VfxSortingOrderProperty, SortingOrder);
+        }
+
+        private void SetVisualEffectProperty(PropertyInfo property, object value)
+        {
+            if (property == null || !property.CanWrite) return;
+
+            property.SetValue(_vfx, value);
         }
 
         private void Flicker()

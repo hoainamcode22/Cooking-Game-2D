@@ -84,6 +84,12 @@ public class EditModeManager : MonoBehaviour
         // Báº­t/táº¯t tháº£m xanh cá»§a táº¥t cáº£ cÃ´ng trÃ¬nh trÃªn map
         ToggleAllFootprints(isEditMode);
 
+        // DEV-1 / V3: vao hoac ra Edit Mode deu phai dung lai bang O DA CHIEM.
+        // Ly do: nguoi choi co the vua keo cong trinh bang ObjectDragHandler, hoac
+        // scene vua spawn them nha tu save. Neu khong refresh thi lan dat ke tiep
+        // se doi chieu voi du lieu cu -> cho da co nha van bao "trong".
+        PlacementManager.Instance?.RefreshOccupancy();
+
         ApplyVisuals(isEditMode);
         OnEditModeChanged?.Invoke(isEditMode);
     }

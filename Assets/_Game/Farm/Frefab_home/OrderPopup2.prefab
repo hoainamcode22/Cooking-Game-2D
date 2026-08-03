@@ -167,8 +167,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d9199f338c8fb548b491ca499dbb01d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Village.HouseOrderBubble
-  houseTransform: {fileID: 0}
-  worldOffset: {x: 0, y: 1.5, z: 0}
   iconItem1: {fileID: 5081557248298377375}
   slot2Root: {fileID: 8144965871047027018}
   iconItem2: {fileID: 1804113941689777442}

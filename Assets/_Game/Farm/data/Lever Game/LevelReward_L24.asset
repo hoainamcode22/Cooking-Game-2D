@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t Chanh"
     icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "Nh\xE0 h\xE0ng ven bi\u1EC3n"
+    icon: {fileID: -5775399491718878476, guid: 7b314202f7e3b20499171246a1b4a97c, type: 3}
+  - label: "\u0110\u01A1n t\xE0u cao c\u1EA5p"
+    icon: {fileID: 4580813103884654232, guid: 25ad36064caef954bb6f485d1b7fd6f2, type: 3}
   unlockDescriptions:
   - "Nh\xE0 h\xE0ng ven bi\u1EC3n"
   - "\u0110\u01A1n t\xE0u cao c\u1EA5p"

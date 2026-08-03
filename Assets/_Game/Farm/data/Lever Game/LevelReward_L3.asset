@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t C\xE0 chua"
     icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "M\u1EDF kh\xF3a C\xE0 chua v\xE0 C\xE0 r\u1ED1t"
+    icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+  - label: "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
+    icon: {fileID: 950524911477112507, guid: 0772edf2be2709a42bc3f4e453c8fec2, type: 3}
   unlockDescriptions:
   - "M\u1EDF kh\xF3a C\xE0 chua v\xE0 C\xE0 r\u1ED1t"
   - "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"

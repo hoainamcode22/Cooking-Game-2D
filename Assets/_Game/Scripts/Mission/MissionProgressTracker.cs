@@ -2,14 +2,8 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Theo dõi tiến độ nhiệm vụ toàn cục.
-/// - Key chuẩn: "{MissionEventType}:{itemId-thường}" + key gộp "{MissionEventType}:*".
-/// - Persist qua PlayerPrefs (1 blob JSON — JsonUtility wrapper, key MISSION_PROGRESS_V1).
-/// - Daily: tiến độ ghi song song vào map riêng, tự reset khi sang ngày mới (yyyyMMdd).
-/// - ReachLevel: tự nối PlayerProgressManager.OnLevelChanged; tiến độ = level hiện tại.
-/// API cũ (Instance.GetProgress/SetProgress/AddProgress) giữ nguyên làm shim.
-/// </summary>
+
+
 public class MissionProgressTracker : MonoBehaviour
 {
     public static MissionProgressTracker Instance { get; private set; }
@@ -51,16 +45,7 @@ public class MissionProgressTracker : MonoBehaviour
         TryInstallLevelHook();
     }
 
-    // ─────────────────────────────────────────────────────────────────────
-    //  API mới
-    // ─────────────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Ghi nhận 1 sự kiện gameplay.
-    /// itemId rỗng → chỉ cộng key gộp "{type}:*".
-    /// includeTypeWide=false → chỉ cộng key item, KHÔNG cộng key gộp
-    /// (dùng cho item thứ 2 trong cùng 1 đơn hàng để "DeliverOrder:*" đếm SỐ ĐƠN).
-    /// </summary>
     public static void ReportEvent(MissionEventType type, string itemId, int amount, bool includeTypeWide = true)
     {
         if (amount <= 0) return;
@@ -107,11 +92,6 @@ public class MissionProgressTracker : MonoBehaviour
 
         return Raw(_progress, key);
     }
-
-    // ─────────────────────────────────────────────────────────────────────
-    //  API cũ — shim giữ cho code hiện hữu hoạt động nguyên trạng
-    // ─────────────────────────────────────────────────────────────────────
-
     public int GetProgress(string key)
     {
         EnsureLoaded();
@@ -125,8 +105,6 @@ public class MissionProgressTracker : MonoBehaviour
         SaveToPrefs();
         OnProgressChanged?.Invoke(key, value);
     }
-
-    /// <summary>Shim cũ: PlotController từng gọi với harvestItemId → chuyển thành sự kiện HarvestItem.</summary>
     public void AddProgress(string harvestItemId, int amount = 1)
     {
         ReportEvent(MissionEventType.HarvestItem, harvestItemId, amount);
@@ -145,7 +123,7 @@ public class MissionProgressTracker : MonoBehaviour
 
         ppm.OnLevelChanged += HandleLevelChanged;
         _levelHookInstalled = true;
-        HandleLevelChanged(ppm.Level); // sync ngay level hiện tại
+        HandleLevelChanged(ppm.Level); 
     }
 
     private static void HandleLevelChanged(int level)
@@ -159,9 +137,6 @@ public class MissionProgressTracker : MonoBehaviour
         OnProgressChanged?.Invoke(key, level);
     }
 
-    // ─────────────────────────────────────────────────────────────────────
-    //  Nội bộ
-    // ─────────────────────────────────────────────────────────────────────
 
     private static string NormalizeId(string itemId)
         => string.IsNullOrWhiteSpace(itemId) ? "" : itemId.Trim().ToLowerInvariant();

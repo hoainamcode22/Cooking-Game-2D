@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class UIJuiceFeedback : MonoBehaviour, IPointerDownHandler
+public class UIJuiceFeedback : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     public enum SoundType
     {
@@ -15,8 +15,8 @@ public class UIJuiceFeedback : MonoBehaviour, IPointerDownHandler
     [SerializeField] private SoundType soundType = SoundType.UIButton;
 
     [Header("Scale Animation")]
-    [SerializeField] private float pressScale = 0.93f;
-    [SerializeField] private float bounceScale = 1.06f;
+    [SerializeField] private float pressScale = 0.9f;
+    [SerializeField] private float bounceScale = 1.1f;
     [SerializeField] private float pressTime = 0.05f;
     [SerializeField] private float bounceTime = 0.07f;
     [SerializeField] private float settleTime = 0.06f;
@@ -34,11 +34,6 @@ public class UIJuiceFeedback : MonoBehaviour, IPointerDownHandler
     }
 
     public void OnPointerDown(PointerEventData eventData)
-    {
-        PlayFeedback();
-    }
-
-    public void PlayFeedback()
     {
         if (target == null) return;
 
@@ -58,20 +53,41 @@ public class UIJuiceFeedback : MonoBehaviour, IPointerDownHandler
         if (routine != null)
             StopCoroutine(routine);
 
-        routine = StartCoroutine(PunchRoutine());
+        routine = StartCoroutine(PressRoutine());
     }
 
-    private IEnumerator PunchRoutine()
+    public void OnPointerUp(PointerEventData eventData)
     {
-        Vector3 s0 = baseScale;
+        if (target == null) return;
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        routine = StartCoroutine(BounceRoutine());
+    }
+
+    // Tương thích API cũ nếu có script khác trực tiếp gọi PlayFeedback
+    public void PlayFeedback()
+    {
+        OnPointerDown(null);
+        OnPointerUp(null); // Gọi liên tiếp để mô phỏng 1 chu kỳ nhanh nếu gọi qua code
+    }
+
+    private IEnumerator PressRoutine()
+    {
+        Vector3 s0 = target.localScale;
         Vector3 s1 = baseScale * pressScale;
-        Vector3 s2 = baseScale * bounceScale;
 
         yield return LerpScale(s0, s1, pressTime);
-        yield return LerpScale(s1, s2, bounceTime);
-        yield return LerpScale(s2, s0, settleTime);
+    }
 
-        target.localScale = baseScale;
+    private IEnumerator BounceRoutine()
+    {
+        Vector3 s0 = target.localScale;
+        Vector3 s1 = baseScale * bounceScale;
+
+        yield return LerpScale(s0, s1, bounceTime);
+        yield return LerpScale(s1, baseScale, settleTime);
     }
 
     private IEnumerator LerpScale(Vector3 from, Vector3 to, float duration)

@@ -82,7 +82,7 @@ VFXRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1234567890123456789}
   m_Enabled: 1
-  m_CastShadows: 0
+  m_CastShadows: 1
   m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_StaticShadowCaster: 0
@@ -117,7 +117,7 @@ VFXRenderer:
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
   m_SortingLayerID: -733290359
-  m_SortingLayer: 4
+  m_SortingLayer: 2
   m_SortingOrder: 70
   m_MaskInteraction: 0
 --- !u!210 &2237898398799662876
@@ -129,7 +129,7 @@ SortingGroup:
   m_GameObject: {fileID: 1234567890123456789}
   m_Enabled: 1
   m_SortingLayerID: -733290359
-  m_SortingLayer: 4
+  m_SortingLayer: 2
   m_SortingOrder: 70
   m_SortAtRoot: 0
   m_Sort3DAs2D: 0
@@ -148,3 +148,4 @@ MonoBehaviour:
   Target: {fileID: 0}
   Offset: {x: -1902.2156, y: 0, z: 0}
   FollowZ: 0
+  FollowInEditMode: 0

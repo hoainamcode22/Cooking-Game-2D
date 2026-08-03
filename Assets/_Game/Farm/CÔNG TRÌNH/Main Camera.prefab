@@ -161,11 +161,20 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CameraController
   panSpeed: 3
   zoomSpeed: 0.5
+  zoomStepPercent: 0.12
+  pinchSensitivity: 1
+  zoomTowardCursor: 1
   minSize: 400
   maxSize: 1500
   defaultSize: 950
+  devModeOnStart: 0
+  devMinSize: 200
+  devMaxSize: 6000
+  devModeToggleKey: 95
+  fitMapKey: 94
   panSmoothTime: 0.12
   zoomSmoothTime: 0.1
+  cinematicSmoothTime: 0.45
   dragThreshold: 15
   bounds: {x: -5000, y: 5000, z: -5000, w: 5000}
 --- !u!81 &825368016948278170

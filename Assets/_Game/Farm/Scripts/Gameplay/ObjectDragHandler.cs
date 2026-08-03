@@ -22,13 +22,15 @@ public class ObjectDragHandler : MonoBehaviour
     [SerializeField] private SpriteRenderer shadowSprite;
     [SerializeField] private float          shadowAlphaActive   = 0.6f;
 
-    [Header("Grid Snap")]
-    [SerializeField] private float gridSize = 50f;
+    // GRID SNAP: KHÔNG còn field gridSize riêng.
+    // Trước đây script này snap theo 50 còn PlacementManager snap theo 100 → hai hệ lưới
+    // lệch nhau, kéo lại một công trình đã đặt là nó rơi vào mốc nửa ô (lỗi L4 §1).
+    // Giờ cả hai dùng chung hằng số PlacementManager.CELL.
 
-    [Header("Placement Validation")]
-    [SerializeField] private Vector2    collisionCheckSize    = new Vector2(50f, 50f);
+    [Header("Placement Validation (dự phòng khi thiếu PlacementManager)")]
+    [Tooltip("Chỉ dùng khi scene không có PlacementManager. Đường chính là kiểm tra ô lưới.")]
+    [SerializeField] private Vector2    collisionCheckSize    = new Vector2(PlacementManager.CELL, PlacementManager.CELL);
     [SerializeField] private LayerMask  obstacleLayerMask;
-    [SerializeField] private LayerMask  groundLayerMask;
 
     [Header("Visual Feedback")]
     [SerializeField] private SpriteRenderer placementIndicator;
@@ -53,6 +55,13 @@ public class ObjectDragHandler : MonoBehaviour
     private bool    _isDragging;
     private Vector2 _pressStartScreen;
     private Vector3 _dragWorldPos;
+    private Vector2Int _gridSizeCells = Vector2Int.one;
+
+    // Độ lệch từ ĐIỂM NEO (transform.position, pivot ở ĐÁY sprite) tới TÂM hộp bao.
+    // PlacementManager.GetFootprintRect nhận TÂM KHỐI Ô, nên không cộng bù cái này thì
+    // vùng ô kiểm tra tụt xuống nửa chiều cao sprite: kéo nhà xuống sát nhà khác vẫn
+    // "hợp lệ" (đè mái), còn đất trống phía dưới lại bị báo bận.
+    private Vector2 _pivotOffset = Vector2.zero;
 
     // =========================================================================
     // Unity Lifecycle
@@ -71,13 +80,49 @@ public class ObjectDragHandler : MonoBehaviour
         _col    = GetComponent<Collider2D>();
         _sprite = GetComponent<SpriteRenderer>();
 
+        // BUG CŨ (L11 §1): `if (_col == null)` bị treo, KHÔNG có {} và KHÔNG có thân lệnh
+        // → nó "nuốt" luôn dòng `_originalPos = ...` làm thân của mình. Hậu quả:
+        // _originalPos/_originalScale/_originalColor chỉ được gán khi THIẾU collider,
+        // tức gần như không bao giờ → bounce-back trả vật về (0,0,0) và scale = 0.
         if (_col == null)
+        {
+            Debug.LogWarning($"[ObjectDragHandler] '{name}' thiếu Collider2D — không kéo được.", this);
+        }
 
         _originalPos   = transform.position;
         _originalScale = transform.localScale;
         _originalColor = _sprite != null ? _sprite.color : Color.white;
 
+        // Cỡ ô của vật này, suy từ hộp bao visual (vật kéo tay không có PlaceableItemData).
+        _gridSizeCells = MeasureGridSize();
+
         if (shadowSprite != null) SetShadowAlpha(0f);
+    }
+
+    /// <summary>
+    /// Số ô lưới vật này chiếm, đo từ hộp bao các SpriteRenderer con.
+    /// Đồng thời ghi lại <see cref="_pivotOffset"/> — cùng một phép đo, cùng một hộp bao,
+    /// nên kích thước và độ lệch không bao giờ nói hai chuyện khác nhau.
+    /// </summary>
+    private Vector2Int MeasureGridSize()
+    {
+        Bounds b = default;
+        bool found = false;
+        foreach (var sr in GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (sr == null || sr.sprite == null) continue;
+            if (!found) { b = sr.bounds; found = true; }
+            else b.Encapsulate(sr.bounds);
+        }
+        if (!found) return Vector2Int.one;
+
+        // sr.bounds là hộp bao WORLD đã tính sẵn pivot + xoay → hiệu số với transform.position
+        // chính là độ lệch pivot cần bù. Đo một lần ở Awake vì vật không đổi hình khi kéo.
+        _pivotOffset = new Vector2(b.center.x - transform.position.x,
+                                   b.center.y - transform.position.y);
+
+        RectInt r = PlacementManager.RectFromWorldBounds(b);
+        return new Vector2Int(Mathf.Max(1, r.width), Mathf.Max(1, r.height));
     }
 
     private void Update()
@@ -149,6 +194,10 @@ public class ObjectDragHandler : MonoBehaviour
         _isDragging      = true;
         _originalPos     = transform.position;
 
+        // Chụp lại bảng ô đã chiếm ở đúng thời điểm này: vùng ô ghi cho chính vật đang
+        // kéo sẽ là vùng GỐC, nên luôn thả về chỗ cũ được, còn ô của vật khác vẫn chặn.
+        PlacementManager.Instance?.RefreshOccupancy();
+
         transform.localScale = _originalScale * dragScaleMultiplier;
         if (shadowSprite != null) SetShadowAlpha(shadowAlphaActive);
 
@@ -185,6 +234,9 @@ public class ObjectDragHandler : MonoBehaviour
 
         IsDraggingObject = false;
         FreeCursor();
+
+        // Vật đã đứng ở chỗ mới → cập nhật lại bảng ô cho lần kéo/đặt kế tiếp.
+        PlacementManager.Instance?.RefreshOccupancy();
     }
 
     /// <summary>Gọi khi script bị disable giữa chừng drag — reset state không bounce.</summary>
@@ -205,28 +257,50 @@ public class ObjectDragHandler : MonoBehaviour
     // Placement Helpers
     // =========================================================================
 
+    /// <summary>Snap TÂM Ô dùng chung công thức với PlacementManager (CELL = 100).</summary>
     private Vector3 SnapToGrid(Vector3 pos)
     {
-        return new Vector3(
-            Mathf.Round(pos.x / gridSize) * gridSize,
-            Mathf.Round(pos.y / gridSize) * gridSize,
-            pos.z);
+        Vector3 snapped = PlacementManager.SnapCenter(pos, _gridSizeCells);
+        snapped.z = pos.z;
+        return snapped;
     }
 
+    /// <summary>
+    /// Hợp lệ = ô lưới còn trống (bỏ qua ô của chính mình) VÀ nằm trong biên bản đồ.
+    ///
+    /// BỎ Physics2D: obstacleLayer trong scene có m_Bits = 0 và groundLayerMask trỏ vào
+    /// layer không có collider nền → OverlapBox luôn null nên hàm cũ hoặc LUÔN đúng
+    /// (nhánh obstacle) hoặc LUÔN sai (nhánh ground, bắt buộc phải trúng mới hợp lệ).
+    /// Kiểm tra theo ô lưới không phụ thuộc layer/collider nên chính xác tuyệt đối.
+    /// </summary>
     private bool IsValidPlacement(Vector3 pos)
     {
+        PlacementManager pm = PlacementManager.Instance;
+        if (pm != null)
+        {
+            RectInt rect = PlacementManager.GetFootprintRect(FootprintCenterOf(pos), _gridSizeCells);
+            return pm.IsAreaFree(rect, gameObject) && pm.IsRectInsideMap(rect);
+        }
+
+        // Dự phòng (scene test không có PlacementManager): giữ lại phép kiểm tra vật cản cũ.
         Collider2D[] overlaps = Physics2D.OverlapBoxAll(pos, collisionCheckSize, 0f, obstacleLayerMask);
         foreach (var c in overlaps)
             if (c.gameObject != gameObject) return false;
-
-        return Physics2D.OverlapBox(pos, collisionCheckSize, 0f, groundLayerMask) != null;
+        return true;
     }
+
+    /// <summary>Đổi ĐIỂM NEO thành TÂM KHỐI Ô — thứ mà GetFootprintRect thực sự cần.</summary>
+    private Vector3 FootprintCenterOf(Vector3 anchor)
+        => new Vector3(anchor.x + _pivotOffset.x, anchor.y + _pivotOffset.y, 0f);
 
     private void UpdatePlacementIndicator(Vector3 pos, bool valid)
     {
         if (placementIndicator == null) return;
         placementIndicator.enabled          = true;
-        placementIndicator.transform.position = pos;
+        // Vẽ ở TÂM vùng ô để người chơi thấy đúng chỗ sẽ bị chặn, không phải ở chân nhà.
+        Vector3 c = FootprintCenterOf(pos);
+        c.z = placementIndicator.transform.position.z;
+        placementIndicator.transform.position = c;
         placementIndicator.color            = valid ? validPlacementColor : invalidPlacementColor;
     }
 

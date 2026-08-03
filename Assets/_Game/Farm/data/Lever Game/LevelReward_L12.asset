@@ -20,6 +20,11 @@ MonoBehaviour:
     displayName: "H\u1EA1t Ng\xF4"
     icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
     amount: 3
+  unlockEntries:
+  - label: "N\xE2ng c\u1EA5p kho l\u1EA7n 1"
+    icon: {fileID: 21300000, guid: ec37c4358fcdf50428a97e00a3d56320, type: 3}
+  - label: "M\u1EDF th\xEAm c\xE2y tr\u1ED3ng m\u1EDBi"
+    icon: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}
   unlockDescriptions:
   - "N\xE2ng c\u1EA5p kho l\u1EA7n 1"
   - "M\u1EDF th\xEAm c\xE2y tr\u1ED3ng m\u1EDBi"

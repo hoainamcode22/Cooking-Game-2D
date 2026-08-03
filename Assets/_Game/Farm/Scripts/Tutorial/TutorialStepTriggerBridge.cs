@@ -19,8 +19,9 @@ public class TutorialStepTriggerBridge : MonoBehaviour
     [Tooltip("Để trống = đếm mọi Normal plot. Gán để chỉ đếm đúng 6 ô tutorial.")]
     [SerializeField] private List<PlotController> tutorialPlots = new List<PlotController>();
 
-    [SerializeField] private int targetPlantCount   = 6;
-    [SerializeField] private int targetHarvestCount = 6;
+    // Lưu ý: KHÔNG còn field targetPlantCount/targetHarvestCount. Gate đã đổi sang
+    // AllRiceFieldPlanted() / NoUnlockedPlanted() — kiểm tra "hết ô trống / hết cây"
+    // thay vì đếm số, để không kẹt khi số ô unlock lệch với con số cấu hình.
 
     // =========================================================================
     // Flower pots
@@ -29,8 +30,7 @@ public class TutorialStepTriggerBridge : MonoBehaviour
     [Tooltip("Để trống = đếm mọi Flower plot. Gán để chỉ đếm đúng chậu tutorial.")]
     [SerializeField] private List<PlotController> tutorialFlowerPots = new List<PlotController>();
 
-    [SerializeField] private int targetFlowerPlantCount   = 6;
-    [SerializeField] private int targetFlowerHarvestCount = 6;
+    // Tương tự chậu hoa: gate dùng AllUnlockedNonEmpty(Flower) / NoUnlockedPlanted(Flower).
 
     // =========================================================================
     // Runtime counters

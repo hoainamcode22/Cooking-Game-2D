@@ -24,7 +24,10 @@ public class PlacedObjectsManagerTool : EditorWindow
     // PHẢI khớp PlacementManager.BuildingsSaveKey
     private const string SaveKey = "FARM_PLACED_BUILDINGS";
 
-    [Serializable] private class Entry { public string itemId; public float x, y; public int plotId; }
+    // `rot` BẮT BUỘC phải có, dù tool này không dùng tới.
+    // JsonUtility bỏ qua field lạ khi ĐỌC nhưng KHÔNG giữ lại khi GHI —
+    // thiếu nó thì xoá lẻ 1 công trình sẽ làm MẤT HƯỚNG XOAY của tất cả công trình còn lại.
+    [Serializable] private class Entry { public string itemId; public float x, y; public int plotId; public int rot; }
     [Serializable] private class Save  { public List<Entry> list = new List<Entry>(); }
 
     private Save        _data;
