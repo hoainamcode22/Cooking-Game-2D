@@ -360,8 +360,22 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
     // =========================================================================
     public void EnableAreaMask(TutorialAreaKind kind, UnmaskRaycastFilter dim)
     {
+        // TẮT mask thì phải XOÁ LUÔN cái lỗ đang khoét.
+        //
+        // Trước đây chỉ đặt _areaKind = None: UpdatePlotsAreaMask() ngừng cập nhật,
+        // NHƯNG UnmaskRaycastFilter vẫn giữ _useScreenRect = true và LateUpdate của nó
+        // tiếp tục vẽ lại vùng sáng CŨ mỗi frame (nó dùng _screenRectCenterPx đã cache).
+        // Kết quả: sang bước sau vẫn còn một ô sáng lơ lửng quanh mấy chậu hoa, trông
+        // như tutorial đang chờ ở đó trong khi thật ra đã đi tiếp — rất dễ tưởng bị treo.
+        if (kind == TutorialAreaKind.None)
+        {
+            if (_areaDim != null) _areaDim.ClearHole();
+            _areaKind = TutorialAreaKind.None;
+            return;
+        }
+
         _areaKind = kind;
-        if (kind != TutorialAreaKind.None) _areaDim = dim;
+        _areaDim  = dim;
     }
 
     private void UpdatePlotsAreaMask()
@@ -370,7 +384,23 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
         if (_cam == null) { _cam = Camera.main; if (_cam == null) return; }
 
         var plots = _areaKind == TutorialAreaKind.Flower ? _flowerPots : _ricePlots;
-        if (plots.Count == 0) return;
+
+        // KHÔNG có ô nào để bao (canvas tutorial null, hoặc log "plots not found") thì
+        // phải TẮT lớp tối. Trước đây chỉ `return` được, vì lớp tối vẫn giữ lỗ cũ nên
+        // click còn xuyên qua. Nay EnableAreaMask(None) đã ClearHole() ⇒ không còn lỗ ⇒
+        // UnmaskRaycastFilter.IsRaycastLocationValid trả true = CHẶN SẠCH mọi click.
+        // Bỏ mặc ở đây sẽ khoá cứng cả game, không cách nào bấm gì nữa.
+        if (plots.Count == 0)
+        {
+            if (_areaDim.gameObject.activeSelf)
+            {
+                _areaDim.ClearHole();
+                _areaDim.gameObject.SetActive(false);
+                Debug.LogWarning($"[TutorialTargetResolver] Mask {_areaKind}: không có ô nào " +
+                                 "để bao → đã TẮT lớp tối để không chặn click của người chơi.");
+            }
+            return;
+        }
 
         float minX = float.MaxValue, minY = float.MaxValue;
         float maxX = float.MinValue, maxY = float.MinValue;

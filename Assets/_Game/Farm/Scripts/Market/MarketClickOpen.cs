@@ -122,7 +122,11 @@ return;
             Transform t = results[i].gameObject.transform;
             Canvas parentCanvas = t.GetComponentInParent<Canvas>();
 
-            if (parentCanvas != null && (parentCanvas.name == "Canvas_Popup" || parentCanvas.name == "Canvas_MarketPopup"))
+            // Thêm "Canvas_StallPopup": quầy hàng là popup mới, nếu không liệt kê ở đây thì
+            // click lên popup quầy sẽ XUYÊN QUA và mở luôn chợ chồng lên trên.
+            if (parentCanvas != null && (parentCanvas.name == "Canvas_Popup"
+                                      || parentCanvas.name == "Canvas_MarketPopup"
+                                      || parentCanvas.name == "Canvas_StallPopup"))
                 return true;
         }
 

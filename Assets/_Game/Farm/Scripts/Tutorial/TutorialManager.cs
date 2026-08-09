@@ -432,6 +432,7 @@ public class TutorialManager : MonoBehaviour
         {
             SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: false);
             _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
+            BatWatchdogHetHat(step);
             ConsumeQueuedAction(); yield break;
         }
         // Ô đất — thu hoạch: tay chỉ vào ô đã chín, chờ thu hoạch hết.
@@ -447,6 +448,7 @@ public class TutorialManager : MonoBehaviour
             if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
             SetupSmartGuide(TutorialAreaKind.Flower, harvestMode: false);
             _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
+            BatWatchdogHetHat(step);
             ConsumeQueuedAction(); yield break;
         }
         // Chậu hoa — thu hoạch.
@@ -478,6 +480,11 @@ public class TutorialManager : MonoBehaviour
             if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
             _guideBoardUI?.Hide();
             if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+            // TẮT lớp tối TRƯỚC khi chờ. Lớp tối không có lỗ thì chặn 100% click
+            // (UnmaskRaycastFilter trả true khi không có target), nên để nó bật suốt
+            // 0,4 giây này là khoá cứng shop đúng lúc người chơi vừa mở ra.
+            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+
             // Cuộn shop để item Ngô hiện TRỌN (kèm ＋/－/Mua) rồi mới set vùng sáng + tay.
             ShopManager.Instance?.ScrollItemIntoView("seed_ngo");
             yield return new WaitForSecondsRealtime(0.4f);
@@ -486,9 +493,20 @@ public class TutorialManager : MonoBehaviour
             var cornRect = GetTargetRect("shop_corn_plus") ?? GetTargetRect("shop_corn");
             if (_dimBackground != null)
             {
-                _dimBackground.gameObject.SetActive(true);
-                if (cornRect != null) _dimBackground.SetTarget(cornRect, false, 18f);
-                else _dimBackground.ClearHole();
+                // Không tìm được ô Ngô thì KHÔNG bật lớp tối. Bật mà không khoét lỗ
+                // sẽ chặn sạch click ⇒ người chơi không bấm mua được, kẹt luôn ở bước này.
+                if (cornRect != null)
+                {
+                    _dimBackground.gameObject.SetActive(true);
+                    _dimBackground.SetTarget(cornRect, false, 18f);
+                }
+                else
+                {
+                    _dimBackground.ClearHole();
+                    _dimBackground.gameObject.SetActive(false);
+                    Debug.LogWarning("[Tutorial] L2_03_BuyCorn: không thấy item Ngô trong shop → " +
+                                     "bỏ lớp tối để người chơi vẫn bấm mua được.");
+                }
             }
             // Tay chỉ nút ＋ tới khi chọn đủ 8 ngô → nhảy sang nút Mua.
             _actionHandGuide?.GuideShopBuy("shop_corn_plus", "shop_corn_buy", "shop_corn", 8, _dimBackground);
@@ -506,9 +524,21 @@ public class TutorialManager : MonoBehaviour
             var closeRect = GetTargetRect("shop_close") ?? GetTargetRect("btn_close");
             if (_dimBackground != null)
             {
-                _dimBackground.gameObject.SetActive(true);
-                if (closeRect != null) _dimBackground.SetTarget(closeRect, false, 18f);
-                else _dimBackground.ClearHole();
+                // Cùng lý do như L2_03: lớp tối KHÔNG có lỗ thì chặn sạch click.
+                // Không tìm được nút đóng mà vẫn bật lớp tối ⇒ không đóng shop được ⇒
+                // bước WaitForCloseShop treo vĩnh viễn.
+                if (closeRect != null)
+                {
+                    _dimBackground.gameObject.SetActive(true);
+                    _dimBackground.SetTarget(closeRect, false, 18f);
+                }
+                else
+                {
+                    _dimBackground.ClearHole();
+                    _dimBackground.gameObject.SetActive(false);
+                    Debug.LogWarning("[Tutorial] L2_04_CloseShop: không thấy nút đóng shop → " +
+                                     "bỏ lớp tối để người chơi vẫn đóng được.");
+                }
             }
             // Ưu tiên nút đóng CỦA SHOP (shop_close, đăng ký scoped trong shopPanel) — tránh trùng "Btn_Close" của popup khác.
             _actionHandGuide?.GuidePointFirstActive(new[] { "shop_close", "btn_close" });
@@ -524,6 +554,7 @@ public class TutorialManager : MonoBehaviour
             SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: false);
             _pendingWait = step.waitAction;   // WaitForAllPlotsPlanted
             _state = TutorialState.WaitingAction;
+            BatWatchdogHetHat(step);
             ConsumeQueuedAction(); yield break;
         }
 
@@ -653,6 +684,11 @@ public class TutorialManager : MonoBehaviour
             else if (step.name == "L1L2_17_HarvestAllFlowers")
                 _actionHandGuide?.GuideHarvest("tutorial_flower_01");
 
+            // Bao gồm L1L2_05_DragFirstRice và L1L2_13_DragFirstFlower — hai bước này
+            // cũng chờ WaitForPlant nên cũng cần hạt, và cũng không có timeout.
+            // HatCanChoBuoc() trả null cho các bước không cần hạt → không làm gì.
+            BatWatchdogHetHat(step);
+
             ConsumeQueuedAction();
             yield break;
         }
@@ -778,6 +814,114 @@ public class TutorialManager : MonoBehaviour
     // =========================================================================
     // Helpers
     // =========================================================================
+
+    // =========================================================================
+    //  CHỐNG TREO: các bước "trồng cho hết ô" khi người chơi KHÔNG CÒN HẠT
+    // =========================================================================
+    //  Cổng qua bước của những bước này là "không còn ô nào trống"
+    //  (TutorialStepTriggerBridge.AllRiceFieldPlanted / AllUnlockedNonEmpty).
+    //  Cổng đó KHÔNG có timeout. Nếu người chơi hết hạt giữa đường thì không còn
+    //  cách nào làm cho hết ô trống ⇒ tutorial đứng im vĩnh viễn, không thông báo gì.
+    //
+    //  Kho hạt giống ĐÃ được lưu (WarehouseManager.Save/Load) nên tình huống này hiếm hơn
+    //  nhiều so với trước. Nhưng vẫn xảy ra được: tutorial chạy lại từ bước 0 mỗi lần Play,
+    //  nên người chơi ở cấp cao đã dùng hết hạt sẽ gặp lại đúng bước "trồng cho hết ô".
+    //  Watchdog là lưới an toàn cho trường hợp đó.
+    //
+    //  Watchdog này chỉ nhả bước khi CHẮC CHẮN bế tắc: hết hạt cần dùng VÀ hết luôn
+    //  mọi loại hạt khác (lấp ô bằng hạt nào cũng được), liên tục trong 6 giây.
+    //  Còn dù chỉ 1 hạt → không can thiệp, để người chơi tự làm.
+
+    /// <summary>Hạt mà bước "trồng cho hết ô" này cần. null = bước không cần hạt.</summary>
+    private static string HatCanChoBuoc(string stepName)
+    {
+        switch (stepName)
+        {
+            case "L1L2_04_FocusPlots":
+            case "L1L2_05_DragFirstRice":
+            case "L1L2_06_PlantAllRice":      return "seed_rice";
+            case "L1L2_12_FocusFlowerPots":
+            case "L1L2_13_DragFirstFlower":
+            case "L1L2_14_PlantAllFlowers":   return "seed_huong_duong";
+            case "L2_05_PlantCorn":           return "seed_ngo";
+            default:                          return null;
+        }
+    }
+
+    private void BatWatchdogHetHat(TutorialStepData step)
+    {
+        string hat = HatCanChoBuoc(step != null ? step.name : null);
+        if (hat != null) StartCoroutine(WatchdogHetHat(step, hat));
+    }
+
+    // Hạt trồng ở Ô ĐẤT (Normal) và hạt trồng ở CHẬU HOA — hai bảng chọn hạt RIÊNG,
+    // KHÔNG dùng lẫn nhau được. Vì vậy phải đếm theo đúng loại ô đang bị kẹt: còn đầy
+    // hạt lúa mà hết hạt hoa thì bước trồng hoa VẪN bế tắc.
+    //
+    // Liệt kê tường minh chứ KHÔNG dò tiền tố "seed_": `Khoai_Tay.asset` và
+    // `Ca_Rot.asset` có seedItemId là `khoai_tay` / `ca_rot` — KHÔNG có tiền tố đó.
+    // Dò tiền tố sẽ đếm chúng thành 0 và nhả bước oan trong khi người chơi vẫn trồng được.
+    private static readonly string[] HAT_O_DAT = {
+        "seed_rice", "seed_ngo", "seed_bapcai", "seed_cachua", "ca_rot", "khoai_tay",
+        "seed_nam", "seed_sugarcane", "seed_lemon", "seed_chili", "seed_pepper",
+    };
+    private static readonly string[] HAT_CHAU_HOA = {
+        "seed_huong_duong", "seed_hoa_hong", "seed_hoa_oai_huong", "seed_hoa_cuc_trang",
+        "seed_hoa_lan", "seed_tulip", "seed_hoa_cuc_van_tho", "seed_hoa_anh_thao",
+        "seed_hoa_cam_tu_cau", "seed_hoa_mau_don",
+    };
+
+    /// <summary>Tổng số hạt CÒN DÙNG ĐƯỢC cho loại ô mà hạt này thuộc về.</summary>
+    private static int TongSoHatDungDuoc(string seedIdCanDung)
+    {
+        var kho = WarehouseManager.Instance;
+        if (kho == null) return 0;
+
+        bool laHoa = System.Array.IndexOf(HAT_CHAU_HOA, seedIdCanDung) >= 0;
+        var bang = laHoa ? HAT_CHAU_HOA : HAT_O_DAT;
+
+        int tong = 0;
+        foreach (string id in bang) tong += kho.GetAmount(id);
+        return tong;
+    }
+
+    private IEnumerator WatchdogHetHat(TutorialStepData step, string seedId)
+    {
+        const float NGUONG_GIAY = 6f;
+        float canKho = 0f;
+
+        // Chỉ canh đúng bước này, đúng lần chạy này. Bước đổi → thoát ngay.
+        while (_state == TutorialState.WaitingAction
+               && _currentIndex >= 0 && _currentIndex < _steps.Count
+               && _steps[_currentIndex] == step)
+        {
+            // Đang mở Shop = người chơi đang tự đi mua hạt → KHÔNG được nhả bước,
+            // nếu không tutorial nhảy ngay giữa lúc họ đang bấm mua.
+            bool dangMuaHang = ShopManager.Instance != null && ShopManager.Instance.IsOpen;
+
+            var kho = WarehouseManager.Instance;
+            bool hetHat = kho != null
+                          && !dangMuaHang
+                          && kho.GetAmount(seedId) <= 0
+                          && TongSoHatDungDuoc(seedId) <= 0;
+
+            canKho = hetHat ? canKho + Time.unscaledDeltaTime : 0f;
+
+            if (canKho >= NGUONG_GIAY)
+            {
+                Debug.LogWarning(
+                    $"[Tutorial] '{step.name}' bị BẾ TẮC: kho hết sạch hạt (cần '{seedId}') " +
+                    $"nên không thể trồng cho hết ô — cổng qua bước không bao giờ đạt. " +
+                    "Tự nhả bước để tutorial không đứng im. " +
+                    "Cách xử lý: mua thêm hạt trong Shop, hoặc dùng " +
+                    "Tools ▸ SCN Farm ▸ Hard Reset Everything để chơi lại từ đầu.");
+                AdvanceToNextStep();
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
 
     /// <summary>
     /// Bật guide thông minh cho 1 vùng: ẩn dialog/tay tĩnh, bật nền xám bao vùng,

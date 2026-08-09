@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;//má»›i
@@ -336,6 +336,11 @@ public class CookingChallengeManager : MonoBehaviour
         // Tiến độ nhiệm vụ nấu ăn
         MissionProgressTracker.ReportEvent(MissionEventType.CookDish,
             currentDishData != null ? currentDishData.dishId : "", 1);
+
+        if (QuestManager.Instance != null && currentDishData != null)
+        {
+            QuestManager.Instance.OnItemCooked(currentDishData.dishId, 1);
+        }
 
         if (cookingPopupController != null)
         {

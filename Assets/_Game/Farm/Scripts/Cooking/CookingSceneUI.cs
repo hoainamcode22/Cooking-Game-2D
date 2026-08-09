@@ -47,6 +47,6 @@ public class CookingSceneUI : MonoBehaviour
 
         Scene currentScene = gameObject.scene;
         if (currentScene.IsValid() && currentScene.isLoaded)
-            SceneManager.UnloadSceneAsync(currentScene.name);
+            SceneTransitionManager.Instance.UnloadScene(currentScene.name, SceneTransitionManager.TransitionType.BoardDrop);
     }
 }

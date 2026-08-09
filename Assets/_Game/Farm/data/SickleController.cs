@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -161,6 +161,9 @@ public class SickleController : MonoBehaviour
         {
             harvestedThisDrag.Add(plot);
             FarmManager.Instance?.OnPlotHarvested(plot, cropName);
+            
+            string harvestId = plot.CurrentCrop != null ? plot.CurrentCrop.name : "unknown";
+            if (QuestManager.Instance != null) QuestManager.Instance.OnItemHarvested(harvestId, 1);
         }
         else
         {

@@ -23,7 +23,8 @@ MonoBehaviour:
   unlockEntries:
   - label: "M\u1EDF kh\xF3a Chanh"
     icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
-  - label: "D\xE2n l\xE0ng b\u1EAFt \u0111\u1EA7u \u0111\u1EB7t m\xF3n th\u1ECBt b\xF2"
+  - label: "D\xE2n l\xE0ng b\u1EAFt \u0111\u1EA7u \u0111\u1EB7t m\xF3n th\u1ECBt
+      b\xF2"
     icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
   unlockDescriptions:
   - "M\u1EDF kh\xF3a Chanh"

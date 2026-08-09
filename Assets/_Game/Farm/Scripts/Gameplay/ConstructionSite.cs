@@ -47,6 +47,7 @@ public class ConstructionSite : MonoBehaviour
     private ConstructionManager             _owner;
     private ConstructionSiteVisuals.Handle  _visuals;
     private ConstructionSiteUI              _ui;
+    private BuildingStatusIcon              _statusIcon;
 
     private readonly List<Vector3> _workerBasePos = new List<Vector3>();
     private float _bobTime;
@@ -89,6 +90,18 @@ public class ConstructionSite : MonoBehaviour
                                        ConstructionManager.TopSortingLayerName, 30000, artKit);
         _ui.SetBuildingName(!string.IsNullOrEmpty(data.itemName) ? data.itemName : data.itemID);
         _ui.OnRushClicked = HandleRush;
+
+        // ── V9 — ICON MŨ BẢO HỘ NỔI TRÊN ĐẦU ─────────────────────────────────
+        // Township giữ icon này SUỐT thời gian xây — đó là ngôn ngữ "chỗ này đang thi công"
+        // (§2.B tài liệu phân tích), không phải một hiệu ứng chớp nhoáng lúc bắt đầu.
+        //
+        // ĐỘ CAO: canvas UI công trường nằm ở `worldH*0.5 + 26` với chiều cao 300 và pivot ở
+        // MÉP DƯỚI, nên nó chiếm tới `worldH*0.5 + 326`. Đặt icon ở +416 để chừa một khoảng
+        // thở; thấp hơn là icon đè lên nền tên công trình.
+        _statusIcon = BuildingStatusIcon.AttachTo(gameObject,
+                                                  BuildingStatusIcon.Status.Building,
+                                                  worldH * 0.5f + 416f,
+                                                  artKit);
 
         // Dùng "bây giờ" chứ KHÔNG dùng startUnix: công trường khôi phục từ save đã trôi
         // sẵn một khoảng, lấy startUnix sẽ chớp hiện lại thời gian đầy trong 1 frame.
@@ -180,5 +193,9 @@ public class ConstructionSite : MonoBehaviour
         }
 
         if (_ui != null) _ui.HideAll();
+
+        // Icon "đang thi công" phải tắt CÙNG LÚC với giàn giáo: để nó bob tiếp trong lúc
+        // hộp quà đang mở ra thì người chơi thấy "vẫn đang xây" trong khi đã xây xong.
+        if (_statusIcon != null) _statusIcon.SetVisible(false);
     }
 }

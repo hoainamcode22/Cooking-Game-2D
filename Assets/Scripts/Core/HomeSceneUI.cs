@@ -4,12 +4,18 @@ public class HomeSceneUI : MonoBehaviour
 {
     public void GoToCooking()
     {
-        SceneLoader.Instance.LoadScene("SampleScene");
+        if (SceneTransitionManager.Instance != null)
+            SceneTransitionManager.Instance.LoadScene("SampleScene", SceneTransitionManager.TransitionType.CloudWipe);
+        else
+            SceneLoader.Instance.LoadScene("SampleScene");
     }
 
     public void GoToFarm()
     {
-        SceneLoader.Instance.LoadScene("SCN_Farm");
+        if (SceneTransitionManager.Instance != null)
+            SceneTransitionManager.Instance.LoadScene("SCN_Farm", SceneTransitionManager.TransitionType.CloudWipe);
+        else
+            SceneLoader.Instance.LoadScene("SCN_Farm");
     }
 
     public void OpenDailyReward()

@@ -35,7 +35,15 @@ public class StarterInventorySetup : MonoBehaviour
         if (forceResetOnPlay)
         {
             PlayerPrefs.DeleteKey(PREF_KEY);
-            Debug.Log("[StarterInventory] DEBUG: Reset starter flag");
+
+            // Phải dọn LUÔN kho, không thì cờ DaCoSaveKho vẫn true và GiveStarterItems()
+            // return sớm ⇒ bật forceResetOnPlay mà chẳng có tác dụng gì. Dùng hàm của
+            // WarehouseManager vì kho đã Load() ở Awake — chỉ xoá key thì hàng vẫn còn
+            // trong bộ nhớ và lần AddItem kế tiếp sẽ ghi lại y nguyên.
+            if (WarehouseManager.Instance != null)
+                WarehouseManager.Instance.XoaSaveVaLamTrongKho();
+
+            Debug.Log("[StarterInventory] DEBUG: Đã reset cờ starter + dọn kho.");
         }
 #endif
 
@@ -51,8 +59,35 @@ public class StarterInventorySetup : MonoBehaviour
             return;
         }
 
-        if (FarmLevelManager.Instance != null && FarmLevelManager.Instance.CurrentLevel > 1)
+        // ══════════════════════════════════════════════════════════════════════
+        //  VÌ SAO KHÔNG CÒN CHẶN THEO CẤP ĐỘ
+        // ══════════════════════════════════════════════════════════════════════
+        //  Điều kiện cũ ở đây là `if (CurrentLevel > 1) return;`. Nó gây treo game:
+        //  hồi đó `WarehouseManager` KHÔNG lưu gì cả (kho trống trơn mỗi lần vào scene)
+        //  trong khi CẤP ĐỘ thì có lưu, và TutorialManager chạy lại từ bước 0 mỗi lần Play.
+        //
+        //  Ba điều đó cộng lại thành bẫy chết: thu hoạch 8 ô lúa → lên cấp 2 → thoát
+        //  → vào lại thì cấp = 2, kho = 0 hạt, tutorial lại đòi "trồng hết các ô", mà
+        //  điều kiện trên return sớm ⇒ KHÔNG cấp hạt ⇒ không có gì để trồng ⇒ các bước
+        //  WaitForAllPlots* treo vĩnh viễn (chúng không có timeout). Đây đúng là hiện
+        //  tượng "thu hoạch xong nó đứng im".
+        //
+        //  Kho GIỜ ĐÃ ĐƯỢC LƯU (WarehouseManager.Save/Load), nên mốc đúng để chặn là
+        //  "đã có save kho hay chưa", KHÔNG phải cấp độ:
+        //
+        //    • Chưa có save kho  → lần chơi ĐẦU thật sự → cấp hạt khởi đầu.
+        //    • Đã có save kho    → hạt đã được lưu qua các phiên → KHÔNG cấp thêm.
+        //      Nếu vẫn bù mỗi lần Play thì mỗi phiên lại rót thêm cho đủ 10 hạt ⇒
+        //      hạt vô hạn, phá cân bằng.
+        //
+        //  Trường hợp chơi lại tutorial ở cấp cao mà đã dùng hết hạt thì KHÔNG bù ở đây;
+        //  lưới an toàn là watchdog trong TutorialManager (WatchdogHetHat) — nó nhả bước
+        //  sau 6 giây nếu kho hết sạch hạt dùng được, nên không treo nữa.
+        if (WarehouseManager.DaCoSaveKho)
+        {
+            Debug.Log("[StarterInventory] Kho đã có save → không cấp lại hạt khởi đầu.");
             return;
+        }
 
         int given = 0;
         foreach (var entry in starterItems)
@@ -66,6 +101,11 @@ public class StarterInventorySetup : MonoBehaviour
             Debug.Log($"[StarterInventory] +{missing}x {entry.displayName} ({entry.itemId})");
             given++;
         }
+
+        // Cắm mốc KỂ CẢ khi given == 0. Key save kho hiện chỉ sinh ra như tác dụng phụ
+        // của AddItem; không cấp món nào thì key không tồn tại và DaCoSaveKho mãi false
+        // ⇒ vòng này lặp lại mỗi phiên.
+        WarehouseManager.Instance.GhiSaveNgay();
 
         PlayerPrefs.SetInt(PREF_KEY, 1);
         PlayerPrefs.Save();

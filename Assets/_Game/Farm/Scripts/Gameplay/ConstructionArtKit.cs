@@ -36,6 +36,16 @@ public class ConstructionArtKit : ScriptableObject
     public static readonly Color C_Balloon  = new Color(0.95f, 0.30f, 0.30f, 1f);    // ĐỎ
     public static readonly Color C_HardHat  = new Color(1.00f, 0.85f, 0.10f, 1f);    // VÀNG MŨ
 
+    // ── V9 — ICON TRẠNG THÁI NỔI TRÊN ĐẦU CÔNG TRÌNH ───────────────────────
+    // ⚠ NGOẠI LỆ CÓ CHỦ Ý cho C_IconFrame: quy ước "mỗi ô một màu lạ để nhận dạng" ở đây
+    // phải nhường cho thiết kế — khung icon của Township LÀ MÀU TRẮNG, tô nó thành tím hay
+    // cam thì cả cụm icon đọc sai ngay cả khi vị trí đã đúng. Bù lại: pha một chút xanh
+    // rất nhạt để trong Inspector vẫn phân biệt được với C_Clock (trắng thuần).
+    public static readonly Color C_IconFrame  = new Color(0.97f, 0.98f, 1.00f, 0.95f); // TRẮNG XANH NHẠT
+    public static readonly Color C_IconStar   = new Color(1.00f, 0.68f, 0.00f, 1f);    // VÀNG CAM SAO
+    public static readonly Color C_IconZzz    = new Color(0.45f, 0.50f, 0.72f, 1f);    // XÁM XANH BUỒN NGỦ
+    public static readonly Color C_IconProduct= new Color(0.62f, 0.86f, 1.00f, 1f);    // XANH SỮA
+
     // ════════════════════════════════════════════════════════════════════
     [Header("◆ CHẾ ĐỘ DỰNG NỀN")]
     [Tooltip("BẬT để hiện tên từng ô đè lên mảnh tương ứng trong Scene.\n" +
@@ -121,6 +131,28 @@ public class ConstructionArtKit : ScriptableObject
     public Sprite hardHatDone;
 
     // ════════════════════════════════════════════════════════════════════
+    [Header("◆ V9 — ICON TRẠNG THÁI NỔI TRÊN ĐẦU CÔNG TRÌNH")]
+    // Đây là khác biệt LỚN NHẤT so với Township: màn hình của họ lúc nào cũng có 5–8 icon
+    // đang nhấp nhô, mỗi cái là một lời mời chạm. Xem BuildingStatusIcon.cs.
+
+    [Tooltip("TRẮNG XANH NHẠT — khung bo góc bọc quanh icon. Nên là sprite 9-slice.\n" +
+             "Để trống = dùng panel bo góc vẽ bằng code (đúng dáng Township).")]
+    public Sprite iconFrameBg;
+
+    [Tooltip("VÀNG CAM SAO — ngôi sao: có thưởng XP đang chờ nhận.")]
+    public Sprite iconStar;
+
+    [Tooltip("XÁM XANH BUỒN NGỦ — chữ 'Z': máy ĐỨNG KHÔNG, thiếu nguyên liệu.\n" +
+             "Tài liệu Township gọi đây là chi tiết tinh tế nhất — người chơi thấy Z là " +
+             "biết phải nạp hàng, không cần một dòng chữ nào.")]
+    public Sprite iconZzz;
+
+    [Tooltip("XANH SỮA — icon sản phẩm chung (bình sữa) khi hàng đã xong, chạm để thu.\n" +
+             "Công trình nào có sản phẩm riêng thì gán sprite riêng vào " +
+             "BuildingStatusIcon.productSprite, ô này chỉ là hàng mặc định.")]
+    public Sprite iconProductReady;
+
+    // ════════════════════════════════════════════════════════════════════
     // API
     // ════════════════════════════════════════════════════════════════════
 
@@ -131,7 +163,10 @@ public class ConstructionArtKit : ScriptableObject
         Worker, DustParticle,
         NamePlateBg, TimerBarBg, ClockIcon, RushButtonBg, CoinIcon, GemIcon,
         PriceBarBg,
-        GiftBoxSide, Ribbon, Rosette, Balloon, HardHatDone
+        GiftBoxSide, Ribbon, Rosette, Balloon, HardHatDone,
+        // V9 — thêm ở CUỐI để không đổi giá trị số của các ô cũ (enum đã serialize vào
+        // .asset của kit; chèn giữa là mọi ô đã gán bị trượt sang ô khác).
+        IconFrameBg, IconStar, IconZzz, IconProductReady
     }
 
     /// <summary>Sprite của một ô. Trả null nếu chưa gán → nơi gọi tự vẽ thủ tục.</summary>
@@ -156,6 +191,10 @@ public class ConstructionArtKit : ScriptableObject
         Slot.Rosette       => rosette,
         Slot.Balloon       => balloon,
         Slot.HardHatDone   => hardHatDone,
+        Slot.IconFrameBg      => iconFrameBg,
+        Slot.IconStar         => iconStar,
+        Slot.IconZzz          => iconZzz,
+        Slot.IconProductReady => iconProductReady,
         _                  => null
     };
 
@@ -181,6 +220,10 @@ public class ConstructionArtKit : ScriptableObject
         Slot.Rosette       => C_Ribbon,
         Slot.Balloon       => C_Balloon,
         Slot.HardHatDone   => C_HardHat,
+        Slot.IconFrameBg      => C_IconFrame,
+        Slot.IconStar         => C_IconStar,
+        Slot.IconZzz          => C_IconZzz,
+        Slot.IconProductReady => C_IconProduct,
         _                  => Color.magenta
     };
 
@@ -206,6 +249,10 @@ public class ConstructionArtKit : ScriptableObject
         Slot.Rosette       => "Hoa ruy băng",
         Slot.Balloon       => "Bóng bay",
         Slot.HardHatDone   => "Mũ bảo hộ",
+        Slot.IconFrameBg      => "Khung icon",
+        Slot.IconStar         => "Icon ngôi sao",
+        Slot.IconZzz          => "Icon chữ Z",
+        Slot.IconProductReady => "Icon sản phẩm",
         _                  => slot.ToString()
     };
 

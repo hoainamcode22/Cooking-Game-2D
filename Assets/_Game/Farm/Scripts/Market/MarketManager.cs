@@ -1,47 +1,79 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>Tên + icon để vẽ một vật phẩm. Tra một lần rồi dùng lại, không đụng AssetDatabase lúc chạy.</summary>
+public struct MarketItemVisual
+{
+    public string DisplayName;
+    public Sprite Icon;
+}
+
+/// <summary>
+/// ══════════════════════════════════════════════════════════════════════════
+///  BỘ NÃO CỦA CHỢ — dữ liệu, kinh tế, đóng/mở popup
+/// ══════════════════════════════════════════════════════════════════════════
+///
+/// Phần VẼ nằm ở <see cref="MarketBoardUI"/>. Tách đôi vì bài học
+/// UnifiedTaskPopupUI 1433 dòng: gộp dữ liệu với UI vào một file thì đến lúc
+/// đổi bố cục là phải đọc lại cả logic kinh tế.
+///
+/// ── BA LỖI ĐÃ SỬA Ở BẢN NÀY ─────────────────────────────────────────────
+/// LỖI 1 — popup tự đóng: MarketPopupUI.Start() gọi popupRoot.SetActive(false)
+///          trong khi Start() chỉ chạy lúc popup vừa được bật. Dòng đó đã bị bỏ
+///          và MarketPopupUI giờ chỉ còn là lớp vỏ uỷ quyền sang đây.
+/// LỖI 2 — mua chùa: CanSpendGold cũ trả true khi FarmEconomyManager.Instance == null.
+///          Giờ trả FALSE — không có ví thì không được tiêu.
+/// LỖI 3 — hạt giống vào sai kho: mọi thứ đều đổ vào FarmInventoryManager.
+///          Giờ phân loại qua MarketPriceTable.IsSeed (tra danh mục, KHÔNG dùng
+///          StartsWith("seed") vì ca_rot / khoai_tay không có tiền tố đó).
+/// </summary>
 public class MarketManager : MonoBehaviour
 {
     public static MarketManager Instance { get; private set; }
 
-    [Header("Data")]
+    [Header("Dữ liệu")]
     [SerializeField] private MarketDatabase_SO marketDatabase;
-    [SerializeField] private int itemCountPerRefresh = 10;
+    [Tooltip("Số thẻ hàng NPC sinh ra mỗi chu kỳ. Video tham chiếu dùng lưới 4×3 = 12.")]
+    [SerializeField] private int itemCountPerRefresh = 12;
 
-    [Header("Visual Databases")]
+    [Header("Nguồn icon / tên hiển thị")]
+    [Tooltip("Tự điền bằng Tools/Farm/Chợ/Nạp lại nguồn icon cho MarketManager.")]
     [SerializeField] private List<CropData> cropDatabase = new List<CropData>();
+    [Tooltip("Tự điền bằng Tools/Farm/Chợ/Nạp lại nguồn icon cho MarketManager.")]
     [SerializeField] private List<InventoryItemData> itemDatabase = new List<InventoryItemData>();
 
-    [Header("Refresh")]
-    [SerializeField] private float refreshDurationSeconds = 300f;
-    [SerializeField] private int gemRefreshCost = 1;
+    [Header("Làm mới — CHỈ DÙNG VÀNG, không gem, không đồng tiền thứ ba")]
+    [SerializeField] private int refreshDurationSeconds = 300;
+    [Tooltip("Giá làm mới lần đầu trong ngày. Lần sau nhân lên theo số lần đã trả.")]
+    [SerializeField] private int baseGoldRefreshCost = 150;
+    [Tooltip("Trần giá làm mới trong ngày.")]
+    [SerializeField] private int maxGoldRefreshCost = 900;
 
-    [Header("UI")]
-    [SerializeField] private Transform content;
-    [SerializeField] private MarketShopItemUI shopItemPrefab;
-    [SerializeField] private Text textTimer;
-    [SerializeField] private Image fillBarTimer;
-    [SerializeField] private Button buttonRefreshFree;
-    [SerializeField] private Button buttonRefreshGem;
-    [SerializeField] private Button buttonClose;
+    [Header("Popup")]
     [SerializeField] private GameObject popupRoot;
+    [SerializeField] private Button buttonClose;
 
-    private readonly List<MarketShopItemUI> spawnedItems = new List<MarketShopItemUI>();
-    private readonly Dictionary<string, MarketItemVisual> visualLookup = new Dictionary<string, MarketItemVisual>();
-    private Coroutine refreshCoroutine;
-    private Coroutine openAnimationCoroutine;
-    private float timeRemaining;
-    private bool hasLoadedOnce;
-    private bool popupInputLockHeld;
+    private readonly Dictionary<string, MarketItemVisual> visualLookup =
+        new Dictionary<string, MarketItemVisual>();
 
-    private struct MarketItemVisual
-    {
-        public string DisplayName;
-        public Sprite Icon;
-    }
+    private LocalMarketProvider provider;
+    private MarketRefreshTimer  refreshTimer;
+    private Coroutine           openAnimationCoroutine;
+    private bool                popupInputLockHeld;
+
+    /// <summary>Nguồn hàng. Kiểu interface để sau này đổi sang ServerMarketProvider không phải sửa UI.</summary>
+    public IMarketProvider Provider => provider;
+
+    public MarketRefreshTimer RefreshTimer => refreshTimer;
+
+    /// <summary>Bắn khi hàng đổi (làm mới hoặc vừa mua xong) — MarketBoardUI vẽ lại.</summary>
+    public event System.Action OnMarketChanged;
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  VÒNG ĐỜI
+    // ══════════════════════════════════════════════════════════════════════
 
     private void Awake()
     {
@@ -56,18 +88,6 @@ public class MarketManager : MonoBehaviour
         if (popupRoot == null)
             popupRoot = transform.parent != null ? transform.parent.gameObject : gameObject;
 
-        if (buttonRefreshFree != null)
-        {
-            buttonRefreshFree.onClick.RemoveAllListeners();
-            buttonRefreshFree.onClick.AddListener(RefreshNowFree);
-        }
-
-        if (buttonRefreshGem != null)
-        {
-            buttonRefreshGem.onClick.RemoveAllListeners();
-            buttonRefreshGem.onClick.AddListener(RefreshNowWithGems);
-        }
-
         if (buttonClose != null)
         {
             buttonClose.onClick.RemoveAllListeners();
@@ -75,27 +95,72 @@ public class MarketManager : MonoBehaviour
         }
 
         BuildVisualLookup();
+
+        refreshTimer = new MarketRefreshTimer(refreshDurationSeconds, baseGoldRefreshCost, maxGoldRefreshCost);
+        refreshTimer.OnCycleElapsed += HandleCycleElapsed;
+
+        if (marketDatabase == null)
+        {
+            // Thiếu asset = chợ trống trơn mà không có dấu hiệu gì. Phải kêu lên.
+            Debug.LogError("[Chợ] MarketManager chưa gán MarketDatabase — bảng tin sẽ không có hàng. " +
+                           "Chạy Tools/Farm/Chợ/3 · Dựng lại UI Bảng Tin Chợ để tự gán.", this);
+        }
+
+        provider = new LocalMarketProvider(marketDatabase);
+        provider.OnListingsChanged += HandleProviderChanged;
+
+        MarketPlayerListingBridge.OnPlayerListingsChanged += HandleProviderChanged;
+
+        // Sinh hàng NGAY ở Awake chứ không đợi mở popup: bảng tin phải có sẵn hàng
+        // trước khi UI vẽ khung đầu tiên, nếu không người chơi thấy nháy "chưa có vật phẩm".
+        RegenerateListings();
+    }
+
+    private void OnDestroy()
+    {
+        if (refreshTimer != null)
+            refreshTimer.OnCycleElapsed -= HandleCycleElapsed;
+
+        if (provider != null)
+            provider.OnListingsChanged -= HandleProviderChanged;
+
+        MarketPlayerListingBridge.OnPlayerListingsChanged -= HandleProviderChanged;
+
+        if (Instance == this)
+            Instance = null;
     }
 
     private void OnEnable()
     {
         if (IsOpen)
             AcquirePopupInputBlock();
-
-        if (!hasLoadedOnce)
-            StartRefreshCycle(true);
     }
 
     private void OnDisable()
     {
         ReleasePopupInputBlock();
-
-        if (refreshCoroutine != null)
-        {
-            StopCoroutine(refreshCoroutine);
-            refreshCoroutine = null;
-        }
     }
+
+    private void Update()
+    {
+        // Đồng hồ tự bù chu kỳ đã trôi khi game tắt, xem MarketRefreshTimer.Tick
+        if (refreshTimer != null)
+            refreshTimer.Tick();
+    }
+
+    private void HandleCycleElapsed()
+    {
+        RegenerateListings();
+    }
+
+    private void HandleProviderChanged()
+    {
+        OnMarketChanged?.Invoke();
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  ĐÓNG / MỞ POPUP
+    // ══════════════════════════════════════════════════════════════════════
 
     public bool IsOpen => popupRoot != null && popupRoot.activeSelf;
 
@@ -105,13 +170,24 @@ public class MarketManager : MonoBehaviour
             popupRoot = transform.parent != null ? transform.parent.gameObject : gameObject;
 
         if (popupRoot != null)
+        {
+            // Bật luôn cả chuỗi cha đang tắt. Canvas_MarketPopup có thể bị tool
+            // DisableStartupPopups tắt ở tầng trên, bật mỗi popupRoot là vẫn không thấy gì.
+            Transform parent = popupRoot.transform.parent;
+            while (parent != null)
+            {
+                if (!parent.gameObject.activeSelf)
+                    parent.gameObject.SetActive(true);
+                parent = parent.parent;
+            }
+
             popupRoot.SetActive(true);
+        }
 
         AcquirePopupInputBlock();
         PlayOpenAnimation();
 
-        if (!hasLoadedOnce)
-            StartRefreshCycle(true);
+        OnMarketChanged?.Invoke();
     }
 
     public void CloseMarketPopup()
@@ -124,208 +200,293 @@ public class MarketManager : MonoBehaviour
             gameObject.SetActive(false);
     }
 
-    public void LoadData()
+    // ══════════════════════════════════════════════════════════════════════
+    //  LÀM MỚI
+    // ══════════════════════════════════════════════════════════════════════
+
+    /// <summary>Sinh lại hàng NPC theo hạt của chu kỳ hiện tại.</summary>
+    public void RegenerateListings()
     {
-        ClearItems();
-
-        if (content == null || shopItemPrefab == null)
-        {
+        if (provider == null || refreshTimer == null)
             return;
-        }
 
-        List<MarketItemDef> source = GetValidItems();
-        Shuffle(source);
-        BuildVisualLookup();
-
-        int count = Mathf.Min(itemCountPerRefresh, source.Count);
-        for (int i = 0; i < count; i++)
-        {
-            MarketItemDef def = source[i];
-            int minQuantity = Mathf.Max(1, def.MinQuantity);
-            int maxQuantity = Mathf.Max(minQuantity, def.MaxQuantity);
-            int quantity = Random.Range(minQuantity, maxQuantity + 1);
-            MarketItemVisual visual = ResolveVisual(def.ItemID);
-
-            MarketShopItemUI itemUI = Instantiate(shopItemPrefab, content);
-            itemUI.gameObject.SetActive(true);
-            itemUI.Setup(this, def, quantity, visual.Icon, visual.DisplayName);
-            spawnedItems.Add(itemUI);
-        }
-
-        hasLoadedOnce = true;
+        // KHÔNG gọi OnMarketChanged ở đây: provider đã bắn OnListingsChanged
+        // và HandleProviderChanged chuyển tiếp sang OnMarketChanged. Gọi thêm lần nữa
+        // là UI vẽ lại hai lần và hiệu ứng hiện so le bị khởi động lại giữa chừng.
+        provider.RegenerateNpcListings(itemCountPerRefresh, GetPlayerLevel(), refreshTimer.CurrentCycleSeed);
     }
 
-    public void TryBuy(MarketShopItemUI itemUI, string itemID, int quantity, int totalPrice)
+    /// <summary>
+    /// Làm mới MIỄN PHÍ — chỉ khi đồng hồ đã chạy hết.
+    /// Bản cũ cho bấm lúc nào cũng được nên nút trả tiền thành vô nghĩa.
+    /// </summary>
+    public bool RefreshNowFree()
     {
-        if (itemUI == null || string.IsNullOrEmpty(itemID) || quantity <= 0)
-            return;
+        if (refreshTimer == null || !refreshTimer.CanRefreshFree())
+            return false;
+
+        refreshTimer.ForceNewCycle();
+        return true;
+    }
+
+    /// <summary>Làm mới NGAY bằng VÀNG. Trả false nếu không đủ vàng hoặc không có ví.</summary>
+    public bool RefreshNowWithGold()
+    {
+        if (refreshTimer == null)
+            return false;
+
+        // Đồng hồ đã hết thì làm mới miễn phí, đừng lấy tiền của người chơi
+        if (refreshTimer.CanRefreshFree())
+        {
+            refreshTimer.ForceNewCycle();
+            return true;
+        }
+
+        int cost = refreshTimer.GetGoldRefreshCost();
+        if (!CanSpendGold(cost))
+            return false;
+
+        if (!SpendGold(cost))
+            return false;
+
+        refreshTimer.RegisterPaidRefresh();
+        refreshTimer.ForceNewCycle();
+        return true;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  MUA HÀNG
+    // ══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Mua một mặt hàng trên bảng tin. Trả mã lý do để UI hiện thông báo đúng.
+    ///
+    /// Thứ tự các bước KHÔNG được đảo: kiểm tra đủ → trừ tiền → cộng kho → đánh dấu bán.
+    /// Cộng kho trước khi trừ tiền là mở cửa cho lỗi mua chùa nếu trừ tiền thất bại.
+    /// </summary>
+    public MarketBuyResult TryBuyListing(string listingId)
+    {
+        if (provider == null || string.IsNullOrEmpty(listingId))
+            return MarketBuyResult.ListingNotFound;
+
+        MarketListing listing = provider.GetListing(listingId);
+        if (listing == null)
+            return MarketBuyResult.ListingNotFound;
+
+        if (listing.Status != MarketListingStatus.Active)
+            return MarketBuyResult.ListingNotActive;
+
+        if (listing.IsPlayerListing)
+            return MarketBuyResult.OwnListing;
+
+        int totalPrice = listing.TotalPrice;
 
         if (!CanSpendGold(totalPrice))
+            return MarketBuyResult.NotEnoughGold;
+
+        // Hạt giống đi WarehouseManager, mọi thứ khác đi FarmInventoryManager.
+        // Thiếu kho tương ứng thì DỪNG TRƯỚC khi trừ tiền — không thì mất vàng mà không có hàng.
+        bool isSeed = MarketPriceTable.IsSeed(listing.ItemId);
+        if (isSeed && WarehouseManager.Instance == null)
+            return MarketBuyResult.InventoryMissing;
+        if (!isSeed && FarmInventoryManager.Instance == null)
+            return MarketBuyResult.InventoryMissing;
+
+        if (!SpendGold(totalPrice))
+            return MarketBuyResult.NotEnoughGold;
+
+        GiveItemToCorrectStorage(listing.ItemId, listing.Quantity, isSeed);
+
+        if (isSeed)
+            MissionProgressTracker.ReportEvent(MissionEventType.BuySeed, listing.ItemId, listing.Quantity);
+        else
+            MissionProgressTracker.ReportEvent(MissionEventType.BuyShopItem, listing.ItemId, listing.Quantity);
+
+        provider.MarkListingSold(listingId);
+        return MarketBuyResult.Success;
+    }
+
+    /// <summary>
+    /// LỖI 3 — điểm phân luồng kho.
+    ///
+    /// Quy ước dự án: WarehouseManager CHỈ chứa hạt giống (khoá theo seedItemId),
+    /// FarmInventoryManager chứa nông sản / sản phẩm chuồng-máy / món ăn / gia vị.
+    /// Bỏ nhầm kho là hạt nằm trong kho nông sản → mở túi hạt ra trồng thì báo hết hạt.
+    ///
+    /// ⚠️ Phân loại bằng danh mục trong MarketPriceTable, TUYỆT ĐỐI không bằng
+    /// itemId.StartsWith("seed"): `ca_rot` và `khoai_tay` là hạt giống nhưng
+    /// không mang tiền tố đó (xem Hat_giong/Ca_Rot.asset, Hat_giong/Khoai_Tay.asset).
+    /// </summary>
+    private void GiveItemToCorrectStorage(string itemId, int quantity, bool isSeed)
+    {
+        if (isSeed)
         {
+            MarketItemVisual visual = ResolveVisual(itemId);
+            WarehouseManager.Instance.AddItem(itemId, visual.DisplayName, visual.Icon, quantity);
             return;
         }
 
-        if (FarmInventoryManager.Instance == null)
-        {
-            return;
-        }
-
-        SpendGold(totalPrice);
-        FarmInventoryManager.Instance.AddItem(itemID, quantity);
-
-        // Tiến độ nhiệm vụ: chợ hiện bán nông sản/nguyên liệu; nếu sau này bán hạt giống
-        // (itemID dạng "seed_*") thì tự tính vào BuySeed
-        if (itemID.StartsWith("seed", System.StringComparison.OrdinalIgnoreCase))
-            MissionProgressTracker.ReportEvent(MissionEventType.BuySeed, itemID, quantity);
-
-        itemUI.MarkSoldOut();
+        FarmInventoryManager.Instance.AddItem(itemId, quantity);
     }
 
-    public void RefreshNowFree()
+    // ══════════════════════════════════════════════════════════════════════
+    //  VÍ TIỀN
+    // ══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// LỖI 2 — bản cũ `return true` khi không có FarmEconomyManager, tức là thiếu
+    /// manager thì mua gì cũng miễn phí. Giờ không có ví = không tiêu được.
+    /// </summary>
+    public bool CanSpendGold(int amount)
     {
-        StartRefreshCycle(true);
+        if (amount <= 0)
+            return true;
+
+        if (FarmEconomyManager.Instance == null)
+            return false;
+
+        return FarmEconomyManager.Instance.Gold >= amount;
     }
 
-    public void RefreshNowWithGems()
+    private bool SpendGold(int amount)
     {
-        if (!CanSpendGems(gemRefreshCost))
-        {
-            return;
-        }
+        if (amount <= 0)
+            return true;
 
-        SpendGems(gemRefreshCost);
-        StartRefreshCycle(true);
+        if (FarmEconomyManager.Instance == null)
+            return false;
+
+        return FarmEconomyManager.Instance.SpendGold(amount);
     }
 
-    private void StartRefreshCycle(bool reloadItems)
+    public int GetPlayerGold()
     {
-        if (reloadItems)
-            LoadData();
-
-        timeRemaining = Mathf.Max(1f, refreshDurationSeconds);
-        UpdateTimerUI();
-
-        if (refreshCoroutine != null)
-            StopCoroutine(refreshCoroutine);
-
-        refreshCoroutine = StartCoroutine(RefreshCountdown());
+        return FarmEconomyManager.Instance != null ? FarmEconomyManager.Instance.Gold : 0;
     }
 
-    private IEnumerator RefreshCountdown()
+    public static int GetPlayerLevel()
     {
-        while (timeRemaining > 0f)
-        {
-            timeRemaining -= Time.deltaTime;
-            UpdateTimerUI();
-            yield return null;
-        }
-
-        StartRefreshCycle(true);
+        return FarmLevelManager.Instance != null ? FarmLevelManager.Instance.CurrentLevel : 1;
     }
 
-    private void UpdateTimerUI()
-    {
-        float clampedTime = Mathf.Max(0f, timeRemaining);
-        int minutes = Mathf.FloorToInt(clampedTime / 60f);
-        int seconds = Mathf.FloorToInt(clampedTime % 60f);
+    // ══════════════════════════════════════════════════════════════════════
+    //  ICON / TÊN HIỂN THỊ
+    // ══════════════════════════════════════════════════════════════════════
 
-        if (textTimer != null)
-            textTimer.text = minutes.ToString("00") + ":" + seconds.ToString("00");
-
-        if (fillBarTimer != null)
-            fillBarTimer.fillAmount = refreshDurationSeconds <= 0f ? 0f : clampedTime / refreshDurationSeconds;
-    }
-
-    private List<MarketItemDef> GetValidItems()
-    {
-        List<MarketItemDef> result = new List<MarketItemDef>();
-        if (marketDatabase == null)
-            return result;
-
-        IReadOnlyList<MarketItemDef> items = marketDatabase.Items;
-        for (int i = 0; i < items.Count; i++)
-        {
-            MarketItemDef item = items[i];
-            if (item == null || string.IsNullOrWhiteSpace(item.ItemID))
-                continue;
-
-            if (item.BuyPrice < 0 || item.MaxQuantity <= 0)
-                continue;
-
-            result.Add(item);
-        }
-
-        return result;
-    }
-
-    private void ClearItems()
-    {
-        spawnedItems.Clear();
-
-        if (content == null)
-            return;
-
-        for (int i = content.childCount - 1; i >= 0; i--)
-            Destroy(content.GetChild(i).gameObject);
-    }
-
-    private MarketItemVisual ResolveVisual(string itemID)
+    /// <summary>
+    /// Tra icon + tên. Không tìm thấy thì lấy tên từ bảng giá — thà hiện
+    /// "Phở Bò Tái" không icon còn hơn hiện "pho_bo_tai".
+    /// </summary>
+    public MarketItemVisual ResolveVisual(string itemID)
     {
         string key = NormalizeKey(itemID);
         if (!string.IsNullOrEmpty(key) && visualLookup.TryGetValue(key, out MarketItemVisual visual))
+        {
+            if (string.IsNullOrEmpty(visual.DisplayName))
+                visual.DisplayName = MarketPriceTable.GetDisplayName(itemID);
             return visual;
+        }
 
         return new MarketItemVisual
         {
-            DisplayName = itemID,
-            Icon = null
+            DisplayName = MarketPriceTable.GetDisplayName(itemID),
+            Icon        = null
         };
     }
 
-    private bool CanSpendGold(int amount)
+    private void BuildVisualLookup()
     {
-        if (amount <= 0)
-            return true;
+        visualLookup.Clear();
 
-        if (FarmEconomyManager.Instance != null)
-            return FarmEconomyManager.Instance.Gold >= amount;
+        for (int i = 0; i < cropDatabase.Count; i++)
+        {
+            CropData crop = cropDatabase[i];
+            if (crop == null)
+                continue;
 
-        return true;
+            Sprite cropIcon = crop.icon != null ? crop.icon : crop.harvestIcon;
+
+            // Hạt và nông sản dùng chung icon cây trồng, nhưng TÊN phải khác nhau:
+            // "Hạt Lúa" và "Lúa" là hai vật phẩm nằm ở hai kho khác nhau, trùng tên
+            // thì người chơi không phân biệt được mình vừa mua cái gì.
+            AddVisual(crop.seedItemId, new MarketItemVisual
+            {
+                DisplayName = MarketPriceTable.GetDisplayName(crop.seedItemId),
+                Icon        = cropIcon
+            });
+
+            MarketItemVisual harvestVisual = new MarketItemVisual
+            {
+                DisplayName = string.IsNullOrEmpty(crop.displayName) ? crop.cropId : crop.displayName,
+                Icon        = cropIcon
+            };
+
+            AddVisual(crop.harvestItemId, harvestVisual);
+            AddVisual(crop.cropId, harvestVisual);
+            AddVisual(crop.itemID, new MarketItemVisual
+            {
+                DisplayName = MarketPriceTable.GetDisplayName(crop.itemID),
+                Icon        = cropIcon
+            });
+        }
+
+        // Chạy SAU crop để InventoryItemData thắng khi trùng khoá — nông sản trong kho
+        // có icon riêng đẹp hơn sprite cây trên ruộng
+        for (int i = 0; i < itemDatabase.Count; i++)
+        {
+            InventoryItemData item = itemDatabase[i];
+            if (item == null || string.IsNullOrEmpty(item.itemId))
+                continue;
+
+            OverwriteVisual(item.itemId, new MarketItemVisual
+            {
+                DisplayName = string.IsNullOrEmpty(item.displayName) ? item.itemId : item.displayName,
+                Icon        = item.icon
+            });
+        }
     }
 
-    private void SpendGold(int amount)
+    private void AddVisual(string itemID, MarketItemVisual visual)
     {
-        if (amount <= 0)
+        string key = NormalizeKey(itemID);
+        if (string.IsNullOrEmpty(key) || visualLookup.ContainsKey(key))
             return;
 
-        if (FarmEconomyManager.Instance != null)
-            FarmEconomyManager.Instance.SpendGold(amount);
+        visualLookup.Add(key, visual);
     }
 
-    private bool CanSpendGems(int amount)
+    private void OverwriteVisual(string itemID, MarketItemVisual visual)
     {
-        if (amount <= 0)
-            return true;
-
-        if (FarmEconomyManager.Instance != null)
-            return FarmEconomyManager.Instance.Gems >= amount;
-
-        return true;
-    }
-
-    private void SpendGems(int amount)
-    {
-        if (amount <= 0)
+        string key = NormalizeKey(itemID);
+        if (string.IsNullOrEmpty(key))
             return;
 
-        if (FarmEconomyManager.Instance != null)
-            FarmEconomyManager.Instance.SpendGems(amount);
+        // Icon rỗng thì giữ icon cũ — ba asset máy chế biến chưa gán icon,
+        // ghi đè bằng null sẽ xoá mất icon crop đang dùng tạm
+        if (visual.Icon == null && visualLookup.TryGetValue(key, out MarketItemVisual old) && old.Icon != null)
+            visual.Icon = old.Icon;
+
+        visualLookup[key] = visual;
     }
 
-    private void ClosePopup()
+    private static string NormalizeKey(string key)
     {
-        CloseMarketPopup();
+        return key == null ? string.Empty : key.Trim().ToLowerInvariant();
     }
+
+#if UNITY_EDITOR
+    /// <summary>Editor tool dùng để nạp toàn bộ CropData / InventoryItemData trong dự án.</summary>
+    public void EditorSetVisualSources(List<CropData> crops, List<InventoryItemData> items)
+    {
+        cropDatabase = crops ?? new List<CropData>();
+        itemDatabase = items ?? new List<InventoryItemData>();
+        BuildVisualLookup();
+    }
+#endif
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  KHOÁ INPUT + HIỆU ỨNG MỞ
+    // ══════════════════════════════════════════════════════════════════════
 
     private void EnsurePopupRaycastBlock()
     {
@@ -357,7 +518,10 @@ public class MarketManager : MonoBehaviour
         FarmInputLock.IsMarketPopupOpen = false;
         FarmInputLock.SetPopupRaycastBlock(popupRoot, false);
 
-        Canvas parentCanvas = popupRoot != null ? popupRoot.GetComponentInParent<Canvas>() : GetComponentInParent<Canvas>();
+        Canvas parentCanvas = popupRoot != null
+            ? popupRoot.GetComponentInParent<Canvas>()
+            : GetComponentInParent<Canvas>();
+
         if (parentCanvas != null)
             FarmInputLock.SetPopupRaycastBlock(parentCanvas.gameObject, false);
 
@@ -366,53 +530,11 @@ public class MarketManager : MonoBehaviour
         popupInputLockHeld = false;
     }
 
-    private void BuildVisualLookup()
-    {
-        visualLookup.Clear();
-
-        for (int i = 0; i < cropDatabase.Count; i++)
-        {
-            CropData crop = cropDatabase[i];
-            if (crop == null)
-                continue;
-
-            MarketItemVisual visual = new MarketItemVisual
-            {
-                DisplayName = string.IsNullOrEmpty(crop.displayName) ? crop.cropId : crop.displayName,
-                Icon = crop.icon != null ? crop.icon : crop.harvestIcon
-            };
-
-            AddVisual(crop.itemID, visual);
-            AddVisual(crop.seedItemId, visual);
-            AddVisual(crop.harvestItemId, visual);
-            AddVisual(crop.cropId, visual);
-        }
-
-        for (int i = 0; i < itemDatabase.Count; i++)
-        {
-            InventoryItemData item = itemDatabase[i];
-            if (item == null || string.IsNullOrEmpty(item.itemId))
-                continue;
-
-            AddVisual(item.itemId, new MarketItemVisual
-            {
-                DisplayName = string.IsNullOrEmpty(item.displayName) ? item.itemId : item.displayName,
-                Icon = item.icon
-            });
-        }
-    }
-
-    private void AddVisual(string itemID, MarketItemVisual visual)
-    {
-        string key = NormalizeKey(itemID);
-        if (string.IsNullOrEmpty(key) || visualLookup.ContainsKey(key))
-            return;
-
-        visualLookup.Add(key, visual);
-    }
-
     private void PlayOpenAnimation()
     {
+        if (!gameObject.activeInHierarchy)
+            return;   // StartCoroutine trên object đang tắt sẽ ném lỗi
+
         if (openAnimationCoroutine != null)
             StopCoroutine(openAnimationCoroutine);
 
@@ -425,9 +547,9 @@ public class MarketManager : MonoBehaviour
             yield break;
 
         Vector3 startScale = Vector3.one * 0.92f;
-        Vector3 endScale = Vector3.one;
-        float duration = 0.12f;
-        float elapsed = 0f;
+        Vector3 endScale   = Vector3.one;
+        float   duration   = 0.12f;
+        float   elapsed    = 0f;
 
         target.localScale = startScale;
 
@@ -442,21 +564,5 @@ public class MarketManager : MonoBehaviour
 
         target.localScale = endScale;
         openAnimationCoroutine = null;
-    }
-
-    private static string NormalizeKey(string key)
-    {
-        return key == null ? string.Empty : key.Trim().ToLower();
-    }
-
-    private static void Shuffle<T>(IList<T> list)
-    {
-        for (int i = list.Count - 1; i > 0; i--)
-        {
-            int j = Random.Range(0, i + 1);
-            T temp = list[i];
-            list[i] = list[j];
-            list[j] = temp;
-        }
     }
 }

@@ -25,6 +25,14 @@ public static class FarmResetTool
                 FarmEconomyManager.Instance.ResetCurrency();
             if (PlayerProgressManager.Instance != null)
                 PlayerProgressManager.Instance.ForceSetLevelExp(1, 0);
+
+            // Kho hạt giống và kho nông sản cũng phải dọn TRONG BỘ NHỚ. DeleteAll() chỉ xoá
+            // trên đĩa; hàng vẫn nằm trong list của manager và lần AddItem/RemoveItem kế tiếp
+            // sẽ ghi lại y nguyên — đúng cái bẫy mà comment ở trên đã mô tả cho vàng/level.
+            if (WarehouseManager.Instance != null)
+                WarehouseManager.Instance.XoaSaveVaLamTrongKho();
+            if (FarmInventoryManager.Instance != null)
+                FarmInventoryManager.Instance.ClearAll();
         }
     }
 }

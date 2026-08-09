@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -295,7 +295,7 @@ public class FarmUIManager : MonoBehaviour
             return;
 
         EnterCookingMode();
-        SceneManager.LoadScene(cookingSceneName, LoadSceneMode.Additive);
+        SceneTransitionManager.Instance.LoadScene(cookingSceneName, SceneTransitionManager.TransitionType.CloudWipe, LoadSceneMode.Additive);
     }
 
     public void OnClick_OpenInventory()

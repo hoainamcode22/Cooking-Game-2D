@@ -281,13 +281,17 @@ public class LevelUpPopupUI : MonoBehaviour
             if (gemRewardRow  != null) gemRewardRow.SetActive(hasGem);
             if (gemRewardText != null) gemRewardText.text = $"+{cfg.giftGems}";
 
-            // Gift item slots
-            if (giftItemsContainer != null && cfg.giftItems != null)
+            // Gift item slots — dùng GetGiftItemsToShow(), KHÔNG dùng thẳng cfg.giftItems.
+            // Món nào đã hiện ở dải ô tròn "vừa mở khoá" thì không vẽ lại ô quà nữa,
+            // nếu không cùng một icon xuất hiện hai lần trong cùng một popup.
+            // Vật phẩm vẫn được tặng đủ khi bấm "Nhận" (chỗ đó vẫn duyệt cfg.giftItems).
+            var quaCanVe = cfg.GetGiftItemsToShow();
+            if (giftItemsContainer != null)
             {
                 if (giftItemSlotPrefab != null)
                 {
                     // Có prefab thật → dùng prefab
-                    foreach (var gift in cfg.giftItems)
+                    foreach (var gift in quaCanVe)
                     {
                         var go   = Instantiate(giftItemSlotPrefab, giftItemsContainer);
                         var slot = go.GetComponent<LevelUpGiftSlotUI>();
@@ -297,16 +301,19 @@ public class LevelUpPopupUI : MonoBehaviour
                 else
                 {
                     // Chưa có prefab → DỰNG NỀN ô quà bằng code (placeholder, thay sprite sau)
-                    BuildProceduralGiftSlots(cfg.giftItems);
+                    BuildProceduralGiftSlots(quaCanVe);
                 }
             }
 
-            // Unlock descriptions
+            // Unlock descriptions — LẤY TỪ GetUnlockLabels(), KHÔNG đọc thẳng
+            // cfg.unlockDescriptions: danh sách chữ đó là bản sao tay của unlockEntries,
+            // rất dễ lệch khi sửa một bên mà quên bên kia.
             if (unlockDescText != null)
             {
-                if (cfg.unlockDescriptions != null && cfg.unlockDescriptions.Count > 0)
+                var nhan = cfg.GetUnlockLabels();
+                if (nhan.Count > 0)
                 {
-                    unlockDescText.text = "Mở khóa: " + string.Join(", ", cfg.unlockDescriptions);
+                    unlockDescText.text = "Mở khóa: " + string.Join(", ", nhan);
                     unlockDescText.gameObject.SetActive(true);
                 }
                 else

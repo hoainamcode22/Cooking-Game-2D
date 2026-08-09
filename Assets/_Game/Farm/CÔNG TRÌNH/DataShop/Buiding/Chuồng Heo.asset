@@ -17,5 +17,8 @@ MonoBehaviour:
   itemIcon: {fileID: -6437395713708752273, guid: cf63b2f7d48b30a419f6f54b3ce4cda7, type: 3}
   goldPrice: 600
   diamondPrice: 0
-  unlockLevel: 4
   prefabToBuild: {fileID: 3715949520548590141, guid: 2b761224724b5614b889083f7c186931, type: 3}
+  unlockLevel: 4
+  gridSize: {x: 7, y: 5}
+  buildTimeSeconds: 0
+  rushGemCost: 0

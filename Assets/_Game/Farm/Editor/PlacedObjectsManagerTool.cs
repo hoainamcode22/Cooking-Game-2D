@@ -28,7 +28,12 @@ public class PlacedObjectsManagerTool : EditorWindow
     // JsonUtility bỏ qua field lạ khi ĐỌC nhưng KHÔNG giữ lại khi GHI —
     // thiếu nó thì xoá lẻ 1 công trình sẽ làm MẤT HƯỚNG XOAY của tất cả công trình còn lại.
     [Serializable] private class Entry { public string itemId; public float x, y; public int plotId; public int rot; }
-    [Serializable] private class Save  { public List<Entry> list = new List<Entry>(); }
+
+    // 🔴 `saveVersion` BẮT BUỘC PHẢI CÓ.
+    // PlacementManager coi save THIẾU key này là **v0** và sẽ CHẠY LẠI phép chuyển đổi
+    // toạ độ (MigrateAnchorV0ToV1) → mọi công trình DỊCH CHỖ LẦN THỨ HAI.
+    // Tool này chỉ đọc-rồi-ghi-lại, nên thiếu 1 field là phá hỏng cả map.
+    [Serializable] private class Save  { public int saveVersion; public List<Entry> list = new List<Entry>(); }
 
     private Save        _data;
     private Vector2     _scroll;
@@ -53,6 +58,18 @@ public class PlacedObjectsManagerTool : EditorWindow
 
     private void Persist()
     {
+        // Save đang có vật nhưng saveVersion = 0 nghĩa là ta vừa đọc một save v0 CHƯA
+        // được runtime dịch (hoặc JsonUtility không thấy key). Ghi lại nguyên 0 sẽ khiến
+        // PlacementManager dịch toạ độ LẦN NỮA → cả map dịch chỗ.
+        // Runtime luôn dịch + ghi lại v1 ngay lần Play đầu, nên tới lúc tool này chạy thì
+        // giá trị đúng phải là CurrentSaveVersion.
+        if (_data.saveVersion == 0 && _data.list.Count > 0)
+        {
+            _data.saveVersion = PlacementManager.CurrentSaveVersion;
+            Debug.LogWarning("[PlacedObjects] save thiếu saveVersion — đã đặt thành " +
+                             $"{PlacementManager.CurrentSaveVersion} để tránh dịch toạ độ lần hai.");
+        }
+
         PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(_data));
         PlayerPrefs.Save();
         Debug.Log($"[PlacedObjects] Đã lưu save — còn {_data.list.Count} vật. " +
@@ -63,6 +80,24 @@ public class PlacedObjectsManagerTool : EditorWindow
     {
         EditorGUILayout.Space(6);
         EditorGUILayout.LabelField("Công trình / Ô đất đã đặt (từ save)", EditorStyles.boldLabel);
+
+        EditorGUILayout.HelpBox(
+            "⚠ TOOL CŨ — nên dùng bản mới:  Tools ▸ Farm ▸ Dọn Dẹp Dữ Liệu Đã Lưu\n\n" +
+            "Bản mới hơn ở chỗ: hiện TÊN THẬT (\"Chậu Hoa1\") thay vì id dạng số, bao cả " +
+            "công trường đang xây, dò được dữ liệu ô đất mồ côi, có tìm kiếm và chọn nhiều.",
+            MessageType.Warning);
+
+        if (GUILayout.Button("Mở tool mới", GUILayout.Height(22)))
+        {
+            FarmSaveCleanupTool.Open();
+            Close();
+            // ExitGUI thay vì `return`: Close() giữa OnGUI làm số control vẽ ra ở frame
+            // này khác frame trước → IMGUI ném "Getting control ... in a group with only
+            // N controls". ExitGUI cắt sạch vòng vẽ, không sinh lỗi đó.
+            GUIUtility.ExitGUI();
+        }
+
+        EditorGUILayout.Space(4);
         EditorGUILayout.HelpBox(
             "Vật mua trong play mode được spawn từ save, không nằm trên Hierarchy.\n" +
             "Bấm [Xóa] để gỡ vật đó khỏi save → lần Play sau sẽ KHÔNG hiện lại nữa.",

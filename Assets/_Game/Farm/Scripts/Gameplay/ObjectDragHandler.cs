@@ -57,11 +57,22 @@ public class ObjectDragHandler : MonoBehaviour
     private Vector3 _dragWorldPos;
     private Vector2Int _gridSizeCells = Vector2Int.one;
 
-    // Độ lệch từ ĐIỂM NEO (transform.position, pivot ở ĐÁY sprite) tới TÂM hộp bao.
-    // PlacementManager.GetFootprintRect nhận TÂM KHỐI Ô, nên không cộng bù cái này thì
-    // vùng ô kiểm tra tụt xuống nửa chiều cao sprite: kéo nhà xuống sát nhà khác vẫn
-    // "hợp lệ" (đè mái), còn đất trống phía dưới lại bị báo bận.
-    private Vector2 _pivotOffset = Vector2.zero;
+    // ═══════════════════════════════════════════════════════════════════════════
+    // V8 — HAI ĐỘ LỆCH ĐO TỪ HỘP BAO THẬT, KHÔNG ĐOÁN PIVOT
+    //
+    // PlacementManager V8 quy ước: ĐIỂM NEO của một công trình = MÉP DƯỚI + GIỮA NGANG
+    // của vùng ô nó chiếm (xem PlacementManager.SnapAnchor). Với art của dự án (pivot ở
+    // ĐÁY sprite) thì transform.position ĐÃ là điểm neo đó, hai số dưới đây đều = 0.
+    //
+    // NHƯNG script này chạy trên vật do DESIGNER KÉO TAY vào scene — không có
+    // PlaceableItemData, và pivot có thể ở GIỮA sprite (decor, ô đất). Nên phải đo:
+    //   _pivotOffsetX = tâm ngang hộp bao − transform.position.x
+    //   _footOffsetY   = ĐÁY hộp bao      − transform.position.y   (âm nếu pivot ở giữa)
+    // Nhờ hai số này, "chân vật" luôn được snap đúng lên đường kẻ lưới, dù pivot ở đâu.
+    // Đo MỘT LẦN ở Awake vì vật không đổi hình trong lúc kéo.
+    // ═══════════════════════════════════════════════════════════════════════════
+    private float _pivotOffsetX = 0f;
+    private float _footOffsetY  = 0f;
 
     // =========================================================================
     // Unity Lifecycle
@@ -101,8 +112,9 @@ public class ObjectDragHandler : MonoBehaviour
 
     /// <summary>
     /// Số ô lưới vật này chiếm, đo từ hộp bao các SpriteRenderer con.
-    /// Đồng thời ghi lại <see cref="_pivotOffset"/> — cùng một phép đo, cùng một hộp bao,
-    /// nên kích thước và độ lệch không bao giờ nói hai chuyện khác nhau.
+    /// Đồng thời ghi lại <see cref="_pivotOffsetX"/> và <see cref="_footOffsetY"/> —
+    /// cùng một phép đo, cùng một hộp bao, nên kích thước và độ lệch không bao giờ
+    /// nói hai chuyện khác nhau.
     /// </summary>
     private Vector2Int MeasureGridSize()
     {
@@ -117,9 +129,9 @@ public class ObjectDragHandler : MonoBehaviour
         if (!found) return Vector2Int.one;
 
         // sr.bounds là hộp bao WORLD đã tính sẵn pivot + xoay → hiệu số với transform.position
-        // chính là độ lệch pivot cần bù. Đo một lần ở Awake vì vật không đổi hình khi kéo.
-        _pivotOffset = new Vector2(b.center.x - transform.position.x,
-                                   b.center.y - transform.position.y);
+        // chính là độ lệch cần bù.
+        _pivotOffsetX = b.center.x - transform.position.x;
+        _footOffsetY  = b.min.y    - transform.position.y;
 
         RectInt r = PlacementManager.RectFromWorldBounds(b);
         return new Vector2Int(Mathf.Max(1, r.width), Mathf.Max(1, r.height));
@@ -257,12 +269,27 @@ public class ObjectDragHandler : MonoBehaviour
     // Placement Helpers
     // =========================================================================
 
-    /// <summary>Snap TÂM Ô dùng chung công thức với PlacementManager (CELL = 100).</summary>
+    /// <summary>
+    /// 🔴 V8 — Snap CHÂN VẬT vào lưới, dùng chung đúng một công thức với PlacementManager
+    /// (PlacementManager.SnapAnchor, CELL = 100).
+    ///
+    /// VÌ SAO SNAP CHÂN CHỨ KHÔNG SNAP TÂM: nếu snap tâm thì chân rơi vào
+    /// (đường kẻ − nửa chiều cao sprite) — mỗi vật một con số khác nhau vì sprite cao thấp
+    /// khác nhau → kéo hai công trình cạnh nhau là chân lệch nhau, đúng lỗi "méo méo
+    /// không đều" mà V8 sinh ra để sửa. Snap chân thì chân LUÔN là bội số của CELL.
+    ///
+    /// Quy trình: neo → chân (cộng offset đo được) → snap chân → trả về neo (trừ lại).
+    /// Với pivot ở đáy (mọi công trình của dự án) hai offset đều 0 nên đây đúng bằng
+    /// SnapAnchor(pos) — giống hệt Ghost của PlacementManager, không lệch một pixel.
+    /// </summary>
     private Vector3 SnapToGrid(Vector3 pos)
     {
-        Vector3 snapped = PlacementManager.SnapCenter(pos, _gridSizeCells);
-        snapped.z = pos.z;
-        return snapped;
+        Vector3 foot        = FootAnchorOf(pos);
+        Vector3 snappedFoot = PlacementManager.SnapAnchor(foot, _gridSizeCells);
+
+        return new Vector3(snappedFoot.x - _pivotOffsetX,
+                           snappedFoot.y - _footOffsetY,
+                           pos.z);
     }
 
     /// <summary>
@@ -278,7 +305,7 @@ public class ObjectDragHandler : MonoBehaviour
         PlacementManager pm = PlacementManager.Instance;
         if (pm != null)
         {
-            RectInt rect = PlacementManager.GetFootprintRect(FootprintCenterOf(pos), _gridSizeCells);
+            RectInt rect = RectOf(pos);
             return pm.IsAreaFree(rect, gameObject) && pm.IsRectInsideMap(rect);
         }
 
@@ -289,16 +316,25 @@ public class ObjectDragHandler : MonoBehaviour
         return true;
     }
 
-    /// <summary>Đổi ĐIỂM NEO thành TÂM KHỐI Ô — thứ mà GetFootprintRect thực sự cần.</summary>
-    private Vector3 FootprintCenterOf(Vector3 anchor)
-        => new Vector3(anchor.x + _pivotOffset.x, anchor.y + _pivotOffset.y, 0f);
+    /// <summary>
+    /// Đổi transform.position thành ĐIỂM NEO theo quy ước V8 = CHÂN vật, giữa ngang.
+    /// Với pivot ở đáy thì hai offset = 0 và hàm này là phép đồng nhất.
+    /// </summary>
+    private Vector3 FootAnchorOf(Vector3 objectPos)
+        => new Vector3(objectPos.x + _pivotOffsetX, objectPos.y + _footOffsetY, 0f);
+
+    /// <summary>Vùng ô vật này chiếm nếu transform.position = objectPos.</summary>
+    private RectInt RectOf(Vector3 objectPos)
+        => PlacementManager.RectFromAnchor(FootAnchorOf(objectPos), _gridSizeCells);
 
     private void UpdatePlacementIndicator(Vector3 pos, bool valid)
     {
         if (placementIndicator == null) return;
         placementIndicator.enabled          = true;
-        // Vẽ ở TÂM vùng ô để người chơi thấy đúng chỗ sẽ bị chặn, không phải ở chân nhà.
-        Vector3 c = FootprintCenterOf(pos);
+        // Vẽ ở TÂM VÙNG Ô ĐANG ĐƯỢC KIỂM TRA để người chơi thấy đúng chỗ sẽ bị chặn.
+        // Lấy tâm từ chính `rect` (không tự tính lại từ bounds) — một nguồn sự thật duy nhất,
+        // nên khung chỉ báo không bao giờ nói khác kết quả hợp lệ/không hợp lệ.
+        Vector3 c = PlacementManager.RectCenterWorld(RectOf(pos));
         c.z = placementIndicator.transform.position.z;
         placementIndicator.transform.position = c;
         placementIndicator.color            = valid ? validPlacementColor : invalidPlacementColor;

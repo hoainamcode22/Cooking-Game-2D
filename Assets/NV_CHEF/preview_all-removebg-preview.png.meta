@@ -1,0 +1,883 @@
+fileFormatVersion: 2
+guid: 461745570ca92384a9003f83596b3ec2
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7522885873843597192
+    second: preview_all-removebg-preview_0
+  - first:
+      213: -5450981879732521851
+    second: preview_all-removebg-preview_1
+  - first:
+      213: 3116199960435896560
+    second: preview_all-removebg-preview_2
+  - first:
+      213: 8387699787980712455
+    second: preview_all-removebg-preview_3
+  - first:
+      213: -6055347649461372300
+    second: preview_all-removebg-preview_4
+  - first:
+      213: -1876623739083593019
+    second: preview_all-removebg-preview_5
+  - first:
+      213: 2693770218684393762
+    second: preview_all-removebg-preview_6
+  - first:
+      213: 9056075043948518436
+    second: preview_all-removebg-preview_7
+  - first:
+      213: 8843585225802542995
+    second: preview_all-removebg-preview_8
+  - first:
+      213: 4748913803429204144
+    second: preview_all-removebg-preview_9
+  - first:
+      213: -7020982784726553533
+    second: preview_all-removebg-preview_10
+  - first:
+      213: 7795508050022789191
+    second: preview_all-removebg-preview_11
+  - first:
+      213: -1926140801974172888
+    second: preview_all-removebg-preview_12
+  - first:
+      213: -6442217789822601702
+    second: preview_all-removebg-preview_13
+  - first:
+      213: -184901487381347485
+    second: preview_all-removebg-preview_14
+  - first:
+      213: -7871360092636100508
+    second: preview_all-removebg-preview_15
+  - first:
+      213: -4062438534591037288
+    second: preview_all-removebg-preview_16
+  - first:
+      213: 6346725468603541478
+    second: preview_all-removebg-preview_17
+  - first:
+      213: -7156001721606732367
+    second: preview_all-removebg-preview_18
+  - first:
+      213: 6505448526309841420
+    second: preview_all-removebg-preview_19
+  - first:
+      213: 2692078898162515944
+    second: preview_all-removebg-preview_20
+  - first:
+      213: -6665933933223840129
+    second: preview_all-removebg-preview_21
+  - first:
+      213: -7511097689931034611
+    second: preview_all-removebg-preview_22
+  - first:
+      213: 140063583772261884
+    second: preview_all-removebg-preview_23
+  - first:
+      213: -6800254930095021805
+    second: preview_all-removebg-preview_24
+  - first:
+      213: 1162435887109328179
+    second: preview_all-removebg-preview_25
+  - first:
+      213: 8202880695465159896
+    second: preview_all-removebg-preview_26
+  - first:
+      213: 6459177950619597282
+    second: preview_all-removebg-preview_27
+  - first:
+      213: 5784805846954891876
+    second: preview_all-removebg-preview_28
+  - first:
+      213: 4404997375844644663
+    second: preview_all-removebg-preview_29
+  - first:
+      213: -2276187523706583590
+    second: preview_all-removebg-preview_30
+  - first:
+      213: -6789864822648310902
+    second: preview_all-removebg-preview_31
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 2
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 7
+  spritePivot: {x: 0.5, y: 0}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 1024
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: Chef_Idle_0
+      rect:
+        serializedVersion: 2
+        x: 13
+        y: 249
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c87342ad4981b434b8ffb52dc336a92b
+      internalID: 1418372539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Idle_1
+      rect:
+        serializedVersion: 2
+        x: 110
+        y: 249
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 34115fed98bad624d912c3dec278aa81
+      internalID: 632719907
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Idle_2
+      rect:
+        serializedVersion: 2
+        x: 206
+        y: 249
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7e2bec20fa7f2fd4e9349f2583a9ec2b
+      internalID: -1074506390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Idle_3
+      rect:
+        serializedVersion: 2
+        x: 300
+        y: 249
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ad7fc46b132d3754491b5df5df3597be
+      internalID: -461849398
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Idle_4
+      rect:
+        serializedVersion: 2
+        x: 397
+        y: 249
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53c48fa5a979bdc419bd6e1177abbe5d
+      internalID: 2115694033
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Idle_5
+      rect:
+        serializedVersion: 2
+        x: 493
+        y: 249
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 603ed9acce0a82b48ab19e10905c7099
+      internalID: -1426598045
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Stir_0
+      rect:
+        serializedVersion: 2
+        x: 8
+        y: 168
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0a91e310231507b47bb47863292a8c99
+      internalID: -959996245
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Stir_1
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 168
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 496207f530070c34aa7624745ec2f7b4
+      internalID: 819840088
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Stir_2
+      rect:
+        serializedVersion: 2
+        x: 199
+        y: 168
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5767ec44a3970324b8a4e040fcf10b4a
+      internalID: 1109648443
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Stir_3
+      rect:
+        serializedVersion: 2
+        x: 294
+        y: 168
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e73184d08875763498d412d0d9ba590d
+      internalID: -339613170
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Stir_4
+      rect:
+        serializedVersion: 2
+        x: 389
+        y: 168
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c3bec4cf37a7fd3438bef26d390cacd6
+      internalID: 1358283299
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Stir_5
+      rect:
+        serializedVersion: 2
+        x: 485
+        y: 168
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 78c95e0331718ff41865c088f6c778ba
+      internalID: -1733679366
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Stir_6
+      rect:
+        serializedVersion: 2
+        x: 580
+        y: 168
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9fa7b7cf7486a0f4bb27a50225ac4d52
+      internalID: -279958625
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Flip_0
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 86
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: db42dfad61b03fd4586950ada46efef1
+      internalID: -460597180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Flip_1
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 86
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 45794290c56d7d348886b80868957fc1
+      internalID: 400913782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Flip_2
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 86
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0490471f98304204596dfd4e8a187d89
+      internalID: 378155016
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Flip_3
+      rect:
+        serializedVersion: 2
+        x: 292
+        y: 86
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 61ebe7010e98de14593be7d07d0be1a2
+      internalID: -978164864
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Flip_4
+      rect:
+        serializedVersion: 2
+        x: 388
+        y: 86
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 82db001ef14b97646a8040e21377e68b
+      internalID: 1928509720
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Flip_5
+      rect:
+        serializedVersion: 2
+        x: 484
+        y: 86
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f2a4da6b44bddb14eb7bc68d27ff4c1f
+      internalID: 762186867
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Flip_6
+      rect:
+        serializedVersion: 2
+        x: 579
+        y: 86
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0e5d9b16d32507842a20385052d8a011
+      internalID: -1058842246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Finish_0
+      rect:
+        serializedVersion: 2
+        x: 6
+        y: 4
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 557261ed0480cee40ab51583a9eaf9a7
+      internalID: 370027587
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Finish_1
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 4
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 217db197d53dcbd4dac932b804851d54
+      internalID: -211282322
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Finish_2
+      rect:
+        serializedVersion: 2
+        x: 197
+        y: 4
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1803e4b86c2927d47a1caf8dd2006766
+      internalID: -1103586715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Finish_3
+      rect:
+        serializedVersion: 2
+        x: 293
+        y: 4
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 094f27f406f7f2d43b843f759c1d94a3
+      internalID: -549296722
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Finish_4
+      rect:
+        serializedVersion: 2
+        x: 388
+        y: 4
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed08d7a19752ae545ba37a13ae81be6a
+      internalID: -1230728796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Finish_5
+      rect:
+        serializedVersion: 2
+        x: 484
+        y: 4
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c3d0bc7895ea450498c8155620a1df93
+      internalID: -914458246
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Finish_6
+      rect:
+        serializedVersion: 2
+        x: 579
+        y: 4
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5707b54c316c4e944b1368d720016a46
+      internalID: -736719884
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Chef_Finish_7
+      rect:
+        serializedVersion: 2
+        x: 674
+        y: 4
+        width: 84
+        height: 74
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b3bbef39d69b35644b31e6c90055dc34
+      internalID: -479929402
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 39de5b28f27ce6e47852351acdba4f1f
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      Chef_Finish_0: 370027587
+      Chef_Finish_1: -211282322
+      Chef_Finish_2: -1103586715
+      Chef_Finish_3: -549296722
+      Chef_Finish_4: -1230728796
+      Chef_Finish_5: -914458246
+      Chef_Finish_6: -736719884
+      Chef_Finish_7: -479929402
+      Chef_Flip_0: -460597180
+      Chef_Flip_1: 400913782
+      Chef_Flip_2: 378155016
+      Chef_Flip_3: -978164864
+      Chef_Flip_4: 1928509720
+      Chef_Flip_5: 762186867
+      Chef_Flip_6: -1058842246
+      Chef_Idle_0: 1418372539
+      Chef_Idle_1: 632719907
+      Chef_Idle_2: -1074506390
+      Chef_Idle_3: -461849398
+      Chef_Idle_4: 2115694033
+      Chef_Idle_5: -1426598045
+      Chef_Stir_0: -959996245
+      Chef_Stir_1: 819840088
+      Chef_Stir_2: 1109648443
+      Chef_Stir_3: -339613170
+      Chef_Stir_4: 1358283299
+      Chef_Stir_5: -1733679366
+      Chef_Stir_6: -279958625
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -14,23 +14,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ConstructionArtKit
   showSlotLabels: 0
   forcePlaceholderColors: 0
-  groundPatch: {fileID: 0}
-  scaffoldPost: {fileID: 0}
-  scaffoldRail: {fileID: 0}
-  scaffoldBrace: {fileID: 0}
-  leaningBoard: {fileID: 0}
-  worker: {fileID: 0}
-  workerPrefab: {fileID: 0}
-  dustParticle: {fileID: 0}
-  namePlateBg: {fileID: 0}
-  timerBarBg: {fileID: 0}
-  clockIcon: {fileID: 0}
-  rushButtonBg: {fileID: 0}
-  coinIcon: {fileID: 0}
-  gemIcon: {fileID: 0}
-  priceBarBg: {fileID: 0}
-  giftBoxSide: {fileID: 0}
-  ribbon: {fileID: 0}
-  rosette: {fileID: 0}
-  balloon: {fileID: 0}
-  hardHatDone: {fileID: 0}
+  groundPatch: {fileID: 21300000, guid: 4af4d0b202222884ba6c949aa9504ae6, type: 3}
+  scaffoldPost: {fileID: -599937067, guid: 526b445e8bda4c489be73b733a4aa5c3, type: 3}
+  scaffoldRail: {fileID: 1837557928, guid: 526b445e8bda4c489be73b733a4aa5c3, type: 3}
+  scaffoldBrace: {fileID: -599937067, guid: 526b445e8bda4c489be73b733a4aa5c3, type: 3}
+  leaningBoard: {fileID: -5035517252590282583, guid: cb5b5986921d2f743b55ed601e7b2f26, type: 3}
+  worker: {fileID: -8947514641658741730, guid: df39edf99f9a89d44b0c5ba5e8c5fcb0, type: 3}
+  workerPrefab: {fileID: -8653719598885068355, guid: 4070bce2b7341a94787e1d847b2e519c, type: 3}
+  dustParticle: {fileID: 21300002, guid: 7f221a2efb03036429b23e6e78fe52d5, type: 3}
+  namePlateBg: {fileID: 21300000, guid: 064ca4e3189eec0438cb846aefd8c196, type: 3}
+  timerBarBg: {fileID: 21300000, guid: 064ca4e3189eec0438cb846aefd8c196, type: 3}
+  clockIcon: {fileID: 1000402781115094627, guid: 7ab00fc7156f0854ab2e2dc3d9ab416d, type: 3}
+  rushButtonBg: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
+  coinIcon: {fileID: -5564238710932881115, guid: 6a2f7fdb5dbb9f449b7a84545a970569, type: 3}
+  gemIcon: {fileID: -1053237283959774095, guid: 6fd24a52d8538dc4a8fb77026cb221a3, type: 3}
+  priceBarBg: {fileID: -1053237283959774095, guid: 6fd24a52d8538dc4a8fb77026cb221a3, type: 3}
+  giftBoxSide: {fileID: -876741371647058408, guid: 4070bce2b7341a94787e1d847b2e519c, type: 3}
+  ribbon: {fileID: 6572680760146535305, guid: cd61af38ba63d094293f59060b859609, type: 3}
+  rosette: {fileID: 21300000, guid: 46b9fb839083c6541a79dcbd9072d8c4, type: 3}
+  balloon: {fileID: 21300000, guid: 5e4bcbaf759026e4aa009c3c728033cd, type: 3}
+  hardHatDone: {fileID: 21300000, guid: 94ea43556dfb347439e67a9da6005b9a, type: 3}

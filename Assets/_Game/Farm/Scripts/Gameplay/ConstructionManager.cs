@@ -168,8 +168,27 @@ public class ConstructionManager : MonoBehaviour
     // SAVE
     // ══════════════════════════════════════════════════════════════════════
 
-    public const string SaveKey     = "FARM_CONSTRUCTION_SITES";
-    public const int    SaveVersion = 1;
+    public const string SaveKey = "FARM_CONSTRUCTION_SITES";
+
+    /// <summary>
+    /// PHIÊN BẢN ĐỊNH DẠNG SAVE CÔNG TRƯỜNG.
+    ///
+    ///   v1 = hệ V7: `SiteEntry.x/y` là điểm neo tính theo `tâm vùng ô − pivotOffset`
+    ///   v2 = hệ V8: điểm neo là MÉP DƯỚI vùng ô (DEV-1 đổi ở §5.1)
+    ///
+    /// 🔴 VÌ SAO PHẢI BUMP: DEV-1 đổi ruột `AnchorToFootprintCenter` từ `+ pivotOffset`
+    /// sang `+ M·CELL/2`. Công trường khôi phục từ save v1 sẽ dựng giàn giáo cao hơn đúng
+    /// M·CELL/2 (≈2 ô) vì con số trong save vốn ĐÃ là tâm, giờ lại bị cộng thêm nửa chiều
+    /// sâu lần nữa (DEV-1 báo trước ở §5.4).
+    ///
+    /// XỬ LÝ: XOÁ KEY MỘT LẦN (quyết định của Edric, §5.4 phương án (b)).
+    /// Vì sao chọn cách này thay vì viết hàm dịch toạ độ như DEV-1 làm với công trình đã
+    /// xây xong: công trường là dữ liệu NGẮN HẠN (30–240 giây rồi tự thành công trình thật),
+    /// dự án đang ở giai đoạn dựng game nên mất mấy công trường test không đau; còn một hàm
+    /// dịch toạ độ thì phải đo lại `PivotOffsetOf` cho từng entry, không test được bằng mắt,
+    /// và sống mãi trong code chỉ để phục vụ một lần chuyển hệ.
+    /// </summary>
+    public const int SaveVersion = 2;
 
     [Serializable]
     private class SiteEntry
@@ -186,7 +205,14 @@ public class ConstructionManager : MonoBehaviour
     [Serializable]
     private class SitesSave
     {
-        public int            saveVersion = SaveVersion;
+        // ⚠ MẶC ĐỊNH PHẢI LÀ 0, KHÔNG PHẢI `SaveVersion`.
+        // JsonUtility.FromJson KHÔNG chạy hàm khởi tạo / field initializer một cách bảo đảm,
+        // nên nếu đặt mặc định = SaveVersion thì save đời rất cũ (chưa có key "saveVersion")
+        // có nguy cơ bị đọc thành "đã là bản mới nhất" và không được dọn.
+        // Để 0 thì mọi save thiếu key đều rơi vào nhánh `< SaveVersion` → xử lý đúng.
+        // (Cùng thủ thuật DEV-1 dùng cho `BuildingsSave.saveVersion` và field `rot`.)
+        // `SaveSites()` luôn GÁN TƯỜNG MINH `saveVersion = SaveVersion` khi ghi.
+        public int            saveVersion;
         public long           maxSeenUnix;   // chống lùi giờ máy
         public List<SiteEntry> list = new List<SiteEntry>();
     }
@@ -695,6 +721,38 @@ public class ConstructionManager : MonoBehaviour
         }
 
         if (save?.list == null) return;
+
+        // ══════════════════════════════════════════════════════════════════
+        // V10 — SAVE CÔNG TRƯỜNG PHIÊN BẢN CŨ → XOÁ KEY MỘT LẦN
+        //
+        // Save v1 lưu điểm neo theo hệ V7 (tâm vùng ô − pivotOffset). DEV-1 đã đổi
+        // `AnchorToFootprintCenter` sang `+ M·CELL/2` nên đọc lại số cũ sẽ dựng giàn giáo
+        // lơ lửng cao hơn ≈2 ô. Xem ghi chú dài ở hằng `SaveVersion` để biết vì sao xoá
+        // thay vì dịch toạ độ.
+        //
+        // KHÔNG hoàn tiền: tiền đã bị trừ trong `ConfirmPlacement()` của phiên trước và
+        // save đó KHÔNG lưu giá đã trả (`SiteEntry` chỉ có itemId/x/y/rot/plotId/thời gian).
+        // Muốn hoàn thì phải tra ngược `PlaceableItemData` rồi cộng lại — mà `itemId` của
+        // Home4/Home5 đang TRÙNG NHAU (DEV-1 §5.6) nên có khả năng hoàn sai món. Thà mất
+        // vài công trường test còn hơn tự cấp tiền sai cho người chơi.
+        // ══════════════════════════════════════════════════════════════════
+        if (save.saveVersion < SaveVersion)
+        {
+            PlayerPrefs.DeleteKey(SaveKey);
+            PlayerPrefs.Save();
+
+            Debug.LogWarning(
+                $"[Construction] 🔴 XOÁ SAVE CÔNG TRƯỜNG CŨ — phát hiện saveVersion " +
+                $"{save.saveVersion} (code đang ở v{SaveVersion}). " +
+                $"Bỏ {save.list.Count} công trường đang xây.\n" +
+                "LÝ DO: DEV-1 đổi hệ neo từ 'tâm vùng ô − pivotOffset' (V7) sang " +
+                "'mép dưới vùng ô' (V8). Toạ độ cũ đọc lại sẽ làm giàn giáo lơ lửng cao " +
+                "hơn ~2 ô so với chỗ đặt.\n" +
+                "ĐÂY LÀ HÀNH VI CÓ CHỦ Ý, xảy ra ĐÚNG MỘT LẦN cho mỗi máy. " +
+                "Công trình ĐÃ XÂY XONG (FARM_PLACED_BUILDINGS) KHÔNG bị ảnh hưởng — " +
+                "DEV-1 có hàm dịch toạ độ riêng cho key đó.");
+            return;
+        }
 
         if (save.saveVersion > SaveVersion)
         {

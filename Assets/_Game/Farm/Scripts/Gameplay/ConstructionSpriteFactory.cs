@@ -111,6 +111,26 @@ public static class ConstructionSpriteFactory
         return (pa - ba * t).magnitude;
     }
 
+    private static float Cross2(Vector2 u, Vector2 v) => u.x * v.y - u.y * v.x;
+
+    /// <summary>
+    /// SDF tam giác a-b-c (âm = trong, dương = ngoài).
+    /// Ghép từ <see cref="SdSegment"/> + phép thử dấu tích có hướng — không cần biết trước
+    /// tam giác quay chiều nào (nhận cả hai chiều), nên gọi được với toạ độ viết tay.
+    /// Dùng cho mũi nhọn của nút XOAY.
+    /// </summary>
+    private static float SdTriangle(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
+    {
+        float d = Mathf.Min(SdSegment(p, a, b),
+                  Mathf.Min(SdSegment(p, b, c), SdSegment(p, c, a)));
+
+        float s1 = Cross2(b - a, p - a);
+        float s2 = Cross2(c - b, p - b);
+        float s3 = Cross2(a - c, p - c);
+        bool inside = (s1 >= 0f && s2 >= 0f && s3 >= 0f) || (s1 <= 0f && s2 <= 0f && s3 <= 0f);
+        return inside ? -d : d;
+    }
+
     /// <summary>Signed distance → alpha có khử răng cưa.</summary>
     private static float Aa(float sd, float softness = 1.4f)
         => Mathf.Clamp01(0.5f - sd / softness);
@@ -374,6 +394,204 @@ public static class ConstructionSpriteFactory
                 float gloss = Mathf.Clamp01(1f - new Vector2(u + 0.26f, v - 0.38f).magnitude / 0.30f);
                 Color c = Color.Lerp(new Color(0.82f, 0.82f, 0.82f, 1f), Color.white, gloss);
                 return WithA(c, a);
+            },
+            Vector4.zero);
+
+    // ── V6 — GLYPH CHO 3 NÚT TRÒN CỦA THANH XÁC NHẬN ─────────────────────────
+    //
+    // VÌ SAO VẼ BẰNG CODE THAY VÌ DÙNG KÝ TỰ TMP (✕ ↻ ✓):
+    // prefab Placement_Ghost có sẵn 3 node "Label" chứa ký tự Unicode nhưng cả 3 đang
+    // TẮT (m_IsActive: 0). Bật lên là đánh cược vào việc font TMP mặc định có đủ 3 glyph
+    // đó — thiếu một cái là hiện ô vuông trống. Sprite thủ tục thì chắc chắn hiện, và
+    // đằng nào cũng cùng đường với 19 ô art khác (Edric thay sprite thật sau).
+
+    /// <summary>Dấu ✕ — hai đoạn thẳng bo đầu cắt nhau. Trắng, tô màu lại bằng color.</summary>
+    public static Sprite CrossMark(int size = 72)
+        => Make($"cross_{size}", size, size,
+            (u, v, w, h) =>
+            {
+                Vector2 p = new Vector2(u, v);
+                float d = Mathf.Min(
+                    SdSegment(p, new Vector2(-0.50f, -0.50f), new Vector2(0.50f,  0.50f)),
+                    SdSegment(p, new Vector2(-0.50f,  0.50f), new Vector2(0.50f, -0.50f)));
+                float unit = 2f / w;
+                float a = Mathf.Clamp01((0.16f - d) / (unit * 1.8f));
+                return a <= 0.001f ? Color.clear : WithA(Color.white, a);
+            },
+            Vector4.zero);
+
+    /// <summary>
+    /// THÙNG RÁC 🗑 — dùng cho nút XOÁ công trình trong Edit Mode.
+    ///
+    /// Ghép 4 khối chữ nhật bo góc: nắp (thanh ngang trên), tay cầm (thanh nhỏ trên nắp),
+    /// thân thùng (hơi thu hẹp xuống dưới cho ra dáng thùng), và 2 khe dọc khoét trong thân.
+    /// Vẽ bằng SDF thay vì import icon để không phụ thuộc art — Edric thay sprite sau nếu muốn.
+    /// </summary>
+    public static Sprite TrashCan(int size = 72)
+        => Make($"trash_{size}", size, size,
+            (u, v, w, h) =>
+            {
+                Vector2 p    = new Vector2(u, v);
+                float   unit = 2f / w;
+                float   aa   = unit * 1.8f;
+
+                // ── Nắp: thanh ngang ở y = +0.46 ──
+                float dLid = SdRoundBox(p - new Vector2(0f, 0.46f),
+                                        new Vector2(0.52f, 0.085f), 0.05f);
+
+                // ── Tay cầm: thanh nhỏ nhô lên trên nắp ──
+                float dGrip = SdRoundBox(p - new Vector2(0f, 0.60f),
+                                         new Vector2(0.20f, 0.075f), 0.05f);
+
+                // ── Thân thùng: thu hẹp dần xuống dưới ──
+                // Nội suy nửa-chiều-rộng theo y: rộng 0.44 ở mép trên, 0.34 ở đáy.
+                float tBody = Mathf.InverseLerp(0.34f, -0.62f, p.y);   // 0 ở trên → 1 ở đáy
+                float halfW = Mathf.Lerp(0.44f, 0.34f, Mathf.Clamp01(tBody));
+                float dBody = SdRoundBox(p - new Vector2(0f, -0.14f),
+                                         new Vector2(halfW, 0.48f), 0.07f);
+
+                // Gộp 3 khối
+                float d = Mathf.Min(dLid, Mathf.Min(dGrip, dBody));
+                float a = Mathf.Clamp01((0f - d) / aa);
+                if (a <= 0.001f) return Color.clear;
+
+                // ── Khoét 2 khe dọc trong thân (chỉ khoét phần thân, không đụng nắp) ──
+                if (p.y < 0.30f)
+                {
+                    float slot = Mathf.Min(
+                        SdRoundBox(p - new Vector2(-0.16f, -0.16f), new Vector2(0.045f, 0.30f), 0.04f),
+                        SdRoundBox(p - new Vector2( 0.16f, -0.16f), new Vector2(0.045f, 0.30f), 0.04f));
+                    float slotA = Mathf.Clamp01((0f - slot) / aa);
+                    a *= 1f - slotA;
+                    if (a <= 0.001f) return Color.clear;
+                }
+
+                return WithA(Color.white, a);
+            },
+            Vector4.zero);
+
+    /// <summary>
+    /// Mũi tên XOAY ↻ — vòng cung hở + mũi nhọn ở đầu cung.
+    /// Khoảng hở (18°…96°) là thứ làm nó khác chữ "O": mắt phải thấy vòng cung CHƯA KHÉP
+    /// mới đọc ra "quay". Mũi nhọn chỉ theo chiều ngược kim đồng hồ, khớp ký hiệu ↻ quen mắt.
+    /// </summary>
+    public static Sprite RotateArrow(int size = 72)
+    {
+        const float ringR   = 0.52f;                 // bán kính vòng cung
+        const float ringHalf= 0.115f;                // nửa độ dày
+        const float gapFrom = 18f;                   // độ — đầu cung có mũi nhọn
+        const float gapTo   = 96f;                   // độ — đuôi cung
+
+        float ca = Mathf.Cos(gapFrom * Mathf.Deg2Rad);
+        float sa = Mathf.Sin(gapFrom * Mathf.Deg2Rad);
+        Vector2 radial  = new Vector2(ca, sa);                 // hướng ra xa tâm tại 18°
+        Vector2 tangent = new Vector2(-sa, ca);                // hướng ngược kim đồng hồ
+        Vector2 baseIn  = radial * (ringR - 0.20f);
+        Vector2 baseOut = radial * (ringR + 0.20f);
+        Vector2 tip     = radial * ringR + tangent * 0.30f;
+
+        return Make($"rotarrow_{size}", size, size,
+            (u, v, w, h) =>
+            {
+                Vector2 p = new Vector2(u, v);
+                float unit = 2f / w;
+                float soft = unit * 1.8f;
+
+                float ringSd = Mathf.Abs(p.magnitude - ringR) - ringHalf;
+                float ang    = Mathf.Atan2(p.y, p.x) * Mathf.Rad2Deg;   // −180…180
+                bool  inGap  = ang > gapFrom && ang < gapTo;
+                float aRing  = inGap ? 0f : Mathf.Clamp01(-ringSd / soft);
+
+                float aTip = Mathf.Clamp01(-SdTriangle(p, baseIn, baseOut, tip) / soft);
+
+                float a = Mathf.Max(aRing, aTip);
+                return a <= 0.001f ? Color.clear : WithA(Color.white, a);
+            },
+            Vector4.zero);
+    }
+
+    // ── V9 — ICON TRẠNG THÁI NỔI TRÊN ĐẦU CÔNG TRÌNH ─────────────────────────
+
+    /// <summary>
+    /// NGÔI SAO 5 CÁNH — "thưởng XP đang chờ".
+    /// Cách vẽ: gập góc cực về MỘT nan quạt 1/5 rồi thử điểm nằm trong hay ngoài đường
+    /// thẳng nối ĐỈNH cánh với HÕM giữa hai cánh. Rẻ hơn dựng đa giác 10 đỉnh, và có sẵn
+    /// khử răng cưa vì làm việc bằng khoảng cách có dấu.
+    /// </summary>
+    public static Sprite Star(int size = 80)
+    {
+        const float rOut = 0.94f;                 // bán kính đỉnh cánh
+        const float rIn  = 0.42f;                 // bán kính hõm
+        float seg  = Mathf.PI * 2f / 5f;
+        Vector2 tipP   = new Vector2(0f, rOut);
+        Vector2 notchP = new Vector2(Mathf.Sin(seg * 0.5f) * rIn, Mathf.Cos(seg * 0.5f) * rIn);
+        // Pháp tuyến HƯỚNG RA NGOÀI của cạnh tip→notch (suy tay: xem ghi chú trong FxEase
+        // về dấu — ở đây tip.y > notch.y và notch.x > 0 nên (rOut−y, x) chỉ ra ngoài).
+        Vector2 nOut = new Vector2(tipP.y - notchP.y, notchP.x - tipP.x).normalized;
+
+        return Make($"star_{size}", size, size,
+            (u, v, w, h) =>
+            {
+                float rr = Mathf.Sqrt(u * u + v * v);
+                if (rr > rOut + 0.05f) return Color.clear;
+
+                // Atan2(u, v) cho góc TÍNH TỪ TRỤC +Y → một cánh chỉ thẳng lên, dễ nhìn.
+                float ang = Mathf.Atan2(u, v);
+                ang = Mathf.Abs(Mathf.Repeat(ang + seg * 0.5f, seg) - seg * 0.5f);
+
+                Vector2 p = new Vector2(Mathf.Sin(ang) * rr, Mathf.Cos(ang) * rr);
+                float sd = Vector2.Dot(p - tipP, nOut);      // <0 = trong ngôi sao
+
+                float a = Mathf.Clamp01(-sd / (2f / w * 1.8f));
+                return a <= 0.001f ? Color.clear : WithA(Color.white, a);
+            },
+            Vector4.zero);
+    }
+
+    /// <summary>
+    /// CHỮ "Z" — "máy đứng không, thiếu nguyên liệu".
+    /// Tài liệu Township gọi đây là "chi tiết tinh tế nhất" (§3): nhà máy hết hàng thì
+    /// "ngủ", người chơi thấy Z là biết phải nạp liệu, KHÔNG cần một dòng chữ nào.
+    /// Ba đoạn thẳng — gạch trên, gạch chéo, gạch dưới.
+    /// </summary>
+    public static Sprite LetterZ(int size = 72)
+        => Make($"letterz_{size}", size, size,
+            (u, v, w, h) =>
+            {
+                Vector2 p = new Vector2(u, v);
+                float d = Mathf.Min(Mathf.Min(
+                    SdSegment(p, new Vector2(-0.44f,  0.54f), new Vector2( 0.44f,  0.54f)),
+                    SdSegment(p, new Vector2( 0.44f,  0.54f), new Vector2(-0.44f, -0.54f))),
+                    SdSegment(p, new Vector2(-0.44f, -0.54f), new Vector2( 0.44f, -0.54f)));
+                float unit = 2f / w;
+                float a = Mathf.Clamp01((0.145f - d) / (unit * 1.8f));
+                return a <= 0.001f ? Color.clear : WithA(Color.white, a);
+            },
+            Vector4.zero);
+
+    /// <summary>
+    /// BÌNH SỮA — "sản phẩm đã xong, chạm để thu". Placeholder chung cho mọi sản phẩm;
+    /// công trình nào có sprite riêng thì truyền vào BuildingStatusIcon.productSprite.
+    /// Thân + cổ + nắp (nắp tô xám để mắt đọc ra 3 khối, không thành một cục trắng).
+    /// </summary>
+    public static Sprite MilkBottle(int w = 72, int h = 96)
+        => Make($"milk_{w}_{h}", w, h,
+            (u, v, ww, hh) =>
+            {
+                Color c = Color.clear;
+                float unit = 2f / ww;
+                float soft = unit * 2f;
+
+                float body = SdRoundBox(new Vector2(u, v + 0.28f), new Vector2(0.44f, 0.50f), 0.16f);
+                c = Over(WithA(Color.white, Mathf.Clamp01(-body / soft)), c);
+
+                float neck = SdRoundBox(new Vector2(u, v - 0.50f), new Vector2(0.19f, 0.22f), 0.07f);
+                c = Over(WithA(Color.white, Mathf.Clamp01(-neck / soft)), c);
+
+                float cap = SdRoundBox(new Vector2(u, v - 0.74f), new Vector2(0.25f, 0.10f), 0.05f);
+                c = Over(WithA(new Color(0.60f, 0.62f, 0.66f, 1f), Mathf.Clamp01(-cap / soft)), c);
+
+                return c;
             },
             Vector4.zero);
 

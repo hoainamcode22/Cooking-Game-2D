@@ -48,6 +48,11 @@ public class ConstructionArtKitWindow : EditorWindow
         ConstructionArtKit.Slot.Rosette       => "rosette",
         ConstructionArtKit.Slot.Balloon       => "balloon",
         ConstructionArtKit.Slot.HardHatDone   => "hardHatDone",
+        // V9 — icon trạng thái nổi trên đầu công trình (BuildingStatusIcon.cs)
+        ConstructionArtKit.Slot.IconFrameBg      => "iconFrameBg",
+        ConstructionArtKit.Slot.IconStar         => "iconStar",
+        ConstructionArtKit.Slot.IconZzz          => "iconZzz",
+        ConstructionArtKit.Slot.IconProductReady => "iconProductReady",
         _                                     => null
     };
 
@@ -73,12 +78,17 @@ public class ConstructionArtKitWindow : EditorWindow
         ConstructionArtKit.Slot.Rosette       => "Hoa hồng ruy băng gắn trên đỉnh hộp.",
         ConstructionArtKit.Slot.Balloon       => "Bóng bay. Ô trống = tất cả màu đỏ; có art = rải đỏ/vàng/hồng.",
         ConstructionArtKit.Slot.HardHatDone   => "Mũ bảo hộ + tick xanh bật lên khi xây xong.",
+        ConstructionArtKit.Slot.IconFrameBg      => "Khung bo góc bọc icon trạng thái. Nên 9-slice, art gốc màu TRẮNG.",
+        ConstructionArtKit.Slot.IconStar         => "Ngôi sao: có thưởng XP đang chờ nhận.",
+        ConstructionArtKit.Slot.IconZzz          => "Chữ 'Z': máy ĐỨNG KHÔNG, thiếu nguyên liệu.",
+        ConstructionArtKit.Slot.IconProductReady => "Icon sản phẩm chung khi hàng xong. Xưởng riêng dùng productSprite.",
         _                                     => ""
     };
 
     /// <summary>
-    /// Ô nào CHƯA được nối dây. Hiện KHÔNG còn ô nào — cả 19/19 đã nối,
-    /// kể cả PriceBarBg (nối ở PlacementGhostVisualController.EnsurePriceBar).
+    /// Ô nào CHƯA được nối dây. Hiện KHÔNG còn ô nào — cả 23/23 đã nối:
+    /// PriceBarBg nối ở `PlacementGhostVisualController.EnsureConfirmBar`, và 4 ô icon
+    /// trạng thái (V9) nối ở `BuildingStatusIcon.Apply`.
     /// Giữ hàm lại để sau này thêm ô mới thì đánh dấu được ngay.
     /// </summary>
     private static bool IsNotWiredYet(ConstructionArtKit.Slot slot) => false;

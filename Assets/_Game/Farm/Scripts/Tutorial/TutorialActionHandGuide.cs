@@ -289,13 +289,70 @@ public class TutorialActionHandGuide : MonoBehaviour
         _hand.anchoredPosition += _nudge;            // tinh chỉnh nhỏ (Inspector)
     }
 
+    private bool _hasRippledThisCycle;
+
     private void Pulse()
     {
         if (!_hand.gameObject.activeSelf) return;
-        float scale = 1f + Mathf.Sin(Time.unscaledTime * _pulseSpeed) * _pulseAmount;
-        _hand.localScale = _baseScale * scale;
+        
+        // Ép và Giãn (Squash & Stretch)
+        float time = Time.unscaledTime * _pulseSpeed;
+        float sin = Mathf.Sin(time);
+        
+        // Khi tay ấn xuống (sin > 0), chiều ngang phình ra (Squash), chiều dọc xẹp lại
+        float squashX = 1f + sin * _pulseAmount;
+        float squashY = 1f - sin * _pulseAmount * 0.5f; // Xẹp ít hơn phình
+        
+        _hand.localScale = new Vector3(_baseScale.x * squashX, _baseScale.y * squashY, _baseScale.z);
+        
+        // Sinh vòng sóng nước (Ripple) khi tay nhấn mạnh nhất
+        if (sin > 0.95f && !_hasRippledThisCycle)
+        {
+            _hasRippledThisCycle = true;
+            SpawnRipple();
+        }
+        else if (sin < 0f)
+        {
+            _hasRippledThisCycle = false;
+        }
+
         if (_hasLastFingertipWorld)
             PlaceHandFingertipAt(_lastFingertipWorld);
+    }
+
+    private void SpawnRipple()
+    {
+        if (!_hasLastFingertipWorld) return;
+        
+        GameObject ripple = new GameObject("HandRipple");
+        ripple.transform.SetParent(_hand.parent, true);
+        ripple.transform.position = _lastFingertipWorld;
+        ripple.transform.localScale = Vector3.zero;
+        
+        Image img = ripple.AddComponent<Image>();
+        img.color = new Color(1f, 1f, 1f, 0.5f);
+        img.raycastTarget = false;
+        
+        // Tao animation Ripple nho = Coroutine
+        StartCoroutine(RippleAnim(ripple.transform, img));
+    }
+
+    private IEnumerator RippleAnim(Transform t, Image img)
+    {
+        float elapsed = 0f;
+        float dur = 0.4f;
+        while (elapsed < dur)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float time = elapsed / dur;
+            
+            // To ra va mo dan
+            t.localScale = Vector3.one * Mathf.Lerp(0.2f, 1.5f, time);
+            img.color = new Color(1f, 1f, 1f, Mathf.Lerp(0.6f, 0f, time));
+            
+            yield return null;
+        }
+        Destroy(t.gameObject);
     }
 
     private void OnDisable() => StopGuide();
