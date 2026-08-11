@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_huong_duong
   itemName: "H\u01B0\u1EDBng D\u01B0\u01A1ng"
   itemIcon: {fileID: -7696085379610616033, guid: c36c76047753b414093b747a43aecc75, type: 3}
-  goldPrice: 35
+  goldPrice: 23
   diamondPrice: 0
   cropCategory: 1
   cropId: huong_duong
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 1
   seedItemId: seed_huong_duong
   harvestItemId: huong_duong
-  tier: 1
   unlockLevel: 1
-  growSeconds: 180
-  sellGold: 12
+  growSeconds: 55
+  sellGold: 8
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 6
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

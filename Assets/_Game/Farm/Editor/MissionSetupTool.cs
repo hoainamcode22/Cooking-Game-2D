@@ -11,7 +11,7 @@ using UnityEngine;
 ///   - MissionDatabase_Main được GHI ĐÈ danh sách = 23 mission mới
 ///     (20 asset Mission_&lt;itemId&gt; cũ vẫn nằm trên đĩa nhưng bị gỡ khỏi database).
 ///   - MissionDatabase_Daily được tạo mới (6 mission isDaily=true, mở từ L6).
-///   - Icon: tái dùng icon từ mission cũ / CropData / DishData / OrderItemDefinition /
+///   - Icon: tái dùng icon từ mission cũ / CropData / DishData / InventoryItemData /
 ///     BaseItemData (chuồng); không tìm thấy → để null (prefab giữ icon mặc định).
 ///
 /// Tools/Farm Game/Test/Check Missions L1-L10: validate eventType hợp lệ,
@@ -256,12 +256,18 @@ public static class MissionSetupTool
             RegisterIcon(dish.dishId, dish.dishSprite);
         }
 
-        // 4. OrderItemDefinition — itemId → icon (egg, beef, com_chien_trung...)
-        foreach (string guid in AssetDatabase.FindAssets("t:OrderItemDefinition"))
+        // 4. InventoryItemData — itemId → icon (egg, beef, chicken_meat, milk...)
+        //
+        //    VÌ SAO đổi nguồn khỏi `OrderItemDefinition`: 37 asset đó đã bị xoá cùng hệ
+        //    đơn hàng nhà dân cũ. `InventoryItemData` là nguồn ĐÚNG HƠN cho việc này —
+        //    nó chính là asset mô tả vật phẩm trong kho, còn `OrderItemDefinition` chỉ
+        //    chép lại icon từ đây. Chép lại nên cũng lệch được: `Order_item_salad_nam_rau`
+        //    từng điền nhầm `itemId = salad_bap_cai_chanh` mà không ai phát hiện.
+        foreach (string guid in AssetDatabase.FindAssets("t:InventoryItemData"))
         {
-            var def = AssetDatabase.LoadAssetAtPath<Village.OrderItemDefinition>(AssetDatabase.GUIDToAssetPath(guid));
-            if (def == null || def.icon == null) continue;
-            RegisterIcon(def.itemId, def.icon);
+            var item = AssetDatabase.LoadAssetAtPath<InventoryItemData>(AssetDatabase.GUIDToAssetPath(guid));
+            if (item == null || item.icon == null) continue;
+            RegisterIcon(item.itemId, item.icon);
         }
 
         // 5. BaseItemData (gồm PlaceableItemData chuồng 106/108) — itemID → itemIcon
@@ -270,6 +276,21 @@ public static class MissionSetupTool
             var item = AssetDatabase.LoadAssetAtPath<BaseItemData>(AssetDatabase.GUIDToAssetPath(guid));
             if (item == null || item.itemIcon == null) continue;
             RegisterIcon(item.itemID, item.itemIcon);
+        }
+
+        // 6. BÍ DANH — chạy CUỐI CÙNG, khi mọi nguồn icon ở trên đã nạp xong.
+        //
+        //    `chicken` (id trong công thức nấu ăn) và `chicken_meat` (id trong kho) là cùng
+        //    một vật phẩm. Mission nào nhắm vào tên phụ mà không có bước này sẽ hiện ô icon
+        //    trắng — đúng thứ mục 8 BÀN GIAO bắt phải không có.
+        //
+        //    Duyệt `ItemAliases` chứ KHÔNG phải `AllItems`: bảng giá cố ý chỉ giữ tên chuẩn,
+        //    tên phụ không có dòng riêng nào để mà duyệt.
+        foreach (var pair in MarketPriceTable.ItemAliases)
+        {
+            if (_iconCache.TryGetValue(pair.Key, out Sprite already) && already != null) continue;
+            if (_iconCache.TryGetValue(pair.Value, out Sprite canonicalIcon) && canonicalIcon != null)
+                RegisterIcon(pair.Key, canonicalIcon);
         }
     }
 
@@ -299,6 +320,44 @@ public static class MissionSetupTool
         foreach (var def in MAIN)
             mainAssets.Add(CreateOrUpdate(def, MainFolder, false, ref created, ref updated));
 
+        // TỰ ĐỘNG SINH HÀNG TRĂM NHIỆM VỤ DÀY ĐẶC (SCALING DENSITY) CHO L1-L30
+        string[] crops = { "rice", "huong_duong", "sugarcane", "ngo", "hoa_hong", "cachua", "carot", "lemon" };
+        string[] dishes = { "com_chien_trung", "bo_ham_ca_rot", "ga_xao_ot", "trung_chien_ca_chua", "pho_beef" };
+        
+        for (int lvl = 1; lvl <= 30; lvl++)
+        {
+            // Mật độ nhiệm vụ tăng dần theo cấp: L1 có 3 nhiệm vụ, L30 có khoảng 12 nhiệm vụ
+            int numQuests = 3 + (lvl / 3); 
+            for (int q = 1; q <= numQuests; q++)
+            {
+                int r = (lvl * 13) + (q * 7); // Giả ngẫu nhiên
+                string crop = crops[r % crops.Length];
+                string dish = dishes[r % dishes.Length];
+                
+                int typeRand = (lvl + q) % 4; // Chia 4 loại hành động
+                MissionDef procDef;
+                
+                if (typeRand == 0) 
+                {
+                    procDef = new MissionDef($"proc_h_{lvl}_{q}", $"Thu hoạch {5 * lvl} {crop}", lvl, MissionEventType.HarvestItem, crop, 5 * lvl, 50 * lvl, RewardType.Coin, crop);
+                } 
+                else if (typeRand == 1) 
+                {
+                    procDef = new MissionDef($"proc_c_{lvl}_{q}", $"Nấu {1 + lvl/2} món {dish}", lvl, MissionEventType.CookDish, dish, 1 + lvl/2, 100 * lvl, RewardType.Coin, dish);
+                } 
+                else if (typeRand == 2)
+                {
+                    procDef = new MissionDef($"proc_d_{lvl}_{q}", $"Giao {2 * lvl} đơn hàng", lvl, MissionEventType.DeliverOrder, "", 2 * lvl, 80 * lvl, RewardType.Coin, "");
+                }
+                else
+                {
+                    procDef = new MissionDef($"proc_p_{lvl}_{q}", $"Chế biến {3 * lvl} sản phẩm", lvl, MissionEventType.CollectAnimalProduct, "", 3 * lvl, 70 * lvl, RewardType.Coin, "");
+                }
+                
+                mainAssets.Add(CreateOrUpdate(procDef, MainFolder, false, ref created, ref updated));
+            }
+        }
+
         var dailyAssets = new List<MissionData>();
         foreach (var def in DAILY)
             dailyAssets.Add(CreateOrUpdate(def, DailyFolder, true, ref created, ref updated));
@@ -307,9 +366,41 @@ public static class MissionSetupTool
         foreach (var def in ACHIEVEMENTS)
             achievementAssets.Add(CreateOrUpdate(def, AchievementFolder, false, ref created, ref updated));
 
-        // Thành tựu LÊN CẤP: "Nông dân cấp 2" → "Nông dân cấp 100" (ReachLevel).
-        // rewardAmount = cấp×100 (vàng); EXP + kim cương cộng thêm theo cấp tính trong popup.
-        for (int lvl = 2; lvl <= 100; lvl++)
+        // TỰ ĐỘNG SINH HÀNG TRĂM THÀNH TỰU THEO MỐC (MICRO-TIERS)
+        // 1. Thu hoạch nông sản (30 Mốc)
+        for (int i = 1; i <= 30; i++) {
+            int target = i * 150;
+            var def = new MissionDef($"a_proc_harvest_{i}", $"Nông dân Siêu Hạng (Mốc {i}) — Thu hoạch {target} nông sản", 1, MissionEventType.HarvestItem, "", target, i * 300, RewardType.Coin, "");
+            achievementAssets.Add(CreateOrUpdate(def, AchievementFolder, false, ref created, ref updated));
+        }
+        
+        // 2. Giao hàng (30 Mốc)
+        for (int i = 1; i <= 30; i++) {
+            int target = i * 40;
+            var def = new MissionDef($"a_proc_order_{i}", $"Thương lái tài ba (Mốc {i}) — Giao {target} đơn hàng", 1, MissionEventType.DeliverOrder, "", target, i * 400, RewardType.Coin, "");
+            achievementAssets.Add(CreateOrUpdate(def, AchievementFolder, false, ref created, ref updated));
+        }
+        
+        // 3. Nấu ăn (30 Mốc)
+        for (int i = 1; i <= 30; i++) {
+            int target = i * 25;
+            var def = new MissionDef($"a_proc_cook_{i}", $"Vua Đầu Bếp (Mốc {i}) — Nấu {target} món ăn", 1, MissionEventType.CookDish, "", target, i * 350, RewardType.Coin, "");
+            achievementAssets.Add(CreateOrUpdate(def, AchievementFolder, false, ref created, ref updated));
+        }
+        
+        // 4. Các mốc vật phẩm đặc thù (Lúa, Cà chua, Bò hầm...)
+        for (int i = 1; i <= 15; i++) {
+            int targetRice = i * 100;
+            var defRice = new MissionDef($"a_proc_rice_{i}", $"Vua Lúa Nước (Mốc {i}) — Gặt {targetRice} bó lúa", 1, MissionEventType.HarvestItem, "rice", targetRice, i * 200, RewardType.Coin, "rice");
+            achievementAssets.Add(CreateOrUpdate(defRice, AchievementFolder, false, ref created, ref updated));
+            
+            int targetBeef = i * 15;
+            var defBeef = new MissionDef($"a_proc_beefdish_{i}", $"Chuyên gia Bò Hầm (Mốc {i}) — Nấu {targetBeef} món bò", 1, MissionEventType.CookDish, "bo_ham_ca_rot", targetBeef, i * 500, RewardType.Coin, "bo_ham_ca_rot");
+            achievementAssets.Add(CreateOrUpdate(defBeef, AchievementFolder, false, ref created, ref updated));
+        }
+
+        // Thành tựu LÊN CẤP: Chỉ tới Cấp 30 theo đúng game design.
+        for (int lvl = 2; lvl <= 30; lvl++)
         {
             var def = new MissionDef($"a_reach_level_{lvl}", $"Nông dân cấp {lvl}", 1,
                 MissionEventType.ReachLevel, "", lvl, lvl * 100, RewardType.Coin, "");

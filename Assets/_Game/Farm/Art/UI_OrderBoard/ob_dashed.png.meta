@@ -1,0 +1,949 @@
+fileFormatVersion: 2
+guid: 796212c00a8c75b44ab7afb325931721
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2576450770607421043
+    second: ob_dashed_0
+  - first:
+      213: 3992995746027501842
+    second: ob_dashed_1
+  - first:
+      213: 4144741792987980809
+    second: ob_dashed_2
+  - first:
+      213: -516943650479036826
+    second: ob_dashed_3
+  - first:
+      213: -1429902947774783605
+    second: ob_dashed_4
+  - first:
+      213: 4044245815708513467
+    second: ob_dashed_5
+  - first:
+      213: -3897095679670529391
+    second: ob_dashed_6
+  - first:
+      213: -7611483945130837838
+    second: ob_dashed_7
+  - first:
+      213: -5293044092104329521
+    second: ob_dashed_8
+  - first:
+      213: -89758700269939421
+    second: ob_dashed_9
+  - first:
+      213: 453138195478849249
+    second: ob_dashed_10
+  - first:
+      213: -8787223605997856783
+    second: ob_dashed_11
+  - first:
+      213: 2959259363857136976
+    second: ob_dashed_12
+  - first:
+      213: 3621417616187322018
+    second: ob_dashed_13
+  - first:
+      213: 5222945726848767504
+    second: ob_dashed_14
+  - first:
+      213: -1157129517704271613
+    second: ob_dashed_15
+  - first:
+      213: 7433771393882258867
+    second: ob_dashed_16
+  - first:
+      213: -1105083531594360552
+    second: ob_dashed_17
+  - first:
+      213: -7711655971532133590
+    second: ob_dashed_18
+  - first:
+      213: 7720010502839705320
+    second: ob_dashed_19
+  - first:
+      213: -7028466332678827561
+    second: ob_dashed_20
+  - first:
+      213: 9019776946262090579
+    second: ob_dashed_21
+  - first:
+      213: 7788097531066931556
+    second: ob_dashed_22
+  - first:
+      213: -8966154845096920880
+    second: ob_dashed_23
+  - first:
+      213: -1035158647156302001
+    second: ob_dashed_24
+  - first:
+      213: 6206831448593919444
+    second: ob_dashed_25
+  - first:
+      213: -5739786289291381442
+    second: ob_dashed_26
+  - first:
+      213: -2295221035050078916
+    second: ob_dashed_27
+  - first:
+      213: 3163187576565267602
+    second: ob_dashed_28
+  - first:
+      213: 7080935732140049113
+    second: ob_dashed_29
+  - first:
+      213: 5375043189634840457
+    second: ob_dashed_30
+  - first:
+      213: 2438072811430052771
+    second: ob_dashed_31
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: ob_dashed_0
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 139
+        width: 18
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3763653435461c320800000000000000
+      internalID: 2576450770607421043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_1
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 149
+        width: 18
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2197d97a978f96730800000000000000
+      internalID: 3992995746027501842
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_2
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 150
+        width: 17
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 904a3c073b4158930800000000000000
+      internalID: 4144741792987980809
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_3
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 150
+        width: 17
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 666ad402d7273d8f0800000000000000
+      internalID: -516943650479036826
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_4
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 150
+        width: 14
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b8f999e48d6f72ce0800000000000000
+      internalID: -1429902947774783605
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_5
+      rect:
+        serializedVersion: 2
+        x: 87
+        y: 150
+        width: 17
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bb47aad542c002830800000000000000
+      internalID: 4044245815708513467
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_6
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 150
+        width: 17
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1925785802cbae9c0800000000000000
+      internalID: -3897095679670529391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_7
+      rect:
+        serializedVersion: 2
+        x: 121
+        y: 149
+        width: 18
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b833e4eda39e5690800000000000000
+      internalID: -7611483945130837838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_8
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 139
+        width: 18
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fc634a521745b86b0800000000000000
+      internalID: -5293044092104329521
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_9
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 121
+        width: 9
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 325d8ea00fc11cef0800000000000000
+      internalID: -89758700269939421
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_10
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 104
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1e6ada7b9ced94600800000000000000
+      internalID: 453138195478849249
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_11
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 121
+        width: 9
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1f71292efa28d0680800000000000000
+      internalID: -8787223605997856783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_12
+      rect:
+        serializedVersion: 2
+        x: 150
+        y: 104
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 05df3fc66b6611920800000000000000
+      internalID: 2959259363857136976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_13
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 87
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2aeef24822cd14230800000000000000
+      internalID: 3621417616187322018
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_14
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 73
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 01617f95771ab7840800000000000000
+      internalID: 5222945726848767504
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_15
+      rect:
+        serializedVersion: 2
+        x: 150
+        y: 87
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3092e1a95dc01ffe0800000000000000
+      internalID: -1157129517704271613
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_16
+      rect:
+        serializedVersion: 2
+        x: 150
+        y: 73
+        width: 8
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3bdffc962bf0a2760800000000000000
+      internalID: 7433771393882258867
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_17
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 56
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8191f2c0264f9a0f0800000000000000
+      internalID: -1105083531594360552
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_18
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 39
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2baec280c1baf490800000000000000
+      internalID: -7711655971532133590
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_19
+      rect:
+        serializedVersion: 2
+        x: 150
+        y: 56
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8ee9b0466acf22b60800000000000000
+      internalID: 7720010502839705320
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_20
+      rect:
+        serializedVersion: 2
+        x: 150
+        y: 39
+        width: 8
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7d1d2ecdb1fd57e90800000000000000
+      internalID: -7028466332678827561
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_21
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 21
+        width: 9
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 353a533085fac2d70800000000000000
+      internalID: 9019776946262090579
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_22
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 3
+        width: 18
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 469575ff071e41c60800000000000000
+      internalID: 7788097531066931556
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_23
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 3
+        width: 18
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0d8b9d05ca1d19380800000000000000
+      internalID: -8966154845096920880
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_24
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 21
+        width: 9
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4f1316e1b062a1f0800000000000000
+      internalID: -1035158647156302001
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_25
+      rect:
+        serializedVersion: 2
+        x: 21
+        y: 2
+        width: 18
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4dde92a3158132650800000000000000
+      internalID: 6206831448593919444
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_26
+      rect:
+        serializedVersion: 2
+        x: 39
+        y: 2
+        width: 17
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e353124d7ce2850b0800000000000000
+      internalID: -5739786289291381442
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_27
+      rect:
+        serializedVersion: 2
+        x: 56
+        y: 2
+        width: 17
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c3de5d411acb520e0800000000000000
+      internalID: -2295221035050078916
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_28
+      rect:
+        serializedVersion: 2
+        x: 73
+        y: 2
+        width: 14
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 29cf9137756e5eb20800000000000000
+      internalID: 3163187576565267602
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_29
+      rect:
+        serializedVersion: 2
+        x: 87
+        y: 2
+        width: 17
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9d2049f2889844260800000000000000
+      internalID: 7080935732140049113
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_30
+      rect:
+        serializedVersion: 2
+        x: 104
+        y: 2
+        width: 17
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 98731928d4df79a40800000000000000
+      internalID: 5375043189634840457
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: ob_dashed_31
+      rect:
+        serializedVersion: 2
+        x: 121
+        y: 2
+        width: 18
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a383d5fd46c5d120800000000000000
+      internalID: 2438072811430052771
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      ob_dashed_0: 2576450770607421043
+      ob_dashed_1: 3992995746027501842
+      ob_dashed_10: 453138195478849249
+      ob_dashed_11: -8787223605997856783
+      ob_dashed_12: 2959259363857136976
+      ob_dashed_13: 3621417616187322018
+      ob_dashed_14: 5222945726848767504
+      ob_dashed_15: -1157129517704271613
+      ob_dashed_16: 7433771393882258867
+      ob_dashed_17: -1105083531594360552
+      ob_dashed_18: -7711655971532133590
+      ob_dashed_19: 7720010502839705320
+      ob_dashed_2: 4144741792987980809
+      ob_dashed_20: -7028466332678827561
+      ob_dashed_21: 9019776946262090579
+      ob_dashed_22: 7788097531066931556
+      ob_dashed_23: -8966154845096920880
+      ob_dashed_24: -1035158647156302001
+      ob_dashed_25: 6206831448593919444
+      ob_dashed_26: -5739786289291381442
+      ob_dashed_27: -2295221035050078916
+      ob_dashed_28: 3163187576565267602
+      ob_dashed_29: 7080935732140049113
+      ob_dashed_3: -516943650479036826
+      ob_dashed_30: 5375043189634840457
+      ob_dashed_31: 2438072811430052771
+      ob_dashed_4: -1429902947774783605
+      ob_dashed_5: 4044245815708513467
+      ob_dashed_6: -3897095679670529391
+      ob_dashed_7: -7611483945130837838
+      ob_dashed_8: -5293044092104329521
+      ob_dashed_9: -89758700269939421
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

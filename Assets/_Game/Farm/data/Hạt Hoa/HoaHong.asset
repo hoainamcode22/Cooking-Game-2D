@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_hoa_hong
   itemName: "Hoa H\u1ED3ng"
   itemIcon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
-  goldPrice: 80
+  goldPrice: 57
   diamondPrice: 0
   cropCategory: 1
   cropId: hoa_hong
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 1
   seedItemId: seed_hoa_hong
   harvestItemId: hoa_hong
-  tier: 1
   unlockLevel: 4
-  growSeconds: 180
-  sellGold: 24
+  growSeconds: 170
+  sellGold: 23
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 17
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

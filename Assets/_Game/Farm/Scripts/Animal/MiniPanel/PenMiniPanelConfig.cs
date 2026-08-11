@@ -23,7 +23,21 @@ public class PenMiniPanelConfig : ScriptableObject
     [Header("Rổ thu hoạch")]
     public Sprite basketIcon;
 
+    /// <summary>
+    /// E1 — Số ĐƠN VỊ thức ăn cho một lượt nuôi.
+    ///
+    /// VÌ SAO phải có field này: trước đây `TryFeed` cứng `RemoveItem(foodItemId, 1)`.
+    /// Một hạt lúa (7 vàng) thả vào chuồng gà trả về 4 thịt gà + 4 trứng = 320 vàng
+    /// trong 30 giây, tức lãi/giây gấp ~70 lần ruộng tốt nhất. Từ cấp 2 trồng trọt
+    /// thành vô nghĩa. Nay: gà 2 · heo 2 · bò 3 · bò sữa 3 · máy 1.
+    /// </summary>
     [Header("Thời gian & EXP")]
+    [Min(1)] public int foodAmountPerFeed = 1;
+
+    /// <summary>
+    /// Thời gian nuôi, GIÂY THẬT — cùng đơn vị với `CropData.growSeconds`
+    /// sau khi `FarmManager.realTimeMultiplier` về 1.0 (quyết định #6).
+    /// </summary>
     public float feedDurationSeconds = 120f;
     public int expReward = 10;
 }

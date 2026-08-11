@@ -108,7 +108,7 @@ public class StarterInventorySetup : MonoBehaviour
         WarehouseManager.Instance.GhiSaveNgay();
 
         PlayerPrefs.SetInt(PREF_KEY, 1);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         Debug.Log($"[StarterInventory] Da cap {given} loai vat pham starter. Flag da set.");
     }
 

@@ -25,8 +25,11 @@ MonoBehaviour:
     umami: 0
     texture: 0
   requiredIngredients:
-  - {fileID: 11400000, guid: 1c4f147355611e044beec9c27dc0c752, type: 2}
+  - {fileID: 11400000, guid: 3f7a1c9b4e2d58c4a91b6d0e7c53f8a2, type: 2}
   - {fileID: 11400000, guid: cdf2556cba1e8fe4e9b7fabb9944f804, type: 2}
+  rewardExp: 24
+  rewardGold: 30
+  sellPrice: 120
   required1:
     displayName: "M\xEDa"
     icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}

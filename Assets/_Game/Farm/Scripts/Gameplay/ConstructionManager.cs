@@ -445,8 +445,11 @@ public class ConstructionManager : MonoBehaviour
     {
         if (site == null) return;
 
-        if (refund && site.Data != null && FarmEconomyManager.Instance != null && site.Data.goldPrice > 0)
-            FarmEconomyManager.Instance.AddGold(site.Data.goldPrice);
+        // F10: ô đất có giá luỹ tiến — hoàn tiền phải hỏi PlotPurchasePricing, không đọc
+        // `goldPrice` gốc trong asset, nếu không thì huỷ một ô đất thứ 10 chỉ được trả 50.
+        int refundGold = site.Data != null ? PlotPurchasePricing.EffectiveGoldPrice(site.Data) : 0;
+        if (refund && site.Data != null && FarmEconomyManager.Instance != null && refundGold > 0)
+            FarmEconomyManager.Instance.AddGold(refundGold);
 
         if (PlacementManager.Instance != null)
             PlacementManager.Instance.ReleaseConstructionCells(site.CenterWorld);
@@ -696,7 +699,7 @@ public class ConstructionManager : MonoBehaviour
         };
 
         PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(save));
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 
     public void LoadSites()
@@ -739,7 +742,7 @@ public class ConstructionManager : MonoBehaviour
         if (save.saveVersion < SaveVersion)
         {
             PlayerPrefs.DeleteKey(SaveKey);
-            PlayerPrefs.Save();
+            LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
 
             Debug.LogWarning(
                 $"[Construction] 🔴 XOÁ SAVE CÔNG TRƯỜNG CŨ — phát hiện saveVersion " +
@@ -823,7 +826,7 @@ public class ConstructionManager : MonoBehaviour
 
         _sites.Clear();
         PlayerPrefs.DeleteKey(SaveKey);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 
     /// <summary>

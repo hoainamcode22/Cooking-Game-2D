@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_pepper
   itemName: "Ti\xEAu"
   itemIcon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
-  goldPrice: 190
+  goldPrice: 134
   diamondPrice: 0
   cropCategory: 0
   cropId: pepper
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 12
   seedItemId: seed_pepper
   harvestItemId: pepper
-  tier: 1
   unlockLevel: 10
-  growSeconds: 660
-  sellGold: 55
+  growSeconds: 560
+  sellGold: 76
   harvestAmount: 4
   plantCost: 1
-  expReward: 14
+  expReward: 56
   sweet: 0
   spicy: 2
   sour: 0
   umami: 1
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

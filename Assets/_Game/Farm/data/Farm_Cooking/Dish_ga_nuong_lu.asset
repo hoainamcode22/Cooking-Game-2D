@@ -28,7 +28,10 @@ MonoBehaviour:
   - {fileID: 11400000, guid: b0631d5b8894e8b4c988c34191d84120, type: 2}
   - {fileID: 11400000, guid: 068c729ad2bb67e4d9a7cea8aec07a6d, type: 2}
   - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
-  - {fileID: 11400000, guid: 1c4f147355611e044beec9c27dc0c752, type: 2}
+  - {fileID: 11400000, guid: 3f7a1c9b4e2d58c4a91b6d0e7c53f8a2, type: 2}
+  rewardExp: 32
+  rewardGold: 49
+  sellPrice: 195
   required1:
     displayName: Chicken
     icon: {fileID: -2283333445584976228, guid: 888289491956e5347952a87ca3ec06d1, type: 3}

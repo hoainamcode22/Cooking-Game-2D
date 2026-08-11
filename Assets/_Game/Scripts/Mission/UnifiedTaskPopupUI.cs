@@ -90,6 +90,37 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     private const string DailyLastSeenKey = "UNIFIED_TASK_DAILY_LAST_SEEN";
     private const string DailyStreakKey = "UNIFIED_TASK_DAILY_STREAK";
     private const string DailyClaimedDateKey = "UNIFIED_TASK_DAILY_CLAIMED_DATE";
+
+    // B4 — họ save + phiên bản cho MỌI khoá nhiệm vụ ghi trực tiếp:
+    //   MISSION_CLAIMED_{id} · MISSION_CLAIMED_DAILY_{yyyyMMdd}_{id} · ACHIEVEMENT_CLAIMED_{id}
+    //   UNIFIED_TASK_DAILY_LAST_SEEN / _STREAK / _CLAIMED_DATE
+    // Chúng ghi thẳng số/chuỗi, và số lượng khoá thì SINH ĐỘNG theo từng `MissionData` —
+    // không có chỗ nào nhét `saveVersion` vào. Dấu phiên bản nằm ở `SAVE_VER_MISSION`.
+    //
+    // v1 = khoá claimed đặt theo `MissionData.MissionId` (rỗng thì lấy tên asset).
+    // TĂNG SỐ NÀY nếu đổi cách đặt `MissionId` hoặc đổi tên asset mission hàng loạt: khoá cũ
+    // trở thành rác vĩnh viễn và người chơi được NHẬN LẠI mọi nhiệm vụ đã nhận — nhân đôi thưởng.
+    private const string SaveFamily  = "MISSION";
+    private const int    SaveVersion = 1;
+
+    private static bool _missionVersionChecked;
+
+    /// <summary>
+    /// Đóng dấu phiên bản họ save MISSION. Gọi từ mọi cửa ĐỌC static bên dưới: popup này
+    /// được dựng lười (`EnsureInstance`) nên không thể chỉ đóng dấu trong `Awake`.
+    /// </summary>
+    private static void EnsureMissionSaveVersion()
+    {
+        if (_missionVersionChecked) return;
+        _missionVersionChecked = true;
+
+        bool coSaveCu = PlayerPrefs.HasKey(DailyLastSeenKey)
+                        || PlayerPrefs.HasKey(DailyStreakKey)
+                        || PlayerPrefs.HasKey(DailyClaimedDateKey)
+                        || PlayerPrefs.HasKey("MISSION_PROGRESS_V1");
+
+        SaveVersionGuard.Ensure(SaveFamily, SaveVersion, null, coSaveCu);
+    }
     private const int DefaultMissionCoinReward = 50;
     private const int DefaultMissionDiamondReward = 5;
     private const int DefaultMissionExpReward = 10;
@@ -320,11 +351,11 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (gameObject.GetComponent<UIRaycastBlocker>() == null)
             gameObject.AddComponent<UIRaycastBlocker>();
 
-        _board = CreateImage(_root, "Board_WoodFrame", sprites.boardFrame, new Color32(136, 73, 29, 255), new Vector2(0f, -10f), new Vector2(1180f, 720f), true);
+        _board = CreateImage(_root, "Board_WoodFrame", BoardFrameSprite, new Color32(136, 73, 29, 255), new Vector2(0f, -10f), new Vector2(1180f, 720f), true);
         AddOutline(_board.gameObject, new Color32(83, 43, 18, 255), new Vector2(5f, -5f));
         CreateImage(_board, "Board_InnerShadow", null, new Color32(82, 43, 18, 120), new Vector2(0f, -4f), new Vector2(1130f, 660f), true);
 
-        RectTransform paper = CreateImage(_board, "PaperPanel_Main", sprites.paperPanel, new Color32(255, 236, 195, 255), new Vector2(95f, -20f), new Vector2(890f, 595f), true);
+        RectTransform paper = CreateImage(_board, "PaperPanel_Main", PaperPanelSprite, new Color32(255, 236, 195, 255), new Vector2(95f, -20f), new Vector2(890f, 595f), true);
         AddOutline(paper.gameObject, new Color32(205, 142, 65, 255), new Vector2(2f, -2f));
 
         CreateImage(_board, "WoodRail_Left", null, new Color32(118, 64, 29, 255), new Vector2(-460f, -20f), new Vector2(220f, 610f), true);
@@ -350,7 +381,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     {
         CreateImage(_board, "Ribbon_Tail_Left", null, new Color32(178, 49, 35, 255), new Vector2(-165f, 312f), new Vector2(185f, 72f), true);
         CreateImage(_board, "Ribbon_Tail_Right", null, new Color32(178, 49, 35, 255), new Vector2(165f, 312f), new Vector2(185f, 72f), true);
-        RectTransform ribbon = CreateImage(_board, "Ribbon_Title", sprites.ribbon, new Color32(221, 70, 48, 255), new Vector2(0f, 322f), new Vector2(520f, 105f), true);
+        RectTransform ribbon = CreateImage(_board, "Ribbon_Title", RibbonSprite, new Color32(221, 70, 48, 255), new Vector2(0f, 322f), new Vector2(520f, 105f), true);
         AddOutline(ribbon.gameObject, new Color32(140, 34, 24, 255), new Vector2(3f, -3f));
         _titleText = CreateText(ribbon, "Txt_Title", "Nhiệm vụ", 52, Color.white, TextAlignmentOptions.Center, Vector2.zero, new Vector2(500f, 90f), FontStyles.Bold);
         AddShadow(_titleText.gameObject, new Color32(120, 32, 22, 255), new Vector2(2f, -3f));
@@ -358,19 +389,19 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
     private void BuildDecorations()
     {
-        CreateImage(_board, "Decor_Leaf_TopLeft", sprites.leafCluster, new Color32(101, 158, 45, 255), new Vector2(-420f, 328f), new Vector2(125f, 45f), false);
-        CreateImage(_board, "Decor_Flowers_TopLeft", sprites.flowerCluster, new Color32(255, 245, 185, 255), new Vector2(-510f, 330f), new Vector2(80f, 45f), false);
-        CreateImage(_board, "Decor_Leaf_TopRight", sprites.leafCluster, new Color32(101, 158, 45, 255), new Vector2(360f, 328f), new Vector2(125f, 45f), false);
-        CreateImage(_board, "Decor_Flowers_TopRight", sprites.flowerCluster, new Color32(255, 245, 185, 255), new Vector2(480f, 330f), new Vector2(80f, 45f), false);
-        CreateImage(_board, "Decor_Mascot_Placeholder", sprites.mascot, new Color32(235, 154, 91, 255), new Vector2(-470f, -260f), new Vector2(190f, 160f), false);
+        CreateImage(_board, "Decor_Leaf_TopLeft", LeafSprite, new Color32(101, 158, 45, 255), new Vector2(-420f, 328f), new Vector2(125f, 45f), false);
+        CreateImage(_board, "Decor_Flowers_TopLeft", FlowerSprite, new Color32(255, 245, 185, 255), new Vector2(-510f, 330f), new Vector2(80f, 45f), false);
+        CreateImage(_board, "Decor_Leaf_TopRight", LeafSprite, new Color32(101, 158, 45, 255), new Vector2(360f, 328f), new Vector2(125f, 45f), false);
+        CreateImage(_board, "Decor_Flowers_TopRight", FlowerSprite, new Color32(255, 245, 185, 255), new Vector2(480f, 330f), new Vector2(80f, 45f), false);
+        CreateImage(_board, "Decor_Mascot_Placeholder", MascotSprite, new Color32(235, 154, 91, 255), new Vector2(-470f, -260f), new Vector2(190f, 160f), false);
         CreateText(_board, "Txt_Mascot_Placeholder", "NPC", 28, new Color32(108, 64, 34, 255), TextAlignmentOptions.Center, new Vector2(-470f, -260f), new Vector2(130f, 50f), FontStyles.Bold);
     }
 
     private void BuildTabs()
     {
-        _missionTab = CreateTabButton("Tab_Mission", "Nhiệm vụ", sprites.missionTabIcon, new Vector2(-460f, 190f), Tab.Mission);
-        _dailyTab = CreateTabButton("Tab_Daily", "Hằng ngày", sprites.dailyTabIcon, new Vector2(-460f, 20f), Tab.Daily);
-        _achievementTab = CreateTabButton("Tab_Achievement", "Thành tựu", sprites.achievementTabIcon, new Vector2(-460f, -150f), Tab.Achievement);
+        _missionTab = CreateTabButton("Tab_Mission", "Nhiệm vụ", MissionTabSprite, new Vector2(-460f, 190f), Tab.Mission);
+        _dailyTab = CreateTabButton("Tab_Daily", "Hằng ngày", DailyTabSprite, new Vector2(-460f, 20f), Tab.Daily);
+        _achievementTab = CreateTabButton("Tab_Achievement", "Thành tựu", AchievementTabSprite, new Vector2(-460f, -150f), Tab.Achievement);
     }
 
     private TabButtonView CreateTabButton(string name, string label, Sprite iconSprite, Vector2 position, Tab targetTab)
@@ -490,9 +521,9 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         BuildProgressBar(row, "Progress", new Vector2(-235f, -20f), new Vector2(235f, 26f), progress, locked ? "Khoá" : $"{current}/{target}");
 
         RewardBundle rewards = GetMissionRewards(data);
-        BuildRewardSlot(row, "RewardSlot_Coin", sprites.coinIcon ?? data?.rewardIcon, "x" + rewards.coin, new Vector2(48f, 0f), new Vector2(90f, 58f), new Color32(255, 228, 166, 255));
-        BuildRewardSlot(row, "RewardSlot_Diamond", sprites.diamondIcon, "x" + rewards.diamond, new Vector2(155f, 0f), new Vector2(90f, 58f), new Color32(255, 228, 166, 255));
-        BuildRewardSlot(row, "RewardSlot_EXP", sprites.expIcon, "x" + rewards.exp, new Vector2(262f, 0f), new Vector2(90f, 58f), new Color32(255, 228, 166, 255));
+        BuildRewardSlot(row, "RewardSlot_Coin", CoinSprite ?? data?.rewardIcon, "x" + rewards.coin, new Vector2(48f, 0f), new Vector2(90f, 58f), new Color32(255, 228, 166, 255));
+        BuildRewardSlot(row, "RewardSlot_Diamond", DiamondSprite, "x" + rewards.diamond, new Vector2(155f, 0f), new Vector2(90f, 58f), new Color32(255, 228, 166, 255));
+        BuildRewardSlot(row, "RewardSlot_EXP", ExpSprite, "x" + rewards.exp, new Vector2(262f, 0f), new Vector2(90f, 58f), new Color32(255, 228, 166, 255));
 
         if (locked)
         {
@@ -527,11 +558,11 @@ public class UnifiedTaskPopupUI : MonoBehaviour
                 completed++;
         }
 
-        RectTransform chest = CreateImage(milestone, "Img_ChestReward_Placeholder", sprites.chestIcon, new Color32(188, 89, 46, 255), new Vector2(92f, 2f), new Vector2(128f, 92f), false);
+        RectTransform chest = CreateImage(milestone, "Img_ChestReward_Placeholder", ChestSprite, new Color32(188, 89, 46, 255), new Vector2(92f, 2f), new Vector2(128f, 92f), false);
         CreateText(chest, "Txt_Chest", "CHEST", 20, Color.white, TextAlignmentOptions.Center, Vector2.zero, new Vector2(110f, 40f), FontStyles.Bold);
-        BuildRewardSlot(milestone, "RewardSlot_Coin", sprites.coinIcon, "x200", new Vector2(240f, -2f), new Vector2(92f, 78f), new Color32(255, 217, 132, 255));
-        BuildRewardSlot(milestone, "RewardSlot_Diamond", sprites.diamondIcon, "x20", new Vector2(350f, -2f), new Vector2(92f, 78f), new Color32(255, 217, 132, 255));
-        BuildRewardSlot(milestone, "RewardSlot_EXP", sprites.expIcon, "x50", new Vector2(460f, -2f), new Vector2(92f, 78f), new Color32(255, 217, 132, 255));
+        BuildRewardSlot(milestone, "RewardSlot_Coin", CoinSprite, "x200", new Vector2(240f, -2f), new Vector2(92f, 78f), new Color32(255, 217, 132, 255));
+        BuildRewardSlot(milestone, "RewardSlot_Diamond", DiamondSprite, "x20", new Vector2(350f, -2f), new Vector2(92f, 78f), new Color32(255, 217, 132, 255));
+        BuildRewardSlot(milestone, "RewardSlot_EXP", ExpSprite, "x50", new Vector2(460f, -2f), new Vector2(92f, 78f), new Color32(255, 217, 132, 255));
         CreateText(milestone, "Txt_MilestoneProgress", $"{completed}/{Mathf.Max(1, visibleMissions.Count)}", 20, new Color32(119, 67, 24, 255), TextAlignmentOptions.Center, new Vector2(-26f, -43f), new Vector2(120f, 28f), FontStyles.Bold);
     }
 
@@ -597,7 +628,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         {
             string lockText = day == state.streakDay + 1 ? "Ngày mai" : $"{day - state.streakDay} ngày nữa";
             CreateStatusRibbon(card, lockText, new Color32(198, 164, 120, 255));
-            CreateImage(card, "Img_Lock", sprites.lockIcon, new Color32(132, 92, 56, 255), new Vector2(-34f, -91f), new Vector2(24f, 24f), false);
+            CreateImage(card, "Img_Lock", LockSprite, new Color32(132, 92, 56, 255), new Vector2(-34f, -91f), new Vector2(24f, 24f), false);
         }
     }
 
@@ -607,11 +638,11 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         AddOutline(weekly.gameObject, new Color32(203, 130, 44, 255), new Vector2(2f, -2f));
         CreateText(weekly, "Txt_Title", "Phần thưởng tuần", 27, new Color32(91, 52, 24, 255), TextAlignmentOptions.Left, new Vector2(-260f, 28f), new Vector2(270f, 34f), FontStyles.Bold);
         CreateText(weekly, "Txt_Desc", "Điểm danh đủ 7 ngày để nhận quà tuần đặc biệt!", 19, new Color32(91, 52, 24, 255), TextAlignmentOptions.Left, new Vector2(-244f, -20f), new Vector2(318f, 54f), FontStyles.Bold);
-        RectTransform chest = CreateImage(weekly, "Img_WeeklyChest_Placeholder", sprites.chestIcon, new Color32(173, 73, 157, 255), new Vector2(92f, 0f), new Vector2(130f, 92f), false);
+        RectTransform chest = CreateImage(weekly, "Img_WeeklyChest_Placeholder", ChestSprite, new Color32(173, 73, 157, 255), new Vector2(92f, 0f), new Vector2(130f, 92f), false);
         CreateText(chest, "Txt_Chest", "CHEST", 20, Color.white, TextAlignmentOptions.Center, Vector2.zero, new Vector2(110f, 40f), FontStyles.Bold);
-        BuildRewardSlot(weekly, "RewardSlot_Coin", sprites.coinIcon, "x500", new Vector2(245f, -2f), new Vector2(92f, 78f), new Color32(255, 218, 133, 255));
-        BuildRewardSlot(weekly, "RewardSlot_Diamond", sprites.diamondIcon, "x30", new Vector2(360f, -2f), new Vector2(92f, 78f), new Color32(255, 218, 133, 255));
-        BuildRewardSlot(weekly, "RewardSlot_EXP", sprites.expIcon, "x100", new Vector2(475f, -2f), new Vector2(92f, 78f), new Color32(255, 218, 133, 255));
+        BuildRewardSlot(weekly, "RewardSlot_Coin", CoinSprite, "x500", new Vector2(245f, -2f), new Vector2(92f, 78f), new Color32(255, 218, 133, 255));
+        BuildRewardSlot(weekly, "RewardSlot_Diamond", DiamondSprite, "x30", new Vector2(360f, -2f), new Vector2(92f, 78f), new Color32(255, 218, 133, 255));
+        BuildRewardSlot(weekly, "RewardSlot_EXP", ExpSprite, "x100", new Vector2(475f, -2f), new Vector2(92f, 78f), new Color32(255, 218, 133, 255));
     }
 
     private void BuildAchievementContent()
@@ -649,10 +680,10 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         BuildProgressBar(row, "Progress", new Vector2(-244f, -18f), new Vector2(225f, 23f), progress, $"{current}/{target}");
 
         RewardBundle rewards = GetAchievementRewards(data);
-        Sprite mainRewardIcon = data != null && data.rewardType == RewardType.Diamond ? sprites.diamondIcon ?? data.rewardIcon : sprites.coinIcon ?? data?.rewardIcon;
+        Sprite mainRewardIcon = data != null && data.rewardType == RewardType.Diamond ? DiamondSprite ?? data.rewardIcon : CoinSprite ?? data?.rewardIcon;
         string mainRewardText = data != null && data.rewardType == RewardType.Diamond ? "x" + rewards.diamond : "x" + rewards.coin;
         BuildRewardSlot(row, "RewardSlot_Main", mainRewardIcon, mainRewardText, new Vector2(76f, 0f), new Vector2(116f, 54f), new Color32(255, 228, 166, 255));
-        BuildRewardSlot(row, "RewardSlot_EXP", sprites.expIcon, "x" + rewards.exp, new Vector2(204f, 0f), new Vector2(116f, 54f), new Color32(255, 228, 166, 255));
+        BuildRewardSlot(row, "RewardSlot_EXP", ExpSprite, "x" + rewards.exp, new Vector2(204f, 0f), new Vector2(116f, 54f), new Color32(255, 228, 166, 255));
 
         bool claimed = data != null && IsAchievementClaimed(data);
         bool complete = data != null && current >= target;
@@ -710,11 +741,11 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
         int points = Mathf.Clamp(completed * 100, 0, 500);
         BuildProgressBar(milestone, "AchievementPointProgress", new Vector2(-245f, -42f), new Vector2(245f, 24f), points / 500f, $"{points}/500");
-        RectTransform chest = CreateImage(milestone, "Img_AchievementChest_Placeholder", sprites.chestIcon, new Color32(173, 73, 157, 255), new Vector2(98f, 0f), new Vector2(126f, 86f), false);
+        RectTransform chest = CreateImage(milestone, "Img_AchievementChest_Placeholder", ChestSprite, new Color32(173, 73, 157, 255), new Vector2(98f, 0f), new Vector2(126f, 86f), false);
         CreateText(chest, "Txt_Chest", "CHEST", 20, Color.white, TextAlignmentOptions.Center, Vector2.zero, new Vector2(110f, 40f), FontStyles.Bold);
-        BuildRewardSlot(milestone, "RewardSlot_Coin", sprites.coinIcon, "x500", new Vector2(238f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
-        BuildRewardSlot(milestone, "RewardSlot_Diamond", sprites.diamondIcon, "x30", new Vector2(342f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
-        BuildRewardSlot(milestone, "RewardSlot_EXP", sprites.expIcon, "x100", new Vector2(446f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
+        BuildRewardSlot(milestone, "RewardSlot_Coin", CoinSprite, "x500", new Vector2(238f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
+        BuildRewardSlot(milestone, "RewardSlot_Diamond", DiamondSprite, "x30", new Vector2(342f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
+        BuildRewardSlot(milestone, "RewardSlot_EXP", ExpSprite, "x100", new Vector2(446f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
         BuildRewardSlot(milestone, "RewardSlot_Trophy", null, "x1", new Vector2(548f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
     }
 
@@ -929,7 +960,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         GrantRewards(rewards);
         PlayRewardFly(rewards, src);
         PlayerPrefs.SetInt(MissionClaimedPrefsKey(data), 1);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         AvatarProfilePopupUI.AddAchievementCount();
         ShowTab(Tab.Mission);
     }
@@ -948,7 +979,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         GrantRewards(rewards);
         PlayRewardFly(rewards, src);
         PlayerPrefs.SetInt(AchievementClaimedPrefsKey(data), 1);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         AvatarProfilePopupUI.AddAchievementCount();
         ShowTab(Tab.Achievement);
     }
@@ -963,7 +994,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         GrantRewards(reward.grant);
         PlayRewardFly(reward.grant, src);
         PlayerPrefs.SetString(DailyClaimedDateKey, TodayKey());
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         ShowTab(Tab.Daily);
     }
 
@@ -987,10 +1018,10 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     private void PlayRewardFly(RewardBundle r, Vector3 sourceWorld)
     {
         if (r.diamond > 0)
-            StartCoroutine(CoFlyReward(sprites.diamondIcon, new Color32(120, 205, 255, 255),
+            StartCoroutine(CoFlyReward(DiamondSprite, new Color32(120, 205, 255, 255),
                 sourceWorld, FindHudRect("GemBox"), Mathf.Clamp(r.diamond, 3, 8)));
         if (r.exp > 0)
-            StartCoroutine(CoFlyReward(sprites.expIcon, new Color32(120, 220, 80, 255),
+            StartCoroutine(CoFlyReward(ExpSprite, new Color32(120, 220, 80, 255),
                 sourceWorld, ResolveExpHud(), Mathf.Clamp(r.exp / 4 + 3, 3, 8)));
     }
 
@@ -1038,7 +1069,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         RectTransform rt = (RectTransform)go.transform;
         rt.SetParent(canvasRect, false);
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(48f, 48f);
+        rt.sizeDelta = new Vector2(96f, 96f); // X2 kích thước
         rt.SetAsLastSibling();
 
         Image img = go.GetComponent<Image>();
@@ -1047,30 +1078,41 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         img.raycastTarget = false;
         img.preserveAspect = true;
 
-        // Pha 1: bung nhẹ ra khỏi nút
-        Vector2 burst = startLocal + UnityEngine.Random.insideUnitCircle * 70f;
+        // Random góc xoay ban đầu và chiều xoay
+        float startRot = UnityEngine.Random.Range(0f, 360f);
+        float rotSpeed = UnityEngine.Random.Range(-500f, 500f);
+
+        // Pha 1: bung mạnh ra khỏi nút (Nổ to)
+        Vector2 burst = startLocal + UnityEngine.Random.insideUnitCircle * 150f;
         rt.anchoredPosition = startLocal;
+        rt.localScale = Vector3.zero;
         float t = 0f;
-        const float burstT = 0.12f;
+        const float burstT = 0.25f;
         while (t < burstT)
         {
             t += Time.unscaledDeltaTime;
             float k = Mathf.Clamp01(t / burstT);
-            k = k * (2f - k);
-            rt.anchoredPosition = Vector2.Lerp(startLocal, burst, k);
+            float easeOutBack = k * k * ((1.70158f + 1) * k - 1.70158f) + 1; // nảy to
+            rt.anchoredPosition = Vector2.Lerp(startLocal, burst, Mathf.Clamp01(k * 1.5f)); // bay ra nhanh
+            rt.localScale = Vector3.one * Mathf.LerpUnclamped(0f, 1.4f, easeOutBack); // Phóng to
+            rt.localRotation = Quaternion.Euler(0, 0, startRot + rotSpeed * t);
             yield return null;
         }
 
-        // Pha 2: bay về HUD + thu nhỏ
-        const float dur = 0.7f;
+        // Pha 2: bay về HUD + xoay tiếp
+        const float dur = 0.65f;
         t = 0f;
+        Vector2 curPos = rt.anchoredPosition;
         while (t < dur)
         {
             t += Time.unscaledDeltaTime;
-            float k = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(t / dur));
-            rt.anchoredPosition = Vector2.LerpUnclamped(burst, endLocal, k);
-            float s = Mathf.Lerp(1f, 0.5f, k);
+            float k = Mathf.Clamp01(t / dur);
+            float easeInBack = k * k * ((1.70158f + 1) * k - 1.70158f); // Gia tốc lõm
+            // Dùng easeIn cho cảm giác hút nhanh về cuối
+            rt.anchoredPosition = Vector2.LerpUnclamped(curPos, endLocal, k * k);
+            float s = Mathf.Lerp(1.4f, 0.6f, k); // Thu nhỏ lại vừa với thanh HUD
             rt.localScale = new Vector3(s, s, 1f);
+            rt.localRotation = Quaternion.Euler(0, 0, startRot + rotSpeed * (burstT + t));
             yield return null;
         }
 
@@ -1128,12 +1170,13 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (sprites.dailyRewardIcons != null && index < sprites.dailyRewardIcons.Length && sprites.dailyRewardIcons[index] != null)
             return sprites.dailyRewardIcons[index];
 
+        // Không còn trả null: ngày 3-6 trước đây ra khối màu trơn, không đọc được là thưởng gì.
         return day switch
         {
-            1 => sprites.coinIcon,
-            2 => sprites.diamondIcon,
-            7 => sprites.chestIcon,
-            _ => null
+            1 => CoinSprite,
+            2 => DiamondSprite,
+            7 => ChestSprite,
+            _ => ExpSprite
         };
     }
 
@@ -1145,6 +1188,8 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
     private DailyState SyncDailyState()
     {
+        EnsureMissionSaveVersion();
+
         string today = TodayKey();
         string lastSeen = PlayerPrefs.GetString(DailyLastSeenKey, "");
         int streak = Mathf.Clamp(PlayerPrefs.GetInt(DailyStreakKey, 0), 0, 7);
@@ -1169,7 +1214,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
         PlayerPrefs.SetString(DailyLastSeenKey, today);
         PlayerPrefs.SetInt(DailyStreakKey, streak);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
 
         return new DailyState
         {
@@ -1193,14 +1238,65 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         return previous.Date == today.Date.AddDays(-1);
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    //  CACHE CỜ "ĐÃ NHẬN"
+    // ═════════════════════════════════════════════════════════════════════════
+    //  `IsMissionClaimed` được gọi HAI lần cho mỗi nhiệm vụ khi dựng danh sách: một lần
+    //  trong `MissionBucket` (phân nhóm) và một lần trong `BuildMissionRow`. Với 307
+    //  nhiệm vụ chính + 157 thành tựu là hơn 900 lần `PlayerPrefs.GetInt` mỗi lần dựng.
+    //  `GetInt` là lệnh gọi native có marshal chuỗi — không đắt bằng `Save()` nhưng nhân
+    //  900 lần thì thành một phần đáng kể của khung hình bị giật.
+    //
+    //  Chỉ CHÍNH LỚP NÀY ghi các khoá đó, nên cache không thể lệch với đĩa: mọi đường
+    //  ghi đều đi qua `ClaimMission`/`ClaimAchievement` và cập nhật cache tại chỗ.
+    private static readonly Dictionary<string, bool> _cacheDaNhan = new Dictionary<string, bool>();
+
+    private static bool DocCoDaNhan(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return false;
+        if (_cacheDaNhan.TryGetValue(key, out bool co)) return co;
+
+        co = PlayerPrefs.GetInt(key, 0) == 1;
+        _cacheDaNhan[key] = co;
+        return co;
+    }
+
+    private static void GhiCoDaNhan(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return;
+        PlayerPrefs.SetInt(key, 1);
+        _cacheDaNhan[key] = true;
+        LuuGopPrefs.Hen();
+    }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// Dọn cache khi vào Play Mode. Có hai lý do bắt buộc:
+    ///   • Bật "Enter Play Mode Options" (không reload domain) thì `static` giữ nguyên
+    ///     giá trị của lần chạy trước.
+    ///   • Tool "CHƠI LẠI TỪ ĐẦU" gọi `PlayerPrefs.DeleteAll()` — không dọn cache thì
+    ///     popup vẫn tưởng mọi nhiệm vụ đã nhận, và không có gì báo là sai.
+    /// </summary>
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void DonCacheKhiVaoPlay()
+    {
+        _cacheDaNhan.Clear();
+        _missionVersionChecked = false;
+    }
+#endif
+
     private static bool IsMissionClaimed(MissionData data)
     {
-        return data != null && PlayerPrefs.GetInt(MissionClaimedPrefsKey(data), 0) == 1;
+        if (data == null) return false;
+        EnsureMissionSaveVersion();
+        return DocCoDaNhan(MissionClaimedPrefsKey(data));
     }
 
     private static bool IsAchievementClaimed(MissionData data)
     {
-        return data != null && PlayerPrefs.GetInt(AchievementClaimedPrefsKey(data), 0) == 1;
+        if (data == null) return false;
+        EnsureMissionSaveVersion();
+        return DocCoDaNhan(AchievementClaimedPrefsKey(data));
     }
 
     private static string MissionClaimedPrefsKey(MissionData data)
@@ -1325,6 +1421,183 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         Shadow shadow = target.AddComponent<Shadow>();
         shadow.effectColor = color;
         shadow.effectDistance = distance;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  F7 — SPRITE THỦ TỤC CHO 14 REF RỖNG
+    // ══════════════════════════════════════════════════════════════════════
+    //
+    // VẤN ĐỀ: `UnifiedTaskPopupSprites` có 14 ô sprite và trong `SCN_Farm` TẤT CẢ đều
+    // rỗng, nên popup nhiệm vụ dựng ra bằng khối màu trơn: vàng, kim cương, EXP, hòm,
+    // ổ khoá đều là hình chữ nhật y như nhau — không đọc được cái nào là cái gì.
+    //
+    // CÁCH SỬA: sinh sprite ngay trong code như đã làm cho bảng tin chợ và quầy hàng.
+    // Nếu chủ dự án gán art thật vào Inspector thì art LUÔN THẮNG (mỗi property kiểm
+    // field trước), nên đây thuần là lớp dự phòng, không chặn đường gắn ảnh sau này.
+    //
+    // Texture đều `HideAndDontSave` + cache static → mỗi hình chỉ sinh một lần cho cả
+    // vòng đời app, không rò rỉ asset vào scene.
+
+    private Sprite BoardFrameSprite   => sprites.boardFrame   != null ? sprites.boardFrame   : GetPanelSprite();
+    private Sprite PaperPanelSprite   => sprites.paperPanel   != null ? sprites.paperPanel   : GetPanelSprite();
+    private Sprite RibbonSprite       => sprites.ribbon       != null ? sprites.ribbon       : GetRoundedSprite();
+    private Sprite MascotSprite       => sprites.mascot       != null ? sprites.mascot       : GetRoundedSprite();
+    private Sprite LeafSprite         => sprites.leafCluster  != null ? sprites.leafCluster  : GetLeafShapeSprite();
+    private Sprite FlowerSprite       => sprites.flowerCluster!= null ? sprites.flowerCluster: GetFlowerShapeSprite();
+
+    private Sprite MissionTabSprite     => sprites.missionTabIcon     != null ? sprites.missionTabIcon     : GetStarSprite();
+    private Sprite DailyTabSprite       => sprites.dailyTabIcon       != null ? sprites.dailyTabIcon       : GetCircleSprite();
+    private Sprite AchievementTabSprite => sprites.achievementTabIcon != null ? sprites.achievementTabIcon : GetDiamondShapeSprite();
+
+    private Sprite CoinSprite    => sprites.coinIcon    != null ? sprites.coinIcon    : GetCoinShapeSprite();
+    private Sprite DiamondSprite => sprites.diamondIcon != null ? sprites.diamondIcon : GetDiamondShapeSprite();
+    private Sprite ExpSprite     => sprites.expIcon     != null ? sprites.expIcon     : GetStarSprite();
+    private Sprite ChestSprite   => sprites.chestIcon   != null ? sprites.chestIcon   : GetChestShapeSprite();
+    private Sprite LockSprite    => sprites.lockIcon    != null ? sprites.lockIcon    : GetLockShapeSprite();
+
+    private static Sprite _panelSprite;
+    private static Sprite _coinShape;
+    private static Sprite _diamondShape;
+    private static Sprite _starShape;
+    private static Sprite _chestShape;
+    private static Sprite _lockShape;
+    private static Sprite _leafShape;
+    private static Sprite _flowerShape;
+
+    /// <summary>Nền bo góc lớn (khung gỗ / tờ giấy). Border 9-slice để kéo giãn không méo góc.</summary>
+    private static Sprite GetPanelSprite()
+    {
+        if (_panelSprite != null) return _panelSprite;
+        _panelSprite = CreateRoundedSprite("UnifiedTask_Panel", 96, 26);
+        return _panelSprite;
+    }
+
+    /// <summary>Sinh sprite từ một hàm quyết định "điểm (x,y) có nằm trong hình không".</summary>
+    private static Sprite MakeShape(string name, int size, System.Func<float, float, bool> inside)
+    {
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+        {
+            hideFlags = HideFlags.HideAndDontSave
+        };
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                // Quy về hệ toạ độ [-1, 1] để công thức hình không phụ thuộc kích thước
+                float u = (x / (float)(size - 1)) * 2f - 1f;
+                float v = (y / (float)(size - 1)) * 2f - 1f;
+                tex.SetPixel(x, y, inside(u, v) ? Color.white : Color.clear);
+            }
+        }
+
+        tex.Apply();
+        Sprite sp = Sprite.Create(tex, new Rect(0f, 0f, size, size), new Vector2(0.5f, 0.5f), 100f);
+        sp.name = name;
+        sp.hideFlags = HideFlags.HideAndDontSave;
+        return sp;
+    }
+
+    /// <summary>Đồng vàng: đĩa tròn có vành trong để phân biệt với chấm đỏ thông báo.</summary>
+    private static Sprite GetCoinShapeSprite()
+    {
+        if (_coinShape != null) return _coinShape;
+        _coinShape = MakeShape("UnifiedTask_Coin", 96, (u, v) =>
+        {
+            float r = Mathf.Sqrt(u * u + v * v);
+            return r <= 0.96f && !(r > 0.66f && r < 0.74f);   // đĩa + khe vành
+        });
+        return _coinShape;
+    }
+
+    private static Sprite GetDiamondShapeSprite()
+    {
+        if (_diamondShape != null) return _diamondShape;
+        _diamondShape = MakeShape("UnifiedTask_Diamond", 96,
+            (u, v) => Mathf.Abs(u) + Mathf.Abs(v) <= 0.95f);
+        return _diamondShape;
+    }
+
+    /// <summary>Ngôi sao 5 cánh — dùng cho EXP và tab Nhiệm vụ.</summary>
+    private static Sprite GetStarSprite()
+    {
+        if (_starShape != null) return _starShape;
+        _starShape = MakeShape("UnifiedTask_Star", 96, (u, v) =>
+        {
+            float r = Mathf.Sqrt(u * u + v * v);
+            if (r < 0.001f) return true;
+            float ang = Mathf.Atan2(v, u);
+            // Bán kính dao động 5 nhịp quanh vòng tròn → 5 cánh nhọn
+            float wave = 0.62f + 0.34f * Mathf.Cos(5f * (ang - Mathf.PI * 0.5f));
+            return r <= wave;
+        });
+        return _starShape;
+    }
+
+    /// <summary>Hòm gỗ: thân chữ nhật + nắp vòm, có khe hở giữa hai phần.</summary>
+    private static Sprite GetChestShapeSprite()
+    {
+        if (_chestShape != null) return _chestShape;
+        _chestShape = MakeShape("UnifiedTask_Chest", 96, (u, v) =>
+        {
+            if (Mathf.Abs(u) > 0.86f) return false;
+            if (v >= -0.86f && v <= -0.02f) return true;                      // thân
+            if (v > 0.06f && v <= 0.82f) return (u * u) / 0.74f + (v - 0.06f) * (v - 0.06f) / 0.58f <= 1f; // nắp vòm
+            return false;
+        });
+        return _chestShape;
+    }
+
+    /// <summary>Ổ khoá: thân chữ nhật + quai hình chữ U ở trên.</summary>
+    private static Sprite GetLockShapeSprite()
+    {
+        if (_lockShape != null) return _lockShape;
+        _lockShape = MakeShape("UnifiedTask_Lock", 96, (u, v) =>
+        {
+            if (Mathf.Abs(u) <= 0.62f && v >= -0.88f && v <= 0.12f) return true;   // thân
+            if (v > 0.12f)
+            {
+                float r = Mathf.Sqrt(u * u + (v - 0.12f) * (v - 0.12f));
+                return r <= 0.52f && r >= 0.28f;                                    // quai
+            }
+            return false;
+        });
+        return _lockShape;
+    }
+
+    /// <summary>Chùm lá: hai hình bầu dục nghiêng ngược nhau.</summary>
+    private static Sprite GetLeafShapeSprite()
+    {
+        if (_leafShape != null) return _leafShape;
+        _leafShape = MakeShape("UnifiedTask_Leaf", 96, (u, v) =>
+        {
+            bool a = ((u + 0.32f) * (u + 0.32f)) / 0.30f + ((v - 0.10f) * (v - 0.10f)) / 0.09f <= 1f;
+            bool b = ((u - 0.32f) * (u - 0.32f)) / 0.30f + ((v + 0.10f) * (v + 0.10f)) / 0.09f <= 1f;
+            return a || b;
+        });
+        return _leafShape;
+    }
+
+    /// <summary>Chùm hoa: bốn cánh tròn quanh một tâm tròn.</summary>
+    private static Sprite GetFlowerShapeSprite()
+    {
+        if (_flowerShape != null) return _flowerShape;
+        _flowerShape = MakeShape("UnifiedTask_Flower", 96, (u, v) =>
+        {
+            if (u * u + v * v <= 0.11f) return true;                       // tâm
+            Vector2[] petals =
+            {
+                new Vector2(0f, 0.52f), new Vector2(0f, -0.52f),
+                new Vector2(0.52f, 0f), new Vector2(-0.52f, 0f)
+            };
+            for (int i = 0; i < petals.Length; i++)
+            {
+                float du = u - petals[i].x, dv = v - petals[i].y;
+                if (du * du + dv * dv <= 0.14f) return true;
+            }
+            return false;
+        });
+        return _flowerShape;
     }
 
     private static Sprite GetRoundedSprite()

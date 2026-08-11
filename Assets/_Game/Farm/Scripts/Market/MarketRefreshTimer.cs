@@ -179,7 +179,7 @@ public class MarketRefreshTimer
 
         PlayerPrefs.SetString(KeyPaidDate, today);
         PlayerPrefs.SetInt(KeyPaidCount, count + 1);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 
     private static string TodayKey() => DateTimeOffset.UtcNow.ToString("yyyyMMdd");
@@ -199,7 +199,7 @@ public class MarketRefreshTimer
             MigrateFromLegacy(savedVersion);
             StartFreshCycle();
             PlayerPrefs.SetInt(KeyVersion, CurrentSaveVersion);
-            PlayerPrefs.Save();
+            LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
             return;
         }
 
@@ -245,7 +245,7 @@ public class MarketRefreshTimer
         PlayerPrefs.SetInt(KeyVersion, CurrentSaveVersion);
         PlayerPrefs.SetString(KeyNextTicks, nextRefreshUtcTicks.ToString());
         PlayerPrefs.SetInt(KeyCycleIndex, cycleIndex);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 
 #if UNITY_EDITOR
@@ -257,7 +257,7 @@ public class MarketRefreshTimer
         PlayerPrefs.DeleteKey(KeyCycleIndex);
         PlayerPrefs.DeleteKey(KeyPaidCount);
         PlayerPrefs.DeleteKey(KeyPaidDate);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 #endif
 }

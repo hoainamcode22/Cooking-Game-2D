@@ -9,7 +9,7 @@ using UnityEngine.UI;
 /// toast nhỏ đáy màn hình + bàn tay tap-hint (GuideTapHintFX), KHÔNG chặn thao tác,
 /// mỗi tip chỉ hiện đúng 1 lần (PlayerPrefs).
 ///   • L2: chuồng gà mở bán   • L4: chuồng heo   • L6: chuồng bò   • L8: chuồng bò sữa
-///   • Chuồng gà (Pen_03) lần đầu xuất hiện trong scene → toast + tay chỉ vào chuồng
+///   • Chuồng gà (TutorialManager.TenChuongTutorial = Pen_03) xuất hiện → toast + tay chỉ
 ///   • Đơn làng đầu tiên ĐỦ HÀNG giao → toast + tay chỉ vào nhà có bubble (GUIDE_DELIVER_DONE)
 ///   • L3+: tàu chở hàng chờ ở ga → toast + tay chỉ vào toa tàu (GUIDE_TRAIN_DONE)
 ///   • L5: NHÀ BẾP mở → toast + tay chỉ nút/cổng cooking (GUIDE_COOKING_DONE)
@@ -49,11 +49,16 @@ public class AnimalGuideController : MonoBehaviour
             "Chuồng bò sữa đã mở bán — bò sữa ăn lúa/ngô cho sữa giao đơn làng đó!"),
     };
 
-    // ── Tip cho gà ăn khi chuồng gà đầu tiên xuất hiện trong scene ───────────
+    // ── Tip cho ăn khi chuồng tutorial đầu tiên xuất hiện trong scene ────────
     private const string FeedPrefKey = "ANIMAL_GUIDE_COOP_FEED_DONE";
+
+    // Chuồng dạy tutorial là `Pen_03` — chuồng GÀ, mở sớm nhất (cấp 2). Nếu sau này đổi
+    // chuồng dạy sang loài khác thì phải sửa CẢ câu này, không thì người chơi đọc "cho
+    // gà ăn" mà trước mắt là con bò.
     private const string FeedMessage = "Chạm vào chuồng để cho gà ăn (1 lúa hoặc ngô)!";
-    // PlacementManager Instantiate prefab Pen_03 → clone tên "Pen_03(Clone)"
-    private static readonly string[] CoopNames = { "Pen_03(Clone)", "Pen_03" };
+    // Tên chuồng khai một chỗ ở TutorialManager.TenChuongTutorial — mảng này đã gồm cả
+    // bản "(Clone)" mà PlacementManager sinh ra khi người chơi mua chuồng.
+    private static string[] CoopNames => TutorialManager.TenChuongCanDo;
     private const float CoopPollInterval = 5f;
 
     // ── Tap-hint config (GuideTapHintFX) ─────────────────────────────────────
@@ -202,11 +207,11 @@ public class AnimalGuideController : MonoBehaviour
         }
     }
 
-    // ── Giao hàng dân làng — đơn đầu tiên ĐỦ HÀNG (poll 5s, one-shot) ────────
+    // ── Bảng đơn hàng — khi có đơn đầu tiên ĐỦ HÀNG (poll 5s, one-shot) ─────
 
     private IEnumerator PollForDeliverableOrder()
     {
-        // Chờ managers (VillageOrderManager gán order ở Start + replenish 5s/lần)
+        // Chờ managers: OrderBoardManager dựng bảng ở Start (sau khi kho và cấp đã nạp).
         yield return new WaitForSeconds(4f);
 
         var wait = new WaitForSeconds(DeliverPollInterval);
@@ -218,45 +223,42 @@ public class AnimalGuideController : MonoBehaviour
                 PlayerProgressManager.Instance.Level < DeliverMinLevel)
                 continue;
 
-            var manager = Village.VillageOrderManager.Instance;
-            if (manager == null)
-                continue;
-
-            Village.HouseOrderController found = null;
-            foreach (var house in FindObjectsByType<Village.HouseOrderController>(FindObjectsSortMode.None))
-            {
-                if (house == null || house.CurrentState != Village.OrderState.Active ||
-                    house.CurrentOrder == null)
-                    continue;
-                if (!manager.HasEnoughForOrder(house.CurrentOrder))
-                    continue;
-
-                found = house;
-                break;
-            }
-
-            if (found == null)
+            // Hệ cũ phải quét mọi HouseOrderController trong scene rồi hỏi từng nhà một.
+            // Bảng đơn mới gom về một chỗ nên chỉ còn đúng một câu hỏi — và cũng vì thế
+            // mà tay chỉ vào ĐÚNG cái bảng, thay vì chỉ vào một trong 12 nhà rải rác.
+            var board = OrderBoardManager.Instance as OrderBoardManager;
+            if (board == null || !board.HasAnyDeliverableOrder())
                 continue;
 
             MarkDone(DeliverPrefKey);
             EnqueueToast(DeliverMessage);
-            GuideTapHintFX.ShowAtWorld(GetHouseHintPosition(found), TapHintDuration);
+            GuideTapHintFX.ShowAtWorld(GetOrderBoardHintPosition(board), TapHintDuration);
             yield break;
         }
     }
 
-    /// <summary>Vị trí tay chỉ: ưu tiên bubble đơn hàng đang hiện, fallback nóc nhà.</summary>
-    private static Vector3 GetHouseHintPosition(Village.HouseOrderController house)
+    /// <summary>
+    /// Vị trí tay chỉ: neo do object bảng tự khai (RegisterBoardAnchor), fallback là
+    /// SpriteRenderer của chính bảng. Không tìm thấy gì thì chỉ vào gốc toạ độ — xấu
+    /// nhưng không crash, và nhìn là biết ngay DEV-B chưa gắn neo.
+    /// </summary>
+    private static Vector3 GetOrderBoardHintPosition(OrderBoardManager board)
     {
-        var bubble = house.GetComponentInChildren<Village.HouseOrderBubble>(false);
-        if (bubble != null)
-            return bubble.transform.position;
+        Transform anchor = board != null ? board.BoardWorldAnchor : null;
+        if (anchor != null)
+            return anchor.position;
 
-        var sr = house.GetComponentInChildren<SpriteRenderer>();
-        if (sr != null)
-            return sr.bounds.center + new Vector3(0f, sr.bounds.extents.y * 0.8f, 0f);
+        var world = FindFirstObjectByType<OrderBoardWorldObject>(FindObjectsInactive.Exclude);
+        if (world != null)
+        {
+            var sr = world.GetComponentInChildren<SpriteRenderer>();
+            if (sr != null)
+                return sr.bounds.center + new Vector3(0f, sr.bounds.extents.y * 0.8f, 0f);
 
-        return house.transform.position + Vector3.up;
+            return world.transform.position + Vector3.up;
+        }
+
+        return Vector3.zero;
     }
 
     // ── Tàu chở hàng — lần đầu tàu đứng ga chờ nạp (L3+, poll 5s, one-shot) ──
@@ -410,7 +412,7 @@ public class AnimalGuideController : MonoBehaviour
     private static void MarkDone(string key)
     {
         PlayerPrefs.SetInt(key, 1);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 
     // ── Toast queue ──────────────────────────────────────────────────────────

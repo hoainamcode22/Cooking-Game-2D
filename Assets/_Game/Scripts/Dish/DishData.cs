@@ -43,4 +43,24 @@ public class DishData : ScriptableObject
     [Header("Scoring - Required Ingredients")]
     public List<IngredientData> requiredIngredients;
 
+    // ─────────────────────────────────────────────────────────────────────────
+    //  THƯỞNG & GIÁ BÁN
+    // ─────────────────────────────────────────────────────────────────────────
+    // VÌ SAO phải có ba số này trên từng món thay vì tính bằng công thức trong code:
+    // trước đây `CookingChallengeManager` cộng CỨNG `AddExp(20)` cho mọi món và 0 vàng.
+    // Nấu "Phở bò tái" (5 nguyên liệu, cấp 9, cần thịt bò từ chuồng cấp 7) ăn đúng bằng
+    // "Khoai tây chiên" (1 nguyên liệu, cấp 5) ⇒ không ai có lý do nấu món khó.
+    // Để số ngay trên asset thì người cân bằng game sửa được mà không phải mở code.
+
+    [Header("Rewards")]
+    [Tooltip("EXP gốc khi nấu ĐẠT (70đ). Điểm cao hơn được nhân thêm — xem CookingChallengeManager.")]
+    public int rewardExp = 20;
+
+    [Tooltip("Vàng gốc khi nấu ĐẠT (70đ). Điểm cao hơn được nhân thêm.")]
+    public int rewardGold = 0;
+
+    // Bằng đúng `MarketPriceTable.GetBasePrice(dishId)`. KHÔNG được lệch: lệch là bán ở
+    // chợ và bán ở kho ra hai số khác nhau, người chơi phát hiện ngay.
+    [Tooltip("Giá bán 1 đĩa. Phải khớp MarketPriceTable.GetBasePrice(dishId).")]
+    public int sellPrice = 0;
 }

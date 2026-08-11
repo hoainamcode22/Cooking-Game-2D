@@ -29,6 +29,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e3b733d266196064bbe31fc48e40f7e1, type: 2}
   - {fileID: 11400000, guid: 068c729ad2bb67e4d9a7cea8aec07a6d, type: 2}
   - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
+  rewardExp: 48
+  rewardGold: 88
+  sellPrice: 350
   required1:
     displayName: Beef
     icon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}

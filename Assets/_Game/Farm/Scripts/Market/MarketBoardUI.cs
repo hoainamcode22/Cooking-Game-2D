@@ -329,6 +329,12 @@ public class MarketBoardUI : MonoBehaviour
                 ShowToast("Kho chưa sẵn sàng");
                 break;
 
+            // TESTER-F8 — không gộp vào default: default còn Redraw(false) và báo sai
+            // ("vừa có người mua"), người chơi sẽ bấm mua lại mãi mà không hiểu vì sao.
+            case MarketBuyResult.InventoryFull:
+                ShowToast("Kho đầy — bán bớt hoặc nâng cấp kho");
+                break;
+
             default:
                 ShowToast("Món này vừa có người mua");
                 Redraw(false);

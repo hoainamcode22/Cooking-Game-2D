@@ -28,6 +28,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e8ff296568c88e84c8ee3c7a64b0615a, type: 2}
   - {fileID: 11400000, guid: cdf2556cba1e8fe4e9b7fabb9944f804, type: 2}
   - {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}
+  rewardExp: 24
+  rewardGold: 32
+  sellPrice: 130
   required1:
     displayName: "B\u1EAFp C\u1EA3i"
     icon: {fileID: -842988855527424611, guid: b0b144ddc7537a348b0c7d8ec7c4b7e4, type: 3}

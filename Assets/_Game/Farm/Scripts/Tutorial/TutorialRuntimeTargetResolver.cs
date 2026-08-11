@@ -94,18 +94,26 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
     }
 
     // =========================================================================
-    // Tutorial L2 — chuồng Pen_03 + thức ăn + rổ + nút Gem (B8–B13)
+    // Tutorial L2 — chuồng tutorial + thức ăn + rổ + nút Gem (B8–B13)
     // =========================================================================
     private IEnumerator PenScanLoop()
     {
         var wait = new WaitForSeconds(0.3f);
         while (true)
         {
-            // Pen_03 (world object luôn có trong scene) → world-proxy để tay chỉ giữa chuồng
+            // Chuồng tutorial → world-proxy để tay chỉ giữa chuồng.
+            // Dò theo TutorialManager.TenChuongCanDo (gồm cả bản "(Clone)") thay vì gõ
+            // cứng một tên: chuồng có thể là object dựng sẵn trong scene HOẶC bản clone
+            // do người chơi vừa mua, và trước đây chỉ bắt được trường hợp đầu.
             if (TutorialManager.GetTargetRect("tutorial_pen") == null)
             {
-                var pen = GameObject.Find("Pen_03");
-                if (pen != null) CreateWorldProxy("tutorial_pen", pen.transform);
+                foreach (string ten in TutorialManager.TenChuongCanDo)
+                {
+                    var pen = GameObject.Find(ten);
+                    if (pen == null) continue;
+                    CreateWorldProxy("tutorial_pen", pen.transform);
+                    break;
+                }
             }
 
             // Thức ăn + rổ: lấy TRỰC TIẾP từ chuồng ĐANG MỞ (slot UI THẬT đang hiển thị).

@@ -25,16 +25,41 @@ public class FarmManager : MonoBehaviour
 
     private static FarmManager _instance;
 
-    [System.Serializable]
-    public class SeedStockData
-    {
-        public string cropId;
-        public int amount = 10;
-    }
+    // C6 — đã xoá `class SeedStockData` + `List<SeedStockData> seedStocks` +
+    // `Dictionary seedStockMap` + `RebuildSeedStockMap()` + `GetSeedStock()` +
+    // `HasSeed()` + `ConsumeSeed()`, và cả dữ liệu của chúng trong `SCN_Farm`.
+    //
+    // VÌ SAO: đây là hệ hạt giống THỨ HAI. Kho hạt giống thật là `WarehouseManager`
+    // (có save `FARM_WAREHOUSE`, Shop trừ hạt qua nó, `PlotController.TryPlant` đọc nó).
+    // `seedStocks` chỉ là một danh sách trong Inspector, KHÔNG được lưu, KHÔNG ai ghi vào,
+    // và `ConsumeSeed()` chưa từng được gọi từ bất kỳ đâu. Nhưng nó CÓ dữ liệu trong scene
+    // ⇒ ai mở Inspector cũng tưởng đó là kho hạt thật rồi sửa số ở đó, và không hiểu vì
+    // sao trong game không đổi gì. Code chết mà trông như đang chạy là loại tệ nhất.
 
-    [Header("Roots")]
-    [SerializeField] private Transform normalPlotsRoot;
-    [SerializeField] private Transform rarePlotsRoot;
+    // ── HAI ROOT Ô ĐẤT: ĐÃ XOÁ (CS-3) ────────────────────────────────────────
+    // Trước đây có `[SerializeField] Transform normalPlotsRoot` + `rarePlotsRoot`.
+    //
+    // VÌ SAO XOÁ — ĐO TRÊN `SCN_Farm` THẬT:
+    //   • `rarePlotsRoot: {fileID: 0}` — RỖNG. Danh sách `rarePlots` do đó LUÔN rỗng.
+    //   • `normalPlotsRoot` có trỏ vào một Transform, nhưng cây con của nó chỉ chứa
+    //     **19** `PlotController` trong khi cả scene có **38**. Nghĩa là gần một nửa số ô
+    //     đất đứng NGOÀI tầm nhìn của FarmManager: `UnlockAllPlotsNow()` không đụng tới,
+    //     và `GetNextGrowingPlot()` bỏ qua khi dò "ô sắp chín nhất".
+    //
+    // Gán tay hai root trong Inspector thì chữa được HÔM NAY, nhưng lỗi quay lại ngay lúc
+    // ai đó kéo một ô ra ngoài root, hoặc khi người chơi MUA thêm ô đất — `PlacementManager`
+    // đẻ ô mới ở gốc scene, ngoài mọi root. Một ref Inspector là điểm hỏng câm: không log,
+    // không lỗi, chỉ lặng lẽ bỏ sót.
+    //
+    // Nay quét thẳng scene rồi phân loại bằng `PlotController.IsRarePlot` — chính cờ mà
+    // `PlotController.KeyFor()` dùng để chọn khoá save (`PLOT_RARE_x` / `PLOT_NORMAL_x`),
+    // nên hai bên không thể lệch nhau. Một nguồn sự thật duy nhất, không quên kéo được.
+    //
+    // ⚠️ TRẠNG THÁI HIỆN TẠI, GHI RÕ ĐỂ NGƯỜI SAU KHỎI TƯỞNG NHẦM: cả **38/38** ô trong
+    // scene lẫn cả 5 prefab ô/chậu đều đang để `isRarePlot: 0`. Vậy nên bây giờ 38 ô rơi
+    // hết vào `normalPlots` và `rarePlots` vẫn rỗng — nhưng KHÔNG còn ô nào bị bỏ sót,
+    // đó mới là thứ hai vòng lặp trên cần. Ngày nào chậu hoa được tick `isRarePlot` thì
+    // chúng tự động tách nhóm, không phải sửa thêm dòng nào ở đây.
 
     [Header("Crop Database")]
     [SerializeField] private List<CropData> cropDatabase = new List<CropData>();
@@ -46,16 +71,20 @@ public class FarmManager : MonoBehaviour
     [SerializeField] private CropData defaultNormalCrop;
     [SerializeField] private CropData defaultRareCrop;
 
-    [Header("Seed Stocks")]
-    [SerializeField] private List<SeedStockData> seedStocks = new List<SeedStockData>();
-
-    [Header("Fast Time")]
-    [Range(0.1f, 1f)]
-    [SerializeField] private float realTimeMultiplier = 0.3f;
-
-    [Header("Plot Debug / Layout")]
-    [SerializeField] private bool unlockAllPlotsForLayout = true;
-    [SerializeField] private int startUnlockedNormalCount = 20;
+    /// <summary>
+    /// Hệ số rút ngắn thời gian trồng — CHỈ để test, mặc định 1.0 = ĐÚNG GIÂY THẬT.
+    ///
+    /// VÌ SAO đặt về 1.0 (quyết định #6): trước đây để 0.3 nên con số trong `CropData
+    /// .growSeconds` KHÔNG phải thời gian thật (asset ghi 180 → cây chín sau 54 giây).
+    /// Hai người đọc cùng một asset ra hai con số khác nhau, và `feedDurationSeconds`
+    /// của chuồng thì KHÔNG nhân hệ số này → ruộng và chuồng đo thời gian bằng hai đơn vị.
+    /// Từ bản này `growSeconds` là GIÂY THẬT, cùng đơn vị với `feedDurationSeconds`.
+    ///
+    /// Ai muốn test nhanh thì hạ số này trong Inspector, KHÔNG sửa asset.
+    /// </summary>
+    [Header("Fast Time (chỉ để test — 1.0 = giây thật)")]
+    [Range(0.05f, 1f)]
+    [SerializeField] private float realTimeMultiplier = 1.0f;
 
     public int CropDatabaseCount => cropMap.Count;
 
@@ -66,7 +95,6 @@ public class FarmManager : MonoBehaviour
     public static event System.Action<PlotController> OnPlotHarvestedEvent;
 
     private readonly Dictionary<string, CropData> cropMap = new Dictionary<string, CropData>();
-    private readonly Dictionary<string, int> seedStockMap = new Dictionary<string, int>();
 
     private readonly List<PlotController> normalPlots = new List<PlotController>();
     private readonly List<PlotController> rarePlots = new List<PlotController>();
@@ -91,7 +119,6 @@ public class FarmManager : MonoBehaviour
         }
 
         RebuildCropMap();
-        RebuildSeedStockMap();
         CachePlotsFromRoots();
     }
 
@@ -106,26 +133,45 @@ public class FarmManager : MonoBehaviour
 
     private void Start()
     {
-        ApplyStartupUnlockState();
+        // F10 — hệ khoá ô đất theo cấp/kim cương đã bị XOÁ (quyết định #5). Mọi ô đất
+        // có mặt trong scene đều dùng được ngay; muốn thêm ô thì MUA công trình "Đất".
+        // VÌ SAO không giữ hệ cũ: `unlockAllPlotsForLayout: 1` trong scene đã tắt nó
+        // hoàn toàn từ lâu — code mở khoá theo cấp/gem chưa từng chạy một lần nào.
+        UnlockAllPlotsNow();
     }
 
     private void OnValidate()
     {
         RebuildCropMap();
-        RebuildSeedStockMap();
     }
 
+    /// <summary>
+    /// Nạp lại hai danh sách ô đất bằng cách QUÉT SCENE, phân loại theo
+    /// <see cref="PlotController.IsRarePlot"/> (xem lý do ở khối "HAI ROOT Ô ĐẤT" trên đầu file).
+    ///
+    /// GIỮ NGUYÊN TÊN HÀM dù không còn "root" nào: đây là mục ContextMenu quen tay và có
+    /// hai nơi trong chính file này gọi — đổi tên chỉ để cho đẹp là rước rủi ro không cần.
+    ///
+    /// `FindObjectsInactive.Include` là BẮT BUỘC: ô đất có thể đang tắt lúc scene khởi động
+    /// (popup/nhóm bị ẩn), bỏ sót chúng thì đúng lại vào lỗi cũ.
+    /// </summary>
     [ContextMenu("Cache Plots From Roots")]
     public void CachePlotsFromRoots()
     {
         normalPlots.Clear();
         rarePlots.Clear();
 
-        if (normalPlotsRoot != null)
-            normalPlots.AddRange(normalPlotsRoot.GetComponentsInChildren<PlotController>(true));
+        PlotController[] tatCaO = FindObjectsByType<PlotController>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
 
-        if (rarePlotsRoot != null)
-            rarePlots.AddRange(rarePlotsRoot.GetComponentsInChildren<PlotController>(true));
+        for (int i = 0; i < tatCaO.Length; i++)
+        {
+            PlotController o = tatCaO[i];
+            if (o == null) continue;
+
+            if (o.IsRarePlot) rarePlots.Add(o);
+            else              normalPlots.Add(o);
+        }
     }
 
     [ContextMenu("Unlock All Plots Now")]
@@ -146,30 +192,6 @@ public class FarmManager : MonoBehaviour
         }
     }
 
-    [ContextMenu("Apply Startup Unlock State")]
-    public void ApplyStartupUnlockState()
-    {
-        CachePlotsFromRoots();
-
-        if (unlockAllPlotsForLayout)
-        {
-            UnlockAllPlotsNow();
-            return;
-        }
-
-        for (int i = 0; i < normalPlots.Count; i++)
-        {
-            PlotController plot = normalPlots[i];
-            if (plot == null)
-                continue;
-
-            if (plot.HasSavedState())
-                continue;
-
-            bool unlocked = plot.PlotId <= startUnlockedNormalCount;
-            plot.SetUnlocked(unlocked);
-        }
-    }
 
     private void RebuildCropMap()
     {
@@ -193,20 +215,6 @@ public class FarmManager : MonoBehaviour
 
     }
 
-    private void RebuildSeedStockMap()
-    {
-        seedStockMap.Clear();
-
-        for (int i = 0; i < seedStocks.Count; i++)
-        {
-            SeedStockData data = seedStocks[i];
-            if (data == null || string.IsNullOrEmpty(data.cropId))
-                continue;
-
-            seedStockMap[data.cropId] = Mathf.Max(0, data.amount);
-        }
-    }
-
     public CropData GetCropById(string cropId)
     {
         if (string.IsNullOrEmpty(cropId))
@@ -223,46 +231,23 @@ public class FarmManager : MonoBehaviour
         return Mathf.Max(5, Mathf.RoundToInt(crop.growSeconds * realTimeMultiplier));
     }
 
-    public int GetSeedStock(string cropId)
+    /// <summary>
+    /// Quy MỘT khoảng thời gian bất kỳ (giây thật) về thời gian trong game.
+    ///
+    /// VÌ SAO là hàm public: chuồng (`PenMiniPanelUI.feedDurationSeconds`) trước đây
+    /// KHÔNG nhân hệ số này trong khi cây trồng thì có → hạ multiplier để test thì ruộng
+    /// nhanh gấp 3 mà chuồng vẫn nguyên, hai hệ đo bằng hai đơn vị khác nhau. Giờ cả hai
+    /// đi qua một cửa duy nhất nên luôn cùng nhịp.
+    /// </summary>
+    public float GetRealSeconds(float realSeconds)
     {
-        if (string.IsNullOrEmpty(cropId))
-            return 0;
-
-        return seedStockMap.TryGetValue(cropId, out int amount) ? amount : 0;
+        return Mathf.Max(1f, realSeconds * realTimeMultiplier);
     }
 
-    public bool HasSeed(string cropId, int amount = 1)
+    /// <summary>Bản static an toàn khi chưa có FarmManager trong scene (trả nguyên số).</summary>
+    public static float ScaleSeconds(float realSeconds)
     {
-        return GetSeedStock(cropId) >= amount;
-    }
-
-    public bool ConsumeSeed(string cropId, int amount = 1)
-    {
-        if (string.IsNullOrEmpty(cropId))
-            return false;
-
-        if (!seedStockMap.TryGetValue(cropId, out int current))
-            return false;
-
-        if (current < amount)
-            return false;
-
-        current -= amount;
-        seedStockMap[cropId] = current;
-
-        for (int i = 0; i < seedStocks.Count; i++)
-        {
-            if (seedStocks[i] == null)
-                continue;
-
-            if (seedStocks[i].cropId == cropId)
-            {
-                seedStocks[i].amount = current;
-                break;
-            }
-        }
-
-        return true;
+        return _instance != null ? _instance.GetRealSeconds(realSeconds) : Mathf.Max(1f, realSeconds);
     }
 
     public void SetSelectedPlot(PlotController plot)
@@ -492,32 +477,6 @@ public class FarmManager : MonoBehaviour
         }
 
         return harvested;
-    }
-
-    public bool TryUnlockSelectedPlotByGem()
-    {
-        if (selectedPlot == null)
-            return false;
-
-        if (selectedPlot.IsUnlocked)
-            return false;
-
-        int gemCost = Mathf.Max(0, selectedPlot.GemCost);
-
-        if (FarmEconomyManager.Instance != null && gemCost > 0)
-        {
-            if (!FarmEconomyManager.Instance.SpendGems(gemCost))
-            {
-                FarmUIManager.Instance?.ShowHint("Không đủ kim cương.");
-                return false;
-            }
-        }
-
-        selectedPlot.SetUnlocked(true);
-        FarmUIManager.Instance?.ShowHint($"Đã mở ô đất {selectedPlot.PlotId}");
-        FarmUIManager.Instance?.HideAllPopups();
-
-        return true;
     }
 
     public void ClearSelectedPlot()

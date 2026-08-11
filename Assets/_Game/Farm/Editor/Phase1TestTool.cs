@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEditor;
-using Village;
 
 /// <summary>
 /// Editor Tool: Tools/Farm Game/Test/...
@@ -18,7 +17,12 @@ public static class Phase1TestTool
 
     // ── Simulate Level Up ─────────────────────────────────────────────────────
 
-    [MenuItem(BASE + "Force Level 1 (Reset)")]
+    // Tên cũ là "Force Level 1 (Reset)" — chữ "(Reset)" gây hiểu nhầm nặng: nó CHỈ đổi
+    // con số cấp độ, kho/tutorial/nhiệm vụ giữ nguyên. Người dùng bấm nó tưởng đã về
+    // trạng thái người chơi mới, vào game thấy cấp 1 mà không có hạt lúa (kho cũ vẫn
+    // còn nên StarterInventorySetup không cấp lại) và nhiệm vụ đã 2/2 sẵn.
+    // Muốn chơi lại thật thì dùng: Tools ▸ Farm ▸ ⚠ CHƠI LẠI TỪ ĐẦU.
+    [MenuItem(BASE + "Force Level 1 (chỉ đổi cấp, KHÔNG xoá save)")]
     private static void ForceLevel1()  => ForceLevel(1);
 
     [MenuItem(BASE + "Force Level 2")]
@@ -55,27 +59,15 @@ public static class Phase1TestTool
 
     // ── Test Currency (đang dựng game) ────────────────────────────────────────
 
-    [MenuItem(BASE + "Give Test Currency (1000 Gold / 1000 Gems)")]
-    private static void GiveTestCurrency()
-    {
-        const int gold = 1000;
-        const int gems = 1000;
-
-        if (Application.isPlaying && FarmEconomyManager.Instance != null)
-        {
-            // Đang Play: nạp thẳng vào manager đang sống (DontDestroyOnLoad)
-            FarmEconomyManager.Instance.SetCurrency(gold, gems);
-            Debug.Log($"[Phase1Test] ✅ Đã nạp {gold} vàng / {gems} gem (live).");
-        }
-        else
-        {
-            // Edit Mode: ghi PlayerPrefs để lần Play sau load đúng
-            PlayerPrefs.SetInt("FARM_ECONOMY_GOLD", gold);
-            PlayerPrefs.SetInt("FARM_ECONOMY_GEMS", gems);
-            PlayerPrefs.Save();
-            Debug.Log($"[Phase1Test] ✅ Đã set PlayerPrefs {gold} vàng / {gems} gem — nhấn Play để áp dụng.");
-        }
-    }
+    /// <summary>
+    /// Giao cho <see cref="NapTienTestTool"/>.
+    ///
+    /// Bản cũ ở đây gọi `SetCurrency(1000, 1000)` — ĐẶT BẰNG chứ không CỘNG THÊM. Đang
+    /// có 25.000 vàng mà bấm "Give Test Currency" là tụt còn 1.000: tên tool nói nạp
+    /// tiền, hành vi thật là xoá tiền.
+    /// </summary>
+    [MenuItem(BASE + "Nạp +1000 vàng / +1000 gem")]
+    private static void GiveTestCurrency() => NapTienTestTool.Nap(1000, 1000);
 
     // ── Status Report ─────────────────────────────────────────────────────────
 
@@ -113,19 +105,39 @@ public static class Phase1TestTool
 
     // ── Village Orders Report ─────────────────────────────────────────────────
 
-    [MenuItem(BASE + "Print Village Orders Status")]
-    private static void PrintVillageOrders()
+    [MenuItem(BASE + "Print Order Board Status")]
+    private static void PrintOrderBoard()
     {
         if (!Application.isPlaying)
         {
-            Debug.Log("[Phase1Test] Cần Play Mode để in trạng thái Village Orders.");
+            Debug.Log("[Phase1Test] Cần Play Mode để in trạng thái Bảng Đơn Hàng.");
             return;
         }
 
-        var vom = VillageOrderManager.Instance;
-        if (vom == null) { Debug.LogWarning("[Phase1Test] VillageOrderManager.Instance = null!"); return; }
+        var board = OrderBoardManagerBase.Instance as OrderBoardManager;
+        if (board == null) { Debug.LogWarning("[Phase1Test] OrderBoardManager.Instance = null!"); return; }
 
-        Debug.Log("[Phase1Test] Inventory print skipped — DebugPrintInventoryNow is private in VillageOrderManager. Use [ContextMenu] on the component directly in Play Mode.");
+        var orders = board.GetOrders();
+        Debug.Log($"[Phase1Test] Bảng đơn: {orders.Count}/{OrderBoardManagerBase.SlotCount} ô — " +
+                  $"{board.CountDeliverableOrders()} đơn giao được ngay.");
+
+        for (int i = 0; i < orders.Count; i++)
+        {
+            var o = orders[i];
+            if (o == null) { Debug.Log($"  ô {i}: (trống)"); continue; }
+
+            string items = string.Empty;
+            for (int j = 0; j < o.requirements.Count; j++)
+            {
+                var r = o.requirements[j];
+                if (r == null) continue;
+                if (items.Length > 0) items += " + ";
+                items += $"{board.GetOwnedAmount(r.itemId)}/{r.needAmount} {r.itemId}";
+            }
+
+            Debug.Log($"  ô {i}: \"{o.title}\" [{items}] → {o.rewardGold}v {o.rewardExp}exp" +
+                      (o.CanDeliverNow() ? "  ✓" : string.Empty));
+        }
     }
 
     // ── Check Phase 1 Setup ───────────────────────────────────────────────────
@@ -164,7 +176,7 @@ public static class Phase1TestTool
                 }
             }
             report.AppendLine($"  {(lockedCount > 0 ? "✅" : "⚠")} Shop items with unlockLevel>1: {lockedCount}" +
-                              (lockedCount == 0 ? " — chạy Tools/Farm Game/Setup Village Orders L1-L6" : ""));
+                              (lockedCount == 0 ? " — đặt unlockLevel trong asset BaseItemData" : ""));
         }
         else
         {
@@ -177,25 +189,25 @@ public static class Phase1TestTool
             ? $"  ✅ TutorialStepData assets: {guids.Length} (đủ cho L1 tutorial)"
             : $"  ⚠  TutorialStepData assets: {guids.Length} (cần ít nhất 8 — chạy Tools/Farm Game/Setup Tutorial Steps L1)");
 
-        // 5. OrderItemDefinition unlock levels
-        string[] orderGuids = AssetDatabase.FindAssets("t:OrderItemDefinition",
-            new[] { "Assets/_Game/Farm/data/Village_data" });
-        int lockedOrders = 0;
-        foreach (string g in orderGuids)
+        // 5. Món ăn trong pool đơn hàng phải khoá từ L5 trở lên
+        //    (không còn asset OrderItemDefinition — pool sinh thẳng từ MarketPriceTable)
+        int dishesInPool = 0, dishesTooEarly = 0;
+        foreach (var info in MarketPriceTable.AllItems)
         {
-            var asset = AssetDatabase.LoadAssetAtPath<OrderItemDefinition>(AssetDatabase.GUIDToAssetPath(g));
-            if (asset != null && asset.unlockLevel >= 5 && ContainsCookingKeyword(asset.name.ToLower()))
-                lockedOrders++;
+            if (!info.MarketEnabled || info.Category != MarketCategory.MonAn) continue;
+            dishesInPool++;
+            if (info.UnlockLevel < 5) dishesTooEarly++;
         }
-        report.AppendLine(lockedOrders > 0
-            ? $"  ✅ Cooking orders locked at L5+: {lockedOrders} assets"
-            : $"  ⚠  Cooking orders may not be level-locked — chạy Tools/Farm Game/Setup Village Orders L1-L6");
+        report.AppendLine(dishesTooEarly == 0
+            ? $"  ✅ Món ăn trong pool đơn: {dishesInPool}, tất cả khoá từ L5+"
+            : $"  ⚠  {dishesTooEarly}/{dishesInPool} món ăn mở trước L5 — người chơi chưa có bếp");
 
-        // 6. HouseOrderBubbleAnimator
-        var animators = Object.FindObjectsByType<Village.HouseOrderBubbleAnimator>(FindObjectsSortMode.None);
-        report.AppendLine(animators.Length > 0
-            ? $"  ✅ HouseOrderBubbleAnimator: {animators.Length} instance(s)"
-            : "  ⚠  HouseOrderBubbleAnimator: 0 — thêm component vào HouseOrderBubble GameObjects");
+        // 6. Bảng đơn hàng trong scene
+        var boards = Object.FindObjectsByType<OrderBoardManager>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+        report.AppendLine(boards.Length == 1
+            ? "  ✅ OrderBoardManager: đúng 1 trong scene"
+            : $"  ⚠  OrderBoardManager: {boards.Length} trong scene (phải đúng 1)");
 
         report.AppendLine("═══════════════════════════════════════");
         Debug.Log(report.ToString());
@@ -207,15 +219,28 @@ public static class Phase1TestTool
 
     // ── Reset Player Save (cẩn thận!) ────────────────────────────────────────
 
-    [MenuItem(BASE + "⚠ Reset Player Save (PlayerPrefs)")]
+    /// <summary>
+    /// Chỉ xoá 4 con số cấp/tiền. GIỮ NGUYÊN kho, tutorial, nhiệm vụ, đơn hàng.
+    ///
+    /// Tool này từng mang tên "Reset Player Save" và mô tả là "xóa toàn bộ dữ liệu lưu
+    /// của người chơi" — sai, và cái sai đó tốn nhiều giờ mò lỗi: về cấp 1 nhưng kho vẫn
+    /// giữ hàng của lần chơi trước, mà còn key kho thì `StarterInventorySetup` bỏ qua
+    /// bước cấp hạt khởi đầu ⇒ cấp 1 mà không có lúa để trồng.
+    ///
+    /// Giữ lại vì đôi khi vẫn muốn đúng thế: thử lại cân bằng tiền ở cấp thấp mà không
+    /// mất công gây dựng lại kho.
+    /// </summary>
+    [MenuItem(BASE + "Xoá cấp + tiền (GIỮ kho, tutorial, nhiệm vụ)")]
     private static void ResetPlayerSave()
     {
         bool confirm = EditorUtility.DisplayDialog(
-            "⚠ Reset Player Save",
-            "Thao tác này sẽ xóa toàn bộ dữ liệu lưu của người chơi (PlayerPrefs)!\n\n" +
-            "Bao gồm: Level, EXP, Gold, Gems.\n\n" +
-            "Chỉ dùng để test lại từ đầu. Không thể hoàn tác!",
-            "XÓA DỮ LIỆU", "Huỷ bỏ");
+            "Xoá cấp độ và tiền",
+            "Xoá 4 mục: Level, EXP, Gold, Gems.\n\n" +
+            "GIỮ NGUYÊN: kho hạt, tutorial, nhiệm vụ, đơn hàng, quầy, chuồng, công trình.\n\n" +
+            "→ Vào game sẽ là cấp 1 nhưng KHÔNG được cấp lại hạt khởi đầu (kho cũ vẫn còn).\n\n" +
+            "Muốn chơi lại thật sự như người mới, dùng:\n" +
+            "Tools ▸ Farm ▸ ⚠ CHƠI LẠI TỪ ĐẦU",
+            "Xoá cấp + tiền", "Huỷ bỏ");
 
         if (!confirm) return;
 
@@ -225,10 +250,12 @@ public static class Phase1TestTool
         PlayerPrefs.DeleteKey("FARM_ECONOMY_GEMS");
         PlayerPrefs.Save();
 
-        Debug.Log("[Phase1Test] ✅ PlayerPrefs đã được xóa. Lần chơi tiếp sẽ bắt đầu từ Level 1.");
+        Debug.Log("[Phase1Test] Đã xoá cấp + tiền. Kho/tutorial/nhiệm vụ GIỮ NGUYÊN — " +
+                  "muốn sạch hoàn toàn thì dùng Tools ▸ Farm ▸ ⚠ CHƠI LẠI TỪ ĐẦU.");
 
         if (Application.isPlaying)
-            Debug.LogWarning("[Phase1Test] Đang Play Mode — cần Stop và Play lại để reset có hiệu lực.");
+            Debug.LogWarning("[Phase1Test] Đang Play Mode — manager còn sống sẽ ghi đè lại " +
+                             "ngay lần Save kế tiếp. Phải Stop rồi chạy lại tool này.");
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -245,14 +272,8 @@ public static class Phase1TestTool
         return 1;
     }
 
-    private static bool ContainsCookingKeyword(string name) =>
-        name.Contains("_xao_") || name.Contains("_nuong_") || name.Contains("_chien") ||
-        name.Contains("_ham_") || name.Contains("pho_") || name.Contains("trung_op_") ||
-        name.Contains("com_chien") || name.Contains("suon_") || name.Contains("salad_") ||
-        name.Contains("order_item_");
-
     // Validate — một số tool chỉ có nghĩa trong Play Mode
-    [MenuItem(BASE + "Force Level 1 (Reset)", true)]
+    [MenuItem(BASE + "Force Level 1 (chỉ đổi cấp, KHÔNG xoá save)", true)]
     [MenuItem(BASE + "Force Level 2", true)]
     [MenuItem(BASE + "Force Level 3", true)]
     [MenuItem(BASE + "Force Level 4", true)]

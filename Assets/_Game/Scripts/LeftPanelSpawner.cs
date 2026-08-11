@@ -24,20 +24,16 @@ public class LeftPanelSpawner : MonoBehaviour
     [Header("Seasonings")]
     public List<CardData> seasonings = new List<CardData>();
 
-    private void Start()
-    {
-        if (leftPanel == null)
-        {
-            Debug.LogError("LeftPanelRefs chưa được gán.");
-            return;
-        }
-
-        SpawnAll();
-    }
 
     [ContextMenu("Spawn All")]
     public void SpawnAll()
     {
+        if (leftPanel == null)
+        {
+            Debug.LogError("[LeftPanelSpawner] LeftPanelRefs chưa được gán.");
+            return;
+        }
+
         SpawnList(ingredients, leftPanel.ingredientsContent, leftPanel.ingredientCardSample);
         SpawnList(seasonings, leftPanel.seasoningsContent, leftPanel.seasoningCardSample);
     }

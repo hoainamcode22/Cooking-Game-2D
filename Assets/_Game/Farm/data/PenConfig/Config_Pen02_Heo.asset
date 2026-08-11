@@ -20,9 +20,10 @@ MonoBehaviour:
   productItemId: pork
   secondProductItemId: 
   productIcon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}
-  productAmount: 4
-  secondProductAmount: 4
+  productAmount: 1
+  secondProductAmount: 1
   secondProductIcon: {fileID: 0}
   basketIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-  feedDurationSeconds: 30
-  expReward: 25
+  foodAmountPerFeed: 2
+  feedDurationSeconds: 150
+  expReward: 19

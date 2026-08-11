@@ -9,14 +9,25 @@ public enum RewardType { Coin, Diamond }
 public enum MissionEventType
 {
     HarvestItem,          // thu hoạch nông sản (PlotController.Harvest)
-    DeliverOrder,         // giao đơn hàng làng (VillageOrderManager.DeliverOrder)
+    DeliverOrder,         // giao đơn ở Bảng Đơn Hàng (OrderBoardManager.TryDeliverOrder)
     CookDish,             // nấu món thành công (CookingChallengeManager)
     FeedAnimal,           // cho vật nuôi ăn (PenMiniPanelUI.TryFeed)
     CollectAnimalProduct, // thu sản phẩm chuồng (PenMiniPanelUI.TryHarvest)
     BuyShopItem,          // mua trong Shop (ShopItemUI.BuyItem)
     BuySeed,              // mua hạt giống (ShopItemUI / MarketManager)
     ReachLevel,           // đạt cấp X (PlayerProgressManager.OnLevelChanged)
-    PlantCrop             // trồng cây (PlotController.TryPlant)
+    PlantCrop,            // trồng cây (PlotController.TryPlant)
+
+    // F4 — bán được hàng ở Quầy Hàng (PlayerStallManager.SellListing).
+    // THÊM Ở CUỐI, không chèn giữa: enum này được serialize thành SỐ trong MissionData
+    // asset và trong khoá tiến độ "{type}:{id}" của MissionProgressTracker. Chèn giữa là
+    // mọi mission đã cấu hình bị dịch loại, và mọi tiến độ đã lưu trỏ sai key.
+    SellAtStall,
+
+    // F5 — nạp hàng lên toa tàu (TrainManager.TryAddOneItemToSlot).
+    // Tách khỏi `DeliverOrder` để nhiệm vụ "giao 5 đơn ở bảng đơn hàng" không bị tàu
+    // hoàn thành hộ — hai hệ thống khác nhau, đếm chung là gian lận tiến độ.
+    LoadTrainCargo
 }
 
 [CreateAssetMenu(fileName = "MissionData", menuName = "Game/Mission Data")]

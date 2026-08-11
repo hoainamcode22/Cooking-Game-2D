@@ -61,7 +61,7 @@ public class TutorialPrePlant : MonoBehaviour
         {
             // Save cũ (đã từng nhận starter items) — không bao giờ pre-plant nữa.
             PlayerPrefs.SetInt(PREF_KEY, 1);
-            PlayerPrefs.Save();
+            LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
             return;
         }
 
@@ -123,7 +123,7 @@ public class TutorialPrePlant : MonoBehaviour
         FarmManager.OnPlotHarvestedEvent += HandlePlotHarvested;
 
         PlayerPrefs.SetInt(PREF_KEY, 1);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         Debug.Log($"[TutorialPrePlant] '{plot.name}' da chin san lua (Hay Day opening). Flag set.");
     }
 

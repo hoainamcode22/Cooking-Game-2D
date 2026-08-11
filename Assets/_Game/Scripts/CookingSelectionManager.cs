@@ -25,27 +25,27 @@ public class CookingSelectionManager : MonoBehaviour
     [Header("Old Pot Card Prefab (mini)")]
     public IngredientItemUI potCardPrefab;
 
-    [Header("New Left Panels")]
-    public Transform leftIngredientsContent;
-    public Transform leftSeasoningsContent;
-
-    [Header("New Pot Panels")]
-    public Transform newPotIngredientsContent;
-    public Transform newPotSeasoningsContent;
-
-    [Header("New Slot Prefab")]
-    public CookingStackSlotUI stackSlotPrefab;
-
-    [Header("Cooking Item Database")]
-    public List<InventoryItemData> cookingInventoryItems = new List<InventoryItemData>();
+    // ─────────────────────────────────────────────────────────────────────────
+    //  C11 — ĐÃ XOÁ 6 FIELD KHÔNG MỘT DÒNG CODE NÀO ĐỌC
+    // ─────────────────────────────────────────────────────────────────────────
+    //   leftIngredientsContent · leftSeasoningsContent
+    //   newPotIngredientsContent · newPotSeasoningsContent
+    //   stackSlotPrefab (kiểu `CookingStackSlotUI` — class cũng đã xoá ở C9)
+    //   cookingInventoryItems
+    //
+    // VÌ SAO nguy hiểm chứ không chỉ vô dụng: trong `SampleScene` chúng ĐÃ ĐƯỢC GÁN, và
+    // gán SAI. `leftIngredientsContent` trỏ vào chính THẺ `Item_Ingredient_Beef` thay vì
+    // trỏ vào `Content_Ingredients`. Ai tin vào Inspector rồi viết code dùng field đó sẽ
+    // sinh thẻ vào bên trong một cái thẻ khác. Cột thẻ bên trái do `CookingBoot` +
+    // `leftRefs` (LeftPanelRefs) quản, và `RegisterAllLeftCards(...)` nhận container qua
+    // THAM SỐ — không đọc field nào của class này.
+    //
+    // `cookingInventoryItems` cũng bị xoá: bản dùng thật nằm ở `CookingBoot`. Hai danh sách
+    // song song là chắc chắn lệch — A3 (thêm `Item_Milk`) chỉ cần sửa MỘT chỗ.
 
     private readonly List<SelectableIngredientCard> selectedIngredients = new();
     private readonly List<SelectableIngredientCard> selectedSeasonings = new();
 
-  
-
-    private readonly Dictionary<string, int> potIngredientAmounts = new();
-    private readonly Dictionary<string, int> potSeasoningAmounts = new();
     private bool canSelectIngredient = false;
 
     public void RegisterAllLeftCards(Transform ingredientsContent, Transform seasoningsContent)
@@ -347,16 +347,9 @@ public class CookingSelectionManager : MonoBehaviour
     }
 
 
-    private int GetTotalAmount(Dictionary<string, int> dict)
-    {
-        int total = 0;
-
-        foreach (var kv in dict)
-            total += kv.Value;
-
-        return total;
-    }
-
+    // C11 — đã xoá `GetTotalAmount(dict)` cùng hai dictionary `potIngredientAmounts` /
+    // `potSeasoningAmounts` mà nó cộng: cả ba đều không có nơi nào gọi/ghi. Nồi được dựng
+    // lại từ `selectedIngredients` / `selectedSeasonings` trong `RebuildPot()`.
 
     private void AddFlavor(IngredientData data)
     {

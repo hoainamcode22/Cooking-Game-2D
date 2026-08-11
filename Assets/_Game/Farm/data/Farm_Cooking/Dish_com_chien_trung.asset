@@ -28,6 +28,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a709c3d40f4f1b64b96d6ce35aa30e8a, type: 2}
   - {fileID: 11400000, guid: fc7f3c85c12966b4f993aeca2a544016, type: 2}
   - {fileID: 11400000, guid: 7f96869f08d4e0a4687f826acd150dfc, type: 2}
+  rewardExp: 15
+  rewardGold: 28
+  sellPrice: 110
   required1:
     displayName: Rice
     icon: {fileID: 9135130128162984572, guid: 83b0ddd2946e3e94e9671b1686386e1b, type: 3}

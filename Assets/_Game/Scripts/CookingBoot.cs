@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -28,6 +28,13 @@ public class CookingBoot : MonoBehaviour
 
     private readonly Dictionary<string, InventoryItemData> inventoryLookup = new Dictionary<string, InventoryItemData>();
 
+    // Khuôn thẻ đã chốt cho từng cột. Chốt MỘT LẦN ở lần nạp đầu rồi giữ luôn:
+    // sau khi `ApplyToCardGroup` chạy, thẻ con đầu tiên trong container có thể đang
+    // bị SetActive(false) (dư slot) — lấy lại nó làm khuôn ở lần refresh sau thì
+    // `Instantiate` ra thẻ TẮT, thẻ mới không bao giờ hiện lên.
+    private SelectableIngredientCard cachedIngredientTemplate;
+    private SelectableIngredientCard cachedSeasoningTemplate;
+
     private IEnumerator Start()
     {
         yield return null;
@@ -39,9 +46,6 @@ public class CookingBoot : MonoBehaviour
         {
             BuildInventoryLookup();
             FillOldCardsFromTransferredItems();
-        }
-        else
-        {
         }
 
         selection.RegisterAllLeftCards(
@@ -60,6 +64,15 @@ public class CookingBoot : MonoBehaviour
             if (item == null || string.IsNullOrEmpty(item.itemId))
                 continue;
 
+            if (item.cookingData == null)
+            {
+                Debug.LogWarning(
+                    $"[CookingBoot] '{item.itemId}' nằm trong cookingInventoryItems nhưng " +
+                    $"cookingData để trống → sẽ KHÔNG bao giờ hiện được trong bếp. " +
+                    $"Gán IngredientData cho asset '{item.name}', hoặc bỏ nó khỏi danh sách này.");
+                continue;
+            }
+
             if (!inventoryLookup.ContainsKey(item.itemId))
                 inventoryLookup.Add(item.itemId, item);
         }
@@ -67,10 +80,8 @@ public class CookingBoot : MonoBehaviour
 
     private void FillOldCardsFromTransferredItems()
     {
-        
         List<CookingTransferredItem> ingredientItems = new List<CookingTransferredItem>();
         List<CookingTransferredItem> seasoningItems = new List<CookingTransferredItem>();
-        
 
         if (KitchenTransferManager.Instance != null)
         {
@@ -78,7 +89,6 @@ public class CookingBoot : MonoBehaviour
 
             foreach (var kv in transferred)
             {
-                
                 if (!inventoryLookup.TryGetValue(kv.Key, out InventoryItemData inventoryItem))
                     continue;
 
@@ -86,10 +96,8 @@ public class CookingBoot : MonoBehaviour
                     continue;
 
                 int quantity = kv.Value;
-                    if (quantity <= 0)
-                    {
-                        continue;
-                    }
+                if (quantity <= 0)
+                    continue;
 
                 CookingTransferredItem transferredItem = new CookingTransferredItem(inventoryItem, quantity);
 
@@ -110,7 +118,6 @@ public class CookingBoot : MonoBehaviour
             return;
 
         List<SelectableIngredientCard> cards = new List<SelectableIngredientCard>();
-
         foreach (Transform child in contentRoot)
         {
             SelectableIngredientCard card = child.GetComponent<SelectableIngredientCard>();
@@ -118,23 +125,74 @@ public class CookingBoot : MonoBehaviour
                 cards.Add(card);
         }
 
-        for (int i = 0; i < cards.Count; i++)
+        SelectableIngredientCard template = ResolveTemplate(cards, isSeasoning);
+
+        for (int i = 0; i < items.Count; i++)
         {
-            if (i < items.Count)
+            SelectableIngredientCard card;
+
+            if (i < cards.Count)
             {
-                SetupCard(cards[i], items[i].itemData, items[i].quantity, isSeasoning);
-                cards[i].gameObject.SetActive(true);
+                card = cards[i];
             }
             else
             {
-                cards[i].gameObject.SetActive(false);
+                if (template == null)
+                {
+                    // Không có khuôn thì không thể sinh thêm. Báo rõ chứ không im lặng
+                    // như bản cũ — im lặng chính là lý do lỗi này sống sót lâu vậy.
+                    Debug.LogError(
+                        $"[CookingBoot] Cột {(isSeasoning ? "gia vị" : "nguyên liệu")} cần " +
+                        $"{items.Count} ô nhưng chỉ có {cards.Count} và KHÔNG có khuôn thẻ để sinh thêm. " +
+                        $"Gán '{(isSeasoning ? "seasoningCardPrefab" : "ingredientCardPrefab")}' " +
+                        $"trong LeftPanelRefs, hoặc để lại ít nhất một thẻ mẫu trong container.");
+                    break;
+                }
+
+                card = Instantiate(template, contentRoot, false);
+                card.name = $"{template.name}_Auto_{i}";
+
+                RectTransform rt = card.transform as RectTransform;
+                if (rt != null)
+                {
+                    rt.localScale = Vector3.one;
+                    rt.anchoredPosition = Vector2.zero;
+                }
             }
+
+            SetupCard(card, items[i].itemData, items[i].quantity, isSeasoning);
+            card.gameObject.SetActive(true);
         }
 
-        if (items.Count > cards.Count)
-        {
-            Debug.LogWarning($"[CookingBoot] Không đủ slot {(isSeasoning ? "gia vị" : "nguyên liệu")} để hiển thị. Dư: {items.Count - cards.Count}");
-        }
+        // Ô dư: tắt, KHÔNG Destroy. Giữ lại để lần sau người chơi gửi nhiều hàng hơn
+        // thì tái dùng ngay, khỏi cấp phát lại giữa lúc đang chơi.
+        for (int i = items.Count; i < cards.Count; i++)
+            cards[i].gameObject.SetActive(false);
+    }
+
+
+    private SelectableIngredientCard ResolveTemplate(List<SelectableIngredientCard> existingCards, bool isSeasoning)
+    {
+        SelectableIngredientCard fromInspector = isSeasoning
+            ? leftRefs.seasoningCardPrefab
+            : leftRefs.ingredientCardPrefab;
+
+        if (fromInspector != null)
+            return fromInspector;
+
+        SelectableIngredientCard cached = isSeasoning ? cachedSeasoningTemplate : cachedIngredientTemplate;
+        if (cached != null)
+            return cached;
+
+        if (existingCards.Count == 0)
+            return null;
+
+        cached = existingCards[0];
+
+        if (isSeasoning) cachedSeasoningTemplate = cached;
+        else cachedIngredientTemplate = cached;
+
+        return cached;
     }
 
     private void SetupCard(SelectableIngredientCard card, InventoryItemData inventoryItem, int quantity, bool isSeasoning)
@@ -163,6 +221,7 @@ public class CookingBoot : MonoBehaviour
         card.setIdItem(inventoryItem.itemId);// Thiết lập ID item để có thể đối chiếu sau này
         card.SetQuantityFromKitchen(quantity);// Hiển thị số lượng từ KitchenTransferManager lên card
     }
+
     public void RefreshTransferredItemCards()
     {
         if (selection == null || leftRefs == null)
@@ -175,6 +234,5 @@ public class CookingBoot : MonoBehaviour
             leftRefs.ingredientsContent,
             leftRefs.seasoningsContent
         );
-
     }
 }

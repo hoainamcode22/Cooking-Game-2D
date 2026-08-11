@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_hoa_anh_thao
   itemName: "Hoa Anh Th\u1EA3o"
   itemIcon: {fileID: -3401004264720572072, guid: bcec67a80c8219646a69a6c3f218ea64, type: 3}
-  goldPrice: 130
+  goldPrice: 164
   diamondPrice: 0
   cropCategory: 1
   cropId: hoa_anh_thao
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 1
   seedItemId: seed_hoa_anh_thao
   harvestItemId: hoa_anh_thao
-  tier: 1
   unlockLevel: 10
-  growSeconds: 180
-  sellGold: 32
+  growSeconds: 700
+  sellGold: 95
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 70
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

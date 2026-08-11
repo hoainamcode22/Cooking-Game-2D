@@ -30,9 +30,8 @@ MonoBehaviour:
   displayCount: 12
   seedItemId: seed_rice
   harvestItemId: rice
-  tier: 1
   unlockLevel: 1
-  growSeconds: 180
+  growSeconds: 50
   sellGold: 7
   harvestAmount: 4
   plantCost: 1
@@ -43,5 +42,3 @@ MonoBehaviour:
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

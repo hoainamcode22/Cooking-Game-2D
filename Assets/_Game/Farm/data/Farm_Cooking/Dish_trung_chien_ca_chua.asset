@@ -27,6 +27,9 @@ MonoBehaviour:
   requiredIngredients:
   - {fileID: 11400000, guid: fc7f3c85c12966b4f993aeca2a544016, type: 2}
   - {fileID: 11400000, guid: d497d41e2fee904489fe75f7a8f6d927, type: 2}
+  rewardExp: 23
+  rewardGold: 31
+  sellPrice: 125
   required1:
     displayName: "Tr\u1EE9ng"
     icon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}

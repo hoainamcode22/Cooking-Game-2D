@@ -27,6 +27,9 @@ MonoBehaviour:
   requiredIngredients:
   - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
   - {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}
+  rewardExp: 32
+  rewardGold: 44
+  sellPrice: 175
   required1:
     displayName: Mushroom
     icon: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}

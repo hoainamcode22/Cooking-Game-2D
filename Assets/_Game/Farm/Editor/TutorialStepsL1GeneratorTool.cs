@@ -38,7 +38,7 @@ public static class TutorialStepsL1GeneratorTool
             fileName       = "6_DeliverOrder",
             npcText        = "Tuyệt vời! Bạn đã có lúa rồi!\n" +
                              "Bây giờ hãy bấm vào căn nhà có bong bóng đơn hàng để giao hàng và nhận thưởng!",
-            targetID       = "",   // User điền targetID của HouseOrderController sau
+            targetID       = "",   // Bước này nay chỉ vào Bảng Đơn Hàng — để trống là đủ
             waitAction     = TutorialWaitAction.WaitForDelivery,
             showHandPointer= false,
             handOffset     = new Vector2(40, -30),

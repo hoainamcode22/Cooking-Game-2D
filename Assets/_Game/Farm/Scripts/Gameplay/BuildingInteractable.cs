@@ -35,6 +35,12 @@ public class BuildingInteractable : MonoBehaviour
                 break;
 
             case BuildingType.CookingGate:
+                // A6 — khoá tới cấp 5. Món có unlockLevel thấp nhất là cấp 5, nên vào
+                // sớm hơn là mở ra màn hình bếp KHÔNG CÓ MÓN NÀO chọn được.
+                // Con số 5 nằm ở `CookingGateAccess`, không gõ lại ở đây.
+                if (!CookingGateAccess.CanEnterOrWarn())
+                    break;
+
                 if (FarmUIManager.Instance != null)
                     FarmUIManager.Instance.OnClick_GoCooking();
                 break;

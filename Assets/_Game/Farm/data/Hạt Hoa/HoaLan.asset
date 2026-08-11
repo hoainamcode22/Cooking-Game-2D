@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_hoa_lan
   itemName: Hoa Lan
   itemIcon: {fileID: -5282305146031929904, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
-  goldPrice: 70
+  goldPrice: 80
   diamondPrice: 0
   cropCategory: 1
   cropId: hoa_lan
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 1
   seedItemId: seed_hoa_lan
   harvestItemId: hoa_lan
-  tier: 1
   unlockLevel: 7
-  growSeconds: 180
-  sellGold: 22
+  growSeconds: 280
+  sellGold: 38
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 28
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

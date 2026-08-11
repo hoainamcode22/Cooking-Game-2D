@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_nam
   itemName: "N\u1EA5m"
   itemIcon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
-  goldPrice: 100
+  goldPrice: 76
   diamondPrice: 0
   cropCategory: 0
   cropId: nam
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 6
   seedItemId: seed_nam
   harvestItemId: mushroom
-  tier: 1
   unlockLevel: 6
-  growSeconds: 600
-  sellGold: 30
+  growSeconds: 250
+  sellGold: 34
   harvestAmount: 4
   plantCost: 1
-  expReward: 10
+  expReward: 25
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 0
-  canAppearInRareMarket: 0

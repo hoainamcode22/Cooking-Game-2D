@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 69a363e6c16666945ac5438e62388fb7, type: 3}
   m_Name: Home5
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
-  itemID: 104
-  itemName: "Nh\xE0 D\xE2n 4"
+  itemID: 114
+  itemName: "Nh\xE0 D\xE2n 5"
   itemIcon: {fileID: -1012304903085406105, guid: 155788aa74607b74cb3bf78bd04339bd, type: 3}
   goldPrice: 180
   diamondPrice: 0

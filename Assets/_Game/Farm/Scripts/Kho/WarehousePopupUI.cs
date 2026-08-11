@@ -7,9 +7,13 @@ using UnityEngine.UI;
 
 public class WarehousePopupUI : MonoBehaviour
 {
-    private const string WarehouseLevelPrefsKey = "WAREHOUSE_LEVEL";
-    private const int WarehouseBaseCapacity = 25;
-    private const int WarehouseMaxLevel = 7;
+    // F8 — ba hằng số này giờ lấy từ FarmInventoryManager (nguồn sự thật của kho).
+    // VÌ SAO: trước đây popup tự giữ một bộ hằng số riêng và AddItem không kiểm gì cả,
+    // nên con số "12 / 25" chỉ là chữ. Sau khi enforce thật, hai bên lệch nhau một đơn vị
+    // là UI báo còn chỗ mà kho từ chối nhận — loại bug người chơi không thể hiểu nổi.
+    private const string WarehouseLevelPrefsKey = FarmInventoryManager.WarehouseLevelPrefsKey;
+    private const int WarehouseBaseCapacity = FarmInventoryManager.SlotsPerWarehouseLevel;
+    private const int WarehouseMaxLevel = FarmInventoryManager.MaxWarehouseLevel;
 
     // Danh sách itemId của các món ăn đã nấu, sẽ không hiển thị trong kho để tránh nhầm lẫn
     [Header("Cooked Dish Block")]
@@ -166,8 +170,21 @@ public class WarehousePopupUI : MonoBehaviour
             FarmInventoryManager.Instance.OnInventoryChanged -= RefreshUI;
     }
 
+    // B4 — họ save + phiên bản cho khoá `WAREHOUSE_LEVEL` (ghi thẳng số nguyên nên dấu
+    // phiên bản nằm ở khoá phụ `SAVE_VER_WAREHOUSE_LEVEL`).
+    //
+    // v1 = cấp 1..7, mỗi cấp 25 slot (`FarmInventoryManager.SlotsPerWarehouseLevel`).
+    // TĂNG SỐ NÀY nếu đổi `SlotsPerWarehouseLevel` hoặc `MaxWarehouseLevel`: sức chứa suy ra
+    // TỪ cấp, nên hạ MaxWarehouseLevel mà không kẹp lại là người chơi cấp 7 mất sạch slot dư
+    // và kho của họ lập tức "quá đầy" — `AddItem` từ chối mọi loại mới (F8 giờ chặn thật).
+    private const string SaveFamily  = "WAREHOUSE_LEVEL";
+    private const int    SaveVersion = 1;
+
     private void LoadWarehouseProgress()
     {
+        SaveVersionGuard.Ensure(SaveFamily, SaveVersion, null,
+                                PlayerPrefs.HasKey(WarehouseLevelPrefsKey));
+
         warehouseLevel = Mathf.Clamp(PlayerPrefs.GetInt(WarehouseLevelPrefsKey, 1), 1, WarehouseMaxLevel);
         slotCapacity = GetWarehouseCapacity(warehouseLevel);
         AvatarProfilePopupUI.SetWarehouseLevel(warehouseLevel);
@@ -177,13 +194,13 @@ public class WarehousePopupUI : MonoBehaviour
     {
         warehouseLevel = Mathf.Clamp(warehouseLevel, 1, WarehouseMaxLevel);
         PlayerPrefs.SetInt(WarehouseLevelPrefsKey, warehouseLevel);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         AvatarProfilePopupUI.SetWarehouseLevel(warehouseLevel);
     }
 
     private int GetWarehouseCapacity(int level)
     {
-        return Mathf.Clamp(level, 1, WarehouseMaxLevel) * WarehouseBaseCapacity;
+        return FarmInventoryManager.CapacityForLevel(level);
     }
 
     private int GetStoredItemKindCount()

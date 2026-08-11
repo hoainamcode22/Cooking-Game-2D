@@ -865,6 +865,43 @@ public class StallHierarchyBuilderTool : EditorWindow
     //  3 · QUẦY NGOÀI MAP
     // ─────────────────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Chép sorting layer + order từ một công trình ĐANG HIỂN THỊ ĐÚNG trong scene.
+    ///
+    /// VÌ SAO KHÔNG GÁN SỐ CỨNG: dự án đang dùng sorting layer id <c>1669604809</c> cho
+    /// 208 sprite (gồm `Market`, `CookingGate`), nhưng id đó **không có trong TagManager**.
+    /// Đây là "layer chết" đã biết của dự án. Gán id lạ bằng code thì Unity từ chối, im
+    /// lặng rơi về Default, và quầy chìm xuống dưới mọi công trình khác — lỗi rất khó đoán
+    /// vì Inspector vẫn hiện đúng tên layer.
+    ///
+    /// Chép trực tiếp từ SpriteRenderer thật thì luôn khớp, kể cả sau này ai đó dọn lại
+    /// bảng sorting layer.
+    /// </summary>
+    private static void ApDungSortingTheoCongTrinhCoSan(SpriteRenderer dich)
+    {
+        if (dich == null) return;
+
+        // Ưu tiên theo thứ tự: chợ → cổng bếp → bất kỳ công trình nào trong World/Buildings
+        string[] mau = { "Market", "CookingGate" };
+        foreach (string ten in mau)
+        {
+            GameObject g = GameObject.Find(ten);
+            SpriteRenderer nguon = g != null ? g.GetComponent<SpriteRenderer>() : null;
+            if (nguon == null) continue;
+
+            dich.sortingLayerID = nguon.sortingLayerID;
+            dich.sortingOrder   = nguon.sortingOrder;
+            return;
+        }
+
+        // Không tìm được mẫu nào → báo rõ thay vì để mặc định rồi người dùng tự đoán
+        Debug.LogWarning(
+            "[QuầyHàng] Không tìm thấy công trình mẫu ('Market' / 'CookingGate') để chép " +
+            "sorting. Quầy sẽ nằm ở layer Default order 0 và nhiều khả năng bị chìm dưới " +
+            "các công trình khác. Hãy tự chỉnh Sorting Layer + Order cho khớp một công trình " +
+            "bất kỳ trong scene.");
+    }
+
     private static void BuildWorldObject()
     {
         // Sinh sprite trước (bỏ qua file đã có). Nếu người dùng bấm thẳng nút "chỉ dựng
@@ -890,28 +927,24 @@ public class StallHierarchyBuilderTool : EditorWindow
         Undo.RegisterCreatedObjectUndo(root, "Tạo quầy hàng ngoài map");
         root.transform.position = viTriCu;
 
-        // Thân quầy — nền màu phẳng, chờ art
-        var body = new GameObject("SPR_ArtStallBody");
-        body.transform.SetParent(root.transform, false);
-        SpriteRenderer bodySr = body.AddComponent<SpriteRenderer>();
-        bodySr.sprite = StallSpriteFactory.Load("stall_panel");
+        // ── THÂN CÔNG TRÌNH: MỘT SpriteRenderer duy nhất, ngay trên gốc ──────────
+        // Cố ý KHÔNG tách thành thân + mái hiên như video: chủ dự án tự vẽ công trình
+        // theo ý mình, một ô ảnh duy nhất là dễ gắn nhất. Đây cũng đúng quy ước của
+        // dự án — `Market` và `CookingGate` đều là 1 SpriteRenderer trên gốc.
+        SpriteRenderer bodySr = root.AddComponent<SpriteRenderer>();
+        bodySr.sprite = StallSpriteFactory.Load("stall_panel");   // ảnh tạm, thay bằng art thật
         bodySr.color  = StallSpriteFactory.Hex("#553873");
-        bodySr.drawMode = SpriteDrawMode.Sliced;
-        bodySr.size     = new Vector2(3.2f, 2.0f);
-        bodySr.sortingOrder = 0;
 
-        // Mái hiên răng sò
-        var roof = new GameObject("SPR_ArtStallValance");
-        roof.transform.SetParent(root.transform, false);
-        roof.transform.localPosition = new Vector3(0f, 1.15f, 0f);
-        SpriteRenderer roofSr = roof.AddComponent<SpriteRenderer>();
-        roofSr.sprite   = StallSpriteFactory.Load("stall_valance");
-        roofSr.color    = Color.white;
-        roofSr.drawMode = SpriteDrawMode.Tiled;
-        roofSr.size     = new Vector2(3.4f, 0.55f);
-        roofSr.sortingOrder = 2;
+        // ── SORTING: sao chép từ công trình có sẵn, KHÔNG gán số cứng ────────────
+        // Dự án đang dùng sorting layer id 1669604809 — layer này KHÔNG có trong
+        // TagManager (đây là "layer chết" đã biết). Gán id đó bằng tay trong code thì
+        // Unity từ chối và im lặng rơi về Default → quầy chìm dưới mọi công trình khác.
+        // Cách chắc chắn: đọc thẳng từ một công trình đang hiển thị đúng rồi chép sang.
+        ApDungSortingTheoCongTrinhCoSan(bodySr);
 
-        // Mặt quầy: 5 chỗ bày hàng — nhìn từ ngoài là biết đang bán gì (B2)
+        // Mặt quầy: 5 chỗ bày hàng — nhìn từ ngoài là biết đang bán gì (B2).
+        // Nếu art của bạn không có chỗ bày hàng thì cứ TẮT object `Counter_Display`,
+        // hệ thống vẫn chạy bình thường, chỉ mất phần khoe hàng ngoài map.
         var display = new GameObject("Counter_Display");
         display.transform.SetParent(root.transform, false);
         display.transform.localPosition = new Vector3(0f, -0.35f, 0f);
@@ -925,7 +958,8 @@ public class StallHierarchyBuilderTool : EditorWindow
             s.transform.localScale    = new Vector3(0.5f, 0.5f, 1f);
 
             SpriteRenderer sr = s.AddComponent<SpriteRenderer>();
-            sr.sortingOrder = 3;
+            ApDungSortingTheoCongTrinhCoSan(sr);
+            sr.sortingOrder += 3;      // nổi trên thân quầy
             sr.enabled = false;
             slots.Add(sr);
         }
@@ -937,10 +971,18 @@ public class StallHierarchyBuilderTool : EditorWindow
         signSr.color  = new Color(1f, 1f, 1f, 0.20f);
         signSr.drawMode = SpriteDrawMode.Sliced;
         signSr.size     = new Vector2(2.6f, 0.5f);
-        signSr.sortingOrder = 3;
+        ApDungSortingTheoCongTrinhCoSan(signSr);
+        signSr.sortingOrder += 3;
+
+        // Tắt sẵn ngay lúc dựng: `Refresh()` chỉ chạy khi bấm Play, nên không tắt ở đây
+        // thì suốt lúc dựng scene vẫn thấy vệt biển mờ nằm chình ình giữa công trình.
+        signSr.enabled = false;
 
         StallCounterDisplay counter = display.AddComponent<StallCounterDisplay>();
         new Wiring(counter)
+            // Mặc định KHÔNG bày hàng ra ngoài map: icon vật phẩm vẽ cho ô UI 68px, đặt
+            // vào world nó phủ kín cả mái quầy. Chỉ bật khi có bộ sprite vẽ riêng.
+            .Bool("hienHangTrenQuay", false)
             .ObjList("displaySlots", slots)
             .Obj("emptySign", emptySign)
             .Apply();
@@ -1101,6 +1143,14 @@ public class StallHierarchyBuilderTool : EditorWindow
             SerializedProperty p = _so.FindProperty(propertyName);
             if (p == null) { Debug.LogError($"[QuầyHàng] {_name}: không có field '{propertyName}'."); return this; }
             p.floatValue = value;
+            return this;
+        }
+
+        public Wiring Bool(string propertyName, bool value)
+        {
+            SerializedProperty p = _so.FindProperty(propertyName);
+            if (p == null) { Debug.LogError($"[QuầyHàng] {_name}: không có field '{propertyName}'."); return this; }
+            p.boolValue = value;
             return this;
         }
 

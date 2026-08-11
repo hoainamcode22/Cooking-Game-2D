@@ -136,7 +136,7 @@ public static class ShopLockSetupTool
             "✅ Thêm Lock UI thành công!\n\n" +
             "Tiếp theo:\n" +
             "1. Kéo sprite ổ khóa vào LockIcon.sprite trong prefab (tùy chọn)\n" +
-            "2. Mở scene và chạy Tools/Farm Game/Setup Village Orders L1-L6\n" +
+            "2. Mở scene và kiểm bằng Tools/Farm Game/Demo L1-L10/Check All\n" +
             "   để set unlockLevel cho từng item",
             "OK");
     }

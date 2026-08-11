@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: ca_rot
   itemName: "C\xE0 R\u1ED1t"
   itemIcon: {fileID: -7838428690720439933, guid: c105b929d03dbb84bb30f2735dbc4369, type: 3}
-  goldPrice: 50
+  goldPrice: 45
   diamondPrice: 0
   cropCategory: 0
   cropId: carot
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 6
   seedItemId: ca_rot
   harvestItemId: carot
-  tier: 0
   unlockLevel: 3
-  growSeconds: 400
-  sellGold: 16
+  growSeconds: 120
+  sellGold: 17
   harvestAmount: 4
   plantCost: 1
-  expReward: 7
+  expReward: 12
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 0
-  canAppearInRareMarket: 0

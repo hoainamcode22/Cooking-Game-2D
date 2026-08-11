@@ -3610,31 +3610,6 @@ MonoBehaviour:
   potIngredientsContent: {fileID: 2050022313}
   potSeasoningsContent: {fileID: 10709777}
   potCardPrefab: {fileID: 717496962}
-  leftIngredientsContent: {fileID: 1472207261}
-  leftSeasoningsContent: {fileID: 1160869246049629409}
-  newPotIngredientsContent: {fileID: 2050022313}
-  newPotSeasoningsContent: {fileID: 10709777}
-  stackSlotPrefab: {fileID: 717496972}
-  cookingInventoryItems:
-  - {fileID: 11400000, guid: a964bf93501b0d949a7f37608d6b258a, type: 2}
-  - {fileID: 11400000, guid: dc65438bbef945a48bb89c15d5a16340, type: 2}
-  - {fileID: 11400000, guid: 76c8b1ad741bc974c90f68a176bbd85a, type: 2}
-  - {fileID: 11400000, guid: a3a7e99b6a8cce743976af800d936dca, type: 2}
-  - {fileID: 11400000, guid: 4f6c32691655376419c1a1b238bf9584, type: 2}
-  - {fileID: 11400000, guid: b7d215e65c92f384489ef6784f3a1d90, type: 2}
-  - {fileID: 11400000, guid: f51d75728c96b7249bbb1722f54d0608, type: 2}
-  - {fileID: 11400000, guid: 62bbddf0a59500642a4ce5212105b803, type: 2}
-  - {fileID: 11400000, guid: 8edbede7d5c664d4d889bfa962e84eec, type: 2}
-  - {fileID: 11400000, guid: dd6c9824a380b3e429337e1595fd161a, type: 2}
-  - {fileID: 11400000, guid: ed40e225646c1c649b2480fd8c78df8b, type: 2}
-  - {fileID: 11400000, guid: 70f710751e57eaa4c8a1d7934d8664b6, type: 2}
-  - {fileID: 11400000, guid: 384d72d664b3c8e448cc88a0e8dc7315, type: 2}
-  - {fileID: 11400000, guid: 4299e6bfa747fe84fac50c1093e6e18d, type: 2}
-  - {fileID: 11400000, guid: eee5da3c19809294d8cb8383324cd0e6, type: 2}
-  - {fileID: 11400000, guid: ca146d3e05f2b481ca370d8e6a2f1053, type: 2}
-  - {fileID: 11400000, guid: b4190c7f2e3d51a6d902c8e5f7b34021, type: 2}
-  - {fileID: 11400000, guid: 08b0bccec3c391f43b772952025b872c, type: 2}
-  - {fileID: 11400000, guid: b7c16bacea6b86042a74929c1f0c0b2d, type: 2}
 --- !u!114 &453846585
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3670,6 +3645,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4299e6bfa747fe84fac50c1093e6e18d, type: 2}
   - {fileID: 11400000, guid: b7c16bacea6b86042a74929c1f0c0b2d, type: 2}
   - {fileID: 11400000, guid: ca146d3e05f2b481ca370d8e6a2f1053, type: 2}
+  - {fileID: 11400000, guid: b5519c93970e53d478b4657f15532d65, type: 2}
 --- !u!114 &453846586
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5573,7 +5549,7 @@ PrefabInstance:
       addedObject: {fileID: 717496962}
     - targetCorrespondingSourceObject: {fileID: 2158307079235096892, guid: 55bd37a79e4f32344b796901b9bda061, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 717496972}
+      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 55bd37a79e4f32344b796901b9bda061, type: 3}
 --- !u!224 &717496952 stripped
 RectTransform:
@@ -5634,20 +5610,6 @@ MonoBehaviour:
   topIconImage: {fileID: 0}
   mainIconImage: {fileID: 717496957}
   statusIcon: {fileID: 0}
---- !u!114 &717496972
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 717496960}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a0fbee36ea790d48b6c727e1a4135a5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CookingStackSlotUI
-  icon: {fileID: 717496958}
-  txtAmount: {fileID: 0}
 --- !u!1 &722862787
 GameObject:
   m_ObjectHideFlags: 0
@@ -8481,46 +8443,6 @@ PrefabInstance:
       propertyPath: target
       value: 
       objectReference: {fileID: 1837414398}
-    - target: {fileID: 6671455306677498483, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
-      propertyPath: potCardPrefab
-      value: 
-      objectReference: {fileID: 717496962}
-    - target: {fileID: 6671455306677498483, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
-      propertyPath: stackSlotPrefab
-      value: 
-      objectReference: {fileID: 717496972}
-    - target: {fileID: 6671455306677498483, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
-      propertyPath: seasoningsCountText
-      value: 
-      objectReference: {fileID: 303161271}
-    - target: {fileID: 6671455306677498483, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
-      propertyPath: ingredientsCountText
-      value: 
-      objectReference: {fileID: 1073910701}
-    - target: {fileID: 6671455306677498483, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
-      propertyPath: potSeasoningsContent
-      value: 
-      objectReference: {fileID: 10709777}
-    - target: {fileID: 6671455306677498483, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
-      propertyPath: leftSeasoningsContent
-      value: 
-      objectReference: {fileID: 1756671189}
-    - target: {fileID: 6671455306677498483, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
-      propertyPath: potIngredientsContent
-      value: 
-      objectReference: {fileID: 2050022313}
-    - target: {fileID: 6671455306677498483, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
-      propertyPath: leftIngredientsContent
-      value: 
-      objectReference: {fileID: 207288231}
-    - target: {fileID: 6671455306677498483, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
-      propertyPath: newPotSeasoningsContent
-      value: 
-      objectReference: {fileID: 10709777}
-    - target: {fileID: 6671455306677498483, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
-      propertyPath: newPotIngredientsContent
-      value: 
-      objectReference: {fileID: 2050022313}
     - target: {fileID: 7003358576969426635, guid: 85b7e25a25b4ab649b0c841e30484093, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -8776,103 +8698,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LeftPanelSpawner
   leftPanel: {fileID: 1069223694}
-  ingredients:
-  - ingredientData: {fileID: 11400000, guid: bca8dffa2ead0a1458794f98ac2594ce, type: 2}
-    itemName: Beef
-    mainIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: cbb295e0601ca0344a1b190e4f5a6809, type: 2}
-    itemName: Chicken
-    mainIcon: {fileID: -2283333445584976228, guid: 888289491956e5347952a87ca3ec06d1, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 4b02e8b930db6fd4a9280395c54fdbcc, type: 2}
-    itemName: Rice
-    mainIcon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 5500cad7c9fdcaa41b6519d5c2cd327f, type: 2}
-    itemName: Mushroom
-    mainIcon: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 296a7d8e2a390504fbed40bbdc1bf3ef, type: 2}
-    itemName: Egg
-    mainIcon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 8a720d393dd91984992382961a91e964, type: 2}
-    itemName: Herbs
-    mainIcon: {fileID: -6473379884045465844, guid: ae1ebfb2e0c364648a535b22df192d73, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: d497d41e2fee904489fe75f7a8f6d927, type: 2}
-    itemName: "C\xE0 chua"
-    mainIcon: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 65f23ad20a871e24fa3c77769c5cbe4c, type: 2}
-    itemName: "Khoai T\xE2y"
-    mainIcon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: e3b733d266196064bbe31fc48e40f7e1, type: 2}
-    itemName: "C\xE0 R\u1ED1t"
-    mainIcon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: e8ff296568c88e84c8ee3c7a64b0615a, type: 2}
-    itemName: "B\u1EAFp C\u1EA3i"
-    mainIcon: {fileID: -842988855527424611, guid: b0b144ddc7537a348b0c7d8ec7c4b7e4, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: ec1bd42123fd58842880a4a88b780874, type: 2}
-    itemName: "Ng\xF4"
-    mainIcon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 70c1c435689c8c44084a9fdfb4ce269d, type: 2}
-    itemName: "C\xE1"
-    mainIcon: {fileID: 0}
-    topIcon: {fileID: 0}
-    starCount: 3
-  seasonings:
-  - ingredientData: {fileID: 11400000, guid: e22543d600772274aa4bb6f9ee07c8c7, type: 2}
-    itemName: Salt
-    mainIcon: {fileID: -2266700597664887886, guid: a96784f63e2f3a94bb37caf0c56ea650, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 75006c3941d066f42be1cfa651b2ac0c, type: 2}
-    itemName: Fish Sauce
-    mainIcon: {fileID: -5582771631697853027, guid: 34b84bd10902cd3428f634528d40cdfb, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 1e3b5bd11d139be49b01ba6c55bddbdd, type: 2}
-    itemName: Soy Sauce
-    mainIcon: {fileID: 21300000, guid: 6e524dca915a58b408f62e67123ce912, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 61131780ff1d41b4fa8b9e475f382092, type: 2}
-    itemName: Chili
-    mainIcon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 51bfb86437e40914186db4a51248739a, type: 2}
-    itemName: Lemon
-    mainIcon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: 812e438ca44504242b9b03de1e932300, type: 2}
-    itemName: Sugar
-    mainIcon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
-  - ingredientData: {fileID: 11400000, guid: d2bb12c975f3924438dfbb05808e7a17, type: 2}
-    itemName: Pepper
-    mainIcon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
-    topIcon: {fileID: 0}
-    starCount: 3
+  ingredients: []
+  seasonings: []
 --- !u!1 &1069780255
 GameObject:
   m_ObjectHideFlags: 0
@@ -18420,54 +18247,6 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: maxSeasonings
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: potCardPrefab
-      value: 
-      objectReference: {fileID: 717496962}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: maxIngredients
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: stackSlotPrefab
-      value: 
-      objectReference: {fileID: 717496972}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: seasoningsCountText
-      value: 
-      objectReference: {fileID: 303161271}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: ingredientsCountText
-      value: 
-      objectReference: {fileID: 1073910701}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: potSeasoningsContent
-      value: 
-      objectReference: {fileID: 10709777}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: leftSeasoningsContent
-      value: 
-      objectReference: {fileID: 1756671189}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: potIngredientsContent
-      value: 
-      objectReference: {fileID: 2050022313}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: leftIngredientsContent
-      value: 
-      objectReference: {fileID: 207288231}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: newPotSeasoningsContent
-      value: 
-      objectReference: {fileID: 10709777}
-    - target: {fileID: 8244659969383978972, guid: 4545e58d27b82394ebb0c8dc4f7b9ef1, type: 3}
-      propertyPath: newPotIngredientsContent
-      value: 
-      objectReference: {fileID: 2050022313}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

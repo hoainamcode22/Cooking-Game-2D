@@ -13,16 +13,17 @@ MonoBehaviour:
   m_Name: Config_Pen04_BoSua
   m_EditorClassIdentifier: Assembly-CSharp::PenMiniPanelConfig
   penId: pen_04
-  food1ItemId: rice
-  food2ItemId: ngo
-  food1Icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
-  food2Icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
+  food1ItemId: carot
+  food2ItemId: khoaitay
+  food1Icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
+  food2Icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
   productItemId: milk
   secondProductItemId: 
   productIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-  productAmount: 4
-  secondProductAmount: 4
+  productAmount: 2
+  secondProductAmount: 1
   secondProductIcon: {fileID: 0}
   basketIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-  feedDurationSeconds: 30
-  expReward: 25
+  foodAmountPerFeed: 3
+  feedDurationSeconds: 300
+  expReward: 38

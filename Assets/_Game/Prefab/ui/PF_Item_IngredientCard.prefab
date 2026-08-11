@@ -681,7 +681,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e674d9a1ddc89d449966d1af130900f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DraggableItem
-  ingredientData: {fileID: 11400000, guid: b261843af6db97f4892f54a9d4c386b3, type: 2}
+  ingredientData: {fileID: 11400000, guid: bca8dffa2ead0a1458794f98ac2594ce, type: 2}
   parentAfterDrag: {fileID: 0}
 --- !u!114 &4722592750012997187
 MonoBehaviour:

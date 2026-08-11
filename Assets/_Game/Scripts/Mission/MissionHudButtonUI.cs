@@ -10,6 +10,17 @@ public class MissionHudButtonUI : MonoBehaviour
     [SerializeField] private PopupEwarManager popupEwarManager;
     [SerializeField] private bool bubbleInitiallyVisible = true;
 
+    [Header("Điều kiện hiện HUD nhiệm vụ")]
+    // Người chơi mới vào game đang phải xử lý hai luồng chỉ dẫn cùng lúc: bàn tay
+    // tutorial dạy kéo hạt, VÀ bong bóng "Giao 2 đơn hàng" chắn ngay giữa ruộng. Nhiệm
+    // vụ đó còn chưa làm được (chưa mở bảng đơn, chưa có hàng), nên nó chỉ tổ gây rối.
+    // Giấu tới khi tutorial xong VÀ đủ cấp thì lúc hiện ra người chơi mới làm được ngay.
+    [Tooltip("Cấp tối thiểu để hiện nút + bong bóng nhiệm vụ. 0 = bỏ qua điều kiện cấp.")]
+    [SerializeField] private int capToiThieuHien = 3;
+
+    [Tooltip("Bắt buộc xong tutorial mới hiện. Bỏ tick thì chỉ xét theo cấp.")]
+    [SerializeField] private bool phaiXongTutorial = true;
+
     [Header("Circle Button")]
     [SerializeField] private Button missionButton;
     [SerializeField] private Image buttonIcon;
@@ -52,7 +63,11 @@ public class MissionHudButtonUI : MonoBehaviour
         if (goButtonText != null)
             goButtonText.text = DefaultAction;
 
-        SetBubbleVisible(bubbleInitiallyVisible, true);
+        // Chưa đủ điều kiện thì ẩn NGAY trong Awake. Chờ RefreshNow ở OnEnable là muộn
+        // một khung hình — đủ để bong bóng loé lên rồi tắt, nhìn như lỗi hiển thị.
+        bool hien = DuocPhepHien();
+        ApDungHienThi(hien);
+        SetBubbleVisible(hien && bubbleInitiallyVisible, true);
     }
 
     private void OnEnable()
@@ -108,8 +123,45 @@ public class MissionHudButtonUI : MonoBehaviour
         UnifiedTaskPopupUI.OpenMission();
     }
 
+    /// <summary>
+    /// Đủ điều kiện cho người chơi thấy HUD nhiệm vụ chưa.
+    /// </summary>
+    private bool DuocPhepHien()
+    {
+        if (phaiXongTutorial && !TutorialManager.IsTutorialDone)
+            return false;
+
+        return capToiThieuHien <= 0 || GetPlayerLevel() >= capToiThieuHien;
+    }
+
+    /// <summary>
+    /// Bật/tắt phần NHÌN THẤY ĐƯỢC, KHÔNG tắt chính GameObject mang script này —
+    /// tắt nó thì Update ngừng chạy và HUD sẽ không bao giờ tự hiện lại khi lên cấp.
+    /// </summary>
+    private void ApDungHienThi(bool hien)
+    {
+        if (missionButton != null && missionButton.gameObject.activeSelf != hien)
+            missionButton.gameObject.SetActive(hien);
+
+        if (!hien)
+        {
+            // Ẩn luôn bong bóng, kể cả khi nó đang mở dở.
+            if (bubbleRoot != null && bubbleRoot.gameObject.activeSelf)
+                bubbleRoot.gameObject.SetActive(false);
+            _bubbleVisible = false;
+        }
+    }
+
     private void RefreshNow()
     {
+        if (!DuocPhepHien())
+        {
+            ApDungHienThi(false);
+            return;
+        }
+
+        ApDungHienThi(true);
+
         if (missionDatabase == null)
             return;
 

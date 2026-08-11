@@ -161,9 +161,16 @@ public class SickleController : MonoBehaviour
         {
             harvestedThisDrag.Add(plot);
             FarmManager.Instance?.OnPlotHarvested(plot, cropName);
-            
-            string harvestId = plot.CurrentCrop != null ? plot.CurrentCrop.name : "unknown";
-            if (QuestManager.Instance != null) QuestManager.Instance.OnItemHarvested(harvestId, 1);
+
+            // C8 — chỗ này trước đây gọi `QuestManager.Instance.OnItemHarvested(...)`.
+            // `QuestManager` đã xoá sạch (hệ nhiệm vụ thứ hai, 0 instance trong mọi scene,
+            // `CheckQuestCompletion` còn ghi `// TODO: Give rewards` ⇒ thưởng rơi vào hư không).
+            //
+            // KHÔNG cần thay bằng `MissionProgressTracker.ReportEvent(HarvestItem, ...)` ở
+            // đây: `PlotController.Harvest()` đã tự báo rồi. Thêm lời gọi thứ hai là mỗi lần
+            // quét liềm cộng tiến độ HAI lần, nhiệm vụ "thu hoạch 20 lúa" xong khi mới 10.
+            // Ngoài ra id cũ dùng `CurrentCrop.name` (TÊN ASSET, ví dụ "Crop_Rice") chứ không
+            // phải `harvestItemId` ("rice") — có gọi cũng không khớp khoá nhiệm vụ nào.
         }
         else
         {

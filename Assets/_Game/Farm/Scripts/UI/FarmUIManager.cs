@@ -74,6 +74,48 @@ public class FarmUIManager : MonoBehaviour
             FarmEconomyManager.Instance.OnCurrencyChanged -= HandleCurrencyChanged;
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    //  KHO ĐẦY → BÁO CHO NGƯỜI CHƠI  (CS-6 · hoàn tất yêu cầu F8)
+    // ═════════════════════════════════════════════════════════════════════════
+    //
+    // `FarmInventoryManager.OnAddRejectedByCapacity` bắn mỗi lần kho phải TỪ CHỐI một
+    // loại vật phẩm MỚI vì hết slot. Chú thích nơi khai báo sự kiện ghi "UI nào muốn hiện
+    // popup 'kho đầy' thì nghe ở đây" — nhưng grep toàn dự án ra ĐÚNG 0 chỗ `+=`.
+    // Sự kiện chết ngay khi vừa sinh ra, nên F8 mới chỉ làm được một nửa: CHẶN đúng
+    // nhưng KHÔNG BÁO. Người chơi bấm cây chín mà không thu được thì chỉ thấy game hỏng.
+    //
+    // VÌ SAO nghe ở FarmUIManager chứ không ở kho: kho là `DontDestroyOnLoad`, sống qua
+    // cả scene bếp nơi không có UI nông trại — nó không được phép biết gì về UI. Ngược
+    // lại FarmUIManager là thứ đã nắm đường thông báo duy nhất (`ShowHint`).
+    //
+    // VÌ SAO OnEnable/OnDisable chứ không Awake/OnDestroy: sự kiện là STATIC. Đăng ký ở
+    // Awake mà quên gỡ là kho giữ tham chiếu tới một FarmUIManager đã chết qua mỗi lần
+    // đổi scene — rò rỉ dần và bắn vào object hỏng. Cặp OnEnable/OnDisable luôn cân nhau.
+
+    private void OnEnable()
+    {
+        FarmInventoryManager.OnAddRejectedByCapacity += HandleKhoTuChoiViDay;
+    }
+
+    private void OnDisable()
+    {
+        FarmInventoryManager.OnAddRejectedByCapacity -= HandleKhoTuChoiViDay;
+    }
+
+    private void HandleKhoTuChoiViDay(string itemId)
+    {
+        // Tên hiển thị tiếng Việt; `GetDisplayName` tự trả lại chính itemId nếu bảng giá
+        // chưa có dòng đó, nên không bao giờ ra chuỗi rỗng.
+        string ten = MarketPriceTable.GetDisplayName(itemId);
+
+        // Kèm số ô đang dùng — người chơi cần biết "đầy" là đầy bao nhiêu thì mới biết
+        // nên bán bớt hay nâng cấp kho.
+        FarmInventoryManager kho = FarmInventoryManager.Instance;
+        string sucChua = kho != null ? $" ({kho.UsedSlots}/{kho.SlotCapacity} ô)" : string.Empty;
+
+        ShowHint($"Kho đầy{sucChua} — chưa nhận được \"{ten}\". Bán bớt hoặc nâng cấp kho.");
+    }
+
     private void HandleCurrencyChanged(int gold, int gems)
     {
         RefreshTopBar();
@@ -111,10 +153,90 @@ public class FarmUIManager : MonoBehaviour
         }
     }
 
+    // ═════════════════════════════════════════════════════════════════════════
+    //  THÔNG BÁO NGẮN CHO NGƯỜI CHƠI
+    // ═════════════════════════════════════════════════════════════════════════
+    //
+    // 🔴 VÌ SAO PHẢI CÓ ĐƯỜNG DỰ PHÒNG: `txtHint` trong `SCN_Farm` đang là `{fileID: 0}`
+    // (chưa gán). Bản cũ chỉ có đúng `if (txtHint != null)` nên **36 lời gọi ShowHint
+    // trong toàn dự án đều CÂM** — người chơi bấm cây chín mà không thu được, kho đầy mà
+    // không mua được, vào bếp khi chưa đủ cấp… đều không có một chữ giải thích nào.
+    //
+    // Hai thứ dựa vào đường này để hoạt động đúng:
+    //   • A6 — cổng bếp khoá tới cấp 5, "kèm thông báo Cần cấp 5"
+    //   • F8 — kho đầy thì chặn "VÀ BÁO RÕ"
+    //
+    // Nên ở đây: tìm lại ô chữ lúc chạy, không thấy thì tự dựng một dòng chữ tối giản.
+    // Dựng UI lúc chạy vốn là thứ dự án này cấm, nhưng đây là LƯỚI AN TOÀN cho thông báo
+    // lỗi — thà xấu còn hơn người chơi không hiểu vì sao thao tác của mình không ăn.
+
+    private TMP_Text _hintFallback;
+    private float    _hintClearAt;
+
     public void ShowHint(string message)
     {
-        if (txtHint != null)
-            txtHint.text = message;
+        if (string.IsNullOrEmpty(message)) return;
+
+        TMP_Text dich = txtHint != null ? txtHint : LayHoacDungOChuDuPhong();
+        if (dich == null)
+        {
+            // Cùng đường cũng không dựng nổi (không có Canvas) — ít nhất đừng im lặng.
+            Debug.LogWarning($"[FarmUI] Không hiển thị được thông báo: {message}");
+            return;
+        }
+
+        dich.text = message;
+        dich.gameObject.SetActive(true);
+        _hintClearAt = Time.unscaledTime + 2.5f;
+    }
+
+    private TMP_Text LayHoacDungOChuDuPhong()
+    {
+        if (_hintFallback != null) return _hintFallback;
+
+        // Ưu tiên ô chữ có sẵn trong scene, kể cả đang tắt — có thể chỉ là quên kéo vào
+        // Inspector chứ object vẫn còn đó.
+        foreach (var t in FindObjectsByType<TMP_Text>(FindObjectsInactive.Include,
+                                                      FindObjectsSortMode.None))
+        {
+            if (t != null && t.name == "Txt_Hint") { _hintFallback = t; return _hintFallback; }
+        }
+
+        Canvas hud = null;
+        foreach (var c in FindObjectsByType<Canvas>(FindObjectsInactive.Include,
+                                                    FindObjectsSortMode.None))
+        {
+            if (c == null || !c.isRootCanvas) continue;
+            if (hud == null || c.sortingOrder > hud.sortingOrder) hud = c;
+        }
+        if (hud == null) return null;
+
+        var go = new GameObject("Txt_Hint_DuPhong", typeof(RectTransform));
+        go.transform.SetParent(hud.transform, false);
+
+        var rt = (RectTransform)go.transform;
+        rt.anchorMin        = new Vector2(0.5f, 0f);
+        rt.anchorMax        = new Vector2(0.5f, 0f);
+        rt.pivot            = new Vector2(0.5f, 0f);
+        rt.anchoredPosition = new Vector2(0f, 170f);
+        rt.sizeDelta        = new Vector2(900f, 70f);
+
+        _hintFallback                = go.AddComponent<TextMeshProUGUI>();
+        _hintFallback.fontSize       = 34f;
+        _hintFallback.alignment      = TextAlignmentOptions.Center;
+        _hintFallback.color          = Color.white;
+        _hintFallback.raycastTarget  = false;   // không được nuốt click của người chơi
+        return _hintFallback;
+    }
+
+    private void LateUpdate()
+    {
+        // Tự tắt sau vài giây, nếu không dòng chữ nằm lì trên màn hình mãi mãi.
+        if (_hintClearAt <= 0f || Time.unscaledTime < _hintClearAt) return;
+
+        _hintClearAt = 0f;
+        if (_hintFallback != null) _hintFallback.gameObject.SetActive(false);
+        else if (txtHint  != null) txtHint.text = string.Empty;
     }
 
     public void HideAllPopups()
@@ -291,6 +413,13 @@ public class FarmUIManager : MonoBehaviour
 
     public void OnClick_GoCooking()
     {
+        // A6 — chốt cuối cùng của cổng bếp. `BuildingInteractable` đã kiểm một lần cho
+        // đường click cổng ngoài world, nhưng hàm này còn được các nút HUD wire trực tiếp
+        // vào (`AnimalGuideController` dò đúng listener "OnClick_GoCooking"). Chặn ở đây
+        // thì KHÔNG đường nào lọt, kể cả nút mới thêm sau này.
+        if (!CookingGateAccess.CanEnterOrWarn())
+            return;
+
         if (SceneManager.GetSceneByName(cookingSceneName).isLoaded)
             return;
 

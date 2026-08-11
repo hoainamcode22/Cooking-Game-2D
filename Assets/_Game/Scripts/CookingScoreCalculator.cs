@@ -55,9 +55,6 @@ public static class CookingScoreCalculator
 
         result.baseScore = result.ingredientScore + result.seasoningScore;
 
-        result.rareBonus = 0;
-        result.techniqueBonus = 0;
-
         result.finalScore = Mathf.Clamp(result.baseScore, 0, 100);
 
         Debug.Log(
@@ -156,19 +153,10 @@ public static int ScoreRequiredIngredients(
 
     return maxScore;
 }
-    private static bool IsSameIngredient(IngredientData selected, IngredientData required)
-    {
-        if (selected == null || required == null)
-            return false;
-
-        // Trường hợp cùng một asset IngredientData
-        if (selected == required)
-            return true;
-
-        // Trường hợp khác reference nhưng cùng tên asset
-        if (selected.name == required.name)
-            return true;
-
-        return false;
-    }
+    // C9 — đã xoá `IsSameIngredient(selected, required)`: không nơi nào gọi.
+    // Và ĐỪNG dựng lại nó: nó so bằng `selected.name == required.name` (TÊN ASSET).
+    // Cách so đó chính là thứ đã che lỗi trùng asset ở A7 — hai file `SEA_Pepper.asset`
+    // cùng tên nhưng một bản `kind: 0`, một bản `kind: 1`, mà `IsSameIngredient` vẫn coi
+    // là một. Hàm `ScoreRequiredIngredients` bên trên so bằng `IngredientData.id` — đúng,
+    // vì `id` là khoá dữ liệu, còn tên asset chỉ là tên file, ai đổi cũng được.
 }

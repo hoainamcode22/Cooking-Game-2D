@@ -28,6 +28,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
   - {fileID: 11400000, guid: bca8dffa2ead0a1458794f98ac2594ce, type: 2}
   - {fileID: 11400000, guid: 7f96869f08d4e0a4687f826acd150dfc, type: 2}
+  rewardExp: 36
+  rewardGold: 66
+  sellPrice: 265
   required1:
     displayName: Mushroom
     icon: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}

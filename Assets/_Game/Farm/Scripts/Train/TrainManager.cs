@@ -80,10 +80,18 @@ public class TrainManager : MonoBehaviour
     [Header("Config")]
     [Tooltip("EXP thÆ°á»Ÿng má»—i láº§n thu 1 slot reward")]
     [SerializeField] private int   expPerReward        = 10;
-    [Tooltip("Thá»i gian xá»­ lÃ½ trong háº§m (giÃ¢y). KHÃ”NG tÃ­nh thá»i gian tÃ u di chuyá»ƒn.")]
-#pragma warning disable 0414
-    [SerializeField] private float tripDurationSeconds = 4f;
-#pragma warning restore 0414
+    // ── TIMER Ở HẦM: ĐÃ GỠ HẲN (CS-2) ────────────────────────────────────
+    // Trước đây chỗ này có `[SerializeField] float tripDurationSeconds = 4f` bọc trong
+    // `#pragma warning disable 0414`. Cái pragma chính là lời thú nhận: KHÔNG AI ĐỌC
+    // biến đó. Luồng tàu chạy liền một mạch — `OnShippingReachedTunnel()` áp thưởng rồi
+    // cho tàu cũ ra khỏi hầm NGAY, không chờ giây nào.
+    //
+    // VÌ SAO XOÁ chứ không bật lại timer: luồng "chạy liền" là quyết định thiết kế cố ý
+    // và đang chạy ĐÚNG. Nhưng để lại một trường Inspector chết thì ai mở TrainManager
+    // cũng tưởng chỉnh số đó là đổi được thời gian tàu — trường Inspector NÓI DỐI người
+    // chỉnh số còn tệ hơn là không có trường nào. Muốn có timer thật thì thêm lại cả
+    // cụm (field + `_tripEndTime` + `Update()` + state Processing) một lượt, đừng để
+    // nửa nọ nửa kia.
 
     // â”€â”€â”€ Runtime â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -92,13 +100,17 @@ public class TrainManager : MonoBehaviour
 
     private int               _tripIndex      = 0;
     private TrainRewardItem[] _pendingRewards;
-    private float             _tripEndTime;
-#pragma warning disable 0414
-    private bool              _timerActive    = false;
-#pragma warning restore 0414
 
-    /// Thá»i gian cÃ²n láº¡i cá»§a Processing timer (giÃ¢y).
-    public float TripRemainingTime => Mathf.Max(0f, _tripEndTime - Time.time);
+    /// <summary>
+    /// Thời gian còn lại của chuyến tàu, tính bằng giây — LUÔN BẰNG 0.
+    ///
+    /// GIỮ LẠI property này vì `TrainStationBuilding.HandleClick()` đang gọi (xoá là vỡ
+    /// biên dịch), nhưng nó không còn biến nào để đọc: hệ timer đã bị gỡ (xem khối
+    /// "TIMER Ở HẦM" ở trên). Trả thẳng 0 chứ không đọc `_tripEndTime` chết — hành vi y
+    /// hệt bản cũ (`_tripEndTime` chưa từng được gán nên hiệu luôn âm và bị kẹp về 0),
+    /// chỉ khác là giờ đọc code là hiểu ngay, không phải dò xem ai gán biến đó.
+    /// </summary>
+    public float TripRemainingTime => 0f;
 
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -176,18 +188,6 @@ public class TrainManager : MonoBehaviour
         });
     }
 
-    void Update()
-    {
-        // Timer táº¡m táº¯t â€” flow cháº¡y liá»n khÃ´ng Ä‘á»£i
-        // if (!_timerActive) return;
-        // processPopup?.UpdateTimer(TripRemainingTime);
-        // if (TripRemainingTime <= 0f)
-        // {
-        //     _timerActive = false;
-        //     OnProcessingTimerExpired();
-        // }
-    }
-
     // â”€â”€â”€ Public API (gá»i tá»« TrainWagonSlot & TrainLoadPopupUI) â”€â”€â”€
 
     /// Äiá»ƒm vÃ o duy nháº¥t tá»« TrainWagonSlot.OnMouseDown().
@@ -256,6 +256,10 @@ public class TrainManager : MonoBehaviour
 
         slot.currentAmount++;
 
+        // F5 — báo nhiệm vụ. Trước đây nạp cả 4 toa tàu mà không nhiệm vụ nào nhích:
+        // tàu là một trong bốn nguồn thu chính nhưng lại đứng ngoài hệ tiến độ.
+        MissionProgressTracker.ReportEvent(MissionEventType.LoadTrainCargo, slot.itemId, 1);
+
         loadPopup?.RefreshPopup();
         RefreshShippingSlotUI(slotIndex);
 
@@ -277,6 +281,14 @@ public class TrainManager : MonoBehaviour
         if (slot.isCollected)                       return;
 
         // ÄÃ¡nh dáº¥u trÆ°á»›c â€” ngÄƒn double-click trong lÃºc FX Ä‘ang cháº¡y
+        // F8 — kho có sức chứa THẬT. Kiểm TRƯỚC khi đánh dấu đã thu: nếu kho từ chối thì
+        // thưởng bốc hơi mà toa đã mang dấu "đã thu" vĩnh viễn — mất cả chuyến tàu.
+        if (!TrainInventoryAdapter.CanAddItem(slot.itemId))
+        {
+            FarmUIManager.Instance?.ShowHint("Kho đầy — bán bớt hoặc nâng cấp kho rồi thu thưởng tàu.");
+            return;
+        }
+
         slot.isCollected = true;
 
         TrainInventoryAdapter.AddItem(slot.itemId, slot.displayName, slot.icon, slot.rewardAmount);
@@ -332,34 +344,10 @@ public class TrainManager : MonoBehaviour
         DisableAllRewardSlotInteractions();
         ShowRewardAtTunnelThenMoveToStation(OnRewardArrivedAtStation);
     }
+    // OnProcessingTimerExpired() ĐÃ XOÁ (CS-2): chỉ có khối comment trong Update()
+    // gọi nó — 0 lời gọi thật. Phần việc của nó (áp thưởng → cho tàu cũ ra khỏi hầm)
+    // đã nằm nguyên trong OnShippingReachedTunnel() ở trên, không mất bước nào.
 
-    // StartProcessingTimer() â€” táº¡m giá»¯ Ä‘á»ƒ báº­t láº¡i náº¿u cáº§n timer sau nÃ y
-    // private void StartProcessingTimer()
-    // {
-    //     _tripEndTime = Time.time + tripDurationSeconds;
-    //     _timerActive = true;
-    //     processPopup?.Show(tripDurationSeconds);
-    // }
-
-    // â”€â”€â”€ Flow: Processing â†’ RewardArriving â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-    private void OnProcessingTimerExpired()
-    {
-
-        processPopup?.Hide();
-
-        // Ãp reward vÃ o SlotData trÆ°á»›c khi tÃ u hiá»‡n
-        ApplyRewardsToSlots();
-
-        ChangeState(TrainState.RewardArriving);
-
-        // Refresh reward slots nhÆ°ng táº¯t collider (tÃ u Ä‘ang di chuyá»ƒn)
-        RefreshAllRewardSlots();
-        DisableAllRewardSlotInteractions();
-
-        // Cháº·ng 3: TunnelReward â†’ StationReward
-        ShowRewardAtTunnelThenMoveToStation(OnRewardArrivedAtStation);
-    }
 
     // â”€â”€â”€ Flow: RewardArriving â†’ RewardReadyToCollect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -606,22 +594,40 @@ public class TrainManager : MonoBehaviour
 
     private void SpawnItemFlyFX(int slotIndex, TrainWagonSlotData slot)
     {
-        if (itemFlyFXPrefab == null || warehouseTargetTransform == null) return;
-
         Vector3 pos = GetRewardSlotWorldPos(slotIndex);
-        var fx = Instantiate(itemFlyFXPrefab, pos, Quaternion.identity);
-        fx.GetComponent<HarvestFlyItemFX>()
-          ?.Play(slot.icon, pos, warehouseTargetTransform.position);
+
+        // F5 — 4 ref FX trong Inspector đang RỖNG (itemFlyFXPrefab, expFlyFXPrefab,
+        // warehouseTargetTransform, expTargetTransform) nên thu thưởng tàu không có một
+        // hiệu ứng nào: người chơi bấm mà không thấy gì, tưởng nút chết.
+        //
+        // Thay vì bắt ai đó nhớ kéo 4 ref vào scene, dùng lại HarvestFeedbackSpawner —
+        // chính hệ FX mà ruộng và chuồng đã dùng, đã có sẵn đích kho/avatar. Ref trong
+        // Inspector vẫn được ƯU TIÊN nếu có ai gán, nên không mất đường tuỳ biến.
+        if (itemFlyFXPrefab != null && warehouseTargetTransform != null)
+        {
+            var fx = Instantiate(itemFlyFXPrefab, pos, Quaternion.identity);
+            fx.GetComponent<HarvestFlyItemFX>()
+              ?.Play(slot.icon, pos, warehouseTargetTransform.position);
+            return;
+        }
+
+        HarvestFeedbackSpawner.Instance?.SpawnHarvestFly(slot.icon, pos, Mathf.Max(1, slot.rewardAmount));
     }
 
     private void SpawnExpFlyFX(int slotIndex)
     {
-        if (expFlyFXPrefab == null || expTargetTransform == null) return;
-
         Vector3 pos = GetRewardSlotWorldPos(slotIndex);
-        var fx = Instantiate(expFlyFXPrefab, pos, Quaternion.identity);
-        fx.GetComponent<ExpFlyToAvatarFX>()
-          ?.Play(pos, expTargetTransform.position);
+
+        if (expFlyFXPrefab != null && expTargetTransform != null)
+        {
+            var fx = Instantiate(expFlyFXPrefab, pos, Quaternion.identity);
+            fx.GetComponent<ExpFlyToAvatarFX>()
+              ?.Play(pos, expTargetTransform.position);
+            return;
+        }
+
+        // Dự phòng: cùng hệ FX với ruộng/chuồng (xem giải thích ở SpawnItemFlyFX).
+        HarvestFeedbackSpawner.Instance?.SpawnExpFly(pos, expPerReward);
     }
 
     private Vector3 GetRewardSlotWorldPos(int i)

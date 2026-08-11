@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_lemon
   itemName: Chanh
   itemIcon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
-  goldPrice: 130
+  goldPrice: 105
   diamondPrice: 0
   cropCategory: 0
   cropId: lemon
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 12
   seedItemId: seed_lemon
   harvestItemId: lemon
-  tier: 1
   unlockLevel: 8
-  growSeconds: 780
-  sellGold: 38
+  growSeconds: 380
+  sellGold: 52
   harvestAmount: 4
   plantCost: 1
-  expReward: 12
+  expReward: 38
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

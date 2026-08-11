@@ -9,7 +9,12 @@ public enum MarketBuyResult
     ListingNotActive   = 2,
     NotEnoughGold      = 3,
     InventoryMissing   = 4,
-    OwnListing         = 5   // hàng của chính mình — mua lại chỉ tốn phí, chặn luôn
+    OwnListing         = 5,  // hàng của chính mình — mua lại chỉ tốn phí, chặn luôn
+
+    // TESTER-F8 — kho hết SLOT (số LOẠI vật phẩm) và món này là loại MỚI.
+    // Phải là mã riêng, không gộp vào InventoryMissing: "kho chưa sẵn sàng" và "kho đầy"
+    // đòi hai hành động khác nhau của người chơi (chờ vs bán bớt/nâng cấp kho).
+    InventoryFull      = 6
 }
 
 /// <summary>

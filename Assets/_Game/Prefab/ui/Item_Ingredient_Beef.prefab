@@ -367,7 +367,6 @@ GameObject:
   - component: {fileID: 5043103043106225204}
   - component: {fileID: 3785944731346453572}
   - component: {fileID: 1180385684716608898}
-  - component: {fileID: 6671455306677498483}
   - component: {fileID: 3855468834790160901}
   m_Layer: 5
   m_Name: Item_Ingredient_Beef
@@ -448,7 +447,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e674d9a1ddc89d449966d1af130900f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DraggableItem
-  ingredientData: {fileID: 11400000, guid: b261843af6db97f4892f54a9d4c386b3, type: 2}
+  ingredientData: {fileID: 11400000, guid: bca8dffa2ead0a1458794f98ac2594ce, type: 2}
   parentAfterDrag: {fileID: 0}
 --- !u!114 &240975932764886134
 MonoBehaviour:
@@ -533,38 +532,6 @@ MonoBehaviour:
   statusGO: {fileID: 0}
   isSeasoning: 0
   txtQuantity: {fileID: 2011232479398471131}
---- !u!114 &6671455306677498483
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2158307079235096892}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4055827d3812c14ababf2c833337941, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CookingSelectionManager
-  currentFlavor: {fileID: 0}
-  currentFlavorVector:
-    sweet: 0
-    spicy: 0
-    sour: 0
-    umami: 0
-    texture: 0
-  maxIngredients: 4
-  maxSeasonings: 3
-  ingredientsCountText: {fileID: 0}
-  seasoningsCountText: {fileID: 0}
-  potIngredientsContent: {fileID: 0}
-  potSeasoningsContent: {fileID: 0}
-  potCardPrefab: {fileID: 0}
-  leftIngredientsContent: {fileID: 0}
-  leftSeasoningsContent: {fileID: 0}
-  newPotIngredientsContent: {fileID: 0}
-  newPotSeasoningsContent: {fileID: 0}
-  stackSlotPrefab: {fileID: 0}
-  cookingInventoryItems: []
 --- !u!114 &3855468834790160901
 MonoBehaviour:
   m_ObjectHideFlags: 0

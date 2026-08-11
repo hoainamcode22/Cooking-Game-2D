@@ -173,8 +173,10 @@ public static class BasePriceBook
         { "trung_chien_ca_chua", 80 }, { "nuoc_mia_chanh", 70 },
         { "salad_bap_cai_chanh", 85 }, { "salad_nam_rau", 90 }, { "sup_ngo_nam", 95 },
         { "bap_cai_xao_nam", 100 }, { "canh_khoai_tay_thit_heo", 110 },
-        { "ga_xao_ot", 115 }, { "thit_heo_luoc_cuon_rau", 115 }, { "canh_chua_ca", 120 },
-        { "ca_nuong_tieu", 125 }, { "bo_xao_tieu", 135 }, { "nam_xao_thit_bo", 140 },
+        // `canh_chua_ca` / `ca_nuong_tieu` đã xoá khỏi dự án (A4) — không giữ giá "để dành",
+        // còn khoá ở đây là quầy hàng vẫn gợi ý được giá cho món không tồn tại.
+        { "ga_xao_ot", 115 }, { "thit_heo_luoc_cuon_rau", 115 },
+        { "bo_xao_tieu", 135 }, { "nam_xao_thit_bo", 140 },
         { "suon_heo_xao_chua_ngot", 145 }, { "bo_ham_ca_rot", 150 },
         { "ga_nuong_lu", 155 }, { "pho_bo_tai", 160 },
     };

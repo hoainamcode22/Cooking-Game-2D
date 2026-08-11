@@ -292,6 +292,16 @@ public class MarketManager : MonoBehaviour
         if (!isSeed && FarmInventoryManager.Instance == null)
             return MarketBuyResult.InventoryMissing;
 
+        // TESTER-F8 — LỖI MẤT TIỀN NGƯỜI CHƠI.
+        // F8 làm `FarmInventoryManager.AddItem` TỪ CHỐI loại mới khi kho hết slot và trả
+        // về false, nhưng `GiveItemToCorrectStorage` bỏ qua giá trị trả về. Vàng đã bị
+        // `SpendGold` trừ ở dòng dưới ⇒ người chơi TRẢ TIỀN MÀ KHÔNG NHẬN ĐƯỢC HÀNG.
+        // Đúng theo chính chú thích ngay trên hàm này ("kiểm tra đủ → trừ tiền → cộng
+        // kho"), phép kiểm sức chứa phải nằm ở bước "kiểm tra đủ", tức TRƯỚC SpendGold.
+        // Kho hạt (`WarehouseManager`) không có hệ slot nên chỉ kiểm nhánh không phải hạt.
+        if (!isSeed && !FarmInventoryManager.Instance.CanAddItem(listing.ItemId))
+            return MarketBuyResult.InventoryFull;
+
         if (!SpendGold(totalPrice))
             return MarketBuyResult.NotEnoughGold;
 

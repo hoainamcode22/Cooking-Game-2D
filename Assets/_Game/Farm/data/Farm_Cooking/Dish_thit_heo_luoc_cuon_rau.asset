@@ -27,6 +27,9 @@ MonoBehaviour:
   requiredIngredients:
   - {fileID: 11400000, guid: e0b72888953ad72479d8eb9c8462d0c6, type: 2}
   - {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}
+  rewardExp: 32
+  rewardGold: 46
+  sellPrice: 185
   required1:
     displayName: "Th\u1ECBt heo"
     icon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}

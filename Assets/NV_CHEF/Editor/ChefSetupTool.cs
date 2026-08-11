@@ -745,7 +745,7 @@ namespace NVChef.EditorTools
             dp.Apply();
             importer.SaveAndReimport();
         }
-
+        
         private static bool SortingLayerTonTai(string n)
         {
             foreach (var l in SortingLayer.layers) if (l.name == n) return true;

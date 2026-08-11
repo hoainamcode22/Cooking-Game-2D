@@ -110,8 +110,7 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     /// </summary>
     public void BuyItem()
     {
-        int unitPrice = isDiamondItem ? currentData.diamondPrice : currentData.goldPrice;
-        int totalCost = currentQuantity * unitPrice;
+        int totalCost = GetTotalCost();
 
         bool success = isDiamondItem
             ? FarmEconomyManager.Instance.SpendGems(totalCost)
@@ -123,10 +122,13 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         }
 
         // Tiến độ nhiệm vụ mua hàng (chuồng heo=108, chuồng bò=106...);
-        // mua CropData = mua hạt giống → tính thêm BuySeed
-        MissionProgressTracker.ReportEvent(MissionEventType.BuyShopItem, currentData.itemID, currentQuantity);
+        // mua CropData = mua hạt giống → tính thêm BuySeed.
+        // Dùng SỐ LƯỢNG THẬT ĐÃ TRẢ TIỀN (công trình luôn = 1, xem GetTotalCost),
+        // không dùng `currentQuantity`: báo 3 mà chỉ đặt 1 là tiến độ nhiệm vụ sai.
+        int boughtQty = GetChargedQuantity();
+        MissionProgressTracker.ReportEvent(MissionEventType.BuyShopItem, currentData.itemID, boughtQty);
         if (currentData is CropData)
-            MissionProgressTracker.ReportEvent(MissionEventType.BuySeed, currentData.itemID, currentQuantity);
+            MissionProgressTracker.ReportEvent(MissionEventType.BuySeed, currentData.itemID, boughtQty);
 
         // Vật phẩm xây dựng / trang trí → đóng Shop và chuyển sang chế độ đặt
         if (currentData is PlaceableItemData placeable && placeable.prefabToBuild != null)
@@ -181,10 +183,34 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private void UpdateUI()
     {
         txtQuantity.text = currentQuantity.ToString();
+        txtPrice.text    = GetTotalCost().ToString();
+    }
 
-        int unitPrice = isDiamondItem ? currentData.diamondPrice : currentData.goldPrice;
-        int totalCost = currentQuantity * unitPrice;
+    /// <summary>
+    /// Số tiền THẬT phải trả cho lần bấm Mua này. Một chỗ tính duy nhất để nhãn giá
+    /// và lúc trừ tiền không bao giờ lệch nhau.
+    ///
+    /// Hai điểm khác bản cũ:
+    ///  • Ô đất lấy giá LUỸ TIẾN qua <see cref="PlotPurchasePricing"/> (F10).
+    ///  • Công trình / trang trí luôn tính SỐ LƯỢNG = 1. Bản cũ nhân với `currentQuantity`
+    ///    trong khi `BuyItem` chỉ chuyển sang chế độ đặt ĐÚNG MỘT vật → bấm "+" lên 3 rồi
+    ///    Mua là mất tiền 3 công trình mà chỉ nhận 1. Đó là mất tiền thật của người chơi.
+    /// </summary>
+    private int GetTotalCost()
+    {
+        if (currentData == null) return 0;
 
-        txtPrice.text = totalCost.ToString();
+        int unitPrice = isDiamondItem
+            ? currentData.diamondPrice
+            : PlotPurchasePricing.EffectiveGoldPrice(currentData);
+
+        return GetChargedQuantity() * unitPrice;
+    }
+
+    /// <summary>Số lượng THẬT bị tính tiền. Công trình / trang trí luôn 1 (xem GetTotalCost).</summary>
+    private int GetChargedQuantity()
+    {
+        bool placeable = currentData is PlaceableItemData p && p.prefabToBuild != null;
+        return placeable ? 1 : Mathf.Max(1, currentQuantity);
     }
 }

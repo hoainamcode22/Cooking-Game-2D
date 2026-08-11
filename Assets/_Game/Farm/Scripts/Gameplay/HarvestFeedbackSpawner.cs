@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 public class HarvestFeedbackSpawner : MonoBehaviour
@@ -240,10 +240,17 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         expPulseRoutine = StartCoroutine(CoPulseExpTarget(target));
     }
 
+    private Vector3 initialExpScale = Vector3.zero;
+    private Vector2 initialExpPos = Vector2.zero;
+
     private IEnumerator CoPulseExpTarget(RectTransform target)
     {
-        Vector3 baseScale = target.localScale;
-        Vector2 basePos = target.anchoredPosition;
+        if (initialExpScale == Vector3.zero)
+        {
+            initialExpScale = target.localScale;
+            initialExpPos = target.anchoredPosition;
+        }
+
         float duration = Mathf.Max(0.05f, expPulseDuration);
         float elapsed = 0f;
 
@@ -254,16 +261,16 @@ public class HarvestFeedbackSpawner : MonoBehaviour
             float wave = Mathf.Sin(t * Mathf.PI);
             float shake = expShakePixels * wave;
 
-            target.localScale = Vector3.LerpUnclamped(baseScale, baseScale * expPulseScale, wave);
-            target.anchoredPosition = basePos + new Vector2(
+            target.localScale = Vector3.LerpUnclamped(initialExpScale, initialExpScale * expPulseScale, wave);
+            target.anchoredPosition = initialExpPos + new Vector2(
                 Mathf.Sin(t * Mathf.PI * 10f) * shake,
                 Mathf.Cos(t * Mathf.PI * 12f) * shake * 0.6f);
 
             yield return null;
         }
 
-        target.localScale = baseScale;
-        target.anchoredPosition = basePos;
+        target.localScale = initialExpScale;
+        target.anchoredPosition = initialExpPos;
         expPulseRoutine = null;
     }
 

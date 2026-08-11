@@ -50,8 +50,10 @@ public class CropData : BaseItemData   // ← Đổi từ ScriptableObject sang 
     public string harvestItemId;    // ID nông sản thu hoạch trong kho (ví dụ: "lua")
 
     // ── Economy ───────────────────────────────────────────────────────────────
+    // C5 — đã xoá `public IngredientTier tier;`: không một dòng code nào đọc nó, và giá
+    // trị trên 21 asset thì lộn xộn (cây cấp 1 mang tier Epic, cây cấp 10 mang tier Basic).
+    // Field vô nghĩa mà hiện trong Inspector là bẫy: người cân bằng game tưởng nó có tác dụng.
     [Header("Economy")]
-    public IngredientTier tier;
     public int unlockLevel;
     public int growSeconds  = 30;
     // goldPrice → kế thừa từ BaseItemData (thay thế seedBuyGold cũ, data cũ tự migrate)
@@ -71,10 +73,12 @@ public class CropData : BaseItemData   // ← Đổi từ ScriptableObject sang 
     public int texture;
 
     // ── Flags ────────────────────────────────────────────────────────────────
+    // C3 — đã xoá `canDropFromAds`: dự án KHÔNG có hệ quảng cáo nào (0 SDK, 0 nơi gọi),
+    //      nhưng cờ này đang bật cho 11 asset ⇒ ai đọc data cũng tưởng có rơi hạt từ ads.
+    // C4 — đã xoá `canAppearInRareMarket`: 21/21 asset đều = 0 và không nơi nào đọc.
+    //      Chợ hiếm đã được thay bằng `MarketPriceTable.MarketEnabled` + `MarketRefreshTimer`.
     [Header("Flags")]
     public bool canBuyInSeedShop       = true;
-    public bool canDropFromAds         = false;
-    public bool canAppearInRareMarket  = false;
 
     // ── Editor Helper ────────────────────────────────────────────────────────
 #if UNITY_EDITOR

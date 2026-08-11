@@ -223,7 +223,6 @@ GameObject:
   - component: {fileID: 7982831031890475386}
   - component: {fileID: 7596688562507006668}
   - component: {fileID: 1069363523682639100}
-  - component: {fileID: 6288836095571904856}
   m_Layer: 5
   m_Name: KhungEwar
   m_TagString: Untagged
@@ -293,27 +292,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &6288836095571904856
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2757129926405878970}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aa0d282e3f1a89b489caf7c670cb85ed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MissionItemUI
-  img_Icon: {fileID: 6395840563642700282}
-  txt_MissionName: {fileID: 3905671138407505443}
-  txt_Progress: {fileID: 7249286569229669334}
-  btn_Claim: {fileID: 6078096349634122219}
-  txt_BtnClaim: {fileID: 8134229995480187452}
-  img_Reward: {fileID: 8444812027611720727}
-  txt_RewardAmount: {fileID: 2138258268524190583}
-  obj_BtnNormal: {fileID: 0}
-  obj_BtnClaimed: {fileID: 6396859415559943622}
 --- !u!1 &4602336364236239672
 GameObject:
   m_ObjectHideFlags: 0

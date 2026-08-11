@@ -34,7 +34,7 @@ public static class SetupTutorialL2Tool
         new Spec { file = "L2_04_CloseShop",  npc = "",                                          wait = TutorialWaitAction.WaitForCloseShop },
         new Spec { file = "L2_05_PlantCorn",  npc = "",                                          wait = TutorialWaitAction.WaitForAllPlotsPlanted },
 
-        // ── B8–B13: chăn nuôi (chuồng gà Pen_03) ──
+        // ── B8–B13: chăn nuôi (chuồng tutorial — xem TutorialManager.TenChuongTutorial) ──
         new Spec { file = "L2_06_AnimalIntro",npc = "Bạn đã làm tốt lắm! Trồng trọt xong rồi — giờ mình tập chăn nuôi gia súc nhé!", wait = TutorialWaitAction.WaitForClick },
         new Spec { file = "L2_07_FocusPen",   npc = "",                                          wait = TutorialWaitAction.WaitForOpenPen },
         new Spec { file = "L2_08_FeedPen",    npc = "",                                          wait = TutorialWaitAction.WaitForFeed },

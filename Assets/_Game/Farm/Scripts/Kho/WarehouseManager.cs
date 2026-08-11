@@ -165,7 +165,7 @@ public class WarehouseManager : MonoBehaviour
     private void Flush()
     {
         if (!_canGhi) return;
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         _canGhi = false;
     }
 
@@ -308,7 +308,7 @@ public class WarehouseManager : MonoBehaviour
     {
         items.Clear();
         PlayerPrefs.DeleteKey(SaveKey);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         _canGhi = false;
         OnWarehouseChanged?.Invoke();
         Debug.Log("[Warehouse] Đã làm trống kho và xoá save — coi như lần chơi đầu.");

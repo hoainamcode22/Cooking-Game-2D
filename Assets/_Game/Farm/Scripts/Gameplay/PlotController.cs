@@ -18,12 +18,58 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     [Serializable]
     private class PlotSaveData
     {
+        /// <summary>
+        /// Phiên bản save của MỘT ô đất.
+        ///
+        /// VÌ SAO cần: save cũ (bản chưa cấp lại plotId) không có khoá này nên
+        /// JsonUtility để 0. Nhờ đó phân biệt được "save v0 — có thể đang dùng chung
+        /// khoá với ô khác" và "save v1 — khoá đã là duy nhất", để chỉ chuyển đổi MỘT LẦN.
+        /// </summary>
+        public int saveVersion;
+
         public bool isUnlocked;
         public string plantedCropId;
         public long startUnixTime;
         public long finishUnixTime;
         public int state;
     }
+
+    /// <summary>v0 = trước khi cấp lại plotId (F1) · v1 = plotId đã duy nhất.</summary>
+    private const int CurrentSaveVersion = 1;
+
+    /// <summary>
+    /// BẢNG CHUYỂN KHOÁ SAVE — plotId MỚI → plotId CŨ (F1).
+    ///
+    /// VÌ SAO PHẢI CÓ: trước bản này 8 ô đất trong `SCN_Farm` dùng TRÙNG plotId với 8 ô
+    /// khác (thường 1..6, chậu hoa 26, 27). Vì `SaveKey = PLOT_NORMAL_{plotId}` không
+    /// chứa category, mỗi cặp ghi/đọc CÙNG một khoá PlayerPrefs: trồng ô này, thoát vào
+    /// lại thì ô kia hiện cây. Đó là lỗi mất dữ liệu, nên 8 ô bị đổi sang 101..108.
+    ///
+    /// Đổi plotId = ĐỔI KHOÁ LƯU. Nếu không chuyển đổi thì người chơi đang có save cũ
+    /// mở game lên thấy 8 ô trắng trơn — mất sạch cây đang trồng. Nên lần nạp đầu tiên
+    /// sau khi cập nhật, ô mang id mới sẽ COPY trạng thái từ khoá cũ của nó.
+    ///
+    /// Cặp trùng cũ đọc chung một khoá nên sau khi chuyển, cả hai ô cùng hiện một cây —
+    /// ĐÚNG với những gì người chơi đang thấy trên màn hình trước khi cập nhật, và từ lần
+    /// trồng sau hai ô tách hẳn ra. Không thể làm tốt hơn: dữ liệu cũ vốn không phân biệt
+    /// được cây đó thuộc ô nào.
+    ///
+    /// VÌ SAO chọn dải 101..108 thay vì 31..38: `PlacementManager.GetNextPlotId()` trả
+    /// max(plotId trong scene) + 1, mà max cũ = 30 → người chơi đang có save đã được cấp
+    /// 31, 32, 33... cho các ô đất họ MUA. Đặt id mới vào 31..38 là đè lên chính save đó.
+    /// </summary>
+    private static readonly System.Collections.Generic.Dictionary<int, int> LegacyPlotIdMap =
+        new System.Collections.Generic.Dictionary<int, int>
+        {
+            { 101, 2  },   // Plot_01 (1)
+            { 102, 3  },   // Plot_01 (2)
+            { 103, 4  },   // Plot_01 (3)
+            { 104, 5  },   // Plot_01 (4)
+            { 105, 6  },   // Plot_01 (5)
+            { 106, 1  },   // Plot_01     (dùng plotId mặc định của prefab)
+            { 107, 26 },   // Chauhoa_1 (4)
+            { 108, 27 },   // Chauhoa_1 (5)
+        };
 
     [Header("Category")]
     [SerializeField] private PlotCategory plotCategory = PlotCategory.Normal;
@@ -32,18 +78,11 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     [SerializeField] private int plotId = 1;
     [SerializeField] private bool isRarePlot = false;
 
-    [Header("Unlock")]
-    [SerializeField] private bool unlockedAtStart = false;
-    [SerializeField] private int requiredLevel = 1;
-    [SerializeField] private int gemCost = 0;
-    [SerializeField] private bool requireAd = false;
-
     [Header("Refs")]
     [SerializeField] private CropProcessPopupUI processPopup;
     [SerializeField] private SpriteRenderer groundSprite;
     [SerializeField] private Transform cropGroup;
     [SerializeField] private PlotCropVisual cropVisual;
-    [SerializeField] private SpriteRenderer lockSprite;
     [SerializeField] private SpriteRenderer readyIcon;
 
     [Header("Timer UI")]
@@ -82,11 +121,20 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     public int PlotId => plotId;
     public PlotCategory Category => plotCategory;
 
-    /// <summary>Gán plotId mới và đổi tên GameObject. Gọi từ PlacementManager sau Instantiate.</summary>
+    /// <summary>
+    /// Gán plotId mới và đổi tên GameObject. Gọi từ PlacementManager sau Instantiate.
+    ///
+    /// Tên theo ĐÚNG loại ô: chậu hoa mua ở Shop trước đây bị đặt tên "Plot_39" trong khi
+    /// nó là ô hoa. `TutorialStepTriggerBridge.AllRiceFieldPlanted()` lọc chậu hoa bằng
+    /// TÊN ("chau"/"pot"/"hoa") song song với lọc theo Category, nên tên sai làm lớp lọc
+    /// thứ hai mất tác dụng — và người đọc Hierarchy cũng không phân biệt được ô nào là ô nào.
+    /// </summary>
     public void SetPlotId(int newId)
     {
         plotId = newId;
-        gameObject.name = $"Plot_{plotId:00}";
+        gameObject.name = plotCategory == PlotCategory.Flower
+            ? $"Chauhoa_{plotId:00}"
+            : $"Plot_{plotId:00}";
     }
     public bool IsRarePlot => isRarePlot;
     public bool IsUnlocked => state != PlotState.Locked;
@@ -94,12 +142,15 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     public bool IsEmpty => state == PlotState.Empty;
     public bool IsGrowing => state == PlotState.Growing;
     public bool IsReady => state == PlotState.Ready;
-    public int RequiredLevel => requiredLevel;
-    public int GemCost => gemCost;
-    public bool RequireAd => requireAd;
     public CropData CurrentCrop => plantedCrop;
 
-    private string SaveKey => isRarePlot ? $"PLOT_RARE_{plotId}" : $"PLOT_NORMAL_{plotId}";
+    private string SaveKey => KeyFor(plotId);
+
+    private string KeyFor(int id) => isRarePlot ? $"PLOT_RARE_{id}" : $"PLOT_NORMAL_{id}";
+
+    /// <summary>Khoá save CŨ của ô này (trước F1). Trả về chuỗi rỗng nếu ô không bị đổi id.</summary>
+    private string LegacySaveKey =>
+        LegacyPlotIdMap.TryGetValue(plotId, out int oldId) ? KeyFor(oldId) : string.Empty;
 
     private void Reset()
     {
@@ -261,7 +312,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         groundSprite = null;
         cropGroup = null;
         cropVisual = null;
-        lockSprite = null;
         readyIcon = null;
         timerRoot = null;
         timerText = null;
@@ -276,9 +326,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         if (cropGroup != null)
             cropVisual = cropGroup.GetComponent<PlotCropVisual>();
-
-        t = transform.Find("LockSprite");
-        if (t != null) lockSprite = t.GetComponent<SpriteRenderer>();
 
         t = transform.Find("ReadyIcon");
         if (t != null) readyIcon = t.GetComponent<SpriteRenderer>();
@@ -443,9 +490,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     public void ClearThisPlotSave()
     {
         PlayerPrefs.DeleteKey(SaveKey);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
 
-        state = unlockedAtStart ? PlotState.Empty : PlotState.Locked;
+        state = PlotState.Empty;   // F10: không còn hệ khoá ô đất — ô mới luôn trống, sẵn sàng trồng
         plantedCrop = null;
         plantedCropId = "";
         startUnixTime = 0;
@@ -468,14 +515,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         Save();
         RefreshVisual();
-    }
-
-    public bool CanUnlockByLevel()
-    {
-        if (FarmLevelManager.Instance == null)
-            return requiredLevel <= 1;
-
-        return FarmLevelManager.Instance.HasReached(requiredLevel);
     }
 
     public bool CanOpenSeedPopup()
@@ -532,6 +571,14 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         // Tiến độ nhiệm vụ trồng cây (đếm theo ô đất, 1 lần trồng = 1)
         MissionProgressTracker.ReportEvent(MissionEventType.PlantCrop, crop.cropId, 1);
+
+        // C8 — ĐÃ GỠ `QuestManager.Instance?.OnCropPlanted(crop.cropId, 1);`.
+        // Hai lý do, mỗi lý do đủ để vỡ biên dịch:
+        //   1. `QuestManager` là hệ nhiệm vụ thứ hai, đã xoá sạch (0 instance trong mọi
+        //      scene, 0 asset QuestData, `CheckQuestCompletion` chỉ ghi `// TODO: Give rewards`).
+        //   2. `OnCropPlanted` CHƯA TỪNG tồn tại trên `QuestManager` — class đó chỉ có
+        //      `OnItemHarvested` / `OnItemCooked` / `OnOrderDelivered`.
+        // `MissionProgressTracker.ReportEvent` ngay trên là hệ CÒN SỐNG và đã báo đủ.
         return true;
     }
 
@@ -596,6 +643,18 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         int amount = Mathf.Max(1, harvestedCrop.harvestAmount);
 
+        // F8 — kho có sức chứa THẬT. Kiểm TRƯỚC khi xoá cây: nếu cứ thu hoạch rồi AddItem
+        // từ chối thì nông sản bốc hơi và ô đất đã trống — người chơi mất công cả một vòng
+        // trồng mà không hiểu vì sao. Thà để cây đứng nguyên chờ dọn kho.
+        if (FarmInventoryManager.Instance != null &&
+            !FarmInventoryManager.Instance.CanAddItem(harvestItemId))
+        {
+            FarmUIManager.Instance?.ShowHint(
+                $"Kho đầy ({FarmInventoryManager.Instance.UsedSlots}/{FarmInventoryManager.Instance.SlotCapacity} slot) — " +
+                "bán bớt hoặc nâng cấp kho rồi thu hoạch.");
+            return false;
+        }
+
         if (FarmInventoryManager.Instance != null)
             FarmInventoryManager.Instance.AddItem(harvestItemId, amount);
 
@@ -659,7 +718,26 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         RefreshVisual();
     }
 
-    /// <summary>Trừ 1 Gem và chín lúa ngay lập tức — gắn vào nút Gem trên CropProcessPopupUI.</summary>
+    /// <summary>
+    /// F9 — Số kim cương để bỏ qua thời gian còn lại của ô đất này.
+    ///
+    /// VÌ SAO KHÔNG CÒN CỨNG 1 GEM: cây 50 giây và cây 700 giây trước đây cùng giá 1 gem,
+    /// nên cách chơi tối ưu là chỉ trồng cây cấp 10 rồi bấm gem — thời gian trong bảng D1
+    /// mất hết ý nghĩa. Dùng lại đúng công thức của `ConstructionManager` để cả game chỉ
+    /// có MỘT thang giá rush: ceil(15 + 0.82·√giây_còn_lại).
+    ///
+    /// Hằng số 15 là "phí bấm nút": rush lúc còn 2 giây vẫn mất 17 gem → không ai chờ
+    /// gần chín rồi rush cho rẻ. Dạng √ giữ giá cây 700 giây ở ~37 gem thay vì 700×hệ số.
+    /// </summary>
+    public int GetSpeedUpGemCost()
+    {
+        if (state != PlotState.Growing)
+            return 0;
+
+        return ConstructionManager.RushCostFor(GetRemainingSeconds());
+    }
+
+    /// <summary>Trừ gem theo thời gian còn lại rồi chín ngay — gắn vào nút Gem trên CropProcessPopupUI.</summary>
     public void InstantGrow()
     {
         if (state != PlotState.Growing)
@@ -672,13 +750,20 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             return;
         }
 
-        if (FarmEconomyManager.Instance.Gems < 1)
+        int cost = GetSpeedUpGemCost();
+
+        // Kiểm tra ĐỦ TIỀN trước khi trừ: SpendGems trả false là không mất gì,
+        // nhưng vẫn phải chặn ở đây để hiện được thông báo cho người chơi.
+        if (FarmEconomyManager.Instance.Gems < cost)
         {
+            FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
             return;
         }
 
+        if (!FarmEconomyManager.Instance.SpendGems(cost))
+            return;
+
         StopAllCoroutines();                             // dừng mọi timer coroutine nếu có
-        FarmEconomyManager.Instance.SpendGems(1);
 
         // Ép trạng thái Ready ngay lập tức, không phụ thuộc finishUnixTime
         finishUnixTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
@@ -707,28 +792,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             PlayerPrefs.DeleteKey(PlacementManager.BuildingsSaveKey);
             removed++;
         }
-        PlayerPrefs.Save();
-    }
-
-    public void ApplyWaterBonus(int reduceSeconds)
-    {
-        if (state != PlotState.Growing)
-            return;
-
-        if (reduceSeconds <= 0)
-            return;
-
-        long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-        finishUnixTime -= reduceSeconds;
-
-        if (finishUnixTime <= now)
-        {
-            finishUnixTime = now;
-            state = PlotState.Ready;
-        }
-
-        Save();
-        RefreshVisual();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 
     public void RefreshVisual()
@@ -738,9 +802,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         if (groundSprite != null)
             groundSprite.enabled = true;
-
-        if (lockSprite != null)
-            lockSprite.enabled = state == PlotState.Locked;
 
         if (readyIcon != null)
             readyIcon.enabled = state == PlotState.Ready;
@@ -822,6 +883,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     {
         PlotSaveData data = new PlotSaveData
         {
+            saveVersion = CurrentSaveVersion,
             isUnlocked = state != PlotState.Locked,
             plantedCropId = plantedCropId,
             startUnixTime = startUnixTime,
@@ -830,14 +892,54 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         };
 
         PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(data));
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+    }
+
+    /// <summary>
+    /// Chuyển save v0 → v1 cho 8 ô đất bị cấp lại plotId ở F1.
+    ///
+    /// Chỉ chạy khi: (a) ô này nằm trong <see cref="LegacyPlotIdMap"/>, (b) khoá MỚI
+    /// chưa tồn tại, (c) khoá CŨ có dữ liệu. Sau khi copy thì khoá mới tồn tại nên
+    /// lần mở game sau không chạy lại — không có nguy cơ ghi đè tiến trình mới.
+    ///
+    /// KHÔNG xoá khoá cũ: nó vẫn là khoá thật của ô đất "song sinh" đã giữ nguyên id.
+    /// </summary>
+    private void MigrateLegacySaveIfNeeded()
+    {
+        string legacyKey = LegacySaveKey;
+        if (string.IsNullOrEmpty(legacyKey))
+            return;
+
+        if (PlayerPrefs.HasKey(SaveKey))
+            return;
+
+        if (!PlayerPrefs.HasKey(legacyKey))
+            return;
+
+        string legacyJson = PlayerPrefs.GetString(legacyKey, "");
+        if (string.IsNullOrEmpty(legacyJson))
+            return;
+
+        PlotSaveData legacy = JsonUtility.FromJson<PlotSaveData>(legacyJson);
+        if (legacy == null)
+            return;
+
+        legacy.saveVersion = CurrentSaveVersion;
+        PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(legacy));
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+
+        Debug.Log($"[Plot] Chuyển save ô đất {legacyKey} → {SaveKey} (F1: plotId trùng đã được cấp lại).");
     }
 
     private void Load()
     {
+        // Phải chạy TRƯỚC mọi lần đọc SaveKey, nếu không ô mang id mới sẽ thấy khoá rỗng
+        // rồi tự Save() một trạng thái trắng đè lên — đúng lúc đó là mất cây thật.
+        MigrateLegacySaveIfNeeded();
+
         if (!PlayerPrefs.HasKey(SaveKey))
         {
-            state = unlockedAtStart ? PlotState.Empty : PlotState.Locked;
+            state = PlotState.Empty;   // F10: không còn hệ khoá ô đất — ô mới luôn trống, sẵn sàng trồng
             plantedCrop = null;
             plantedCropId = "";
             startUnixTime = 0;
@@ -849,7 +951,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         string json = PlayerPrefs.GetString(SaveKey, "");
         if (string.IsNullOrEmpty(json))
         {
-            state = unlockedAtStart ? PlotState.Empty : PlotState.Locked;
+            state = PlotState.Empty;   // F10: không còn hệ khoá ô đất — ô mới luôn trống, sẵn sàng trồng
             plantedCrop = null;
             plantedCropId = "";
             startUnixTime = 0;
@@ -861,7 +963,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         PlotSaveData data = JsonUtility.FromJson<PlotSaveData>(json);
         if (data == null)
         {
-            state = unlockedAtStart ? PlotState.Empty : PlotState.Locked;
+            state = PlotState.Empty;   // F10: không còn hệ khoá ô đất — ô mới luôn trống, sẵn sàng trồng
             plantedCrop = null;
             plantedCropId = "";
             startUnixTime = 0;
@@ -875,6 +977,21 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         startUnixTime = data.startUnixTime;
         finishUnixTime = data.finishUnixTime;
         plantedCrop = null;
+
+        // ── CHUYỂN ĐỔI save v0 → v1: hệ khoá ô đất đã bị xoá (F10 / quyết định #5) ──
+        // Save cũ có thể ghi state = Locked. Từ bản này KHÔNG còn cách nào mở khoá nữa,
+        // nên ô đó sẽ chết vĩnh viễn (`UnlockAllPlotsNow` bỏ qua ô đã có save). Nâng lên
+        // Empty ngay tại đây, và chỉ một lần vì Save() bên dưới đóng dấu saveVersion = 1.
+        if (state == PlotState.Locked)
+        {
+            state = PlotState.Empty;
+            plantedCropId = "";
+            startUnixTime = 0;
+            finishUnixTime = 0;
+            Save();
+            RefreshVisual();
+            return;
+        }
 
         // Nếu state là Growing/Ready nhưng không có cropId → dữ liệu bị hỏng, reset về Empty
         if ((state == PlotState.Growing || state == PlotState.Ready) && string.IsNullOrEmpty(plantedCropId))

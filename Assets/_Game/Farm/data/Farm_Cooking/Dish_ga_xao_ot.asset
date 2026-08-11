@@ -27,6 +27,9 @@ MonoBehaviour:
   requiredIngredients:
   - {fileID: 11400000, guid: b0631d5b8894e8b4c988c34191d84120, type: 2}
   - {fileID: 11400000, guid: 047a75f3fbcb9974b91428681e2e96ac, type: 2}
+  rewardExp: 41
+  rewardGold: 60
+  sellPrice: 240
   required1:
     displayName: Chicken
     icon: {fileID: -2283333445584976228, guid: 888289491956e5347952a87ca3ec06d1, type: 3}

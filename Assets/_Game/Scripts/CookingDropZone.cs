@@ -20,13 +20,13 @@ public class CookingDropZone : MonoBehaviour, IDropHandler
             return;
         }
 
-        // kiểm tra đúng loại
+    
         if (card.isSeasoning != isSeasoning)
         {
             return;
         }
 
-        // nếu chưa chọn thì add vào nồi
+        
         manager.TrySelect(card);
     }
 }

@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27da4e0963ef8a14bba5b6535e1c8d80, type: 3}
+  m_Name: Mission_proc_d_17_5
+  m_EditorClassIdentifier: Assembly-CSharp::MissionData
+  missionIcon: {fileID: 0}
+  missionName: "Giao 34 \u0111\u01A1n h\xE0ng"
+  targetAmount: 34
+  rewardIcon: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
+  rewardAmount: 1360
+  rewardType: 0
+  missionId: proc_d_17_5
+  requiredLevel: 17
+  eventType: 1
+  targetItemId: 
+  isDaily: 0

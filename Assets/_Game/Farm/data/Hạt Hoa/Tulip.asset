@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_tulip
   itemName: Tulip
   itemIcon: {fileID: -9055938408451778832, guid: ee879aad837187b4aa8c50051bbdae2a, type: 3}
-  goldPrice: 60
+  goldPrice: 107
   diamondPrice: 0
   cropCategory: 1
   cropId: tulip
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 1
   seedItemId: seed_tulip
   harvestItemId: tulip
-  tier: 1
   unlockLevel: 9
-  growSeconds: 180
-  sellGold: 20
+  growSeconds: 420
+  sellGold: 57
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 42
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

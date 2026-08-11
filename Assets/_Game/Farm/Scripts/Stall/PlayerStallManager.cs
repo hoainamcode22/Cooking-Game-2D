@@ -735,6 +735,22 @@ public class PlayerStallManager : MonoBehaviour
         l.Status = ListingStatus.Sold;
         l.refundPending = false;   // đã bán thì không còn gì phải hoàn
 
+        // ── F4 — NỐI LẠI HAI DÂY ĐỨT ──────────────────────────────────────────
+        // Trước đây bán ở quầy chỉ cộng vàng: nhiệm vụ không nhích, EXP không lên.
+        // Quầy hàng là một trong bốn nguồn thu chính mà lại KHÔNG lên cấp, nên người chơi
+        // càng dùng quầy càng chậm tiến — đúng ngược với thứ ta muốn thưởng.
+        //
+        // Báo theo ĐÚNG itemId đã chuẩn hoá (`MarketPriceTable.Canonical`) vì mission
+        // targetItemId dùng cùng khoá kho; lệch tên là mission không bao giờ nhích.
+        string soldId = MarketPriceTable.Canonical(l.itemId);
+        MissionProgressTracker.ReportEvent(MissionEventType.SellAtStall, soldId, Mathf.Max(1, l.quantity));
+
+        // EXP theo GIÁ TRỊ bán được, không phải theo số lượt bán: 1 EXP mỗi 10 vàng.
+        // VÌ SAO gắn vào giá trị: bán 1 tiêu (76 vàng) phải hơn bán 1 lúa (7 vàng), nếu
+        // không thì cách lên cấp tối ưu là spam mặt hàng rẻ nhất.
+        int exp = Mathf.Max(1, Mathf.RoundToInt(total / 10f));
+        PlayerProgressManager.Instance?.AddExp(exp);
+
         MarkListingsDirty();
 
         if (verboseLog)
@@ -989,7 +1005,7 @@ public class PlayerStallManager : MonoBehaviour
     private void Flush()
     {
         if (!_canGhi) return;
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         _canGhi = false;
     }
 
@@ -1000,7 +1016,7 @@ public class PlayerStallManager : MonoBehaviour
         _listings.Clear();
         _unlockedSlots = Mathf.Clamp(slotCountAtStart, 0, TotalSlotCount);
         PlayerPrefs.DeleteKey(SaveKey);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         _canGhi = false;
         RaiseChanged();
         Debug.Log("[QuầyHàng] Đã xoá save quầy hàng.");

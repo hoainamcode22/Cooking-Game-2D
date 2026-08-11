@@ -22,6 +22,17 @@ public class PenMiniPanelUI : MonoBehaviour
     private const string PrefKeyFood      = "PenFood_";
     private const string PrefKeyStartTime = "PenStartTime_";
 
+    // B4 — họ save + phiên bản cho ba khoá chuồng ở trên (mỗi chuồng một hậu tố `penId`).
+    // Ba khoá ghi thẳng số/chuỗi nên dấu phiên bản nằm ở khoá phụ `SAVE_VER_PEN_STATE`.
+    //
+    // v1 = thời gian chuồng tính bằng GIÂY THẬT, đi qua `FarmManager.ScaleSeconds`.
+    // VÌ SAO PHẢI CÓ: `PenStartTime_*` là MỐC THỜI GIAN unix, còn thời lượng thì suy ra từ
+    // `config.feedDurationSeconds` LÚC ĐỌC. Bảng D2 vừa đổi 30s → 90..480s. Người chơi bấm
+    // cho ăn ở bản cũ rồi cập nhật game sẽ thấy lượt đang chạy bỗng dài thêm gấp 3-16 lần,
+    // không thu được. Nhánh migrate cắt lượt đang chạy về Idle và ghi rõ trong log.
+    private const string PenSaveFamily  = "PEN_STATE";
+    private const int    PenSaveVersion = 1;
+
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     //  Inspector
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -125,8 +136,18 @@ public class PenMiniPanelUI : MonoBehaviour
     [Tooltip("Kéo thịt/trứng/EXP spawn LÊN CAO (world units) — tránh nằm sát panel thức ăn (sorting C)")]
     [SerializeField] private float harvestSpawnUpOffset = 120f;
 
-    [Tooltip("Số kim cương để hoàn tất NGAY quá trình nuôi (nút Gem trên pen panel gọi TrySpeedUpGem)")]
-    [SerializeField] private int speedUpGemCost = 1;
+    /// <summary>
+    /// F9 — số kim cương để hoàn tất NGAY, tính theo THỜI GIAN CÒN LẠI chứ không phải
+    /// số cứng 1 như trước.
+    ///
+    /// VÌ SAO: sau E1 chuồng chạy 90–480 giây. Cứng 1 gem thì cách chơi tối ưu là cho ăn
+    /// rồi bấm gem ngay, và toàn bộ bảng thời gian D2 vô nghĩa. Dùng ĐÚNG công thức của
+    /// `ConstructionManager` để cả game chỉ có một thang giá rush: ceil(15 + 0.82·√giây).
+    /// </summary>
+    private int SpeedUpGemCost =>
+        CurrentState == PenState.Processing
+            ? ConstructionManager.RushCostFor(GetRemainingSeconds())
+            : 0;
 
     [Header("Sorting (C) — process thấp hơn vật phẩm")]
     [Tooltip("(C) Canvas của process overlay — GÁN để ép sortingOrder THẤP hơn vật phẩm chuồng. Trống = chỉ dùng sibling order.")]
@@ -192,13 +213,19 @@ public class PenMiniPanelUI : MonoBehaviour
             return false;
         }
 
-        if (!FarmInventoryManager.Instance.HasItem(foodItemId, 1))
+        // E1 — một lượt nuôi tốn `foodAmountPerFeed` đơn vị, không còn cứng 1.
+        int need = FoodNeeded;
+
+        if (!FarmInventoryManager.Instance.HasItem(foodItemId, need))
         {
+            // Nói rõ vì sao không cho ăn, thay vì im lặng như bản cũ — người chơi kéo
+            // thức ăn vào mà không có phản hồi gì sẽ tưởng chuồng bị lỗi.
+            FarmUIManager.Instance?.ShowHint($"Cần {need} phần thức ăn cho một lượt nuôi.");
             return false;
         }
 
-        FarmInventoryManager.Instance.RemoveItem(foodItemId, 1);
-        MissionProgressTracker.ReportEvent(MissionEventType.FeedAnimal, foodItemId, 1);
+        FarmInventoryManager.Instance.RemoveItem(foodItemId, need);
+        MissionProgressTracker.ReportEvent(MissionEventType.FeedAnimal, foodItemId, need);
         PlayFeedVFX(foodItemId, vfxWorldPosition);
         activeFoodId = foodItemId;
         processStartUnix = (float)GetUnixNow(); // ghi timestamp trÆ°á»›c khi save
@@ -206,7 +233,7 @@ public class PenMiniPanelUI : MonoBehaviour
         SaveState();
 
         StopTimerIfRunning();
-        timerCoroutine = StartCoroutine(ProcessTimerCoroutine(config.feedDurationSeconds));
+        timerCoroutine = StartCoroutine(ProcessTimerCoroutine(EffectiveFeedSeconds));
 
         if (IsPenTutorialStep("L2_08_FeedPen"))
             ClosePanel();
@@ -224,6 +251,23 @@ public class PenMiniPanelUI : MonoBehaviour
         if (CurrentState != PenState.Ready)
         {
             return false;
+        }
+
+        // F8 — kho có sức chứa THẬT. Kiểm CẢ HAI sản phẩm trước khi đổi state: nếu thu
+        // hoạch xong rồi kho từ chối thì thịt/trứng bốc hơi mà chuồng đã về Idle, người
+        // chơi mất trắng một lượt nuôi kèm thức ăn đã tốn. Thà giữ chuồng ở Ready.
+        var inv = FarmInventoryManager.Instance;
+        if (inv != null)
+        {
+            bool fit = inv.CanAddItem(config.productItemId)
+                    && (string.IsNullOrEmpty(config.secondProductItemId) || inv.CanAddItem(config.secondProductItemId));
+
+            if (!fit)
+            {
+                FarmUIManager.Instance?.ShowHint(
+                    $"Kho đầy ({inv.UsedSlots}/{inv.SlotCapacity} slot) — bán bớt hoặc nâng cấp kho rồi thu hoạch.");
+                return false;
+            }
         }
 
         // Spawn sáº£n pháº©m chÃ­nh
@@ -265,7 +309,13 @@ public class PenMiniPanelUI : MonoBehaviour
     {
         if (CurrentState != PenState.Processing) return false;
         if (FarmEconomyManager.Instance == null) return false;
-        if (!FarmEconomyManager.Instance.SpendGems(speedUpGemCost)) return false;
+        int gemCost = SpeedUpGemCost;
+        if (FarmEconomyManager.Instance.Gems < gemCost)
+        {
+            FarmUIManager.Instance?.ShowHint($"Cần {gemCost} kim cương để hoàn tất ngay.");
+            return false;
+        }
+        if (!FarmEconomyManager.Instance.SpendGems(gemCost)) return false;
 
         StopTimerIfRunning();
         SetState(PenState.Ready);
@@ -320,6 +370,8 @@ public class PenMiniPanelUI : MonoBehaviour
 
             if (progressFill  != null) progressFill.fillAmount = t;
             if (progressLabel != null) progressLabel.text = FormatTime(remaining);
+            // Giá gem tụt dần cùng đồng hồ (F9) — không cập nhật thì nhãn đứng ở số cũ
+            if (_gemCostText  != null) _gemCostText.text = "x" + ConstructionManager.RushCostFor(remaining);
 
             yield return null;
         }
@@ -338,12 +390,28 @@ public class PenMiniPanelUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Số phần thức ăn cho MỘT lượt nuôi (E1). Config cũ chưa có field này thì
+    /// `foodAmountPerFeed` = 0 khi đọc từ YAML → Max(1, …) để không bao giờ ra 0 phần.
+    /// </summary>
+    private int FoodNeeded => config != null ? Mathf.Max(1, config.foodAmountPerFeed) : 1;
+
+    /// <summary>
+    /// Thời gian nuôi sau khi quy đổi qua `FarmManager.realTimeMultiplier`.
+    ///
+    /// VÌ SAO: trước đây chuồng dùng thẳng `feedDurationSeconds` còn cây trồng thì nhân
+    /// hệ số → hạ multiplier để test thì ruộng nhanh gấp 3 mà chuồng vẫn 30 giây, hai hệ
+    /// đo thời gian bằng hai đơn vị. Với multiplier = 1.0 (mặc định) con số không đổi.
+    /// </summary>
+    private float EffectiveFeedSeconds =>
+        config != null ? FarmManager.ScaleSeconds(config.feedDurationSeconds) : 1f;
+
     private float GetRemainingSeconds()
     {
         double startUnix = processStartUnix;
         double nowUnix   = GetUnixNow();
         float elapsed    = (float)(nowUnix - startUnix);
-        return Mathf.Max(0f, config.feedDurationSeconds - elapsed);
+        return Mathf.Max(0f, EffectiveFeedSeconds - elapsed);
     }
 
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -394,7 +462,7 @@ public class PenMiniPanelUI : MonoBehaviour
                 }
                 float remaining = GetRemainingSeconds();
                 if (progressFill != null)
-                    progressFill.fillAmount = 1f - remaining / config.feedDurationSeconds;
+                    progressFill.fillAmount = 1f - remaining / Mathf.Max(1f, EffectiveFeedSeconds);
                 if (progressLabel != null)
                     progressLabel.text = FormatTime(remaining);
             }
@@ -406,7 +474,13 @@ public class PenMiniPanelUI : MonoBehaviour
         if (_gemButtonGO != null)
         {
             _gemButtonGO.SetActive(isProcessing);
-            if (isProcessing) _gemButtonGO.transform.SetAsLastSibling();
+            if (isProcessing)
+            {
+                _gemButtonGO.transform.SetAsLastSibling();
+                // F9: giá phụ thuộc thời gian còn lại → vẽ lại mỗi lần mở panel,
+                // không chỉ lúc coroutine đang chạy.
+                if (_gemCostText != null) _gemCostText.text = "x" + SpeedUpGemCost;
+            }
         }
     }
 
@@ -419,8 +493,10 @@ public class PenMiniPanelUI : MonoBehaviour
         if (iconImg != null && fallbackIcon != null)
             iconImg.sprite = fallbackIcon;
 
+        // Hiện "đang có / cần" thay vì chỉ "xN": từ E1 một lượt nuôi tốn 2-3 phần, người
+        // chơi phải thấy được vì sao kéo thức ăn vào mà chuồng không nhận.
         if (amtText != null)
-            amtText.text = "x" + amount;
+            amtText.text = $"{amount}/{FoodNeeded}";
     }
 
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -475,13 +551,19 @@ public class PenMiniPanelUI : MonoBehaviour
         if (CurrentState == PenState.Processing)
             PlayerPrefs.SetString(PrefKeyStartTime + id, processStartUnix.ToString("R"));
 
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 
     private void LoadState()
     {
         if (config == null) return;
         string id = config.penId;
+
+        // B4 — đóng dấu phiên bản trước khi đọc. Dùng `id` của CHÍNH chuồng này để dò
+        // "đã có save cũ chưa", nhưng dấu phiên bản là CHUNG cho cả họ PEN_STATE: chuồng
+        // nào nạp trước thì đóng dấu, các chuồng sau thấy version đã đúng nên không migrate lại.
+        bool coSaveCu = PlayerPrefs.HasKey(PrefKeyState + id);
+        int verCu = SaveVersionGuard.Ensure(PenSaveFamily, PenSaveVersion, null, coSaveCu);
 
         int stateInt = PlayerPrefs.GetInt(PrefKeyState + id, (int)PenState.Idle);
         CurrentState = (PenState)stateInt;
@@ -491,6 +573,24 @@ public class PenMiniPanelUI : MonoBehaviour
         double.TryParse(startStr, System.Globalization.NumberStyles.Float,
             System.Globalization.CultureInfo.InvariantCulture, out double startUnix);
         processStartUnix = (float)startUnix;
+
+        // v0 → v1: cắt lượt đang chạy. Không cắt thì người chơi đang có lượt 30 giây của
+        // bản cũ bị đo lại bằng thời lượng mới (90..480 giây) ⇒ đồng hồ nhảy vọt lên, và
+        // với chuồng bò sữa là chờ thêm 4 phút rưỡi cho một lượt họ tưởng sắp xong.
+        // Trả về Idle là mất công cho ăn của họ, nên HOÀN thức ăn lại vào kho.
+        if (verCu < PenSaveVersion && coSaveCu && CurrentState == PenState.Processing)
+        {
+            Debug.LogWarning($"[Chuồng {id}] Save v{verCu}: bảng thời gian đã đổi (D2) nên lượt " +
+                             $"đang chạy không còn đo được đúng — trả về Idle và hoàn thức ăn.");
+
+            if (!string.IsNullOrEmpty(activeFoodId) && FarmInventoryManager.Instance != null)
+                FarmInventoryManager.Instance.AddItem(activeFoodId, FoodNeeded);
+
+            CurrentState      = PenState.Idle;
+            activeFoodId      = "";
+            processStartUnix  = 0f;
+            SaveState();
+        }
 
     }
 
@@ -522,6 +622,7 @@ public class PenMiniPanelUI : MonoBehaviour
     // =========================================================================
 
     private GameObject _gemButtonGO;
+    private TMP_Text   _gemCostText;
     private GameObject _readyBubble;
     private static Sprite _roundSprite;
     private static Sprite _diamondSprite;
@@ -546,6 +647,14 @@ public class PenMiniPanelUI : MonoBehaviour
             _gemButtonGO = existing.gameObject;
             if (_gemButtonGO.transform.parent != host)
                 _gemButtonGO.transform.SetParent(host, false);
+
+            // Nút đã có sẵn trong prefab/scene → vẫn phải bắt lấy nhãn giá, nếu không
+            // thì F9 hiện số cũ mãi (nhãn chỉ được cập nhật qua _gemCostText).
+            if (_gemCostText == null)
+            {
+                Transform costTf = FindDeepChild(_gemButtonGO.transform, "Txt_Cost");
+                if (costTf != null) _gemCostText = costTf.GetComponent<TMP_Text>();
+            }
             return;
         }
 
@@ -581,12 +690,13 @@ public class PenMiniPanelUI : MonoBehaviour
         txtRt.sizeDelta = new Vector2(rt.sizeDelta.x * 0.5f, rt.sizeDelta.y * 0.82f);
         txtRt.anchoredPosition = new Vector2(rt.sizeDelta.x * 0.18f, 0f);
         var t = txtGO.AddComponent<TextMeshProUGUI>();
-        t.text = "x" + speedUpGemCost;
+        t.text = "x" + SpeedUpGemCost;
         t.color = Color.white;
         t.alignment = TextAlignmentOptions.Center;
         t.fontStyle = FontStyles.Bold;
         t.enableAutoSizing = true; t.fontSizeMin = 8; t.fontSizeMax = 80;
         t.raycastTarget = false;
+        _gemCostText = t;   // giữ lại để RefreshUI cập nhật giá theo thời gian còn lại
 
         _gemButtonGO = go;
         PlaceGemButton();

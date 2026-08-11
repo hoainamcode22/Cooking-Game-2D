@@ -21,7 +21,14 @@ public class CropProcessPopupUI : MonoBehaviour
     [Header("Speed Up")]
     [SerializeField] private Button btnSpeedUp;
     [SerializeField] private TMP_Text txtGemCost;
-    [SerializeField] private int speedUpGemCost = 1;
+
+    /// <summary>
+    /// F9 — giá gem KHÔNG còn là số cứng trong Inspector.
+    /// Nó phụ thuộc thời gian còn lại của đúng ô đất đang mở popup
+    /// (<see cref="PlotController.GetSpeedUpGemCost"/>), nên phải đọc lại mỗi frame:
+    /// người chơi mở popup rồi ngồi xem thì con số phải giảm dần theo cây.
+    /// </summary>
+    private int CurrentGemCost => currentPlot != null ? currentPlot.GetSpeedUpGemCost() : 0;
 
     public bool IsOpen => gameObject.activeSelf;
     public RectTransform SpeedUpButtonRect =>
@@ -77,9 +84,6 @@ public class CropProcessPopupUI : MonoBehaviour
 
         currentPlot = plot;
 
-        if (txtGemCost != null)
-            txtGemCost.text = speedUpGemCost.ToString();
-
         ResolveFillImage();
         RefreshDisplay();
         gameObject.SetActive(true);
@@ -123,9 +127,10 @@ public class CropProcessPopupUI : MonoBehaviour
             return;
         }
 
-        if (FarmEconomyManager.Instance.Gems < 1)
+        int cost = CurrentGemCost;
+        if (FarmEconomyManager.Instance.Gems < cost)
         {
-            FarmUIManager.Instance?.ShowHint("Không đủ kim cương để tăng tốc.");
+            FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
             return;
         }
 
@@ -176,6 +181,10 @@ public class CropProcessPopupUI : MonoBehaviour
         if (txtTimeRemaining != null)
             txtTimeRemaining.text = currentPlot.GetRemainingTimeText();
 
+        // Giá gem tụt dần theo thời gian còn lại → phải vẽ lại cùng nhịp với đồng hồ
+        if (txtGemCost != null)
+            txtGemCost.text = CurrentGemCost.ToString();
+
         // Chỉ fill thanh XANH (Image con). Viền khung gỗ (progressFill) giữ tĩnh.
         if (_fillImage == null) ResolveFillImage();
         if (_fillImage != null)
@@ -192,7 +201,7 @@ public class CropProcessPopupUI : MonoBehaviour
             return;
         }
 
-        if (!FarmEconomyManager.Instance.SpendGems(speedUpGemCost))
+        if (!FarmEconomyManager.Instance.SpendGems(CurrentGemCost))
         {
             FarmUIManager.Instance?.ShowHint("Không đủ kim cương để tăng tốc.");
             return;

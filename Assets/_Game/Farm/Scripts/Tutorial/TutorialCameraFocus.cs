@@ -88,19 +88,50 @@ public class TutorialCameraFocus : MonoBehaviour
         Debug.Log($"[TutorialCameraFocus] Focus on flower pots center: {center} zoom={zoom}");
     }
 
-    /// <summary>Lia camera vào 1 chuồng (vd Pen_03) theo tâm collider/renderer.</summary>
-    public void FocusOnPen(string penName = "Pen_03")
+    /// <summary>
+    /// Lia camera vào 1 chuồng theo tâm collider/renderer.
+    /// Mặc định là chuồng tutorial — khai ở <see cref="TutorialManager.TenChuongTutorial"/>.
+    /// </summary>
+    public void FocusOnPen(string penName = TutorialManager.TenChuongTutorial)
     {
-        var pen = GameObject.Find(penName);
+        GameObject pen = TimChuong(penName);
         if (pen == null)
         {
-            Debug.LogWarning($"[TutorialCameraFocus] Không tìm thấy '{penName}' trong scene.");
+            Debug.LogWarning($"[TutorialCameraFocus] Không tìm thấy '{penName}' trong scene " +
+                             $"(đã dò cả bản '(Clone)' và object đang tắt).");
             return;
         }
         SaveOriginal();
         float zoom = SanitizeZoom(_flowerZoom);
         Focus(PlotVisualCenter(pen.transform), zoom);
         Debug.Log($"[TutorialCameraFocus] FocusOnPen '{penName}' zoom={zoom}");
+    }
+
+    /// <summary>
+    /// Dò chuồng trong scene. `GameObject.Find` KHÔNG thấy object đang tắt, mà chuồng
+    /// hoàn toàn có thể đang tắt lúc tutorial gọi tới (chưa mở khoá, hoặc đang ở Edit
+    /// Mode) — lúc đó camera lặng lẽ không lia và tutorial treo ở bước này.
+    /// Cũng thử cả tên có hậu tố `(Clone)` cho chuồng do người chơi mua.
+    /// </summary>
+    private static GameObject TimChuong(string penName)
+    {
+        if (string.IsNullOrEmpty(penName)) return null;
+
+        GameObject g = GameObject.Find(penName);
+        if (g != null) return g;
+
+        g = GameObject.Find(penName + "(Clone)");
+        if (g != null) return g;
+
+        string clone = penName + "(Clone)";
+        foreach (Transform t in Object.FindObjectsByType<Transform>(
+                     FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (t == null) continue;
+            if (t.name == penName || t.name == clone) return t.gameObject;
+        }
+
+        return null;
     }
 
     /// <summary>Trả camera về vị trí/zoom ban đầu và trả input cho người chơi.</summary>

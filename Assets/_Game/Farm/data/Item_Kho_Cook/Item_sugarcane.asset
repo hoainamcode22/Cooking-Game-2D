@@ -15,4 +15,4 @@ MonoBehaviour:
   itemId: sugarcane
   displayName: "M\xEDa"
   icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
-  cookingData: {fileID: 11400000, guid: 1c4f147355611e044beec9c27dc0c752, type: 2}
+  cookingData: {fileID: 11400000, guid: 3f7a1c9b4e2d58c4a91b6d0e7c53f8a2, type: 2}

@@ -11,9 +11,12 @@ public class PopupEwarManager : MonoBehaviour
     [Header("Controls")]
     [SerializeField] private Button      btnClose;
 
-    [Header("ScrollView")]
-    [SerializeField] private Transform   contentTransform;
-    [SerializeField] private GameObject  missionItemPrefab;
+    // C7 — đã xoá `contentTransform` + `missionItemPrefab`: hai field này chỉ phục vụ
+    // `SpawnMissionItems()`, mà hàm đó KHÔNG có nơi nào gọi và `MissionItemUI` (thứ nó
+    // sinh ra) thì cộng thưởng vào `PlayerWallet` — một cái ví mồ côi, không nối với
+    // top-bar vàng/kim cương nào cả. Người chơi bấm "Nhận" và tiền rơi vào hư không.
+    // Danh sách nhiệm vụ thật do `UnifiedTaskPopupUI` vẽ (nó cộng vào `FarmEconomyManager`).
+    // `OpenPopup()` bên dưới cũng đã chuyển hướng sang `UnifiedTaskPopupUI` từ trước.
 
     [Header("Data")]
     [SerializeField] private MissionDatabase missionDatabase;
@@ -27,8 +30,6 @@ public class PopupEwarManager : MonoBehaviour
     // UnifiedTaskPopupUI tab "Thành tựu" đọc qua AchievementMissionDatabaseRef.
     [SerializeField] private MissionDatabase achievementMissionDatabase;
 
-    private readonly List<MissionItemUI> _spawnedItems = new List<MissionItemUI>();
-    private bool _initialized;
     private bool _popupInputLockHeld;
 
     // PopupManager.IsAnyPopupOpen() đọc property này để biết có đang mở không
@@ -106,57 +107,14 @@ public class PopupEwarManager : MonoBehaviour
         }
     }
 
-    private void SpawnMissionItems(int playerLevel)
-    {
-        if (missionDatabase == null || missionDatabase.missions == null) return;
-
-        foreach (Transform child in contentTransform)
-            Destroy(child.gameObject);
-
-        _spawnedItems.Clear();
-
-        foreach (var data in missionDatabase.missions)
-        {
-            if (data == null) continue;
-
-            // List chính: chỉ mission đã mở khoá theo level, không lấy mission daily
-            if (data.isDaily) continue;
-            if (data.requiredLevel > playerLevel) continue;
-
-            var go   = Instantiate(missionItemPrefab, contentTransform);
-            var item = go.GetComponent<MissionItemUI>();
-            if (item == null) continue;
-
-            item.Setup(data);
-            _spawnedItems.Add(item);
-        }
-    }
-
-    private void RefreshAllProgress()
-    {
-        foreach (var item in _spawnedItems)
-        {
-            if (item == null || item.Data == null) continue;
-            item.UpdateProgress(MissionProgressTracker.GetProgressFor(item.Data));
-        }
-    }
-
+    /// <summary>
+    /// Tiến độ nhiệm vụ vừa đổi. Popup này KHÔNG còn tự vẽ danh sách nhiệm vụ (xem C7),
+    /// nên chỉ chuyển tiếp cho <see cref="UnifiedTaskPopupUI"/> — nơi đang thật sự vẽ.
+    /// Vẫn phải nghe event: bỏ hẳn thì tiến độ đổi trong lúc popup đang mở sẽ không cập nhật.
+    /// </summary>
     private void HandleProgressChanged(string key, int newValue)
     {
         if (!IsOpen) return;
-        NotifyProgressChanged();
-    }
-
-    /// <summary>Refresh tiến độ mọi item đang hiển thị (gọi từ event tracker).</summary>
-    public void NotifyProgressChanged()
-    {
-        RefreshAllProgress();
-    }
-
-    private static int GetPlayerLevel()
-    {
-        if (PlayerProgressManager.Instance != null) return PlayerProgressManager.Instance.Level;
-        if (FarmLevelManager.Instance != null)      return FarmLevelManager.Instance.CurrentLevel;
-        return 1;
+        UnifiedTaskPopupUI.RefreshIfOpen();
     }
 }

@@ -122,6 +122,81 @@ public class TutorialManager : MonoBehaviour
     [SerializeField] private bool _skipIntroInEditor = false;
 
     // =========================================================================
+    //  B1 · B2 — CỜ "ĐÃ XONG TUTORIAL"
+    // =========================================================================
+    // VÌ SAO: `Start()` trước đây LUÔN chạy `PlayIntroAnimation()` → `StartTutorial()` →
+    // step 0, MỖI LẦN bấm Play. Người chơi đã xong hướng dẫn, đã lên cấp 12, mở game lên
+    // vẫn bị dắt lại từ "kéo hạt lúa vào ô đất" — và bị KHOÁ CỨNG ở đó, vì cổng qua bước là
+    // "không còn ô nào trống" mà ruộng của họ đang trồng đầy. Watchdog hết hạt chỉ đỡ được
+    // trường hợp hết hạt, không đỡ được trường hợp này.
+    //
+    // Cờ lưu ở PlayerPrefs `TUTORIAL_MAIN_DONE`, thuộc họ save "TUTORIAL" có saveVersion
+    // — xem `SaveVersionGuard`.
+
+    /// <summary>Khoá PlayerPrefs: đã chạy hết tutorial chính chưa.</summary>
+    private const string PrefKeyDone = "TUTORIAL_MAIN_DONE";
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  TÊN CHUỒNG DÙNG TRONG TUTORIAL — MỘT CHỖ DUY NHẤT
+    // ═════════════════════════════════════════════════════════════════════════
+    //  Tên này trước đây được gõ cứng ở BỐN file khác nhau (TutorialManager,
+    //  TutorialCameraFocus, TutorialRuntimeTargetResolver, AnimalGuideController).
+    //  Đổi chuồng dạy tutorial thì phải sửa cả bốn, sót một chỗ là camera lia tới
+    //  chuồng này còn bàn tay chỉ vào chuồng khác — mà không có lỗi nào báo.
+    //  Giờ đổi ở đây là đổi hết.
+
+    /// <summary>
+    /// Chuồng mà tutorial L2 dạy cho ăn.
+    ///
+    /// Phải là CHUỒNG GÀ (`Pen_03`) vì nó mở khoá SỚM NHẤT — cấp 2, 100 vàng. Thứ tự
+    /// mở: gà (L2) → heo (L4) → bò thịt (L8) → bò sữa (L13). Trỏ vào chuồng bò `Pen_01`
+    /// là dạy người chơi cấp 2 dùng công trình họ chỉ mua được ở cấp 8.
+    ///
+    /// Kèm điều kiện: bản `Pen_03` trong scene phải đang BẬT, không thì `GameObject.Find`
+    /// trả null và bước `L2_07_FocusPen` treo. Dùng
+    /// Tools ▸ Farm ▸ Chuồng ▸ Bật chuồng tutorial để kiểm và sửa.
+    /// </summary>
+    public const string TenChuongTutorial = "Pen_03";
+
+    /// <summary>
+    /// Tên cần dò trong scene. Có bản `(Clone)` vì chuồng do người chơi mua sẽ được
+    /// `PlacementManager` Instantiate ra và Unity tự thêm hậu tố đó.
+    /// </summary>
+    public static readonly string[] TenChuongCanDo =
+        { TenChuongTutorial, TenChuongTutorial + "(Clone)" };
+
+    /// <summary>Họ save + phiên bản của MỌI cờ hướng dẫn. Tăng khi đổi ý nghĩa các cờ.</summary>
+    private const string TutorialSaveFamily  = "TUTORIAL";
+    private const int    TutorialSaveVersion = 1;
+
+    [Header("Dev — chạy lại tutorial để test (B2)")]
+    [Tooltip("Tick để BỎ QUA cờ đã-xong và chạy lại tutorial từ bước 0 ở lần Play tới. " +
+             "Cờ trong PlayerPrefs vẫn giữ nguyên, bỏ tick là trở lại bình thường.")]
+    [SerializeField] private bool _devForceReplayTutorial = false;
+
+    [Tooltip("Tick để XOÁ HẲN cờ đã-xong ngay khi vào scene → lần Play sau cũng chạy lại " +
+             "dù đã bỏ tick ô trên. Dùng khi muốn thử đúng trải nghiệm người chơi MỚI.")]
+    [SerializeField] private bool _devClearDoneFlagOnStart = false;
+
+    /// <summary>Đã chạy hết tutorial chính chưa (đọc từ PlayerPrefs).</summary>
+    public static bool IsTutorialDone => PlayerPrefs.GetInt(PrefKeyDone, 0) == 1;
+
+    /// <summary>Đóng dấu đã xong. Gọi từ <see cref="FinishTutorial"/>.</summary>
+    private static void MarkTutorialDone()
+    {
+        PlayerPrefs.SetInt(PrefKeyDone, 1);
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+    }
+
+    /// <summary>Xoá cờ để chơi lại như người mới. Dùng cho tool reset save.</summary>
+    public static void ClearTutorialDoneFlag()
+    {
+        PlayerPrefs.DeleteKey(PrefKeyDone);
+        SaveVersionGuard.Clear(TutorialSaveFamily);
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+    }
+
+    // =========================================================================
     // Runtime
     // =========================================================================
     private int                _currentIndex = -1;
@@ -172,6 +247,36 @@ public class TutorialManager : MonoBehaviour
             Debug.LogWarning("[TutorialManager] KhÃ´ng cÃ³ step nÃ o. HÃ£y gÃ¡n TutorialStepData vÃ o _steps.");
             return;
         }
+
+        // ── B1/B2 · ĐÃ XONG RỒI THÌ KHÔNG DẮT LẠI ──
+        // Đóng dấu phiên bản họ save "TUTORIAL" TRƯỚC khi đọc cờ. `hasExistingSave` chỉ
+        // true khi máy này thật sự đã có cờ hướng dẫn nào — người chơi mới thì bỏ qua nhánh
+        // migrate cho khỏi ghi log báo động giả.
+        bool coCoTutorialCu = PlayerPrefs.HasKey(PrefKeyDone)
+                              || PlayerPrefs.HasKey("TUTORIAL_PREPLANT_DONE")
+                              || PlayerPrefs.HasKey("STARTER_ITEMS_GIVEN");
+        SaveVersionGuard.Ensure(TutorialSaveFamily, TutorialSaveVersion,
+                                hasExistingSave: coCoTutorialCu);
+
+        if (_devClearDoneFlagOnStart)
+        {
+            ClearTutorialDoneFlag();
+            Debug.Log("[Tutorial] DEV: đã xoá cờ TUTORIAL_MAIN_DONE → chạy lại như người mới.");
+        }
+
+        if (IsTutorialDone && !_devForceReplayTutorial)
+        {
+            // KHÔNG chỉ `return`: phải DỌN sạch UI hướng dẫn. Bỏ qua bước dọn thì
+            // Tutorial_Canvas còn tàng hình mà `blocksRaycasts` vẫn bật ⇒ nuốt hết click
+            // của người chơi, cả bản đồ thành không bấm được.
+            Debug.Log("[Tutorial] Đã xong từ phiên trước → bỏ qua, không dắt lại.");
+            SkipTutorialEntirely();
+            return;
+        }
+
+        if (_devForceReplayTutorial && IsTutorialDone)
+            Debug.LogWarning("[Tutorial] DEV: _devForceReplayTutorial đang bật → chạy lại dù đã xong. " +
+                             "Nhớ bỏ tick trước khi build.");
 
 #if UNITY_EDITOR
         if (_skipIntroInEditor) { SetCloudPanelVisible(false); StartTutorial(); return; }
@@ -559,10 +664,10 @@ public class TutorialManager : MonoBehaviour
         }
 
         // ═══ TUTORIAL L2 — CHĂN NUÔI (B8–B13) ═══
-        // L2_07: zoom Pen_03 + tay chỉ giữa chuồng, chờ mở chuồng.
+        // L2_07: zoom chuồng tutorial + tay chỉ giữa chuồng, chờ mở chuồng.
         if (step.name == "L2_07_FocusPen")
         {
-            if (_cameraFocus != null) _cameraFocus.FocusOnPen("Pen_03");
+            if (_cameraFocus != null) _cameraFocus.FocusOnPen(TenChuongTutorial);
             if (_npcDialogPopup != null) _npcDialogPopup.SetActive(false);
             _guideBoardUI?.Hide();
             _dragHintAnimator?.StopDragHint();
@@ -791,9 +896,43 @@ public class TutorialManager : MonoBehaviour
     // =========================================================================
     // Finish
     // =========================================================================
+    /// <summary>
+    /// Tắt sạch mọi thứ của tutorial mà KHÔNG chạy qua bước nào. Dùng khi người chơi đã
+    /// xong tutorial ở phiên trước (B1).
+    ///
+    /// Tách riêng khỏi <see cref="FinishTutorial"/> vì hàm kia còn đóng dấu cờ và lia
+    /// camera về — ở đây cờ đã có sẵn, chỉ cần dọn màn hình cho sạch raycast.
+    /// </summary>
+    private void SkipTutorialEntirely()
+    {
+        _state        = TutorialState.Finished;
+        _currentIndex = _steps.Count;
+
+        SetTutorialUIVisible(false);
+        SetCloudPanelVisible(false);
+        _guideBoardUI?.Hide();
+        _dimBackground?.ClearHole();
+        if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+        _dragHintAnimator?.StopDragHint();
+        _actionHandGuide?.StopGuide();
+        _runtimeTargetResolver?.EnableAreaMask(TutorialAreaKind.None, null);
+
+        // Bắt buộc: Canvas tàng hình mà còn blocksRaycasts thì nuốt sạch click game.
+        if (_tutorialCanvasCG != null)
+        {
+            _tutorialCanvasCG.alpha          = 0f;
+            _tutorialCanvasCG.interactable   = false;
+            _tutorialCanvasCG.blocksRaycasts = false;
+        }
+    }
+
     private void FinishTutorial()
     {
         _state = TutorialState.Finished;
+
+        // B1 — đóng dấu NGAY tại đây, TRƯỚC phần dọn UI: nếu một lời gọi dọn bên dưới ném
+        // lỗi (ref rỗng chẳng hạn) thì cờ vẫn đã ghi xong, người chơi không bị dắt lại.
+        MarkTutorialDone();
         Debug.Log("[Tutorial] Tutorial FINISHED — restoring camera and closing UI.");
         SetTutorialUIVisible(false);
         _dimBackground?.ClearHole();

@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using Village;
 
 public class PopupManager : MonoBehaviour
 {
@@ -12,7 +11,9 @@ public class PopupManager : MonoBehaviour
     [SerializeField] private MarketPopupUI     marketPopup;
     [SerializeField] private TrainProcessPopupUI trainProcessPopup;
     [SerializeField] private TrainLoadPopupUI   trainLoadPopup;
-    [SerializeField] private HouseOrderPopupUI houseOrderPopup;
+    // (đã gỡ `houseOrderPopup`) — popup đơn hàng cũ của hệ nhà dân đã bị xoá cùng
+    // `HouseOrderPopupUI`. Bảng đơn mới được hỏi qua `OrderBoardPopupUI.AnyOpen` ở cuối
+    // `IsAnyPopupOpen()`, không cần ô kéo thả trong Inspector nữa.
     [SerializeField] private ShopManager       shopPopup;
     // Popup nhiá»‡m vá»¥ tÃ¢n thá»§ â€” Ä‘Äƒng kÃ½ Ä‘á»ƒ BlockMapPan vÃ  blockingOverlay hoáº¡t Ä‘á»™ng
     [SerializeField] private PopupEwarManager  ewarPopup;
@@ -75,7 +76,6 @@ public class PopupManager : MonoBehaviour
             || (marketPopup       != null && marketPopup.IsOpen)
             || (trainProcessPopup != null && trainProcessPopup.IsOpen)
             || (trainLoadPopup    != null && trainLoadPopup.IsOpen)
-            || (houseOrderPopup   != null && HouseOrderPopupUI.IsOpen)
             || (shopPopup         != null && shopPopup.IsOpen)
             || (ewarPopup         != null && ewarPopup.IsOpen)
             // Popup managers truy cập qua Singleton, không cần kéo vào Inspector
@@ -84,7 +84,12 @@ public class PopupManager : MonoBehaviour
             || (AvatarProfilePopupUI.Instance != null && AvatarProfilePopupUI.Instance.IsOpen)
             || (HomeMenuController.Instance   != null && HomeMenuController.Instance.IsOpen)
             || (HomeMenuManager.Instance      != null && HomeMenuManager.Instance.IsOpen)
-            || CropProcessPopupUI.AnyOpen;
+            || CropProcessPopupUI.AnyOpen
+            // BẢNG ĐƠN HÀNG (DEV-B). Cố ý hỏi qua cờ static thay vì thêm một
+            // [SerializeField] nữa: DEV-A đang sửa đúng khối field ở đầu file này để gỡ
+            // `houseOrderPopup`. Thêm dòng độc lập ở cuối thì hai người không đụng nhau,
+            // và popup mới cũng không cần ai kéo tham chiếu vào Inspector mới chạy đúng.
+            || OrderBoardPopupUI.AnyOpen;
     }
     
 }

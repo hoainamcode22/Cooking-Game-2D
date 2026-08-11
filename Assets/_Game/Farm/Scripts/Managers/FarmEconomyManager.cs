@@ -8,6 +8,15 @@ public class FarmEconomyManager : MonoBehaviour
     private const string GoldKey = "FARM_ECONOMY_GOLD";
     private const string GemsKey = "FARM_ECONOMY_GEMS";
 
+    // B4 — họ save + phiên bản. Hai khoá ghi thẳng số nguyên nên dấu phiên bản nằm ở
+    // khoá phụ `SAVE_VER_FARM_ECONOMY`.
+    //
+    // v1 = vàng/kim cương tính theo bảng giá `MarketPriceTable` hiện hành.
+    // TĂNG SỐ NÀY nếu đổi đơn vị tiền hoặc nhân/chia toàn bộ bảng giá: người chơi đang có
+    // 5.000 vàng theo giá cũ sẽ giàu (hoặc nghèo) gấp mấy lần nếu bảng giá đổi mà số dư không đổi.
+    private const string SaveFamily  = "FARM_ECONOMY";
+    private const int    SaveVersion = 1;
+
     [SerializeField] private int startGold = 400;
     [SerializeField] private int startGems = 15;
 
@@ -130,6 +139,12 @@ public class FarmEconomyManager : MonoBehaviour
 
     private void LoadCurrency()
     {
+        // B4 — đóng dấu phiên bản trước khi đọc. Chưa có nhánh migrate nào vì v0 → v1
+        // không đổi định dạng (vẫn hai số nguyên cùng ý nghĩa); truyền null để hàm chỉ
+        // đóng dấu. Khi nào cần đổi thật thì thêm hàm migrate vào ĐÚNG chỗ này.
+        SaveVersionGuard.Ensure(SaveFamily, SaveVersion, null,
+                                PlayerPrefs.HasKey(GoldKey) || PlayerPrefs.HasKey(GemsKey));
+
         Gold = PlayerPrefs.HasKey(GoldKey) ? PlayerPrefs.GetInt(GoldKey) : startGold;
         Gems = PlayerPrefs.HasKey(GemsKey) ? PlayerPrefs.GetInt(GemsKey) : startGems;
     }
@@ -138,6 +153,6 @@ public class FarmEconomyManager : MonoBehaviour
     {
         PlayerPrefs.SetInt(GoldKey, Gold);
         PlayerPrefs.SetInt(GemsKey, Gems);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 }

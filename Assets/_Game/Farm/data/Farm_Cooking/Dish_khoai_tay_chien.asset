@@ -26,6 +26,9 @@ MonoBehaviour:
     texture: 0
   requiredIngredients:
   - {fileID: 11400000, guid: 65f23ad20a871e24fa3c77769c5cbe4c, type: 2}
+  rewardExp: 15
+  rewardGold: 24
+  sellPrice: 95
   required1:
     displayName: "Khoai T\xE2y"
     icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}

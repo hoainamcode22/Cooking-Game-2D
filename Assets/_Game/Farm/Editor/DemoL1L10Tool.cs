@@ -11,8 +11,9 @@ using UnityEngine;
 ///   • Setup All            — gọi chuỗi tool setup sẵn có (tutorial, level-up popup, startup popups)
 ///   • Reset Demo Save      — xoá PlayerPrefs để chơi lại từ New Game
 ///   • Print Playtest Checklist — in checklist 18 tiêu chí hoàn thành demo
-/// LƯU Ý: KHÔNG chạy "Setup Village Orders L1-L6/Apply Phase 1 Data" — tool đó chứa
-/// số liệu kinh tế CŨ và sẽ ghi đè data đã duyệt (xem L1_L10_ECONOMY_TABLE.md).
+/// LƯU Ý: tool "Setup Village Orders L1-L6" ĐÃ BỊ XOÁ cùng hệ đơn hàng nhà dân cũ.
+/// Nó ghi đè kinh tế đã duyệt bằng số liệu Phase 1 (xem L1_L10_ECONOMY_TABLE.md),
+/// và giờ cũng không còn asset OrderItemDefinition nào để nó ghi vào.
 /// </summary>
 public static class DemoL1L10Tool
 {
@@ -30,15 +31,8 @@ public static class DemoL1L10Tool
             { "hoa_cam_tu_cau", (10, 30) }, { "hoa_anh_thao", (10, 32) },
         };
 
-    private static readonly Dictionary<string, (int unlock, int gold)> ExpectedRawOrders =
-        new Dictionary<string, (int, int)>
-        {
-            { "rice", (1, 15) },   { "bapcai", (1, 26) },  { "ngo", (2, 22) },
-            { "cachua", (3, 34) }, { "egg", (3, 24) },     { "chicken_meat", (3, 36) },
-            { "huong_duong", (3, 20) }, { "hoa_oai_huong", (4, 48) }, { "hoa_hong", (4, 40) },
-            { "pork", (5, 55) },   { "mushroom", (6, 50) }, { "sugarcane", (7, 60) },
-            { "beef", (8, 80) },   { "milk", (8, 45) },    { "tulip", (9, 34) },
-        };
+    // (đã gỡ ExpectedRawOrders) — bảng kỳ vọng của 37 asset `OrderItemDefinition` cũ.
+    // Hệ đơn hàng mới sinh pool thẳng từ `MarketPriceTable`, không còn asset nào để đối chiếu.
 
     // itemID (string) → (giá vàng, unlockLevel) cho 4 chuồng
     private static readonly Dictionary<string, (int gold, int unlock, string label)> ExpectedPens =
@@ -106,7 +100,10 @@ public static class DemoL1L10Tool
     // ── 2. Village orders ─────────────────────────────────────────────────────
     private static void CheckOrders()
     {
-        _log.AppendLine("— VILLAGE ORDERS —");
+        _log.AppendLine("— BẢNG ĐƠN HÀNG (pool sinh từ MarketPriceTable) —");
+
+        // Cấp mở khoá của từng món ăn, đọc thẳng từ DishData — dùng để bắt lỗi
+        // "đơn đòi món mà người chơi chưa nấu được".
         var dishUnlock = new Dictionary<string, int>();
         foreach (string guid in AssetDatabase.FindAssets("t:DishData"))
         {
@@ -115,43 +112,62 @@ public static class DemoL1L10Tool
             if (!string.IsNullOrEmpty(id)) dishUnlock[id] = so.FindProperty("unlockLevel")?.intValue ?? 5;
         }
 
-        int orderCount = 0;
-        foreach (string guid in AssetDatabase.FindAssets("t:OrderItemDefinition"))
+        // Bốn danh mục được phép vào đơn — phải khớp với `OrderGenerator.AllowedCategories`.
+        var allowed = new HashSet<MarketCategory>
         {
-            string path = AssetDatabase.GUIDToAssetPath(guid);
-            var so = new SerializedObject(AssetDatabase.LoadAssetAtPath<ScriptableObject>(path));
-            string id   = so.FindProperty("itemId")?.stringValue;
-            int unlock  = so.FindProperty("unlockLevel")?.intValue ?? -1;
-            int gold    = so.FindProperty("goldPerUnit")?.intValue ?? -1;
-            int catEnum = so.FindProperty("category")?.enumValueIndex ?? 0;
-            orderCount++;
+            MarketCategory.NongSan, MarketCategory.Hoa,
+            MarketCategory.ChanNuoi, MarketCategory.MonAn,
+        };
 
-            if (id == "nam") { Fail($"order '{path}' vẫn dùng itemId 'nam' (phải là 'mushroom')"); continue; }
+        int poolCount = 0, dishCount = 0;
+        foreach (var info in MarketPriceTable.AllItems)
+        {
+            if (!info.MarketEnabled)          continue;   // 5 món thiếu icon / thiếu nguyên liệu
+            if (!allowed.Contains(info.Category)) continue;   // hạt giống, gia vị, vật liệu, chế biến
 
-            if (ExpectedRawOrders.TryGetValue(id, out var exp))
-            {
-                if (unlock == exp.unlock && gold == exp.gold) Pass($"order '{id}' L{unlock}, {gold}g/đv");
-                else Fail($"order '{id}' L{unlock}/{gold}g (kỳ vọng L{exp.unlock}/{exp.gold}g) — {path}");
-            }
-            else if (catEnum == 3) // OrderCategory.Cooking
-            {
-                if (!dishUnlock.TryGetValue(id, out int dUnlock))
-                    Fail($"order món '{id}' KHÔNG có DishData tương ứng — không thể nấu — {path}");
-                else if (unlock < dUnlock)
-                    Fail($"order món '{id}' mở L{unlock} nhưng món chỉ nấu được từ L{dUnlock} — kẹt đơn — {path}");
-                else
-                    Pass($"order món '{id}' L{unlock} (món nấu được từ L{dUnlock})");
-            }
-            if (gold <= 0) Fail($"order '{id}' goldPerUnit={gold} — {path}");
+            poolCount++;
+
+            if (info.BasePrice <= 0)
+                Fail($"'{info.ItemId}' BasePrice={info.BasePrice} — thưởng đơn sẽ tính ra 0");
+
+            if (info.Category != MarketCategory.MonAn) continue;
+
+            dishCount++;
+            if (!dishUnlock.TryGetValue(info.ItemId, out int dUnlock))
+                Fail($"món '{info.ItemId}' có trong bảng giá nhưng KHÔNG có DishData — không nấu được");
+            else if (info.UnlockLevel < dUnlock)
+                Fail($"món '{info.ItemId}' mở ở L{info.UnlockLevel} nhưng chỉ nấu được từ L{dUnlock} — kẹt đơn");
+            else
+                Pass($"món '{info.ItemId}' L{info.UnlockLevel} (nấu được từ L{dUnlock})");
         }
-        if (orderCount < 30) Warn($"chỉ thấy {orderCount} OrderItemDefinition (kỳ vọng ~33)");
+
+        if (poolCount >= 40) Pass($"pool đơn hàng: {poolCount} vật phẩm ({dishCount} món ăn)");
+        else Fail($"pool đơn hàng chỉ có {poolCount} vật phẩm — kỳ vọng ≥40, kiểm lại bộ lọc");
+
+        // Năm gia vị KHÔNG có nguồn sản xuất trong farm — lọt vào đơn là chặn người chơi.
+        foreach (string banned in new[] { "salt", "herbs", "soysauce", "fishsauce", "sugar" })
+            if (MarketPriceTable.Has(banned) && allowed.Contains(MarketPriceTable.GetCategory(banned)))
+                Fail($"gia vị '{banned}' lọt vào pool đơn — người chơi không tự sản xuất được");
+
+        // Hai dòng mục 4 file TEAM yêu cầu bổ sung.
+        if (MarketPriceTable.Has("salad_nam_rau")) Pass("có 'salad_nam_rau' trong bảng giá");
+        else Fail("THIẾU 'salad_nam_rau' — món có thật nhưng không bao giờ ra đơn");
+
+        if (MarketPriceTable.Canonical("chicken") == "chicken_meat")
+            Pass("bí danh 'chicken' → 'chicken_meat' hoạt động");
+        else
+            Fail("'chicken' chưa quy về 'chicken_meat' — đơn thịt gà sẽ không giao được");
+
+        // Kho tên đơn — mục 5.2 yêu cầu 300+.
+        if (OrderNameBank.TotalNameCount >= 300) Pass($"kho tên đơn: {OrderNameBank.TotalNameCount} tên");
+        else Warn($"kho tên đơn chỉ có {OrderNameBank.TotalNameCount} tên (mục 5.2 yêu cầu 300+)");
     }
 
     // ── 3. Dishes ─────────────────────────────────────────────────────────────
     private static void CheckDishes()
     {
         _log.AppendLine("— COOKING DISHES —");
-        int count = 0, fish = 0;
+        int count = 0;
         foreach (string guid in AssetDatabase.FindAssets("t:DishData"))
         {
             var so = new SerializedObject(AssetDatabase.LoadAssetAtPath<ScriptableObject>(AssetDatabase.GUIDToAssetPath(guid)));
@@ -159,18 +175,12 @@ public static class DemoL1L10Tool
             var prop   = so.FindProperty("unlockLevel");
             count++;
             if (prop == null) { Fail($"DishData '{id}' THIẾU field unlockLevel (script chưa compile lại?)"); continue; }
-            if (id == "ca_nuong_tieu" || id == "canh_chua_ca")
-            {
-                fish++;
-                if (prop.intValue >= 99) Pass($"món cá '{id}' đã khoá (L{prop.intValue})");
-                else Fail($"món cá '{id}' unlock L{prop.intValue} — phải ≥99 vì chưa có hệ cá");
-            }
-            else if (prop.intValue < 5 || prop.intValue > 10)
+            if (prop.intValue < 5 || prop.intValue > 10)
                 Warn($"món '{id}' unlock L{prop.intValue} — ngoài dải L5-L10");
             else Pass($"món '{id}' unlock L{prop.intValue}");
         }
-        if (count != 20) Warn($"thấy {count}/20 DishData");
-        if (fish != 2) Warn($"thấy {fish}/2 món cá");
+        // 18 chứ không 20: hai món cá đã xoá sạch ở A4 (không có nguyên liệu cá, không có hồ cá).
+        if (count != 18) Warn($"thấy {count}/18 DishData");
     }
 
     // ── 4. Level rewards ──────────────────────────────────────────────────────
@@ -227,19 +237,14 @@ public static class DemoL1L10Tool
             else Fail($"starter {g} vàng / {d} gem (kỳ vọng 400/15)");
         }
 
-        var vom = Object.FindFirstObjectByType<Village.VillageOrderManager>(FindObjectsInactive.Include);
-        if (vom == null) Warn("VillageOrderManager không có trong scene đang mở");
-        else
-        {
-            var so = new SerializedObject(vom);
-            int steps = so.FindProperty("houseUnlockSteps")?.arraySize ?? 0;
-            if (steps > 0) Pass($"houseUnlockSteps: {steps} mốc (L1=4 nhà → L9=8 nhà)");
-            else Fail("houseUnlockSteps trống — mọi nhà sẽ nhận đơn từ L1");
+        // Bảng đơn hàng thay hệ nhà dân: chỉ cần ĐÚNG MỘT OrderBoardManager trong scene.
+        // Có hai cái thì base tự huỷ bớt lúc chạy, nhưng người dựng scene nên biết trước.
+        var boards = Object.FindObjectsByType<OrderBoardManager>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
 
-            float l1 = so.FindProperty("twoItemChanceL1")?.floatValue ?? -1f;
-            if (Mathf.Approximately(l1, 0f)) Pass("đơn L1 luôn 1-item");
-            else Warn($"twoItemChanceL1 = {l1} (đề xuất 0)");
-        }
+        if (boards.Length == 1)      Pass("có đúng 1 OrderBoardManager trong scene");
+        else if (boards.Length == 0) Warn("không thấy OrderBoardManager trong scene đang mở — bảng đơn sẽ trống");
+        else                         Fail($"có {boards.Length} OrderBoardManager trong scene — phải đúng 1");
     }
 
     // ── 6. Pens ───────────────────────────────────────────────────────────────
@@ -385,37 +390,11 @@ public static class DemoL1L10Tool
             sb.AppendLine("  ✔ [SetupAll] AnimalGuideController OK");
         }
 
-        // ── Đồng bộ VillageOrderManager.availableItems với TOÀN BỘ OrderItemDefinition ──
-        // availableItems là list serialize trong scene → item đơn hàng mới
-        // (vd OrderItem_Milk) chỉ cần tạo asset rồi chạy Setup All là vào pool.
-        var vomSync = Object.FindFirstObjectByType<Village.VillageOrderManager>(FindObjectsInactive.Include);
-        if (vomSync == null)
-        {
-            sb.AppendLine("  ⚠ [SetupAll] Không thấy VillageOrderManager trong scene — bỏ qua đồng bộ availableItems");
-        }
-        else
-        {
-            var orderDefs = AssetDatabase.FindAssets("t:OrderItemDefinition")
-                .Select(g => AssetDatabase.LoadAssetAtPath<Village.OrderItemDefinition>(AssetDatabase.GUIDToAssetPath(g)))
-                .Where(d => d != null)
-                .OrderBy(d => d.unlockLevel).ThenBy(d => d.itemId)
-                .ToList();
+        // (đã gỡ khối đồng bộ `VillageOrderManager.availableItems`)
+        // Bộ sinh đơn mới đọc thẳng `MarketPriceTable` nên không còn danh sách nào trong
+        // scene phải đồng bộ tay — thêm một món vào bảng giá là nó vào pool ngay.
 
-            var soVom = new SerializedObject(vomSync);
-            var itemsProp = soVom.FindProperty("availableItems");
-            itemsProp.ClearArray();
-            for (int i = 0; i < orderDefs.Count; i++)
-            {
-                itemsProp.InsertArrayElementAtIndex(i);
-                itemsProp.GetArrayElementAtIndex(i).objectReferenceValue = orderDefs[i];
-            }
-            soVom.ApplyModifiedPropertiesWithoutUndo();
-            EditorUtility.SetDirty(vomSync);
-            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(vomSync.gameObject.scene);
-            sb.AppendLine($"  ✔ [SetupAll] VillageOrderManager.availableItems ← {orderDefs.Count} OrderItemDefinition (quét toàn bộ asset)");
-        }
-
-        sb.AppendLine("KHÔNG chạy 'Setup Village Orders L1-L6/Apply Phase 1 Data' — tool cũ, sẽ ghi đè kinh tế đã duyệt.");
+        sb.AppendLine("Đơn hàng nay do OrderBoardManager sinh từ MarketPriceTable — không còn tool setup nào phải chạy.");
         sb.AppendLine("Tiếp theo: chạy Check All rồi lưu scene.");
         Debug.Log(sb.ToString());
 
@@ -630,28 +609,19 @@ public static class DemoL1L10Tool
         }
     }
 
+    /// <summary>
+    /// Giao hẳn cho <see cref="ChoiLaiTuDauTool"/> thay vì tự xoá.
+    ///
+    /// Bản cũ ở đây gọi `DeleteAll()` rồi vá tay hai manager `FarmEconomyManager` và
+    /// `PlayerProgressManager` khi đang Play. Vá được hai cái, còn `WarehouseManager`,
+    /// `FarmInventoryManager`, `OrderBoardManager`, `PlayerStallManager`, `TutorialManager`
+    /// thì không — chúng vẫn giữ dữ liệu cũ trong bộ nhớ và ghi đè trở lại ngay lần Save
+    /// kế tiếp. Cứ mỗi manager mới thêm vào game là danh sách phải vá lại dài thêm một
+    /// dòng, và không ai nhớ nổi. Thoát Play rồi mới xoá thì không có manager nào sống
+    /// để mà ghi đè — đúng một lần, đúng mãi mãi.
+    /// </summary>
     [MenuItem("Tools/Farm Game/Demo L1-L10/Reset Demo Save", false, 3)]
-    public static void ResetDemoSave()
-    {
-        if (!EditorUtility.DisplayDialog("Reset Demo Save",
-                "Xoá TOÀN BỘ PlayerPrefs (level, EXP, vàng, gem, kho, ô đất)?\nNew Game sẽ bắt đầu: Level 1, 400 vàng, 15 gem.",
-                "Xoá và chơi lại", "Huỷ"))
-            return;
-        PlayerPrefs.DeleteAll();
-        PlayerPrefs.Save();
-
-        // Đang Play: reset cả bộ nhớ manager (DontDestroyOnLoad) — nếu không vàng/gem/level
-        // sẽ bị instance còn sống ghi đè lại giá trị cũ.
-        if (Application.isPlaying)
-        {
-            if (FarmEconomyManager.Instance != null)
-                FarmEconomyManager.Instance.ResetCurrency();
-            if (PlayerProgressManager.Instance != null)
-                PlayerProgressManager.Instance.ForceSetLevelExp(1, 0);
-        }
-
-        Debug.Log("[DemoL1L10] Đã xoá PlayerPrefs — vào Play Mode để bắt đầu New Game L1.");
-    }
+    public static void ResetDemoSave() => ChoiLaiTuDauTool.ChoiLaiTuDau();
 
     [MenuItem("Tools/Farm Game/Demo L1-L10/Print Playtest Checklist", false, 4)]
     public static void PrintChecklist()

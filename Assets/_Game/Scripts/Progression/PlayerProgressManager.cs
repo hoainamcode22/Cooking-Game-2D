@@ -8,6 +8,16 @@ public class PlayerProgressManager : MonoBehaviour
     private const string Pref_Level = "PLAYER_LEVEL";
     private const string Pref_Exp = "PLAYER_EXP";
 
+    // B4 — họ save + phiên bản. Hai khoá này ghi thẳng số nguyên nên không có chỗ nhét
+    // `saveVersion` vào; dấu phiên bản nằm ở khoá phụ `SAVE_VER_PLAYER_PROGRESS`.
+    //
+    // v1 = đường cong EXP hiện tại (`RequiredExpForLevel` = 40 + 10n + 3n²/20, maxLevel 100).
+    // TĂNG SỐ NÀY nếu đổi công thức EXP: `CurrentExp` là EXP DƯ của cấp hiện tại, nên đổi
+    // công thức mà không migrate thì người chơi có thể đang giữ số dư LỚN HƠN mốc cấp mới
+    // ⇒ vào game là lên vài cấp một lúc, hoặc kẹt vì mốc mới cao hơn nhiều.
+    private const string SaveFamily  = "PLAYER_PROGRESS";
+    private const int    SaveVersion = 1;
+
     [Header("Config")]
     [SerializeField] private int startLevel = 1;
     [SerializeField] private int startExp = 0;
@@ -130,6 +140,10 @@ public class PlayerProgressManager : MonoBehaviour
 
     private void Load()
     {
+        bool coSaveCu = PlayerPrefs.HasKey(Pref_Level) || PlayerPrefs.HasKey(Pref_Exp);
+
+        SaveVersionGuard.Ensure(SaveFamily, SaveVersion, MigrateProgress, coSaveCu);
+
         Level = PlayerPrefs.GetInt(Pref_Level, Mathf.Max(1, startLevel));
         CurrentExp = PlayerPrefs.GetInt(Pref_Exp, Mathf.Max(0, startExp));
 
@@ -139,10 +153,32 @@ public class PlayerProgressManager : MonoBehaviour
             CurrentExp = 0;
     }
 
+    /// <summary>
+    /// Nhánh chuyển đổi save cấp/EXP. Hiện chỉ có v0 → v1 và định dạng KHÔNG đổi
+    /// (vẫn là hai số nguyên cùng ý nghĩa), nên chỉ cần kẹp lại EXP dư cho an toàn:
+    /// save đời cũ có thể mang `CurrentExp` lớn hơn mốc cấp hiện tại nếu công thức từng khác.
+    /// Kẹp ở đây thay vì để `AddExp` tự xử lý, vì `AddExp` chỉ chạy khi người chơi nhận EXP —
+    /// còn màn hình thanh EXP thì vẽ ngay lúc vào game.
+    /// </summary>
+    private void MigrateProgress(int cu, int moi)
+    {
+        int lv  = Mathf.Clamp(PlayerPrefs.GetInt(Pref_Level, 1), 1, maxLevel);
+        int exp = Mathf.Max(0, PlayerPrefs.GetInt(Pref_Exp, 0));
+        int can = RequiredExpForLevel(lv);
+
+        if (exp >= can && lv < maxLevel)
+        {
+            Debug.LogWarning($"[PlayerProgress] Save v{cu}: EXP dư {exp} ≥ mốc cấp {lv} ({can}) — " +
+                             $"kẹp lại còn {can - 1} để không nhảy cấp ngay khi vào game.");
+            PlayerPrefs.SetInt(Pref_Exp, can - 1);
+            LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+        }
+    }
+
     private void Save()
     {
         PlayerPrefs.SetInt(Pref_Level, Level);
         PlayerPrefs.SetInt(Pref_Exp, CurrentExp);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 }

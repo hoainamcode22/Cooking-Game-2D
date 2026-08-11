@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_hoa_mau_don
   itemName: "Hoa M\u1EABu \u0110\u01A1n"
   itemIcon: {fileID: 5323483815673981538, guid: 7abff9af382f065459862ac658a75334, type: 3}
-  goldPrice: 90
+  goldPrice: 141
   diamondPrice: 0
   cropCategory: 1
   cropId: hoa_mau_don
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 1
   seedItemId: seed_hoa_mau_don
   harvestItemId: hoa_mau_don
-  tier: 1
   unlockLevel: 10
-  growSeconds: 180
-  sellGold: 28
+  growSeconds: 600
+  sellGold: 81
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 60
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

@@ -34,7 +34,6 @@ public class EditModeManager : MonoBehaviour
     [SerializeField] private GameObject editModeLabel;
 
     // Danh sÃ¡ch bong bÃ³ng Ä‘ang hiá»‡n lÃºc vÃ o Edit Mode â€” Ä‘á»ƒ khÃ´i phá»¥c khi thoÃ¡t
-    private readonly List<GameObject> _hiddenBubbles = new();
 
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -98,30 +97,44 @@ public class EditModeManager : MonoBehaviour
 
     private void HideBubbles()
     {
-        _hiddenBubbles.Clear();
-
-        // ÄÃ³ng popup náº¿u Ä‘ang má»Ÿ
-        Village.HouseOrderPopupUI.Instance?.Close();
-
-        // Thu tháº­p táº¥t cáº£ bong bÃ³ng Ä‘ang active vÃ  áº©n chÃºng
-        var bubbles = FindObjectsByType<Village.HouseOrderBubble>(
-            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-
-        foreach (var b in bubbles)
-        {
-            _hiddenBubbles.Add(b.gameObject);
-            b.gameObject.SetActive(false);
-        }
-
+        SetOrderBoardMarksVisible(false);
     }
 
     private void RestoreBubbles()
     {
-        foreach (var go in _hiddenBubbles)
-            if (go != null) go.SetActive(true);
-
-        _hiddenBubbles.Clear();
+        SetOrderBoardMarksVisible(true);
     }
+
+    /// <summary>
+    /// Ẩn/hiện phiếu ghim trên mặt bảng đơn hàng khi vào/ra Edit Mode, và đóng popup
+    /// bảng đơn nếu nó đang mở.
+    ///
+    /// VÌ SAO không còn danh sách `_hiddenBubbles`: hệ cũ phải nhớ từng bong bóng đã tắt
+    /// vì chúng nằm rải trên 12 nhà dân khắp bản đồ, mỗi cái một trạng thái riêng. Bảng
+    /// đơn mới chỉ có MỘT object, trạng thái phiếu suy thẳng từ dữ liệu bảng — bật lại là
+    /// nó tự vẽ đúng, không cần chụp ảnh trạng thái trước đó. Bớt một danh sách là bớt
+    /// một chỗ để rò rỉ tham chiếu tới object đã bị huỷ.
+    /// </summary>
+    private void SetOrderBoardMarksVisible(bool visible)
+    {
+        if (!visible)
+        {
+            // Đang kéo thả công trình mà popup còn mở thì click rơi vào popup, người chơi
+            // tưởng game đơ. Đóng trước rồi mới đổi chế độ.
+            var popups = FindObjectsByType<OrderBoardPopupUI>(
+                FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+            foreach (var p in popups)
+                if (p != null && p.IsOpen) p.ClosePopup();
+        }
+
+        var boards = FindObjectsByType<OrderBoardWorldObject>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        foreach (var b in boards)
+            if (b != null) b.SetOrderMarksVisible(visible);
+    }
+
 
     // â”€â”€ Footprint Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 

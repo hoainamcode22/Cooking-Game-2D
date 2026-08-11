@@ -493,7 +493,33 @@ public class PlacementManager : MonoBehaviour
     /// Giá VÀNG của vật đang cầm. 0 khi đang di chuyển vật có sẵn (miễn phí) hoặc khi
     /// vật này bán bằng kim cương. DEV-2 chỉ hiện icon vàng khi số này &gt; 0.
     /// </summary>
-    public int CurrentPriceGold => (IsFreeMove || currentItem == null) ? 0 : currentItem.goldPrice;
+    // F10: ô đất có giá LUỸ TIẾN nên không đọc thẳng `goldPrice` nữa — mọi nơi phải đi
+    // qua PlotPurchasePricing, nếu không thì Ghost hiện một giá mà lúc trừ tiền lại là giá khác.
+    public int CurrentPriceGold => (IsFreeMove || currentItem == null)
+        ? 0
+        : PlotPurchasePricing.EffectiveGoldPrice(currentItem);
+
+    /// <summary>
+    /// Số công trình đã ĐẶT (đã mua) mang itemID này, đọc từ save `FARM_PLACED_BUILDINGS`.
+    /// PlotPurchasePricing dùng để tính giá ô đất tiếp theo.
+    ///
+    /// LƯU Ý: ô đang trong giai đoạn XÂY (`ConstructionManager`) chưa nằm trong danh sách
+    /// này, nên mua hai ô liên tiếp trước khi ô đầu xây xong sẽ cùng một giá. Chấp nhận
+    /// được: `Đất Trồng` có buildTimeSeconds = 30 nên cửa sổ đó rất hẹp, và chọn sai
+    /// hướng này (rẻ hơn) an toàn hơn là tính tiền người chơi cho ô họ chưa có.
+    /// </summary>
+    public int CountPlacedByItemId(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId)) return 0;
+
+        int n = 0;
+        for (int i = 0; i < placedBuildings.Count; i++)
+        {
+            if (placedBuildings[i] != null && placedBuildings[i].itemId == itemId)
+                n++;
+        }
+        return n;
+    }
 
     /// <summary>Giá KIM CƯƠNG của vật đang cầm. Quy ước giống CurrentPriceGold.</summary>
     public int CurrentPriceGem => (IsFreeMove || currentItem == null) ? 0 : currentItem.diamondPrice;
@@ -1219,10 +1245,6 @@ public class PlacementManager : MonoBehaviour
         // Tắt bất kỳ placeholder cùng tên trong scene để tránh object thừa
         DisablePlaceholderInScene(currentItem.prefabToBuild.name, spawnedObj);
 
-        // Khởi tạo house bubble — chỉ clone này được truyền vào RegisterHouse
-        var house = spawnedObj.GetComponentInChildren<Village.HouseOrderController>(true);
-        if (house != null) house.Initialize();
-
         // Khởi tạo sạch nếu là ô đất (tránh load dữ liệu cũ trùng plotId)
         var plot = spawnedObj.GetComponentInChildren<PlotController>(true);
         if (plot != null)
@@ -1336,9 +1358,6 @@ public class PlacementManager : MonoBehaviour
         FixAnimalVisibility(spawnedObj);
         DisablePlaceholderInScene(data.prefabToBuild != null ? data.prefabToBuild.name : spawnedObj.name, spawnedObj);
 
-        var house = spawnedObj.GetComponentInChildren<Village.HouseOrderController>(true);
-        if (house != null) house.Initialize();
-
         int assignedPlotId = 0;
         var plot = spawnedObj.GetComponentInChildren<PlotController>(true);
         if (plot != null)
@@ -1391,7 +1410,7 @@ public class PlacementManager : MonoBehaviour
         // (đặt mới thì sinh ra ở hệ mới, load save cũ thì đã được dịch ở LoadBuildings).
         var save = new BuildingsSave { saveVersion = CurrentSaveVersion, list = placedBuildings };
         PlayerPrefs.SetString(BuildingsSaveKey, JsonUtility.ToJson(save));
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
 
         // Công trình vừa thay đổi → kích thước nội dung map đổi theo.
         // Xoá cache hộp bao để phím F1 (xem toàn bản đồ) đo lại cho đúng.
@@ -1444,9 +1463,6 @@ public class PlacementManager : MonoBehaviour
 
             // Tắt placeholder cùng tên còn sót trong scene
             DisablePlaceholderInScene(itemData.prefabToBuild.name, obj);
-
-            var house = obj.GetComponentInChildren<Village.HouseOrderController>(true);
-            if (house != null) house.Initialize();
 
             // Restore plotId khi load — plot đã có SaveKey riêng nên chỉ cần gán lại ID
             var plot = obj.GetComponentInChildren<PlotController>(true);
@@ -1522,18 +1538,35 @@ public class PlacementManager : MonoBehaviour
 
     // Tìm tất cả object trong scene có tên trùng prefabName (không có "(Clone)")
     // và SetActive(false) để tránh object thừa song song với clone vừa tạo.
+    //
+    // VÌ SAO quét theo Transform chứ không theo một component đánh dấu:
+    // bản cũ neo vào `HouseOrderController` — component vừa bị xoá cùng hệ đơn hàng nhà dân.
+    // Ứng viên thay thế đầu tiên là `EditableBuilding`, nhưng KIỂM TRA THẬT thì chỉ
+    // House_01 và House_02 có component đó; House_03/04/05 KHÔNG có. Neo vào nó là ba
+    // placeholder kia không bao giờ bị tắt, và người chơi thấy hai căn nhà chồng lên nhau.
+    //
+    // Quét toàn bộ Transform là cách duy nhất không phụ thuộc vào việc prefab nào lỡ thiếu
+    // component nào. Đắt hơn, nhưng hàm này chỉ chạy đúng một lần mỗi lần đặt công trình.
     private void DisablePlaceholderInScene(string prefabName, GameObject skipObj)
     {
-        var allHOCs = FindObjectsByType<Village.HouseOrderController>(
+        if (string.IsNullOrEmpty(prefabName)) return;
+
+        var all = FindObjectsByType<Transform>(
             FindObjectsInactive.Include, FindObjectsSortMode.None);
 
-        foreach (var hoc in allHOCs)
+        foreach (var t in all)
         {
-            if (hoc.gameObject == skipObj) continue;
-            if (hoc.gameObject.name == prefabName)          // exact name = chưa có "(Clone)"
-            {
-                hoc.gameObject.SetActive(false);
-            }
+            if (t == null) continue;
+
+            GameObject go = t.gameObject;
+            if (go == skipObj) continue;
+            if (go.name != prefabName) continue;            // exact name = chưa có "(Clone)"
+
+            // Bỏ qua mọi thứ nằm BÊN TRONG object vừa spawn: prefab có thể chứa một con
+            // trùng tên với chính nó, tắt nhầm là công trình mới hiện thiếu một mảnh.
+            if (skipObj != null && t.IsChildOf(skipObj.transform)) continue;
+
+            go.SetActive(false);
         }
     }
 
@@ -1541,7 +1574,7 @@ public class PlacementManager : MonoBehaviour
     public void ClearBuildingData()
     {
         PlayerPrefs.DeleteKey(BuildingsSaveKey);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         placedBuildings.Clear();
         knownSizes.Clear();
         reservedRects.Clear();
@@ -1682,11 +1715,13 @@ public class PlacementManager : MonoBehaviour
             }
             else if (currentItem != null)
             {
-                // Cancel đặt mới: hoàn tiền
+                // Cancel đặt mới: hoàn tiền.
+                // Hoàn ĐÚNG số vừa trừ: với ô đất, giá phụ thuộc số ô đã có, mà lúc này
+                // ô chưa được ghi vào save nên PlotPurchasePricing trả lại đúng con số cũ.
                 if (currentItem.diamondPrice > 0)
                     FarmEconomyManager.Instance.AddGems(currentItem.diamondPrice);
                 else
-                    FarmEconomyManager.Instance.AddGold(currentItem.goldPrice);
+                    FarmEconomyManager.Instance.AddGold(PlotPurchasePricing.EffectiveGoldPrice(currentItem));
 
             }
         }

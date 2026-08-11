@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_hoa_cam_tu_cau
   itemName: "Hoa C\u1EA9m T\xFA C\u1EA7u"
   itemIcon: {fileID: -5775649037021411514, guid: f447b6fe5120361498c771f0cbb24fc6, type: 3}
-  goldPrice: 120
+  goldPrice: 152
   diamondPrice: 0
   cropCategory: 1
   cropId: hoa_cam_tu_cau
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 1
   seedItemId: seed_hoa_cam_tu_cau
   harvestItemId: hoa_cam_tu_cau
-  tier: 1
   unlockLevel: 10
-  growSeconds: 180
-  sellGold: 30
+  growSeconds: 650
+  sellGold: 88
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 65
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

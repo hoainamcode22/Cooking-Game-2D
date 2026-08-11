@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_hoa_cuc_trang
   itemName: "Hoa C\xFAc Tr\u1EAFng"
   itemIcon: {fileID: -979573006427950913, guid: d0add0a1f95cea54baffadb8fe962218, type: 3}
-  goldPrice: 110
+  goldPrice: 88
   diamondPrice: 0
   cropCategory: 1
   cropId: hoa_cuc_trang
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 1
   seedItemId: seed_hoa_cuc_trang
   harvestItemId: hoa_cuc_trang
-  tier: 1
   unlockLevel: 7
-  growSeconds: 180
-  sellGold: 24
+  growSeconds: 310
+  sellGold: 42
   harvestAmount: 4
   plantCost: 1
-  expReward: 5
+  expReward: 31
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

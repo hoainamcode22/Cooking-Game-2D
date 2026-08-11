@@ -27,4 +27,7 @@ MonoBehaviour:
   requiredIngredients:
   - {fileID: 11400000, guid: e8ff296568c88e84c8ee3c7a64b0615a, type: 2}
   - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
-  - {fileID: 11400000, guid: 75006c3941d066f42be1cfa651b2ac0c, type: 2}
+  - {fileID: 11400000, guid: 7df2822734955c543a8459823997157a, type: 2}
+  rewardExp: 27
+  rewardGold: 40
+  sellPrice: 160

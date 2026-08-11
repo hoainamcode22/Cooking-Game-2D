@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_ngo
   itemName: "Ng\xF4"
   itemIcon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
-  goldPrice: 40
+  goldPrice: 35
   diamondPrice: 0
   cropCategory: 0
   cropId: ngo
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 12
   seedItemId: seed_ngo
   harvestItemId: ngo
-  tier: 1
   unlockLevel: 2
-  growSeconds: 360
+  growSeconds: 95
   sellGold: 13
   harvestAmount: 4
   plantCost: 1
-  expReward: 7
+  expReward: 10
   sweet: 0
   spicy: 0
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 0
-  canAppearInRareMarket: 0

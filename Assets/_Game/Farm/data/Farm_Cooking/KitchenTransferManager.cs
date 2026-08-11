@@ -14,6 +14,16 @@ public class KitchenTransferManager : MonoBehaviour
     [Serializable]
     private class TransferSaveData
     {
+        /// <summary>
+        /// B4 — phiên bản save của hàng đã gửi vào bếp.
+        ///
+        /// KHÔNG đặt mặc định = <see cref="CurrentSaveVersion"/>: save đời trước không có
+        /// khoá "saveVersion" nên `JsonUtility` để nguyên giá trị khởi tạo. Đặt mặc định
+        /// bằng phiên bản hiện tại là save cũ tự nhận mình là mới ⇒ mất luôn cơ hội chuyển đổi.
+        /// Để 0 thì phân biệt được ngay. (Cùng thủ thuật `ConstructionManager` đang dùng.)
+        /// </summary>
+        public int saveVersion;
+
         public List<TransferEntry> entries = new List<TransferEntry>();
     }
 
@@ -21,9 +31,33 @@ public class KitchenTransferManager : MonoBehaviour
 
     private const string SaveKey = "KITCHEN_TRANSFER_SAVE";
 
+    /// <summary>
+    /// v0 = save trước khi dọn `IngredientData` trùng (A7) và trước khi xoá 2 món cá (A4).
+    /// v1 = itemId đã chuẩn hoá theo bảng asset hiện hành.
+    ///
+    /// VÌ SAO cần: save này giữ ĐÚNG `itemId` chuỗi. `ca` (cá) đã bị xoá khỏi dự án, nên
+    /// người chơi đang có "ca" trong save sẽ giữ một khoá rác vĩnh viễn — `CookingBoot`
+    /// bỏ qua im lặng, còn `WarehousePopupUI` thì vẫn trừ khỏi kho. Phải cắt tại lúc nạp.
+    /// </summary>
+    private const int CurrentSaveVersion = 1;
+
+    /// <summary>
+    /// itemId đã bị xoá khỏi dự án — phải gỡ khỏi save cũ khi migrate.
+    /// Thêm id vào đây MỖI KHI xoá một `InventoryItemData`, đồng thời tăng
+    /// <see cref="CurrentSaveVersion"/>.
+    /// </summary>
+    private static readonly string[] DeadItemIds = { "ca", "ca_nuong_tieu", "canh_chua_ca" };
+
     private readonly Dictionary<string, int> transferredItems = new Dictionary<string, int>();
 
-    public Action OnTransferredItemsChanged;
+    // C10 — đã xoá `public Action OnTransferredItemsChanged;`.
+    // Sự kiện này được bắn ở 4 chỗ (AddTransferredItem, ClearTransferredItems,
+    // RemoveTransferredItem, SetAfterCooking) mà KHÔNG MỘT AI đăng ký nghe.
+    // Event mồ côi tệ hơn cả code chết: người đọc tin rằng UI bếp tự cập nhật theo
+    // kho nên không đi tìm chỗ gọi refresh — mà thực tế màn hình chỉ được làm mới
+    // khi `CookingChallengeManager.ResetCookingSelectionState()` gọi tay
+    // `cookingBoot.RefreshTransferredItemCards()`. Cần cập nhật realtime thì nối
+    // thẳng lời gọi đó, đừng dựng lại event rồi lại quên đăng ký.
 
     private void Awake()
     {
@@ -61,7 +95,6 @@ public class KitchenTransferManager : MonoBehaviour
 
         transferredItems[itemId] += amount;
         SaveTransferData();
-        OnTransferredItemsChanged?.Invoke();
     }
 
     public int GetTransferredAmount(string itemId)
@@ -89,7 +122,6 @@ public class KitchenTransferManager : MonoBehaviour
     {
         transferredItems.Clear();
         SaveTransferData();
-        OnTransferredItemsChanged?.Invoke();
     }
 
     public bool HasTransferredItem(string itemId, int amount = 1)
@@ -119,13 +151,14 @@ public class KitchenTransferManager : MonoBehaviour
             transferredItems[itemId] = current;
 
         SaveTransferData();
-        OnTransferredItemsChanged?.Invoke();
         return true;
     }
 
     private void SaveTransferData()
     {
-        TransferSaveData data = new TransferSaveData();
+        // LUÔN gán tường minh: `saveVersion` mặc định là 0 (cố ý — xem chú thích ở class),
+        // nên không gán ở đây là ghi ra save v0 và lần nạp sau lại chạy migrate lần nữa.
+        TransferSaveData data = new TransferSaveData { saveVersion = CurrentSaveVersion };
 
         foreach (var kv in transferredItems)
         {
@@ -141,7 +174,7 @@ public class KitchenTransferManager : MonoBehaviour
 
         string json = JsonUtility.ToJson(data);
         PlayerPrefs.SetString(SaveKey, json);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 
     private void LoadTransferData()
@@ -159,13 +192,41 @@ public class KitchenTransferManager : MonoBehaviour
         if (data == null || data.entries == null)
             return;
 
+        if (data.saveVersion > CurrentSaveVersion)
+        {
+            // Save mới hơn code = người chơi vừa hạ cấp bản game. Đọc tiếp thì có thể gặp
+            // itemId mà bản này không biết; nhưng XOÁ save thì mất hàng của họ. Chọn đọc
+            // tiếp và cảnh báo — dữ liệu chỉ là (itemId, số lượng), rủi ro thấp nhất.
+            Debug.LogWarning($"[KitchenTransfer] Save v{data.saveVersion} mới hơn code " +
+                             $"v{CurrentSaveVersion} — đọc tiếp, có thể gặp itemId chưa biết.");
+        }
+
+        bool canMigrate = data.saveVersion < CurrentSaveVersion;
+        int soMucBoDi = 0;
+
         for (int i = 0; i < data.entries.Count; i++)
         {
             TransferEntry entry = data.entries[i];
             if (entry == null || string.IsNullOrEmpty(entry.itemId) || entry.amount <= 0)
                 continue;
 
+            // v0 → v1: gỡ những itemId đã bị xoá khỏi dự án. Không gỡ thì khoá rác nằm
+            // trong save mãi mãi: `CookingBoot` bỏ qua im lặng (không có `InventoryItemData`
+            // tương ứng) nên người chơi thấy "đã gửi vào bếp" mà bếp không có gì.
+            if (canMigrate && System.Array.IndexOf(DeadItemIds, entry.itemId) >= 0)
+            {
+                soMucBoDi++;
+                continue;
+            }
+
             transferredItems[entry.itemId] = entry.amount;
+        }
+
+        if (canMigrate)
+        {
+            Debug.Log($"[KitchenTransfer] Chuyển save v{data.saveVersion} → v{CurrentSaveVersion}" +
+                      (soMucBoDi > 0 ? $", bỏ {soMucBoDi} vật phẩm đã xoá khỏi dự án." : "."));
+            SaveTransferData();   // ghi lại kèm dấu phiên bản → chỉ chuyển MỘT LẦN
         }
     }
     //File nÃ y cá»§a NguyÃªn thÃªm vÃ o
@@ -188,7 +249,6 @@ public class KitchenTransferManager : MonoBehaviour
         }
 
         SaveTransferData();
-        OnTransferredItemsChanged?.Invoke();
     }
 
     public void SetAfterCooking(List<string> selectedItemIds)

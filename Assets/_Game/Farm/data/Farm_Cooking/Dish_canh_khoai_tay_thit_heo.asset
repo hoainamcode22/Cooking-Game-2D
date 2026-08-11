@@ -28,6 +28,9 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e0b72888953ad72479d8eb9c8462d0c6, type: 2}
   - {fileID: 11400000, guid: 65f23ad20a871e24fa3c77769c5cbe4c, type: 2}
   - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
+  rewardExp: 36
+  rewardGold: 48
+  sellPrice: 190
   required1:
     displayName: "Th\u1ECBt heo"
     icon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}

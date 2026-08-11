@@ -93,7 +93,6 @@ GameObject:
   - component: {fileID: 436894237551700408}
   - component: {fileID: 7817038224197738951}
   - component: {fileID: 3721214090068518234}
-  - component: {fileID: 8244659969383978972}
   - component: {fileID: 8211377218225998786}
   m_Layer: 5
   m_Name: Item_Seasoning_FishSauce
@@ -260,38 +259,6 @@ MonoBehaviour:
   statusGO: {fileID: 0}
   isSeasoning: 1
   txtQuantity: {fileID: 3607465316032095200}
---- !u!114 &8244659969383978972
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2303174689766660682}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e4055827d3812c14ababf2c833337941, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CookingSelectionManager
-  currentFlavor: {fileID: 0}
-  currentFlavorVector:
-    sweet: 0
-    spicy: 0
-    sour: 0
-    umami: 0
-    texture: 0
-  maxIngredients: 4
-  maxSeasonings: 3
-  ingredientsCountText: {fileID: 0}
-  seasoningsCountText: {fileID: 0}
-  potIngredientsContent: {fileID: 0}
-  potSeasoningsContent: {fileID: 0}
-  potCardPrefab: {fileID: 0}
-  leftIngredientsContent: {fileID: 0}
-  leftSeasoningsContent: {fileID: 0}
-  newPotIngredientsContent: {fileID: 0}
-  newPotSeasoningsContent: {fileID: 0}
-  stackSlotPrefab: {fileID: 0}
-  cookingInventoryItems: []
 --- !u!114 &8211377218225998786
 MonoBehaviour:
   m_ObjectHideFlags: 0

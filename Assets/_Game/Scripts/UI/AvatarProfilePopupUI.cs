@@ -13,6 +13,36 @@ public class AvatarProfilePopupUI : MonoBehaviour
     private const string PrefWarehouseLevel = "PLAYER_PROFILE_WAREHOUSE_LEVEL";
     private const string PrefAchievementCount = "PLAYER_PROFILE_ACHIEVEMENT_COUNT";
 
+    // B4 — họ save + phiên bản cho 4 khoá hồ sơ ở trên. Bốn khoá này ghi thẳng số/chuỗi
+    // nên dấu phiên bản nằm ở khoá phụ `SAVE_VER_PLAYER_PROFILE`.
+    //
+    // v1 = tên + chỉ số avatar + cấp kho + "điểm nấu ăn" như hiện tại.
+    // TĂNG SỐ NÀY nếu đổi số lượng avatar (chỉ số cũ vượt mảng mới → phải kẹp lại) hoặc
+    // đổi ý nghĩa `PLAYER_PROFILE_WAREHOUSE_LEVEL` (nó đang là BẢN SAO của `WAREHOUSE_LEVEL`
+    // dùng để hiện lên hồ sơ — hai khoá cùng nội dung, xem 6.A phần rủi ro).
+    private const string SaveFamily  = "PLAYER_PROFILE";
+    private const int    SaveVersion = 1;
+
+    /// <summary>
+    /// Đóng dấu phiên bản + kẹp lại dữ liệu vượt biên. Gọi từ mọi cửa ĐỌC static bên dưới:
+    /// popup này có thể chưa được mở lần nào mà `AddAchievementCount()` đã bị gọi từ
+    /// `UnifiedTaskPopupUI`, nên không thể chỉ đóng dấu trong `Awake`.
+    /// </summary>
+    private static void EnsureProfileSaveVersion()
+    {
+        if (_profileVersionChecked) return;
+        _profileVersionChecked = true;
+
+        bool coSaveCu = PlayerPrefs.HasKey(PrefName)
+                        || PlayerPrefs.HasKey(PrefAvatarIndex)
+                        || PlayerPrefs.HasKey(PrefWarehouseLevel)
+                        || PlayerPrefs.HasKey(PrefAchievementCount);
+
+        SaveVersionGuard.Ensure(SaveFamily, SaveVersion, null, coSaveCu);
+    }
+
+    private static bool _profileVersionChecked;
+
     [Header("Root")]
     [SerializeField] private GameObject popupRoot;
     [SerializeField] private Button btnClose;
@@ -161,6 +191,7 @@ public class AvatarProfilePopupUI : MonoBehaviour
         if (inputPlayerName == null)
             return;
 
+        EnsureProfileSaveVersion();
         string savedName = PlayerPrefs.GetString(PrefName, "Nong Dan Vui Ve");
         isRefreshingName = true;
         inputPlayerName.SetTextWithoutNotify(savedName);
@@ -204,25 +235,27 @@ public class AvatarProfilePopupUI : MonoBehaviour
 
     public static int GetSavedWarehouseLevel(int fallback = 1)
     {
+        EnsureProfileSaveVersion();
         return Mathf.Max(1, PlayerPrefs.GetInt(PrefWarehouseLevel, Mathf.Max(1, fallback)));
     }
 
     public static int GetSavedAchievementCount(int fallback = 0)
     {
+        EnsureProfileSaveVersion();
         return Mathf.Max(0, PlayerPrefs.GetInt(PrefAchievementCount, Mathf.Max(0, fallback)));
     }
 
     public static void SetWarehouseLevel(int level)
     {
         PlayerPrefs.SetInt(PrefWarehouseLevel, Mathf.Max(1, level));
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         OnProfileStatsChanged?.Invoke();
     }
 
     public static void SetAchievementCount(int count)
     {
         PlayerPrefs.SetInt(PrefAchievementCount, Mathf.Max(0, count));
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         OnProfileStatsChanged?.Invoke();
     }
 
@@ -261,6 +294,8 @@ public class AvatarProfilePopupUI : MonoBehaviour
 
     private Sprite GetCurrentAvatarSprite()
     {
+        EnsureProfileSaveVersion();
+        // Kẹp chỉ số: save cũ có thể giữ index của một bộ avatar NHIỀU HƠN bộ hiện tại.
         int index = Mathf.Clamp(PlayerPrefs.GetInt(PrefAvatarIndex, 0), 0, Mathf.Max(0, avatarSprites.Length - 1));
         Sprite selected = GetAvatarSprite(index);
 
@@ -287,7 +322,7 @@ public class AvatarProfilePopupUI : MonoBehaviour
     private void SelectAvatar(int index)
     {
         PlayerPrefs.SetInt(PrefAvatarIndex, index);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         RefreshAvatarSelection();
         SetAvatarChoicesVisible(false);
     }
@@ -296,7 +331,7 @@ public class AvatarProfilePopupUI : MonoBehaviour
     {
         string cleanName = string.IsNullOrWhiteSpace(value) ? "Nong Dan Vui Ve" : value.Trim();
         PlayerPrefs.SetString(PrefName, cleanName);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
 
         if (inputPlayerName != null && inputPlayerName.text != cleanName)
             inputPlayerName.SetTextWithoutNotify(cleanName);
@@ -308,7 +343,7 @@ public class AvatarProfilePopupUI : MonoBehaviour
             return;
 
         PlayerPrefs.SetString(PrefName, string.IsNullOrEmpty(value) ? "Nong Dan Vui Ve" : value);
-        PlayerPrefs.Save();
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 
     private void BindButtons()

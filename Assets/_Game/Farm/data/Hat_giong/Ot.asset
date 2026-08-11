@@ -15,7 +15,7 @@ MonoBehaviour:
   itemID: seed_chili
   itemName: "\u1EDAt"
   itemIcon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
-  goldPrice: 170
+  goldPrice: 127
   diamondPrice: 0
   cropCategory: 0
   cropId: chili
@@ -30,18 +30,15 @@ MonoBehaviour:
   displayCount: 12
   seedItemId: seed_chili
   harvestItemId: chili
-  tier: 1
   unlockLevel: 9
-  growSeconds: 540
-  sellGold: 48
+  growSeconds: 500
+  sellGold: 68
   harvestAmount: 4
   plantCost: 1
-  expReward: 12
+  expReward: 50
   sweet: 0
   spicy: 3
   sour: 0
   umami: 0
   texture: 0
   canBuyInSeedShop: 1
-  canDropFromAds: 1
-  canAppearInRareMarket: 0

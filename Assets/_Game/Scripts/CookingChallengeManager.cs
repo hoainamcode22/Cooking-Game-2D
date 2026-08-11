@@ -21,7 +21,7 @@ public class CookingChallengeManager : MonoBehaviour
     [SerializeField] private CookingTimingMiniGameUI timingMiniGame;
 
 
-    private DishData cookedDishOnPlate;// Biáº¿n nÃ y Ä‘á»ƒ lÆ°u trá»¯ mÃ³n Äƒn Ä‘Ã£ náº¥u Ä‘Æ°á»£c hiá»ƒn thá»‹ trÃªn Ä‘Ä©a
+    private DishData cookedDishOnPlate;
     private DishData currentDishData;
 
     private bool isCooking = false;
@@ -196,7 +196,21 @@ public class CookingChallengeManager : MonoBehaviour
             deliveryCharacterMover.ShowDeliveryOnly();
         }
 
-        FarmInventoryManager.Instance.AddItem(cookedDishOnPlate.dishId, 1);
+        if (!FarmInventoryManager.Instance.AddItem(cookedDishOnPlate.dishId, 1))
+        {
+            // TESTER-F8 — LỖI MẤT ĐỒ NGƯỜI CHƠI.
+            // F8 làm AddItem TỪ CHỐI loại mới khi kho hết slot. Bản cũ bỏ qua giá trị trả
+            // về rồi vẫn `cookedDishOnPlate = null` + `HideCookedDish()` ở dưới ⇒ món ăn
+            // BỐC HƠI dù nguyên liệu đã bị trừ (Phở bò tái = 310 vàng nguyên liệu).
+            // DEV-B đã chặn đúng cách ở 3 chỗ khác (PlotController.Harvest,
+            // PenMiniPanelUI.TryHarvest, TrainManager.CollectReward) nhưng bỏ sót chỗ này.
+            // GIỮ món trên dĩa: người chơi dọn kho rồi bấm lại là nhận được.
+            Debug.LogWarning($"[Cooking] Kho đầy — chưa đưa '{cookedDishOnPlate.dishId}' vào kho. " +
+                             $"Món vẫn còn trên dĩa, bán bớt hoặc nâng cấp kho rồi bấm lại.");
+            FarmUIManager.Instance?.ShowHint("Kho đầy — bán bớt hoặc nâng cấp kho rồi nhận món.");
+            return;
+        }
+
         if (deliveryCharacterMover != null)
         {
             deliveryCharacterMover.MoveFromCookingToWarehouse();
@@ -230,7 +244,7 @@ public class CookingChallengeManager : MonoBehaviour
 
     }
 
-    private bool HasSelectedCookingItem()// HÃ m nÃ y kiá»ƒm tra xem ngÆ°á»i chÆ¡i Ä‘Ã£ chá»n nguyÃªn liá»‡u hoáº·c gia vá»‹ nÃ o chÆ°a trÆ°á»›c khi náº¥u
+    private bool HasSelectedCookingItem()
     {
         if (cookingSelectionManager == null)
         {
@@ -324,23 +338,63 @@ public class CookingChallengeManager : MonoBehaviour
     }
 
     //
+    /// <summary>
+    /// Hệ số nhân thưởng theo điểm: đạt vừa đủ ngưỡng ăn 100%, nấu hoàn hảo ăn 150%.
+    ///
+    /// VÌ SAO nội suy thẳng thay vì chia bậc: chia bậc thì người chơi hơn 1 điểm mà nhảy
+    /// hẳn một bậc thưởng — cảm giác như xổ số. Nội suy thì cố gắng thêm bao nhiêu được
+    /// trả bấy nhiêu. Kẹp lại [1.0 , 1.5] để điểm dưới ngưỡng (không thể tới đây) hoặc
+    /// điểm vượt 100 (không thể xảy ra) cũng không sinh số lạ.
+    /// </summary>
+    private float TinhHeSoThuongTheoDiem(int finalScore)
+    {
+        int nguong = successScoreThreshold;
+        if (finalScore <= nguong) return 1f;
+
+        // Khoảng cách từ ngưỡng tới điểm tối đa. Bảo vệ chia cho 0 nếu ai đặt ngưỡng = 100.
+        int daiDiem = 100 - nguong;
+        if (daiDiem <= 0) return 1f;
+
+        float t = Mathf.Clamp01((finalScore - nguong) / (float)daiDiem);
+        return Mathf.Lerp(1f, 1.5f, t);
+    }
+
     private IEnumerator HandleCookingSuccess(CookingScoreResult result)
     {
         cookedDishOnPlate = currentDishData;
 
-        // Cộng EXP khi nấu thành công (chạy đúng 1 lần cho mỗi lần nấu thành công).
-        // 8 → 20: nấu ăn nhiều bước/lâu hơn trồng cây nên EXP cao hơn (cân bằng cấp 1-100).
-        if (PlayerProgressManager.Instance != null)
-            PlayerProgressManager.Instance.AddExp(20);
+        // ── THƯỞNG THEO ĐỘ KHÓ × HỆ SỐ ĐIỂM (A5) ──
+        // Trước đây cộng CỨNG 20 EXP và 0 vàng cho MỌI món: nấu "Phở bò tái" (5 nguyên
+        // liệu, cấp 9, cần thịt bò từ chuồng cấp 7) ăn đúng bằng "Khoai tây chiên"
+        // (1 nguyên liệu, cấp 5) ⇒ không ai có lý do nấu món khó.
+        // Số gốc nằm trên từng `DishData` (rewardExp / rewardGold) để người cân bằng game
+        // sửa được mà không phải mở code.
+        float heSo = TinhHeSoThuongTheoDiem(result.finalScore);
+
+        int expNhan = currentDishData != null
+            ? Mathf.CeilToInt(currentDishData.rewardExp * heSo)
+            : 0;
+        int vangNhan = currentDishData != null
+            ? Mathf.CeilToInt(currentDishData.rewardGold * heSo)
+            : 0;
+
+        if (expNhan > 0 && PlayerProgressManager.Instance != null)
+            PlayerProgressManager.Instance.AddExp(expNhan);
+
+        if (vangNhan > 0 && FarmEconomyManager.Instance != null)
+            FarmEconomyManager.Instance.AddGold(vangNhan);
+
+        Debug.Log($"[Cooking] '{(currentDishData != null ? currentDishData.dishId : "?")}' " +
+                  $"{result.finalScore}đ × {heSo:0.00} → +{expNhan} EXP, +{vangNhan} vàng.");
 
         // Tiến độ nhiệm vụ nấu ăn
         MissionProgressTracker.ReportEvent(MissionEventType.CookDish,
             currentDishData != null ? currentDishData.dishId : "", 1);
 
-        if (QuestManager.Instance != null && currentDishData != null)
-        {
-            QuestManager.Instance.OnItemCooked(currentDishData.dishId, 1);
-        }
+        // Trước đây còn một lời gọi `QuestManager.Instance.OnItemCooked(...)` ở đây.
+        // `QuestManager` là hệ nhiệm vụ THỨ HAI, chết hoàn toàn (không có instance trong
+        // scene nào, `CheckQuestCompletion` còn ghi `// TODO: Give rewards`) nên đã xoá
+        // sạch ở C8. `MissionProgressTracker.ReportEvent` ngay trên là hệ còn sống.
 
         if (cookingPopupController != null)
         {
