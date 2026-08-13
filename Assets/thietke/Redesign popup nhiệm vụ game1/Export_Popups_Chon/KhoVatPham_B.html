@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Kho Vật Phẩm — phương án B (tab danh mục + panel chi tiết phải)</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:radial-gradient(circle at 50% 30%,#2c4222,#16210f 80%);font-family:'Baloo 2',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:26px;padding:120px 40px 60px 40px;}
+*{box-sizing:border-box;}
+h1{margin:0 0 30px 0;font-size:30px;font-weight:800;color:#ffedc8;text-align:center;}
+input::placeholder{color:#b08d5c;}
+</style>
+</head>
+<body>
+<h1>Kho Vật Phẩm — phương án B (tab danh mục + panel chi tiết phải)</h1>
+<div id="kho-b" style="display:flex;flex-direction:column;gap:12px;flex:none;">
+<div style="position:relative;width:1220px;height:760px;flex:none;">
+<div style="position:absolute;inset:0;border-radius:38px;border:7px solid #4a2508;background:linear-gradient(180deg,#a9743c,#7c4e22),repeating-linear-gradient(0deg,transparent 0 150px,rgba(58,28,4,.3) 150px 155px);background-blend-mode:normal,multiply;box-shadow:inset 0 5px 0 rgba(255,230,180,.25),inset 0 -8px 0 rgba(0,0,0,.25),0 26px 55px rgba(0,0,0,.55);"></div>
+<div style="position:absolute;top:-38px;left:50%;transform:translateX(-50%);width:430px;height:96px;background:linear-gradient(180deg,#ffd257,#f0a32f);border:5px solid #a35c14;border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 5px 0 rgba(255,255,255,.5),inset 0 -6px 0 rgba(0,0,0,.15),0 8px 14px rgba(0,0,0,.35);z-index:2;">
+<span style="font-size:42px;font-weight:800;color:#fffbe9;letter-spacing:2px;white-space:nowrap;text-shadow:2px 0 0 #96540f,-2px 0 0 #96540f,0 -2px 0 #96540f,0 3px 0 #96540f;">KHO VẬT PHẨM</span>
+</div>
+<img src="assets/btnX.png" style="position:absolute;top:-26px;right:-26px;width:82px;height:82px;object-fit:contain;filter:drop-shadow(0 5px 7px rgba(0,0,0,.4));z-index:3;">
+<div style="position:absolute;top:88px;left:36px;right:36px;bottom:32px;display:flex;gap:14px;">
+<div style="flex:1;display:flex;flex-direction:column;">
+<div style="display:flex;gap:10px;padding:0 14px;">
+<div style="background:linear-gradient(180deg,#fffbe9,#fdf0d3);border:4px solid #6e4014;border-bottom:none;border-radius:16px 16px 0 0;padding:10px 22px;display:flex;align-items:center;gap:8px;">
+<img src="assets/iconlua.png" style="width:30px;height:30px;object-fit:contain;"><span style="font-size:19px;font-weight:800;color:#5b3417;">Nông sản</span>
+</div>
+<div style="background:linear-gradient(180deg,#e2a75f,#c48538);border:4px solid #6e4014;border-bottom:none;border-radius:16px 16px 0 0;padding:10px 22px;display:flex;align-items:center;gap:8px;margin-top:8px;">
+<img src="assets/trung.png" style="width:30px;height:30px;object-fit:contain;"><span style="font-size:19px;font-weight:800;color:#6e4014;">Chăn nuôi</span>
+</div>
+<div style="background:linear-gradient(180deg,#e2a75f,#c48538);border:4px solid #6e4014;border-bottom:none;border-radius:16px 16px 0 0;padding:10px 22px;display:flex;align-items:center;gap:8px;margin-top:8px;">
+<img src="assets/monan1.png" style="width:30px;height:30px;object-fit:contain;"><span style="font-size:19px;font-weight:800;color:#6e4014;">Món ăn</span>
+</div>
+</div>
+<div style="flex:1;background:linear-gradient(180deg,#fdf3da,#fbeccb);border:4px solid #6e4014;border-radius:20px;box-shadow:inset 0 0 0 3px #f3ddb0;padding:16px;display:flex;flex-direction:column;gap:12px;">
+<div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:110px;gap:12px;align-content:start;">
+<div style="border-radius:18px;background:linear-gradient(180deg,#fff4c2,#ffe9a8);border:3px solid #ffce3d;box-shadow:0 0 0 4px rgba(255,206,61,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+<img src="assets/iconlua.png" style="width:58px;height:58px;object-fit:contain;">
+<span style="position:absolute;bottom:5px;right:9px;background:#6e4014;color:#ffe9bd;font-size:15px;font-weight:800;border-radius:9px;padding:0 8px;">24</span>
+</div>
+<div style="border-radius:18px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+<img src="assets/cachua.png" style="width:58px;height:58px;object-fit:contain;">
+<span style="position:absolute;bottom:5px;right:9px;background:#6e4014;color:#ffe9bd;font-size:15px;font-weight:800;border-radius:9px;padding:0 8px;">9</span>
+</div>
+<div style="border-radius:18px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+<img src="assets/bapcai.png" style="width:58px;height:58px;object-fit:contain;">
+<span style="position:absolute;bottom:5px;right:9px;background:#6e4014;color:#ffe9bd;font-size:15px;font-weight:800;border-radius:9px;padding:0 8px;">6</span>
+</div>
+<div style="border-radius:18px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+<img src="assets/shop/chanh.png" style="width:58px;height:58px;object-fit:contain;">
+<span style="position:absolute;bottom:5px;right:9px;background:#6e4014;color:#ffe9bd;font-size:15px;font-weight:800;border-radius:9px;padding:0 8px;">7</span>
+</div>
+<div style="border-radius:18px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+<img src="assets/shop/ot.png" style="width:58px;height:58px;object-fit:contain;">
+<span style="position:absolute;bottom:5px;right:9px;background:#6e4014;color:#ffe9bd;font-size:15px;font-weight:800;border-radius:9px;padding:0 8px;">3</span>
+</div>
+<div style="border-radius:18px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+<img src="assets/shop/mia.png" style="width:58px;height:58px;object-fit:contain;">
+<span style="position:absolute;bottom:5px;right:9px;background:#6e4014;color:#ffe9bd;font-size:15px;font-weight:800;border-radius:9px;padding:0 8px;">5</span>
+</div>
+<div style="border-radius:18px;background:rgba(110,64,20,.06);border:3px dashed #d9c49a;"></div>
+<div style="border-radius:18px;background:rgba(110,64,20,.06);border:3px dashed #d9c49a;"></div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;">
+<div style="flex:1;position:relative;height:20px;border-radius:10px;background:#e8d0a4;overflow:hidden;box-shadow:inset 0 2px 4px rgba(120,75,20,.3);">
+<div style="position:absolute;left:0;top:0;bottom:0;width:48%;background:linear-gradient(180deg,#a9e470,#68bd2b);"></div>
+</div>
+<span style="font-size:17px;font-weight:800;color:#7a4a10;">12/25 Slot</span>
+</div>
+</div>
+</div>
+<div style="width:360px;flex:none;background:linear-gradient(180deg,#fdf3da,#fbeccb);border:4px solid #6e4014;border-radius:20px;box-shadow:inset 0 0 0 3px #f3ddb0;padding:18px;display:flex;flex-direction:column;align-items:center;gap:12px;">
+<span style="font-size:20px;font-weight:800;color:#5b3417;">Chi tiết vật phẩm</span>
+<div style="width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,#faf0d6,#f1dfb4 78%);box-shadow:inset 0 3px 8px rgba(150,95,30,.22);display:flex;align-items:center;justify-content:center;">
+<img src="assets/iconlua.png" style="width:94px;height:94px;object-fit:contain;">
+</div>
+<span style="font-size:24px;font-weight:800;color:#5b3417;">Lúa · x24</span>
+<span style="font-size:16px;font-weight:700;color:#a3803f;text-align:center;line-height:1.3;">Nguyên liệu nấu ăn và bán tại quầy. Giá tham khảo 12 vàng/cái.</span>
+<div style="align-self:stretch;display:flex;flex-direction:column;gap:10px;background:rgba(110,64,20,.08);border:2px dashed #c99a5c;border-radius:16px;padding:14px;">
+<span style="font-size:17px;font-weight:800;color:#5b3417;text-align:center;">Chuyển sang bếp</span>
+<div style="display:flex;align-items:center;justify-content:center;gap:12px;">
+<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(180deg,#ffb066,#e2701f);border:3px solid #a84812;display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font-size:22px;font-weight:800;color:#fff;line-height:1;margin-top:-2px;">−</span></div>
+<span style="font-size:22px;font-weight:800;color:#5b3417;min-width:40px;text-align:center;">6</span>
+<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(180deg,#a5e05e,#61b527);border:3px solid #3f8a12;display:flex;align-items:center;justify-content:center;cursor:pointer;"><span style="font-size:22px;font-weight:800;color:#fff;line-height:1;margin-top:-2px;">+</span></div>
+<div style="background:#e2a75f;border:2px solid #b07c3a;border-radius:10px;padding:4px 12px;cursor:pointer;"><span style="font-size:16px;font-weight:800;color:#6e4014;">MAX</span></div>
+</div>
+</div>
+<div style="align-self:stretch;height:54px;border-radius:16px;background:linear-gradient(180deg,#a5e05e,#57a51f);border:3px solid #3f8a12;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.28),inset 0 3px 0 rgba(255,255,255,.35);">
+<span style="font-size:21px;font-weight:800;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);">CHUYỂN BẾP</span>
+</div>
+<div style="align-self:stretch;margin-top:auto;display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,#ffe2a0,#f5b94e);border:3px solid #c07d24;border-radius:14px;padding:8px 12px;">
+<img src="assets/shop/baothoc.png" style="width:40px;height:40px;object-fit:contain;">
+<span style="font-size:15px;font-weight:800;color:#6e3d12;flex:1;line-height:1.2;">Cấp 1 · 25 Slot → Cấp 2 · 50 Slot</span>
+<div style="height:40px;border-radius:11px;background:linear-gradient(180deg,#ffd977,#f2a636);border:3px solid #c07818;display:flex;align-items:center;padding:0 12px;cursor:pointer;">
+<span style="font-size:15px;font-weight:800;color:#7a4a10;">NÂNG CẤP</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</body>
+</html>

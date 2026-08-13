@@ -21,7 +21,9 @@ public class RainSplashManager : MonoBehaviour
 
     void Start()
     {
-        weatherSystem = FindObjectOfType<DayNightWeatherSystem>();
+        // FindAnyObjectByType chu khong phai FindObjectOfType: scene chi co MOT
+        // DayNightWeatherSystem nen khong can ban sap xep de lay "cai dau tien".
+        weatherSystem = FindAnyObjectByType<DayNightWeatherSystem>();
         
 #if UNITY_EDITOR
         if (splashSprites == null || splashSprites.Length == 0)

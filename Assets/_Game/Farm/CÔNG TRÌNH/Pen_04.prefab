@@ -203,6 +203,7 @@ GameObject:
   - component: {fileID: 3545366657602183454}
   - component: {fileID: 185977861888532299}
   - component: {fileID: 2695581393651701954}
+  - component: {fileID: 5657123789771062607}
   m_Layer: 6
   m_Name: Pen_04
   m_TagString: Untagged
@@ -262,7 +263,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.016287506, y: 2.2546182}
+  m_Offset: {x: 0, y: 2.5}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -272,7 +273,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 2.2901635, y: 4.4881344}
+  m_Size: {x: 7, y: 5}
   m_EdgeRadius: 0
 --- !u!114 &5141721763928852795
 MonoBehaviour:
@@ -311,7 +312,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e2b7de78d39b8e47b1c9d6ddc2360f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EditableBuilding
-  footprintVisual: {fileID: 8293749280720246623, guid: 944a45eded0569f42af3694cee049563, type: 3}
+  footprintVisual: {fileID: 0}
 --- !u!114 &781902113510030001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -453,6 +454,28 @@ MonoBehaviour:
   miniPanel: {fileID: 7144263197380391886}
   mainCamera: {fileID: 0}
   targetCollider: {fileID: 7061365699429138985}
+--- !u!114 &5657123789771062607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9142124755168808929}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94ff99e12893a5942a224fbde39f9d97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingFootprintKit
+  soO: {x: 7, y: 5}
+  spriteTham: {fileID: 0}
+  spriteNgoac: {fileID: 0}
+  spriteVach: {fileID: 0}
+  spriteChip: {fileID: 0}
+  mauTham: {r: 0.37, g: 0.85, b: 0.66, a: 0.55}
+  mauVien: {r: 0.42, g: 0.95, b: 0.72, a: 0.95}
+  mauChip: {r: 1, g: 0.98, b: 0.86, a: 0.92}
+  caoChip: 46
+  nhipTho: 1
 --- !u!1001 &5434396502676534936
 PrefabInstance:
   m_ObjectHideFlags: 0

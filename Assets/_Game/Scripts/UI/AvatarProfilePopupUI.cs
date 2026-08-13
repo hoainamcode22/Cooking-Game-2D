@@ -206,7 +206,9 @@ public class AvatarProfilePopupUI : MonoBehaviour
 
         SetText(txtLevel, $"Cấp độ : {level}");
         SetText(txtLevelBadge, level.ToString());
-        SetText(txtLevelRange, "Cấp độ 1 - 50");
+        // Trần cấp thật của game là CapToiDa (30) — chuỗi "1 - 50" cũ ghi cứng là
+        // thông tin sai cho người chơi từ khi chốt trần 30.
+        SetText(txtLevelRange, $"Cấp độ 1 - {PlayerProgressManager.CapToiDa}");
         SetText(txtExpValue, requiredExp <= 0 ? "MAX" : $"{currentExp} / {requiredExp}");
 
         if (expFill != null)
@@ -691,7 +693,7 @@ public class AvatarProfilePopupUI : MonoBehaviour
 
         TMP_InputField input = CreateInput(right, "Input_PlayerName", new Vector2(420f, 58f), new Vector2(-40f, 122f));
         CreateText(right, "Txt_Level", "Cấp độ : 1", 32f, new Color(0.28f, 0.13f, 0.04f, 1f), new Vector2(-250f, 62f), new Vector2(240f, 46f));
-        CreateText(right, "Txt_LevelRange", "Cấp độ 1 - 50", 24f, new Color(0.36f, 0.2f, 0.08f, 1f), new Vector2(185f, 62f), new Vector2(250f, 42f));
+        CreateText(right, "Txt_LevelRange", $"Cấp độ 1 - {PlayerProgressManager.CapToiDa}", 24f, new Color(0.36f, 0.2f, 0.08f, 1f), new Vector2(185f, 62f), new Vector2(250f, 42f));
 
         RectTransform expBar = CreateRect(right, "Panel_ExpBar", new Vector2(650f, 46f), new Vector2(-10f, 10f));
         AddImage(expBar.gameObject, new Color(0.38f, 0.18f, 0.06f, 1f), true);

@@ -110,6 +110,15 @@ public class ObjectDragHandler : MonoBehaviour
         if (shadowSprite != null) SetShadowAlpha(0f);
     }
 
+    private void Start()
+    {
+        // Đặt lại vị trí đã lưu SAU Awake của mọi thứ: `PlacementManager` dựng bảng ô
+        // trong `Start` của nó, mà thứ tự Start giữa các object không bảo đảm. Nên gọi
+        // `RefreshOccupancy` ngay sau khi dời để bảng ô không giữ chỗ cũ.
+        NapViTriDaLuu();
+        PlacementManager.Instance?.RefreshOccupancy();
+    }
+
     /// <summary>
     /// Số ô lưới vật này chiếm, đo từ hộp bao các SpriteRenderer con.
     /// Đồng thời ghi lại <see cref="_pivotOffsetX"/> và <see cref="_footOffsetY"/> —
@@ -240,15 +249,115 @@ public class ObjectDragHandler : MonoBehaviour
         if (_sprite != null) _sprite.color = _originalColor;
 
         if (valid)
+        {
             _originalPos = transform.position;
+            GhiViTriVaoSave();          // ← trước đây thiếu: Play lại là vật về chỗ cũ
+        }
         else
+        {
             StartCoroutine(BounceBack(_originalPos));
+        }
 
         IsDraggingObject = false;
         FreeCursor();
 
         // Vật đã đứng ở chỗ mới → cập nhật lại bảng ô cho lần kéo/đặt kế tiếp.
         PlacementManager.Instance?.RefreshOccupancy();
+    }
+
+    // =========================================================================
+    //  LƯU VỊ TRÍ
+    // =========================================================================
+
+    /// <summary>Khoá lưu riêng cho nhóm công trình kéo thẳng (Chợ · Cổng Bếp · Kho).</summary>
+    private const string SaveKey = "FARM_DRAG_OBJECT_POS";
+    private const int    SaveVersion = 1;
+
+    [System.Serializable]
+    private class MotVat
+    {
+        public string ten;
+        public float  x, y;
+    }
+
+    [System.Serializable]
+    private class GoiLuu
+    {
+        public int saveVersion;
+        public System.Collections.Generic.List<MotVat> ds = new System.Collections.Generic.List<MotVat>();
+    }
+
+    /// <summary>
+    /// Ghi vị trí vật này vào save.
+    ///
+    /// VÌ SAO CÓ KHOÁ RIÊNG chứ không nhét vào `FARM_PLACED_BUILDINGS`: khoá đó là danh
+    /// sách vật do `PlacementManager` SINH RA lúc chạy — `LoadBuildings()` đọc nó rồi
+    /// `Instantiate` prefab tương ứng. Chợ/Cổng Bếp/Kho là object DỰNG SẴN TRONG SCENE,
+    /// không có `itemId` trong shop; nhét vào đó thì lần load sau sẽ sinh thêm một bản
+    /// sao nữa nằm chồng lên bản gốc.
+    ///
+    /// Định danh bằng TÊN object. Chấp nhận được vì ba vật này là duy nhất trong scene
+    /// và không ai đổi tên chúng; đổi tên thì mất vị trí đã lưu, chứ không hỏng gì.
+    /// </summary>
+    private void GhiViTriVaoSave()
+    {
+        GoiLuu goi = DocGoiLuu();
+
+        MotVat v = goi.ds.Find(t => t != null && t.ten == gameObject.name);
+        if (v == null)
+        {
+            v = new MotVat { ten = gameObject.name };
+            goi.ds.Add(v);
+        }
+
+        v.x = transform.position.x;
+        v.y = transform.position.y;
+
+        goi.saveVersion = SaveVersion;
+        PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(goi));
+        LuuGopPrefs.Hen();
+    }
+
+    /// <summary>
+    /// Nạp lại vị trí đã lưu. Gọi ở `Start` chứ không phải `Awake`: `PlacementManager`
+    /// dựng bảng ô trong `Start`, đặt vật trước đó thì bảng ô ghi nhận vị trí cũ.
+    /// </summary>
+    private void NapViTriDaLuu()
+    {
+        GoiLuu goi = DocGoiLuu();
+        MotVat v = goi.ds.Find(t => t != null && t.ten == gameObject.name);
+        if (v == null) return;
+
+        transform.position = new Vector3(v.x, v.y, transform.position.z);
+        _originalPos = transform.position;
+    }
+
+    private static GoiLuu DocGoiLuu()
+    {
+        string json = PlayerPrefs.GetString(SaveKey, "");
+        if (string.IsNullOrEmpty(json)) return new GoiLuu { saveVersion = SaveVersion };
+
+        try
+        {
+            GoiLuu g = JsonUtility.FromJson<GoiLuu>(json);
+            if (g == null) return new GoiLuu { saveVersion = SaveVersion };
+            if (g.ds == null) g.ds = new System.Collections.Generic.List<MotVat>();
+
+            if (g.saveVersion > SaveVersion)
+            {
+                // Save mới hơn code = vừa hạ cấp bản game. Đọc tiếp chứ không xoá:
+                // dữ liệu chỉ là (tên, x, y), tên lạ thì không vật nào khớp — vô hại.
+                Debug.LogWarning($"[KéoVật] Save v{g.saveVersion} mới hơn code v{SaveVersion} " +
+                                 "— đọc tiếp, mục lạ sẽ bị bỏ qua.");
+            }
+
+            return g;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[KéoVật] Không đọc được save vị trí — bỏ qua. {e.Message}");
+            return new GoiLuu { saveVersion = SaveVersion };
+        }
     }
 
     /// <summary>Gọi khi script bị disable giữa chừng drag — reset state không bounce.</summary>

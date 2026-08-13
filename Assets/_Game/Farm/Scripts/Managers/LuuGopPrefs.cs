@@ -50,15 +50,23 @@ public static class LuuGopPrefs
     /// Đánh dấu "có gì đó đã đổi, cần lưu". Rẻ như gán một biến bool.
     /// Đây là hàm thay thế trực tiếp cho <c>PlayerPrefs.Save()</c> trong code runtime.
     /// </summary>
+    /// <summary>
+    /// Bộ chạy nền ĐÃ BỊ HUỶ trong phiên này — nghĩa là đang thoát Play / đóng scene
+    /// cuối. Từ lúc này mọi yêu cầu lưu phải ghi THẲNG xuống đĩa, tuyệt đối không dựng
+    /// lại bộ chạy nền: sinh GameObject giữa lúc scene đang đóng là Unity cảnh báo
+    /// "Some objects were not cleaned up when closing the scene" — đúng cái vừa gặp.
+    /// </summary>
+    private static bool _dangThoat;
+
     public static void Hen()
     {
         _soLanHen++;
 
-        // NGOÀI Play Mode thì ghi thẳng. Không có bộ chạy nền nào sống để tới hạn mà
-        // flush, nên hoãn ở đây đồng nghĩa với mất dữ liệu — và mất im lặng, không lỗi.
-        // Trường hợp này xảy ra thật: các khối `#if UNITY_EDITOR` trong file runtime,
-        // và Editor tool gọi vào hàm lưu của manager.
-        if (!Application.isPlaying)
+        // Ghi thẳng khi (1) ngoài Play Mode — không có bộ chạy nền nào sống để flush,
+        // hoãn là mất dữ liệu; hoặc (2) đang thoát Play — thứ tự OnDestroy giữa các
+        // object không bảo đảm, manager lưu SAU khi bộ chạy nền đã chết là chuyện
+        // thường, lúc đó chỉ được ghi ngay chứ không được dựng lại object.
+        if (!Application.isPlaying || _dangThoat)
         {
             _canGhi = false;
             _soLanGhiThat++;
@@ -117,6 +125,7 @@ public static class LuuGopPrefs
         {
             if (_instance != null) return;
             if (!Application.isPlaying) return;   // Editor tool gọi Hen() thì bỏ qua
+            if (_dangThoat) return;               // đang đóng scene — cấm dựng lại
 
             var go = new GameObject("LuuGopPrefs(Auto)") { hideFlags = HideFlags.HideInHierarchy };
             _instance = go.AddComponent<BoChayNen>();
@@ -137,12 +146,21 @@ public static class LuuGopPrefs
             if (!dangFocus) LuuNgay();
         }
 
-        private void OnApplicationQuit() => LuuNgay();
+        private void OnApplicationQuit()
+        {
+            _dangThoat = true;
+            LuuNgay();
+        }
 
         private void OnDestroy()
         {
             // Rời Play Mode trong Editor cũng chạy vào đây. Không ghi thì mỗi lần test
             // xong là mất tới 2 giây tiến độ cuối — đủ để mất cả lần bấm "Nhận" vừa rồi.
+            //
+            // Cắm cờ _dangThoat TRƯỚC khi ghi: thứ tự OnDestroy giữa các object không
+            // bảo đảm, manager nào lưu SAU thời điểm này sẽ đi đường ghi-thẳng thay vì
+            // dựng lại bộ chạy nền giữa lúc scene đang đóng.
+            _dangThoat = true;
             LuuNgay();
             if (_instance == this) _instance = null;
         }
@@ -159,6 +177,7 @@ public static class LuuGopPrefs
     private static void ResetStatic()
     {
         _canGhi = false;
+        _dangThoat = false;   // phiên Play mới — cho phép dựng lại bộ chạy nền
         _lanGhiKeTiep = 0f;
         _soLanHen = 0;
         _soLanGhiThat = 0;

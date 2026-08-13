@@ -45,8 +45,12 @@ public class FerryController : MonoBehaviour
         {
             var foundWP = new System.Collections.Generic.List<Transform>();
             
-            // Tim toan bo GameObject trong Scene, loc nhung ten bat dau bang WP_
-            GameObject[] allObjects = GameObject.FindObjectsOfType<GameObject>();
+            // Tim toan bo GameObject trong Scene, loc nhung ten bat dau bang WP_.
+            // FindObjectsByType + FindObjectsSortMode.None thay cho FindObjectsOfType:
+            // ban cu sap xep ket qua theo InstanceID (ton thoi gian) trong khi doan duoi
+            // chi loc theo ten, khong quan tam thu tu.
+            GameObject[] allObjects =
+                Object.FindObjectsByType<GameObject>(FindObjectsSortMode.None);
             foreach (GameObject obj in allObjects)
             {
                 if (obj.name.StartsWith("WP_"))

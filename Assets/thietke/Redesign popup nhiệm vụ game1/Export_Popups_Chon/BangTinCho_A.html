@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Bảng Tin Chợ — phương án A (tab danh mục dọc trái)</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:radial-gradient(circle at 50% 30%,#2c4222,#16210f 80%);font-family:'Baloo 2',system-ui,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:26px;padding:120px 40px 60px 40px;}
+*{box-sizing:border-box;}
+h1{margin:0 0 30px 0;font-size:30px;font-weight:800;color:#ffedc8;text-align:center;}
+input::placeholder{color:#b08d5c;}
+</style>
+</head>
+<body>
+<h1>Bảng Tin Chợ — phương án A (tab danh mục dọc trái)</h1>
+<div id="cho-a" style="display:flex;flex-direction:column;gap:12px;flex:none;">
+<div style="position:relative;width:1220px;height:730px;flex:none;">
+<div style="position:absolute;inset:0;border-radius:38px;border:7px solid #4a2508;background:linear-gradient(180deg,#a9743c,#7c4e22),repeating-linear-gradient(0deg,transparent 0 150px,rgba(58,28,4,.3) 150px 155px);background-blend-mode:normal,multiply;box-shadow:inset 0 5px 0 rgba(255,230,180,.25),inset 0 -8px 0 rgba(0,0,0,.25),0 26px 55px rgba(0,0,0,.55);"></div>
+<div style="position:absolute;top:-38px;left:50%;transform:translateX(-50%);width:430px;height:96px;background:linear-gradient(180deg,#ffd257,#f0a32f);border:5px solid #a35c14;border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 5px 0 rgba(255,255,255,.5),inset 0 -6px 0 rgba(0,0,0,.15),0 8px 14px rgba(0,0,0,.35);z-index:2;">
+<span style="font-size:42px;font-weight:800;color:#fffbe9;letter-spacing:2px;white-space:nowrap;text-shadow:2px 0 0 #96540f,-2px 0 0 #96540f,0 -2px 0 #96540f,0 3px 0 #96540f;">CHỢ NÔNG SẢN</span>
+</div>
+<img src="assets/btnX.png" style="position:absolute;top:-26px;right:-26px;width:82px;height:82px;object-fit:contain;filter:drop-shadow(0 5px 7px rgba(0,0,0,.4));z-index:3;">
+<div style="position:absolute;top:74px;left:36px;right:36px;bottom:32px;background:linear-gradient(180deg,#fdf3da,#fbeccb);border:4px solid #6e4014;border-radius:22px;box-shadow:inset 0 0 0 3px #f3ddb0;padding:18px;display:flex;gap:16px;">
+<div style="width:190px;flex:none;display:flex;flex-direction:column;gap:10px;">
+<div style="display:flex;align-items:center;gap:10px;background:linear-gradient(180deg,#fffbe9,#fdf0d3);border:3px solid #6e4014;border-radius:16px;padding:10px 14px;box-shadow:inset 0 3px 0 rgba(255,255,255,.6);">
+<img src="assets/iconlua.png" style="width:34px;height:34px;object-fit:contain;"><span style="font-size:21px;font-weight:800;color:#5b3417;">Tất cả</span>
+</div>
+<div style="display:flex;align-items:center;gap:10px;background:#e2a75f;border:3px solid #b07c3a;border-radius:16px;padding:10px 14px;opacity:.85;">
+<img src="assets/cachua.png" style="width:34px;height:34px;object-fit:contain;"><span style="font-size:21px;font-weight:800;color:#6e4014;">Nông sản</span>
+</div>
+<div style="display:flex;align-items:center;gap:10px;background:#e2a75f;border:3px solid #b07c3a;border-radius:16px;padding:10px 14px;opacity:.85;">
+<img src="assets/trung.png" style="width:34px;height:34px;object-fit:contain;"><span style="font-size:21px;font-weight:800;color:#6e4014;">Chăn nuôi</span>
+</div>
+<div style="display:flex;align-items:center;gap:10px;background:#e2a75f;border:3px solid #b07c3a;border-radius:16px;padding:10px 14px;opacity:.85;">
+<img src="assets/monan1.png" style="width:34px;height:34px;object-fit:contain;"><span style="font-size:21px;font-weight:800;color:#6e4014;">Món ăn</span>
+</div>
+<div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;background:rgba(110,64,20,.12);border:2px dashed #c99a5c;border-radius:16px;padding:12px;">
+<span style="font-size:17px;font-weight:700;color:#8a6337;text-align:center;">Làm mới sau 04:32</span>
+<div style="height:50px;border-radius:14px;background:linear-gradient(180deg,#ffd977,#f2a636);border:3px solid #c07818;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.25);">
+<span style="font-size:20px;font-weight:800;color:#7a4a10;">LÀM MỚI</span>
+<img src="assets/Icon_vang.png" style="width:38px;height:38px;object-fit:contain;margin:-3px 0;">
+<span style="font-size:19px;font-weight:800;color:#7a4a10;">50</span>
+</div>
+</div>
+</div>
+<div style="flex:1;display:grid;grid-template-columns:repeat(3,1fr);gap:14px;align-content:start;overflow:hidden;">
+<div style="border-radius:20px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;box-shadow:0 4px 0 rgba(190,140,70,.3);padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+<div style="align-self:stretch;display:flex;align-items:center;gap:8px;">
+<img src="assets/avata_player.png" style="width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid #d99a4e;">
+<span style="font-size:17px;font-weight:700;color:#8a6337;">Bác Ba Nông</span>
+</div>
+<div style="width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#faf0d6,#f1dfb4 78%);box-shadow:inset 0 3px 7px rgba(150,95,30,.2);display:flex;align-items:center;justify-content:center;">
+<img src="assets/iconlua.png" style="width:70px;height:70px;object-fit:contain;">
+</div>
+<span style="font-size:20px;font-weight:800;color:#5b3417;">Lúa x12</span>
+<div style="align-self:stretch;height:48px;border-radius:14px;background:linear-gradient(180deg,#a5e05e,#57a51f);border:3px solid #3f8a12;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.25),inset 0 3px 0 rgba(255,255,255,.35);">
+<img src="assets/Icon_vang.png" style="width:42px;height:42px;object-fit:contain;margin:-4px 0;">
+<span style="font-size:22px;font-weight:800;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);">144</span>
+</div>
+</div>
+<div style="border-radius:20px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;box-shadow:0 4px 0 rgba(190,140,70,.3);padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+<div style="align-self:stretch;display:flex;align-items:center;gap:8px;">
+<img src="assets/avata_player.png" style="width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid #d99a4e;">
+<span style="font-size:17px;font-weight:700;color:#8a6337;">Cô Tư Chợ</span>
+</div>
+<div style="width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#faf0d6,#f1dfb4 78%);box-shadow:inset 0 3px 7px rgba(150,95,30,.2);display:flex;align-items:center;justify-content:center;">
+<img src="assets/cachua.png" style="width:70px;height:70px;object-fit:contain;">
+</div>
+<span style="font-size:20px;font-weight:800;color:#5b3417;">Cà chua x8</span>
+<div style="align-self:stretch;height:48px;border-radius:14px;background:linear-gradient(180deg,#a5e05e,#57a51f);border:3px solid #3f8a12;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.25),inset 0 3px 0 rgba(255,255,255,.35);">
+<img src="assets/Icon_vang.png" style="width:42px;height:42px;object-fit:contain;margin:-4px 0;">
+<span style="font-size:22px;font-weight:800;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);">264</span>
+</div>
+</div>
+<div style="position:relative;border-radius:20px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:.75;">
+<div style="align-self:stretch;display:flex;align-items:center;gap:8px;">
+<img src="assets/avata_player.png" style="width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid #d99a4e;">
+<span style="font-size:17px;font-weight:700;color:#8a6337;">Chú Bảy</span>
+</div>
+<div style="width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#faf0d6,#f1dfb4 78%);display:flex;align-items:center;justify-content:center;">
+<img src="assets/trung.png" style="width:70px;height:70px;object-fit:contain;filter:grayscale(.4);">
+</div>
+<span style="font-size:20px;font-weight:800;color:#93876a;">Trứng x6</span>
+<div style="align-self:stretch;height:48px;border-radius:14px;background:#b8ae95;border:3px solid #9c927c;display:flex;align-items:center;justify-content:center;">
+<span style="font-size:22px;font-weight:800;color:#fff;">ĐÃ BÁN</span>
+</div>
+<div style="position:absolute;top:44%;left:50%;transform:translate(-50%,-50%) rotate(-14deg);background:#dd4630;border:3px solid #a92c1a;border-radius:12px;padding:4px 18px;box-shadow:0 4px 8px rgba(0,0,0,.3);">
+<span style="font-size:24px;font-weight:800;color:#fff;letter-spacing:2px;">HẾT HÀNG</span>
+</div>
+</div>
+<div style="border-radius:20px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;box-shadow:0 4px 0 rgba(190,140,70,.3);padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+<div style="align-self:stretch;display:flex;align-items:center;gap:8px;">
+<img src="assets/avata_player.png" style="width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid #d99a4e;">
+<span style="font-size:17px;font-weight:700;color:#8a6337;">Dì Năm</span>
+</div>
+<div style="width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#faf0d6,#f1dfb4 78%);box-shadow:inset 0 3px 7px rgba(150,95,30,.2);display:flex;align-items:center;justify-content:center;">
+<img src="assets/shop/chanh.png" style="width:70px;height:70px;object-fit:contain;">
+</div>
+<span style="font-size:20px;font-weight:800;color:#5b3417;">Chanh x5</span>
+<div style="align-self:stretch;height:48px;border-radius:14px;background:linear-gradient(180deg,#a5e05e,#57a51f);border:3px solid #3f8a12;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.25),inset 0 3px 0 rgba(255,255,255,.35);">
+<img src="assets/Icon_vang.png" style="width:42px;height:42px;object-fit:contain;margin:-4px 0;">
+<span style="font-size:22px;font-weight:800;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);">350</span>
+</div>
+</div>
+<div style="border-radius:20px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;box-shadow:0 4px 0 rgba(190,140,70,.3);padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+<div style="align-self:stretch;display:flex;align-items:center;gap:8px;">
+<img src="assets/avata_player.png" style="width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid #d99a4e;">
+<span style="font-size:17px;font-weight:700;color:#8a6337;">Bà Hai Vườn</span>
+</div>
+<div style="width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#faf0d6,#f1dfb4 78%);box-shadow:inset 0 3px 7px rgba(150,95,30,.2);display:flex;align-items:center;justify-content:center;">
+<img src="assets/bapcai.png" style="width:70px;height:70px;object-fit:contain;">
+</div>
+<span style="font-size:20px;font-weight:800;color:#5b3417;">Bắp cải x4</span>
+<div style="align-self:stretch;height:48px;border-radius:14px;background:linear-gradient(180deg,#a5e05e,#57a51f);border:3px solid #3f8a12;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.25),inset 0 3px 0 rgba(255,255,255,.35);">
+<img src="assets/Icon_vang.png" style="width:42px;height:42px;object-fit:contain;margin:-4px 0;">
+<span style="font-size:22px;font-weight:800;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);">220</span>
+</div>
+</div>
+<div style="border-radius:20px;background:linear-gradient(180deg,#fffdf4,#fdf6e3);border:3px solid #ecd09c;box-shadow:0 4px 0 rgba(190,140,70,.3);padding:12px;display:flex;flex-direction:column;align-items:center;gap:6px;">
+<div style="align-self:stretch;display:flex;align-items:center;gap:8px;">
+<img src="assets/avata_player.png" style="width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid #d99a4e;">
+<span style="font-size:17px;font-weight:700;color:#8a6337;">Anh Tám</span>
+</div>
+<div style="width:96px;height:96px;border-radius:50%;background:radial-gradient(circle,#faf0d6,#f1dfb4 78%);box-shadow:inset 0 3px 7px rgba(150,95,30,.2);display:flex;align-items:center;justify-content:center;">
+<img src="assets/monan1.png" style="width:70px;height:70px;object-fit:contain;">
+</div>
+<span style="font-size:20px;font-weight:800;color:#5b3417;">Bữa sáng x2</span>
+<div style="align-self:stretch;height:48px;border-radius:14px;background:linear-gradient(180deg,#a5e05e,#57a51f);border:3px solid #3f8a12;display:flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.25),inset 0 3px 0 rgba(255,255,255,.35);">
+<img src="assets/Icon_vang.png" style="width:42px;height:42px;object-fit:contain;margin:-4px 0;">
+<span style="font-size:22px;font-weight:800;color:#fff;text-shadow:0 2px 0 rgba(0,0,0,.25);">480</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+</body>
+</html>

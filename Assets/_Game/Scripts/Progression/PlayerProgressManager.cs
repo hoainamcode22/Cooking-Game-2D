@@ -21,7 +21,15 @@ public class PlayerProgressManager : MonoBehaviour
     [Header("Config")]
     [SerializeField] private int startLevel = 1;
     [SerializeField] private int startExp = 0;
-    [SerializeField] private int maxLevel = 100;
+    /// <summary>
+    /// TRẦN CỨNG của game — mọi nội dung (nhiệm vụ, món ăn, mở khoá) kết thúc ở cấp 30.
+    /// Trước đây field dưới để 100 nên người chơi farm lên 31, 32… vào vùng không có
+    /// nội dung nào. Trần khai bằng const và kẹp đè lên giá trị Inspector: field
+    /// serialize trong scene vẫn đang lưu 100, đổi mỗi default là không đủ.
+    /// </summary>
+    public const int CapToiDa = 30;
+
+    [SerializeField] private int maxLevel = CapToiDa;
 
     public int Level { get; private set; }
     public int CurrentExp { get; private set; }
@@ -41,7 +49,20 @@ public class PlayerProgressManager : MonoBehaviour
         transform.SetParent(null); // Tách ra root để DontDestroyOnLoad hoạt động (fix warning)
         DontDestroyOnLoad(gameObject);
 
+        // Kẹp trần TRƯỚC khi Load: giá trị Inspector trong scene đang lưu 100 (đè lên
+        // default), không kẹp thì const ở trên vô nghĩa.
+        maxLevel = Mathf.Min(maxLevel, CapToiDa);
+
         Load();
+
+        // Save cũ đã leo quá trần (32…) → đưa về đúng 30 một lần và lưu lại.
+        if (Level > maxLevel)
+        {
+            Debug.LogWarning($"[Progress] Save đang ở cấp {Level} > trần {maxLevel} — kẹp về trần.");
+            Level = maxLevel;
+            CurrentExp = 0;
+            Save();
+        }
     }
 
     private void Start()

@@ -80,10 +80,13 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     private sealed class TabButtonView
     {
         public Button button;
-        public Image background;
-        public GameObject pointer;
+        public Image background;          // lớp gradient trên
+        public Image backgroundBottom;    // lớp màu đáy
+        public GameObject pointer;        // chấm đỏ "có thưởng chưa nhận"
         public TMP_Text label;
         public Image icon;
+        public RectTransform root;
+        public int chiSo;                 // 0..2 — tính lại toạ độ khi lún/nổi
     }
 
     private const string RootName = "UnifiedTaskPopupRoot";
@@ -157,6 +160,122 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     private Tab _currentTab;
     private bool _built;
     private bool _inputLockHeld;
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  CHIA TRANG THEO MỐC CẤP
+    // ═════════════════════════════════════════════════════════════════════════
+    //  Database có 307 nhiệm vụ chính. Dựng hết vào một danh sách cuộn là 5.833
+    //  GameObject — và toàn bộ bị huỷ rồi dựng lại mỗi lần bấm "Nhận". Đó là nguyên
+    //  nhân chính của hiện tượng giật đo được trong video (12 lần khựng 0,13–0,37s).
+    //
+    //  Chia theo MỐC CẤP chứ không theo "N dòng mỗi trang": người chơi cấp 3 không
+    //  quan tâm nhiệm vụ cấp 27, và đếm dòng thì ranh giới trang rơi vào giữa một mốc
+    //  trông rất tuỳ tiện. Làm xong hết một mốc thì tự sang mốc sau.
+
+    /// <summary>Cận dưới của 6 mốc. Mốc cuối gom cả nhiệm vụ cấp >30 nếu sau này có thêm.</summary>
+    private static readonly int[] MocCap = { 1, 5, 10, 15, 20, 25 };
+
+    private static int CapDauTrang(int trang) => MocCap[Mathf.Clamp(trang, 0, MocCap.Length - 1)];
+
+    /// <summary>Cấp CAO NHẤT thuộc trang. Trang cuối lấy vô cực để không bỏ sót nhiệm vụ nào.</summary>
+    private static int CapCuoiTrang(int trang)
+    {
+        trang = Mathf.Clamp(trang, 0, MocCap.Length - 1);
+        return trang == MocCap.Length - 1 ? int.MaxValue : MocCap[trang + 1] - 1;
+    }
+
+    private static string TenTrang(int trang)
+    {
+        int a = CapDauTrang(trang);
+        return trang == MocCap.Length - 1 ? $"Cấp {a}+" : $"Cấp {a}–{CapCuoiTrang(trang)}";
+    }
+
+    private int _trangNhiemVu = -1;      // -1 = chưa chọn, sẽ tự nhảy tới mốc đang chơi
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  TÁI DÙNG HÀNG (row pooling)
+    // ═════════════════════════════════════════════════════════════════════════
+    //  Chia trang giảm 307 hàng xuống 28–84. Vẫn còn ~1.600 GameObject nếu mỗi lần đổi
+    //  trang lại huỷ sạch rồi dựng lại. Nên hàng được DỰNG MỘT LẦN rồi NẠP LẠI NỘI DUNG:
+    //  đổi trang chỉ là gán text và sprite — 0 Instantiate, 0 Destroy, 0 rác cho GC.
+
+    private sealed class HangThuong
+    {
+        public RectTransform goc;
+        public Image         nenHang;
+        public Image         iconVien;
+        public Image         icon;
+        public TMP_Text      ten;
+        public Image         thanhTienDo;
+        public TMP_Text      chuTienDo;
+        public OThuong[]     oThuong;
+        public Image         nutNen;          // nút, lớp gradient trên
+        public Image         nutNenDuoi;      // nút, lớp màu đáy
+        public Image         nutVien;
+        public TMP_Text      nutChu;
+        public Button        nut;
+        public GameObject    chamDo;
+        public MissionData   duLieu;
+        public CanvasGroup   doMo;            // mờ cả hàng khi khoá/đã nhận (thiết kế)
+    }
+
+    private sealed class OThuong
+    {
+        public RectTransform goc;
+        public Image         icon;
+        public TMP_Text      so;
+    }
+
+    private sealed class ChanMoc
+    {
+        public RectTransform goc;
+        public TMP_Text      mota;
+        public Image         thanh;
+        public TMP_Text      soTienDo;
+    }
+
+    private readonly List<HangThuong> _khoHangNhiemVu  = new List<HangThuong>();
+    private readonly List<HangThuong> _khoHangThanhTuu = new List<HangThuong>();
+
+    /// <summary>Tra ngược từ nhiệm vụ về hàng đang hiện nó — để bấm Nhận chỉ sửa đúng hàng đó.</summary>
+    private readonly Dictionary<MissionData, HangThuong> _hangDangHien =
+        new Dictionary<MissionData, HangThuong>();
+
+    private RectTransform _vungCuonNhiemVu;
+    private RectTransform _vungCuonThanhTuu;
+    private TMP_Text      _nhanTrangNhiemVu;
+    private TMP_Text      _nhanTrangThanhTuu;
+    private ChanMoc       _chanMocNhiemVu;
+    private ChanMoc       _chanMocThanhTuu;
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  TOẠ ĐỘ CỘT — nguồn duy nhất, tránh chữ đè chữ
+    // ═════════════════════════════════════════════════════════════════════════
+    //  Bố cục cũ rải số toạ độ khắp `BuildMissionRow`, chỉnh một chỗ là lệch chỗ khác —
+    //  đó là lý do chữ chồng lên ô thưởng. Giờ mọi mốc x nằm ở đây và có bài kiểm tra
+    //  tính lại các hình chữ nhật để bắt chồng lấn.
+    //
+    //   -402┃ ○ icon ┃ tên nhiệm vụ       ┃ ▣  ▣  ▣ ┃  [ nút ]  ┃402
+    //       ┃  tròn  ┃ ▬▬▬ tiến độ ▬▬▬   ┃ thưởng  ┃           ┃
+
+    private const float RongHang   = 805f;
+    private const float CaoHangNV  = 96f;
+    private const float CaoHangTT  = 84f;
+
+    private const float X_IconTron = -336f;
+    private const float D_IconTron = 72f;
+
+    private const float X_CotChu   = -172f;
+    private const float W_CotChu   = 250f;
+
+    private const float X_OThuong0 = 22f;
+    private const float B_OThuong  = 98f;
+    private const float W_OThuong  = 92f;
+    private const float H_OThuong  = 58f;
+
+    private const float X_Nut      = 332f;
+    private const float W_Nut      = 122f;
+    private const float H_Nut      = 56f;
 
     public static bool IsOpenStatic =>
         _instance != null && _instance._root != null && _instance._root.gameObject.activeSelf;
@@ -330,7 +449,12 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (_root == null)
             _root = GetComponent<RectTransform>();
         if (_canvasGroup == null)
-            _canvasGroup = gameObject.GetComponent<CanvasGroup>() ?? gameObject.AddComponent<CanvasGroup>();
+        {
+            // Cùng bẫy `??` + fake-null như ở NapHang — chỗ này chưa nổ chỉ vì root
+            // thường đã có sẵn CanvasGroup, nhưng scene nào thiếu là chết y hệt.
+            _canvasGroup = gameObject.GetComponent<CanvasGroup>();
+            if (_canvasGroup == null) _canvasGroup = gameObject.AddComponent<CanvasGroup>();
+        }
 
         if (_built && _board != null)
             return;
@@ -341,37 +465,117 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             if (Application.isPlaying) Destroy(child); else DestroyImmediate(child);
         }
 
+        // ⚠ BẮT BUỘC dọn kho hàng TÁI DÙNG cùng lúc với việc huỷ cây.
+        // Kho giữ tham chiếu tới các RectTransform vừa bị huỷ ở vòng lặp trên. Không dọn
+        // thì lần dựng lại `NapDanhSach` thấy `kho.Count == 28`, đi vào nhánh "dùng lại
+        // hàng có sẵn", rồi chạm vào object ĐÃ BỊ HUỶ → MissingReferenceException ngay
+        // hàng đầu → cả 28 hàng không lên, nhãn vẫn ghi "28 nhiệm vụ" mà màn hình trống.
+        _khoHangNhiemVu.Clear();
+        _khoHangThanhTuu.Clear();
+        _hangDangHien.Clear();
+        _vungCuonNhiemVu   = null;
+        _vungCuonThanhTuu  = null;
+        _nhanTrangNhiemVu  = null;
+        _nhanTrangThanhTuu = null;
+        _chanMocNhiemVu    = null;
+        _chanMocThanhTuu   = null;
+
         _canvasGroup.interactable = false;
         _canvasGroup.blocksRaycasts = false;
 
-        Image overlay = gameObject.GetComponent<Image>() ?? gameObject.AddComponent<Image>();
+        // Bẫy `??` + fake-null thứ ba, cùng họ với hai chỗ CanvasGroup đã sửa.
+        Image overlay = gameObject.GetComponent<Image>();
+        if (overlay == null) overlay = gameObject.AddComponent<Image>();
         overlay.color = new Color(0.04f, 0.08f, 0.03f, 0.68f);
         overlay.raycastTarget = true;
 
         if (gameObject.GetComponent<UIRaycastBlocker>() == null)
             gameObject.AddComponent<UIRaycastBlocker>();
 
-        _board = CreateImage(_root, "Board_WoodFrame", BoardFrameSprite, new Color32(136, 73, 29, 255), new Vector2(0f, -10f), new Vector2(1180f, 720f), true);
-        AddOutline(_board.gameObject, new Color32(83, 43, 18, 255), new Vector2(5f, -5f));
-        CreateImage(_board, "Board_InnerShadow", null, new Color32(82, 43, 18, 120), new Vector2(0f, -4f), new Vector2(1130f, 660f), true);
+        // ══ VÁN GỖ 1300×850 — README: bo 42, viền 8px #4a2508, gradient #a9743c→#7c4e22,
+        // thớ ván mỗi 158px, 4 đinh sắt góc ═════════════════════════════════════
+        _board = CreateRect(_root, "Board_WoodFrame", Vector2.zero,
+            new Vector2(TaskPopupDesign.BangRong, TaskPopupDesign.BangCao));
 
-        RectTransform paper = CreateImage(_board, "PaperPanel_Main", PaperPanelSprite, new Color32(255, 236, 195, 255), new Vector2(95f, -20f), new Vector2(890f, 595f), true);
-        AddOutline(paper.gameObject, new Color32(205, 142, 65, 255), new Vector2(2f, -2f));
+        if (sprites.boardFrame != null)
+        {
+            // Hỏi FIELD THÔ chứ không phải property BoardFrameSprite: property tự lùi
+            // về sprite thủ tục TRẮNG khi chưa có art, nên nhánh này luôn được chọn và
+            // ván gỗ thành tấm trắng — đúng ảnh chụp lần chạy đầu.
+            CreateImage(_board, "Img_WoodBoard", sprites.boardFrame, Color.white, Vector2.zero,
+                new Vector2(TaskPopupDesign.BangRong, TaskPopupDesign.BangCao), true);
+        }
+        else
+        {
+            CreateImage(_board, "Board_Border", BoGoc(TaskPopupDesign.BangBoGoc),
+                TaskPopupDesign.VanGoVien, Vector2.zero,
+                new Vector2(TaskPopupDesign.BangRong + 16f, TaskPopupDesign.BangCao + 16f), true);
+            CreateImage(_board, "Board_Fill_Bottom", BoGoc(TaskPopupDesign.BangBoGoc),
+                TaskPopupDesign.VanGoDuoi, Vector2.zero,
+                new Vector2(TaskPopupDesign.BangRong, TaskPopupDesign.BangCao), true);
+            PhuGradient(_board, "Board_Fill_Top", TaskPopupDesign.VanGoTren, Vector2.zero,
+                new Vector2(TaskPopupDesign.BangRong, TaskPopupDesign.BangCao),
+                TaskPopupDesign.BangBoGoc);
 
-        CreateImage(_board, "WoodRail_Left", null, new Color32(118, 64, 29, 255), new Vector2(-460f, -20f), new Vector2(220f, 610f), true);
-        BuildDecorations();
+            // Thớ ván ngang — repeating-linear-gradient mỗi 158px, dày 5px.
+            int soVach = Mathf.FloorToInt(TaskPopupDesign.BangCao / TaskPopupDesign.ThoVanBuoc);
+            for (int i = 1; i <= soVach; i++)
+                CreateImage(_board, $"Board_Grain_{i}", null, TaskPopupDesign.VanGoTho,
+                    new Vector2(0f, TaskPopupDesign.BangCao * 0.5f - i * TaskPopupDesign.ThoVanBuoc),
+                    new Vector2(TaskPopupDesign.BangRong - 24f, TaskPopupDesign.ThoVanDay), true);
+        }
+
+        // 4 đinh sắt góc — 3 lớp: vành tối, thân, chấm sáng lệch trên-trái.
+        Vector2[] choDinh = { TaskPopupDesign.DinhTrenTrai, TaskPopupDesign.DinhTrenPhai,
+                              TaskPopupDesign.DinhDuoiTrai, TaskPopupDesign.DinhDuoiPhai };
+        var ktDinh = new Vector2(TaskPopupDesign.DinhKichThuoc, TaskPopupDesign.DinhKichThuoc);
+        for (int i = 0; i < choDinh.Length; i++)
+        {
+            CreateImage(_board, $"Stud_{i}_Rim", GetCircleSprite(), TaskPopupDesign.DinhSatVien,
+                choDinh[i], ktDinh + new Vector2(4f, 4f), false);
+            CreateImage(_board, $"Stud_{i}_Base", GetCircleSprite(), TaskPopupDesign.DinhSatToi,
+                choDinh[i], ktDinh, false);
+            CreateImage(_board, $"Stud_{i}_Shine", GetCircleSprite(), TaskPopupDesign.DinhSatSang,
+                choDinh[i] + new Vector2(-2f, 2f), ktDinh * 0.5f, false);
+        }
+
         BuildRibbon();
         BuildTabs();
 
-        _contentRoot = CreateRect(_board, "ContentRoot", new Vector2(95f, -30f), new Vector2(860f, 540f));
-        _missionPanel = CreateRect(_contentRoot, "Panel_Mission", Vector2.zero, new Vector2(860f, 540f));
-        _dailyPanel = CreateRect(_contentRoot, "Panel_Daily", Vector2.zero, new Vector2(860f, 540f));
-        _achievementPanel = CreateRect(_contentRoot, "Panel_Achievement", Vector2.zero, new Vector2(860f, 540f));
+        // ══ GIẤY KEM — bo góc CHỈ Ở ĐÁY vì mép trên nối liền tab đang chọn ═════
+        var ktGiay = new Vector2(TaskPopupDesign.GiayRong, TaskPopupDesign.GiayCao);
+        CreateImage(_board, "Paper_Border", BoGoc(TaskPopupDesign.GiayBoGoc),
+            TaskPopupDesign.GiayVien, TaskPopupDesign.GiayTam, ktGiay + new Vector2(8f, 8f), true);
+        CreateImage(_board, "Paper_Fill", BoGoc(TaskPopupDesign.GiayBoGoc),
+            TaskPopupDesign.GiayDuoi, TaskPopupDesign.GiayTam, ktGiay, true);
+        PhuGradient(_board, "Paper_Fill_Top", TaskPopupDesign.GiayTren,
+            TaskPopupDesign.GiayTam, ktGiay, TaskPopupDesign.GiayBoGoc);
+        CreateImage(_board, "Paper_InnerRing", BoGoc(TaskPopupDesign.GiayBoGoc - 3f),
+            TaskPopupDesign.GiayVienTrong, TaskPopupDesign.GiayTam, ktGiay - new Vector2(6f, 6f), true);
+        CreateImage(_board, "Paper_Fill_Inner", BoGoc(TaskPopupDesign.GiayBoGoc - 4f),
+            TaskPopupDesign.GiayDuoi, TaskPopupDesign.GiayTam, ktGiay - new Vector2(12f, 12f), true);
 
-        Button close = CreateTextButton(_board, "Btn_Close", "X", new Vector2(565f, 300f), new Vector2(78f, 78f), new Color32(230, 92, 53, 255), 42);
+        _contentRoot = CreateRect(_board, "ContentRoot", TaskPopupDesign.GiayTam, ktGiay);
+        _missionPanel     = CreateRect(_contentRoot, "Panel_Mission", Vector2.zero, ktGiay);
+        _dailyPanel       = CreateRect(_contentRoot, "Panel_Daily", Vector2.zero, ktGiay);
+        _achievementPanel = CreateRect(_contentRoot, "Panel_Achievement", Vector2.zero, ktGiay);
+
+        // ══ NÚT ĐÓNG 100×100 nhô góc trên-phải — art btnX gán qua tool ═════════
+        Button close = CreateTextButton(_board, "Btn_Close", "", TaskPopupDesign.NutDongTam,
+            new Vector2(TaskPopupDesign.NutDongKichThuoc, TaskPopupDesign.NutDongKichThuoc),
+            new Color32(255, 255, 255, 0), 1);
         close.image.sprite = sprites.closeButton != null ? sprites.closeButton : GetCircleSprite();
         close.image.type = Image.Type.Simple;
+        close.image.color = sprites.closeButton != null ? Color.white : new Color32(239, 75, 51, 255);
+        close.image.preserveAspect = true;
         close.onClick.AddListener(Close);
+        TMP_Text chuX = close.GetComponentInChildren<TMP_Text>();
+        if (chuX != null)
+        {
+            // Nhãn "X" chỉ hiện khi CHƯA có art — có art rồi thì chữ đè lên hình.
+            if (sprites.closeButton != null) chuX.gameObject.SetActive(false);
+            else { chuX.text = "X"; chuX.fontSize = 44; }
+        }
 
         _built = true;                       // chốt CUỐI: nếu dựng lỗi giữa chừng sẽ thử lại lần sau
         _root.gameObject.SetActive(false);
@@ -379,12 +583,41 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
     private void BuildRibbon()
     {
-        CreateImage(_board, "Ribbon_Tail_Left", null, new Color32(178, 49, 35, 255), new Vector2(-165f, 312f), new Vector2(185f, 72f), true);
-        CreateImage(_board, "Ribbon_Tail_Right", null, new Color32(178, 49, 35, 255), new Vector2(165f, 312f), new Vector2(185f, 72f), true);
-        RectTransform ribbon = CreateImage(_board, "Ribbon_Title", RibbonSprite, new Color32(221, 70, 48, 255), new Vector2(0f, 322f), new Vector2(520f, 105f), true);
-        AddOutline(ribbon.gameObject, new Color32(140, 34, 24, 255), new Vector2(3f, -3f));
-        _titleText = CreateText(ribbon, "Txt_Title", "Nhiệm vụ", 52, Color.white, TextAlignmentOptions.Center, Vector2.zero, new Vector2(500f, 90f), FontStyles.Bold);
-        AddShadow(_titleText.gameObject, new Color32(120, 32, 22, 255), new Vector2(2f, -3f));
+        // Hai đuôi ribbon đỏ #d8641f→#a84812, vẽ TRƯỚC để nằm dưới tấm biển vàng.
+        CreateImage(_board, "Ribbon_Tail_Left", BoGoc(6f), TaskPopupDesign.DuoiRibbonDuoi,
+            TaskPopupDesign.DuoiRibbonTrai, TaskPopupDesign.DuoiRibbonKichThuoc, true);
+        CreateImage(_board, "Ribbon_Tail_Right", BoGoc(6f), TaskPopupDesign.DuoiRibbonDuoi,
+            TaskPopupDesign.DuoiRibbonPhai, TaskPopupDesign.DuoiRibbonKichThuoc, true);
+
+        RectTransform bien;
+        if (sprites.ribbon != null)
+        {
+            // Field thô, cùng lý do với ván gỗ ở trên.
+            bien = CreateImage(_board, "Ribbon_Title", sprites.ribbon, Color.white,
+                TaskPopupDesign.RibbonVungTam,
+                new Vector2(TaskPopupDesign.RibbonVungRong, TaskPopupDesign.RibbonVungCao), true);
+        }
+        else
+        {
+            // Tấm biển vàng #ffd257→#f0a32f, viền 5px #a35c14, bo 24.
+            bien = CreateRect(_board, "Ribbon_Title", TaskPopupDesign.RibbonTamTam,
+                TaskPopupDesign.RibbonTamKichThuoc);
+            CreateImage(bien, "Plate_Border", BoGoc(TaskPopupDesign.RibbonBoGoc),
+                TaskPopupDesign.RibbonVien, Vector2.zero,
+                TaskPopupDesign.RibbonTamKichThuoc + new Vector2(10f, 10f), true);
+            CreateImage(bien, "Plate_Fill", BoGoc(TaskPopupDesign.RibbonBoGoc),
+                TaskPopupDesign.RibbonDuoi, Vector2.zero, TaskPopupDesign.RibbonTamKichThuoc, true);
+            PhuGradient(bien, "Plate_Fill_Top", TaskPopupDesign.RibbonTren, Vector2.zero,
+                TaskPopupDesign.RibbonTamKichThuoc, TaskPopupDesign.RibbonBoGoc);
+        }
+
+        // Chữ 54px trắng kem, viền nâu 2px — README: letter-spacing 2px.
+        _titleText = CreateText(bien, "Txt_Title", "NHIỆM VỤ", TaskPopupDesign.CoChuTieuDe,
+            TaskPopupDesign.ChuTieuDe, TextAlignmentOptions.Center, Vector2.zero,
+            TaskPopupDesign.RibbonTamKichThuoc - new Vector2(24f, 16f), FontStyles.Bold);
+        _titleText.characterSpacing = 4f;
+        AddOutline(_titleText.gameObject, TaskPopupDesign.VienChuTieuDe, new Vector2(2f, -2f));
+        AddShadow(_titleText.gameObject, TaskPopupDesign.VienChuTieuDe, new Vector2(0f, -3f));
     }
 
     private void BuildDecorations()
@@ -399,41 +632,84 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
     private void BuildTabs()
     {
-        _missionTab = CreateTabButton("Tab_Mission", "Nhiệm vụ", MissionTabSprite, new Vector2(-460f, 190f), Tab.Mission);
-        _dailyTab = CreateTabButton("Tab_Daily", "Hằng ngày", DailyTabSprite, new Vector2(-460f, 20f), Tab.Daily);
-        _achievementTab = CreateTabButton("Tab_Achievement", "Thành tựu", AchievementTabSprite, new Vector2(-460f, -150f), Tab.Achievement);
+        // Tab NGANG dán mép trên tờ giấy — bố cục thiết kế. Bản cũ xếp DỌC ở ray trái.
+        // Tab đang chọn nổi lên nối liền giấy, tab thường lún xuống 14px — chuyển động
+        // lún đó là thứ README gọi là "tab 3D".
+        _missionTab     = CreateTabButton("Tab_Mission", "Nhiệm vụ", MissionTabSprite, 0, Tab.Mission);
+        _dailyTab       = CreateTabButton("Tab_Daily", "Hằng ngày", DailyTabSprite, 1, Tab.Daily);
+        _achievementTab = CreateTabButton("Tab_Achievement", "Thành tựu", AchievementTabSprite, 2, Tab.Achievement);
     }
 
-    private TabButtonView CreateTabButton(string name, string label, Sprite iconSprite, Vector2 position, Tab targetTab)
+    private TabButtonView CreateTabButton(string name, string label, Sprite iconSprite, int chiSo, Tab targetTab)
     {
-        RectTransform root = CreateImage(_board, name, sprites.tabButton, new Color32(251, 205, 127, 255), position, new Vector2(155f, 142f), true);
-        AddOutline(root.gameObject, new Color32(132, 78, 32, 255), new Vector2(2f, -2f));
+        var kt = new Vector2(TaskPopupDesign.TabRong, TaskPopupDesign.TabCao);
+        var viTri = new Vector2(TaskPopupDesign.TabTamX(chiSo), TaskPopupDesign.TabTamY(false));
 
-        Image tabBg = root.GetComponent<Image>();
-        tabBg.raycastTarget = true;                   
+        RectTransform root = CreateRect(_board, name, viTri, kt);
+
+        // Viền 4px #6e4014, hở mép dưới (CSS border-bottom: none) — đẩy viền lên 4px.
+        CreateImage(root, "Tab_Border", BoGoc(TaskPopupDesign.TabBoGoc), TaskPopupDesign.TabVien,
+            new Vector2(0f, 4f), kt + new Vector2(8f, 8f), true);
+
+        Image nenDuoi = CreateImage(root, "Tab_Fill_Bottom", BoGoc(TaskPopupDesign.TabBoGoc),
+            TaskPopupDesign.TabThuongDuoi, Vector2.zero, kt, true).GetComponent<Image>();
+        Image nenTren = CreateImage(root, "Tab_Fill_Top", DaiGradient(),
+            TaskPopupDesign.TabThuongTren, Vector2.zero,
+            new Vector2(kt.x - TaskPopupDesign.TabBoGoc * 2f, kt.y - 8f), false).GetComponent<Image>();
+
+        // Vùng bấm riêng, alpha 0. KHÔNG bật raycast trên lớp gradient: sprite có vùng
+        // alpha≈0, Unity coi pixel alpha thấp là "không trúng" → nửa dưới tab bấm hụt.
+        Image vungBam = CreateImage(root, "Tab_Hit", BoGoc(TaskPopupDesign.TabBoGoc),
+            new Color(1f, 1f, 1f, 0f), Vector2.zero, kt, true).GetComponent<Image>();
+        vungBam.raycastTarget = true;
 
         Button button = root.gameObject.AddComponent<Button>();
-        button.transition = Selectable.Transition.ColorTint;
-        button.targetGraphic = tabBg;
+        button.transition = Selectable.Transition.None;
+        button.targetGraphic = vungBam;
         button.onClick.AddListener(() => ShowTab(targetTab));
 
-        Image icon = CreateImage(root, "Img_Icon", iconSprite, new Color32(255, 238, 175, 255), new Vector2(0f, 24f), new Vector2(74f, 70f), true).GetComponent<Image>();
+        // Đĩa tròn trắng mờ 54px chứa icon 38px, đặt lệch trái để chừa chỗ cho nhãn.
+        RectTransform dia = CreateImage(root, "Icon_Disc", GetCircleSprite(),
+            TaskPopupDesign.TabDiaIcon, new Vector2(-84f, 0f),
+            new Vector2(TaskPopupDesign.TabDiaKichThuoc, TaskPopupDesign.TabDiaKichThuoc), false);
+        CreateImage(dia, "Disc_Rim", GetCircleSprite(), TaskPopupDesign.TabDiaVien, Vector2.zero,
+            new Vector2(TaskPopupDesign.TabDiaKichThuoc + 4f, TaskPopupDesign.TabDiaKichThuoc + 4f),
+            false).SetAsFirstSibling();
+
+        Image icon = CreateImage(dia, "Img_Icon", iconSprite, Color.white, Vector2.zero,
+            new Vector2(TaskPopupDesign.TabIconKichThuoc, TaskPopupDesign.TabIconKichThuoc), false)
+            .GetComponent<Image>();
         icon.preserveAspect = true;
-        TMP_Text text = CreateText(root, "Txt_Label", label, 24, new Color32(92, 50, 25, 255), TextAlignmentOptions.Center, new Vector2(0f, -47f), new Vector2(145f, 36f), FontStyles.Bold);
 
-        RectTransform pointer = CreateImage(root, "Img_SelectedPointer", GetRightTriangleSprite(), new Color32(255, 190, 45, 255), new Vector2(92f, 0f), new Vector2(34f, 54f), false);
-        pointer.gameObject.SetActive(false);
+        TMP_Text text = CreateText(root, "Txt_Label", label, TaskPopupDesign.CoChuTab,
+            TaskPopupDesign.TabChuThuong, TextAlignmentOptions.Center,
+            new Vector2(TaskPopupDesign.TabDiaKichThuoc * 0.5f, 0f),
+            new Vector2(TaskPopupDesign.TabRong - TaskPopupDesign.TabDiaKichThuoc - 40f, 40f),
+            FontStyles.Bold);
+        text.textWrappingMode = TextWrappingModes.NoWrap;
 
-        RectTransform notice = CreateImage(root, "Img_RedDot_Placeholder", GetCircleSprite(), new Color32(243, 83, 49, 255), new Vector2(58f, 52f), new Vector2(24f, 24f), false);
-        CreateText(notice, "Txt_RedDot", "!", 18, Color.white, TextAlignmentOptions.Center, Vector2.zero, new Vector2(20f, 20f), FontStyles.Bold);
+        // Chấm đỏ top 6 right 10 — nghĩa MỚI theo thiết kế: "tab này có thứ chưa nhận",
+        // KHÔNG phải "đang chọn" như bản cũ.
+        // CHA = vành trắng, CON = tâm đỏ. Mọi CON đều vẽ SAU cha (SetAsFirstSibling
+        // chỉ xếp giữa anh em) — bản trước để vành trắng làm con nên nó phủ kín tâm
+        // đỏ, chấm báo hiệu hoá thành chấm TRẮNG như ảnh chụp.
+        RectTransform cham = CreateImage(root, "Dot_Notice", GetCircleSprite(), Color.white,
+            new Vector2(TaskPopupDesign.TabRong * 0.5f - 22f, TaskPopupDesign.TabCao * 0.5f - 18f),
+            new Vector2(TaskPopupDesign.ChamDoKichThuoc + 6f, TaskPopupDesign.ChamDoKichThuoc + 6f), false);
+        CreateImage(cham, "Dot_Fill", GetCircleSprite(), TaskPopupDesign.ChamDoGiua, Vector2.zero,
+            new Vector2(TaskPopupDesign.ChamDoKichThuoc, TaskPopupDesign.ChamDoKichThuoc), false);
+        cham.gameObject.SetActive(false);
 
         return new TabButtonView
         {
             button = button,
-            background = root.GetComponent<Image>(),
-            pointer = pointer.gameObject,
+            background = nenTren,
+            backgroundBottom = nenDuoi,
+            pointer = cham.gameObject,
             label = text,
-            icon = icon
+            icon = icon,
+            root = root,
+            chiSo = chiSo,
         };
     }
 
@@ -448,11 +724,12 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         ApplyTabState(_dailyTab, tab == Tab.Daily);
         ApplyTabState(_achievementTab, tab == Tab.Achievement);
 
+        // Chữ HOA theo thiết kế — ribbon biển hiệu nông trại: NHIỆM VỤ / ĐIỂM DANH / THÀNH TỰU.
         _titleText.text = tab switch
         {
-            Tab.Daily       => "Hằng Ngày",
-            Tab.Achievement => "Thành tựu",
-            _               => "Nhiệm vụ",
+            Tab.Daily       => "ĐIỂM DANH",
+            Tab.Achievement => "THÀNH TỰU",
+            _               => "NHIỆM VỤ",
         };
 
         switch (tab)
@@ -474,337 +751,999 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (view == null)
             return;
 
-        view.background.sprite = selected && sprites.selectedTabButton != null ? sprites.selectedTabButton : sprites.tabButton ?? GetRoundedSprite();
-        view.background.color = selected ? new Color32(255, 223, 151, 255) : new Color32(239, 177, 97, 255);
-        view.pointer.SetActive(selected);
-        view.label.color = selected ? new Color32(87, 43, 18, 255) : new Color32(116, 70, 35, 255);
-    }
-
-    private void BuildMissionContent()
-    {
-        ClearChildren(_missionPanel);
-        CreateText(_missionPanel, "Txt_SectionTitle", "Danh sách nhiệm vụ", 30, new Color32(98, 56, 26, 255), TextAlignmentOptions.Center, new Vector2(0f, 245f), new Vector2(700f, 42f), FontStyles.Bold);
-        CreateText(_missionPanel, "Txt_SectionSubtitle", "Hoàn thành mục tiêu để mở thưởng trong ngày.", 19, new Color32(124, 83, 43, 255), TextAlignmentOptions.Center, new Vector2(0f, 213f), new Vector2(720f, 34f), FontStyles.Bold);
-
-        RectTransform content = BuildVerticalScroll(_missionPanel, "Mission_ScrollView", new Vector2(0f, -20f), new Vector2(840f, 405f));
-
-        int level = GetPlayerLevel();
-        List<MissionData> missions = GetOrderedMissions();
-        foreach (MissionData m in missions)
-            BuildMissionRow(content, m, m != null && m.requiredLevel > level);
-
-        BuildMissionMilestone(content, missions);
-    }
-
-    private void BuildMissionRow(RectTransform parent, MissionData data, bool locked)
-    {
-        Color32 rowColor = locked ? new Color32(228, 222, 210, 255) : new Color32(255, 245, 223, 255);
-        RectTransform row = CreateImage(parent, "Mission_Row", null, rowColor, Vector2.zero, new Vector2(805f, 92f), true);
-        AddOutline(row.gameObject, new Color32(224, 174, 95, 255), new Vector2(1.5f, -1.5f));
-        AddLayoutHeight(row, 92f);
-
-        RectTransform iconFrame = CreateImage(row, "IconFrame_Task", GetCircleSprite(), new Color32(181, 101, 41, 255), new Vector2(-350f, 0f), new Vector2(76f, 76f), false);
-        Image icon = CreateImage(iconFrame, "Img_TaskIcon", data != null ? data.missionIcon : null, new Color32(255, 230, 148, 255), Vector2.zero, new Vector2(62f, 62f), false).GetComponent<Image>();
-        icon.sprite = data != null && data.missionIcon != null ? data.missionIcon : GetCircleSprite();
-        icon.preserveAspect = true;
-        if (locked) icon.color = new Color(1f, 1f, 1f, 0.5f);
-
-        string title = data != null ? data.missionName : "Thêm nhiệm vụ mới";
-        CreateText(row, "Txt_TaskTitle", title, 22, locked ? new Color32(132, 112, 92, 255) : new Color32(88, 48, 23, 255), TextAlignmentOptions.Left, new Vector2(-235f, 20f), new Vector2(260f, 32f), FontStyles.Bold);
-
-        int current = data != null ? Mathf.Clamp(MissionProgressTracker.GetProgressFor(data), 0, Mathf.Max(1, data.targetAmount)) : 0;
-        int target = data != null ? Mathf.Max(1, data.targetAmount) : 1;
-        float progress = (!locked && data != null) ? Mathf.Clamp01((float)current / target) : 0f;
-        bool claimed = data != null && IsMissionClaimed(data);
-        bool canClaim = !locked && data != null && !claimed && current >= target;
-
-        BuildProgressBar(row, "Progress", new Vector2(-235f, -20f), new Vector2(235f, 26f), progress, locked ? "Khoá" : $"{current}/{target}");
-
-        RewardBundle rewards = GetMissionRewards(data);
-        BuildRewardSlot(row, "RewardSlot_Coin", CoinSprite ?? data?.rewardIcon, "x" + rewards.coin, new Vector2(48f, 0f), new Vector2(90f, 58f), new Color32(255, 228, 166, 255));
-        BuildRewardSlot(row, "RewardSlot_Diamond", DiamondSprite, "x" + rewards.diamond, new Vector2(155f, 0f), new Vector2(90f, 58f), new Color32(255, 228, 166, 255));
-        BuildRewardSlot(row, "RewardSlot_EXP", ExpSprite, "x" + rewards.exp, new Vector2(262f, 0f), new Vector2(90f, 58f), new Color32(255, 228, 166, 255));
-
-        if (locked)
+        // Có art tab thì thay sprite; chưa có thì đổi màu hai lớp gradient theo token.
+        if (selected && sprites.selectedTabButton != null)
         {
-            int lv = data != null ? data.requiredLevel : 0;
-            Button lockBtn = CreateTextButton(row, "Btn_Locked", $"Mở cấp {lv}", new Vector2(372f, 0f), new Vector2(102f, 58f), new Color32(150, 150, 150, 255), 17);
-            lockBtn.interactable = false;
+            view.background.sprite = sprites.selectedTabButton;
+            view.background.color = Color.white;
+        }
+        else if (!selected && sprites.tabButton != null)
+        {
+            view.background.sprite = sprites.tabButton;
+            view.background.color = Color.white;
         }
         else
         {
-            string buttonText = claimed ? "Xong" : canClaim ? "Nhận" : "Đi";
-            Color32 buttonColor = canClaim ? new Color32(93, 181, 35, 255) : claimed ? new Color32(142, 164, 126, 255) : new Color32(167, 167, 167, 255);
-            Button action = CreateTextButton(row, "Btn_Go", buttonText, new Vector2(372f, 0f), new Vector2(102f, 58f), buttonColor, 26);
-            action.interactable = canClaim;
-            RectTransform actionRect = action.transform as RectTransform;
-            action.onClick.AddListener(() => ClaimMission(data, actionRect));
+            view.background.sprite = DaiGradient();
+            view.background.color = selected ? TaskPopupDesign.TabChonTren : TaskPopupDesign.TabThuongTren;
+            if (view.backgroundBottom != null)
+                view.backgroundBottom.color = selected ? TaskPopupDesign.TabChonDuoi : TaskPopupDesign.TabThuongDuoi;
         }
-    }
 
-    private void BuildMissionMilestone(RectTransform parent, List<MissionData> visibleMissions)
-    {
-        RectTransform milestone = CreateImage(parent, "Mission_MilestoneReward", null, new Color32(255, 202, 96, 255), Vector2.zero, new Vector2(805f, 120f), true);
-        AddLayoutHeight(milestone, 120f);
-        AddOutline(milestone.gameObject, new Color32(199, 128, 43, 255), new Vector2(2f, -2f));
-        CreateText(milestone, "Txt_Title", "Phần thưởng mốc", 26, new Color32(99, 54, 22, 255), TextAlignmentOptions.Left, new Vector2(-265f, 27f), new Vector2(270f, 36f), FontStyles.Bold);
-        CreateText(milestone, "Txt_Desc", "Hoàn thành tất cả nhiệm vụ để nhận phần thưởng đặc biệt!", 18, new Color32(99, 54, 22, 255), TextAlignmentOptions.Left, new Vector2(-245f, -20f), new Vector2(315f, 56f), FontStyles.Bold);
+        view.label.color = selected ? TaskPopupDesign.TabChuChon : TaskPopupDesign.TabChuThuong;
 
-        int completed = 0;
-        for (int i = 0; i < visibleMissions.Count; i++)
+        // Nổi/lún: tab đang chọn nối liền tờ giấy, tab thường tụt xuống 14px.
+        if (view.root != null)
+            view.root.anchoredPosition = new Vector2(
+                TaskPopupDesign.TabTamX(view.chiSo), TaskPopupDesign.TabTamY(selected));
+
+        // Chấm đỏ = "có thưởng chưa nhận" và KHÔNG đang xem tab đó.
+        bool co = false;
+        if (!selected)
         {
-            MissionData mission = visibleMissions[i];
-            if (mission != null && MissionProgressTracker.GetProgressFor(mission) >= mission.targetAmount)
-                completed++;
+            if (view == _missionTab)          co = CoThuongChoNhan(_missionDatabase, false);
+            else if (view == _achievementTab) co = CoThuongChoNhan(_achievementDatabase, true);
+            else if (view == _dailyTab)       co = !SyncDailyState().claimedToday;
+        }
+        if (view.pointer != null && view.pointer.activeSelf != co) view.pointer.SetActive(co);
+    }
+
+    /// <summary>Tab có ít nhất một mục đã xong mà chưa nhận thưởng?</summary>
+    private bool CoThuongChoNhan(MissionDatabase db, bool laThanhTuu)
+    {
+        if (db == null || db.missions == null) return false;
+
+        int cap = GetPlayerLevel();
+        foreach (MissionData m in db.missions)
+        {
+            if (m == null || m.isDaily) continue;
+            if (m.requiredLevel > cap) continue;
+            if (IsAchievementOrMissionClaimed(m, laThanhTuu)) continue;
+            if (MissionProgressTracker.GetProgressFor(m) >= Mathf.Max(1, m.targetAmount)) return true;
+        }
+        return false;
+    }
+
+
+    private void BuildMissionContent()
+    {
+        // Dựng khung MỘT LẦN. Các lần sau chỉ nạp lại nội dung — đây là điểm mấu chốt để
+        // hết giật: `ClearChildren` + dựng lại là thứ đang tốn hàng trăm mili giây.
+        if (_vungCuonNhiemVu == null)
+        {
+            ClearChildren(_missionPanel);
+            // KHÔNG còn dòng tiêu đề trong giấy — ribbon đã ghi NHIỆM VỤ ngay trên đầu,
+            // thêm một dòng nữa là lặp và ăn mất 38px chiều cao danh sách.
+            _nhanTrangNhiemVu = DungThanhChuyenTrang(
+                _missionPanel, new Vector2(0f, 283f),
+                () => DoiTrangNhiemVu(-1), () => DoiTrangNhiemVu(+1));
+
+            _vungCuonNhiemVu = BuildVerticalScroll(_missionPanel, "Mission_ScrollView",
+                new Vector2(0f, 33f), new Vector2(TaskPopupDesign.VungTrongRong, 456f));
+
+            _chanMocNhiemVu = DungChanMoc(_missionPanel, "Phần thưởng mốc — cả trang",
+                "Hoàn thành tất cả nhiệm vụ để nhận thưởng đặc biệt!");
         }
 
-        RectTransform chest = CreateImage(milestone, "Img_ChestReward_Placeholder", ChestSprite, new Color32(188, 89, 46, 255), new Vector2(92f, 2f), new Vector2(128f, 92f), false);
-        CreateText(chest, "Txt_Chest", "CHEST", 20, Color.white, TextAlignmentOptions.Center, Vector2.zero, new Vector2(110f, 40f), FontStyles.Bold);
-        BuildRewardSlot(milestone, "RewardSlot_Coin", CoinSprite, "x200", new Vector2(240f, -2f), new Vector2(92f, 78f), new Color32(255, 217, 132, 255));
-        BuildRewardSlot(milestone, "RewardSlot_Diamond", DiamondSprite, "x20", new Vector2(350f, -2f), new Vector2(92f, 78f), new Color32(255, 217, 132, 255));
-        BuildRewardSlot(milestone, "RewardSlot_EXP", ExpSprite, "x50", new Vector2(460f, -2f), new Vector2(92f, 78f), new Color32(255, 217, 132, 255));
-        CreateText(milestone, "Txt_MilestoneProgress", $"{completed}/{Mathf.Max(1, visibleMissions.Count)}", 20, new Color32(119, 67, 24, 255), TextAlignmentOptions.Center, new Vector2(-26f, -43f), new Vector2(120f, 28f), FontStyles.Bold);
+        if (_trangNhiemVu < 0) _trangNhiemVu = TrangDangChoi(false);
+        NapLaiTrangNhiemVu();
     }
+
+
+
+
+
+    /// <summary>
+    /// Trang ứng với chặng người chơi đang ở. Mở popup lần đầu phải rơi vào đúng mốc
+    /// đang chơi, không phải mốc 1–4 mà họ đã làm xong từ lâu.
+    /// </summary>
+    private int TrangDangChoi(bool laThanhTuu)
+    {
+        int cap = GetPlayerLevel();
+        int trang = 0;
+        for (int i = MocCap.Length - 1; i >= 0; i--)
+        {
+            if (cap >= MocCap[i]) { trang = i; break; }
+        }
+
+        // Mốc hiện tại đã nhận hết thưởng thì nhảy sang mốc sau — đúng ý "làm xong một
+        // lượt sẽ tới trang khác". Dừng ở mốc đầu tiên còn việc.
+        while (trang < MocCap.Length - 1 && DaXongTrang(trang, laThanhTuu))
+            trang++;
+
+        return trang;
+    }
+
+    /// <summary>Mọi nhiệm vụ mở khoá trong trang này đều đã nhận thưởng?</summary>
+    private bool DaXongTrang(int trang, bool laThanhTuu)
+    {
+        int a = CapDauTrang(trang), b = CapCuoiTrang(trang);
+        int cap = GetPlayerLevel();
+        bool coItemMoKhoa = false;
+
+        MissionDatabase db = laThanhTuu ? _achievementDatabase : _missionDatabase;
+        if (db == null || db.missions == null) return true;
+
+        foreach (MissionData m in db.missions)
+        {
+            if (m == null || m.isDaily) continue;
+            if (m.requiredLevel < a || m.requiredLevel > b) continue;
+            if (m.requiredLevel > cap) continue;      // chưa tới cấp thì không tính là còn việc
+
+            coItemMoKhoa = true;
+            bool daNhan = laThanhTuu ? IsAchievementClaimed(m) : IsMissionClaimed(m);
+            if (!daNhan) return false;
+        }
+
+        // Không có nhiệm vụ nào mở khoá trong mốc này ⇒ coi như chưa xong, đứng lại đây.
+        return coItemMoKhoa;
+    }
+
+    private void DoiTrangNhiemVu(int buoc)
+    {
+        int moi = Mathf.Clamp(_trangNhiemVu + buoc, 0, MocCap.Length - 1);
+        if (moi == _trangNhiemVu) return;
+        _trangNhiemVu = moi;
+        NapLaiTrangNhiemVu();
+    }
+
+    private void NapLaiTrangNhiemVu()
+    {
+        int cap = GetPlayerLevel();
+        int a = CapDauTrang(_trangNhiemVu), b = CapCuoiTrang(_trangNhiemVu);
+
+        List<MissionData> ds = LocTheoTrang(_missionDatabase, a, b, false);
+
+        if (_nhanTrangNhiemVu != null)
+            _nhanTrangNhiemVu.text = $"{TenTrang(_trangNhiemVu)}   ·   {ds.Count} nhiệm vụ";
+
+        NapDanhSach(_khoHangNhiemVu, _vungCuonNhiemVu, ds, cap, false);
+        CapNhatChanMoc(_chanMocNhiemVu, ds, false);
+    }
+
+    /// <summary>
+    /// Lấy nhiệm vụ thuộc một mốc cấp, xếp: làm được ngay → đang làm → đã nhận → chưa mở.
+    /// </summary>
+    private List<MissionData> LocTheoTrang(MissionDatabase db, int capDau, int capCuoi, bool laThanhTuu)
+    {
+        var b0 = new List<MissionData>();   // đang làm
+        var b1 = new List<MissionData>();   // xong, chờ nhận
+        var b2 = new List<MissionData>();   // đã nhận
+        var b3 = new List<MissionData>();   // chưa đủ cấp
+
+        if (db != null && db.missions != null)
+        {
+            int cap = GetPlayerLevel();
+            foreach (MissionData m in db.missions)
+            {
+                if (m == null || m.isDaily) continue;
+                if (m.requiredLevel < capDau || m.requiredLevel > capCuoi) continue;
+
+                if (m.requiredLevel > cap) { b3.Add(m); continue; }
+
+                bool daNhan = laThanhTuu ? IsAchievementClaimed(m) : IsAchievementOrMissionClaimed(m, laThanhTuu);
+                if (daNhan) { b2.Add(m); continue; }
+
+                int cur = MissionProgressTracker.GetProgressFor(m);
+                if (cur >= Mathf.Max(1, m.targetAmount)) b1.Add(m);
+                else                                     b0.Add(m);
+            }
+            b3.Sort((x, y) => x.requiredLevel.CompareTo(y.requiredLevel));
+        }
+
+        var ket = new List<MissionData>(b0.Count + b1.Count + b2.Count + b3.Count);
+        ket.AddRange(b1); ket.AddRange(b0); ket.AddRange(b2); ket.AddRange(b3);
+        return ket;
+    }
+
+    private static bool IsAchievementOrMissionClaimed(MissionData m, bool laThanhTuu)
+        => laThanhTuu ? IsAchievementClaimed(m) : IsMissionClaimed(m);
+
+    /// <summary>
+    /// Nạp danh sách vào kho hàng: dùng lại hàng đã có, chỉ dựng thêm khi thiếu, và
+    /// TẮT phần thừa thay vì huỷ. Đổi trang qua lại nhiều lần vẫn không sinh rác.
+    /// </summary>
+    private void NapDanhSach(List<HangThuong> kho, RectTransform vungCuon,
+                             List<MissionData> ds, int capNguoiChoi, bool laThanhTuu)
+    {
+        _hangDangHien.Clear();
+
+        // Bọc từng hàng trong try/catch. Trước đây một lỗi ở hàng ĐẦU làm chết cả vòng
+        // lặp: 27 hàng còn lại không bao giờ được dựng, nhãn vẫn ghi "28 nhiệm vụ" mà
+        // màn hình chỉ có một hàng trống chữ. Không có gì chỉ ra nguyên nhân.
+        // Giờ hàng lỗi bị bỏ qua, các hàng khác vẫn lên, và Console in đúng tên nhiệm vụ
+        // gây lỗi.
+        int soLoi = 0;
+        for (int i = 0; i < ds.Count; i++)
+        {
+            HangThuong h = null;
+            try
+            {
+                if (i < kho.Count)
+                {
+                    h = kho[i];
+                }
+                else
+                {
+                    h = DungHangTrong(vungCuon, laThanhTuu);
+                    kho.Add(h);
+                }
+
+                if (!h.goc.gameObject.activeSelf) h.goc.gameObject.SetActive(true);
+                NapHang(h, ds[i], capNguoiChoi, laThanhTuu);
+                _hangDangHien[ds[i]] = h;
+            }
+            catch (System.Exception e)
+            {
+                soLoi++;
+                string ten = ds[i] != null ? ds[i].name : "(null)";
+                if (soLoi <= 3)
+                    Debug.LogError($"[PopupNV] Dựng hàng #{i} ('{ten}') lỗi: {e.GetType().Name}: " +
+                                   $"{e.Message}\n{e.StackTrace}", ds[i]);
+                if (h != null && h.goc != null) h.goc.gameObject.SetActive(false);
+            }
+        }
+
+        if (soLoi > 0)
+            Debug.LogError($"[PopupNV] {soLoi}/{ds.Count} hàng dựng lỗi — xem 3 lỗi đầu ở trên.");
+
+        for (int i = ds.Count; i < kho.Count; i++)
+        {
+            if (kho[i].goc.gameObject.activeSelf)
+                kho[i].goc.gameObject.SetActive(false);
+        }
+
+        // Cuộn về đầu: đổi trang mà giữ nguyên vị trí cuộn thì người chơi tưởng chưa đổi.
+        if (vungCuon != null) vungCuon.anchoredPosition = Vector2.zero;
+    }
+
+    /// <summary>
+    /// Nạp danh sách vào kho hàng: dùng lại hàng đã có, chỉ dựng thêm khi thiếu, và
+    /// TẮT phần thừa thay vì huỷ. Đổi trang qua lại nhiều lần vẫn không sinh rác.
+    /// </summary>
+
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  THÀNH TỰU LÀ CHUỖI NHIỀU MỐC — CHỈ HIỆN MỐC ĐANG LÀM
+    // ═════════════════════════════════════════════════════════════════════════
+    //  Database thành tựu có 157 mục nhưng KHÔNG phải 157 việc khác nhau: đó là 7 chuỗi,
+    //  mỗi chuỗi nhiều bậc tăng dần cùng theo dõi một sự kiện.
+    //      "Vua Lúa Nước (Mốc 1) — Gặt 100 bó" → Mốc 2: 200 → Mốc 3: 300 → … 15 bậc
+    //  Đổ cả 157 bậc ra danh sách vừa nặng vừa vô nghĩa: người chơi mới thấy 33 dòng
+    //  "thu hoạch 100 / 150 / 300 / 450 …" xếp liền nhau, không biết nhìn dòng nào.
+    //
+    //  Cũng vì vậy chia trang theo cấp không dùng được ở tab này — CẢ 157 mục đều
+    //  `requiredLevel: 1`. Cách chia đúng là theo chuỗi: mỗi chuỗi một dòng, hiện đúng
+    //  mốc đang làm dở. 157 dòng → 7 dòng, khớp luôn với ảnh mẫu 3.
+    private List<MissionData> LocThanhTuuTheoChuoi(out int tongBac, out int bacDaXong)
+    {
+        tongBac = 0; bacDaXong = 0;
+        var ket = new List<MissionData>();
+        if (_achievementDatabase == null || _achievementDatabase.missions == null) return ket;
+
+        // Gom theo (loại sự kiện, item) — đúng định nghĩa "cùng một chuỗi".
+        var nhom = new Dictionary<string, List<MissionData>>();
+        foreach (MissionData m in _achievementDatabase.missions)
+        {
+            if (m == null) continue;
+            string khoa = $"{(int)m.eventType}|{(m.targetItemId ?? string.Empty).Trim().ToLowerInvariant()}";
+            if (!nhom.TryGetValue(khoa, out var ds)) nhom[khoa] = ds = new List<MissionData>();
+            ds.Add(m);
+            tongBac++;
+        }
+
+        foreach (var ds in nhom.Values)
+        {
+            ds.Sort((x, y) => x.targetAmount.CompareTo(y.targetAmount));
+
+            MissionData dangLam = null;
+            foreach (MissionData m in ds)
+            {
+                if (IsAchievementClaimed(m)) { bacDaXong++; continue; }
+                if (dangLam == null) dangLam = m;
+            }
+
+            // Cả chuỗi đã nhận hết → vẫn hiện bậc cuối để người chơi thấy "đã hoàn tất",
+            // chứ không để chuỗi biến mất khỏi danh sách như chưa từng có.
+            ket.Add(dangLam ?? ds[ds.Count - 1]);
+        }
+
+        // Chuỗi nhận được ngay lên đầu, rồi tới chuỗi đang làm, cuối là chuỗi đã xong.
+        ket.Sort((x, y) => HangThanhTuu(x).CompareTo(HangThanhTuu(y)));
+        return ket;
+    }
+
+    private int HangThanhTuu(MissionData m)
+    {
+        if (m == null) return 3;
+        if (IsAchievementClaimed(m)) return 2;
+        return MissionProgressTracker.GetProgressFor(m) >= Mathf.Max(1, m.targetAmount) ? 0 : 1;
+    }
+
+    private void CapNhatChanMocChuoi(ChanMoc c, int tongBac, int bacDaXong)
+    {
+        if (c == null) return;
+        int mau = Mathf.Max(1, tongBac);
+        c.thanh.fillAmount = (float)bacDaXong / mau;
+        c.soTienDo.text = $"{bacDaXong}/{tongBac}";
+        c.mota.text = bacDaXong >= tongBac
+            ? "Đã hoàn tất mọi thành tựu!"
+            : "Hoàn thành các mốc để mở rương thưởng!";
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  DỰNG HÀNG TRỐNG (một lần)
+    // ═════════════════════════════════════════════════════════════════════════
+    private HangThuong DungHangTrong(RectTransform parent, bool laThanhTuu)
+    {
+        float cao = laThanhTuu ? TaskPopupDesign.HangCaoTT : TaskPopupDesign.HangCao;
+        var kt = new Vector2(TaskPopupDesign.HangRong, cao);
+        var h = new HangThuong();
+
+        // Nền hàng: viền 3px #ecd09c + gradient #fffdf4→#fdf6e3 + cạnh dưới dày 5px.
+        h.goc = CreateRect(parent, laThanhTuu ? "Achievement_Row" : "Mission_Row", Vector2.zero, kt);
+        AddLayoutHeight(h.goc, cao + 5f);   // +5 cho cạnh dưới, không bị hàng sau đè
+
+        CreateImage(h.goc, "Row_EdgeBottom", BoGoc(TaskPopupDesign.HangBoGoc),
+            TaskPopupDesign.HangDoCanh, new Vector2(0f, -5f), kt, true);
+        CreateImage(h.goc, "Row_Border", BoGoc(TaskPopupDesign.HangBoGoc),
+            TaskPopupDesign.HangVien, Vector2.zero, kt + new Vector2(6f, 6f), true);
+        h.nenHang = CreateImage(h.goc, "Row_Fill", BoGoc(TaskPopupDesign.HangBoGoc),
+            TaskPopupDesign.HangDuoi, Vector2.zero, kt, true).GetComponent<Image>();
+        PhuGradient(h.goc, "Row_Fill_Top", TaskPopupDesign.HangTren, Vector2.zero, kt,
+            TaskPopupDesign.HangBoGoc);
+
+        // ── cột 1 · khung icon 76×76 bo 20, NGHIÊNG −3° ──────────────────────
+        // Xoay cả khung để viền nghiêng theo — chi tiết "juicy" của README.
+        float dk = TaskPopupDesign.IconKhungKichThuoc;
+        RectTransform khung = CreateRect(h.goc, "IconFrame",
+            new Vector2(TaskPopupDesign.XKhungIcon, 0f), new Vector2(dk, dk));
+        khung.localRotation = Quaternion.Euler(0f, 0f, TaskPopupDesign.IconNghieng);
+
+        CreateImage(khung, "Frame_Border", BoGoc(TaskPopupDesign.IconBoGoc),
+            TaskPopupDesign.KhungIconVien, Vector2.zero, new Vector2(dk + 6f, dk + 6f), true);
+        h.iconVien = CreateImage(khung, "Frame_Fill", BoGoc(TaskPopupDesign.IconBoGoc),
+            TaskPopupDesign.KhungIconDuoi, Vector2.zero, new Vector2(dk, dk), true).GetComponent<Image>();
+        PhuGradient(khung, "Frame_Fill_Top", TaskPopupDesign.KhungIconTren, Vector2.zero,
+            new Vector2(dk, dk), TaskPopupDesign.IconBoGoc);
+
+        h.icon = CreateImage(khung, "Img_Icon", null, Color.white, Vector2.zero,
+            new Vector2(TaskPopupDesign.IconKichThuoc, TaskPopupDesign.IconKichThuoc), false)
+            .GetComponent<Image>();
+        h.icon.preserveAspect = true;
+
+        // ── cột 2 · tên 25px (trên) + thanh tiến độ 28px gloss (dưới) ────────
+        float xCot = TaskPopupDesign.XCotChu;
+
+        h.ten = CreateText(h.goc, "Txt_Title", "", TaskPopupDesign.CoChuTen,
+            TaskPopupDesign.TenBinhThuong, TextAlignmentOptions.Left,
+            new Vector2(xCot, 21f), new Vector2(TaskPopupDesign.CotChuRong, 34f), FontStyles.Bold);
+        h.ten.textWrappingMode = TextWrappingModes.NoWrap;
+        h.ten.overflowMode = TextOverflowModes.Ellipsis;
+
+        var ktTd = new Vector2(TaskPopupDesign.CotChuRong, TaskPopupDesign.TdCao);
+        RectTransform mangTd = CreateImage(h.goc, "Progress", BoGoc(TaskPopupDesign.TdBoGoc),
+            TaskPopupDesign.TdMang, new Vector2(xCot, -18f), ktTd, true);
+
+        var fill = CreateImage(mangTd, "Fill", BoGoc(TaskPopupDesign.TdBoGoc),
+            TaskPopupDesign.TdRuotDuoi, Vector2.zero, ktTd, true);
+        h.thanhTienDo = fill.GetComponent<Image>();
+        h.thanhTienDo.type = Image.Type.Filled;
+        h.thanhTienDo.fillMethod = Image.FillMethod.Horizontal;
+        h.thanhTienDo.fillOrigin = 0;
+
+        // Gloss trắng nửa trên — CSS rgba(255,255,255,.42), bo trên.
+        CreateImage(mangTd, "Gloss", BoGoc(TaskPopupDesign.TdBoGoc), TaskPopupDesign.TdGloss,
+            new Vector2(0f, TaskPopupDesign.TdCao * 0.25f),
+            new Vector2(ktTd.x - 6f, TaskPopupDesign.TdCao * 0.5f), true);
+
+        h.chuTienDo = CreateText(mangTd, "Txt_Progress", "", TaskPopupDesign.CoChuTd,
+            TaskPopupDesign.TdChu, TextAlignmentOptions.Center, Vector2.zero,
+            new Vector2(ktTd.x - 8f, 24f), FontStyles.Bold);
+        AddShadow(h.chuTienDo.gameObject, TaskPopupDesign.TdChuVien, new Vector2(0f, -2f));
+
+        // ── cột 3 · 3 chip thưởng (icon trái · số phải) ──────────────────────
+        h.oThuong = new OThuong[3];
+        for (int i = 0; i < 3; i++)
+            h.oThuong[i] = DungOThuong(h.goc, i, laThanhTuu ? TaskPopupDesign.OThuongCao - 4f
+                                                            : TaskPopupDesign.OThuongCao);
+
+        // ── cột 4 · nút 156×60 bo 18, cạnh dưới dày 6px, bấm lún ─────────────
+        var ktNut = new Vector2(TaskPopupDesign.NutRong, TaskPopupDesign.NutCao);
+        RectTransform gocNut = CreateRect(h.goc, "Btn_Action",
+            new Vector2(TaskPopupDesign.XNut, 0f), ktNut);
+
+        CreateImage(gocNut, "Btn_EdgeBottom", BoGoc(TaskPopupDesign.NutBoGoc),
+            TaskPopupDesign.NutDoCanh, new Vector2(0f, -6f), ktNut, true);
+        h.nutVien = CreateImage(gocNut, "Btn_Border", BoGoc(TaskPopupDesign.NutBoGoc),
+            TaskPopupDesign.NutNhan.vien, Vector2.zero, ktNut + new Vector2(6f, 6f), true)
+            .GetComponent<Image>();
+        h.nutNenDuoi = CreateImage(gocNut, "Btn_Fill_Bottom", BoGoc(TaskPopupDesign.NutBoGoc),
+            TaskPopupDesign.NutNhan.nenDuoi, Vector2.zero, ktNut, true).GetComponent<Image>();
+        h.nutNen = CreateImage(gocNut, "Btn_Fill_Top", DaiGradient(),
+            TaskPopupDesign.NutNhan.nen, Vector2.zero,
+            new Vector2(ktNut.x - TaskPopupDesign.NutBoGoc * 2f, ktNut.y - 8f), false)
+            .GetComponent<Image>();
+
+        Image vungBamNut = CreateImage(gocNut, "Btn_Hit", BoGoc(TaskPopupDesign.NutBoGoc),
+            new Color(1f, 1f, 1f, 0f), Vector2.zero, ktNut, true).GetComponent<Image>();
+        vungBamNut.raycastTarget = true;
+
+        h.nut = gocNut.gameObject.AddComponent<Button>();
+        h.nut.transition = Selectable.Transition.None;
+        h.nut.targetGraphic = vungBamNut;
+
+        h.nutChu = CreateText(gocNut, "Txt_Label", "", TaskPopupDesign.CoChuNut, Color.white,
+            TextAlignmentOptions.Center, Vector2.zero, ktNut - new Vector2(10f, 10f), FontStyles.Bold);
+        h.nutChu.textWrappingMode = TextWrappingModes.NoWrap;
+        AddShadow(h.nutChu.gameObject, new Color(0f, 0f, 0f, 0.22f), new Vector2(0f, -2f));
+
+        // Chấm đỏ nhô ra góc trên-phải nút (CSS top -10 right -10).
+        float nc = TaskPopupDesign.ChamDoKichThuoc * 0.5f;
+        // Cha = vành trắng, con = tâm đỏ — cùng lý do với chấm trên tab.
+        RectTransform cham = CreateImage(gocNut, "Dot_Claimable", GetCircleSprite(), Color.white,
+            new Vector2(ktNut.x * 0.5f + 10f - nc, ktNut.y * 0.5f + 10f - nc),
+            new Vector2(TaskPopupDesign.ChamDoKichThuoc + 6f, TaskPopupDesign.ChamDoKichThuoc + 6f), false);
+        CreateImage(cham, "Dot_Fill", GetCircleSprite(), TaskPopupDesign.ChamDoGiua, Vector2.zero,
+            new Vector2(TaskPopupDesign.ChamDoKichThuoc, TaskPopupDesign.ChamDoKichThuoc), false);
+        h.chamDo = cham.gameObject;
+        h.chamDo.SetActive(false);
+
+        return h;
+    }
+
+    private OThuong DungOThuong(RectTransform hang, int chiSo, float chieuCao)
+    {
+        var o = new OThuong();
+        var kt = new Vector2(TaskPopupDesign.OThuongRong, chieuCao);
+
+        // Chip thưởng: viền 3px #e0b26a + gradient #fff6de→#ffe9bd + cạnh dưới 3px.
+        o.goc = CreateRect(hang, $"RewardSlot_{chiSo}",
+            new Vector2(TaskPopupDesign.XOThuong(chiSo), 0f), kt);
+
+        CreateImage(o.goc, "Chip_EdgeBottom", BoGoc(TaskPopupDesign.OThuongBoGoc),
+            TaskPopupDesign.HangDoCanh, new Vector2(0f, -3f), kt, true);
+        CreateImage(o.goc, "Chip_Border", BoGoc(TaskPopupDesign.OThuongBoGoc),
+            TaskPopupDesign.OThuongVien, Vector2.zero, kt + new Vector2(6f, 6f), true);
+        CreateImage(o.goc, "Chip_Fill", BoGoc(TaskPopupDesign.OThuongBoGoc),
+            TaskPopupDesign.OThuongDuoi, Vector2.zero, kt, true);
+        PhuGradient(o.goc, "Chip_Fill_Top", TaskPopupDesign.OThuongTren, Vector2.zero, kt,
+            TaskPopupDesign.OThuongBoGoc);
+
+        // Icon 36 TRÁI · số PHẢI — thiết kế xếp ngang (ô 134 đủ rộng, "x1000" không cắt).
+        float xIcon = -kt.x * 0.5f + 12f + TaskPopupDesign.OThuongIcon * 0.5f;
+        o.icon = CreateImage(o.goc, "Img_Icon", null, Color.white, new Vector2(xIcon, 0f),
+            new Vector2(TaskPopupDesign.OThuongIcon, TaskPopupDesign.OThuongIcon), false)
+            .GetComponent<Image>();
+        o.icon.preserveAspect = true;
+
+        float xSo = xIcon + TaskPopupDesign.OThuongIcon * 0.5f + 6f;
+        float wSo = kt.x * 0.5f - 12f - xSo;
+        o.so = CreateText(o.goc, "Txt_Amount", "", TaskPopupDesign.CoChuOThuong,
+            TaskPopupDesign.OThuongChu, TextAlignmentOptions.Left,
+            new Vector2(xSo + wSo * 0.5f, 0f), new Vector2(wSo, 26f), FontStyles.Bold);
+        o.so.textWrappingMode = TextWrappingModes.NoWrap;
+
+        return o;
+    }
+
+    /// <summary>Thanh chuyển trang: ‹  Cấp 5–9 · 39 nhiệm vụ  ›</summary>
+    private TMP_Text DungThanhChuyenTrang(RectTransform cha, Vector2 viTri,
+                                          UnityEngine.Events.UnityAction lui,
+                                          UnityEngine.Events.UnityAction toi,
+                                          bool coNut = true)
+    {
+        if (coNut)
+        {
+            Button bLui = CreateTextButton(cha, "Btn_PrevPage", "‹", new Vector2(-330f, viTri.y),
+                new Vector2(52f, 40f), new Color32(196, 143, 74, 255), 28);
+            bLui.onClick.AddListener(lui);
+
+            Button bToi = CreateTextButton(cha, "Btn_NextPage", "›", new Vector2(330f, viTri.y),
+                new Vector2(52f, 40f), new Color32(196, 143, 74, 255), 28);
+            bToi.onClick.AddListener(toi);
+        }
+
+        return CreateText(cha, "Txt_PageLabel", "", 20, new Color32(124, 83, 43, 255),
+            TextAlignmentOptions.Center, viTri, new Vector2(480f, 32f), FontStyles.Bold);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  NẠP NỘI DUNG VÀO HÀNG CÓ SẴN
+    // ═════════════════════════════════════════════════════════════════════════
+    private void NapHang(HangThuong h, MissionData data, int capNguoiChoi, bool laThanhTuu)
+    {
+        h.duLieu = data;
+        h.goc.localScale = Vector3.one;
+
+        bool khoa   = data != null && data.requiredLevel > capNguoiChoi;
+        bool daNhan = data != null && IsAchievementOrMissionClaimed(data, laThanhTuu);
+
+        int muc  = data != null ? Mathf.Max(1, data.targetAmount) : 1;
+        int nay  = data != null ? Mathf.Clamp(MissionProgressTracker.GetProgressFor(data), 0, muc) : 0;
+        bool xong = !khoa && data != null && nay >= muc;
+        bool nhanDuoc = xong && !daNhan;
+
+        // Thiết kế làm MỜ CẢ HÀNG: khoá 0.55, đã nhận 0.68 — một giá trị CanvasGroup
+        // điều khiển toàn bộ, không thể lệch giữa nền và chữ như đổi màu từng phần.
+        if (h.doMo == null)
+        {
+            // KHÔNG dùng `??` với GetComponent: khi thiếu component Unity trả object
+            // "giả null" — `== null` bắt được (toán tử nạp chồng) nhưng `??` thì không,
+            // và chạm vào nó là MissingComponentException. Chính lỗi này làm 84/84
+            // hàng chết trong lần chạy đầu.
+            h.doMo = h.goc.GetComponent<CanvasGroup>();
+            if (h.doMo == null) h.doMo = h.goc.gameObject.AddComponent<CanvasGroup>();
+        }
+        h.doMo.alpha = khoa ? TaskPopupDesign.MoKhoa : daNhan ? TaskPopupDesign.MoDaNhan : 1f;
+        h.doMo.blocksRaycasts = true;
+
+        // Nhiệm vụ chưa gán icon (Giao đơn, Nấu món, Đạt cấp…) thì ẨN ảnh — để
+        // fallback vòng tròn trắng như ảnh chụp trông như lỗi. Khung vàng nghiêng
+        // trống tự nó đã là một ô sạch sẽ, chờ chủ dự án gán icon là hiện.
+        bool coIcon = data != null && data.missionIcon != null;
+        h.icon.enabled = coIcon;
+        if (coIcon) { h.icon.sprite = data.missionIcon; h.icon.color = Color.white; }
+
+        h.ten.text  = data != null ? data.missionName : "";
+        h.ten.color = (khoa || daNhan) ? TaskPopupDesign.TenMoNhat : TaskPopupDesign.TenBinhThuong;
+
+        h.thanhTienDo.fillAmount = khoa ? 0f : daNhan ? 1f : (float)nay / muc;
+        h.thanhTienDo.color = daNhan ? TaskPopupDesign.TdRuotXong : TaskPopupDesign.TdRuotDuoi;
+        h.chuTienDo.text = khoa ? $"Mở ở cấp {(data != null ? data.requiredLevel : 0)}" : $"{nay}/{muc}";
+
+        RewardBundle thuong = laThanhTuu ? GetAchievementRewards(data) : GetMissionRewards(data);
+        NapOThuong(h.oThuong[0], CoinSprite,    thuong.coin,    new Color32(240, 174, 45, 255), khoa);
+        NapOThuong(h.oThuong[1], DiamondSprite, thuong.diamond, new Color32(120, 205, 255, 255), khoa);
+        NapOThuong(h.oThuong[2], ExpSprite,     thuong.exp,     new Color32(120, 220, 80, 255), khoa);
+
+        CapNhatNut(h, khoa, daNhan, nhanDuoc, data, laThanhTuu);
+    }
+
+    private void NapOThuong(OThuong o, Sprite spr, int soLuong, Color mauDuPhong, bool khoa)
+    {
+        bool hien = soLuong > 0;
+        if (o.goc.gameObject.activeSelf != hien) o.goc.gameObject.SetActive(hien);
+        if (!hien) return;
+
+        o.icon.sprite = spr != null ? spr : GetCircleSprite();
+        // KHÔNG tự làm mờ icon — CanvasGroup của cả hàng đã lo. Mờ hai lần thì hàng
+        // khoá tụt còn 0.55×0.5=0.27, gần như không đọc được.
+        o.icon.color  = spr != null ? Color.white : mauDuPhong;
+        o.so.text  = "x" + soLuong;
+        o.so.color = TaskPopupDesign.OThuongChu;
+    }
+
+    /// <summary>
+    /// Bốn trạng thái nút gom vào MỘT chỗ, để trạng thái sau khi bấm Nhận và trạng thái
+    /// lúc dựng lại không thể lệch nhau — trước đây hai đoạn code riêng, sửa một bên là lệch.
+    /// </summary>
+    private void CapNhatNut(HangThuong h, bool khoa, bool daNhan, bool nhanDuoc,
+                            MissionData data, bool laThanhTuu)
+    {
+        h.nut.onClick.RemoveAllListeners();
+
+        // Bốn kiểu nút lấy nguyên mã màu thiết kế (TaskPopupDesign.Nut*):
+        //   Nhận #a5e05e→#57a51f · Đi làm #ffd977→#f2a636 · Đã nhận #ded4bd · Khoá #cfc7b4
+        TaskPopupDesign.KieuNut kieu;
+        string chu;
+
+        if (khoa)
+        {
+            kieu = TaskPopupDesign.NutKhoa;
+            chu  = data != null ? $"Cấp {data.requiredLevel}" : kieu.nhan;
+        }
+        else if (daNhan)
+        {
+            kieu = TaskPopupDesign.NutDaNhan;
+            chu  = kieu.nhan;
+        }
+        else if (nhanDuoc)
+        {
+            kieu = TaskPopupDesign.NutNhan;
+            chu  = kieu.nhan;
+            RectTransform nguon = h.nut.transform as RectTransform;
+            if (laThanhTuu) h.nut.onClick.AddListener(() => ClaimAchievement(data, nguon));
+            else            h.nut.onClick.AddListener(() => ClaimMission(data, nguon));
+        }
+        else
+        {
+            kieu = TaskPopupDesign.NutDiLam;
+            chu  = laThanhTuu ? "Đang làm" : kieu.nhan;
+
+            // "Đi làm" phải LÀM GÌ ĐÓ — đóng popup để ra ruộng làm nhiệm vụ.
+            if (!laThanhTuu) h.nut.onClick.AddListener(ClosePopupForAction);
+        }
+
+        h.nutChu.text  = chu;
+        h.nutChu.color = kieu.chu;
+        // Nhãn dài ("Đang làm", "Đã nhận") co chữ — để 25 là Ellipsis cắt thành "Đang là…".
+        h.nutChu.fontSize = chu.Length > 6 ? TaskPopupDesign.CoChuNut - 4 : TaskPopupDesign.CoChuNut;
+
+        h.nutNen.color = kieu.nen;
+        if (h.nutNenDuoi != null) h.nutNenDuoi.color = kieu.nenDuoi;
+        if (h.nutVien != null)    h.nutVien.color    = kieu.vien;
+
+        h.nut.interactable = nhanDuoc || (!khoa && !daNhan && !laThanhTuu);
+        if (h.chamDo.activeSelf != nhanDuoc) h.chamDo.SetActive(nhanDuoc);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  CHÂN TRANG "PHẦN THƯỞNG MỐC"
+    // ═════════════════════════════════════════════════════════════════════════
+    //  Bản cũ nhét thanh này vào TRONG danh sách cuộn như một dòng nữa, nên với 307 dòng
+    //  thì gần như không ai cuộn tới. Giờ là chân trang cố định, dựng một lần, chỉ cập
+    //  nhật con số khi đổi trang.
+    private ChanMoc DungChanMoc(RectTransform cha, string tieuDe, string moTa)
+    {
+        var c = new ChanMoc();
+        var kt = new Vector2(TaskPopupDesign.HangRong, TaskPopupDesign.MocCao);
+
+        // Banner vàng #ffe2a0→#f5b94e, viền 4px #c07d24, cạnh dưới 5px, bo 22.
+        c.goc = CreateRect(cha, "MilestoneFooter", new Vector2(0f, -255f), kt);
+        CreateImage(c.goc, "Moc_EdgeBottom", BoGoc(TaskPopupDesign.MocBoGoc),
+            TaskPopupDesign.MocDoCanh, new Vector2(0f, -5f), kt, true);
+        CreateImage(c.goc, "Moc_Border", BoGoc(TaskPopupDesign.MocBoGoc),
+            TaskPopupDesign.MocVien, Vector2.zero, kt + new Vector2(8f, 8f), true);
+        CreateImage(c.goc, "Moc_Fill", BoGoc(TaskPopupDesign.MocBoGoc),
+            TaskPopupDesign.MocDuoi, Vector2.zero, kt, true);
+        PhuGradient(c.goc, "Moc_Fill_Top", TaskPopupDesign.MocTren, Vector2.zero, kt,
+            TaskPopupDesign.MocBoGoc);
+
+        // Chỉ may nét đứt inset 6px — vẽ bằng 4 vạch mảnh, uGUI không có viền dashed.
+        float ix = kt.x * 0.5f - 9f, iy = kt.y * 0.5f - 9f;
+        CreateImage(c.goc, "Stitch_Top",    null, TaskPopupDesign.MocChiMay, new Vector2(0f,  iy), new Vector2(ix * 2f, 3f), true);
+        CreateImage(c.goc, "Stitch_Bottom", null, TaskPopupDesign.MocChiMay, new Vector2(0f, -iy), new Vector2(ix * 2f, 3f), true);
+        CreateImage(c.goc, "Stitch_Left",   null, TaskPopupDesign.MocChiMay, new Vector2(-ix, 0f), new Vector2(3f, iy * 2f), true);
+        CreateImage(c.goc, "Stitch_Right",  null, TaskPopupDesign.MocChiMay, new Vector2( ix, 0f), new Vector2(3f, iy * 2f), true);
+
+        // Túi vàng NHÔ LÊN mép banner (CSS margin-top -26).
+        float xRuong = -kt.x * 0.5f + 18f + TaskPopupDesign.MocRuongKichThuoc * 0.5f;
+        RectTransform ruong = CreateImage(c.goc, "Img_Chest", ChestSprite, Color.white,
+            new Vector2(xRuong, 14f),
+            new Vector2(TaskPopupDesign.MocRuongKichThuoc, TaskPopupDesign.MocRuongKichThuoc), false);
+        ruong.GetComponent<Image>().preserveAspect = true;
+
+        float xChu = xRuong + TaskPopupDesign.MocRuongKichThuoc * 0.5f + 22f;
+        float wChu = TaskPopupDesign.MocTdRong;
+
+        CreateText(c.goc, "Txt_Title", tieuDe, TaskPopupDesign.CoChuMoc - 3, TaskPopupDesign.MocChu,
+            TextAlignmentOptions.Left, new Vector2(xChu + (wChu + 30f) * 0.5f, 18f),
+            new Vector2(wChu + 30f, 32f), FontStyles.Bold);
+
+        var ktTd = new Vector2(wChu, TaskPopupDesign.MocTdCao);
+        RectTransform mang = CreateImage(c.goc, "Milestone_Progress", BoGoc(12f),
+            TaskPopupDesign.MocTdMang, new Vector2(xChu + wChu * 0.5f, -14f), ktTd, true);
+        var fill = CreateImage(mang, "Fill", BoGoc(12f), TaskPopupDesign.MocTdDuoi,
+            Vector2.zero, ktTd, true);
+        c.thanh = fill.GetComponent<Image>();
+        c.thanh.type = Image.Type.Filled;
+        c.thanh.fillMethod = Image.FillMethod.Horizontal;
+        c.thanh.fillOrigin = 0;
+
+        c.soTienDo = CreateText(mang, "Txt_Value", "", 16, Color.white,
+            TextAlignmentOptions.Center, Vector2.zero, new Vector2(wChu - 8f, 22f), FontStyles.Bold);
+        AddShadow(c.soTienDo.gameObject, TaskPopupDesign.TdChuVien, new Vector2(0f, -2f));
+
+        c.mota = CreateText(c.goc, "Txt_Desc", moTa, 14, TaskPopupDesign.MocChu,
+            TextAlignmentOptions.Left, new Vector2(xChu + wChu * 0.5f, -35f),
+            new Vector2(wChu, 20f));
+
+        // Hai chip thưởng bên phải — thiết kế chỉ có vàng + kim cương ở footer.
+        float xO = kt.x * 0.5f - 18f - TaskPopupDesign.OThuongRong * 0.5f;
+        DungChipTinh(c.goc, "RewardSlot_Diamond", DiamondSprite, "x20", new Vector2(xO, 0f));
+        DungChipTinh(c.goc, "RewardSlot_Coin", CoinSprite, "x200",
+            new Vector2(xO - TaskPopupDesign.OThuongRong - TaskPopupDesign.OThuongKheHo, 0f));
+
+        return c;
+    }
+
+    /// <summary>Chip thưởng CỐ ĐỊNH (không nạp lại) cho chân trang.</summary>
+    private void DungChipTinh(RectTransform cha, string ten, Sprite spr, string so, Vector2 viTri)
+    {
+        var kt = new Vector2(TaskPopupDesign.OThuongRong, TaskPopupDesign.OThuongCao);
+        RectTransform goc = CreateRect(cha, ten, viTri, kt);
+
+        CreateImage(goc, "Chip_Border", BoGoc(TaskPopupDesign.OThuongBoGoc),
+            TaskPopupDesign.OThuongVien, Vector2.zero, kt + new Vector2(6f, 6f), true);
+        CreateImage(goc, "Chip_Fill", BoGoc(TaskPopupDesign.OThuongBoGoc),
+            TaskPopupDesign.OThuongDuoi, Vector2.zero, kt, true);
+        PhuGradient(goc, "Chip_Fill_Top", TaskPopupDesign.OThuongTren, Vector2.zero, kt,
+            TaskPopupDesign.OThuongBoGoc);
+
+        float xIcon = -kt.x * 0.5f + 12f + TaskPopupDesign.OThuongIcon * 0.5f;
+        Image ic = CreateImage(goc, "Img_Icon", spr, Color.white, new Vector2(xIcon, 0f),
+            new Vector2(TaskPopupDesign.OThuongIcon, TaskPopupDesign.OThuongIcon), false)
+            .GetComponent<Image>();
+        ic.preserveAspect = true;
+
+        float xSo = xIcon + TaskPopupDesign.OThuongIcon * 0.5f + 6f;
+        float wSo = kt.x * 0.5f - 12f - xSo;
+        CreateText(goc, "Txt_Amount", so, TaskPopupDesign.CoChuOThuong, TaskPopupDesign.OThuongChu,
+            TextAlignmentOptions.Left, new Vector2(xSo + wSo * 0.5f, 0f), new Vector2(wSo, 26f),
+            FontStyles.Bold);
+    }
+
+    private void CapNhatChanMoc(ChanMoc c, List<MissionData> ds, bool laThanhTuu)
+    {
+        if (c == null) return;
+
+        int xong = 0, moKhoa = 0;
+        int cap = GetPlayerLevel();
+        for (int i = 0; i < ds.Count; i++)
+        {
+            MissionData m = ds[i];
+            if (m == null || m.requiredLevel > cap) continue;
+            moKhoa++;
+            if (IsAchievementOrMissionClaimed(m, laThanhTuu)) xong++;
+        }
+
+        int mau = Mathf.Max(1, moKhoa);
+        c.thanh.fillAmount = (float)xong / mau;
+        c.soTienDo.text = $"{xong}/{moKhoa}";
+        c.mota.text = xong >= moKhoa && moKhoa > 0
+            ? "Đã xong cả mốc này! Sang mốc sau để nhận thêm."
+            : (laThanhTuu ? "Hoàn thành các mốc để mở rương thưởng!"
+                          : "Hoàn thành tất cả nhiệm vụ để nhận thưởng đặc biệt!");
+    }
+
+    /// <summary>
+    /// Đổi đúng một hàng sau khi nhận thưởng: nút thành "Đã nhận", nền nhạt đi, tắt
+    /// chấm đỏ. Các hàng khác không bị đụng tới nên không nhấp nháy, không sinh rác.
+    /// </summary>
+    private void CapNhatMotHang(MissionData data, bool daNhan, bool laThanhTuu)
+    {
+        if (data == null) return;
+        if (!_hangDangHien.TryGetValue(data, out HangThuong h) || h == null || h.goc == null) return;
+
+        NapHang(h, data, GetPlayerLevel(), laThanhTuu);
+        StartCoroutine(CoNhipHang(h.goc));
+    }
+
+    /// <summary>Nhịp phồng nhẹ để mắt bắt được hàng nào vừa đổi trạng thái.</summary>
+    private IEnumerator CoNhipHang(RectTransform rt)
+    {
+        if (rt == null) yield break;
+
+        const float thoiGian = 0.22f;
+        float t = 0f;
+        while (t < thoiGian && rt != null)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / thoiGian);
+            float s = 1f + 0.05f * Mathf.Sin(k * Mathf.PI);
+            rt.localScale = new Vector3(s, s, 1f);
+            yield return null;
+        }
+        if (rt != null) rt.localScale = Vector3.one;
+    }
+
+    private void ClosePopupForAction() => Close();
+
+
+
+    /// <summary>
+    /// Ô trên HUD phồng lên rồi về — để mắt bắt được "vàng vừa tăng", kể cả khi con
+    /// số đổi quá nhanh. Chờ một nhịp cho icon bay tới nơi rồi mới đập.
+    /// </summary>
+    private IEnumerator CoDapHud(RectTransform hud, float treGiay)
+    {
+        if (hud == null) yield break;
+        yield return new WaitForSecondsRealtime(treGiay);
+        if (hud == null) yield break;
+
+        Vector3 goc = hud.localScale;
+        const float thoiGian = 0.34f;
+        float t = 0f;
+        while (t < thoiGian && hud != null)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / thoiGian);
+            // Nảy một nhịp rồi lún nhẹ trước khi về — cảm giác "va vào" chứ không phải
+            // phóng to trơn tuột.
+            float s = 1f + 0.32f * Mathf.Sin(k * Mathf.PI) - 0.06f * Mathf.Sin(k * Mathf.PI * 2f);
+            hud.localScale = goc * s;
+            yield return null;
+        }
+        if (hud != null) hud.localScale = goc;
+    }
+
 
     private void BuildDailyContent()
     {
         ClearChildren(_dailyPanel);
         DailyState state = SyncDailyState();
 
-        CreateText(_dailyPanel, "Txt_DailyTitle", "Điểm danh 7 ngày", 34, new Color32(93, 52, 24, 255), TextAlignmentOptions.Center, new Vector2(0f, 232f), new Vector2(620f, 44f), FontStyles.Bold);
-        CreateText(_dailyPanel, "Txt_DailySubtitle", "Điểm danh mỗi ngày để nhận phần thưởng hấp dẫn!", 20, new Color32(113, 72, 36, 255), TextAlignmentOptions.Center, new Vector2(0f, 194f), new Vector2(680f, 34f), FontStyles.Bold);
-        CreateImage(_dailyPanel, "Decor_Line_Left", null, new Color32(207, 147, 73, 255), new Vector2(-220f, 229f), new Vector2(110f, 4f), true);
-        CreateImage(_dailyPanel, "Decor_Line_Right", null, new Color32(207, 147, 73, 255), new Vector2(220f, 229f), new Vector2(110f, 4f), true);
+        // Tiêu đề 29px giữa panel — thiết kế chỉ có MỘT dòng, không có subtitle.
+        CreateText(_dailyPanel, "Txt_DailyTitle", "Điểm danh mỗi ngày để nhận quà!", 29,
+            TaskPopupDesign.TenBinhThuong, TextAlignmentOptions.Center,
+            new Vector2(0f, 283f), new Vector2(900f, 40f), FontStyles.Bold);
 
+        // 7 thẻ: (1152 − 6·14) / 7 = 152 mỗi thẻ, cao 300, tâm y = 60.
         DailyReward[] rewards = GetDailyRewards();
-        const float spacing = 116f;
+        const float theRong = 152f, theCao = 300f, khe = 14f;
+        float x0 = -TaskPopupDesign.VungTrongRong * 0.5f + theRong * 0.5f;
         for (int i = 0; i < 7; i++)
-        {
-            float x = -348f + i * spacing;
-            BuildDailyCard(i + 1, rewards[i], state, new Vector2(x, 50f));
-        }
+            BuildDailyCard(i + 1, rewards[i], state,
+                new Vector2(x0 + i * (theRong + khe), 60f), new Vector2(theRong, theCao));
 
         BuildDailyWeeklyReward();
     }
 
-    private void BuildDailyCard(int day, DailyReward reward, DailyState state, Vector2 position)
+    private void BuildDailyCard(int day, DailyReward reward, DailyState state,
+                                Vector2 position, Vector2 kt)
     {
-        bool isPast = day < state.streakDay || (day == state.streakDay && state.claimedToday);
-        bool isToday = day == state.streakDay && !state.claimedToday;
-        bool isFuture = day > state.streakDay;
-        bool finalDay = day == 7;
+        // Trạng thái đúng theo vmDay của thiết kế.
+        bool daNhan  = day < state.streakDay || (day == state.streakDay && state.claimedToday);
+        bool homNay  = day == state.streakDay && !state.claimedToday;
+        bool tuongLai = day > state.streakDay;
 
-        Color32 cardColor = finalDay ? new Color32(244, 215, 255, 255) : new Color32(255, 238, 206, 255);
-        if (isToday)
-            cardColor = new Color32(255, 245, 200, 255);
+        // Bảng màu vmDay: past [#f4e6c4,#d8b174] · today [#fff4c2,#ffce3d] · future [#efe3c6,#d8bd8d]
+        Color nen, vien;
+        if (day == state.streakDay) { nen = TaskPopupDesign.Hex("#fff4c2"); vien = TaskPopupDesign.Hex("#ffce3d"); }
+        else if (daNhan)            { nen = TaskPopupDesign.Hex("#f4e6c4"); vien = TaskPopupDesign.Hex("#d8b174"); }
+        else                        { nen = TaskPopupDesign.Hex("#efe3c6"); vien = TaskPopupDesign.Hex("#d8bd8d"); }
 
-        RectTransform card = CreateImage(_dailyPanel, $"Daily_Day_{day:00}", null, cardColor, position, new Vector2(finalDay ? 122f : 108f, 240f), true);
-        AddOutline(card.gameObject, isToday ? new Color32(255, 212, 47, 255) : new Color32(216, 157, 82, 255), new Vector2(2f, -2f));
+        RectTransform the = CreateRect(_dailyPanel, $"Daily_Day_{day:00}", position, kt);
 
-        if (isToday)
-            CreateImage(card, "Glow_SelectedDay", null, new Color32(255, 234, 74, 65), Vector2.zero, new Vector2(finalDay ? 134f : 120f, 252f), true);
+        // Hôm nay: vòng glow vàng 5px quanh thẻ (CSS 0 0 0 5px rgba(255,206,61,.35)).
+        if (homNay)
+            CreateImage(the, "Glow_Ring", BoGoc(24f), TaskPopupDesign.Hex("#ffce3d", 0.35f),
+                Vector2.zero, kt + new Vector2(14f, 14f), true);
 
-        CreateText(card, "Txt_Day", $"Ngày {day}", 20, finalDay ? Color.white : new Color32(91, 54, 28, 255), TextAlignmentOptions.Center, new Vector2(0f, 92f), new Vector2(100f, 30f), FontStyles.Bold);
-        if (finalDay)
-            CreateImage(card, "Ribbon_Day7", null, new Color32(150, 79, 202, 255), new Vector2(0f, 94f), new Vector2(116f, 38f), true).SetAsFirstSibling();
+        CreateImage(the, "Card_EdgeBottom", BoGoc(20f), TaskPopupDesign.Hex("#965f1e", 0.3f),
+            new Vector2(0f, -5f), kt, true);
+        CreateImage(the, "Card_Border", BoGoc(20f), vien, Vector2.zero, kt + new Vector2(6f, 6f), true);
+        CreateImage(the, "Card_Fill", BoGoc(20f), nen, Vector2.zero, kt, true);
 
-        Image icon = CreateImage(card, "Img_RewardIcon", GetDailyRewardSprite(day), new Color32(245, 182, 67, 255), new Vector2(0f, 22f), new Vector2(finalDay ? 86f : 72f, finalDay ? 78f : 70f), false).GetComponent<Image>();
+        // Band tên ngày trên đỉnh — nâu #c98a3f, hôm nay cam #e6913c.
+        var ktBand = new Vector2(kt.x, 44f);
+        CreateImage(the, "Band", BoGoc(16f),
+            TaskPopupDesign.Hex(homNay ? "#e6913c" : "#c98a3f"),
+            new Vector2(0f, kt.y * 0.5f - 22f), ktBand, true);
+        TMP_Text nhan = CreateText(the, "Txt_Day", $"Ngày {day}", 21, Color.white,
+            TextAlignmentOptions.Center, new Vector2(0f, kt.y * 0.5f - 22f),
+            new Vector2(kt.x - 8f, 30f), FontStyles.Bold);
+        AddShadow(nhan.gameObject, new Color(0f, 0f, 0f, 0.25f), new Vector2(0f, -2f));
+
+        // Icon quà 82px + số lượng.
+        Image icon = CreateImage(the, "Img_RewardIcon", GetDailyRewardSprite(day),
+            new Color32(245, 182, 67, 255), new Vector2(0f, 28f), new Vector2(82f, 82f), false)
+            .GetComponent<Image>();
         icon.preserveAspect = true;
-        CreateText(card, "Txt_Amount", reward.amount, 22, new Color32(85, 49, 25, 255), TextAlignmentOptions.Center, new Vector2(0f, -54f), new Vector2(90f, 30f), FontStyles.Bold);
+        if (icon.sprite != null) icon.color = Color.white;
 
-        if (isPast)
+        CreateText(the, "Txt_Amount", reward.amount, 21, TaskPopupDesign.TenBinhThuong,
+            TextAlignmentOptions.Center, new Vector2(0f, -38f), new Vector2(kt.x - 10f, 28f),
+            FontStyles.Bold);
+
+        if (homNay)
         {
-            RectTransform check = CreateImage(card, "Img_ClaimedCheck", GetCircleSprite(), new Color32(86, 173, 48, 255), new Vector2(40f, 93f), new Vector2(26f, 26f), false);
-            CreateText(check, "Txt_Check", "✓", 20, Color.white, TextAlignmentOptions.Center, Vector2.zero, new Vector2(24f, 24f), FontStyles.Bold);
-            CreateStatusRibbon(card, "Đã nhận", new Color32(91, 160, 45, 255));
-        }
-        else if (isToday)
-        {
-            Button claim = CreateTextButton(card, "Btn_ClaimToday", "Nhận", new Vector2(0f, -91f), new Vector2(86f, 42f), new Color32(104, 186, 45, 255), 22);
+            // Nút Nhận 112×50 xanh — pulse tĩnh (glow ring đã báo "hôm nay").
+            Button claim = CreateTextButton(the, "Btn_ClaimToday", "Nhận",
+                new Vector2(0f, -kt.y * 0.5f + 45f), new Vector2(112f, 50f),
+                new Color32(104, 186, 45, 255), 22);
             RectTransform claimRect = claim.transform as RectTransform;
             claim.onClick.AddListener(() => ClaimDailyReward(day, reward, claimRect));
         }
-        else if (isFuture)
+        else
         {
-            string lockText = day == state.streakDay + 1 ? "Ngày mai" : $"{day - state.streakDay} ngày nữa";
-            CreateStatusRibbon(card, lockText, new Color32(198, 164, 120, 255));
-            CreateImage(card, "Img_Lock", LockSprite, new Color32(132, 92, 56, 255), new Vector2(-34f, -91f), new Vector2(24f, 24f), false);
+            // Chip trạng thái: "Đã nhận" nền xanh chữ trắng · "Ngày mai"/"X ngày nữa" nền be.
+            string chu = daNhan ? "Đã nhận"
+                       : day == state.streakDay + 1 ? "Ngày mai"
+                       : $"{day - state.streakDay} ngày nữa";
+            Color nenChip = daNhan ? TaskPopupDesign.Hex("#61a832") : TaskPopupDesign.Hex("#e8d9b4");
+            Color chuChip = daNhan ? Color.white : TaskPopupDesign.Hex("#8d7550");
+
+            RectTransform chip = CreateImage(the, "Chip_Status", BoGoc(12f), nenChip,
+                new Vector2(0f, -kt.y * 0.5f + 42f), new Vector2(kt.x - 32f, 34f), true);
+            CreateText(chip, "Txt_Status", chu, 17, chuChip, TextAlignmentOptions.Center,
+                Vector2.zero, new Vector2(kt.x - 36f, 30f), FontStyles.Bold);
+        }
+
+        // Tick xanh NHÔ góc trên-phải thẻ đã nhận (CSS top -16 right -10).
+        if (daNhan)
+        {
+            // Thứ tự cha→con quyết định thứ tự vẽ: vành trắng NGOÀI cùng làm cha,
+            // vòng xanh làm con, hai vạch tick làm cháu — mỗi lớp vẽ sau lớp trước.
+            RectTransform rim = CreateImage(the, "Img_Check", GetCircleSprite(), Color.white,
+                new Vector2(kt.x * 0.5f - 14f, kt.y * 0.5f + 2f), new Vector2(50f, 50f), false);
+            RectTransform xanh = CreateImage(rim, "Check_Green", GetCircleSprite(),
+                TaskPopupDesign.Hex("#61a832"), Vector2.zero, new Vector2(44f, 44f), false);
+            RectTransform v1 = CreateImage(xanh, "Tick_Short", null, Color.white,
+                new Vector2(-7f, -4f), new Vector2(12f, 5f), false);
+            v1.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            RectTransform v2 = CreateImage(xanh, "Tick_Long", null, Color.white,
+                new Vector2(4f, 0f), new Vector2(20f, 5f), false);
+            v2.localRotation = Quaternion.Euler(0f, 0f, -50f);
+        }
+
+        // Ngày tương lai mờ 62% cả thẻ.
+        if (tuongLai)
+        {
+            var cg = the.gameObject.AddComponent<CanvasGroup>();
+            cg.alpha = 0.62f;
+            cg.blocksRaycasts = true;
         }
     }
 
     private void BuildDailyWeeklyReward()
     {
-        RectTransform weekly = CreateImage(_dailyPanel, "Daily_WeeklyReward", null, new Color32(255, 205, 103, 255), new Vector2(0f, -260f), new Vector2(805f, 120f), true);
-        AddOutline(weekly.gameObject, new Color32(203, 130, 44, 255), new Vector2(2f, -2f));
-        CreateText(weekly, "Txt_Title", "Phần thưởng tuần", 27, new Color32(91, 52, 24, 255), TextAlignmentOptions.Left, new Vector2(-260f, 28f), new Vector2(270f, 34f), FontStyles.Bold);
-        CreateText(weekly, "Txt_Desc", "Điểm danh đủ 7 ngày để nhận quà tuần đặc biệt!", 19, new Color32(91, 52, 24, 255), TextAlignmentOptions.Left, new Vector2(-244f, -20f), new Vector2(318f, 54f), FontStyles.Bold);
-        RectTransform chest = CreateImage(weekly, "Img_WeeklyChest_Placeholder", ChestSprite, new Color32(173, 73, 157, 255), new Vector2(92f, 0f), new Vector2(130f, 92f), false);
-        CreateText(chest, "Txt_Chest", "CHEST", 20, Color.white, TextAlignmentOptions.Center, Vector2.zero, new Vector2(110f, 40f), FontStyles.Bold);
-        BuildRewardSlot(weekly, "RewardSlot_Coin", CoinSprite, "x500", new Vector2(245f, -2f), new Vector2(92f, 78f), new Color32(255, 218, 133, 255));
-        BuildRewardSlot(weekly, "RewardSlot_Diamond", DiamondSprite, "x30", new Vector2(360f, -2f), new Vector2(92f, 78f), new Color32(255, 218, 133, 255));
-        BuildRewardSlot(weekly, "RewardSlot_EXP", ExpSprite, "x100", new Vector2(475f, -2f), new Vector2(92f, 78f), new Color32(255, 218, 133, 255));
+        // Footer quà tuần — cùng ngôn ngữ với chân mốc: banner vàng + chỉ may + túi nhô.
+        var kt = new Vector2(TaskPopupDesign.HangRong, TaskPopupDesign.MocCao);
+        RectTransform goc = CreateRect(_dailyPanel, "Daily_WeeklyReward", new Vector2(0f, -255f), kt);
+
+        CreateImage(goc, "Wk_EdgeBottom", BoGoc(TaskPopupDesign.MocBoGoc),
+            TaskPopupDesign.MocDoCanh, new Vector2(0f, -5f), kt, true);
+        CreateImage(goc, "Wk_Border", BoGoc(TaskPopupDesign.MocBoGoc),
+            TaskPopupDesign.MocVien, Vector2.zero, kt + new Vector2(8f, 8f), true);
+        CreateImage(goc, "Wk_Fill", BoGoc(TaskPopupDesign.MocBoGoc),
+            TaskPopupDesign.MocDuoi, Vector2.zero, kt, true);
+        PhuGradient(goc, "Wk_Fill_Top", TaskPopupDesign.MocTren, Vector2.zero, kt,
+            TaskPopupDesign.MocBoGoc);
+
+        float ix = kt.x * 0.5f - 9f, iy = kt.y * 0.5f - 9f;
+        CreateImage(goc, "Stitch_Top",    null, TaskPopupDesign.MocChiMay, new Vector2(0f,  iy), new Vector2(ix * 2f, 3f), true);
+        CreateImage(goc, "Stitch_Bottom", null, TaskPopupDesign.MocChiMay, new Vector2(0f, -iy), new Vector2(ix * 2f, 3f), true);
+
+        float xRuong = -kt.x * 0.5f + 18f + 50f;
+        RectTransform ruong = CreateImage(goc, "Img_WeeklyChest", ChestSprite, Color.white,
+            new Vector2(xRuong, 14f), new Vector2(100f, 100f), false);
+        ruong.GetComponent<Image>().preserveAspect = true;
+
+        float xChu = xRuong + 72f;
+        CreateText(goc, "Txt_Title", "Phần thưởng tuần — điểm danh đủ 7 ngày", 21,
+            TaskPopupDesign.MocChu, TextAlignmentOptions.Left,
+            new Vector2(xChu + 230f, 12f), new Vector2(460f, 30f), FontStyles.Bold);
+        CreateText(goc, "Txt_Desc", "Quà tuần đặc biệt đang chờ bạn!", 14,
+            TaskPopupDesign.MocChu, TextAlignmentOptions.Left,
+            new Vector2(xChu + 230f, -16f), new Vector2(460f, 22f));
+
+        float xO = kt.x * 0.5f - 18f - TaskPopupDesign.OThuongRong * 0.5f;
+        float buoc = TaskPopupDesign.OThuongRong + TaskPopupDesign.OThuongKheHo;
+        DungChipTinh(goc, "RewardSlot_EXP",     ExpSprite,     "x100", new Vector2(xO, 0f));
+        DungChipTinh(goc, "RewardSlot_Diamond", DiamondSprite, "x30",  new Vector2(xO - buoc, 0f));
+        DungChipTinh(goc, "RewardSlot_Coin",    CoinSprite,    "x500", new Vector2(xO - buoc * 2f, 0f));
     }
+
 
     private void BuildAchievementContent()
     {
-        ClearChildren(_achievementPanel);
-        CreateText(_achievementPanel, "Txt_AchievementTitle", "Thành tựu trang trại", 34, new Color32(93, 52, 24, 255), TextAlignmentOptions.Center, new Vector2(0f, 238f), new Vector2(620f, 44f), FontStyles.Bold);
-        CreateText(_achievementPanel, "Txt_AchievementSubtitle", "Hoàn thành các cột mốc để nhận thưởng lâu dài!", 20, new Color32(113, 72, 36, 255), TextAlignmentOptions.Center, new Vector2(0f, 201f), new Vector2(680f, 34f), FontStyles.Bold);
+        if (_vungCuonThanhTuu == null)
+        {
+            ClearChildren(_achievementPanel);
+            _nhanTrangThanhTuu = DungThanhChuyenTrang(
+                _achievementPanel, new Vector2(0f, 283f), null, null, false);
 
-        RectTransform content = BuildVerticalScroll(_achievementPanel, "Achievement_ScrollView", new Vector2(0f, -20f), new Vector2(840f, 405f));
+            _vungCuonThanhTuu = BuildVerticalScroll(_achievementPanel, "Achievement_ScrollView",
+                new Vector2(0f, 33f), new Vector2(TaskPopupDesign.VungTrongRong, 456f));
 
-        List<MissionData> achievements = GetOrderedAchievements(200);
-        foreach (MissionData a in achievements)
-            BuildAchievementRow(content, a);
+            _chanMocThanhTuu = DungChanMoc(_achievementPanel, "Mốc thành tựu",
+                "Hoàn thành các mốc để mở rương thưởng!");
+        }
 
-        BuildAchievementMilestone(content, achievements);
+        NapLaiTrangThanhTuu();
     }
 
-    private void BuildAchievementRow(RectTransform parent, MissionData data)
+    private void NapLaiTrangThanhTuu()
     {
-        RectTransform row = CreateImage(parent, "Achievement_Row", null, new Color32(255, 245, 223, 255), Vector2.zero, new Vector2(805f, 74f), true);
-        AddOutline(row.gameObject, new Color32(224, 174, 95, 255), new Vector2(1.3f, -1.3f));
-        AddLayoutHeight(row, 74f);
+        int cap = GetPlayerLevel();
+        List<MissionData> ds = LocThanhTuuTheoChuoi(out int tongBac, out int bacDaXong);
 
-        RectTransform iconFrame = CreateImage(row, "IconFrame_Achievement", GetCircleSprite(), new Color32(181, 101, 41, 255), new Vector2(-350f, 0f), new Vector2(62f, 62f), false);
-        Image icon = CreateImage(iconFrame, "Img_AchievementIcon", data != null ? data.missionIcon : null, new Color32(255, 230, 148, 255), Vector2.zero, new Vector2(50f, 50f), false).GetComponent<Image>();
-        icon.sprite = data != null && data.missionIcon != null ? data.missionIcon : GetCircleSprite();
-        icon.preserveAspect = true;
+        if (_nhanTrangThanhTuu != null)
+            _nhanTrangThanhTuu.text = $"{ds.Count} chuỗi thành tựu   ·   {bacDaXong}/{tongBac} mốc";
 
-        string title = data != null ? data.missionName : "Thêm thành tựu mới";
-        CreateText(row, "Txt_Title", title, 21, new Color32(88, 48, 23, 255), TextAlignmentOptions.Left, new Vector2(-245f, 16f), new Vector2(255f, 28f), FontStyles.Bold);
-
-        int current = data != null ? Mathf.Clamp(MissionProgressTracker.GetProgressFor(data), 0, Mathf.Max(1, data.targetAmount)) : 0;
-        int target = data != null ? Mathf.Max(1, data.targetAmount) : 1;
-        float progress = data != null ? Mathf.Clamp01((float)current / target) : 0f;
-        BuildProgressBar(row, "Progress", new Vector2(-244f, -18f), new Vector2(225f, 23f), progress, $"{current}/{target}");
-
-        RewardBundle rewards = GetAchievementRewards(data);
-        Sprite mainRewardIcon = data != null && data.rewardType == RewardType.Diamond ? DiamondSprite ?? data.rewardIcon : CoinSprite ?? data?.rewardIcon;
-        string mainRewardText = data != null && data.rewardType == RewardType.Diamond ? "x" + rewards.diamond : "x" + rewards.coin;
-        BuildRewardSlot(row, "RewardSlot_Main", mainRewardIcon, mainRewardText, new Vector2(76f, 0f), new Vector2(116f, 54f), new Color32(255, 228, 166, 255));
-        BuildRewardSlot(row, "RewardSlot_EXP", ExpSprite, "x" + rewards.exp, new Vector2(204f, 0f), new Vector2(116f, 54f), new Color32(255, 228, 166, 255));
-
-        bool claimed = data != null && IsAchievementClaimed(data);
-        bool complete = data != null && current >= target;
-        bool started = data != null && current > 0;
-
-        string statusText;
-        Color32 statusColor;
-        bool interactable;
-        if (claimed)
-        {
-            statusText = "Đã nhận";
-            statusColor = new Color32(134, 161, 122, 255);
-            interactable = false;
-        }
-        else if (complete)
-        {
-            statusText = "Nhận";
-            statusColor = new Color32(92, 177, 40, 255);
-            interactable = true;
-        }
-        else if (started)
-        {
-            statusText = "Đang làm";
-            statusColor = new Color32(219, 178, 128, 255);
-            interactable = false;
-        }
-        else
-        {
-            statusText = "Khóa";
-            statusColor = new Color32(155, 155, 155, 255);
-            interactable = false;
-        }
-
-        Button status = CreateTextButton(row, "Btn_Status", statusText, new Vector2(366f, 0f), new Vector2(116f, 52f), statusColor, 22);
-        status.interactable = interactable;
-        RectTransform statusRect = status.transform as RectTransform;
-        status.onClick.AddListener(() => ClaimAchievement(data, statusRect));
+        NapDanhSach(_khoHangThanhTuu, _vungCuonThanhTuu, ds, cap, true);
+        CapNhatChanMocChuoi(_chanMocThanhTuu, tongBac, bacDaXong);
     }
 
-    private void BuildAchievementMilestone(RectTransform parent, List<MissionData> achievements)
-    {
-        RectTransform milestone = CreateImage(parent, "Achievement_MilestoneReward", null, new Color32(255, 203, 101, 255), Vector2.zero, new Vector2(805f, 112f), true);
-        AddOutline(milestone.gameObject, new Color32(203, 130, 44, 255), new Vector2(2f, -2f));
-        AddLayoutHeight(milestone, 112f);
-        CreateText(milestone, "Txt_Title", "Mốc thành tựu", 26, new Color32(91, 52, 24, 255), TextAlignmentOptions.Left, new Vector2(-270f, 26f), new Vector2(270f, 34f), FontStyles.Bold);
-        CreateText(milestone, "Txt_Desc", "Tích lũy điểm thành tựu để mở rương thưởng!", 18, new Color32(91, 52, 24, 255), TextAlignmentOptions.Left, new Vector2(-250f, -14f), new Vector2(320f, 44f), FontStyles.Bold);
-
-        int completed = 0;
-        for (int i = 0; i < achievements.Count; i++)
-        {
-            MissionData data = achievements[i];
-            if (data != null && MissionProgressTracker.GetProgressFor(data) >= data.targetAmount)
-                completed++;
-        }
-
-        int points = Mathf.Clamp(completed * 100, 0, 500);
-        BuildProgressBar(milestone, "AchievementPointProgress", new Vector2(-245f, -42f), new Vector2(245f, 24f), points / 500f, $"{points}/500");
-        RectTransform chest = CreateImage(milestone, "Img_AchievementChest_Placeholder", ChestSprite, new Color32(173, 73, 157, 255), new Vector2(98f, 0f), new Vector2(126f, 86f), false);
-        CreateText(chest, "Txt_Chest", "CHEST", 20, Color.white, TextAlignmentOptions.Center, Vector2.zero, new Vector2(110f, 40f), FontStyles.Bold);
-        BuildRewardSlot(milestone, "RewardSlot_Coin", CoinSprite, "x500", new Vector2(238f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
-        BuildRewardSlot(milestone, "RewardSlot_Diamond", DiamondSprite, "x30", new Vector2(342f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
-        BuildRewardSlot(milestone, "RewardSlot_EXP", ExpSprite, "x100", new Vector2(446f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
-        BuildRewardSlot(milestone, "RewardSlot_Trophy", null, "x1", new Vector2(548f, -2f), new Vector2(86f, 74f), new Color32(255, 218, 133, 255));
-    }
-
-    private List<MissionData> GetVisibleMissions(int maxCount)
-        => GetVisibleFrom(_missionDatabase, maxCount);
-
-    private List<MissionData> GetVisibleAchievements(int maxCount)
-        => GetVisibleFrom(_achievementDatabase != null ? _achievementDatabase : _missionDatabase, maxCount);
 
 
-    private List<MissionData> GetOrderedAchievements(int maxCount)
-    {
-        var db = _achievementDatabase != null ? _achievementDatabase : _missionDatabase;
-        var b0 = new List<MissionData>(); // hoàn thành, chưa nhận
-        var b1 = new List<MissionData>(); // đang làm
-        var b2 = new List<MissionData>(); // đã nhận
 
-        if (db != null && db.missions != null)
-        {
-            foreach (var m in db.missions)
-            {
-                if (m == null || m.isDaily) continue;
-                int cur = MissionProgressTracker.GetProgressFor(m);
-                bool complete = cur >= Mathf.Max(1, m.targetAmount);
-                if (IsAchievementClaimed(m)) b2.Add(m);
-                else if (complete)          b0.Add(m);
-                else                        b1.Add(m);
-            }
-            b0.Sort((a, b) => a.targetAmount.CompareTo(b.targetAmount));
-            b1.Sort((a, b) => a.targetAmount.CompareTo(b.targetAmount));
-            b2.Sort((a, b) => a.targetAmount.CompareTo(b.targetAmount));
-        }
 
-        var result = new List<MissionData>(b0.Count + b1.Count + b2.Count);
-        result.AddRange(b0); result.AddRange(b1); result.AddRange(b2);
-        if (result.Count > maxCount) result = result.GetRange(0, maxCount);
-        return result;
-    }
 
-    private List<MissionData> GetVisibleFrom(MissionDatabase database, int maxCount)
-    {
-        List<MissionData> result = new List<MissionData>();
-        if (database == null || database.missions == null)
-            return result;
 
-        int level = GetPlayerLevel();
-        for (int i = 0; i < database.missions.Count; i++)
-        {
-            MissionData data = database.missions[i];
-            if (data == null || data.isDaily || data.requiredLevel > level)
-                continue;
 
-            result.Add(data);
-            if (result.Count >= maxCount)
-                break;
-        }
-
-        return result;
-    }
 
     // =========================================================================
     // Danh sách CUỘN ĐƯỢC (ScrollRect dọc) — dùng cho tab Nhiệm vụ & Thành tựu
@@ -868,42 +1807,9 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     }
 
    
-    private List<MissionData> GetOrderedMissions()
-    {
-        var b0 = new List<MissionData>(); var b1 = new List<MissionData>();
-        var b2 = new List<MissionData>(); var b3 = new List<MissionData>();
-
-        if (_missionDatabase != null && _missionDatabase.missions != null)
-        {
-            int level = GetPlayerLevel();
-            foreach (var m in _missionDatabase.missions)
-            {
-                if (m == null || m.isDaily) continue;
-                switch (MissionBucket(m, level))
-                {
-                    case 0: b0.Add(m); break;
-                    case 1: b1.Add(m); break;
-                    case 2: b2.Add(m); break;
-                    default: b3.Add(m); break;
-                }
-            }
-            b3.Sort((a, b) => a.requiredLevel.CompareTo(b.requiredLevel));
-        }
 
 
-        var result = new List<MissionData>(b0.Count + b1.Count + b2.Count + b3.Count);
-        result.AddRange(b1); result.AddRange(b0); result.AddRange(b2); result.AddRange(b3);
-        return result;
-    }
 
-    private int MissionBucket(MissionData m, int level)
-    {
-        if (m.requiredLevel > level) return 3;           
-        int cur = MissionProgressTracker.GetProgressFor(m);
-        bool complete = cur >= Mathf.Max(1, m.targetAmount);
-        if (!complete) return 0;                              
-        return IsMissionClaimed(m) ? 2 : 1;               
-    }
 
     private void BuildProgressBar(RectTransform parent, string name, Vector2 position, Vector2 size, float fillAmount, string label)
     {
@@ -959,10 +1865,13 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         Vector3 src = source != null ? source.position : _root.position;
         GrantRewards(rewards);
         PlayRewardFly(rewards, src);
-        PlayerPrefs.SetInt(MissionClaimedPrefsKey(data), 1);
-        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+        GhiCoDaNhan(MissionClaimedPrefsKey(data));
         AvatarProfilePopupUI.AddAchievementCount();
-        ShowTab(Tab.Mission);
+
+        // KHÔNG gọi `ShowTab(Tab.Mission)` nữa. Lệnh đó dựng lại CẢ danh sách — với
+        // 307 nhiệm vụ là huỷ 5.833 GameObject rồi tạo lại đúng ngần ấy, cho một thay
+        // đổi duy nhất là chữ trên một cái nút. Chính nó gây khựng ~0,3s mỗi lần bấm.
+        CapNhatMotHang(data, true, false);
     }
 
     private void ClaimAchievement(MissionData data, RectTransform source)
@@ -978,10 +1887,9 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         Vector3 src = source != null ? source.position : _root.position;
         GrantRewards(rewards);
         PlayRewardFly(rewards, src);
-        PlayerPrefs.SetInt(AchievementClaimedPrefsKey(data), 1);
-        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+        GhiCoDaNhan(AchievementClaimedPrefsKey(data));
         AvatarProfilePopupUI.AddAchievementCount();
-        ShowTab(Tab.Achievement);
+        CapNhatMotHang(data, true, true);
     }
 
     private void ClaimDailyReward(int day, DailyReward reward, RectTransform source)
@@ -1023,6 +1931,11 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (r.exp > 0)
             StartCoroutine(CoFlyReward(ExpSprite, new Color32(120, 220, 80, 255),
                 sourceWorld, ResolveExpHud(), Mathf.Clamp(r.exp / 4 + 3, 3, 8)));
+
+        // Vàng bay do `FarmEconomyManager.AddGold` tự lo (CoinFlyFX). Ở đây vẫn đập ô
+        // vàng trên HUD để cả ba loại thưởng đều có phản hồi thị giác.
+        if (r.coin > 0)
+            StartCoroutine(CoDapHud(FindHudRect("CoinBox"), 0.55f));
     }
 
     private static RectTransform FindHudRect(string objName)
@@ -1061,6 +1974,9 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             StartCoroutine(CoFlyOne(canvasRect, spr, color, startLocal, endLocal));
             yield return new WaitForSecondsRealtime(0.05f);
         }
+
+        // Đập ô HUD đúng lúc icon cuối cùng chạm tới.
+        StartCoroutine(CoDapHud(target, 0.75f));
     }
 
     private IEnumerator CoFlyOne(RectTransform canvasRect, Sprite spr, Color color, Vector2 startLocal, Vector2 endLocal)
@@ -1086,16 +2002,33 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         Vector2 burst = startLocal + UnityEngine.Random.insideUnitCircle * 150f;
         rt.anchoredPosition = startLocal;
         rt.localScale = Vector3.zero;
+        // Đỉnh scale nâng 1,4 → 2,4. Ở 1,4 trên icon 96px thì phần thưởng chỉ nhỉnh hơn
+        // cái nút một chút, mắt lướt qua là mất; 2,4 thì nó chiếm chỗ đủ lâu để người
+        // chơi kịp nhận ra mình vừa được cái gì.
         float t = 0f;
-        const float burstT = 0.25f;
+        const float burstT = 0.30f;
         while (t < burstT)
         {
             t += Time.unscaledDeltaTime;
             float k = Mathf.Clamp01(t / burstT);
-            float easeOutBack = k * k * ((1.70158f + 1) * k - 1.70158f) + 1; // nảy to
-            rt.anchoredPosition = Vector2.Lerp(startLocal, burst, Mathf.Clamp01(k * 1.5f)); // bay ra nhanh
-            rt.localScale = Vector3.one * Mathf.LerpUnclamped(0f, 1.4f, easeOutBack); // Phóng to
+            float easeOutBack = k * k * ((1.70158f + 1) * k - 1.70158f) + 1;
+            rt.anchoredPosition = Vector2.Lerp(startLocal, burst, Mathf.Clamp01(k * 1.5f));
+            rt.localScale = Vector3.one * Mathf.LerpUnclamped(0f, 2.4f, easeOutBack);
             rt.localRotation = Quaternion.Euler(0, 0, startRot + rotSpeed * t);
+            yield return null;
+        }
+
+        // Pha NỞ THÊM một nhịp rồi mới bay. Khoảng lặng này là thứ tạo cảm giác "to
+        // thêm": bản cũ vừa đạt đỉnh là lập tức co lại và lao đi, nên chưa bao giờ
+        // thật sự trông to.
+        const float noT = 0.16f;
+        t = 0f;
+        while (t < noT)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / noT);
+            rt.localScale = Vector3.one * Mathf.Lerp(2.4f, 3.0f, k);
+            rt.localRotation = Quaternion.Euler(0, 0, startRot + rotSpeed * (burstT + t) * 0.35f);
             yield return null;
         }
 
@@ -1110,7 +2043,10 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             float easeInBack = k * k * ((1.70158f + 1) * k - 1.70158f); // Gia tốc lõm
             // Dùng easeIn cho cảm giác hút nhanh về cuối
             rt.anchoredPosition = Vector2.LerpUnclamped(curPos, endLocal, k * k);
-            float s = Mathf.Lerp(1.4f, 0.6f, k); // Thu nhỏ lại vừa với thanh HUD
+            // Giữ TO gần hết quãng đường, chỉ co lại ở đoạn cuối khi sắp chạm ví.
+            float s = k < 0.62f
+                ? Mathf.Lerp(3.0f, 2.2f, k / 0.62f)
+                : Mathf.Lerp(2.2f, 0.5f, (k - 0.62f) / 0.38f);
             rt.localScale = new Vector3(s, s, 1f);
             rt.localRotation = Quaternion.Euler(0, 0, startRot + rotSpeed * (burstT + t));
             yield return null;
@@ -1653,6 +2589,96 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         _leftTriangleSprite = CreateTriangleSprite("UnifiedTask_TriangleLeft", false);
         return _leftTriangleSprite;
     }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  SPRITE CHO BẢN THIẾT KẾ — BoGoc / DaiGradient / PhuGradient
+    // ═════════════════════════════════════════════════════════════════════════
+    //  uGUI không có gradient. Thiết kế dùng `linear-gradient(180deg,A,B)` ở gần như
+    //  mọi thành phần, nên dựng bằng HAI lớp: dưới = màu B đặc, trên = màu A với dải
+    //  alpha giảm dần.
+    //
+    //  ⚠ BÀI HỌC từ lần hỏng trước: KHÔNG làm sprite gradient có bo góc rồi vẽ Sliced.
+    //  Sliced kéo giãn vùng GIỮA sprite — toàn bộ chuyển sắc nằm đúng đó, bị bóp thành
+    //  một hàng pixel; với ván gỗ cao 850px hàng đó rơi vào alpha≈0 → tấm ván trắng
+    //  toát. Gradient phải là ảnh 1×64 vẽ Simple.
+    private static readonly Dictionary<string, Sprite> _khoSpriteTK = new Dictionary<string, Sprite>();
+
+    /// <summary>Chữ nhật bo góc alpha đặc, 9-slice được. Bán kính theo pixel thiết kế.</summary>
+    private static Sprite BoGoc(float banKinh)
+    {
+        string khoa = $"bogoc_{banKinh:0.#}";
+        if (_khoSpriteTK.TryGetValue(khoa, out Sprite co) && co != null) return co;
+
+        int r = Mathf.Max(2, Mathf.RoundToInt(banKinh));
+        int n = r * 4 + 8;
+        var tex = new Texture2D(n, n, TextureFormat.RGBA32, false)
+        { name = khoa, filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp,
+          hideFlags = HideFlags.HideAndDontSave };
+
+        for (int y = 0; y < n; y++)
+        for (int x = 0; x < n; x++)
+        {
+            float dx = x < r ? r - x : (x >= n - r ? x - (n - r - 1) : 0f);
+            float dy = y < r ? r - y : (y >= n - r ? y - (n - r - 1) : 0f);
+            float a = (dx <= 0f || dy <= 0f) ? 1f : Mathf.Clamp01(r - Mathf.Sqrt(dx*dx+dy*dy) + 0.5f);
+            tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+        }
+        tex.Apply();
+
+        var spr = Sprite.Create(tex, new Rect(0, 0, n, n), new Vector2(0.5f, 0.5f), 100f, 0,
+                                SpriteMeshType.FullRect, new Vector4(r + 2, r + 2, r + 2, r + 2));
+        spr.name = khoa; spr.hideFlags = HideFlags.HideAndDontSave;
+        _khoSpriteTK[khoa] = spr;
+        return spr;
+    }
+
+    /// <summary>Dải gradient dọc 1×64: alpha 1 trên, 0 dưới. Vẽ Simple, KHÔNG Sliced.</summary>
+    private static Sprite DaiGradient()
+    {
+        const string khoa = "dai_gradient";
+        if (_khoSpriteTK.TryGetValue(khoa, out Sprite co) && co != null) return co;
+
+        const int n = 64;
+        var tex = new Texture2D(1, n, TextureFormat.RGBA32, false)
+        { name = khoa, filterMode = FilterMode.Bilinear, wrapMode = TextureWrapMode.Clamp,
+          hideFlags = HideFlags.HideAndDontSave };
+
+        for (int y = 0; y < n; y++)
+        {
+            float t = (float)y / (n - 1);          // y=0 là ĐÁY texture → alpha thấp
+            tex.SetPixel(0, y, new Color(1f, 1f, 1f, Mathf.SmoothStep(0f, 1f, t)));
+        }
+        tex.Apply();
+
+        var spr = Sprite.Create(tex, new Rect(0, 0, 1, n), new Vector2(0.5f, 0.5f), 100f);
+        spr.name = khoa; spr.hideFlags = HideFlags.HideAndDontSave;
+        _khoSpriteTK[khoa] = spr;
+        return spr;
+    }
+
+    /// <summary>
+    /// Phủ lớp gradient dọc lên khối đã có nền bo góc. Thu vào theo bán kính để lớp
+    /// phẳng không chìa ra khỏi bốn góc bo của nền.
+    /// </summary>
+    private static void PhuGradient(Transform cha, string ten, Color mau,
+                                    Vector2 viTri, Vector2 kichThuoc, float banKinh)
+    {
+        // Thu 60% bán kính là đủ né góc bo — bản trước thu nguyên bán kính làm lớp
+        // gradient trên hụt hẳn so với nền, plate ribbon lộ mép cam dày và cả khối
+        // nhìn cam thay vì vàng như thiết kế.
+        float thu = Mathf.Min(banKinh * 0.6f, Mathf.Min(kichThuoc.x, kichThuoc.y) * 0.2f);
+        RectTransform rt = CreateRect(cha, ten, viTri, new Vector2(kichThuoc.x - thu * 2f, kichThuoc.y - thu * 0.5f));
+        var img = rt.gameObject.AddComponent<Image>();
+        img.sprite = DaiGradient();
+        img.type = Image.Type.Simple;
+        img.color = mau;
+        img.raycastTarget = false;
+    }
+
+#if UNITY_EDITOR
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void DonKhoSpriteTK() => _khoSpriteTK.Clear();
+#endif
 
     private static Sprite CreateRoundedSprite(string name, int size, int radius)
     {

@@ -45,6 +45,7 @@ GameObject:
   - component: {fileID: 5737610210004506391}
   - component: {fileID: 2283560656759628202}
   - component: {fileID: 535273601085260575}
+  - component: {fileID: 9013734122682899824}
   m_Layer: 7
   m_Name: Plot_01
   m_TagString: Untagged
@@ -109,7 +110,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 5.163254, y: 173.59735}
+  m_Offset: {x: 0, y: 200}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -119,7 +120,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 84.28116, y: 347.92444}
+  m_Size: {x: 800, y: 400}
   m_EdgeRadius: 0
 --- !u!114 &-2092318574339711010
 MonoBehaviour:
@@ -133,7 +134,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8e2b7de78d39b8e47b1c9d6ddc2360f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EditableBuilding
-  footprintVisual: {fileID: 8293749280720246623, guid: 944a45eded0569f42af3694cee049563, type: 3}
+  footprintVisual: {fileID: 0}
 --- !u!114 &5737610210004506391
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -149,15 +150,10 @@ MonoBehaviour:
   plotCategory: 0
   plotId: 1
   isRarePlot: 0
-  unlockedAtStart: 1
-  requiredLevel: 1
-  gemCost: 0
-  requireAd: 0
   processPopup: {fileID: 0}
   groundSprite: {fileID: 1999188332332886526}
   cropGroup: {fileID: 5690261201191178003}
   cropVisual: {fileID: 948456280786013433}
-  lockSprite: {fileID: 0}
   readyIcon: {fileID: 0}
   timerRoot: {fileID: 0}
   timerText: {fileID: 0}
@@ -263,6 +259,28 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 399.51428, y: 258.1062}
   m_EdgeRadius: 0
+--- !u!114 &9013734122682899824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1016672308775500909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94ff99e12893a5942a224fbde39f9d97, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingFootprintKit
+  soO: {x: 4, y: 2}
+  spriteTham: {fileID: 0}
+  spriteNgoac: {fileID: 0}
+  spriteVach: {fileID: 0}
+  spriteChip: {fileID: 0}
+  mauTham: {r: 0.37, g: 0.85, b: 0.66, a: 0.55}
+  mauVien: {r: 0.42, g: 0.95, b: 0.72, a: 0.95}
+  mauChip: {r: 1, g: 0.98, b: 0.86, a: 0.92}
+  caoChip: 46
+  nhipTho: 1
 --- !u!1 &2086479571925551832
 GameObject:
   m_ObjectHideFlags: 0

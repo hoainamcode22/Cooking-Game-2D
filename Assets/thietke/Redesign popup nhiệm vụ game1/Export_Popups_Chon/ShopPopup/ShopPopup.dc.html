@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#4a6b3c"/><rect x="28" y="36" width="44" height="28" rx="7" fill="#f0a32f" stroke="#a35c14" stroke-width="2"/><circle cx="50" cy="50" r="9" fill="#fffbe9"/></svg></template>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&amp;display=swap" rel="stylesheet">
+<meta name="ext-resource-dependency" content="assets/Icon_vang.png">
+<meta name="ext-resource-dependency" content="assets/kimcuong.png">
+<meta name="ext-resource-dependency" content="assets/iconlua.png">
+<meta name="ext-resource-dependency" content="assets/cachua.png">
+<meta name="ext-resource-dependency" content="assets/bapcai.png">
+<meta name="ext-resource-dependency" content="assets/btnX.png">
+<meta name="ext-resource-dependency" content="assets/shop/lua.png">
+<meta name="ext-resource-dependency" content="assets/shop/bap.png">
+<meta name="ext-resource-dependency" content="assets/shop/carot.png">
+<meta name="ext-resource-dependency" content="assets/shop/iconKhoaiTay.png">
+<meta name="ext-resource-dependency" content="assets/shop/mia.png">
+<meta name="ext-resource-dependency" content="assets/shop/chanh.png">
+<meta name="ext-resource-dependency" content="assets/shop/ot.png">
+<meta name="ext-resource-dependency" content="assets/shop/nam.png">
+<meta name="ext-resource-dependency" content="assets/shop/khungchuong.png">
+<meta name="ext-resource-dependency" content="assets/shop/chuongheo.png">
+<meta name="ext-resource-dependency" content="assets/shop/chuongbo.png">
+<meta name="ext-resource-dependency" content="assets/shop/coixoaygio.png">
+<meta name="ext-resource-dependency" content="assets/shop/caythong.png">
+<meta name="ext-resource-dependency" content="assets/shop/baothoc.png">
+<style>
+body{margin:0;background:#1e2c17;font-family:'Baloo 2',sans-serif;}
+*{box-sizing:border-box;scrollbar-width:thin;scrollbar-color:#c89a5e transparent;}
+a{color:#ffd977;} a:hover{color:#ffec9e;}
+@keyframes dotPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.35);}}
+@keyframes toastIn{0%{transform:translate(-50%,20px);opacity:0;}100%{transform:translate(-50%,0);opacity:1;}}
+input::placeholder{color:#b08d5c;}
+::-webkit-scrollbar{width:7px;height:0;} ::-webkit-scrollbar-thumb{background:#c89a5e;border-radius:6px;} ::-webkit-scrollbar-track{background:transparent;} ::-webkit-scrollbar-button{display:none;}
+</style>
+</helmet>
+<div data-screen-label="Popup Cửa hàng" style="width:1920px;height:1080px;position:relative;overflow:hidden;background:radial-gradient(circle at 50% 30%,#4a6b3c,#20311a 80%);display:flex;align-items:center;justify-content:center;">
+<div style="position:absolute;inset:0;background:rgba(6,14,3,.45);"></div>
+<div style="position:absolute;width:1300px;height:950px;background:radial-gradient(closest-side,rgba(255,220,120,.15),rgba(255,220,120,0) 72%);"></div>
+<div style="position:relative;width:1300px;height:880px;">
+<div style="position:absolute;inset:0;border-radius:42px;border:8px solid #4a2508;background:linear-gradient(180deg,#a9743c 0%,#8a5a2e 14%,#7c4e22 100%);box-shadow:inset 0 6px 0 rgba(255,230,180,.28),inset 0 -10px 0 rgba(0,0,0,.28),0 34px 70px rgba(0,0,0,.6);"></div>
+<div style="position:absolute;inset:8px;border-radius:34px;background:repeating-linear-gradient(0deg,transparent 0 158px,rgba(58,28,4,.32) 158px 163px),repeating-linear-gradient(90deg,rgba(0,0,0,.045) 0 9px,rgba(255,255,255,.028) 9px 34px);pointer-events:none;"></div>
+<div style="position:absolute;top:22px;left:24px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9b8,#b98745 55%,#7a4a1a);border:2px solid #5a3210;box-shadow:0 2px 3px rgba(0,0,0,.45);"></div>
+<div style="position:absolute;top:22px;right:24px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9b8,#b98745 55%,#7a4a1a);border:2px solid #5a3210;box-shadow:0 2px 3px rgba(0,0,0,.45);"></div>
+<div style="position:absolute;bottom:22px;left:24px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9b8,#b98745 55%,#7a4a1a);border:2px solid #5a3210;box-shadow:0 2px 3px rgba(0,0,0,.45);"></div>
+<div style="position:absolute;bottom:22px;right:24px;width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe9b8,#b98745 55%,#7a4a1a);border:2px solid #5a3210;box-shadow:0 2px 3px rgba(0,0,0,.45);"></div>
+<div style="position:absolute;top:-54px;left:50%;transform:translateX(-50%);width:680px;height:134px;z-index:2;">
+<div style="position:absolute;left:0;top:30px;width:120px;height:80px;background:linear-gradient(180deg,#d8641f,#a84812);clip-path:polygon(0 0,100% 0,100% 100%,0 100%,24% 50%);filter:drop-shadow(0 6px 6px rgba(0,0,0,.3));"></div>
+<div style="position:absolute;right:0;top:30px;width:120px;height:80px;background:linear-gradient(180deg,#d8641f,#a84812);clip-path:polygon(0 0,100% 0,76% 50%,100% 100%,0 100%);filter:drop-shadow(0 6px 6px rgba(0,0,0,.3));"></div>
+<div style="position:absolute;left:76px;right:76px;top:0;bottom:14px;background:linear-gradient(180deg,#ffd257,#f0a32f);border:5px solid #a35c14;border-radius:24px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 6px 0 rgba(255,255,255,.5),inset 0 -8px 0 rgba(0,0,0,.16),0 10px 16px rgba(0,0,0,.38);">
+<span style="font-size:54px;font-weight:800;color:#fffbe9;letter-spacing:2px;white-space:nowrap;text-shadow:2px 0 0 #96540f,-2px 0 0 #96540f,0 -2px 0 #96540f,0 3px 0 #96540f,0 7px 0 rgba(0,0,0,.22);">CỬA HÀNG</span>
+</div>
+</div>
+<div style-hover="transform:scale(1.1) rotate(4deg)" style="position:absolute;top:-34px;right:-32px;width:100px;height:100px;cursor:pointer;transition:transform .15s;z-index:3;">
+<img src="assets/btnX.png" style="width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 6px 8px rgba(0,0,0,.4));">
+</div>
+<div style="position:absolute;top:76px;left:48px;right:48px;display:flex;gap:14px;">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+<div onClick="{{ t.onClick }}" style-hover="filter:brightness(1.05)" style="flex:1;height:86px;margin-top:{{ t.mt }}px;background:{{ t.bg }};border:4px solid #6e4014;border-bottom:none;border-radius:22px 22px 0 0;display:flex;align-items:center;justify-content:center;gap:14px;cursor:pointer;position:relative;transition:margin .15s;box-shadow:inset 0 4px 0 rgba(255,255,255,.35);">
+<div style="width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,.45);border:2px solid rgba(160,105,40,.35);display:flex;align-items:center;justify-content:center;">
+<img src="{{ t.icon }}" style="width:40px;height:40px;object-fit:contain;">
+</div>
+<span style="font-size:26px;font-weight:800;color:{{ t.tx }};white-space:nowrap;">{{ t.label }}</span>
+</div>
+</sc-for>
+</div>
+<div style="position:absolute;top:162px;left:48px;right:48px;bottom:42px;background:linear-gradient(180deg,#fdf3da,#fbeccb);border:4px solid #6e4014;border-radius:0 0 26px 26px;box-shadow:inset 0 0 0 3px #f3ddb0,inset 0 8px 14px rgba(150,95,30,.18);padding:20px 24px;display:flex;flex-direction:column;gap:16px;overflow:hidden;">
+<div style="display:flex;align-items:center;gap:14px;flex:none;">
+<div style="flex:1;display:flex;align-items:center;gap:10px;background:#f3e2bb;border:3px solid #d9b478;border-radius:18px;padding:0 18px;height:56px;box-shadow:inset 0 3px 6px rgba(120,75,20,.25);">
+<span style="font-size:24px;color:#a3803f;">⌕</span>
+<input value="{{ search }}" onChange="{{ onSearch }}" placeholder="Tìm vật phẩm..." style="flex:1;background:transparent;border:none;outline:none;font-family:'Baloo 2',sans-serif;font-size:22px;font-weight:700;color:#5b3417;">
+</div>
+<div style="display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,#fff6de,#ffe9bd);border:3px solid #e0b26a;border-radius:18px;padding:6px 16px;height:56px;box-shadow:0 3px 0 rgba(190,140,70,.4),inset 0 2px 0 rgba(255,255,255,.7);">
+<img src="assets/Icon_vang.png" style="width:52px;height:52px;object-fit:contain;margin:-4px 0;">
+<span style="font-size:24px;font-weight:800;color:#7a4a10;">{{ gold }}</span>
+</div>
+<div style="display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,#fff6de,#ffe9bd);border:3px solid #e0b26a;border-radius:18px;padding:6px 16px;height:56px;box-shadow:0 3px 0 rgba(190,140,70,.4),inset 0 2px 0 rgba(255,255,255,.7);">
+<img src="assets/kimcuong.png" style="width:38px;height:38px;object-fit:contain;">
+<span style="font-size:24px;font-weight:800;color:#7a4a10;">{{ gem }}</span>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;overflow-y:auto;overflow-x:hidden;flex:1;padding:6px 8px 10px 4px;align-content:start;">
+<sc-for list="{{ items }}" as="r" hint-placeholder-count="8">
+<div style="position:relative;display:flex;flex-direction:column;border-radius:26px;background:linear-gradient(180deg,#c98f52,#a96f36);padding:8px;box-shadow:0 6px 0 rgba(90,50,15,.35),inset 0 3px 0 rgba(255,255,255,.3);filter:{{ r.cardFilter }};">
+<div style="flex:1;border-radius:20px;background:radial-gradient(circle at 50% 26%,#fffaf0,#fdf0d3 80%);box-shadow:inset 0 0 0 2px #ecd4a5,inset 0 -4px 8px rgba(150,95,30,.12);padding:12px 10px 10px 10px;display:flex;flex-direction:column;align-items:center;gap:7px;">
+<span style="font-size:20px;font-weight:800;color:#5b3417;text-align:center;line-height:1.1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:44px;">{{ r.name }}</span>
+<div style="width:112px;height:112px;border-radius:50%;background:radial-gradient(circle,#faf0d6,#f1dfb4 78%);box-shadow:inset 0 3px 8px rgba(150,95,30,.22),inset 0 -2px 0 rgba(255,255,255,.6);display:flex;align-items:center;justify-content:center;">
+<img src="{{ r.icon }}" style="width:84px;height:84px;object-fit:contain;filter:drop-shadow(0 4px 4px rgba(0,0,0,.2));">
+</div>
+<sc-if value="{{ r.hasQty }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;align-items:center;gap:12px;height:38px;">
+<div onClick="{{ r.onMinus }}" style-hover="filter:brightness(1.1)" style-active="transform:scale(.9)" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(180deg,#ffb066,#e2701f);border:3px solid #a84812;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);">
+<span style="font-size:24px;font-weight:800;color:#fff;line-height:1;margin-top:-3px;">−</span>
+</div>
+<span style="font-size:24px;font-weight:800;color:#5b3417;min-width:34px;text-align:center;">{{ r.qty }}</span>
+<div onClick="{{ r.onPlus }}" style-hover="filter:brightness(1.1)" style-active="transform:scale(.9)" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(180deg,#a5e05e,#61b527);border:3px solid #3f8a12;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.25);">
+<span style="font-size:24px;font-weight:800;color:#fff;line-height:1;margin-top:-3px;">+</span>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ r.noQty }}" hint-placeholder-val="{{ false }}">
+<span style="font-size:15px;font-weight:700;color:#a3803f;height:38px;display:flex;align-items:center;white-space:nowrap;">Mua 1 cái / lần</span>
+</sc-if>
+</div>
+<div onClick="{{ r.onBuy }}" style-hover="filter:brightness(1.08)" style-active="transform:translateY(3px)" style="margin-top:8px;height:54px;border-radius:16px;background:{{ r.buyBg }};border:3px solid {{ r.buyBd }};display:flex;align-items:center;justify-content:center;gap:9px;cursor:{{ r.buyCur }};box-shadow:0 4px 0 rgba(0,0,0,.28),inset 0 3px 0 rgba(255,255,255,.35);">
+<img src="{{ r.curIcon }}" style="width:50px;height:50px;object-fit:contain;margin:-4px 0;">
+<span style="font-size:25px;font-weight:800;color:#fff;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.25);">{{ r.price }}</span>
+</div>
+<sc-if value="{{ r.locked }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;border-radius:26px;background:rgba(62,40,16,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;">
+<div style="width:58px;height:58px;border-radius:50%;background:#5b4226;border:3px solid #8a6a42;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;">
+<div style="width:20px;height:14px;border:4px solid #ffe9bd;border-bottom:none;border-radius:10px 10px 0 0;"></div>
+<div style="width:30px;height:20px;background:#ffe9bd;border-radius:5px;"></div>
+</div>
+<span style="font-size:22px;font-weight:800;color:#ffe9bd;text-shadow:0 2px 0 rgba(0,0,0,.4);">{{ r.lockLb }}</span>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;bottom:26px;left:50%;transform:translateX(-50%);background:linear-gradient(180deg,#a5e05e,#61b527);border:3px solid #3f8a12;border-radius:18px;padding:10px 28px;box-shadow:0 6px 14px rgba(0,0,0,.35);animation:toastIn .25s ease-out;z-index:5;">
+<span style="font-size:23px;font-weight:800;color:#fff;white-space:nowrap;text-shadow:0 2px 0 rgba(0,0,0,.25);">{{ toast }}</span>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;capNguoiChoi&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:5,&quot;min&quot;:1,&quot;max&quot;:10,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+class Component extends DCLogic {
+  state = { tab: 'seed', qty: {}, gold: 1250, gem: 40, search: '', toast: null };
+
+  data() {
+    const S = 'assets/shop/';
+    return {
+      seed: [
+        { id: 'lua', icon: S + 'lua.png', name: 'Hạt lúa', price: 10, lvl: 1 },
+        { id: 'bap', icon: S + 'bap.png', name: 'Hạt bắp', price: 15, lvl: 1 },
+        { id: 'carot', icon: S + 'carot.png', name: 'Cà rốt', price: 25, lvl: 2 },
+        { id: 'cachua', icon: 'assets/cachua.png', name: 'Cà chua', price: 30, lvl: 3 },
+        { id: 'bapcai', icon: 'assets/bapcai.png', name: 'Bắp cải', price: 40, lvl: 4 },
+        { id: 'khoaitay', icon: S + 'iconKhoaiTay.png', name: 'Khoai tây', price: 35, lvl: 4 },
+        { id: 'mia', icon: S + 'mia.png', name: 'Mía', price: 45, lvl: 5 },
+        { id: 'chanh', icon: S + 'chanh.png', name: 'Chanh', price: 60, lvl: 5 },
+        { id: 'ot', icon: S + 'ot.png', name: 'Ớt', price: 55, lvl: 6 },
+        { id: 'nam', icon: S + 'nam.png', name: 'Nấm', price: 80, lvl: 8 },
+      ],
+      build: [
+        { id: 'chga', icon: S + 'khungchuong.png', name: 'Chuồng gà', price: 500, lvl: 3, one: true },
+        { id: 'chheo', icon: S + 'chuongheo.png', name: 'Chuồng heo', price: 800, lvl: 5, one: true },
+        { id: 'chbo', icon: S + 'chuongbo.png', name: 'Chuồng bò', price: 20, lvl: 7, gem: true, one: true },
+        { id: 'coixay', icon: S + 'coixoaygio.png', name: 'Cối xay gió', price: 15, lvl: 6, gem: true, one: true },
+      ],
+      decor: [
+        { id: 'thong', icon: S + 'caythong.png', name: 'Cây thông', price: 120, lvl: 2, one: true },
+        { id: 'baothoc', icon: S + 'baothoc.png', name: 'Bao thóc', price: 90, lvl: 1, one: true },
+      ],
+    };
+  }
+
+  showToast(msg) {
+    clearTimeout(this._toastT);
+    this.setState({ toast: msg });
+    this._toastT = setTimeout(() => this.setState({ toast: null }), 1800);
+  }
+
+  renderVals() {
+    const cap = this.props.capNguoiChoi ?? 5;
+    const d = this.data();
+    const tab = this.state.tab;
+    const list = d[tab] || [];
+    const kw = this.state.search.trim().toLowerCase();
+    const items = list
+      .filter(m => !kw || m.name.toLowerCase().includes(kw))
+      .sort((a, b) => (a.lvl || 1) - (b.lvl || 1))
+      .map(m => {
+        const locked = (m.lvl || 1) > cap;
+        const qty = m.one ? 1 : Math.max(1, this.state.qty[m.id] || 1);
+        const total = m.price * qty;
+        const enough = m.gem ? this.state.gem >= total : this.state.gold >= total;
+        const can = !locked && enough;
+        return {
+          id: m.id, icon: m.icon, name: m.name, qty,
+          hasQty: !m.one && !locked, noQty: !!m.one && !locked,
+          locked, lockLb: 'Mở ở cấp ' + m.lvl,
+          cardFilter: locked ? 'grayscale(.55)' : 'none',
+          price: total.toLocaleString('vi-VN'),
+          curIcon: m.gem ? 'assets/kimcuong.png' : 'assets/Icon_vang.png',
+          buyBg: !can ? '#b8ae95' : m.gem ? 'linear-gradient(180deg,#7cc9f0 0%,#4aa3dd 55%,#3486c2 100%)' : 'linear-gradient(180deg,#a5e05e 0%,#6cbf2e 55%,#57a51f 100%)',
+          buyBd: !can ? '#9c927c' : m.gem ? '#2e6fa3' : '#3f8a12',
+          buyCur: can ? 'pointer' : 'default',
+          onPlus: () => this.setState(s => ({ qty: { ...s.qty, [m.id]: Math.min(99, (s.qty[m.id] || 1) + 1) } })),
+          onMinus: () => this.setState(s => ({ qty: { ...s.qty, [m.id]: Math.max(1, (s.qty[m.id] || 1) - 1) } })),
+          onBuy: can ? () => {
+            if (m.gem) this.setState(s => ({ gem: s.gem - total }));
+            else this.setState(s => ({ gold: s.gold - total }));
+            this.showToast('Đã mua ' + (m.one ? '' : 'x' + qty + ' ') + m.name + '!');
+          } : () => {},
+        };
+      });
+    const tabDefs = [
+      ['seed', 'Hạt giống', 'assets/iconlua.png'],
+      ['build', 'Công trình', 'assets/shop/khungchuong.png'],
+      ['decor', 'Trang trí', 'assets/shop/caythong.png'],
+    ];
+    return {
+      items,
+      gold: this.state.gold.toLocaleString('vi-VN'),
+      gem: this.state.gem.toLocaleString('vi-VN'),
+      search: this.state.search,
+      onSearch: (e) => this.setState({ search: e.target.value }),
+      toast: this.state.toast || '', hasToast: !!this.state.toast,
+      tabs: tabDefs.map(([tk, label, icon]) => {
+        const act = tab === tk;
+        return {
+          label, icon,
+          bg: act ? 'linear-gradient(180deg,#fffbe9,#fdf0d3)' : 'linear-gradient(180deg,#e2a75f,#c48538)',
+          tx: act ? '#5b3417' : '#6e4014', mt: act ? 0 : 14,
+          onClick: () => this.setState({ tab: tk }),
+        };
+      }),
+    };
+  }
+}
+</script>
+</body>
+</html>
