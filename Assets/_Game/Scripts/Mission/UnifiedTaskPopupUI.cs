@@ -583,22 +583,31 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
     private void BuildRibbon()
     {
-        // Hai đuôi ribbon đỏ #d8641f→#a84812, vẽ TRƯỚC để nằm dưới tấm biển vàng.
-        CreateImage(_board, "Ribbon_Tail_Left", BoGoc(6f), TaskPopupDesign.DuoiRibbonDuoi,
-            TaskPopupDesign.DuoiRibbonTrai, TaskPopupDesign.DuoiRibbonKichThuoc, true);
-        CreateImage(_board, "Ribbon_Tail_Right", BoGoc(6f), TaskPopupDesign.DuoiRibbonDuoi,
-            TaskPopupDesign.DuoiRibbonPhai, TaskPopupDesign.DuoiRibbonKichThuoc, true);
+        Sprite ribbonSpr = sprites.ribbon;
+        if (ribbonSpr == null)
+        {
+#if UNITY_EDITOR
+            ribbonSpr = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_banner_ribbon.png");
+#endif
+        }
 
         RectTransform bien;
-        if (sprites.ribbon != null)
+        if (ribbonSpr != null)
         {
-            // Field thô, cùng lý do với ván gỗ ở trên.
-            bien = CreateImage(_board, "Ribbon_Title", sprites.ribbon, Color.white,
+            bien = CreateImage(_board, "Ribbon_Title", ribbonSpr, Color.white,
                 TaskPopupDesign.RibbonVungTam,
-                new Vector2(TaskPopupDesign.RibbonVungRong, TaskPopupDesign.RibbonVungCao), true);
+                new Vector2(620f, 126f), true);
+            var img = bien.GetComponent<Image>();
+            if (img != null) img.type = Image.Type.Sliced;
         }
         else
         {
+            // Hai đuôi ribbon đỏ #d8641f→#a84812, vẽ TRƯỚC để nằm dưới tấm biển vàng.
+            CreateImage(_board, "Ribbon_Tail_Left", BoGoc(6f), TaskPopupDesign.DuoiRibbonDuoi,
+                TaskPopupDesign.DuoiRibbonTrai, TaskPopupDesign.DuoiRibbonKichThuoc, true);
+            CreateImage(_board, "Ribbon_Tail_Right", BoGoc(6f), TaskPopupDesign.DuoiRibbonDuoi,
+                TaskPopupDesign.DuoiRibbonPhai, TaskPopupDesign.DuoiRibbonKichThuoc, true);
+
             // Tấm biển vàng #ffd257→#f0a32f, viền 5px #a35c14, bo 24.
             bien = CreateRect(_board, "Ribbon_Title", TaskPopupDesign.RibbonTamTam,
                 TaskPopupDesign.RibbonTamKichThuoc);
@@ -611,11 +620,12 @@ public class UnifiedTaskPopupUI : MonoBehaviour
                 TaskPopupDesign.RibbonTamKichThuoc, TaskPopupDesign.RibbonBoGoc);
         }
 
-        // Chữ 54px trắng kem, viền nâu 2px — README: letter-spacing 2px.
-        _titleText = CreateText(bien, "Txt_Title", "NHIỆM VỤ", TaskPopupDesign.CoChuTieuDe,
-            TaskPopupDesign.ChuTieuDe, TextAlignmentOptions.Center, Vector2.zero,
-            TaskPopupDesign.RibbonTamKichThuoc - new Vector2(24f, 16f), FontStyles.Bold);
+        // Chữ 46px trắng kem, không ngắt dòng
+        _titleText = CreateText(bien, "Txt_Title", "NHIỆM VỤ", 46,
+            TaskPopupDesign.ChuTieuDe, TextAlignmentOptions.Center, new Vector2(0f, 6f),
+            new Vector2(540f, 70f), FontStyles.Bold);
         _titleText.characterSpacing = 4f;
+        _titleText.textWrappingMode = TextWrappingModes.NoWrap;
         AddOutline(_titleText.gameObject, TaskPopupDesign.VienChuTieuDe, new Vector2(2f, -2f));
         AddShadow(_titleText.gameObject, TaskPopupDesign.VienChuTieuDe, new Vector2(0f, -3f));
     }

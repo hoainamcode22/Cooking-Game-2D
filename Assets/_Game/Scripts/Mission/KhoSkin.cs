@@ -16,8 +16,8 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class KhoSkin : MonoBehaviour
 {
-    [Tooltip("Bỏ tick để về vỏ cũ.")]
-    public bool batAo = false;
+    [Header("Bật/tắt mặc áo Kho (tắt khi dùng hệ UI Kho mới 100% Mockup)")]
+    [SerializeField] private bool batAo = false;
 
     private WarehousePopupUI _popup;
     private GameObject _root;

@@ -1,28 +1,59 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using TMPro;
 
 public class ShopManager : MonoBehaviour
 {
     public static ShopManager Instance { get; private set; }
 
-    [Header("UI")]
-    public GameObject     shopPanel;     // Panel nền popup Shop
-    public Transform      contentParent; // Vùng chứa item
-    public GameObject     itemPrefab;    // Prefab của 1 item trong shop
-    public TMP_InputField searchBar;     // Thanh tìm kiếm
+    [Header("UI Roots")]
+    public GameObject shopPanel;
+    public Transform contentParent;
+    public GameObject itemPrefab;
+    public TMP_InputField searchBar;
+    public Button btnClose;
+
+    [Header("Tab Buttons")]
+    public Button btnTabSeed;
+    public Button btnTabBuilding;
+    public Button btnTabDecor;
+
+    [Header("Tab Images")]
+    public Image imgTabSeed;
+    public Image imgTabBuilding;
+    public Image imgTabDecor;
+
+    [Header("Tab Texts")]
+    public TMP_Text txtTabSeed;
+    public TMP_Text txtTabBuilding;
+    public TMP_Text txtTabDecor;
+
+    [Header("Tab Sprites")]
+    public Sprite tabActiveSprite;
+    public Sprite tabInactiveSprite;
+
+    [Header("Currency Displays")]
+    public TMP_Text txtGoldBalance;
+    public TMP_Text txtGemBalance;
+
+    [Header("Toast Notification")]
+    public GameObject toastRoot;
+    public TMP_Text txtToast;
 
     [Header("Dữ liệu theo Tab")]
-    public List<BaseItemData> seedList;     // Tab 0 - Hạt giống
-    public List<BaseItemData> buildingList; // Tab 1 - Công trình
-    public List<BaseItemData> decorList;    // Tab 2 - Trang trí
+    public List<BaseItemData> seedList = new List<BaseItemData>();
+    public List<BaseItemData> buildingList = new List<BaseItemData>();
+    public List<BaseItemData> decorList = new List<BaseItemData>();
 
     private List<BaseItemData> currentActiveList;
+    private int currentTabIndex = 0;
     private bool popupInputLockHeld;
+    private Coroutine toastRoutine;
+    private GameObject cachedHomeMenu;
 
     public bool IsOpen => shopPanel != null && shopPanel.activeSelf;
 
@@ -36,8 +67,28 @@ public class ShopManager : MonoBehaviour
 
     private void Start()
     {
-        shopPanel.SetActive(false);
-        searchBar.onValueChanged.AddListener(OnSearchTextChanged);
+        if (shopPanel != null) shopPanel.SetActive(false);
+        if (toastRoot != null) toastRoot.SetActive(false);
+
+        if (searchBar != null)
+            searchBar.onValueChanged.AddListener(OnSearchTextChanged);
+
+        if (btnClose != null)
+            btnClose.onClick.AddListener(CloseShop);
+
+        if (btnTabSeed != null)
+            btnTabSeed.onClick.AddListener(() => ShowTab(0));
+        if (btnTabBuilding != null)
+            btnTabBuilding.onClick.AddListener(() => ShowTab(1));
+        if (btnTabDecor != null)
+            btnTabDecor.onClick.AddListener(() => ShowTab(2));
+    }
+
+    private void OnEnable()
+    {
+        SetHomeMenuVisible(false);
+        RefreshCurrencyBalances();
+        ShowTab(currentTabIndex);
     }
 
     private void Update()
@@ -45,10 +96,10 @@ public class ShopManager : MonoBehaviour
         if (!IsOpen) return;
         if (!Input.GetMouseButtonDown(0)) return;
 
-        // Tutorial L2 đang điều khiển shop → chỉ Btn_Close mới đóng (không auto-close khi click ngoài/dim/dialog).
+        // Tutorial L2 đang điều khiển shop -> Không auto-close
         if (IsShopTutorialStep()) return;
 
-        // Nếu click KHÔNG trúng UI nào trong Canvas_Popup → đóng Shop
+        // Nếu click ngoài vùng Canvas_Popup -> Đóng shop
         if (!IsPointerOverPopupUI(Input.mousePosition))
             CloseShop();
     }
@@ -64,23 +115,43 @@ public class ShopManager : MonoBehaviour
 
     public void OpenShop()
     {
-        shopPanel.SetActive(true);
+        if (shopPanel != null) shopPanel.SetActive(true);
+        SetHomeMenuVisible(false);
         AcquirePopupInputBlock();
         if (searchBar != null) searchBar.text = "";
+        RefreshCurrencyBalances();
         ShowTab(0);
-        TutorialManager.Instance?.NotifyOpenShop();   // tutorial L2: bước "mở shop"
+        TutorialManager.Instance?.NotifyOpenShop();
     }
 
     public void CloseShop()
     {
         ReleasePopupInputBlock();
-        shopPanel.SetActive(false);
-        TutorialManager.Instance?.NotifyCloseShop();  // tutorial L2: bước "đóng shop"
+        SetHomeMenuVisible(true);
+        if (shopPanel != null) shopPanel.SetActive(false);
+        TutorialManager.Instance?.NotifyCloseShop();
     }
 
     private void OnDisable()
     {
+        SetHomeMenuVisible(true);
         ReleasePopupInputBlock();
+    }
+
+    private void SetHomeMenuVisible(bool visible)
+    {
+        if (cachedHomeMenu == null)
+        {
+            cachedHomeMenu = GameObject.Find("HomeMenu");
+            if (cachedHomeMenu == null)
+            {
+                var btn = GameObject.Find("Btn_Home");
+                if (btn != null) cachedHomeMenu = btn.transform.parent != null ? btn.transform.parent.gameObject : btn;
+            }
+        }
+
+        if (cachedHomeMenu != null)
+            cachedHomeMenu.SetActive(visible);
     }
 
     private void AcquirePopupInputBlock()
@@ -107,6 +178,8 @@ public class ShopManager : MonoBehaviour
 
     public void ShowTab(int tabIndex)
     {
+        currentTabIndex = tabIndex;
+
         switch (tabIndex)
         {
             case 0: currentActiveList = seedList;     break;
@@ -116,16 +189,72 @@ public class ShopManager : MonoBehaviour
                 return;
         }
 
-        if (searchBar != null)
-            OnSearchTextChanged(searchBar.text);
-        else
-            OnSearchTextChanged("");
+        UpdateTabVisuals();
+        RenderItems(searchBar != null ? searchBar.text : "");
+    }
+
+    private void UpdateTabVisuals()
+    {
+        Color activeTextColor = new Color(0.36f, 0.20f, 0.09f, 1f);   // #5B3417
+        Color inactiveTextColor = new Color(0.43f, 0.25f, 0.08f, 1f); // #6E4014
+
+        // Tab 0: Seed
+        UpdateSingleTab(imgTabSeed, txtTabSeed, currentTabIndex == 0, activeTextColor, inactiveTextColor);
+        // Tab 1: Building
+        UpdateSingleTab(imgTabBuilding, txtTabBuilding, currentTabIndex == 1, activeTextColor, inactiveTextColor);
+        // Tab 2: Decor
+        UpdateSingleTab(imgTabDecor, txtTabDecor, currentTabIndex == 2, activeTextColor, inactiveTextColor);
+    }
+
+    private void UpdateSingleTab(Image imgTab, TMP_Text txtTab, bool isActive, Color activeCol, Color inactiveCol)
+    {
+        if (imgTab != null)
+        {
+            if (isActive && tabActiveSprite != null)
+                imgTab.sprite = tabActiveSprite;
+            else if (!isActive && tabInactiveSprite != null)
+                imgTab.sprite = tabInactiveSprite;
+
+            RectTransform rt = imgTab.rectTransform;
+            Vector2 pos = rt.anchoredPosition;
+            pos.y = isActive ? 0f : -6f;
+            rt.anchoredPosition = pos;
+        }
+
+        if (txtTab != null)
+            txtTab.color = isActive ? activeCol : inactiveCol;
+    }
+
+    public void RefreshCurrencyBalances()
+    {
+        if (FarmEconomyManager.Instance != null)
+        {
+            if (txtGoldBalance != null)
+                txtGoldBalance.text = FarmEconomyManager.Instance.Gold.ToString("N0", new System.Globalization.CultureInfo("vi-VN"));
+            if (txtGemBalance != null)
+                txtGemBalance.text = FarmEconomyManager.Instance.Gems.ToString("N0", new System.Globalization.CultureInfo("vi-VN"));
+        }
+    }
+
+    public void ShowToast(string message)
+    {
+        if (toastRoot == null || txtToast == null) return;
+
+        txtToast.text = message;
+        toastRoot.SetActive(true);
+
+        if (toastRoutine != null) StopCoroutine(toastRoutine);
+        toastRoutine = StartCoroutine(CoHideToast(1.8f));
+    }
+
+    private IEnumerator CoHideToast(float delay)
+    {
+        yield return new WaitForSecondsRealtime(delay);
+        if (toastRoot != null) toastRoot.SetActive(false);
     }
 
     // ── Cuộn tới item (cho tutorial mua Ngô) ─────────────────────────────────
 
-    /// <summary>Cuộn ScrollRect để item (theo itemID) hiện TRỌN ở giữa viewport —
-    /// dùng cho bước tutorial mua Ngô (nút ＋/－/Mua đang bị cắt ngoài mép).</summary>
     public void ScrollItemIntoView(string itemId)
     {
         if (!IsOpen || contentParent == null || string.IsNullOrEmpty(itemId)) return;
@@ -145,14 +274,13 @@ public class ShopManager : MonoBehaviour
 
     private IEnumerator CoScrollTo(ScrollRect sr, RectTransform target)
     {
-        yield return null;                 // chờ 1 frame cho layout dựng xong
+        yield return null;
         Canvas.ForceUpdateCanvases();
 
         RectTransform content  = sr.content;
         RectTransform viewport = sr.viewport != null ? sr.viewport : (RectTransform)sr.transform;
         if (content == null || target == null) yield break;
 
-        // Dịch content sao cho TÂM item về giữa viewport (chỉ theo trục đang bật).
         Vector3 tw    = target.TransformPoint(target.rect.center);
         Vector2 tInVp = viewport.InverseTransformPoint(tw);
         Vector2 delta = viewport.rect.center - tInVp;
@@ -172,32 +300,47 @@ public class ShopManager : MonoBehaviour
         content.anchoredPosition = to;
     }
 
-    // ── Tìm kiếm & Render ────────────────────────────────────────────────────
+    // ── Tìm kiếm & Render Items ──────────────────────────────────────────────
 
     private void OnSearchTextChanged(string keyword)
     {
-        foreach (Transform child in contentParent)
-            Destroy(child.gameObject);
+        RenderItems(keyword);
+    }
 
-        if (currentActiveList == null) return;
+    private void RenderItems(string keyword)
+    {
+        if (contentParent == null) return;
 
-        string keyLower = keyword.ToLower();
+        // Xoá các card đã sinh trước đó
+        for (int i = contentParent.childCount - 1; i >= 0; i--)
+        {
+            Transform child = contentParent.GetChild(i);
+            if (child.gameObject != itemPrefab)
+                Destroy(child.gameObject);
+        }
 
-        // Sắp xếp theo cấp mở khoá: cái mở TRƯỚC (cấp thấp) hiện TRƯỚC.
-        // OrderBy của LINQ là sort ỔN ĐỊNH → cùng cấp giữ nguyên thứ tự gốc.
+        if (currentActiveList == null || itemPrefab == null)
+            return;
+
+        string keyLower = string.IsNullOrEmpty(keyword) ? "" : keyword.ToLower().Trim();
+
         foreach (BaseItemData item in currentActiveList.OrderBy(GetUnlockLevel))
         {
-            bool match = string.IsNullOrEmpty(keyword)
-                      || item.itemName.ToLower().Contains(keyLower);
+            if (item == null) continue;
+
+            bool match = string.IsNullOrEmpty(keyLower)
+                      || (item.itemName != null && item.itemName.ToLower().Contains(keyLower));
 
             if (!match) continue;
 
             GameObject go = Instantiate(itemPrefab, contentParent);
-            go.GetComponent<ShopItemUI>().Setup(item);
+            go.SetActive(true);
+            var ui = go.GetComponent<ShopItemUI>();
+            if (ui != null)
+                ui.Setup(item);
         }
     }
 
-    /// <summary>Đọc unlockLevel của item (qua reflection — field nằm ở lớp con). Không có = 1.</summary>
     private static int GetUnlockLevel(BaseItemData item)
     {
         if (item == null) return 1;
@@ -210,12 +353,11 @@ public class ShopManager : MonoBehaviour
         return 1;
     }
 
-    // ── UI Raycast (y hệt PigPenClickOpen) ───────────────────────────────────
+    // ── UI Raycast ──────────────────────────────────────────────────────────
 
     private bool IsPointerOverPopupUI(Vector2 screenPos)
     {
-        if (EventSystem.current == null)
-            return false;
+        if (EventSystem.current == null) return false;
 
         PointerEventData eventData = new PointerEventData(EventSystem.current);
         eventData.position = screenPos;

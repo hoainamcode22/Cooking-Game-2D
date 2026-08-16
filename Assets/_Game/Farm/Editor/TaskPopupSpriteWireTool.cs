@@ -35,8 +35,9 @@ public static class TaskPopupSpriteWireTool
         ("expIcon",     "Assets/Assetsgame/iconsao-removebg-preview.png"),
         ("chestIcon",   "Assets/Assetsgame/AnhBtnNhanQua.png"),
 
-        // ── nút đóng ────────────────────────────────────────────────────────
+        // ── nút đóng & ribbon ───────────────────────────────────────────────
         ("closeButton", "Assets/Assetsgame/btnX.png"),
+        ("ribbon",      "Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_banner_ribbon.png"),
 
         // ── icon 3 tab ──────────────────────────────────────────────────────
         ("missionTabIcon",     "Assets/Assetsgame/img_icon_giay.png"),

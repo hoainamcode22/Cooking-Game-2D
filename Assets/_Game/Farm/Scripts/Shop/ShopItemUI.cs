@@ -1,115 +1,149 @@
-﻿using System.Collections;
+using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using TMPro;
 
 /// <summary>
-/// Gắn vào Prefab KhungHatGiong — hiển thị thông tin 1 item trong Shop.
-/// ShopManager sẽ gọi Setup() sau khi Instantiate prefab này.
+/// Gắn vào Prefab ShopItem_Template — hiển thị thông tin 1 item trong Shop theo thẻ mẫu 3a.
+/// Hỗ trợ chuyển tiếp drag event lên ScrollRect cha để kéo vuốt cuộn mượt mà.
 /// </summary>
-public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler
 {
     // ── Tham chiếu UI ────────────────────────────────────────────────────────
     [Header("UI References")]
-    public Image    imgIcon;            // Hình ảnh sản phẩm
-    public TMP_Text txtName;            // Tên sản phẩm
-    public TMP_Text txtPrice;           // Tổng giá tiền (số lượng × đơn giá)
+    public TMP_Text txtName;            // Tên sản phẩm (2 dòng cố định)
+    public Image    imgIcon;            // Hình ảnh sản phẩm (84x84)
+    public Image    imgCirclePlate;     // Đĩa tròn kem phía sau icon (112x112)
+    public GameObject stepperRoot;      // Hàng stepper +/-
     public TMP_Text txtQuantity;        // Số lượng đang chọn
-    public Image    imgCurrencyIcon;    // Icon loại tiền — đổi giữa Vàng / Kim Cương
-    public Button   btnPlus;            // Tăng số lượng
     public Button   btnMinus;           // Giảm số lượng
-    public Button   btnBuy;             // Xác nhận mua
+    public Button   btnPlus;            // Tăng số lượng
+    public GameObject placeableNote;    // Nhãn "Mua 1 cái / lần" cho công trình/trang trí
 
-    // ── Icon tiền tệ — kéo thả trong Inspector ────────────────────────────────
-    [Header("Icon Tiền Tệ")]
-    public Sprite iconGold;             // Sprite biểu tượng Vàng
-    public Sprite iconDiamond;          // Sprite biểu tượng Kim Cương
+    [Header("Buy Button References")]
+    public Button   btnBuy;             // Nút xác nhận mua = Nút giá
+    public Image    imgBuyBackground;   // Background của nút mua (xanh lá / xanh dương / xám)
+    public Image    imgCurrencyIcon;    // Icon loại tiền (Vàng / Kim Cương)
+    public TMP_Text txtPrice;           // Tổng giá tiền hiển thị
+
+    [Header("Lock Overlay References")]
+    public GameObject lockOverlayRoot;  // Overlay làm mờ khi chưa đủ level
+    public TMP_Text   lockLevelText;    // Text "Mở ở cấp X"
+
+    // ── Sprites ──────────────────────────────────────────────────────────────
+    [Header("Sprites")]
+    public Sprite iconGold;             // Sprite Vàng
+    public Sprite iconDiamond;          // Sprite Kim Cương
+    public Sprite btnBuyGoldSprite;     // Nút mua Vàng (Xanh lá)
+    public Sprite btnBuyGemSprite;      // Nút mua Gem (Xanh dương)
+    public Sprite btnBuyLockedSprite;   // Nút mua Khoá (Xám)
 
     // ── Biến logic nội bộ ────────────────────────────────────────────────────
-    private BaseItemData currentData;       // Data của item đang hiển thị
+    private BaseItemData currentData;
+    private int currentQuantity = 1;
+    private bool isDiamondItem;
+    private bool isLocked;
+    private ScrollRect parentScrollRect;
 
-    /// <summary>Data item đang hiển thị (cho tutorial tìm đúng item Ngô để chỉ tay + bao xám).</summary>
     public BaseItemData Data => currentData;
-    private int          currentQuantity = 1;
-
-    /// <summary>Số lượng đang chọn (cho tutorial biết user đã bấm + đủ 8 chưa).</summary>
     public int CurrentQuantity => currentQuantity;
-    private bool         isDiamondItem;     // true = trả bằng Kim Cương, false = Vàng
+    public bool IsLocked => isLocked;
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
     private void Awake()
     {
-        // Tắt raycastTarget trên mọi Graphic không phải Selectable (Button/Toggle...)
-        // để nền/khung không chặn click của Nút Mua
-        foreach (var graphic in GetComponentsInChildren<Graphic>(true))
-        {
-            if (graphic.GetComponent<Selectable>() == null)
-                graphic.raycastTarget = false;
-        }
+        parentScrollRect = GetComponentInParent<ScrollRect>();
 
-        // Đăng ký sự kiện một lần, tránh đăng ký lại mỗi lần Setup()
-        btnPlus .onClick.AddListener(IncreaseQuantity);
-        btnMinus.onClick.AddListener(DecreaseQuantity);
-        btnBuy  .onClick.AddListener(BuyItem);
+        if (btnPlus != null)  btnPlus.onClick.AddListener(IncreaseQuantity);
+        if (btnMinus != null) btnMinus.onClick.AddListener(DecreaseQuantity);
+        if (btnBuy != null)   btnBuy.onClick.AddListener(BuyItem);
+    }
+
+    // ── Chuyển tiếp Drag & Scroll lên ScrollRect cha ────────────────────────
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (parentScrollRect != null) parentScrollRect.OnBeginDrag(eventData);
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (parentScrollRect != null) parentScrollRect.OnDrag(eventData);
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (parentScrollRect != null) parentScrollRect.OnEndDrag(eventData);
+    }
+
+    public void OnScroll(PointerEventData eventData)
+    {
+        if (parentScrollRect != null) parentScrollRect.OnScroll(eventData);
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Khởi tạo UI cho một item — được gọi bởi ShopManager sau khi Instantiate.
-    /// </summary>
     public void Setup(BaseItemData data)
     {
         currentData     = data;
         currentQuantity = 1;
 
-        txtName.text   = data.itemName;
-        imgIcon.sprite = data.itemIcon;
+        if (parentScrollRect == null)
+            parentScrollRect = GetComponentInParent<ScrollRect>();
 
-        // Ưu tiên Kim Cương nếu có diamondPrice > 0
-        isDiamondItem          = data.diamondPrice > 0;
-        imgCurrencyIcon.sprite = isDiamondItem ? iconDiamond : iconGold;
+        if (data == null) return;
 
-        // Ẩn nút +/- cho vật phẩm xây dựng/trang trí (chỉ mua 1 cái mỗi lần)
+        if (txtName != null) txtName.text = data.itemName;
+        if (imgIcon != null)
+        {
+            imgIcon.sprite = data.itemIcon;
+            imgIcon.enabled = data.itemIcon != null;
+        }
+
+        isDiamondItem = data.diamondPrice > 0;
+        if (imgCurrencyIcon != null)
+            imgCurrencyIcon.sprite = isDiamondItem ? iconDiamond : iconGold;
+
+        // Công trình & Trang trí: ẩn stepper, hiện "Mua 1 cái / lần"
         bool isPlaceable = data is PlaceableItemData;
-        if (btnPlus     != null) btnPlus    .gameObject.SetActive(!isPlaceable);
-        if (btnMinus    != null) btnMinus   .gameObject.SetActive(!isPlaceable);
-        if (txtQuantity != null) txtQuantity.gameObject.SetActive(!isPlaceable);
+        if (stepperRoot != null) stepperRoot.SetActive(!isPlaceable);
+        if (placeableNote != null) placeableNote.SetActive(isPlaceable);
+
+        // Kiểm tra cấp độ mở khoá
+        int playerLevel = PlayerProgressManager.Instance != null ? PlayerProgressManager.Instance.Level : 1;
+        int unlockLvl = GetUnlockLevel(data);
+        isLocked = unlockLvl > 1 && playerLevel < unlockLvl;
+
+        if (lockOverlayRoot != null)
+            lockOverlayRoot.SetActive(isLocked);
+
+        if (lockLevelText != null)
+            lockLevelText.text = $"Mở ở cấp {unlockLvl}";
 
         UpdateUI();
-
-        // Cập nhật trạng thái lock theo level — ShopLevelLockUI tự ẩn/hiện overlay
-        GetComponent<ShopLevelLockUI>()?.Refresh(data);
     }
 
-    // ── Tăng / Giảm số lượng ─────────────────────────────────────────────────
-
-    /// <summary>Tăng số lượng — gắn vào btnPlus qua Awake.</summary>
     public void IncreaseQuantity()
     {
-        currentQuantity++;
+        if (isLocked) return;
+        currentQuantity = Mathf.Min(99, currentQuantity + 1);
         UpdateUI();
     }
 
-    /// <summary>Giảm số lượng, tối thiểu là 1 — gắn vào btnMinus qua Awake.</summary>
     public void DecreaseQuantity()
     {
+        if (isLocked) return;
         if (currentQuantity > 1)
             currentQuantity--;
-
         UpdateUI();
     }
 
-    // ── Mua hàng ─────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Xử lý mua: trừ tiền từ FarmEconomyManager → thêm vào WarehouseManager.
-    /// Gắn vào btnBuy qua Awake.
-    /// </summary>
     public void BuyItem()
     {
+        if (isLocked || currentData == null) return;
+
         int totalCost = GetTotalCost();
 
         bool success = isDiamondItem
@@ -118,19 +152,17 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
         if (!success)
         {
+            ShopManager.Instance?.ShowToast("Không đủ tiền!");
             return;
         }
 
-        // Tiến độ nhiệm vụ mua hàng (chuồng heo=108, chuồng bò=106...);
-        // mua CropData = mua hạt giống → tính thêm BuySeed.
-        // Dùng SỐ LƯỢNG THẬT ĐÃ TRẢ TIỀN (công trình luôn = 1, xem GetTotalCost),
-        // không dùng `currentQuantity`: báo 3 mà chỉ đặt 1 là tiến độ nhiệm vụ sai.
+        // Báo cáo tiến độ nhiệm vụ
         int boughtQty = GetChargedQuantity();
         MissionProgressTracker.ReportEvent(MissionEventType.BuyShopItem, currentData.itemID, boughtQty);
         if (currentData is CropData)
             MissionProgressTracker.ReportEvent(MissionEventType.BuySeed, currentData.itemID, boughtQty);
 
-        // Vật phẩm xây dựng / trang trí → đóng Shop và chuyển sang chế độ đặt
+        // Công trình / Trang trí -> Chuyển sang chế độ đặt
         if (currentData is PlaceableItemData placeable && placeable.prefabToBuild != null)
         {
             ShopManager.Instance.CloseShop();
@@ -138,7 +170,7 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             return;
         }
 
-        // Hạt giống / vật phẩm thông thường → thêm vào kho
+        // Hạt giống / Nông sản -> Thêm vào kho
         WarehouseManager.Instance.AddItem(
             currentData.itemID,
             currentData.itemName,
@@ -146,56 +178,44 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             currentQuantity
         );
 
-        // Tutorial L2: báo đã mua hạt giống (bước "mua ngô")
+        // Tutorial L2: Báo đã mua hạt giống
         if (currentData is CropData crop)
             TutorialManager.Instance?.NotifyBuySeed(currentData.itemID, crop.cropId, currentQuantity);
-    }
 
-    // ── Button Feedback ───────────────────────────────────────────────────────
+        // Hiện Toast mua hàng thành công
+        string qtyStr = (currentData is PlaceableItemData) ? "" : $"x{currentQuantity} ";
+        ShopManager.Instance?.ShowToast($"Đã mua {qtyStr}{currentData.itemName}!");
+        ShopManager.Instance?.RefreshCurrencyBalances();
 
-    private Coroutine scaleRoutine;
-
-    public void OnPointerDown(PointerEventData _) => ScaleTo(Vector3.one * 0.92f);
-    public void OnPointerUp(PointerEventData _)   => ScaleTo(Vector3.one);
-
-    private void ScaleTo(Vector3 target)
-    {
-        if (scaleRoutine != null) StopCoroutine(scaleRoutine);
-        scaleRoutine = StartCoroutine(LerpScale(target));
-    }
-
-    private IEnumerator LerpScale(Vector3 target)
-    {
-        Vector3 from = transform.localScale;
-        float t = 0f;
-        while (t < 1f)
-        {
-            t += Time.unscaledDeltaTime / 0.08f;
-            transform.localScale = Vector3.Lerp(from, target, t);
-            yield return null;
-        }
-        transform.localScale = target;
+        // Reset số lượng về 1 sau khi mua
+        currentQuantity = 1;
+        UpdateUI();
     }
 
     // ── Cập nhật hiển thị ────────────────────────────────────────────────────
 
-    /// <summary>Đồng bộ txtQuantity và txtPrice theo currentQuantity.</summary>
     private void UpdateUI()
     {
-        txtQuantity.text = currentQuantity.ToString();
-        txtPrice.text    = GetTotalCost().ToString();
+        if (txtQuantity != null)
+            txtQuantity.text = currentQuantity.ToString();
+
+        int cost = GetTotalCost();
+        if (txtPrice != null)
+            txtPrice.text = cost.ToString("N0", new System.Globalization.CultureInfo("vi-VN"));
+
+        // Cập nhật màu sắc nút Mua
+        if (btnBuy != null)
+            btnBuy.interactable = !isLocked;
+
+        if (imgBuyBackground != null)
+        {
+            if (isLocked)
+                imgBuyBackground.sprite = btnBuyLockedSprite;
+            else
+                imgBuyBackground.sprite = isDiamondItem ? btnBuyGemSprite : btnBuyGoldSprite;
+        }
     }
 
-    /// <summary>
-    /// Số tiền THẬT phải trả cho lần bấm Mua này. Một chỗ tính duy nhất để nhãn giá
-    /// và lúc trừ tiền không bao giờ lệch nhau.
-    ///
-    /// Hai điểm khác bản cũ:
-    ///  • Ô đất lấy giá LUỸ TIẾN qua <see cref="PlotPurchasePricing"/> (F10).
-    ///  • Công trình / trang trí luôn tính SỐ LƯỢNG = 1. Bản cũ nhân với `currentQuantity`
-    ///    trong khi `BuyItem` chỉ chuyển sang chế độ đặt ĐÚNG MỘT vật → bấm "+" lên 3 rồi
-    ///    Mua là mất tiền 3 công trình mà chỉ nhận 1. Đó là mất tiền thật của người chơi.
-    /// </summary>
     private int GetTotalCost()
     {
         if (currentData == null) return 0;
@@ -207,10 +227,21 @@ public class ShopItemUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         return GetChargedQuantity() * unitPrice;
     }
 
-    /// <summary>Số lượng THẬT bị tính tiền. Công trình / trang trí luôn 1 (xem GetTotalCost).</summary>
     private int GetChargedQuantity()
     {
         bool placeable = currentData is PlaceableItemData p && p.prefabToBuild != null;
         return placeable ? 1 : Mathf.Max(1, currentQuantity);
+    }
+
+    private static int GetUnlockLevel(BaseItemData item)
+    {
+        if (item == null) return 1;
+        var f = item.GetType().GetField("unlockLevel",
+            System.Reflection.BindingFlags.Instance |
+            System.Reflection.BindingFlags.Public |
+            System.Reflection.BindingFlags.NonPublic);
+        if (f != null && f.FieldType == typeof(int))
+            return Mathf.Max(1, (int)f.GetValue(item));
+        return 1;
     }
 }
