@@ -20,7 +20,7 @@ using UnityEngine.UI;
 public class ShopSkin : MonoBehaviour
 {
     [Tooltip("Bỏ tick để về vỏ cũ mà không cần gỡ component.")]
-    public bool batAo = true;
+    public bool batAo = false;
 
     private Transform _content;
     private readonly HashSet<Transform> _daMac = new HashSet<Transform>();
@@ -29,20 +29,13 @@ public class ShopSkin : MonoBehaviour
 
     private void OnEnable()
     {
-        if (!Application.isPlaying || !batAo) return;
-        MacKhungNgoai();
+        // Tắt hoàn toàn can thiệp runtime để giữ 100% UI gốc do designer thiết kế
+        return;
     }
 
     private void Update()
     {
-        if (!batAo) return;
-
-        // Card do ShopManager Instantiate lúc mở tab — quét đề phòng card sinh muộn.
-        // Còn cú bấm tab thì HookTab đã gọi QuetVaMac NGAY trong khung hình đó
-        // (trước đây chờ nhịp quét 0.25s → thấy rõ độ trễ, người chơi tưởng lag).
-        if (Time.unscaledTime < _lanQuet) return;
-        _lanQuet = Time.unscaledTime + 0.25f;
-        QuetVaMac();
+        return;
     }
 
     private void QuetVaMac()

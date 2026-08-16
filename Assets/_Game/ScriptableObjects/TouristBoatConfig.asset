@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e53292a63bc932b4a8f7713061effbdc, type: 3}
+  m_Name: TouristBoatConfig
+  m_EditorClassIdentifier: Assembly-CSharp::TouristBoatConfig
+  unlockLevel: 10
+  dock2Level: 12
+  dock2GoldCost: 2000
+  dock3Level: 14
+  dock3GemCost: 25
+  dockMinutes: 40
+  hideMinutes: 15
+  staggerMinutes: 12
+  boatSpeed: 300
+  fallbackTravelSeconds: 20
+  bobAmplitude: 8
+  bobFrequency: 0.8
+  introDialogue:
+  - "Ch\xFAc m\u1EEBng! N\xF4ng tr\u1EA1i c\u1EE7a b\u1EA1n \u0111\xE3 n\u1ED5i ti\u1EBFng
+    kh\u1EAFp v\xF9ng r\u1ED3i \u0111\xF3!"
+  - "Nghe n\xF3i du kh\xE1ch ph\u01B0\u01A1ng xa r\u1EA5t mu\u1ED1n gh\xE9 th\u0103m...
+    B\u1EBFn t\xE0u c\u0169 ngo\xE0i b\xE3i bi\u1EC3n c\xF3 th\u1EC3 s\u1EEDa l\u1EA1i
+    \u0111\u01B0\u1EE3c \u0111\u1EA5y!"
+  - "T\xE0u du l\u1ECBch s\u1EBD c\u1EADp b\u1EBFn th\u01B0\u1EDDng xuy\xEAn \u2014
+    du kh\xE1ch s\u1EBD d\u1EA1o ch\u01A1i, ng\u1EAFm n\xF4ng tr\u1EA1i v\xE0 th\u01B0\u1EDFng
+    th\u1EE9c \u0111\u1EB7c s\u1EA3n c\u1EE7a b\u1EA1n!"
+  - "Nh\xECn k\xECa \u2014 chuy\u1EBFn t\xE0u \u0111\u1EA7u ti\xEAn \u0111ang t\u1EDBi!"
+  debugTimeScale: 1

@@ -16,7 +16,7 @@ using UnityEngine.UI;
 public class HoSoSkin : MonoBehaviour
 {
     [Tooltip("Bỏ tick để về vỏ cũ.")]
-    public bool batAo = true;
+    public bool batAo = false;
 
     private AvatarProfilePopupUI _popup;
     private GameObject _root;

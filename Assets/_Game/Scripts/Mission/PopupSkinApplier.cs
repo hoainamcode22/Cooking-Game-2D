@@ -33,18 +33,14 @@ public class PopupSkinApplier : MonoBehaviour
 
     [Header("Tuỳ chỉnh")]
     [Tooltip("Tắt để popup này giữ nguyên áo cũ mà không phải gỡ component.")]
-    public bool batAo = true;
+    public bool batAo = false;
 
     private bool _daAp;
 
     private void OnEnable()
     {
-        // Áp ở lần BẬT đầu tiên chứ không phải Awake: nhiều popup trong dự án nằm tắt
-        // sẵn trong scene, Awake chỉ chạy khi bật — như nhau; nhưng OnEnable còn che
-        // được trường hợp popup bị tắt/bật lại sau khi ai đó Instantiate.
-        if (_daAp || !batAo || !Application.isPlaying) return;
-        _daAp = true;
-        ApDung();
+        // Tắt hoàn toàn can thiệp runtime để giữ 100% UI gốc do designer thiết kế
+        return;
     }
 
     /// <summary>Áp toàn bộ. Chạy lại không nhân đôi lớp trang trí (SkinKit tự kiểm tên Skin_).</summary>

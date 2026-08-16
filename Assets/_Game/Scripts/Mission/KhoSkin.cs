@@ -17,7 +17,7 @@ using UnityEngine.UI;
 public class KhoSkin : MonoBehaviour
 {
     [Tooltip("Bỏ tick để về vỏ cũ.")]
-    public bool batAo = true;
+    public bool batAo = false;
 
     private WarehousePopupUI _popup;
     private GameObject _root;
