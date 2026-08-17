@@ -102,7 +102,15 @@ namespace Day_Night
         {
             EnsurePresetIsCurrent();
             currentDayRatio = StartingTime;
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                if (this != null)
+                    UpdateSystem(currentDayRatio, true);
+            };
+#else
             UpdateSystem(currentDayRatio, true);
+#endif
         }
 
         private void Update()

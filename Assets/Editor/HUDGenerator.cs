@@ -10,7 +10,7 @@ public class HUDGenerator : EditorWindow
     public static void GenerateHUD()
     {
         // Find existing canvas or create one
-        Canvas canvas = Object.FindObjectOfType<Canvas>();
+        Canvas canvas = Object.FindFirstObjectByType<Canvas>();
         GameObject canvasObj;
         
         if (canvas != null)
@@ -31,7 +31,7 @@ public class HUDGenerator : EditorWindow
         }
 
         // 2. Event System
-        if (Object.FindObjectOfType<EventSystem>() == null)
+        if (Object.FindFirstObjectByType<EventSystem>() == null)
         {
             GameObject eventSystem = new GameObject("EventSystem");
             eventSystem.AddComponent<EventSystem>();
@@ -120,7 +120,7 @@ public class HUDGenerator : EditorWindow
         tmp.fontSize = fontSize;
         tmp.color = color;
         tmp.alignment = TextAlignmentOptions.Center;
-        tmp.enableWordWrapping = false;
+        tmp.textWrappingMode = TextWrappingModes.NoWrap;
         
         return obj;
     }

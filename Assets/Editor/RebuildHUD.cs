@@ -114,7 +114,7 @@ public class RebuildHUD : EditorWindow
         tmp.fontSize = fontSize;
         tmp.color = color;
         tmp.alignment = TextAlignmentOptions.Center;
-        tmp.enableWordWrapping = false;
+        tmp.textWrappingMode = TextWrappingModes.NoWrap;
         
         return obj;
     }

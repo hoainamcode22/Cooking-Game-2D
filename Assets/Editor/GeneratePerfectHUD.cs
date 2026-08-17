@@ -9,7 +9,7 @@ public class GeneratePerfectHUD : EditorWindow
     [MenuItem("Tools/Farm Game/Tạo Bố Cục UI Y Hệt Ảnh Mẫu")]
     public static void CreatePerfectHUD()
     {
-        Canvas canvas = Object.FindObjectOfType<Canvas>();
+        Canvas canvas = Object.FindFirstObjectByType<Canvas>();
         if (canvas == null)
         {
             GameObject canvasObj = new GameObject("Canvas_HUD_Moi");
@@ -133,7 +133,7 @@ public class GeneratePerfectHUD : EditorWindow
         tmp.fontSize = fontSize;
         tmp.color = color;
         tmp.alignment = TextAlignmentOptions.Center;
-        tmp.enableWordWrapping = false;
+        tmp.textWrappingMode = TextWrappingModes.NoWrap;
         
         return tmp;
     }

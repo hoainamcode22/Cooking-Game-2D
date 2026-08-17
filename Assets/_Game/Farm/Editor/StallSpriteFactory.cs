@@ -23,21 +23,21 @@ public static class StallSpriteFactory
 {
     public const string ArtFolder = "Assets/_Game/Farm/Art/UI_Stall";
 
-    // ── BẢNG MÀU QUẦY HÀNG ───────────────────────────────────────────────────
-    public static readonly Color PanelTop   = Hex("#6B4A90");
-    public static readonly Color PanelMid   = Hex("#553873");
-    public static readonly Color PanelBot   = Hex("#3E2857");
-    public static readonly Color PanelEdge  = Hex("#2A1A3C");
+    // ── BẢNG MÀU QUẦY HÀNG ĐỒNG BỘ 100% VỚI KHO & SHOP ──────────────────────────
+    public static readonly Color PanelTop   = Hex("#A9743C"); // Nâu gỗ sáng
+    public static readonly Color PanelMid   = Hex("#8A5A2E"); // Nâu gỗ
+    public static readonly Color PanelBot   = Hex("#7C4E22"); // Nâu gỗ đậm
+    public static readonly Color PanelEdge  = Hex("#4A2508"); // Viền nâu đậm
 
-    public static readonly Color SlotTop    = Hex("#2E1D42");
-    public static readonly Color SlotBot    = Hex("#3B2653");
-    public static readonly Color SlotEdge   = Hex("#20122F");
+    public static readonly Color SlotTop    = Hex("#FFFDF4"); // Nền kem sáng
+    public static readonly Color SlotBot    = Hex("#FDF6E3"); // Nền kem
+    public static readonly Color SlotEdge   = Hex("#A35C14"); // Viền gỗ thẻ
 
-    public static readonly Color Teal       = Hex("#2FBFA8");
-    public static readonly Color TealDark   = Hex("#1E8C7B");
-    public static readonly Color Gold       = Hex("#F2C14E");
-    public static readonly Color GoldDark   = Hex("#C4922B");
-    public static readonly Color Cream      = Hex("#F6EFE4");
+    public static readonly Color Teal       = Hex("#57A51F"); // Xanh lá
+    public static readonly Color TealDark   = Hex("#3F8A12"); // Xanh lá đậm
+    public static readonly Color Gold       = Hex("#FFD257"); // Vàng ruy băng
+    public static readonly Color GoldDark   = Hex("#F0A32F"); // Vàng cam
+    public static readonly Color Cream      = Hex("#FFFBE9"); // Trắng kem
 
     public static Color Hex(string hex)
         => ColorUtility.TryParseHtmlString(hex, out Color c) ? c : Color.magenta;

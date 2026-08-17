@@ -30,23 +30,23 @@ public static class OrderBoardSpriteFactory
 {
     public const string ArtFolder = "Assets/_Game/Farm/Art/UI_OrderBoard";
 
-    // ── BẢNG MÀU BẢNG ĐƠN HÀNG ───────────────────────────────────────────────
-    public static readonly Color BoardTop  = Hex("#3E6049");
-    public static readonly Color BoardMid  = Hex("#314C3A");
-    public static readonly Color BoardBot  = Hex("#25392C");
-    public static readonly Color BoardEdge = Hex("#16241B");
+    // ── BẢNG MÀU BẢNG ĐƠN HÀNG ĐỒNG BỘ 100% VỚI KHO & SHOP ───────────────────
+    public static readonly Color BoardTop  = Hex("#A9743C"); // Nâu gỗ sáng
+    public static readonly Color BoardMid  = Hex("#8A5A2E"); // Nâu gỗ
+    public static readonly Color BoardBot  = Hex("#7C4E22"); // Nâu gỗ đậm
+    public static readonly Color BoardEdge = Hex("#4A2508"); // Viền nâu đậm
 
-    public static readonly Color InsetTop  = Hex("#1E3025");
-    public static readonly Color InsetBot  = Hex("#27402F");
-    public static readonly Color InsetEdge = Hex("#121C15");
+    public static readonly Color InsetTop  = Hex("#FDF3DA"); // Giấy kem
+    public static readonly Color InsetBot  = Hex("#FBECCB"); // Giấy kem đậm
+    public static readonly Color InsetEdge = Hex("#6E4014"); // Viền nâu
 
-    public static readonly Color Cream     = Hex("#F5EFDF");
-    public static readonly Color Paper     = Hex("#FBF7EC");
-    public static readonly Color Amber     = Hex("#E9B44C");
-    public static readonly Color AmberDark = Hex("#B0801F");
-    public static readonly Color Brick     = Hex("#C4483C");
-    public static readonly Color Leaf      = Hex("#6FCF63");
-    public static readonly Color Ocean     = Hex("#3B82D9");
+    public static readonly Color Cream     = Hex("#FFFBE9");
+    public static readonly Color Paper     = Hex("#FFFDF4");
+    public static readonly Color Amber     = Hex("#FFD257");
+    public static readonly Color AmberDark = Hex("#F0A32F");
+    public static readonly Color Brick     = Hex("#E4574C");
+    public static readonly Color Leaf      = Hex("#57A51F");
+    public static readonly Color Ocean     = Hex("#57A51F"); // Giao hàng xanh lá giống nút mua
 
     public static Color Hex(string hex)
         => ColorUtility.TryParseHtmlString(hex, out Color c) ? c : Color.magenta;

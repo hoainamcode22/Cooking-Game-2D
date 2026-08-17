@@ -173,6 +173,9 @@ public class WarehousePopupUI : MonoBehaviour
         if (popupRoot != null)
         {
             popupRoot.SetActive(true);
+            Canvas parentCanvas = popupRoot.GetComponentInParent<Canvas>();
+            if (parentCanvas != null)
+                parentCanvas.sortingOrder = 150;
             EnsurePopupRaycastBlock();
         }
 

@@ -87,12 +87,10 @@ public class StallHierarchyBuilderTool : EditorWindow
         EnsurePrefabFolder();
 
         BuildSystem();
-        BuildPopup();
-        BuildWorldObject();
+        BuildPopup(); // CHỈ DỰNG POPUP UI, KHÔNG ĐỤNG VÀO CÔNG TRÌNH NGOÀI MAP
 
         MarkSceneDirty();
-        Debug.Log("[QuầyHàng] Dựng xong. Kiểm tra 3 object gốc trong scene: " +
-                  $"{SystemName} · {CanvasName} · {WorldObjectName}");
+        Debug.Log("[QuầyHàng] Dựng xong Popup UI. Giữ nguyên 100% công trình trên map.");
     }
 
     private static void EnsurePrefabFolder()
@@ -197,54 +195,89 @@ public class StallHierarchyBuilderTool : EditorWindow
         dimBtn.targetGraphic = dimImg;
         dimBtn.transition    = Selectable.Transition.None;
 
-        // ── Thân popup ───────────────────────────────────────────────────────
+        // ── Thân popup (Khung ván gỗ đồng bộ 100% Kho & Shop) ─────────────────
         RectTransform main = CreateUI("Popup_Main", dim);
         Center(main, Vector2.zero, new Vector2(POPUP_W, POPUP_H));
 
-        RectTransform bg = CreateUI("IMG_ArtPanelBackground", main);
-        Stretch(bg, 0, 0, 0, 0);
-        Sliced(bg, "stall_panel", Color.white);
+        // 3a. Viền gỗ ngoài #4A2508
+        RectTransform boardBorder = CreateUI("Board_Border", main);
+        Stretch(boardBorder, -8, -8, -8, -8);
+        boardBorder.gameObject.AddComponent<Image>().color = TaskPopupDesign.VanGoVien;
 
-        // Mái hiên răng sò vắt ngang đỉnh — thay cho mái sọc xanh-trắng của video.
-        RectTransform valance = CreateUI("IMG_ArtValance", main);
-        TopStretch(valance, 64f, 10f);
-        Image valImg = valance.gameObject.AddComponent<Image>();
-        valImg.sprite = StallSpriteFactory.Load("stall_valance");
-        valImg.type   = Image.Type.Tiled;
-        valImg.color  = Color.white;
-        valImg.raycastTarget = false;
+        // 3b. Thân ván gỗ đáy #7C4E22
+        RectTransform boardFill = CreateUI("Board_Fill_Bottom", main);
+        Stretch(boardFill, 0, 0, 0, 0);
+        boardFill.gameObject.AddComponent<Image>().color = TaskPopupDesign.VanGoDuoi;
 
-        // Biển tên đè lên mái
-        RectTransform pill = CreateUI("TitlePill", main);
-        Anchor(pill, new Vector2(0.5f, 1f), new Vector2(0f, 18f), new Vector2(420f, 84f));
-        Sliced(pill, "stall_pill", Color.white);
-        TextMeshProUGUI title = AddText(pill, "Text_Title", "QUẦY HÀNG", 40, StallSpriteFactory.Gold,
+        // 3c. Lớp phủ gradient #A9743C
+        RectTransform boardTop = CreateUI("Board_Fill_Top", main);
+        Stretch(boardTop, 0, 0, 0, 0);
+        boardTop.gameObject.AddComponent<Image>().color = new Color(TaskPopupDesign.VanGoTren.r, TaskPopupDesign.VanGoTren.g, TaskPopupDesign.VanGoTren.b, 0.45f);
+
+        // 3d. Thớ ván ngang
+        for (int i = 1; i <= 6; i++)
+        {
+            float yPos = 400f - i * 125f;
+            RectTransform grainRect = CreateUI($"Board_Grain_{i}", main);
+            Center(grainRect, new Vector2(0f, yPos), new Vector2(1460f, 5f));
+            grainRect.gameObject.AddComponent<Image>().color = TaskPopupDesign.VanGoTho;
+        }
+
+        // 3e. 4 Đinh sắt góc
+        Vector2[] studPositions = {
+            new Vector2(-700f, 385f), new Vector2(700f, 385f),
+            new Vector2(-700f, -385f), new Vector2(700f, -385f)
+        };
+        for (int i = 0; i < studPositions.Length; i++)
+        {
+            Vector2 pos = studPositions[i];
+            RectTransform sRim = CreateUI($"Stud_{i}_Rim", main);
+            Center(sRim, pos, new Vector2(30f, 30f));
+            sRim.gameObject.AddComponent<Image>().color = TaskPopupDesign.DinhSatVien;
+
+            RectTransform sBase = CreateUI($"Stud_{i}_Base", main);
+            Center(sBase, pos, new Vector2(26f, 26f));
+            sBase.gameObject.AddComponent<Image>().color = TaskPopupDesign.DinhSatToi;
+
+            RectTransform sShine = CreateUI($"Stud_{i}_Shine", main);
+            Center(sShine, pos + new Vector2(-2f, 2f), new Vector2(13f, 13f));
+            sShine.gameObject.AddComponent<Image>().color = TaskPopupDesign.DinhSatSang;
+        }
+
+        // 4. RIBBON TIÊU ĐỀ ("QUẦY HÀNG" 3D 100% SVG ASSET)
+        Sprite bannerRibbonSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_banner_ribbon.png");
+        RectTransform bannerRect = CreateUI("Header_Banner", main);
+        Center(bannerRect, new Vector2(0f, 415f), new Vector2(620f, 126f));
+        Image bannerImg = bannerRect.gameObject.AddComponent<Image>();
+        bannerImg.sprite = bannerRibbonSpr;
+        bannerImg.type = Image.Type.Sliced;
+        bannerImg.raycastTarget = false;
+
+        TextMeshProUGUI title = AddText(bannerRect, "Text_Title", "QUẦY HÀNG", 46, TaskPopupDesign.ChuTieuDe,
                                         TextAlignmentOptions.Center);
-        Stretch(title.rectTransform, 30, 6, 30, 6);
+        Stretch(title.rectTransform, 40, 6, 40, 6);
         title.fontStyle = FontStyles.Bold;
+        title.characterSpacing = 4f;
+        title.textWrappingMode = TextWrappingModes.NoWrap;
 
-        // Nút X LỒI RA NGOÀI mép panel (theo video) — nằm ngoài nên không ăn mất chỗ bên trong.
+        // 5. NÚT ĐÓNG [X] (btnX.png 90x90)
+        Sprite btnCloseSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/btnX.png");
         RectTransform close = CreateUI("BtnClose", main);
-        Anchor(close, new Vector2(1f, 1f), new Vector2(26f, 26f), new Vector2(84f, 84f));
+        Center(close, new Vector2(735f, 415f), new Vector2(90f, 90f));
         Image closeImg = close.gameObject.AddComponent<Image>();
-        closeImg.sprite = StallSpriteFactory.Load("stall_circle");
-        closeImg.color  = StallSpriteFactory.Hex("#E4574C");
+        closeImg.sprite = btnCloseSpr ?? StallSpriteFactory.Load("stall_circle");
+        closeImg.preserveAspect = true;
         Button closeBtn = close.gameObject.AddComponent<Button>();
         closeBtn.targetGraphic = closeImg;
-        TextMeshProUGUI closeTxt = AddText(close, "Text_X", "X", 40, Color.white, TextAlignmentOptions.Center);
-        Stretch(closeTxt.rectTransform, 0, 0, 0, 4);
-        closeTxt.fontStyle = FontStyles.Bold;
 
-        // Ví vàng
+        // 6. Ví vàng
         RectTransform goldBar = CreateUI("GoldBar", main);
-        // y = -96: nằm DƯỚI dải mái hiên (mái cao 64, cách đỉnh 10). Đặt cao hơn là ví vàng
-        // bị mái đè lên và người chơi không đọc được số dư.
         Anchor(goldBar, new Vector2(1f, 1f), new Vector2(-140f, -96f), new Vector2(220f, 62f));
-        Sliced(goldBar, "stall_btn", StallSpriteFactory.Hex("#2A1A3C"));
+        Sliced(goldBar, "stall_btn", TaskPopupDesign.RibbonDuoi);
         RectTransform goldIcon = CreateUI("IMG_ArtGoldIcon", goldBar);
         Anchor(goldIcon, new Vector2(0f, 0.5f), new Vector2(38f, 0f), new Vector2(44f, 44f));
         Simple(goldIcon, "stall_icon_coin", Color.white);
-        TextMeshProUGUI goldTxt = AddText(goldBar, "Text_Gold", "0", 32, StallSpriteFactory.Cream,
+        TextMeshProUGUI goldTxt = AddText(goldBar, "Text_Gold", "0", 32, TaskPopupDesign.ChuTieuDe,
                                           TextAlignmentOptions.MidlineLeft);
         Stretch(goldTxt.rectTransform, 68, 4, 14, 4);
 
@@ -365,6 +398,13 @@ public class StallHierarchyBuilderTool : EditorWindow
     {
         var r = new PickerRefs();
 
+        // ── Panel chọn vật phẩm (Giao diện gỗ & kem ấm áp đồng bộ 100%) ──────
+        Sprite innerPanelSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_svg_perfect/generated_sprites/inner_panel.png");
+        Sprite cardOuterSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_card_outer.png");
+        Sprite buyGoldSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_btn_buy_gold.png");
+        Sprite btnMinusSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_svg_perfect/generated_sprites/btn_minus.png");
+        Sprite btnPlusSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_svg_perfect/generated_sprites/btn_plus.png");
+
         r.Root = CreateUI("Picker_Root", main);
         Stretch(r.Root, 0, 0, 0, 0);
 
@@ -373,17 +413,19 @@ public class StallHierarchyBuilderTool : EditorWindow
 
         RectTransform pbg = CreateUI("IMG_ArtPickerBackground", r.Panel);
         Stretch(pbg, 0, 0, 0, 0);
-        Sliced(pbg, "stall_panel", StallSpriteFactory.Hex("#4A3268"));
+        Image pbgImg = pbg.gameObject.AddComponent<Image>();
+        pbgImg.color = TaskPopupDesign.VanGoDuoi;
 
-        // Nút quay lại
+        // Nút quay lại (Nâu gỗ sáng)
         RectTransform back = CreateUI("Btn_Back", r.Panel);
         Anchor(back, new Vector2(0f, 1f), new Vector2(96f, -46f), new Vector2(150f, 60f));
-        Sliced(back, "stall_btn", StallSpriteFactory.Hex("#7A5C9C"));
+        Sliced(back, "stall_btn", TaskPopupDesign.RibbonDuoi);
         r.BackButton = back.gameObject.AddComponent<Button>();
         r.BackButton.targetGraphic = back.GetComponent<Image>();
-        TextMeshProUGUI backTxt = AddText(back, "Text_Back", "Quay lại", 26, StallSpriteFactory.Cream,
+        TextMeshProUGUI backTxt = AddText(back, "Text_Back", "Quay lại", 26, TaskPopupDesign.ChuTieuDe,
                                           TextAlignmentOptions.Center);
         Stretch(backTxt.rectTransform, 6, 4, 6, 4);
+        backTxt.fontStyle = FontStyles.Bold;
 
         // ── Cột trái: tab danh mục ───────────────────────────────────────────
         RectTransform colTabs = CreateUI("Col_Categories", r.Panel);
@@ -402,10 +444,12 @@ public class StallHierarchyBuilderTool : EditorWindow
         AddCategoryTab(colTabs, StallItemCategory.HatGiong,"Hạt giống",r.Tabs);
         AddCategoryTab(colTabs, StallItemCategory.CheBien, "Chế biến", r.Tabs);
 
-        // ── Cột giữa: lưới vật phẩm ──────────────────────────────────────────
+        // ── Cột giữa: lưới vật phẩm (Nền giấy kem) ───────────────────────────
         RectTransform colItems = CreateUI("Col_Items", r.Panel);
         Anchor(colItems, new Vector2(0f, 0.5f), new Vector2(620f, -40f), new Vector2(770f, 640f));
-        Sliced(colItems, "stall_slot", StallSpriteFactory.Hex("#2E1D42"));
+        Image colItemsImg = colItems.gameObject.AddComponent<Image>();
+        colItemsImg.sprite = innerPanelSpr;
+        colItemsImg.type = Image.Type.Sliced;
 
         RectTransform scroll = CreateUI("Scroll_View", colItems);
         Stretch(scroll, 14, 14, 14, 14);
@@ -431,9 +475,6 @@ public class StallHierarchyBuilderTool : EditorWindow
         g.childAlignment  = TextAnchor.UpperLeft;
         g.padding         = new RectOffset(8, 8, 8, 8);
 
-        // ContentSizeFitter: thiếu nó thì Content không bao giờ cao lên và ScrollRect
-        // tưởng nội dung vừa khít khung ⇒ không cuộn được. Chợ hiện tại đang thiếu
-        // đúng thứ này (mục 2 file TEAM).
         ContentSizeFitter fitter = r.GridContent.gameObject.AddComponent<ContentSizeFitter>();
         fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
@@ -448,15 +489,17 @@ public class StallHierarchyBuilderTool : EditorWindow
         r.EmptyHint = emptyHint.gameObject;
         r.EmptyHint.SetActive(false);
 
-        // ── Cột phải: khu thiết lập ──────────────────────────────────────────
+        // ── Cột phải: khu thiết lập (Nền giấy kem) ──────────────────────────
         RectTransform colSetup = CreateUI("Col_Setup", r.Panel);
         Anchor(colSetup, new Vector2(0f, 0.5f), new Vector2(1250f, -40f), new Vector2(460f, 640f));
-        Sliced(colSetup, "stall_slot", StallSpriteFactory.Hex("#2E1D42"));
+        Image colSetupImg = colSetup.gameObject.AddComponent<Image>();
+        colSetupImg.sprite = innerPanelSpr;
+        colSetupImg.type = Image.Type.Sliced;
 
         RectTransform setupEmpty = CreateUI("Setup_EmptyHint", colSetup);
         Stretch(setupEmpty, 20, 20, 20, 20);
         TextMeshProUGUI setupEmptyTxt = AddText(setupEmpty, "Text_SetupHint",
-            "Chọn một vật phẩm để đặt lên quầy", 26, new Color(1f, 1f, 1f, 0.45f),
+            "Chọn một vật phẩm để đặt lên quầy", 26, new Color(0.48f, 0.29f, 0.06f, 0.75f),
             TextAlignmentOptions.Center);
         Stretch(setupEmptyTxt.rectTransform, 0, 0, 0, 0);
         r.SetupEmptyHint = setupEmpty.gameObject;
@@ -465,15 +508,22 @@ public class StallHierarchyBuilderTool : EditorWindow
         Stretch(setup, 0, 0, 0, 0);
         r.SetupContent = setup.gameObject;
 
-        RectTransform selIcon = CreateUI("IMG_SelectedIcon", setup);
-        Anchor(selIcon, new Vector2(0.5f, 1f), new Vector2(0f, -110f), new Vector2(150f, 150f));
+        RectTransform selPlate = CreateUI("IMG_Plate", setup);
+        Anchor(selPlate, new Vector2(0.5f, 1f), new Vector2(0f, -110f), new Vector2(140f, 140f));
+        Image selPlateImg = selPlate.gameObject.AddComponent<Image>();
+        selPlateImg.sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_circle_plate.png");
+        selPlateImg.preserveAspect = true;
+
+        RectTransform selIcon = CreateUI("IMG_SelectedIcon", selPlate);
+        Anchor(selIcon, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(110f, 110f));
         r.SelectedIcon = selIcon.gameObject.AddComponent<Image>();
         r.SelectedIcon.preserveAspect = true;
 
-        r.SelectedName = AddText(setup, "Text_SelectedName", "", 30, StallSpriteFactory.Cream,
+        r.SelectedName = AddText(setup, "Text_SelectedName", "", 30, new Color(0.36f, 0.20f, 0.09f, 1f),
                                  TextAlignmentOptions.Center);
         Anchor(r.SelectedName.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -206f),
                new Vector2(420f, 44f));
+        r.SelectedName.fontStyle = FontStyles.Bold;
 
         // Hàng SỐ LƯỢNG
         BuildStepRow(setup, "Row_Quantity", -276f, "SỐ LƯỢNG", false,
@@ -483,7 +533,7 @@ public class StallHierarchyBuilderTool : EditorWindow
         BuildStepRow(setup, "Row_Price", -392f, "GIÁ BÁN", true,
                      out r.PriceMinus, out r.PricePlus, out r.PriceText);
 
-        r.PriceHint = AddText(setup, "Text_PriceHint", "", 20, new Color(1f, 1f, 1f, 0.55f),
+        r.PriceHint = AddText(setup, "Text_PriceHint", "", 20, new Color(0.48f, 0.29f, 0.06f, 0.65f),
                               TextAlignmentOptions.Center);
         Anchor(r.PriceHint.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -452f),
                new Vector2(420f, 34f));
@@ -491,45 +541,48 @@ public class StallHierarchyBuilderTool : EditorWindow
         // ── Nút gạt loa (B7) ─────────────────────────────────────────────────
         RectTransform loaRow = CreateUI("Switch_Loa", setup);
         Anchor(loaRow, new Vector2(0.5f, 1f), new Vector2(0f, -512f), new Vector2(410f, 76f));
-        Sliced(loaRow, "stall_btn", StallSpriteFactory.Hex("#3B2653"));
+        Sliced(loaRow, "stall_btn", new Color(0.95f, 0.89f, 0.73f, 1f));
         r.LoaButton = loaRow.gameObject.AddComponent<Button>();
         r.LoaButton.targetGraphic = loaRow.GetComponent<Image>();
         r.LoaButton.transition    = Selectable.Transition.None;
 
         RectTransform loaIcon = CreateUI("IMG_ArtSpeakerIcon", loaRow);
         Anchor(loaIcon, new Vector2(0f, 0.5f), new Vector2(38f, 0f), new Vector2(42f, 42f));
-        Simple(loaIcon, "stall_icon_speaker", StallSpriteFactory.Cream);
+        Simple(loaIcon, "stall_icon_speaker", new Color(0.36f, 0.20f, 0.09f, 1f));
 
-        r.LoaLabel = AddText(loaRow, "Text_LoaLabel", "BẬT LOA", 24, StallSpriteFactory.Cream,
+        r.LoaLabel = AddText(loaRow, "Text_LoaLabel", "BẬT LOA", 24, new Color(0.36f, 0.20f, 0.09f, 1f),
                              TextAlignmentOptions.MidlineLeft);
         Anchor(r.LoaLabel.rectTransform, new Vector2(0f, 0.5f), new Vector2(150f, 0f),
                new Vector2(150f, 40f));
+        r.LoaLabel.fontStyle = FontStyles.Bold;
 
         RectTransform track = CreateUI("Loa_Track", loaRow);
         Anchor(track, new Vector2(1f, 0.5f), new Vector2(-90f, 0f), new Vector2(160f, 56f));
         r.LoaTrack = track.gameObject.AddComponent<Image>();
         r.LoaTrack.sprite = StallSpriteFactory.Load("stall_btn");
         r.LoaTrack.type   = Image.Type.Sliced;
-        r.LoaTrack.color  = StallSpriteFactory.Hex("#5A4D6B");
+        r.LoaTrack.color  = new Color(0.85f, 0.75f, 0.60f, 1f);
         r.LoaTrack.raycastTarget = false;
 
         r.LoaKnob = CreateUI("Loa_Knob", track);
         Anchor(r.LoaKnob, new Vector2(0.5f, 0.5f), new Vector2(-46f, 0f), new Vector2(48f, 48f));
-        Simple(r.LoaKnob, "stall_circle", StallSpriteFactory.Cream);
+        Simple(r.LoaKnob, "stall_circle", Color.white);
 
         RectTransform loaCoin = CreateUI("IMG_ArtLoaCoin", loaRow);
         Anchor(loaCoin, new Vector2(0.5f, 0f), new Vector2(-6f, 14f), new Vector2(26f, 26f));
         Simple(loaCoin, "stall_icon_coin", Color.white);
 
-        r.LoaCost = AddText(loaRow, "Text_LoaCost", "0", 20, StallSpriteFactory.Gold,
+        r.LoaCost = AddText(loaRow, "Text_LoaCost", "0", 20, TaskPopupDesign.RibbonDuoi,
                             TextAlignmentOptions.MidlineLeft);
         Anchor(r.LoaCost.rectTransform, new Vector2(0.5f, 0f), new Vector2(36f, 14f),
                new Vector2(80f, 28f));
 
-        // ── Nút xác nhận ─────────────────────────────────────────────────────
+        // ── Nút xác nhận (shop_btn_buy_gold.png 3D) ──────────────────────────
         RectTransform confirm = CreateUI("Btn_Confirm", setup);
         Anchor(confirm, new Vector2(0.5f, 0f), new Vector2(0f, 54f), new Vector2(380f, 86f));
-        Sliced(confirm, "stall_btn", StallSpriteFactory.Hex("#2FBF6A"));
+        Image confirmImg = confirm.gameObject.AddComponent<Image>();
+        confirmImg.sprite = buyGoldSpr;
+        confirmImg.type = Image.Type.Sliced;
         r.ConfirmButton = confirm.gameObject.AddComponent<Button>();
         r.ConfirmButton.targetGraphic = confirm.GetComponent<Image>();
         r.ConfirmLabel = AddText(confirm, "Text_Confirm", "Đặt lên quầy", 32,
@@ -612,7 +665,7 @@ public class StallHierarchyBuilderTool : EditorWindow
         Image bgImg = rt.gameObject.AddComponent<Image>();
         bgImg.sprite = StallSpriteFactory.Load("stall_btn");
         bgImg.type   = Image.Type.Sliced;
-        bgImg.color  = new Color(0.28f, 0.18f, 0.40f, 1f);
+        bgImg.color  = new Color(0.49f, 0.31f, 0.13f, 1f); // #7C4E22 Nâu gỗ ấm
 
         Button b = rt.gameObject.AddComponent<Button>();
         b.targetGraphic = bgImg;
@@ -651,6 +704,9 @@ public class StallHierarchyBuilderTool : EditorWindow
     {
         EnsurePrefabFolder();
 
+        Sprite cardOuterSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_card_outer.png");
+        Sprite cardInnerSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_card_inner.png");
+
         var root = new GameObject("PF_StallSlot", typeof(RectTransform));
         RectTransform rt = root.GetComponent<RectTransform>();
         rt.sizeDelta = new Vector2(250f, 230f);
@@ -658,9 +714,9 @@ public class StallHierarchyBuilderTool : EditorWindow
         RectTransform bg = CreateUI("IMG_ArtSlotBackground", rt);
         Stretch(bg, 0, 0, 0, 0);
         Image bgImg = bg.gameObject.AddComponent<Image>();
-        bgImg.sprite = StallSpriteFactory.Load("stall_slot");
+        bgImg.sprite = cardOuterSpr ?? StallSpriteFactory.Load("stall_slot");
         bgImg.type   = Image.Type.Sliced;
-        bgImg.color  = new Color(0.24f, 0.15f, 0.35f, 1f);
+        bgImg.color  = Color.white;
 
         // ── Trạng thái 1: TRỐNG, DÙNG ĐƯỢC ───────────────────────────────────
         RectTransform empty = CreateUI("State_Empty", rt);
@@ -672,12 +728,13 @@ public class StallHierarchyBuilderTool : EditorWindow
 
         RectTransform plus = CreateUI("IMG_ArtPlusIcon", empty);
         Anchor(plus, new Vector2(0.5f, 0.5f), new Vector2(0f, 24f), new Vector2(76f, 76f));
-        Simple(plus, "stall_icon_plus", StallSpriteFactory.Cream);
+        Simple(plus, "stall_icon_plus", TaskPopupDesign.RibbonDuoi);
 
         TextMeshProUGUI emptyLabel = AddText(empty, "Text_EmptyLabel", "Bán vật phẩm", 24,
-                                             StallSpriteFactory.Cream, TextAlignmentOptions.Center);
+                                             new Color(0.36f, 0.20f, 0.09f, 1f), TextAlignmentOptions.Center);
         Anchor(emptyLabel.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, -52f),
                new Vector2(220f, 36f));
+        emptyLabel.fontStyle = FontStyles.Bold;
 
         // ── Trạng thái 2: ĐANG BÁN ───────────────────────────────────────────
         RectTransform selling = CreateUI("State_Selling", rt);
@@ -689,26 +746,28 @@ public class StallHierarchyBuilderTool : EditorWindow
         iconImg.preserveAspect = true;
         iconImg.raycastTarget  = false;
 
-        TextMeshProUGUI qty = AddText(selling, "Text_Quantity", "x0", 24, StallSpriteFactory.Cream,
+        TextMeshProUGUI qty = AddText(selling, "Text_Quantity", "x0", 24, new Color(0.36f, 0.20f, 0.09f, 1f),
                                       TextAlignmentOptions.MidlineRight);
         Anchor(qty.rectTransform, new Vector2(1f, 1f), new Vector2(-52f, -34f), new Vector2(90f, 34f));
+        qty.fontStyle = FontStyles.Bold;
 
         RectTransform priceRow = CreateUI("Row_Price", selling);
         Anchor(priceRow, new Vector2(0.5f, 0f), new Vector2(0f, 64f), new Vector2(190f, 40f));
         RectTransform priceCoin = CreateUI("IMG_ArtCoin", priceRow);
         Anchor(priceCoin, new Vector2(0f, 0.5f), new Vector2(28f, 0f), new Vector2(30f, 30f));
         Simple(priceCoin, "stall_icon_coin", Color.white);
-        TextMeshProUGUI price = AddText(priceRow, "Text_Price", "0", 26, StallSpriteFactory.Gold,
+        TextMeshProUGUI price = AddText(priceRow, "Text_Price", "0", 26, TaskPopupDesign.RibbonDuoi,
                                         TextAlignmentOptions.MidlineLeft);
         Stretch(price.rectTransform, 52, 2, 6, 2);
+        price.fontStyle = FontStyles.Bold;
 
         TextMeshProUGUI remain = AddText(selling, "Text_RemainTime", "", 19,
-                                         new Color(1f, 1f, 1f, 0.5f), TextAlignmentOptions.Center);
+                                         new Color(0.48f, 0.29f, 0.06f, 0.65f), TextAlignmentOptions.Center);
         Anchor(remain.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 30f), new Vector2(200f, 28f));
 
         RectTransform loaBadge = CreateUI("Badge_Loa", selling);
         Anchor(loaBadge, new Vector2(0f, 1f), new Vector2(34f, -32f), new Vector2(44f, 44f));
-        Simple(loaBadge, "stall_circle", StallSpriteFactory.Teal);
+        Simple(loaBadge, "stall_circle", TaskPopupDesign.RibbonDuoi);
         RectTransform loaBadgeIcon = CreateUI("IMG_ArtSpeakerIcon", loaBadge);
         Anchor(loaBadgeIcon, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(28f, 28f));
         Simple(loaBadgeIcon, "stall_icon_speaker", Color.white);
@@ -731,16 +790,17 @@ public class StallHierarchyBuilderTool : EditorWindow
 
         RectTransform lockIcon = CreateUI("IMG_ArtLockIcon", unlockable);
         Anchor(lockIcon, new Vector2(0.5f, 1f), new Vector2(0f, -56f), new Vector2(62f, 62f));
-        Simple(lockIcon, "stall_icon_lock", StallSpriteFactory.Cream);
+        Simple(lockIcon, "stall_icon_lock", new Color(0.36f, 0.20f, 0.09f, 1f));
 
         TextMeshProUGUI unlockLabel = AddText(unlockable, "Text_UnlockLabel", "Thêm ô", 24,
-                                              StallSpriteFactory.Cream, TextAlignmentOptions.Center);
+                                              new Color(0.36f, 0.20f, 0.09f, 1f), TextAlignmentOptions.Center);
         Anchor(unlockLabel.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -112f),
                new Vector2(200f, 32f));
+        unlockLabel.fontStyle = FontStyles.Bold;
 
         RectTransform unlockBtn = CreateUI("Btn_Unlock", unlockable);
         Anchor(unlockBtn, new Vector2(0.5f, 0f), new Vector2(0f, 48f), new Vector2(178f, 60f));
-        Sliced(unlockBtn, "stall_btn", StallSpriteFactory.Gold);
+        Sliced(unlockBtn, "stall_btn", TaskPopupDesign.RibbonDuoi);
         Button unlockButton = unlockBtn.gameObject.AddComponent<Button>();
         unlockButton.targetGraphic = unlockBtn.GetComponent<Image>();
 
@@ -749,7 +809,7 @@ public class StallHierarchyBuilderTool : EditorWindow
         Simple(unlockCoin, "stall_icon_coin", Color.white);
 
         TextMeshProUGUI unlockCost = AddText(unlockBtn, "Text_UnlockCost", "0", 26,
-                                             StallSpriteFactory.Hex("#4A3208"),
+                                             Color.white,
                                              TextAlignmentOptions.MidlineLeft);
         Stretch(unlockCost.rectTransform, 54, 4, 10, 4);
         unlockCost.fontStyle = FontStyles.Bold;
@@ -760,7 +820,7 @@ public class StallHierarchyBuilderTool : EditorWindow
         Image lockedImg = locked.gameObject.AddComponent<Image>();
         lockedImg.sprite = StallSpriteFactory.Load("stall_slot");
         lockedImg.type   = Image.Type.Sliced;
-        lockedImg.color  = new Color(0.13f, 0.08f, 0.20f, 1f);
+        lockedImg.color  = new Color(0.85f, 0.75f, 0.60f, 0.6f);
         lockedImg.raycastTarget = false;
 
         StallSlotUI slotUI = root.AddComponent<StallSlotUI>();
@@ -798,24 +858,26 @@ public class StallHierarchyBuilderTool : EditorWindow
     {
         EnsurePrefabFolder();
 
+        Sprite cardOuterSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_card_outer.png");
+
         var root = new GameObject("PF_StallPickCell", typeof(RectTransform));
         RectTransform rt = root.GetComponent<RectTransform>();
         rt.sizeDelta = new Vector2(170f, 190f);
 
         Image bgImg = root.AddComponent<Image>();
-        bgImg.sprite = StallSpriteFactory.Load("stall_slot");
+        bgImg.sprite = cardOuterSpr ?? StallSpriteFactory.Load("stall_slot");
         bgImg.type   = Image.Type.Sliced;
-        bgImg.color  = new Color(0.24f, 0.15f, 0.35f, 1f);
+        bgImg.color  = Color.white;
 
         Button b = root.AddComponent<Button>();
         b.targetGraphic = bgImg;
         b.transition    = Selectable.Transition.None;   // màu do SetSelected điều khiển
 
-        TextMeshProUGUI nameTxt = AddText(rt, "Text_Name", "", 19, StallSpriteFactory.Cream,
+        TextMeshProUGUI nameTxt = AddText(rt, "Text_Name", "", 19, new Color(0.36f, 0.20f, 0.09f, 1f),
                                           TextAlignmentOptions.Center);
         Anchor(nameTxt.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -22f),
                new Vector2(158f, 36f));
-        // Tên vật phẩm tiếng Việt hay dài ("Hoa Cẩm Tú Cầu") — ô rộng 170px, phải cho xuống dòng.
+        nameTxt.fontStyle = FontStyles.Bold;
         nameTxt.textWrappingMode = TextWrappingModes.Normal;
         nameTxt.overflowMode     = TextOverflowModes.Ellipsis;
 
@@ -825,11 +887,10 @@ public class StallHierarchyBuilderTool : EditorWindow
         iconImg.preserveAspect = true;
         iconImg.raycastTarget  = false;
 
-        // Badge số lượng ở GÓC DƯỚI PHẢI — đúng vị trí trong video, và là thứ duy nhất
-        // cho biết còn bao nhiêu để bán.
+        // Badge số lượng ở GÓC DƯỚI PHẢI
         RectTransform badge = CreateUI("Badge_Amount", rt);
         Anchor(badge, new Vector2(1f, 0f), new Vector2(-28f, 26f), new Vector2(48f, 48f));
-        Simple(badge, "stall_circle", StallSpriteFactory.Teal);
+        Simple(badge, "stall_circle", TaskPopupDesign.RibbonDuoi);
         TextMeshProUGUI amountTxt = AddText(badge, "Text_Amount", "0", 22, Color.white,
                                             TextAlignmentOptions.Center);
         Stretch(amountTxt.rectTransform, 0, 0, 0, 0);

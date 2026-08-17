@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
@@ -12,11 +13,9 @@ using UnityEngine.UI;
 /// Toàn bộ hierarchy của thẻ nằm trong PREFAB do
 /// Tools/Farm/Chợ/Dựng lại UI Bảng Tin Chợ sinh ra. Script này CHỈ đổ dữ liệu,
 /// không tạo GameObject nào — đúng bài học từ UnifiedTaskPopupUI 1433 dòng.
-///
-/// Tầng dưới không phải trang trí: tên người bán là thứ duy nhất làm bảng tin
-/// trông như chợ có người thật thay vì bảng hàng do máy sinh.
+/// Hỗ trợ kéo vuốt cảm ứng trên Mobile và chuột trên PC mượt mà.
 /// </summary>
-public class MarketListingCardUI : MonoBehaviour
+public class MarketListingCardUI : MonoBehaviour, IInitializePotentialDragHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler
 {
     [Header("Tầng trên — vật phẩm")]
     [SerializeField] private Image      imageIcon;
@@ -44,9 +43,45 @@ public class MarketListingCardUI : MonoBehaviour
     private string          listingId;
     private Action<string>  onBuyRequested;
     private Coroutine       revealCoroutine;
+    private ScrollRect      _parentScrollRect;
 
     /// <summary>Id của listing đang hiển thị — MarketBoardUI dùng để tái sử dụng thẻ.</summary>
     public string ListingId => listingId;
+
+    private ScrollRect ParentScrollRect
+    {
+        get
+        {
+            if (_parentScrollRect == null)
+                _parentScrollRect = GetComponentInParent<ScrollRect>();
+            return _parentScrollRect;
+        }
+    }
+
+    public void OnInitializePotentialDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnInitializePotentialDrag(eventData);
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnBeginDrag(eventData);
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnDrag(eventData);
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnEndDrag(eventData);
+    }
+
+    public void OnScroll(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnScroll(eventData);
+    }
 
     private void Awake()
     {

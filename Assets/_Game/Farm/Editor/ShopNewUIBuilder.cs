@@ -28,6 +28,14 @@ public static class ShopNewUIBuilder
             return;
         }
 
+        Canvas popupCanvas = shopManager.GetComponentInParent<Canvas>();
+        if (popupCanvas != null)
+        {
+            popupCanvas.overrideSorting = true;
+            popupCanvas.sortingOrder = 150;
+            EditorUtility.SetDirty(popupCanvas);
+        }
+
         // Tắt ShopSkin cũ nếu có
         ShopSkin oldSkin = shopManager.GetComponent<ShopSkin>();
         if (oldSkin != null) Object.DestroyImmediate(oldSkin);
@@ -54,14 +62,22 @@ public static class ShopNewUIBuilder
             Object.DestroyImmediate(shopPanelGO.transform.GetChild(i).gameObject);
         }
 
-        // RectTransform của shopPanel (1440x920)
+        // RectTransform của shopPanel (1500x880 chuẩn to ngang Quầy Hàng)
         RectTransform rootRect = shopPanelGO.GetComponent<RectTransform>();
         if (rootRect == null) rootRect = shopPanelGO.AddComponent<RectTransform>();
         rootRect.anchorMin = new Vector2(0.5f, 0.5f);
         rootRect.anchorMax = new Vector2(0.5f, 0.5f);
         rootRect.pivot = new Vector2(0.5f, 0.5f);
-        rootRect.sizeDelta = new Vector2(1440f, 920f);
+        rootRect.sizeDelta = new Vector2(1500f, 880f);
         rootRect.anchoredPosition = Vector2.zero;
+
+        // Đảm bảo Popup nằm ĐÈ LÊN TRÊN HUD (sortingOrder 120 như Quầy Hàng)
+        Canvas panelCanvas = shopPanelGO.GetComponent<Canvas>();
+        if (panelCanvas == null) panelCanvas = shopPanelGO.AddComponent<Canvas>();
+        panelCanvas.overrideSorting = true;
+        panelCanvas.sortingOrder = 120;
+        if (shopPanelGO.GetComponent<GraphicRaycaster>() == null)
+            shopPanelGO.AddComponent<GraphicRaycaster>();
 
         // Load TMP Font
         TMP_FontAsset fontVo = LoadFontVo();
@@ -93,24 +109,30 @@ public static class ShopNewUIBuilder
         Sprite iconTabBuildSpr = LoadSprite(DesignAssetsFolder, "khungchuong.png") ?? LoadSprite(DesignAssetsFolder, "chuongheo.png") ?? iconTabSeedSpr;
         Sprite iconTabDecorSpr = LoadSprite(DesignAssetsFolder, "caythong.png") ?? iconTabSeedSpr;
 
-        // 3. KHUNG VÁN GỖ ĐỒNG BỘ 100% VỚI KHO VẬT PHẨM
+        // 2b. LỚP MÀN MỜ TỐI CHE TOÀN MÀN HÌNH (Panel_Dim giống Quầy Hàng & Nhiệm Vụ)
+        RectTransform dim = CreateRect(rootRect, "Panel_Dim", new Vector2(3840f, 2160f), Vector2.zero);
+        Image dimImg = dim.gameObject.AddComponent<Image>();
+        dimImg.color = new Color(0.04f, 0.08f, 0.03f, 0.65f);
+        dimImg.raycastTarget = true;
+
+        // 3. KHUNG VÁN GỖ ĐỒNG BỘ 100% VỚI KHO VẬT PHẨM (1500x880)
         Image rootImg = shopPanelGO.GetComponent<Image>();
         if (rootImg != null) Object.DestroyImmediate(rootImg);
 
         // 3a. Viền gỗ ngoài #4A2508
-        RectTransform boardBorder = CreateRect(rootRect, "Board_Border", new Vector2(1456f, 936f), Vector2.zero);
+        RectTransform boardBorder = CreateRect(rootRect, "Board_Border", new Vector2(1516f, 896f), Vector2.zero);
         Image borderImg = boardBorder.gameObject.AddComponent<Image>();
         borderImg.color = TaskPopupDesign.VanGoVien;
         borderImg.raycastTarget = true;
 
         // 3b. Thân ván gỗ đáy #7C4E22
-        RectTransform boardFill = CreateRect(rootRect, "Board_Fill_Bottom", new Vector2(1440f, 920f), Vector2.zero);
+        RectTransform boardFill = CreateRect(rootRect, "Board_Fill_Bottom", new Vector2(1500f, 880f), Vector2.zero);
         Image fillBaseImg = boardFill.gameObject.AddComponent<Image>();
         fillBaseImg.color = TaskPopupDesign.VanGoDuoi;
         fillBaseImg.raycastTarget = false;
 
         // 3c. Lớp phủ gradient #A9743C
-        RectTransform boardTop = CreateRect(rootRect, "Board_Fill_Top", new Vector2(1440f, 920f), Vector2.zero);
+        RectTransform boardTop = CreateRect(rootRect, "Board_Fill_Top", new Vector2(1500f, 880f), Vector2.zero);
         Image fillTopImg = boardTop.gameObject.AddComponent<Image>();
         fillTopImg.color = new Color(TaskPopupDesign.VanGoTren.r, TaskPopupDesign.VanGoTren.g, TaskPopupDesign.VanGoTren.b, 0.45f);
         fillTopImg.raycastTarget = false;
@@ -118,8 +140,8 @@ public static class ShopNewUIBuilder
         // 3d. Thớ ván ngang
         for (int i = 1; i <= 6; i++)
         {
-            float yPos = 460f - i * 140f;
-            RectTransform grainRect = CreateRect(rootRect, $"Board_Grain_{i}", new Vector2(1410f, 5f), new Vector2(0f, yPos));
+            float yPos = 400f - i * 125f;
+            RectTransform grainRect = CreateRect(rootRect, $"Board_Grain_{i}", new Vector2(1460f, 5f), new Vector2(0f, yPos));
             Image grainImg = grainRect.gameObject.AddComponent<Image>();
             grainImg.color = TaskPopupDesign.VanGoTho;
             grainImg.raycastTarget = false;
@@ -127,8 +149,8 @@ public static class ShopNewUIBuilder
 
         // 3e. 4 Đinh sắt góc
         Vector2[] studPositions = {
-            new Vector2(-670f, 415f), new Vector2(670f, 415f),
-            new Vector2(-670f, -415f), new Vector2(670f, -415f)
+            new Vector2(-700f, 385f), new Vector2(700f, 385f),
+            new Vector2(-700f, -385f), new Vector2(700f, -385f)
         };
         for (int i = 0; i < studPositions.Length; i++)
         {
@@ -203,8 +225,8 @@ public static class ShopNewUIBuilder
         searchBg.sprite = searchBoxSpr;
         searchBg.type = Image.Type.Sliced;
 
-        // Search Icon (Dùng ký hiệu chuẩn hoặc để trống)
-        CreateText(searchRect, "Txt_SearchIcon", "🔍", 24f, new Color(0.64f, 0.50f, 0.25f, 1f), new Vector2(-350f, 0f), new Vector2(40f, 40f), TextAlignmentOptions.Center, true, fontVo);
+        // Search Icon
+        CreateText(searchRect, "Txt_SearchIcon", "", 24f, new Color(0.64f, 0.50f, 0.25f, 1f), new Vector2(-350f, 0f), new Vector2(40f, 40f), TextAlignmentOptions.Center, true, fontVo);
 
         // Search Text Area
         RectTransform textAreaRect = CreateRect(searchRect, "TextArea", new Vector2(680f, 46f), new Vector2(30f, 0f));
@@ -254,6 +276,9 @@ public static class ShopNewUIBuilder
         scrollRect.movementType = ScrollRect.MovementType.Elastic;
 
         RectTransform viewport = CreateRect(scrollViewRect, "Viewport", new Vector2(1280f, 620f), Vector2.zero);
+        Image vpImg = viewport.gameObject.AddComponent<Image>();
+        vpImg.color = Color.clear;
+        vpImg.raycastTarget = true;
         viewport.gameObject.AddComponent<RectMask2D>();
         scrollRect.viewport = viewport;
 
@@ -371,6 +396,7 @@ public static class ShopNewUIBuilder
         Image minusImg = minusBtnRect.gameObject.AddComponent<Image>();
         minusImg.sprite = minusSpr;
         Button btnMinus = minusBtnRect.gameObject.AddComponent<Button>();
+        minusBtnRect.gameObject.AddComponent<UIDragScrollForwarder>();
 
         TMP_Text txtQuantity = CreateText(stepperRow, "Txt_Quantity", "1", 24f, new Color(0.36f, 0.20f, 0.09f, 1f), Vector2.zero, new Vector2(50f, 36f), TextAlignmentOptions.Center, true, font);
 
@@ -378,6 +404,7 @@ public static class ShopNewUIBuilder
         Image plusImg = plusBtnRect.gameObject.AddComponent<Image>();
         plusImg.sprite = plusSpr;
         Button btnPlus = plusBtnRect.gameObject.AddComponent<Button>();
+        plusBtnRect.gameObject.AddComponent<UIDragScrollForwarder>();
 
         // Placeable Note ("Mua 1 cái / lần")
         TMP_Text txtPlaceableNote = CreateText(innerRect, "Txt_PlaceableNote", "Mua 1 cái / lần", 16f, new Color(0.64f, 0.50f, 0.25f, 1f), new Vector2(0f, -74f), new Vector2(240f, 36f), TextAlignmentOptions.Center, true, font);
@@ -389,6 +416,7 @@ public static class ShopNewUIBuilder
         buyBgImg.sprite = buyGoldSpr;
         buyBgImg.type = Image.Type.Sliced;
         Button btnBuy = buyBtnRect.gameObject.AddComponent<Button>();
+        buyBtnRect.gameObject.AddComponent<UIDragScrollForwarder>();
 
         HorizontalLayoutGroup buyLayout = buyBtnRect.gameObject.AddComponent<HorizontalLayoutGroup>();
         buyLayout.childAlignment = TextAnchor.MiddleCenter;
@@ -413,15 +441,13 @@ public static class ShopNewUIBuilder
         Image lockBg = lockOverlay.gameObject.AddComponent<Image>();
         lockBg.color = new Color(0.24f, 0.16f, 0.06f, 0.65f); // rgba(62,40,16,0.65)
         lockBg.raycastTarget = true;
+        lockOverlay.gameObject.AddComponent<UIDragScrollForwarder>();
 
         // Lock Badge Circle
         RectTransform lockBadgeRect = CreateRect(lockOverlay, "Lock_Badge", new Vector2(58f, 58f), new Vector2(0f, 25f));
         Image lockBadgeImg = lockBadgeRect.gameObject.AddComponent<Image>();
         lockBadgeImg.sprite = lockBadgeSpr;
         lockBadgeImg.raycastTarget = false;
-
-        // Lock Icon Inside Badge (White Lock)
-        CreateText(lockBadgeRect, "Txt_LockGraphic", "🔒", 26f, new Color(1f, 0.91f, 0.74f, 1f), Vector2.zero, new Vector2(40f, 40f), TextAlignmentOptions.Center, false, font);
 
         // Lock Text ("Mở ở cấp X")
         TMP_Text lockLvlText = CreateText(lockOverlay, "Txt_LockLevel", "Mở ở cấp 6", 22f, new Color(1f, 0.91f, 0.74f, 1f), new Vector2(0f, -25f), new Vector2(260f, 36f), TextAlignmentOptions.Center, true, font);

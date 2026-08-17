@@ -161,10 +161,10 @@ public static class TaskPopupDesign
     //  Khung thiết kế 1920×1080. Bảng gỗ 1300×850 đặt giữa khung.
     //  Gốc toạ độ mọi hằng dưới đây = TÂM BẢNG GỖ.
 
-    public const float BangRong = 1300f;
-    public const float BangCao  = 850f;
-    private const float NuaRong = BangRong * 0.5f;   // 650
-    private const float NuaCao  = BangCao * 0.5f;    // 425
+    public const float BangRong = 1500f;
+    public const float BangCao  = 880f;
+    private const float NuaRong = BangRong * 0.5f;   // 750
+    private const float NuaCao  = BangCao * 0.5f;    // 440
 
     public const float BangBoGoc = 42f;
     public const float BangVienDay = 8f;
@@ -210,8 +210,8 @@ public static class TaskPopupDesign
     public const float TabIconKichThuoc = 38f;
 
     private const float LeNgang = 48f;
-    public const float VungRong = BangRong - LeNgang * 2f;              // 1204
-    public static readonly float TabRong = (VungRong - TabKheHo * 2f) / 3f;   // 392
+    public const float VungRong = BangRong - LeNgang * 2f;              // 1404
+    public static readonly float TabRong = (VungRong - TabKheHo * 2f) / 3f;
 
     /// <summary>Tâm X của tab thứ i (0..2).</summary>
     public static float TabTamX(int i)
@@ -236,7 +236,7 @@ public static class TaskPopupDesign
     public static readonly float VungTrongCao  = GiayCao - GiayLeDoc * 2f;      //  602
 
     // ── Hàng nhiệm vụ ────────────────────────────────────────────────────────
-    public const float HangRong = 1140f;
+    public const float HangRong = 1340f;
     public const float HangCao  = 100f;          // padding 12 + icon 76 + padding 12
     public const float HangCaoTT = 92f;          // hàng thành tựu gọn hơn
     public const float HangBoGoc = 22f;
@@ -250,7 +250,7 @@ public static class TaskPopupDesign
     public const float IconBoGoc = 20f;
     public const float IconNghieng = -3f;        // CSS rotate(-3deg)
 
-    public const float CotChuRong = 300f;
+    public const float CotChuRong = 480f;
     public const int   CoChuTen = 25;
     public const float TdCao = 28f;
     public const float TdBoGoc = 14f;

@@ -80,6 +80,9 @@ public class MasterTutorialBeautifier : EditorWindow
                     ApplyWhiteWoodStyle(prefabRoot.transform, pureWhite, woodColor, darkBrown, freshGreen, bangers, defaultBgSprite);
                     changed = true;
                 }
+
+                if (changed)
+                    EditorUtility.SetDirty(prefabRoot);
             }
         }
 

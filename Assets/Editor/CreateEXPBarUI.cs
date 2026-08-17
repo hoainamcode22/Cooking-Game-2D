@@ -7,7 +7,7 @@ public class CreateEXPBarUI : EditorWindow
     [MenuItem("Tools/Farm Game/Tạo Thanh EXP Đẹp (Bo góc)")]
     public static void CreateBar()
     {
-        Canvas canvas = Object.FindObjectOfType<Canvas>();
+        Canvas canvas = Object.FindFirstObjectByType<Canvas>();
         if (canvas == null)
         {
             Debug.LogError("Chưa có Canvas trong Scene!");

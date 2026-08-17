@@ -208,39 +208,55 @@ public static class MarketBoardUIBuilder
 
         MarketBoardUI boardUI = Ensure<MarketBoardUI>(boardGO);
 
-        // ── Trang trí: dải chấm bi vắt ngang đỉnh ────────────────────────
-        RectTransform ribbon = NewRect("Deco_RibbonTop", board);
-        AnchorTopStretch(ribbon, RibbonHeight, 18f, 18f, -10f);
-        AddImage(ribbon, SpritePanel(), MarketBoardPalette.RibbonBase, Image.Type.Sliced);
+        // ── 4 Đinh sắt góc ───────────────────────────────────────────────
+        Vector2[] studPositions = {
+            new Vector2(-680f, 380f), new Vector2(680f, 380f),
+            new Vector2(-680f, -380f), new Vector2(680f, -380f)
+        };
+        for (int i = 0; i < studPositions.Length; i++)
+        {
+            Vector2 pos = studPositions[i];
+            RectTransform sRim = NewRect($"Stud_{i}_Rim", board);
+            Center(sRim, new Vector2(30f, 30f));
+            sRim.anchoredPosition = pos;
+            AddImage(sRim, SpriteCircle(), TaskPopupDesign.DinhSatVien, Image.Type.Simple);
 
-        RectTransform ribbonDots = NewRect("Deco_RibbonDots", ribbon);
-        StretchFull(ribbonDots);
-        Image dotsImage = AddImage(ribbonDots, SpriteDots(), MarketBoardPalette.RibbonDot, Image.Type.Tiled);
-        dotsImage.raycastTarget = false;
+            RectTransform sBase = NewRect($"Stud_{i}_Base", board);
+            Center(sBase, new Vector2(26f, 26f));
+            sBase.anchoredPosition = pos;
+            AddImage(sBase, SpriteCircle(), TaskPopupDesign.DinhSatToi, Image.Type.Simple);
 
-        // ── Tiêu đề dạng viên thuốc đè lên dải ───────────────────────────
-        RectTransform titlePill = NewRect("Header_TitlePill", board);
-        AnchorTop(titlePill, new Vector2(460f, 84f), new Vector2(0f, -12f));
-        AddImage(titlePill, SpritePill(), MarketBoardPalette.RibbonBase, Image.Type.Sliced);
+            RectTransform sShine = NewRect($"Stud_{i}_Shine", board);
+            Center(sShine, new Vector2(13f, 13f));
+            sShine.anchoredPosition = pos + new Vector2(-2f, 2f);
+            AddImage(sShine, SpriteCircle(), TaskPopupDesign.DinhSatSang, Image.Type.Simple);
+        }
 
-        RectTransform titleText = NewRect("Text_Title", titlePill);
+        // ── Tiêu đề Ruy băng 3D ("BẢNG TIN CHỢ") ────────────────────────
+        Sprite bannerRibbonSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_banner_ribbon.png");
+        RectTransform bannerRect = NewRect("Header_Banner", board);
+        AnchorTop(bannerRect, new Vector2(620f, 126f), new Vector2(0f, 18f));
+        Image bannerImg = bannerRect.gameObject.AddComponent<Image>();
+        bannerImg.sprite = bannerRibbonSpr;
+        bannerImg.type = Image.Type.Sliced;
+        bannerImg.raycastTarget = false;
+
+        RectTransform titleText = NewRect("Text_Title", bannerRect);
         StretchFull(titleText);
-        AddText(titleText, "BẢNG TIN CHỢ", 40f, MarketBoardPalette.TextOnPanel,
+        TMP_Text txtTitle = AddText(titleText, "BẢNG TIN CHỢ", 46f, TaskPopupDesign.ChuTieuDe,
                 TextAlignmentOptions.Center, FontStyles.Bold);
+        txtTitle.characterSpacing = 4f;
+        txtTitle.textWrappingMode = TextWrappingModes.NoWrap;
 
-        // ── Nút X LỒI RA NGOÀI mép phải (offset âm = đẩy ra khỏi panel) ──
+        // ── Nút Đóng [X] (btnX.png 90x90) ────────────────────────────────
+        Sprite btnCloseSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/btnX.png");
         RectTransform closeRT = NewRect("Btn_Close", board);
-        AnchorTopRight(closeRT, new Vector2(78f, 78f), new Vector2(-14f, -6f));
-        Image closeImage = AddImage(closeRT, SpriteCircle(), MarketBoardPalette.ButtonClose, Image.Type.Simple);
+        AnchorTopRight(closeRT, new Vector2(90f, 90f), new Vector2(26f, 26f));
+        Image closeImage = closeRT.gameObject.AddComponent<Image>();
+        closeImage.sprite = btnCloseSpr ?? SpriteCircle();
+        closeImage.preserveAspect = true;
         Button closeButton = closeRT.gameObject.AddComponent<Button>();
         closeButton.targetGraphic = closeImage;
-
-        RectTransform closeText = NewRect("Text_Close", closeRT);
-        StretchFull(closeText);
-        // Dùng chữ "X" thường chứ KHÔNG dùng ✕ (U+2715): font mặc định của dự án là
-        // LiberationSans, ký tự đó không có trong bộ nên sẽ ra ô vuông rỗng.
-        AddText(closeText, "X", 40f, MarketBoardPalette.TextOnPanel,
-                TextAlignmentOptions.Center, FontStyles.Bold);
 
         // ── Ví vàng, góc trên trái ───────────────────────────────────────
         RectTransform goldChip = NewRect("Chip_Gold", board);
@@ -336,7 +352,10 @@ public static class MarketBoardUIBuilder
         RectTransform viewport = NewRect("Viewport", scrollRT);
         StretchFull(viewport);
         viewport.pivot = new Vector2(0.5f, 1f);
-        viewport.gameObject.AddComponent<RectMask2D>();   // rẻ hơn Mask, không cần Image nền
+        Image vpImg = viewport.gameObject.AddComponent<Image>();
+        vpImg.color = Color.clear;
+        vpImg.raycastTarget = true;
+        viewport.gameObject.AddComponent<RectMask2D>();
 
         RectTransform content = NewRect("Content_Listings", viewport);
         AnchorTopStretch(content, 100f, 0f, 0f, 0f);

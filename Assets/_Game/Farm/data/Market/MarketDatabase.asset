@@ -16,7 +16,7 @@ MonoBehaviour:
     MarketPriceTable.cs \xB7 Menu: Tools/Farm/Ch\u1EE3/2 \xB7 Sinh l\u1EA1i MarketDatabase
     t\u1EEB b\u1EA3ng gi\xE1\nBuyPrice = BasePrice \xD7 1,5\nS\u1ED1 d\xF2ng: 74
     \xB7 b\u1ECF v\xEC thi\u1EBFu icon: 0 \xB7 b\u1ECF v\xEC t\u1EAFt th\u1EE7 c\xF4ng:
-    5"
+    3"
   items:
   - ItemID: rice
     BuyPrice: 10
@@ -214,6 +214,13 @@ MonoBehaviour:
     Category: 2
     UnlockLevel: 9
     Weight: 55
+  - ItemID: seed_pepper
+    BuyPrice: 111
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 10
+    Weight: 50
   - ItemID: seed_hoa_mau_don
     BuyPrice: 117
     MinQuantity: 1
@@ -235,13 +242,6 @@ MonoBehaviour:
     Category: 2
     UnlockLevel: 10
     Weight: 45
-  - ItemID: seed_pepper
-    BuyPrice: 111
-    MinQuantity: 1
-    MaxQuantity: 5
-    Category: 2
-    UnlockLevel: 10
-    Weight: 50
   - ItemID: huong_duong
     BuyPrice: 12
     MinQuantity: 2
@@ -326,13 +326,6 @@ MonoBehaviour:
     Category: 4
     UnlockLevel: 2
     Weight: 75
-  - ItemID: milk
-    BuyPrice: 172
-    MinQuantity: 2
-    MaxQuantity: 6
-    Category: 4
-    UnlockLevel: 13
-    Weight: 75
   - ItemID: pork
     BuyPrice: 135
     MinQuantity: 2
@@ -347,6 +340,13 @@ MonoBehaviour:
     Category: 4
     UnlockLevel: 8
     Weight: 60
+  - ItemID: milk
+    BuyPrice: 172
+    MinQuantity: 2
+    MaxQuantity: 6
+    Category: 4
+    UnlockLevel: 13
+    Weight: 75
   - ItemID: khoai_tay_chien
     BuyPrice: 142
     MinQuantity: 1
@@ -424,13 +424,6 @@ MonoBehaviour:
     Category: 6
     UnlockLevel: 8
     Weight: 45
-  - ItemID: trung_op_la_bo_ne
-    BuyPrice: 458
-    MinQuantity: 1
-    MaxQuantity: 3
-    Category: 6
-    UnlockLevel: 8
-    Weight: 45
   - ItemID: nam_xao_thit_bo
     BuyPrice: 398
     MinQuantity: 1
@@ -438,6 +431,13 @@ MonoBehaviour:
     Category: 6
     UnlockLevel: 8
     Weight: 40
+  - ItemID: trung_op_la_bo_ne
+    BuyPrice: 458
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 8
+    Weight: 45
   - ItemID: bo_ham_ca_rot
     BuyPrice: 525
     MinQuantity: 1

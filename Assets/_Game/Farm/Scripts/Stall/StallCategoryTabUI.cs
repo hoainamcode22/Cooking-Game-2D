@@ -23,8 +23,8 @@ public class StallCategoryTabUI : MonoBehaviour
     [SerializeField] private RectTransform scaleTarget;
 
     [Header("Màu")]
-    [SerializeField] private Color colorSelected = new Color(0.18f, 0.75f, 0.66f, 1f);
-    [SerializeField] private Color colorNormal   = new Color(0.28f, 0.18f, 0.40f, 1f);
+    [SerializeField] private Color colorSelected = new Color(1.0f, 0.82f, 0.34f, 1f); // #FFD257 Vàng rực nổi bật
+    [SerializeField] private Color colorNormal   = new Color(0.49f, 0.31f, 0.13f, 1f); // #7C4E22 Nâu gỗ ấm
 
     private StallPopupUI _owner;
 

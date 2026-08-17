@@ -408,6 +408,14 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (transform.parent != canvasObject.transform)
             transform.SetParent(canvasObject.transform, false);
 
+        // Đảm bảo Popup luôn nổi trên HUD (sortingOrder 120)
+        Canvas popupCanvas = GetComponent<Canvas>();
+        if (popupCanvas == null) popupCanvas = gameObject.AddComponent<Canvas>();
+        popupCanvas.overrideSorting = true;
+        popupCanvas.sortingOrder = 120;
+        if (GetComponent<GraphicRaycaster>() == null)
+            gameObject.AddComponent<GraphicRaycaster>();
+
         gameObject.name = RootName;
         rect.anchorMin = Vector2.zero;
         rect.anchorMax = Vector2.one;
@@ -1182,6 +1190,8 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         h.nut = gocNut.gameObject.AddComponent<Button>();
         h.nut.transition = Selectable.Transition.None;
         h.nut.targetGraphic = vungBamNut;
+        gocNut.gameObject.AddComponent<UIDragScrollForwarder>();
+        h.goc.gameObject.AddComponent<UIDragScrollForwarder>();
 
         h.nutChu = CreateText(gocNut, "Txt_Label", "", TaskPopupDesign.CoChuNut, Color.white,
             TextAlignmentOptions.Center, Vector2.zero, ktNut - new Vector2(10f, 10f), FontStyles.Bold);

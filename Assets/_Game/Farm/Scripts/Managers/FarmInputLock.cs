@@ -81,25 +81,34 @@ public static class FarmInputLock
         if (popupRoot == null)
             return;
 
-        if (isBlocking && popupRoot.GetComponent<UIRaycastBlocker>() == null)
-            popupRoot.AddComponent<UIRaycastBlocker>();
-
-        Image image = popupRoot.GetComponent<Image>();
-        if (image == null && popupRoot.GetComponent<RectTransform>() != null)
+        if (isBlocking)
         {
-            image = popupRoot.AddComponent<Image>();
-            image.color = new Color(0f, 0f, 0f, 0.001f);
+            if (popupRoot.GetComponent<UIRaycastBlocker>() == null)
+                popupRoot.AddComponent<UIRaycastBlocker>();
+
+            Image image = popupRoot.GetComponent<Image>();
+            if (image == null && popupRoot.GetComponent<RectTransform>() != null)
+            {
+                image = popupRoot.AddComponent<Image>();
+                image.color = new Color(0f, 0f, 0f, 0.001f);
+            }
+
+            if (image != null)
+                image.raycastTarget = true;
         }
 
-        if (image != null)
-            image.raycastTarget = isBlocking;
-
         CanvasGroup canvasGroup = popupRoot.GetComponent<CanvasGroup>();
-        if (canvasGroup == null)
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = isBlocking;
+            canvasGroup.interactable = isBlocking;
+        }
+        else if (isBlocking)
+        {
             canvasGroup = popupRoot.AddComponent<CanvasGroup>();
-
-        canvasGroup.alpha = 1f;
-        canvasGroup.blocksRaycasts = isBlocking;
-        canvasGroup.interactable = isBlocking;
+            canvasGroup.alpha = 1f;
+            canvasGroup.blocksRaycasts = true;
+            canvasGroup.interactable = true;
+        }
     }
 }

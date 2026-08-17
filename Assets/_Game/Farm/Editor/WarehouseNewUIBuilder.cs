@@ -25,6 +25,14 @@ public static class WarehouseNewUIBuilder
             return;
         }
 
+        Canvas popupCanvas = warehousePopup.GetComponentInParent<Canvas>();
+        if (popupCanvas != null)
+        {
+            popupCanvas.overrideSorting = true;
+            popupCanvas.sortingOrder = 150;
+            EditorUtility.SetDirty(popupCanvas);
+        }
+
         GameObject popupRootGO = warehousePopup.gameObject;
         Undo.RegisterFullObjectHierarchyUndo(popupRootGO, "Build New Warehouse UI");
 
@@ -38,14 +46,22 @@ public static class WarehouseNewUIBuilder
             Object.DestroyImmediate(popupRootGO.transform.GetChild(i).gameObject);
         }
 
-        // Set RectTransform of popupRoot (1440x920 - Cực to, cực đẹp và thoáng mắt)
+        // Set RectTransform of popupRoot (1500x880 - Cực to, cực đẹp và thoáng mắt chuẩn Quầy Hàng)
         RectTransform rootRect = popupRootGO.GetComponent<RectTransform>();
         if (rootRect == null) rootRect = popupRootGO.AddComponent<RectTransform>();
         rootRect.anchorMin = new Vector2(0.5f, 0.5f);
         rootRect.anchorMax = new Vector2(0.5f, 0.5f);
         rootRect.pivot = new Vector2(0.5f, 0.5f);
-        rootRect.sizeDelta = new Vector2(1440f, 920f);
+        rootRect.sizeDelta = new Vector2(1500f, 880f);
         rootRect.anchoredPosition = Vector2.zero;
+
+        // Đảm bảo Popup nằm ĐÈ LÊN TRÊN HUD (sortingOrder 120 như Quầy Hàng)
+        Canvas panelCanvas = popupRootGO.GetComponent<Canvas>();
+        if (panelCanvas == null) panelCanvas = popupRootGO.AddComponent<Canvas>();
+        panelCanvas.overrideSorting = true;
+        panelCanvas.sortingOrder = 120;
+        if (popupRootGO.GetComponent<GraphicRaycaster>() == null)
+            popupRootGO.AddComponent<GraphicRaycaster>();
 
         // Load TMP Font (FontVo)
         TMP_FontAsset fontVo = LoadFontVo();
@@ -75,24 +91,30 @@ public static class WarehouseNewUIBuilder
         Sprite iconTrungSpr = LoadSprite(DesignAssetsFolder, "trung.png");
         Sprite iconMonAnSpr = LoadSprite(DesignAssetsFolder, "monan1.png");
 
-        // 3. KHUNG VÁN GỖ ĐỒNG BỘ 100% VỚI POPUP NHIỆM VỤ
+        // 2b. LỚP MÀN MỜ TỐI CHE TOÀN MÀN HÌNH (Panel_Dim giống Quầy Hàng & Nhiệm Vụ)
+        RectTransform dim = CreateRect(rootRect, "Panel_Dim", new Vector2(3840f, 2160f), Vector2.zero);
+        Image dimImg = dim.gameObject.AddComponent<Image>();
+        dimImg.color = new Color(0.04f, 0.08f, 0.03f, 0.65f);
+        dimImg.raycastTarget = true;
+
+        // 3. KHUNG VÁN GỖ ĐỒNG BỘ 100% VỚI POPUP NHIỆM VỤ (1500x880)
         Image rootImg = popupRootGO.GetComponent<Image>();
         if (rootImg != null) Object.DestroyImmediate(rootImg);
 
         // 3a. Viền gỗ ngoài (Board Border #4A2508)
-        RectTransform boardBorder = CreateRect(rootRect, "Board_Border", new Vector2(1456f, 936f), Vector2.zero);
+        RectTransform boardBorder = CreateRect(rootRect, "Board_Border", new Vector2(1516f, 896f), Vector2.zero);
         Image borderImg = boardBorder.gameObject.AddComponent<Image>();
         borderImg.color = TaskPopupDesign.VanGoVien; // #4a2508
         borderImg.raycastTarget = true;
 
         // 3b. Thân ván gỗ đáy (Board Fill Bottom #7C4E22)
-        RectTransform boardFill = CreateRect(rootRect, "Board_Fill_Bottom", new Vector2(1440f, 920f), Vector2.zero);
+        RectTransform boardFill = CreateRect(rootRect, "Board_Fill_Bottom", new Vector2(1500f, 880f), Vector2.zero);
         Image fillBaseImg = boardFill.gameObject.AddComponent<Image>();
         fillBaseImg.color = TaskPopupDesign.VanGoDuoi; // #7c4e22
         fillBaseImg.raycastTarget = false;
 
         // 3c. Lớp phủ gradient trên (Board Fill Top #A9743C)
-        RectTransform boardTop = CreateRect(rootRect, "Board_Fill_Top", new Vector2(1440f, 920f), Vector2.zero);
+        RectTransform boardTop = CreateRect(rootRect, "Board_Fill_Top", new Vector2(1500f, 880f), Vector2.zero);
         Image fillTopImg = boardTop.gameObject.AddComponent<Image>();
         fillTopImg.color = new Color(TaskPopupDesign.VanGoTren.r, TaskPopupDesign.VanGoTren.g, TaskPopupDesign.VanGoTren.b, 0.45f);
         fillTopImg.raycastTarget = false;
@@ -100,8 +122,8 @@ public static class WarehouseNewUIBuilder
         // 3d. Thớ ván ngang (Repeating wood grain lines)
         for (int i = 1; i <= 6; i++)
         {
-            float yPos = 460f - i * 140f;
-            RectTransform grainRect = CreateRect(rootRect, $"Board_Grain_{i}", new Vector2(1410f, 5f), new Vector2(0f, yPos));
+            float yPos = 400f - i * 125f;
+            RectTransform grainRect = CreateRect(rootRect, $"Board_Grain_{i}", new Vector2(1460f, 5f), new Vector2(0f, yPos));
             Image grainImg = grainRect.gameObject.AddComponent<Image>();
             grainImg.color = TaskPopupDesign.VanGoTho; // #3a1c04 (alpha 0.32)
             grainImg.raycastTarget = false;
@@ -109,8 +131,8 @@ public static class WarehouseNewUIBuilder
 
         // 3e. 4 Đinh sắt ở 4 góc (Corner Studs: Rim, Base, Shine)
         Vector2[] studPositions = {
-            new Vector2(-670f, 415f), new Vector2(670f, 415f),
-            new Vector2(-670f, -415f), new Vector2(670f, -415f)
+            new Vector2(-700f, 385f), new Vector2(700f, 385f),
+            new Vector2(-700f, -385f), new Vector2(700f, -385f)
         };
         for (int i = 0; i < studPositions.Length; i++)
         {

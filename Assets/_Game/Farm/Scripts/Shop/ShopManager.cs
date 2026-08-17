@@ -76,6 +76,16 @@ public class ShopManager : MonoBehaviour
         if (btnClose != null)
             btnClose.onClick.AddListener(CloseShop);
 
+        // Đóng shop khi bấm vào màn tối ngoài khung popup (nếu có Panel_Dim)
+        Transform dimTrans = shopPanel != null ? shopPanel.transform.Find("Panel_Dim") : null;
+        if (dimTrans != null)
+        {
+            Button dimBtn = dimTrans.GetComponent<Button>();
+            if (dimBtn == null) dimBtn = dimTrans.gameObject.AddComponent<Button>();
+            dimBtn.onClick.RemoveAllListeners();
+            dimBtn.onClick.AddListener(CloseShop);
+        }
+
         if (btnTabSeed != null)
             btnTabSeed.onClick.AddListener(() => ShowTab(0));
         if (btnTabBuilding != null)
@@ -91,19 +101,6 @@ public class ShopManager : MonoBehaviour
         ShowTab(currentTabIndex);
     }
 
-    private void Update()
-    {
-        if (!IsOpen) return;
-        if (!Input.GetMouseButtonDown(0)) return;
-
-        // Tutorial L2 đang điều khiển shop -> Không auto-close
-        if (IsShopTutorialStep()) return;
-
-        // Nếu click ngoài vùng Canvas_Popup -> Đóng shop
-        if (!IsPointerOverPopupUI(Input.mousePosition))
-            CloseShop();
-    }
-
     private static bool IsShopTutorialStep()
     {
         var n = TutorialManager.Instance != null ? TutorialManager.Instance.CurrentStepName : null;
@@ -115,7 +112,13 @@ public class ShopManager : MonoBehaviour
 
     public void OpenShop()
     {
-        if (shopPanel != null) shopPanel.SetActive(true);
+        if (shopPanel != null)
+        {
+            shopPanel.SetActive(true);
+            Canvas parentCanvas = shopPanel.GetComponentInParent<Canvas>();
+            if (parentCanvas != null)
+                parentCanvas.sortingOrder = 150;
+        }
         SetHomeMenuVisible(false);
         AcquirePopupInputBlock();
         if (searchBar != null) searchBar.text = "";

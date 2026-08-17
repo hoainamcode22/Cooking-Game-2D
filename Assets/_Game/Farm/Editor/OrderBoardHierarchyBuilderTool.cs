@@ -84,12 +84,10 @@ public class OrderBoardHierarchyBuilderTool : EditorWindow
         EnsurePrefabFolder();
 
         BuildSystem();
-        BuildPopup();
-        BuildWorldObject();
+        BuildPopup(); // CHỈ DỰNG POPUP UI, KHÔNG ĐỤNG VÀO CÔNG TRÌNH NGOÀI MAP
 
         MarkSceneDirty();
-        Debug.Log("[BảngĐơn] Dựng xong. Kiểm tra 3 object gốc trong scene: " +
-                  $"{SystemName} · {CanvasName} · {WorldObjectName}");
+        Debug.Log("[BảngĐơn] Dựng xong Popup UI. Giữ nguyên 100% công trình trên map.");
     }
 
     private static void EnsurePrefabFolder()
@@ -172,41 +170,80 @@ public class OrderBoardHierarchyBuilderTool : EditorWindow
         dimBtn.targetGraphic = dimImg;
         dimBtn.transition    = Selectable.Transition.None;
 
-        // ── Thân popup ───────────────────────────────────────────────────────
+        // ── Thân popup (Khung ván gỗ đồng bộ 100% Kho & Shop) ─────────────────
         RectTransform main = CreateUI("Popup_Main", dim);
         Center(main, Vector2.zero, new Vector2(POPUP_W, POPUP_H));
 
-        RectTransform bg = CreateUI("IMG_ArtPanelBackground", main);
-        Stretch(bg, 0, 0, 0, 0);
-        Sliced(bg, "ob_panel", Color.white);
+        // 3a. Viền gỗ ngoài #4A2508
+        RectTransform boardBorder = CreateUI("Board_Border", main);
+        Stretch(boardBorder, -8, -8, -8, -8);
+        boardBorder.gameObject.AddComponent<Image>().color = TaskPopupDesign.VanGoVien;
 
-        // ── B3 · Biển tên + icon ─────────────────────────────────────────────
-        RectTransform pill = CreateUI("TitlePill", main);
-        Anchor(pill, new Vector2(0.5f, 1f), new Vector2(0f, 20f), new Vector2(480f, 92f));
-        Sliced(pill, "ob_pill", Color.white);
+        // 3b. Thân ván gỗ đáy #7C4E22
+        RectTransform boardFill = CreateUI("Board_Fill_Bottom", main);
+        Stretch(boardFill, 0, 0, 0, 0);
+        boardFill.gameObject.AddComponent<Image>().color = TaskPopupDesign.VanGoDuoi;
 
-        RectTransform titleIcon = CreateUI("IMG_ArtTitleIcon", pill);
-        Anchor(titleIcon, new Vector2(0f, 0.5f), new Vector2(60f, 0f), new Vector2(54f, 54f));
-        Simple(titleIcon, "ob_clipboard", OrderBoardSpriteFactory.Cream);
+        // 3c. Lớp phủ gradient #A9743C
+        RectTransform boardTop = CreateUI("Board_Fill_Top", main);
+        Stretch(boardTop, 0, 0, 0, 0);
+        boardTop.gameObject.AddComponent<Image>().color = new Color(TaskPopupDesign.VanGoTren.r, TaskPopupDesign.VanGoTren.g, TaskPopupDesign.VanGoTren.b, 0.45f);
 
-        TextMeshProUGUI title = AddText(pill, "Text_Title", "BẢNG ĐƠN HÀNG", 40,
-                                        OrderBoardSpriteFactory.Amber, TextAlignmentOptions.Center);
-        Stretch(title.rectTransform, 100, 8, 40, 8);
+        // 3d. Thớ ván ngang
+        for (int i = 1; i <= 6; i++)
+        {
+            float yPos = 400f - i * 125f;
+            RectTransform grainRect = CreateUI($"Board_Grain_{i}", main);
+            Center(grainRect, new Vector2(0f, yPos), new Vector2(1460f, 5f));
+            grainRect.gameObject.AddComponent<Image>().color = TaskPopupDesign.VanGoTho;
+        }
+
+        // 3e. 4 Đinh sắt góc
+        Vector2[] studPositions = {
+            new Vector2(-700f, 385f), new Vector2(700f, 385f),
+            new Vector2(-700f, -385f), new Vector2(700f, -385f)
+        };
+        for (int i = 0; i < studPositions.Length; i++)
+        {
+            Vector2 pos = studPositions[i];
+            RectTransform sRim = CreateUI($"Stud_{i}_Rim", main);
+            Center(sRim, pos, new Vector2(30f, 30f));
+            sRim.gameObject.AddComponent<Image>().color = TaskPopupDesign.DinhSatVien;
+
+            RectTransform sBase = CreateUI($"Stud_{i}_Base", main);
+            Center(sBase, pos, new Vector2(26f, 26f));
+            sBase.gameObject.AddComponent<Image>().color = TaskPopupDesign.DinhSatToi;
+
+            RectTransform sShine = CreateUI($"Stud_{i}_Shine", main);
+            Center(sShine, pos + new Vector2(-2f, 2f), new Vector2(13f, 13f));
+            sShine.gameObject.AddComponent<Image>().color = TaskPopupDesign.DinhSatSang;
+        }
+
+        // 4. RIBBON TIÊU ĐỀ ("BẢNG ĐƠN HÀNG" 3D 100% SVG ASSET)
+        Sprite bannerRibbonSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_banner_ribbon.png");
+        RectTransform bannerRect = CreateUI("Header_Banner", main);
+        Center(bannerRect, new Vector2(0f, 415f), new Vector2(620f, 126f));
+        Image bannerImg = bannerRect.gameObject.AddComponent<Image>();
+        bannerImg.sprite = bannerRibbonSpr;
+        bannerImg.type = Image.Type.Sliced;
+        bannerImg.raycastTarget = false;
+
+        TextMeshProUGUI title = AddText(bannerRect, "Text_Title", "BẢNG ĐƠN HÀNG", 46,
+                                        TaskPopupDesign.ChuTieuDe, TextAlignmentOptions.Center);
+        Stretch(title.rectTransform, 40, 6, 40, 6);
         title.fontStyle = FontStyles.Bold;
+        title.characterSpacing = 4f;
+        title.textWrappingMode = TextWrappingModes.NoWrap;
 
-        // ── B3 · Nút X đỏ LỒI RA NGOÀI mép panel ─────────────────────────────
-        // Đặt ngoài mép là có chủ đích (theo video): nút đóng không ăn mất chỗ bên trong
-        // panel, và ngón tay bấm hụt vào mép panel cũng không đóng nhầm popup.
+        // 5. NÚT ĐÓNG [X] (btnX.png 90x90)
+        Sprite btnCloseSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/btnX.png");
         RectTransform close = CreateUI("BtnClose", main);
-        Anchor(close, new Vector2(1f, 1f), new Vector2(28f, 28f), new Vector2(86f, 86f));
+        Center(close, new Vector2(735f, 415f), new Vector2(90f, 90f));
         Image closeImg = close.gameObject.AddComponent<Image>();
-        closeImg.sprite = OrderBoardSpriteFactory.Load("ob_circle");
-        closeImg.color  = OrderBoardSpriteFactory.Brick;
+        closeImg.sprite = btnCloseSpr ?? OrderBoardSpriteFactory.Load("ob_circle");
+        closeImg.preserveAspect = true;
         Button closeBtn = close.gameObject.AddComponent<Button>();
         closeBtn.targetGraphic = closeImg;
-        TextMeshProUGUI closeTxt = AddText(close, "Text_X", "X", 42, Color.white, TextAlignmentOptions.Center);
-        Stretch(closeTxt.rectTransform, 0, 0, 0, 4);
-        closeTxt.fontStyle = FontStyles.Bold;
 
         // ── B4 · Cột trái: lưới phiếu 3x3 ────────────────────────────────────
         RectTransform gridBack = CreateUI("Panel_TicketArea", main);

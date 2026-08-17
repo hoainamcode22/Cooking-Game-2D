@@ -1,15 +1,15 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 /// <summary>
 /// MỘT Ô TRONG LƯỚI CHỌN VẬT PHẨM (cột giữa của panel trượt — B4).
 ///
 /// Bố cục theo video: tên ở TRÊN, icon ở giữa, **badge số lượng nằm góc dưới phải**.
-/// Badge phải luôn thấy được: nó là thứ duy nhất cho biết còn bao nhiêu để bán, và
-/// cũng là cách người chơi nhận ra vật phẩm sắp biến mất khỏi lưới (B6).
+/// Hỗ trợ chuyển tiếp thao tác kéo vuốt trên PC & Mobile cảm ứng mượt mà.
 /// </summary>
-public class StallPickItemCellUI : MonoBehaviour
+public class StallPickItemCellUI : MonoBehaviour, IInitializePotentialDragHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler
 {
     [Header("Nội dung")]
     [SerializeField] private Image    imageIcon;
@@ -23,8 +23,44 @@ public class StallPickItemCellUI : MonoBehaviour
 
     private StallPopupUI _owner;
     private string       _itemId;
+    private ScrollRect   _parentScrollRect;
 
     public string ItemId => _itemId;
+
+    private ScrollRect ParentScrollRect
+    {
+        get
+        {
+            if (_parentScrollRect == null)
+                _parentScrollRect = GetComponentInParent<ScrollRect>();
+            return _parentScrollRect;
+        }
+    }
+
+    public void OnInitializePotentialDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnInitializePotentialDrag(eventData);
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnBeginDrag(eventData);
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnDrag(eventData);
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnEndDrag(eventData);
+    }
+
+    public void OnScroll(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnScroll(eventData);
+    }
 
     public void Bind(StallPopupUI owner, string itemId, int amount)
     {
@@ -70,8 +106,8 @@ public class StallPickItemCellUI : MonoBehaviour
         if (imageArtCellBackground != null)
         {
             imageArtCellBackground.color = selected
-                ? new Color(0.18f, 0.75f, 0.66f, 1f)   // ngọc lam — màu nhấn của bộ quầy hàng
-                : new Color(0.24f, 0.15f, 0.35f, 1f);
+                ? new Color(1.0f, 0.95f, 0.8f, 1f)
+                : Color.white;
         }
     }
 }

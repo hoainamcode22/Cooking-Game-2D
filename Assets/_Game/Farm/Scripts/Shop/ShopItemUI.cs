@@ -8,7 +8,7 @@ using UnityEngine.UI;
 /// Gắn vào Prefab ShopItem_Template — hiển thị thông tin 1 item trong Shop theo thẻ mẫu 3a.
 /// Hỗ trợ chuyển tiếp drag event lên ScrollRect cha để kéo vuốt cuộn mượt mà.
 /// </summary>
-public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler
+public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler
 {
     // ── Tham chiếu UI ────────────────────────────────────────────────────────
     [Header("UI References")]
@@ -54,32 +54,48 @@ public class ShopItemUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDr
 
     private void Awake()
     {
-        parentScrollRect = GetComponentInParent<ScrollRect>();
+        EnsureParentScrollRect();
 
         if (btnPlus != null)  btnPlus.onClick.AddListener(IncreaseQuantity);
         if (btnMinus != null) btnMinus.onClick.AddListener(DecreaseQuantity);
         if (btnBuy != null)   btnBuy.onClick.AddListener(BuyItem);
     }
 
-    // ── Chuyển tiếp Drag & Scroll lên ScrollRect cha ────────────────────────
+    private void EnsureParentScrollRect()
+    {
+        if (parentScrollRect == null)
+            parentScrollRect = GetComponentInParent<ScrollRect>();
+    }
+
+    // ── Chuyển tiếp Drag & Scroll lên ScrollRect cha (PC & Mobile cảm ứng) ────
+
+    public void OnInitializePotentialDrag(PointerEventData eventData)
+    {
+        EnsureParentScrollRect();
+        if (parentScrollRect != null) parentScrollRect.OnInitializePotentialDrag(eventData);
+    }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        EnsureParentScrollRect();
         if (parentScrollRect != null) parentScrollRect.OnBeginDrag(eventData);
     }
 
     public void OnDrag(PointerEventData eventData)
     {
+        EnsureParentScrollRect();
         if (parentScrollRect != null) parentScrollRect.OnDrag(eventData);
     }
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        EnsureParentScrollRect();
         if (parentScrollRect != null) parentScrollRect.OnEndDrag(eventData);
     }
 
     public void OnScroll(PointerEventData eventData)
     {
+        EnsureParentScrollRect();
         if (parentScrollRect != null) parentScrollRect.OnScroll(eventData);
     }
 

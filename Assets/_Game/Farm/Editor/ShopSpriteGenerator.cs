@@ -109,8 +109,30 @@ public static class ShopSpriteGenerator
             FillCircle(tex, 32, 32, 26, new Color(0.36f, 0.26f, 0.15f, 1f)); // #5B4226
         });
 
+        // 12. Panel Khung Gỗ 9-Slice (chuẩn 100% shop_panel.svg)
+        CreateTexture("shop_panel.png", 200, 200, new Vector4(36, 36, 36, 36), (tex) =>
+        {
+            // Outer shadow #42250F
+            FillRoundedRect(tex, 0, 0, 200, 196, 26, new Color(0.26f, 0.15f, 0.06f, 1f));
+            // Wood border #995D28
+            FillRoundedRect(tex, 0, 4, 200, 196, 26, new Color(0.60f, 0.36f, 0.16f, 1f));
+            // Planks base #CC9351
+            FillRoundedRect(tex, 6, 10, 188, 184, 18, new Color(0.80f, 0.58f, 0.32f, 1f));
+            // Inner shadow #6C3E14
+            FillRoundedRect(tex, 8, 12, 184, 180, 16, new Color(0.72f, 0.50f, 0.26f, 0.4f));
+            // Top highlight #F0C389
+            FillTopRoundedRect(tex, 16, 186, 168, 6, 3, new Color(0.94f, 0.76f, 0.54f, 0.6f));
+            // 4 Corner Rivets (#FFD494 -> #CA9751)
+            int[,] rivets = { { 24, 24 }, { 176, 24 }, { 24, 176 }, { 176, 176 } };
+            for (int i = 0; i < 4; i++)
+            {
+                FillCircle(tex, rivets[i, 0], rivets[i, 1], 10, new Color(0.33f, 0.17f, 0.05f, 1f)); // border
+                FillVerticalGradientCircle(tex, rivets[i, 0], rivets[i, 1], 8, new Color(0.79f, 0.59f, 0.32f, 1f), new Color(1.0f, 0.83f, 0.58f, 1f));
+            }
+        });
+
         AssetDatabase.Refresh();
-        Debug.Log("[ShopSpriteGenerator] Đã tạo toàn bộ UI Sprites 9-slice độ nét cao cho Shop (bao gồm shop_banner_ribbon chuẩn mockup 100%)!");
+        Debug.Log("[ShopSpriteGenerator] Đã tạo toàn bộ UI Sprites 9-slice độ nét cao cho Shop (bao gồm shop_banner_ribbon & shop_panel chuẩn mockup 100%)!");
     }
 
     private static void CreateTexture(string fileName, int width, int height, Vector4 border, System.Action<Texture2D> painter)
