@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
@@ -91,10 +91,28 @@ public class PenBasketDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
         Vector3 world  = cam.ScreenToWorldPoint(screenPos);
         Vector2 world2 = new Vector2(world.x, world.y);
 
-        // LayerMask mặc định (tất cả layer) — nếu cần hạn chế thì gán layer riêng cho chuồng
-        Collider2D hit = Physics2D.OverlapPoint(world2);
-        if (hit == null) return null;
+        // Quét tất cả colliders để tránh bị livestock hay hàng rào che mất
+        Collider2D[] hits = Physics2D.OverlapPointAll(world2);
+        if (hits != null)
+        {
+            foreach (var hit in hits)
+            {
+                var target = hit.GetComponent<PenDropTarget>() ?? hit.GetComponentInParent<PenDropTarget>();
+                if (target != null) return target;
+            }
+        }
 
-        return hit.GetComponent<PenDropTarget>();
+        // Fallback: Nếu thả gần vị trí chuồng (trong bán kính 4 unit)
+        var parentPen = GetComponentInParent<PenMiniPanelUI>();
+        if (parentPen != null)
+        {
+            float dist = Vector2.Distance(world2, parentPen.transform.position);
+            if (dist < 4f)
+            {
+                return parentPen.GetComponent<PenDropTarget>() ?? parentPen.GetComponentInChildren<PenDropTarget>() ?? parentPen.GetComponentInParent<PenDropTarget>();
+            }
+        }
+
+        return null;
     }
 }

@@ -49,6 +49,9 @@
 | M1-8 | **Teaser unlock kế tiếp** (HUD: "Cấp tới mở X" + thanh EXP) — retention P0 | 🤖 | ui-programmer | — | Luôn hiện mục tiêu kế tiếp; ẩn khi max | TODO |
 | M1-9 | **Daily login wheel / streak 7 ngày** — retention P0 | 🤝 | gameplay-programmer | M0-2 | Quà mỗi ngày, chuỗi tăng dần, cộng vàng/gem thật | TODO |
 | M1-10 | **Thông báo "đã chín/đã xong"** + đếm ngược rõ trên cây/chuồng — retention P0 | 🤖 | ui-programmer | — | Có badge "✓ chín" + countdown; rõ ở camera xa | TODO |
+| M1-11 | **Fix 12 mission chết trỏ `pho_beef`** (dish thật `pho_bo_tai`; L4/L6/L8 đổi món đúng level) — tool `FixPhoBeefMissions.cs` + vá `MissionSetupTool.cs`, gói tại `production/missionfix/` | 🤝 | gameplay-programmer | — | Chạy menu Fix Pho Beef Missions (APPLY) → 12/12 sửa, 0 lỗi Console; generator đã vá chống tái sinh bug | REVIEW |
+| M1-12 | Sửa 2 mission nấu quá sớm: `proc_c_2_3` (L2 đòi món L9), `proc_c_3_2` (L3 đòi món L5) — Bếp mở L5; generator không xét unlock level của dish | 🤖 | gameplay-programmer | M1-11 | Mission CookDish chỉ xuất hiện từ L5; target là dish đã mở tại level đó | TODO |
+| M1-13 | Rà 70 achievement `a_reach_level_31..100` (cap L30) + 79 mission/daily mồ côi ngoài MissionDatabase — đề xuất dọn/park, chờ duyệt | 🤖 | game-designer | — | Có proposal danh sách xoá/giữ; bạn duyệt trước khi đụng asset | TODO |
 
 ---
 

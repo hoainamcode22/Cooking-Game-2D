@@ -233,11 +233,16 @@ MonoBehaviour:
   animalPrefab: {fileID: 88036800646919876, guid: 309e3af177dd4cdeb4eab0787381ab83, type: 3}
   legacyChildName: heonam1_0
   spawnedChildName: HappyHarvest_Pig
-  localPosition: {x: -0.03, y: 2.04, z: 0}
-  localScale: {x: 0.8, y: 0.8, z: 0.8}
-  sortingOrderOffset: 10
+  localPosition: {x: 0, y: 0, z: 0}
+  localScale: {x: 0.85, y: 0.85, z: 0.85}
+  sortingOrderOffset: 50
   animalCount: 2
-  horizontalSpacing: 1.4
+  horizontalSpacing: 1.2
+  walkBoundsMin: {x: -1.15, y: -0.6}
+  walkBoundsMax: {x: 1.15, y: 0.45}
+  soundClips:
+  - {fileID: 8300000, guid: 481d222bc68d4229a20cb5015a3a646b, type: 3}
+  - {fileID: 8300000, guid: 004638a57ec341ffab05626045363bcd, type: 3}
 --- !u!114 &6276826222337865982
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -487,7 +492,7 @@ PrefabInstance:
     - target: {fileID: 736988142960254716, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 1833139184334439992, guid: 03f00e375caf06145a4bc41253a7a2f1, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
     - target: {fileID: 1037848967059955010, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Size.x
       value: 534.4889
@@ -619,7 +624,7 @@ PrefabInstance:
     - target: {fileID: 3796745679944943026, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -3810440115334909774, guid: 1bbb08395055ade4f9eb9ee6dd21bf59, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
     - target: {fileID: 6056364980241170663, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -627,7 +632,7 @@ PrefabInstance:
     - target: {fileID: 7645119900833754873, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
     - target: {fileID: 8075159325001082237, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: feedItemId
       value: carot

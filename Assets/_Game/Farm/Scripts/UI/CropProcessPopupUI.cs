@@ -12,15 +12,16 @@ using UnityEngine.UI;
 public class CropProcessPopupUI : MonoBehaviour
 {
     [Header("Info")]
-    [SerializeField] private TMP_Text txtCropName;
-    [SerializeField] private TMP_Text txtTimeRemaining;
+    public TMP_Text txtCropName;
+    public TMP_Text txtTimeRemaining;
 
     [Header("Progress Bar")]
-    [SerializeField] private Image progressFill;
+    public Image progressFill;
 
     [Header("Speed Up")]
-    [SerializeField] private Button btnSpeedUp;
-    [SerializeField] private TMP_Text txtGemCost;
+    public Button btnSpeedUp;
+    public TMP_Text txtGemCost;
+    public Image imgDiamondIcon;
 
     /// <summary>
     /// F9 — giá gem KHÔNG còn là số cứng trong Inspector.
@@ -28,7 +29,7 @@ public class CropProcessPopupUI : MonoBehaviour
     /// (<see cref="PlotController.GetSpeedUpGemCost"/>), nên phải đọc lại mỗi frame:
     /// người chơi mở popup rồi ngồi xem thì con số phải giảm dần theo cây.
     /// </summary>
-    private int CurrentGemCost => currentPlot != null ? currentPlot.GetSpeedUpGemCost() : 0;
+    public int CurrentGemCost => currentPlot != null ? currentPlot.GetSpeedUpGemCost() : 0;
 
     public bool IsOpen => gameObject.activeSelf;
     public RectTransform SpeedUpButtonRect =>
@@ -40,16 +41,26 @@ public class CropProcessPopupUI : MonoBehaviour
 
     private PlotController currentPlot;
     private bool popupInputLockHeld;
-    // Thanh XANH thật = Image con của progressFill (type Filled). progressFill chính nó là KHUNG gỗ tĩnh.
+    // Thanh XANH thật = Image con của progressFill (type Filled).
     private Image _fillImage;
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
     private void Awake()
     {
+        AutoBindComponents();
         bool startOpen = gameObject.activeSelf;
-
         if (!startOpen) gameObject.SetActive(false);
+    }
+
+    private void Start()
+    {
+        AutoBindComponents();
+    }
+
+    private void OnDisable()
+    {
+        ReleasePopupInputBlock();
     }
 
     private void Update()
@@ -60,6 +71,7 @@ public class CropProcessPopupUI : MonoBehaviour
         {
             if (currentPlot.IsGrowing)
             {
+                UpdatePositionToCurrentPlot();
                 RefreshDisplay();
             }
             else
@@ -84,11 +96,55 @@ public class CropProcessPopupUI : MonoBehaviour
 
         currentPlot = plot;
 
-        ResolveFillImage();
+        AutoBindComponents();
         RefreshDisplay();
+        UpdatePositionToCurrentPlot();
         gameObject.SetActive(true);
         AcquirePopupInputBlock();
         TutorialManager.Instance?.NotifyOpenCropProcess();
+    }
+
+    private void UpdatePositionToCurrentPlot()
+    {
+        if (currentPlot == null) return;
+
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        Vector3 worldPos = currentPlot.transform.position + new Vector3(0f, 0.7f, 0f);
+
+        Canvas parentCanvas = GetComponentInParent<Canvas>();
+        if (parentCanvas == null) return;
+
+        RectTransform rootRect = GetComponent<RectTransform>();
+        if (rootRect == null) return;
+
+        if (parentCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        {
+            Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
+            if (screenPos.z < 0) return;
+
+            RectTransform canvasRect = parentCanvas.GetComponent<RectTransform>();
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPos, null, out Vector2 localPos))
+            {
+                rootRect.anchoredPosition = localPos;
+            }
+        }
+        else if (parentCanvas.renderMode == RenderMode.ScreenSpaceCamera)
+        {
+            Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
+            if (screenPos.z < 0) return;
+
+            RectTransform canvasRect = parentCanvas.GetComponent<RectTransform>();
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, screenPos, parentCanvas.worldCamera, out Vector2 localPos))
+            {
+                rootRect.anchoredPosition = localPos;
+            }
+        }
+        else
+        {
+            rootRect.position = worldPos;
+        }
     }
 
     public void ClosePopup()
@@ -96,11 +152,6 @@ public class CropProcessPopupUI : MonoBehaviour
         ReleasePopupInputBlock();
         gameObject.SetActive(false);
         currentPlot = null;
-    }
-
-    private void OnDisable()
-    {
-        ReleasePopupInputBlock();
     }
 
     /// <summary>
@@ -144,28 +195,56 @@ public class CropProcessPopupUI : MonoBehaviour
 
     // ── Internal ─────────────────────────────────────────────────────────────
 
-    /// <summary>
-    /// Xác định thanh XANH thật để fill: là Image con của progressFill (đã set type Filled, màu xanh,
-    /// sprite trống). progressFill chính nó là KHUNG gỗ (khungprocess) → GIỮ TĨNH, không fill.
-    /// Nhờ vậy chỉ phần xanh chảy theo thời gian, viền khung đứng yên.
-    /// </summary>
-    private void ResolveFillImage()
+    public void AutoBindComponents()
     {
-        if (progressFill == null) { _fillImage = null; return; }
-
-        _fillImage = progressFill;
-        foreach (var img in progressFill.GetComponentsInChildren<Image>(true))
+        if (progressFill == null)
         {
-            if (img == progressFill) continue;
-            _fillImage = img;   // ưu tiên thanh xanh (Image con)
-            break;
+            var fillTr = transform.Find("Track_Bar/Progress_Fill") ?? transform.Find("Progress_Fill");
+            if (fillTr != null) progressFill = fillTr.GetComponent<Image>();
         }
 
-        if (_fillImage != null)
+        if (txtTimeRemaining == null)
         {
-            _fillImage.type       = Image.Type.Filled;
-            _fillImage.fillMethod = Image.FillMethod.Horizontal;
-            _fillImage.fillOrigin = (int)Image.OriginHorizontal.Left;
+            var timeTr = transform.Find("Track_Bar/Txt_TimeRemaining") ?? transform.Find("Txt_TimeRemaining") ?? transform.Find("Text_Time");
+            if (timeTr != null) txtTimeRemaining = timeTr.GetComponent<TMP_Text>();
+        }
+
+        if (txtCropName == null)
+        {
+            var nameTr = transform.Find("Txt_CropName") ?? transform.Find("Text_CropName");
+            if (nameTr != null) txtCropName = nameTr.GetComponent<TMP_Text>();
+        }
+
+        if (btnSpeedUp == null)
+        {
+            var btnTr = transform.Find("Btn_SpeedUp") ?? transform.Find("Btn_gem");
+            if (btnTr != null) btnSpeedUp = btnTr.GetComponent<Button>();
+        }
+
+        if (btnSpeedUp != null)
+        {
+            if (txtGemCost == null)
+            {
+                var costTr = btnSpeedUp.transform.Find("Txt_GemCost") ?? btnSpeedUp.transform.Find("Text_Gia");
+                if (costTr != null) txtGemCost = costTr.GetComponent<TMP_Text>();
+                else txtGemCost = btnSpeedUp.GetComponentInChildren<TMP_Text>(true);
+            }
+
+            if (imgDiamondIcon == null)
+            {
+                var diaTr = btnSpeedUp.transform.Find("Icon_Diamond") ?? btnSpeedUp.transform.Find("Icon_Tien") ?? btnSpeedUp.transform.Find("img_kimcuong");
+                if (diaTr != null) imgDiamondIcon = diaTr.GetComponent<Image>();
+            }
+
+            btnSpeedUp.onClick.RemoveAllListeners();
+            btnSpeedUp.onClick.AddListener(OnGemClick);
+        }
+
+        if (progressFill != null)
+        {
+            progressFill.type = Image.Type.Filled;
+            progressFill.fillMethod = Image.FillMethod.Horizontal;
+            progressFill.fillOrigin = (int)Image.OriginHorizontal.Left;
         }
     }
 
@@ -173,22 +252,32 @@ public class CropProcessPopupUI : MonoBehaviour
     {
         if (currentPlot == null) return;
 
+        if (txtCropName == null || progressFill == null || txtTimeRemaining == null || btnSpeedUp == null)
+        {
+            AutoBindComponents();
+        }
+
         if (txtCropName != null)
+        {
             txtCropName.text = currentPlot.CurrentCrop != null
                 ? currentPlot.CurrentCrop.displayName
                 : "Đang lớn...";
+        }
 
         if (txtTimeRemaining != null)
+        {
             txtTimeRemaining.text = currentPlot.GetRemainingTimeText();
+        }
 
-        // Giá gem tụt dần theo thời gian còn lại → phải vẽ lại cùng nhịp với đồng hồ
         if (txtGemCost != null)
+        {
             txtGemCost.text = CurrentGemCost.ToString();
+        }
 
-        // Chỉ fill thanh XANH (Image con). Viền khung gỗ (progressFill) giữ tĩnh.
-        if (_fillImage == null) ResolveFillImage();
-        if (_fillImage != null)
-            _fillImage.fillAmount = currentPlot.GetGrowProgress01();
+        if (progressFill != null)
+        {
+            progressFill.fillAmount = currentPlot.GetGrowProgress01();
+        }
     }
 
     private void OnSpeedUpClicked()

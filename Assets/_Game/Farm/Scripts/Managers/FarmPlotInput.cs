@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 
@@ -27,13 +27,8 @@ public class FarmPlotInput : MonoBehaviour
             return;
         }
 
-        if (FarmInputLock.BlockMapPan)
-        {
-            return;
-        }
-
-        // Không xử lý trong khi đang kéo hạt giống
-        if (FarmInputLock.IsDraggingSeed)
+        // Không xử lý trong khi đang kéo hạt giống hoặc liềm
+        if (FarmInputLock.IsDraggingSeed || FarmInputLock.IsDraggingSickle)
         {
             return;
         }

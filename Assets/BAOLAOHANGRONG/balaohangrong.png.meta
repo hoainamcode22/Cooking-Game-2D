@@ -1,0 +1,429 @@
+fileFormatVersion: 2
+guid: 83a4c1063c374c74e9cea99efc7e727d
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -7719421811736596632
+    second: balaohangrong_0
+  - first:
+      213: 8778906808852849525
+    second: balaohangrong_1
+  - first:
+      213: -706518421825469241
+    second: balaohangrong_2
+  - first:
+      213: 4853456249606371363
+    second: balaohangrong_3
+  - first:
+      213: 6255522123531867341
+    second: balaohangrong_4
+  - first:
+      213: 1108940288248305238
+    second: balaohangrong_5
+  - first:
+      213: 5870702118144416684
+    second: balaohangrong_6
+  - first:
+      213: 2655695980094087586
+    second: balaohangrong_7
+  - first:
+      213: 6480367778364064066
+    second: balaohangrong_8
+  - first:
+      213: -7861636539898462553
+    second: balaohangrong_9
+  - first:
+      213: 5730552169926174360
+    second: balaohangrong_10
+  - first:
+      213: -3597508169237861887
+    second: balaohangrong_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 9
+  spritePivot: {x: 0.5, y: 0}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 1024
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: balaohangrong_10
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 12
+        width: 73
+        height: 125
+      alignment: 9
+      pivot: {x: 0.6391192, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8962b4736d2078f40800000000000000
+      internalID: 5730552169926174360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_11
+      rect:
+        serializedVersion: 2
+        x: 447
+        y: 12
+        width: 74
+        height: 125
+      alignment: 9
+      pivot: {x: 0.6002993, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 10ae2086165131ec0800000000000000
+      internalID: -3597508169237861887
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_00
+      rect:
+        serializedVersion: 2
+        x: 47
+        y: 291
+        width: 90
+        height: 127
+      alignment: 9
+      pivot: {x: 0.47918922, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a204870c3b9de6041961167ca3e1c06e
+      internalID: 1697936870
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_01
+      rect:
+        serializedVersion: 2
+        x: 183
+        y: 291
+        width: 91
+        height: 127
+      alignment: 9
+      pivot: {x: 0.4345735, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 82cb846bb425e0e4ba165a2df7e76c86
+      internalID: 506308003
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_02
+      rect:
+        serializedVersion: 2
+        x: 316
+        y: 291
+        width: 91
+        height: 127
+      alignment: 9
+      pivot: {x: 0.43001246, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9bb34549ae022c643ae8bbe1ce73097f
+      internalID: 1844197004
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_03
+      rect:
+        serializedVersion: 2
+        x: 449
+        y: 291
+        width: 88
+        height: 127
+      alignment: 9
+      pivot: {x: 0.44361532, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bba8cd1ed08d6e6499dde10cf6fa1fd8
+      internalID: -847406760
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_04
+      rect:
+        serializedVersion: 2
+        x: 52
+        y: 150
+        width: 88
+        height: 126
+      alignment: 9
+      pivot: {x: 0.43919, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 885c7a40d8f79e442a0eafa77b285cec
+      internalID: -1242210800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_05
+      rect:
+        serializedVersion: 2
+        x: 185
+        y: 150
+        width: 86
+        height: 126
+      alignment: 9
+      pivot: {x: 0.44309235, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f986978e43493a04fb65084de5b87711
+      internalID: -678152150
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_06
+      rect:
+        serializedVersion: 2
+        x: 317
+        y: 150
+        width: 82
+        height: 126
+      alignment: 9
+      pivot: {x: 0.47469833, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3224c88eb75d0d44fae3f70148caadae
+      internalID: -1314033597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_07
+      rect:
+        serializedVersion: 2
+        x: 450
+        y: 150
+        width: 82
+        height: 126
+      alignment: 9
+      pivot: {x: 0.47968534, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ea8ebb8fd574ee7499a9953b521f2bf1
+      internalID: -212717509
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_08
+      rect:
+        serializedVersion: 2
+        x: 55
+        y: 12
+        width: 82
+        height: 125
+      alignment: 9
+      pivot: {x: 0.45421284, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4181a92be4bf0c4f9e8640b703ec9b5
+      internalID: 266955909
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: balaohangrong_09
+      rect:
+        serializedVersion: 2
+        x: 188
+        y: 12
+        width: 79
+        height: 125
+      alignment: 9
+      pivot: {x: 0.47215194, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7af1f4f65bfcbd94485c2f195c9293cc
+      internalID: -34661873
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 176f219bc6d79314c96cb8e6a8c62f3d
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      balaohangrong_00: 1697936870
+      balaohangrong_01: 506308003
+      balaohangrong_02: 1844197004
+      balaohangrong_03: -847406760
+      balaohangrong_04: -1242210800
+      balaohangrong_05: -678152150
+      balaohangrong_06: -1314033597
+      balaohangrong_07: -212717509
+      balaohangrong_08: 266955909
+      balaohangrong_09: -34661873
+      balaohangrong_10: 5730552169926174360
+      balaohangrong_11: -3597508169237861887
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

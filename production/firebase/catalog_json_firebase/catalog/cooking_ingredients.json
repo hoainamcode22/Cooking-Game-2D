@@ -1,0 +1,359 @@
+[
+  {
+    "itemId": "beef",
+    "name": "Beef",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 3,
+      "texture": 2
+    },
+    "sprite_guid": "7c146c31094766a4888de50bc8013caa",
+    "sprite_path": "Assets/Assetsgame/Thịt/thitbo-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Beef.asset"
+  },
+  {
+    "itemId": "bapcai",
+    "name": "Bắp Cải",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 2,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 0,
+      "texture": 0
+    },
+    "sprite_guid": "b0b144ddc7537a348b0c7d8ec7c4b7e4",
+    "sprite_path": "Assets/Assetsgame/hatgiong/bapcailever2-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Cabbage.asset"
+  },
+  {
+    "itemId": "carot",
+    "name": "Cà Rốt",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 1,
+      "spicy": 0,
+      "sour": 1,
+      "umami": 0,
+      "texture": 1
+    },
+    "sprite_guid": "056a5265973e3024785694e5f2f4e236",
+    "sprite_path": "Assets/Assetsgame/hatgiong/carot-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Carot.asset"
+  },
+  {
+    "itemId": "chicken",
+    "name": "Chicken",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 2,
+      "texture": 2
+    },
+    "sprite_guid": "888289491956e5347952a87ca3ec06d1",
+    "sprite_path": "Assets/Assetsgame/Thịt/thitga-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Chicken.asset"
+  },
+  {
+    "itemId": "ngo",
+    "name": "Ngô",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 1,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 0,
+      "texture": 0
+    },
+    "sprite_guid": "7052130bafa12124e87e8448046bae07",
+    "sprite_path": "Assets/Assetsgame/hatgiong/bap-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Corn.asset"
+  },
+  {
+    "itemId": "egg",
+    "name": "Trứng",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 1,
+      "texture": 1
+    },
+    "sprite_guid": "15faf402283724c4a8c0194063d3fe76",
+    "sprite_path": "Assets/Assetsgame/Thịt/trung-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Egg.asset"
+  },
+  {
+    "itemId": "herbs",
+    "name": "Herbs",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 1,
+      "texture": 1
+    },
+    "sprite_guid": "90a4252b924d8fb44b2e6ead23bc8d58",
+    "sprite_path": "Assets/Anh/rau.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Herbs.asset"
+  },
+  {
+    "itemId": "khoaitay",
+    "name": "Khoai Tây",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 1,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 1,
+      "texture": 0
+    },
+    "sprite_guid": "c0014274ce5b13e48b90062dd2280b80",
+    "sprite_path": "Assets/Assetsgame/hatgiong/iconKhoaiTay.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_KhoaiTay.asset"
+  },
+  {
+    "itemId": "mushroom",
+    "name": "Mushroom",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 2,
+      "texture": 1
+    },
+    "sprite_guid": "4d849149e4c04714a9c1b16b0cae29ed",
+    "sprite_path": "Assets/Assetsgame/hatgiong/VES8N-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Mushroom.asset"
+  },
+  {
+    "itemId": "pork",
+    "name": "Thịt heo",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 3,
+      "texture": 2
+    },
+    "sprite_guid": "de16df85269be62459a51c70a1ac2585",
+    "sprite_path": "Assets/Assetsgame/Thịt/thitheo-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Pork.asset"
+  },
+  {
+    "itemId": "rice",
+    "name": "Rice",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 1,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 0,
+      "texture": 2
+    },
+    "sprite_guid": "ae3730e6740dc42438b21a76abafb62a",
+    "sprite_path": "Assets/Anh/rice.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Rice.asset"
+  },
+  {
+    "itemId": "sugarcane",
+    "name": "Mía",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 3,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 0,
+      "texture": 0
+    },
+    "sprite_guid": "e6c12ff2d0ad38b45af17c41ab41112e",
+    "sprite_path": "Assets/Assetsgame/hatgiong/mia-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_Sugarcane.asset"
+  },
+  {
+    "itemId": "cachua",
+    "name": "Cà Chua",
+    "category": "ingredient",
+    "tier": "Basic",
+    "stars": null,
+    "flavor_vector": {
+      "sweet": 2,
+      "spicy": 0,
+      "sour": 2,
+      "umami": 0,
+      "texture": 0
+    },
+    "sprite_guid": "96c480eebb5cbec4a91d9fd42fd43b54",
+    "sprite_path": "Assets/Assetsgame/cachualever3-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/ING_cachua.asset"
+  },
+  {
+    "itemId": "chili",
+    "name": "Chili",
+    "category": "seasoning",
+    "tier": "Rare",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 3,
+      "sour": 0,
+      "umami": 0,
+      "texture": 1
+    },
+    "sprite_guid": "e07bc155db7814a4db8dd70af2ab53c0",
+    "sprite_path": "Assets/Assetsgame/hatgiong/ot-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/SEA_Chili.asset"
+  },
+  {
+    "itemId": "fishsauce",
+    "name": "FishSauce",
+    "category": "seasoning",
+    "tier": "Rare",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 2,
+      "texture": 0
+    },
+    "sprite_guid": "e05efc49d25b1ac4d8fc62cc1760bf9f",
+    "sprite_path": "Assets/Anh/fish_sauce.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/SEA_FishSauce.asset"
+  },
+  {
+    "itemId": "lemon",
+    "name": "Lemon",
+    "category": "seasoning",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 3,
+      "umami": 0,
+      "texture": 0
+    },
+    "sprite_guid": "2fb67aa1523f6cf499fd0815f52679bc",
+    "sprite_path": "Assets/Assetsgame/hatgiong/chanh-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/SEA_Lemon.asset"
+  },
+  {
+    "itemId": "milk",
+    "name": "Sữa",
+    "category": "seasoning",
+    "tier": "Basic",
+    "stars": null,
+    "flavor_vector": {
+      "sweet": 3,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 0,
+      "texture": 0
+    },
+    "sprite_guid": "309bc08c5417bfc48a42313d16d33afb",
+    "sprite_path": "Assets/Assetsgame/suamilk.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/SEA_Milk.asset"
+  },
+  {
+    "itemId": "pepper",
+    "name": "Pepper",
+    "category": "seasoning",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 1,
+      "sour": 0,
+      "umami": 0,
+      "texture": 0
+    },
+    "sprite_guid": "cd4948aa0afe3c14e87ee94fb4c5a9f6",
+    "sprite_path": "Assets/Assetsgame/hatgiong/tieu.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/SEA_Pepper.asset"
+  },
+  {
+    "itemId": "salt",
+    "name": "Salt",
+    "category": "seasoning",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 1,
+      "texture": 0
+    },
+    "sprite_guid": "a849ade4905cf98419e62a9cf5b043e5",
+    "sprite_path": "Assets/Anh/salt.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/SEA_Salt.asset"
+  },
+  {
+    "itemId": "soysauce",
+    "name": "SoySauce",
+    "category": "seasoning",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 1,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 2,
+      "texture": 0
+    },
+    "sprite_guid": "5c65947b00d7d5a44a54a4cd07de9661",
+    "sprite_path": "Assets/Anh/soy_sauce.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/SEA_SoySauce.asset"
+  },
+  {
+    "itemId": "sugar",
+    "name": "Sugar",
+    "category": "seasoning",
+    "tier": "Basic",
+    "stars": 3,
+    "flavor_vector": {
+      "sweet": 3,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 0,
+      "texture": 0
+    },
+    "sprite_guid": "e6c12ff2d0ad38b45af17c41ab41112e",
+    "sprite_path": "Assets/Assetsgame/hatgiong/mia-removebg-preview.png",
+    "asset_path": "Assets/_Game/Data/Data_cooking/SEA_Sugar.asset"
+  }
+]

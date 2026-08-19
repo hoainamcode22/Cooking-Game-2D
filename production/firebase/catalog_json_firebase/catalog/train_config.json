@@ -1,0 +1,98 @@
+{
+  "cargo_presets": [
+    [
+      {
+        "itemId": "rice",
+        "name_vi": "Lúa",
+        "amount": 4
+      },
+      {
+        "itemId": "ngo",
+        "name_vi": "Ngô",
+        "amount": 6
+      },
+      {
+        "itemId": "egg",
+        "name_vi": "Trứng",
+        "amount": 5
+      },
+      {
+        "itemId": "beef",
+        "name_vi": "Thịt Bò",
+        "amount": 5
+      }
+    ],
+    [
+      {
+        "itemId": "rice",
+        "name_vi": "Lúa",
+        "amount": 7
+      },
+      {
+        "itemId": "beef",
+        "name_vi": "Thịt bò",
+        "amount": 5
+      },
+      {
+        "itemId": "sugarcane",
+        "name_vi": "Mía",
+        "amount": 4
+      },
+      {
+        "itemId": "egg",
+        "name_vi": "Trứng",
+        "amount": 4
+      }
+    ]
+  ],
+  "reward_presets": [
+    [
+      {
+        "itemId": "da",
+        "name_vi": "Đá",
+        "amount": 8
+      },
+      {
+        "itemId": "go",
+        "name_vi": "Gỗ",
+        "amount": 8
+      },
+      {
+        "itemId": "dinh",
+        "name_vi": "Đinh",
+        "amount": 8
+      },
+      {
+        "itemId": "kinh",
+        "name_vi": "Kính",
+        "amount": 8
+      }
+    ],
+    [
+      {
+        "itemId": "da",
+        "name_vi": "Đá",
+        "amount": 10
+      },
+      {
+        "itemId": "go",
+        "name_vi": "Gỗ",
+        "amount": 10
+      },
+      {
+        "itemId": "son",
+        "name_vi": "Sơn",
+        "amount": 8
+      },
+      {
+        "itemId": "kinh",
+        "name_vi": "Kính",
+        "amount": 7
+      }
+    ]
+  ],
+  "asset_paths": [
+    "Assets/_Game/Farm/data/item_taulua/TrainCargoData.asset",
+    "Assets/_Game/Farm/data/item_taulua/TrainRewardData.asset"
+  ]
+}

@@ -41,6 +41,13 @@ public class TouristBoatController : MonoBehaviour
     [Tooltip("Cỡ chữ countdown placeholder tự tạo")]
     [SerializeField] private float countdownFontSize = 72f;
 
+    [Header("Canh vị trí (khi tàu đậu bị lệch khỏi ô)")]
+    [Tooltip("Dịch tàu thêm so với waypoint/Berth, tính bằng unit world. " +
+             "Dùng khi pivot của sprite tàu không nằm giữa thân, làm tàu đậu lệch khỏi ô. " +
+             "Trong Play Mode không kéo tay được vì code ghi lại vị trí mỗi frame — chỉnh 2 số này thay vì kéo. " +
+             "Tool: Tools/Farm Game/Tourist Boat/10.")]
+    [SerializeField] private Vector3 berthOffset = Vector3.zero;
+
     // ─── Runtime ────────────────────────────────────────────────────────
 
     private int       _dockIndex = -1;     // index đã resolve (serialized hoặc suy từ tên cha)
@@ -49,6 +56,9 @@ public class TouristBoatController : MonoBehaviour
     private float     _totalLength;
     private bool      _pathReady;
     private bool      _warnedNoPath;
+    // Cờ chống spam log: mỗi cảnh báo setup chỉ in đúng 1 lần cho mỗi tàu.
+    private bool      _warnedNoSetup;
+    private bool      _warnedNoVisual;
 
     private Vector3 _visualBaseLocalPos;   // localPosition gốc của Visual — bob cộng lên từ đây
     private float   _bobTime;
@@ -86,7 +96,27 @@ public class TouristBoatController : MonoBehaviour
     {
         BoatDockManager mgr = BoatDockManager.Instance;
         if (mgr == null || mgr.Config == null || _dockIndex < 0)
+        {
+            // Trước đây nhánh này im lặng tuyệt đối: dockIndex = -1 (tool không wire
+            // được, hoặc object cha bị đổi tên khác "Dock_XX") làm tàu tắt VĨNH VIỄN
+            // mà không ai biết vì sao. Cảnh báo MỘT LẦN duy nhất — không spam mỗi frame.
+            if (!_warnedNoSetup && mgr != null && mgr.Config != null && _dockIndex < 0)
+            {
+                _warnedNoSetup = true;
+                Debug.LogWarning($"[TouristBoat] '{name}': dockIndex = -1 nen tau nay se KHONG BAO GIO hien. " +
+                                 "Sua: gan dockIndex trong Inspector (0/1/2), hoac dat tau duoi object ten " +
+                                 "'Dock_01'/'Dock_02'/'Dock_03' roi chay Tools/Farm Game/Tourist Boat/1. Setup All. " +
+                                 "Chan doan day du: menu 6. Chan Doan.", this);
+            }
             return;
+        }
+
+        if (!_warnedNoVisual && visual == null)
+        {
+            _warnedNoVisual = true;
+            Debug.LogWarning($"[TouristBoat] '{name}': field Visual chua gan — logic thoi gian van chay " +
+                             "nhung khong co gi hien tren man hinh. Keo SpriteRenderer cua con tau vao field Visual.", this);
+        }
 
         // Path dựng lười: Start của manager có thể chạy SAU Start của tàu
         // (thứ tự script không đảm bảo) nên thử lại mỗi frame tới khi có.
@@ -110,7 +140,7 @@ public class TouristBoatController : MonoBehaviour
                 SetVisualShown(false);
                 ShowCountdown(false);
                 if (_pathReady)
-                    transform.position = _points[0];
+                    transform.position = _points[0] + berthOffset;
                 break;
 
             case BoatState.Arriving:
@@ -124,7 +154,7 @@ public class TouristBoatController : MonoBehaviour
             case BoatState.Docked:
                 SetVisualShown(true);
                 if (_pathReady)
-                    transform.position = _points[_points.Length - 1]; // đậu chính xác tại berth
+                    transform.position = _points[_points.Length - 1] + berthOffset; // đậu chính xác tại berth
                 ShowCountdown(true);
                 UpdateCountdownText(info.DockedRemainingSeconds);
                 break;
@@ -158,7 +188,7 @@ public class TouristBoatController : MonoBehaviour
         Vector3 direction;
         SamplePath(distance, out position, out direction);
 
-        transform.position = position;
+        transform.position = position + berthOffset;
 
         if (updateFacing && Mathf.Abs(direction.x) > 0.0001f)
             SetFacing(direction.x < 0f);
@@ -403,4 +433,24 @@ public class TouristBoatController : MonoBehaviour
         }
         return -1;
     }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// (Editor) Toạ độ tàu SẼ đậu khi vào Play Mode = Berth + berthOffset.
+    /// Tool menu 10 dùng hàm này để snap tàu trong Edit Mode, cho thấy trước
+    /// đúng vị trí Play Mode — vì trong Play Mode kéo tay bị code ghi đè mỗi frame.
+    /// </summary>
+    public Vector3 EditorGetDockedPosition(Transform berth)
+        => (berth != null ? berth.position : transform.position) + berthOffset;
+
+    /// <summary>(Editor) Ghi offset từ vị trí tàu hiện tại so với berth — "kéo rồi chốt".</summary>
+    public void EditorCaptureOffsetFrom(Transform berth)
+    {
+        if (berth == null) return;
+        berthOffset = transform.position - berth.position;
+    }
+
+    /// <summary>(Editor) Đọc offset đang lưu.</summary>
+    public Vector3 EditorBerthOffset => berthOffset;
+#endif
 }

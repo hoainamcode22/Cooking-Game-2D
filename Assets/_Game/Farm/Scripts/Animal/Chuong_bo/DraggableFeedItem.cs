@@ -1,22 +1,22 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class DraggableFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
-    [Header("Cáº¥u hÃ¬nh â€” gÃ¡n trong Inspector")]
+    [Header("Cấu hình — gán trong Inspector")]
     public string feedItemId;
     public float feedDuration;
 
-    [Header("Tham chiáº¿u UI")]
+    [Header("Tham chiếu UI")]
     public TMP_Text txtFeedAmount;
     public Image imgFeedIcon;
 
     private RectTransform rectTransform;
     private Vector2 originalAnchoredPos;
     private CanvasGroup canvasGroup;
-    private Canvas ghostCanvas;   // screen-space overlay Ä‘á»ƒ ghost theo Ä‘Ãºng cursor
+    private Canvas ghostCanvas;   // screen-space overlay để ghost theo đúng cursor
     private GameObject ghostObj;
 
     private void Start()
@@ -32,9 +32,9 @@ public class DraggableFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
     public void OnBeginDrag(PointerEventData eventData)
     {
         canvasGroup.blocksRaycasts = false;
-        FarmInputLock.IsDraggingSeed = true; // khoÃ¡ map pan khi kÃ©o thá»©c Äƒn
+        FarmInputLock.IsDraggingSeed = true; // khoá map pan khi kéo thức ăn
 
-        // Táº¡o canvas Screen Space Overlay riÃªng â€” position = screen pixels, khÃ´ng bá»‹ lá»‡ch
+        // Tạo canvas Screen Space Overlay riêng — position = screen pixels, không bị lệch
         GameObject canvasGo = new GameObject("_FeedGhostCanvas");
         ghostCanvas = canvasGo.AddComponent<Canvas>();
         ghostCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -51,7 +51,7 @@ public class DraggableFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
         ghostRect.sizeDelta = new Vector2(80f, 80f);
         ghostRect.anchorMin = ghostRect.anchorMax = Vector2.zero;
         ghostRect.pivot = new Vector2(0.5f, 0.5f);
-        ghostRect.position = eventData.position; // screen pixels â†’ Ä‘Ãºng ngay cursor
+        ghostRect.position = eventData.position; // screen pixels → đúng ngay cursor
 
         CanvasGroup ghostCG = ghostObj.AddComponent<CanvasGroup>();
         ghostCG.alpha = 0.85f;
@@ -67,7 +67,7 @@ public class DraggableFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
     public void OnEndDrag(PointerEventData eventData)
     {
         canvasGroup.blocksRaycasts = true;
-        FarmInputLock.IsDraggingSeed = false; // má»Ÿ khoÃ¡ map pan
+        FarmInputLock.IsDraggingSeed = false; // mở khoá map pan
 
         if (ghostCanvas != null)
         {
@@ -89,12 +89,34 @@ public class DraggableFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
         Vector3 world  = cam.ScreenToWorldPoint(screenPos);
         Vector2 world2 = new Vector2(world.x, world.y);
 
-        Collider2D hit = Physics2D.OverlapPoint(world2);
-        if (hit == null) return false;
+        Collider2D[] hits = Physics2D.OverlapPointAll(world2);
+        if (hits != null)
+        {
+            foreach (var hit in hits)
+            {
+                PenDropTarget target = hit.GetComponent<PenDropTarget>() ?? hit.GetComponentInParent<PenDropTarget>();
+                if (target != null)
+                {
+                    return target.ReceiveFoodDrop(feedItemId);
+                }
+            }
+        }
 
-        PenDropTarget target = hit.GetComponent<PenDropTarget>();
-        if (target == null) return false;
+        // Fallback: Nếu thả gần chuồng cha
+        var parentPen = GetComponentInParent<PenMiniPanelUI>();
+        if (parentPen != null)
+        {
+            float dist = Vector2.Distance(world2, parentPen.transform.position);
+            if (dist < 4f)
+            {
+                var target = parentPen.GetComponent<PenDropTarget>() ?? parentPen.GetComponentInChildren<PenDropTarget>() ?? parentPen.GetComponentInParent<PenDropTarget>();
+                if (target != null)
+                {
+                    return target.ReceiveFoodDrop(feedItemId);
+                }
+            }
+        }
 
-        return target.ReceiveFoodDrop(feedItemId);
+        return false;
     }
 }

@@ -328,11 +328,16 @@ MonoBehaviour:
   animalPrefab: {fileID: 7686175365432690585, guid: 7538caeddd7e4f5e9877a851b50b68ed, type: 3}
   legacyChildName: ganam1_0
   spawnedChildName: HappyHarvest_Chicken
-  localPosition: {x: -0.06, y: 2.11, z: 0}
-  localScale: {x: 0.8, y: 0.8, z: 0.8}
-  sortingOrderOffset: 10
-  animalCount: 2
-  horizontalSpacing: 1.4
+  localPosition: {x: 0, y: 0, z: 0}
+  localScale: {x: 0.85, y: 0.85, z: 0.85}
+  sortingOrderOffset: 50
+  animalCount: 3
+  horizontalSpacing: 1.1
+  walkBoundsMin: {x: -1.15, y: -0.6}
+  walkBoundsMax: {x: 1.15, y: 0.45}
+  soundClips:
+  - {fileID: 8300000, guid: 335065204f6c4336b6a334cd9a6c05f1, type: 3}
+  - {fileID: 8300000, guid: 56d3c244f28545149b3e3f85d2e0b9c9, type: 3}
 --- !u!114 &8589652062898984983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -491,7 +496,7 @@ PrefabInstance:
     - target: {fileID: 736988142960254716, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
     - target: {fileID: 1037848967059955010, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Size.x
       value: 497.42325
@@ -623,7 +628,7 @@ PrefabInstance:
     - target: {fileID: 3796745679944943026, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -3810440115334909774, guid: 1bbb08395055ade4f9eb9ee6dd21bf59, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
     - target: {fileID: 6056364980241170663, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -631,7 +636,7 @@ PrefabInstance:
     - target: {fileID: 7645119900833754873, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
     - target: {fileID: 8075159325001082237, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: feedItemId
       value: ngo

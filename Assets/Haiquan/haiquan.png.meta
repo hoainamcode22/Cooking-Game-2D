@@ -1,0 +1,429 @@
+fileFormatVersion: 2
+guid: 4bcd1b9df391063439060bac11e9bc4f
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 5822092270025248755
+    second: haiquan_0
+  - first:
+      213: -2001689482908305337
+    second: haiquan_1
+  - first:
+      213: 3652331916330537199
+    second: haiquan_2
+  - first:
+      213: -2191560849352988266
+    second: haiquan_3
+  - first:
+      213: -5851249621637184659
+    second: haiquan_4
+  - first:
+      213: 5426039245458983899
+    second: haiquan_5
+  - first:
+      213: -7243323854089765440
+    second: haiquan_6
+  - first:
+      213: -4452627341806697160
+    second: haiquan_7
+  - first:
+      213: 8120766652950092477
+    second: haiquan_8
+  - first:
+      213: -8460425133683209672
+    second: haiquan_9
+  - first:
+      213: -3595057279662982809
+    second: haiquan_10
+  - first:
+      213: -7821275054326345800
+    second: haiquan_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 9
+  spritePivot: {x: 0.5, y: 0}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 1024
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: haiquan_10
+      rect:
+        serializedVersion: 2
+        x: 306
+        y: 9
+        width: 94
+        height: 130
+      alignment: 9
+      pivot: {x: 0.51350856, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 769718a937acb1ec0800000000000000
+      internalID: -3595057279662982809
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_11
+      rect:
+        serializedVersion: 2
+        x: 436
+        y: 9
+        width: 86
+        height: 130
+      alignment: 9
+      pivot: {x: 0.4712755, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8bf0148e6cf357390800000000000000
+      internalID: -7821275054326345800
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_00
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 288
+        width: 73
+        height: 131
+      alignment: 9
+      pivot: {x: 0.5927625, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 18d14b095cc225f4095bba91c60525d1
+      internalID: -741421260
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_01
+      rect:
+        serializedVersion: 2
+        x: 191
+        y: 288
+        width: 73
+        height: 131
+      alignment: 9
+      pivot: {x: 0.5849505, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa6046cea44a9464ca8c60a0e14c9158
+      internalID: 2056999690
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_02
+      rect:
+        serializedVersion: 2
+        x: 312
+        y: 288
+        width: 72
+        height: 131
+      alignment: 9
+      pivot: {x: 0.5888303, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d75d01e6ff6367d4e89a5f5f63356bc1
+      internalID: 1066523862
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_03
+      rect:
+        serializedVersion: 2
+        x: 432
+        y: 288
+        width: 73
+        height: 131
+      alignment: 9
+      pivot: {x: 0.58273315, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7553c1df5417abf49b391a5b3ee5c78a
+      internalID: 401918656
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_04
+      rect:
+        serializedVersion: 2
+        x: 67
+        y: 148
+        width: 72
+        height: 131
+      alignment: 9
+      pivot: {x: 0.59192806, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 57889c7aeb07af643a7cf0d3e48fd91d
+      internalID: 165402990
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_05
+      rect:
+        serializedVersion: 2
+        x: 191
+        y: 148
+        width: 73
+        height: 131
+      alignment: 9
+      pivot: {x: 0.5865186, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 6004e53b2a7a95a47bcfaf912ac6bcf3
+      internalID: 225840109
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_06
+      rect:
+        serializedVersion: 2
+        x: 313
+        y: 148
+        width: 72
+        height: 131
+      alignment: 9
+      pivot: {x: 0.58115894, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f7347204f7c441541814d3eb41112b1f
+      internalID: 1807078765
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_07
+      rect:
+        serializedVersion: 2
+        x: 435
+        y: 148
+        width: 73
+        height: 131
+      alignment: 9
+      pivot: {x: 0.5858898, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f9e43e66d6ea73c4e8872278116c30b6
+      internalID: 1036174937
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_08
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 9
+        width: 86
+        height: 130
+      alignment: 9
+      pivot: {x: 0.4760209, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: dc9363eb3f893684cbaf09fa6ad255b5
+      internalID: 929561776
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: haiquan_09
+      rect:
+        serializedVersion: 2
+        x: 194
+        y: 9
+        width: 86
+        height: 130
+      alignment: 9
+      pivot: {x: 0.47451872, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2a61d5c46f49fd04c9956639aac0ab78
+      internalID: 2088941930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 50b164d449c1a3a408f35df119f9474c
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      haiquan_00: -741421260
+      haiquan_01: 2056999690
+      haiquan_02: 1066523862
+      haiquan_03: 401918656
+      haiquan_04: 165402990
+      haiquan_05: 225840109
+      haiquan_06: 1807078765
+      haiquan_07: 1036174937
+      haiquan_08: 929561776
+      haiquan_09: 2088941930
+      haiquan_10: -3595057279662982809
+      haiquan_11: -7821275054326345800
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

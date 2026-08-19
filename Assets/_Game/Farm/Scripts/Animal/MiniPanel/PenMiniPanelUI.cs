@@ -1,84 +1,54 @@
-﻿using System;
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-/// <summary>
-/// Mini panel hiá»‡n cáº¡nh chuá»“ng khi click vÃ o. Cháº¡y trÃªn World Space Canvas.
-/// State machine: Idle â†’ Processing â†’ Ready â†’ Idle.
-/// Save/load tiáº¿n Ä‘á»™ qua PlayerPrefs (timestamp thá»±c táº¿).
-/// </summary>
 public class PenMiniPanelUI : MonoBehaviour
 {
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Enums & Constants
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
     public enum PenState { Idle, Processing, Ready }
 
     private const string PrefKeyState     = "PenState_";
     private const string PrefKeyFood      = "PenFood_";
     private const string PrefKeyStartTime = "PenStartTime_";
 
-    // B4 — họ save + phiên bản cho ba khoá chuồng ở trên (mỗi chuồng một hậu tố `penId`).
-    // Ba khoá ghi thẳng số/chuỗi nên dấu phiên bản nằm ở khoá phụ `SAVE_VER_PEN_STATE`.
-    //
-    // v1 = thời gian chuồng tính bằng GIÂY THẬT, đi qua `FarmManager.ScaleSeconds`.
-    // VÌ SAO PHẢI CÓ: `PenStartTime_*` là MỐC THỜI GIAN unix, còn thời lượng thì suy ra từ
-    // `config.feedDurationSeconds` LÚC ĐỌC. Bảng D2 vừa đổi 30s → 90..480s. Người chơi bấm
-    // cho ăn ở bản cũ rồi cập nhật game sẽ thấy lượt đang chạy bỗng dài thêm gấp 3-16 lần,
-    // không thu được. Nhánh migrate cắt lượt đang chạy về Idle và ghi rõ trong log.
     private const string PenSaveFamily  = "PEN_STATE";
     private const int    PenSaveVersion = 1;
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Inspector
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
-    [Header("Config â€” gÃ¡n ScriptableObject Ä‘Ãºng loáº¡i chuá»“ng")]
+    [Header("Config")]
     [SerializeField] private PenMiniPanelConfig config;
 
-    [Header("Panel Root (World Space Canvas / Container)")]
+    [Header("Panel Root")]
     [SerializeField] private GameObject panelRoot;
 
-    [Header("Slot thá»©c Äƒn 1")]
+    [Header("Slot Food 1")]
     [SerializeField] private GameObject slot1Root;
     [SerializeField] private Image      slot1Icon;
     [SerializeField] private TMP_Text   slot1Amount;
 
-    [Header("Slot thá»©c Äƒn 2")]
+    [Header("Slot Food 2")]
     [SerializeField] private GameObject slot2Root;
     [SerializeField] private Image      slot2Icon;
     [SerializeField] private TMP_Text   slot2Amount;
 
-    [Header("Slot rá»• thu hoáº¡ch")]
+    [Header("Slot Basket")]
     [SerializeField] private GameObject basketRoot;
     [SerializeField] private Image      basketIcon;
-    [SerializeField] private GameObject basketActiveGlow; // báº­t/táº¯t tÃ¹y Ready state
+    [SerializeField] private GameObject basketActiveGlow;
 
-    [Header("Overlay tiáº¿n trÃ¬nh (hiá»‡n khi Processing)")]
+    [Header("Progress Overlay")]
     [SerializeField] private GameObject progressOverlay;
-    [SerializeField] private Image      progressFill;     // fillAmount 0â†’1
-    [SerializeField] private TMP_Text   progressLabel;    // "1:23"
-
-    // panelCollider Ä‘Ã£ bá» â€” dÃ¹ng RectTransform cá»§a root canvas Ä‘á»ƒ check click-outside
-
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Runtime State
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    [SerializeField] private Image      progressFill;
+    [SerializeField] private TMP_Text   progressLabel;
 
     public PenState CurrentState { get; private set; } = PenState.Idle;
 
     private float   processStartUnix;
     private string  activeFoodId;
     private Coroutine timerCoroutine;
-    private int     _openedAtFrame = -10; // frame-guard: trÃ¡nh Ä‘Ã³ng ngay frame vá»«a má»Ÿ
-
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Unity Lifecycle
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    private int     _openedAtFrame = -10;
+    private bool    popupInputLockHeld;
 
     private void Awake()
     {
@@ -96,17 +66,17 @@ public class PenMiniPanelUI : MonoBehaviour
             else
                 timerCoroutine = StartCoroutine(ProcessTimerCoroutine(remaining));
         }
-        UpdateReadyBubble();   // hiện bubble nếu nạp lại lúc đang Ready
+        UpdateReadyBubble();
     }
 
     private void Update()
     {
         if (!IsPanelOpen()) return;
 
-        // Frame-guard: bá» qua frame panel vá»«a má»Ÿ, trÃ¡nh Ä‘Ã³ng ngay láº­p tá»©c
+        if (FarmInputLock.IsDraggingSeed) return;
+
         if (Time.frameCount <= _openedAtFrame) return;
 
-        // Click outside â†’ Ä‘Ã³ng panel (dÃ¹ng New Input System, fallback sang legacy)
         bool clicked = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
                     || Input.GetMouseButtonDown(0);
 
@@ -129,41 +99,45 @@ public class PenMiniPanelUI : MonoBehaviour
             ClosePanel();
     }
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Public API â€” gá»i tá»« PenClickDetector vÃ  PenDropTarget
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    private void AcquirePopupInputBlock()
+    {
+        if (popupInputLockHeld) return;
+        FarmInputLock.RegisterPopupOpen();
+        popupInputLockHeld = true;
+    }
 
-    [Tooltip("Kéo thịt/trứng/EXP spawn LÊN CAO (world units) — tránh nằm sát panel thức ăn (sorting C)")]
+    private void ReleasePopupInputBlock()
+    {
+        if (!popupInputLockHeld) return;
+        FarmInputLock.RegisterPopupClose();
+        popupInputLockHeld = false;
+    }
+
+    private void OnDisable()
+    {
+        ReleasePopupInputBlock();
+    }
+
+    [Header("Title")]
+    [SerializeField] private TMP_Text txtPenTitle;
+
+    [Tooltip("Offset spawn FX")]
     [SerializeField] private float harvestSpawnUpOffset = 120f;
 
-    /// <summary>
-    /// F9 — số kim cương để hoàn tất NGAY, tính theo THỜI GIAN CÒN LẠI chứ không phải
-    /// số cứng 1 như trước.
-    ///
-    /// VÌ SAO: sau E1 chuồng chạy 90–480 giây. Cứng 1 gem thì cách chơi tối ưu là cho ăn
-    /// rồi bấm gem ngay, và toàn bộ bảng thời gian D2 vô nghĩa. Dùng ĐÚNG công thức của
-    /// `ConstructionManager` để cả game chỉ có một thang giá rush: ceil(15 + 0.82·√giây).
-    /// </summary>
     private int SpeedUpGemCost =>
         CurrentState == PenState.Processing
             ? ConstructionManager.RushCostFor(GetRemainingSeconds())
             : 0;
 
-    [Header("Sorting (C) — process thấp hơn vật phẩm")]
-    [Tooltip("(C) Canvas của process overlay — GÁN để ép sortingOrder THẤP hơn vật phẩm chuồng. Trống = chỉ dùng sibling order.")]
+    [Header("Sorting")]
     [SerializeField] private Canvas processOverlayCanvas;
-    [SerializeField] private int processSortingOrder = -10;
+    [SerializeField] private int processSortingOrder = 300;
 
-    [Header("Tutorial — nút Gem (process) + bubble 'sẵn sàng' (tự dựng nếu trống, gán ảnh sau)")]
-    [Tooltip("Nền nút kim cương — để trống dùng bo góc tự vẽ.")]
+    [Header("Tutorial")]
     [SerializeField] private Sprite gemButtonBgSprite;
-    [Tooltip("Icon kim cương — để trống dùng hình thoi tự vẽ.")]
     [SerializeField] private Sprite gemIconSprite;
-    [Tooltip("Nền bubble sẵn sàng — để trống dùng bo góc tự vẽ.")]
     [SerializeField] private Sprite readyBubbleBgSprite;
-    [Tooltip("Vị trí bubble 'sẵn sàng' so với chuồng (local) — đặt CAO trên đầu con vật.")]
-    [SerializeField] private Vector2 readyBubbleLocalPos = new Vector2(0f, 420f);
-    [Tooltip("Sorting order của bubble — cao hơn chuồng & con vật để luôn nổi trên cùng.")]
+    [SerializeField] private Vector2 readyBubbleLocalPos = new Vector2(0f, 320f);
     [SerializeField] private int readyBubbleSortingOrder = 1300;
 
     public bool IsPanelOpen() => panelRoot != null && panelRoot.activeSelf;
@@ -181,45 +155,47 @@ public class PenMiniPanelUI : MonoBehaviour
 
     public void OpenPanel()
     {
-        if (config == null)
-        {
-            return;
-        }
-        _openedAtFrame = Time.frameCount; // Ä‘Ã¡nh dáº¥u frame má»Ÿ Ä‘á»ƒ Update bá» qua
-        panelRoot.SetActive(true);
+        if (config == null) return;
+        _openedAtFrame = Time.frameCount;
+        if (panelRoot != null) panelRoot.SetActive(true);
+        AcquirePopupInputBlock();
         RefreshUI();
-        TutorialManager.Instance?.NotifyOpenPen();   // tutorial L2: bước "mở chuồng"
+        TutorialManager.Instance?.NotifyOpenPen();
     }
 
     public void ClosePanel()
     {
+        ReleasePopupInputBlock();
         if (panelRoot != null) panelRoot.SetActive(false);
         FarmInputLock.SuppressWorldClickForCurrentFrame();
     }
 
-    /// <summary>
-    /// PenDropTarget gá»i khi user tháº£ thá»©c Äƒn vÃ o collider chuá»“ng.
-    /// Tráº£ vá» true náº¿u feed thÃ nh cÃ´ng.
-    /// </summary>
+    public void OnSlot1Clicked()
+    {
+        if (config == null || CurrentState != PenState.Idle) return;
+        TryFeed(config.food1ItemId, transform.position);
+    }
+
+    public void OnSlot2Clicked()
+    {
+        if (config == null || CurrentState != PenState.Idle) return;
+        TryFeed(config.food2ItemId, transform.position);
+    }
+
+    public void OnBasketClicked()
+    {
+        if (CurrentState != PenState.Ready) return;
+        TryHarvest(transform.position);
+    }
+
     public bool TryFeed(string foodItemId, Vector3 vfxWorldPosition)
     {
-        if (CurrentState != PenState.Idle)
-        {
-            return false;
-        }
+        if (CurrentState != PenState.Idle) return false;
+        if (foodItemId != config.food1ItemId && foodItemId != config.food2ItemId) return false;
 
-        if (foodItemId != config.food1ItemId && foodItemId != config.food2ItemId)
-        {
-            return false;
-        }
-
-        // E1 — một lượt nuôi tốn `foodAmountPerFeed` đơn vị, không còn cứng 1.
         int need = FoodNeeded;
-
         if (!FarmInventoryManager.Instance.HasItem(foodItemId, need))
         {
-            // Nói rõ vì sao không cho ăn, thay vì im lặng như bản cũ — người chơi kéo
-            // thức ăn vào mà không có phản hồi gì sẽ tưởng chuồng bị lỗi.
             FarmUIManager.Instance?.ShowHint($"Cần {need} phần thức ăn cho một lượt nuôi.");
             return false;
         }
@@ -227,8 +203,9 @@ public class PenMiniPanelUI : MonoBehaviour
         FarmInventoryManager.Instance.RemoveItem(foodItemId, need);
         MissionProgressTracker.ReportEvent(MissionEventType.FeedAnimal, foodItemId, need);
         PlayFeedVFX(foodItemId, vfxWorldPosition);
+        AudioManager.Instance?.PlayPlanting();
         activeFoodId = foodItemId;
-        processStartUnix = (float)GetUnixNow(); // ghi timestamp trÆ°á»›c khi save
+        processStartUnix = (float)GetUnixNow();
         SetState(PenState.Processing);
         SaveState();
 
@@ -238,24 +215,14 @@ public class PenMiniPanelUI : MonoBehaviour
         if (IsPenTutorialStep("L2_08_FeedPen"))
             ClosePanel();
 
-        TutorialManager.Instance?.NotifyFeed();   // tutorial L2: đã cho ăn
+        TutorialManager.Instance?.NotifyFeed();
         return true;
     }
 
-    /// <summary>
-    /// PenDropTarget gá»i khi user tháº£ rá»• vÃ o collider chuá»“ng.
-    /// Tráº£ vá» true náº¿u thu hoáº¡ch thÃ nh cÃ´ng.
-    /// </summary>
     public bool TryHarvest(Vector3 vfxWorldPosition)
     {
-        if (CurrentState != PenState.Ready)
-        {
-            return false;
-        }
+        if (CurrentState != PenState.Ready) return false;
 
-        // F8 — kho có sức chứa THẬT. Kiểm CẢ HAI sản phẩm trước khi đổi state: nếu thu
-        // hoạch xong rồi kho từ chối thì thịt/trứng bốc hơi mà chuồng đã về Idle, người
-        // chơi mất trắng một lượt nuôi kèm thức ăn đã tốn. Thà giữ chuồng ở Ready.
         var inv = FarmInventoryManager.Instance;
         if (inv != null)
         {
@@ -270,21 +237,19 @@ public class PenMiniPanelUI : MonoBehaviour
             }
         }
 
-        // Spawn sáº£n pháº©m chÃ­nh
-        Vector3 productSpawn = vfxWorldPosition + Vector3.up * harvestSpawnUpOffset; // kéo lên cao, tránh panel thức ăn (C)
+        Vector3 productSpawn = vfxWorldPosition + Vector3.up * harvestSpawnUpOffset;
         int productAmount = Mathf.Max(1, config.productAmount);
         SpawnHarvestFX(config.productItemId, config.productIcon, productAmount, productSpawn);
 
-        // Sáº£n pháº©m phá»¥ (chá»‰ gÃ : egg)
         if (!string.IsNullOrEmpty(config.secondProductItemId))
             SpawnHarvestFX(config.secondProductItemId, config.secondProductIcon,
                 Mathf.Max(1, config.secondProductAmount), productSpawn);
 
-        // EXP
         if (HarvestFeedbackSpawner.Instance != null)
             HarvestFeedbackSpawner.Instance.SpawnExpFly(transform.position + Vector3.up * harvestSpawnUpOffset, config.expReward);
 
-        // Cá»™ng vÃ o FarmInventoryManager â€” Kho popup Ä‘á»c tá»« Ä‘Ã¢y, rá»“i user chuyá»ƒn sang KitchenTransferManager
+        AudioManager.Instance?.PlayHarvest();
+
         FarmInventoryManager.Instance.AddItem(config.productItemId, productAmount);
         MissionProgressTracker.ReportEvent(MissionEventType.CollectAnimalProduct, config.productItemId, productAmount);
         if (!string.IsNullOrEmpty(config.secondProductItemId))
@@ -297,14 +262,10 @@ public class PenMiniPanelUI : MonoBehaviour
         SetState(PenState.Idle);
         SaveState();
         RefreshUI();
-        TutorialManager.Instance?.NotifyPenHarvest();   // tutorial L2: đã thu hoạch chuồng
+        TutorialManager.Instance?.NotifyPenHarvest();
         return true;
     }
 
-    /// <summary>Dùng kim cương hoàn tất NGAY quá trình nuôi.
-    /// Gắn vào nút Gem trên pen panel: OnClick → PenMiniPanelUI.TrySpeedUpGem.
-    /// • Trong game thường: bấm gem = hoàn tất + THU HOẠCH gia súc luôn (về Idle).
-    /// • Trong tutorial chuồng (L2_09/L2_10): chỉ chuyển Ready để bước "kéo rổ" còn dạy được.</summary>
     public bool TrySpeedUpGem()
     {
         if (CurrentState != PenState.Processing) return false;
@@ -325,17 +286,14 @@ public class PenMiniPanelUI : MonoBehaviour
         if (penTutorialActive)
             ClosePanel();
 
-        TutorialManager.Instance?.NotifyPenSpeedUp();   // tutorial L2: đã dùng gem hoàn tất
+        TutorialManager.Instance?.NotifyPenSpeedUp();
 
-        // Ngoài tutorial chuồng → thu hoạch ngay (không cần kéo rổ).
         if (!penTutorialActive)
             TryHarvest(transform.position);
 
         return true;
     }
 
-    /// <summary>Đang ở bước tutorial chuồng (gem-speedup / kéo rổ)? Khi đó GIỮ luồng dạy:
-    /// gem chỉ chuyển Ready, để bước L2_10 dạy kéo rổ thu hoạch.</summary>
     private static bool IsPenTutorialActive()
     {
         string step = TutorialManager.Instance != null ? TutorialManager.Instance.CurrentStepName : null;
@@ -348,15 +306,11 @@ public class PenMiniPanelUI : MonoBehaviour
             && TutorialManager.Instance.CurrentStepName == stepName;
     }
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Internal â€” State & Timer
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
     private void SetState(PenState newState)
     {
         CurrentState = newState;
         RefreshUI();
-        UpdateReadyBubble();   // bubble 'sẵn sàng' bật/tắt theo state (kể cả khi panel đóng)
+        UpdateReadyBubble();
     }
 
     private IEnumerator ProcessTimerCoroutine(float duration)
@@ -370,7 +324,6 @@ public class PenMiniPanelUI : MonoBehaviour
 
             if (progressFill  != null) progressFill.fillAmount = t;
             if (progressLabel != null) progressLabel.text = FormatTime(remaining);
-            // Giá gem tụt dần cùng đồng hồ (F9) — không cập nhật thì nhãn đứng ở số cũ
             if (_gemCostText  != null) _gemCostText.text = "x" + ConstructionManager.RushCostFor(remaining);
 
             yield return null;
@@ -390,19 +343,9 @@ public class PenMiniPanelUI : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Số phần thức ăn cho MỘT lượt nuôi (E1). Config cũ chưa có field này thì
-    /// `foodAmountPerFeed` = 0 khi đọc từ YAML → Max(1, …) để không bao giờ ra 0 phần.
-    /// </summary>
-    private int FoodNeeded => config != null ? Mathf.Max(1, config.foodAmountPerFeed) : 1;
+    private int FoodNeeded =>
+        config != null ? Mathf.Max(1, config.foodAmountPerFeed) : 1;
 
-    /// <summary>
-    /// Thời gian nuôi sau khi quy đổi qua `FarmManager.realTimeMultiplier`.
-    ///
-    /// VÌ SAO: trước đây chuồng dùng thẳng `feedDurationSeconds` còn cây trồng thì nhân
-    /// hệ số → hạ multiplier để test thì ruộng nhanh gấp 3 mà chuồng vẫn 30 giây, hai hệ
-    /// đo thời gian bằng hai đơn vị. Với multiplier = 1.0 (mặc định) con số không đổi.
-    /// </summary>
     private float EffectiveFeedSeconds =>
         config != null ? FarmManager.ScaleSeconds(config.feedDurationSeconds) : 1f;
 
@@ -414,10 +357,6 @@ public class PenMiniPanelUI : MonoBehaviour
         return Mathf.Max(0f, EffectiveFeedSeconds - elapsed);
     }
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Internal â€” UI Refresh
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-
     private void RefreshUI()
     {
         if (config == null) return;
@@ -426,21 +365,24 @@ public class PenMiniPanelUI : MonoBehaviour
         bool isProcessing = CurrentState == PenState.Processing;
         bool isReady      = CurrentState == PenState.Ready;
 
-        // Thá»©c Äƒn slot 1
+        Transform panelContent = panelRoot != null ? (panelRoot.transform.Find("PanelContent") ?? panelRoot.transform.Find("panelContent")) : null;
+        if (panelContent != null)
+        {
+            panelContent.gameObject.SetActive(isIdle);
+        }
+
         if (slot1Root != null)
         {
             slot1Root.SetActive(isIdle);
             if (isIdle) RefreshFoodSlot(slot1Icon, slot1Amount, config.food1ItemId, config.food1Icon);
         }
 
-        // Thá»©c Äƒn slot 2
         if (slot2Root != null)
         {
             slot2Root.SetActive(isIdle);
             if (isIdle) RefreshFoodSlot(slot2Icon, slot2Amount, config.food2ItemId, config.food2Icon);
         }
 
-        // Rá»• thu hoạch chỉ hiện khi đã sẵn sàng, nhường chỗ cho nút gem lúc đang Processing.
         if (basketRoot != null)
         {
             basketRoot.SetActive(isReady);
@@ -448,13 +390,12 @@ public class PenMiniPanelUI : MonoBehaviour
                 basketActiveGlow.SetActive(isReady);
         }
 
-        // Progress overlay
         if (progressOverlay != null)
         {
             progressOverlay.SetActive(isProcessing);
             if (isProcessing)
             {
-                progressOverlay.transform.SetAsFirstSibling();   // (C) render dưới vật phẩm cùng panel
+                progressOverlay.transform.SetAsLastSibling();
                 if (processOverlayCanvas != null)
                 {
                     processOverlayCanvas.overrideSorting = true;
@@ -465,10 +406,15 @@ public class PenMiniPanelUI : MonoBehaviour
                     progressFill.fillAmount = 1f - remaining / Mathf.Max(1f, EffectiveFeedSeconds);
                 if (progressLabel != null)
                     progressLabel.text = FormatTime(remaining);
+
+                if (txtPenTitle != null && config != null)
+                {
+                    txtPenTitle.text = GetPenDisplayName();
+                    txtPenTitle.color = Color.white;
+                }
             }
         }
 
-        // Nút Gem: dựng 1 lần (kể cả khi chưa gán progressOverlay), chỉ hiện khi đang Processing.
         EnsureGemButton();
         PlaceGemButton();
         if (_gemButtonGO != null)
@@ -477,9 +423,7 @@ public class PenMiniPanelUI : MonoBehaviour
             if (isProcessing)
             {
                 _gemButtonGO.transform.SetAsLastSibling();
-                // F9: giá phụ thuộc thời gian còn lại → vẽ lại mỗi lần mở panel,
-                // không chỉ lúc coroutine đang chạy.
-                if (_gemCostText != null) _gemCostText.text = "x" + SpeedUpGemCost;
+                if (_gemCostText != null) _gemCostText.text = SpeedUpGemCost.ToString();
             }
         }
     }
@@ -493,15 +437,12 @@ public class PenMiniPanelUI : MonoBehaviour
         if (iconImg != null && fallbackIcon != null)
             iconImg.sprite = fallbackIcon;
 
-        // Hiện "đang có / cần" thay vì chỉ "xN": từ E1 một lượt nuôi tốn 2-3 phần, người
-        // chơi phải thấy được vì sao kéo thức ăn vào mà chuồng không nhận.
         if (amtText != null)
+        {
             amtText.text = $"{amount}/{FoodNeeded}";
+            amtText.color = amount >= FoodNeeded ? new Color(1f, 0.97f, 0.84f, 1f) : new Color(1f, 0.45f, 0.45f, 1f);
+        }
     }
-
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Internal â€” Harvest FX
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void PlayFeedVFX(string foodItemId, Vector3 vfxWorldPosition)
     {
@@ -516,17 +457,10 @@ public class PenMiniPanelUI : MonoBehaviour
 
     private void SpawnHarvestFX(string itemId, Sprite icon, int amount, Vector3 vfxWorldPosition)
     {
-        if (icon == null)
-        {
-            return;
-        }
+        if (icon == null) return;
         HarvestFeedbackSpawner.Instance?.SpawnHarvestFly(icon, vfxWorldPosition, amount);
         FarmCropVFXSpawner.Instance?.PlayHarvestAmountVFX(amount, vfxWorldPosition);
     }
-
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Internal â€” Click-outside Detection
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private bool IsPointerOverPanel(Vector2 screenPos)
     {
@@ -535,10 +469,6 @@ public class PenMiniPanelUI : MonoBehaviour
         Camera cam = Camera.main;
         return RectTransformUtility.RectangleContainsScreenPoint(rt, screenPos, cam);
     }
-
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Internal â€” Save / Load
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void SaveState()
     {
@@ -551,7 +481,7 @@ public class PenMiniPanelUI : MonoBehaviour
         if (CurrentState == PenState.Processing)
             PlayerPrefs.SetString(PrefKeyStartTime + id, processStartUnix.ToString("R"));
 
-        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+        LuuGopPrefs.Hen();
     }
 
     private void LoadState()
@@ -559,9 +489,6 @@ public class PenMiniPanelUI : MonoBehaviour
         if (config == null) return;
         string id = config.penId;
 
-        // B4 — đóng dấu phiên bản trước khi đọc. Dùng `id` của CHÍNH chuồng này để dò
-        // "đã có save cũ chưa", nhưng dấu phiên bản là CHUNG cho cả họ PEN_STATE: chuồng
-        // nào nạp trước thì đóng dấu, các chuồng sau thấy version đã đúng nên không migrate lại.
         bool coSaveCu = PlayerPrefs.HasKey(PrefKeyState + id);
         int verCu = SaveVersionGuard.Ensure(PenSaveFamily, PenSaveVersion, null, coSaveCu);
 
@@ -574,15 +501,8 @@ public class PenMiniPanelUI : MonoBehaviour
             System.Globalization.CultureInfo.InvariantCulture, out double startUnix);
         processStartUnix = (float)startUnix;
 
-        // v0 → v1: cắt lượt đang chạy. Không cắt thì người chơi đang có lượt 30 giây của
-        // bản cũ bị đo lại bằng thời lượng mới (90..480 giây) ⇒ đồng hồ nhảy vọt lên, và
-        // với chuồng bò sữa là chờ thêm 4 phút rưỡi cho một lượt họ tưởng sắp xong.
-        // Trả về Idle là mất công cho ăn của họ, nên HOÀN thức ăn lại vào kho.
         if (verCu < PenSaveVersion && coSaveCu && CurrentState == PenState.Processing)
         {
-            Debug.LogWarning($"[Chuồng {id}] Save v{verCu}: bảng thời gian đã đổi (D2) nên lượt " +
-                             $"đang chạy không còn đo được đúng — trả về Idle và hoàn thức ăn.");
-
             if (!string.IsNullOrEmpty(activeFoodId) && FarmInventoryManager.Instance != null)
                 FarmInventoryManager.Instance.AddItem(activeFoodId, FoodNeeded);
 
@@ -591,12 +511,23 @@ public class PenMiniPanelUI : MonoBehaviour
             processStartUnix  = 0f;
             SaveState();
         }
-
     }
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Helpers
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    private string GetPenDisplayName()
+    {
+        if (config != null && !string.IsNullOrEmpty(config.penName))
+            return config.penName.ToUpper();
+
+        if (config != null)
+        {
+            if (config.penId == "pen_01" || config.productItemId == "beef") return "CHUỒNG BÒ";
+            if (config.penId == "pen_02" || config.productItemId == "pork") return "CHUỒNG HEO";
+            if (config.penId == "pen_03" || config.productItemId == "chicken_meat" || config.secondProductItemId == "egg") return "CHUỒNG GÀ";
+            if (config.penId == "pen_04" || config.productItemId == "milk") return "CHUỒNG BÒ SỮA";
+        }
+
+        return "CHUỒNG NUÔI";
+    }
 
     private static double GetUnixNow() =>
         (System.DateTime.UtcNow - new System.DateTime(1970, 1, 1, 0, 0, 0, System.DateTimeKind.Utc))
@@ -609,29 +540,14 @@ public class PenMiniPanelUI : MonoBehaviour
         return $"{m}:{s:D2}";
     }
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    //  Gá»i khi báº¯t Ä‘áº§u nuÃ´i Ä‘á»ƒ ghi timestamp
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    private void OnFeedStarted()
-    {
-        processStartUnix = (float)GetUnixNow();
-    }
-
-    // =========================================================================
-    //  Tutorial L2 — Nút Gem (trên ô process) + Bubble "sẵn sàng thu hoạch"
-    // =========================================================================
-
     private GameObject _gemButtonGO;
     private TMP_Text   _gemCostText;
     private GameObject _readyBubble;
     private static Sprite _roundSprite;
     private static Sprite _diamondSprite;
 
-    /// <summary>Dựng nút kim cương trên ô process (nếu chưa có). Đặt tên 'btn_PenGem' để tutorial
-    /// (tutorial_pen_gem) chỉ tay vào được. OnClick → TrySpeedUpGem (hoàn tất ngay).</summary>
     private void EnsureGemButton()
     {
-        // Gắn trên panelRoot để không bị progressOverlay clipping/sorting che mất.
         Transform host = panelRoot != null ? panelRoot.transform : transform;
         if (host == null) return;
         if (_gemButtonGO != null)
@@ -648,8 +564,6 @@ public class PenMiniPanelUI : MonoBehaviour
             if (_gemButtonGO.transform.parent != host)
                 _gemButtonGO.transform.SetParent(host, false);
 
-            // Nút đã có sẵn trong prefab/scene → vẫn phải bắt lấy nhãn giá, nếu không
-            // thì F9 hiện số cũ mãi (nhãn chỉ được cập nhật qua _gemCostText).
             if (_gemCostText == null)
             {
                 Transform costTf = FindDeepChild(_gemButtonGO.transform, "Txt_Cost");
@@ -672,7 +586,6 @@ public class PenMiniPanelUI : MonoBehaviour
         btn.targetGraphic = img;
         btn.onClick.AddListener(() => TrySpeedUpGem());
 
-        // icon kim cương (placeholder hình thoi — gán ảnh thật sau)
         var gemGO = new GameObject("Img_Gem", typeof(RectTransform), typeof(Image));
         gemGO.transform.SetParent(rt, false);
         var gemRt = (RectTransform)gemGO.transform;
@@ -696,7 +609,7 @@ public class PenMiniPanelUI : MonoBehaviour
         t.fontStyle = FontStyles.Bold;
         t.enableAutoSizing = true; t.fontSizeMin = 8; t.fontSizeMax = 80;
         t.raycastTarget = false;
-        _gemCostText = t;   // giữ lại để RefreshUI cập nhật giá theo thời gian còn lại
+        _gemCostText = t;
 
         _gemButtonGO = go;
         PlaceGemButton();
@@ -723,7 +636,6 @@ public class PenMiniPanelUI : MonoBehaviour
         rt.sizeDelta = new Vector2(refSize.x * 1.25f, refSize.y * 0.72f);
     }
 
-    /// <summary>Bật/tắt bubble 'sẵn sàng thu hoạch' theo state (Ready = hiện).</summary>
     private void UpdateReadyBubble()
     {
         if (config == null) return;
@@ -731,8 +643,6 @@ public class PenMiniPanelUI : MonoBehaviour
         if (_readyBubble != null) _readyBubble.SetActive(CurrentState == PenState.Ready);
     }
 
-    /// <summary>Bubble nổi trên chuồng (kiểu đơn hàng dân làng) hiện icon sản phẩm khi process xong.
-    /// Gà: thịt + trứng; Heo/Bò: thịt; Bò sữa: sữa — tất cả lấy theo config từng chuồng. Tự dựng 1 lần.</summary>
     private void EnsureReadyBubble()
     {
         if (_readyBubble != null) return;
@@ -750,69 +660,67 @@ public class PenMiniPanelUI : MonoBehaviour
         rt.sizeDelta = new Vector2(w, h);
         rt.anchoredPosition = readyBubbleLocalPos;
 
-        // Canvas riêng overrideSorting → bubble luôn NỔI TRÊN cùng (trên chuồng + con vật).
-        var bubbleCanvas = go.AddComponent<Canvas>();
-        bubbleCanvas.overrideSorting = true;
-        bubbleCanvas.sortingLayerName = "Foreground";
-        bubbleCanvas.sortingOrder = readyBubbleSortingOrder;
+        var canvas = go.AddComponent<Canvas>();
+        canvas.overrideSorting = true;
+        canvas.sortingOrder    = readyBubbleSortingOrder;
+        go.AddComponent<GraphicRaycaster>();
 
-        var bg = go.GetComponent<Image>();
-        bg.sprite = readyBubbleBgSprite != null ? readyBubbleBgSprite : GetRoundSprite();
-        bg.type = Image.Type.Sliced;
-        bg.color = readyBubbleBgSprite != null ? Color.white : new Color32(255, 252, 240, 245);
-        bg.raycastTarget = false;
+        var img = go.GetComponent<Image>();
+        img.sprite = readyBubbleBgSprite != null ? readyBubbleBgSprite : GetRoundSprite();
+        img.type = Image.Type.Sliced;
+        img.color = readyBubbleBgSprite != null ? Color.white : new Color32(255, 246, 214, 255);
 
-        float iconSize = refSize.y * 0.8f;
-        AddBubbleIcon(rt, config.productIcon, two ? new Vector2(-w * 0.24f, 6f) : new Vector2(0f, 6f), iconSize);
-        if (two) AddBubbleIcon(rt, config.secondProductIcon, new Vector2(w * 0.24f, 6f), iconSize);
+        var btn = go.AddComponent<Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(() => TryHarvest(transform.position));
 
-        // Đuôi bubble chỉ xuống chuồng (placeholder hình vuông xoay 45°).
-        var tail = new GameObject("Tail", typeof(RectTransform), typeof(Image));
-        tail.transform.SetParent(rt, false);
-        var tailRt = (RectTransform)tail.transform;
-        tailRt.sizeDelta = new Vector2(refSize.x * 0.32f, refSize.x * 0.32f);
-        tailRt.anchoredPosition = new Vector2(0f, -h * 0.5f);
-        tailRt.localRotation = Quaternion.Euler(0f, 0f, 45f);
-        var tailImg = tail.GetComponent<Image>();
-        tailImg.sprite = GetRoundSprite();
-        tailImg.color = bg.color;
-        tailImg.raycastTarget = false;
+        if (config.productIcon != null)
+        {
+            var p1 = new GameObject("Icon_Product1", typeof(RectTransform), typeof(Image));
+            p1.transform.SetParent(rt, false);
+            var p1Rt = (RectTransform)p1.transform;
+            p1Rt.sizeDelta = new Vector2(h * 0.72f, h * 0.72f);
+            p1Rt.anchoredPosition = two ? new Vector2(-w * 0.23f, 0f) : Vector2.zero;
+            var p1Img = p1.GetComponent<Image>();
+            p1Img.sprite = config.productIcon;
+            p1Img.preserveAspect = true;
+            p1Img.raycastTarget = false;
+        }
+
+        if (two)
+        {
+            var p2 = new GameObject("Icon_Product2", typeof(RectTransform), typeof(Image));
+            p2.transform.SetParent(rt, false);
+            var p2Rt = (RectTransform)p2.transform;
+            p2Rt.sizeDelta = new Vector2(h * 0.72f, h * 0.72f);
+            p2Rt.anchoredPosition = new Vector2(w * 0.23f, 0f);
+            var p2Img = p2.GetComponent<Image>();
+            p2Img.sprite = config.secondProductIcon;
+            p2Img.preserveAspect = true;
+            p2Img.raycastTarget = false;
+        }
 
         _readyBubble = go;
-        _readyBubble.SetActive(false);
-    }
-
-    private static void AddBubbleIcon(RectTransform parent, Sprite icon, Vector2 pos, float size)
-    {
-        var go = new GameObject("Img_Product", typeof(RectTransform), typeof(Image));
-        go.transform.SetParent(parent, false);
-        var rt = (RectTransform)go.transform;
-        rt.sizeDelta = new Vector2(size, size);
-        rt.anchoredPosition = pos;
-        var img = go.GetComponent<Image>();
-        img.sprite = icon;
-        img.color = icon != null ? Color.white : new Color(1f, 1f, 1f, 0f);   // chưa có icon → ẩn
-        img.preserveAspect = true;
-        img.raycastTarget = false;
     }
 
     private Vector2 ReferenceSlotSize()
     {
-        GameObject r = slot1Root != null ? slot1Root : (basketRoot != null ? basketRoot : panelRoot);
-        if (r != null)
+        if (slot1Root != null)
         {
-            var rt = r.GetComponent<RectTransform>();
-            if (rt != null && rt.rect.width > 1f) return rt.rect.size;
+            var rt = slot1Root.GetComponent<RectTransform>();
+            if (rt != null && rt.sizeDelta.sqrMagnitude > 1f) return rt.sizeDelta;
         }
-        return new Vector2(120f, 120f);
+        return new Vector2(100f, 100f);
     }
 
-    private static Transform FindDeepChild(Transform parent, string childName)
+    private static Transform FindDeepChild(Transform parent, string name)
     {
-        foreach (Transform c in parent)
+        if (parent == null) return null;
+        for (int i = 0; i < parent.childCount; i++)
         {
-            if (c.name == childName) return c;
-            Transform found = FindDeepChild(c, childName);
+            Transform child = parent.GetChild(i);
+            if (child.name == name) return child;
+            Transform found = FindDeepChild(child, name);
             if (found != null) return found;
         }
         return null;
@@ -821,37 +729,40 @@ public class PenMiniPanelUI : MonoBehaviour
     private static Sprite GetRoundSprite()
     {
         if (_roundSprite != null) return _roundSprite;
-        const int s = 48; const int rad = 14;
-        var tex = new Texture2D(s, s, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
-        for (int y = 0; y < s; y++)
-            for (int x = 0; x < s; x++)
+        int size = 32;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        float r = size * 0.5f;
+        Vector2 c = new Vector2(r, r);
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
             {
-                float dx = x < rad ? rad - x : x >= s - rad ? x - (s - rad - 1) : 0f;
-                float dy = y < rad ? rad - y : y >= s - rad ? y - (s - rad - 1) : 0f;
-                bool inside = (dx <= 0f && dy <= 0f) || dx * dx + dy * dy <= (float)rad * rad;
-                tex.SetPixel(x, y, inside ? Color.white : Color.clear);
+                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), c);
+                tex.SetPixel(x, y, d <= r ? Color.white : Color.clear);
             }
+        }
         tex.Apply();
-        _roundSprite = Sprite.Create(tex, new Rect(0, 0, s, s), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(rad, rad, rad, rad));
-        _roundSprite.hideFlags = HideFlags.HideAndDontSave;
+        _roundSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100, 0,
+            SpriteMeshType.FullRect, new Vector4(12, 12, 12, 12));
         return _roundSprite;
     }
 
     private static Sprite GetDiamondSprite()
     {
         if (_diamondSprite != null) return _diamondSprite;
-        const int s = 48;
-        var tex = new Texture2D(s, s, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
-        float c = (s - 1) * 0.5f;
-        for (int y = 0; y < s; y++)
-            for (int x = 0; x < s; x++)
+        int size = 32;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        float half = size * 0.5f;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
             {
-                float dx = Mathf.Abs(x - c) / c, dy = Mathf.Abs(y - c) / c;
-                tex.SetPixel(x, y, (dx + dy) <= 1f ? Color.white : Color.clear);   // hình thoi
+                float manhattan = Mathf.Abs(x + 0.5f - half) + Mathf.Abs(y + 0.5f - half);
+                tex.SetPixel(x, y, manhattan <= half ? Color.white : Color.clear);
             }
+        }
         tex.Apply();
-        _diamondSprite = Sprite.Create(tex, new Rect(0, 0, s, s), new Vector2(0.5f, 0.5f), 100f);
-        _diamondSprite.hideFlags = HideFlags.HideAndDontSave;
+        _diamondSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
         return _diamondSprite;
     }
 }

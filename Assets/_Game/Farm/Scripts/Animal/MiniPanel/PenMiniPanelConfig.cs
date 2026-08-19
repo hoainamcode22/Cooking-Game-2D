@@ -5,6 +5,7 @@ public class PenMiniPanelConfig : ScriptableObject
 {
     [Header("Identity")]
     public string penId; // "pen_01" .. "pen_04" — dùng làm key PlayerPrefs
+    public string penName; // "Chuồng Bò", "Chuồng Heo", "Chuồng Gà", "Chuồng Bò Sữa"
 
     [Header("Thức ăn")]
     public string food1ItemId;   // "rice"

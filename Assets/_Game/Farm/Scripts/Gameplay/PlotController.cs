@@ -568,6 +568,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         Save();
         RefreshVisual();
         PlaySeedPlantVFX(crop, 1);
+        AudioManager.Instance?.PlayPlanting();
 
         // Tiến độ nhiệm vụ trồng cây (đếm theo ô đất, 1 lần trồng = 1)
         MissionProgressTracker.ReportEvent(MissionEventType.PlantCrop, crop.cropId, 1);
@@ -688,6 +689,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         HarvestSlashFX.Spawn(fxSpawn);
 
         PlayHarvestAmountTextVFX(amount);
+        AudioManager.Instance?.PlayHarvest();
 
         int expReward = harvestedCrop != null ? Mathf.Max(0, harvestedCrop.expReward) : 5;
         if (expReward <= 0)

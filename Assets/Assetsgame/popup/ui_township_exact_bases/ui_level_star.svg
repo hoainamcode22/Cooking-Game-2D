@@ -1,0 +1,10 @@
+﻿<svg viewBox="0 0 80 80" width="80" height="80" xmlns="http://www.w3.org/2000/svg">
+    <!-- Shadow -->
+    <polygon points="40,8 51,28 73,31 56,47 61,69 40,56 19,69 24,47 7,31 29,28" fill="#000000" opacity="0.4" transform="translate(2, 4)" />
+    <!-- Outline -->
+    <polygon points="40,8 51,28 73,31 56,47 61,69 40,56 19,69 24,47 7,31 29,28" fill="#FFC107" stroke="#FF8F00" stroke-width="2" stroke-linejoin="round" />
+    <!-- Inner Blue Body -->
+    <polygon points="40,12 49,29 68,32 54,45 58,64 40,53 22,64 26,45 12,32 31,29" fill="#03A9F4" />
+    <!-- Top Left Highlight -->
+    <polygon points="40,12 49,29 68,32 54,45 40,36" fill="#81D4FA" />
+</svg>

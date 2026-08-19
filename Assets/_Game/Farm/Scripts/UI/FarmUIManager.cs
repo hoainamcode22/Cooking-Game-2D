@@ -190,24 +190,28 @@ public class FarmUIManager : MonoBehaviour
         _hintClearAt = Time.unscaledTime + 2.5f;
     }
 
+    private bool _hintSearched;
+
     private TMP_Text LayHoacDungOChuDuPhong()
     {
         if (_hintFallback != null) return _hintFallback;
+        if (_hintSearched) return null;
+        _hintSearched = true;
 
-        // Ưu tiên ô chữ có sẵn trong scene, kể cả đang tắt — có thể chỉ là quên kéo vào
-        // Inspector chứ object vẫn còn đó.
-        foreach (var t in FindObjectsByType<TMP_Text>(FindObjectsInactive.Include,
-                                                      FindObjectsSortMode.None))
+        if (txtHint != null)
         {
-            if (t != null && t.name == "Txt_Hint") { _hintFallback = t; return _hintFallback; }
+            _hintFallback = txtHint;
+            return _hintFallback;
         }
 
-        Canvas hud = null;
-        foreach (var c in FindObjectsByType<Canvas>(FindObjectsInactive.Include,
-                                                    FindObjectsSortMode.None))
+        Canvas hud = GetComponentInParent<Canvas>() ?? GetComponentInChildren<Canvas>(true);
+        if (hud == null)
         {
-            if (c == null || !c.isRootCanvas) continue;
-            if (hud == null || c.sortingOrder > hud.sortingOrder) hud = c;
+            foreach (var c in FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (c == null || !c.isRootCanvas) continue;
+                if (hud == null || c.sortingOrder > hud.sortingOrder) hud = c;
+            }
         }
         if (hud == null) return null;
 

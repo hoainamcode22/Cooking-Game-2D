@@ -1,0 +1,44 @@
+[
+  {
+    "id": "may_01",
+    "category": "machine",
+    "food1_itemId": "rice",
+    "food2_itemId": null,
+    "product_itemId": "bot_gao",
+    "second_product_itemId": null,
+    "product_amount": 2,
+    "second_product_amount": 1,
+    "food_amount_per_feed": 1,
+    "duration_s": 360,
+    "exp": 45,
+    "asset_path": "Assets/_Game/Farm/data/Farm_May_Che_Bien/Config_May01_XayBot.asset"
+  },
+  {
+    "id": "may_02",
+    "category": "machine",
+    "food1_itemId": "sugarcane",
+    "food2_itemId": null,
+    "product_itemId": "nuoc_mia_ep",
+    "second_product_itemId": null,
+    "product_amount": 2,
+    "second_product_amount": 1,
+    "food_amount_per_feed": 1,
+    "duration_s": 420,
+    "exp": 53,
+    "asset_path": "Assets/_Game/Farm/data/Farm_May_Che_Bien/Config_May02_EpMia.asset"
+  },
+  {
+    "id": "may_03",
+    "category": "machine",
+    "food1_itemId": "milk",
+    "food2_itemId": null,
+    "product_itemId": "pho_mai",
+    "second_product_itemId": null,
+    "product_amount": 2,
+    "second_product_amount": 1,
+    "food_amount_per_feed": 1,
+    "duration_s": 480,
+    "exp": 60,
+    "asset_path": "Assets/_Game/Farm/data/Farm_May_Che_Bien/Config_May03_PhoMai.asset"
+  }
+]

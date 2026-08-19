@@ -1,71 +1,203 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Assetsgame.Animals
 {
+    /// <summary>
+    /// AI điều khiển con vật trong chuồng (Gà, Bò thịt, Bò sữa, Heo):
+    /// - Di chuyển thông minh trong phạm vi sàn chuồng, không chạy lệch ra ngoài hàng rào.
+    /// - Đi bộ mượt mà, đồng bộ với Animator (Speed float) và flip hướng mặt trái/phải.
+    /// - Lúc CHƯA cho ăn (Hungry/Idle): Đi lại nhiều, bồn chồn, thỉnh thoảng kêu la đòi ăn.
+    /// - Lúc ĐÃ cho ăn (Processing/Fed): Ngoan ngoãn, chậm rãi, đứng yên nhai/nghỉ ngơi nhiều hơn.
+    /// - Lúc SẴN SÀNG thu hoạch (Ready): Đứng hướng về phía trước, sẵn sàng thu hoạch.
+    /// - SortingGroup & SortingOrder cao (base 600+) và dynamic theo Y để không bị chìm hay che lấp tứ chi.
+    /// </summary>
+    [RequireComponent(typeof(SortingGroup))]
     public class LivestockAI : MonoBehaviour
     {
-        [Header("Movement Config")]
-        public float roamRadius = 1.5f;
-        public float walkSpeed = 0.5f;
-        public float fastWalkSpeed = 1.2f;
-        
-        [Header("State Durations")]
-        public float minIdleTimeHungry = 3f;
-        public float maxIdleTimeHungry = 7f;
-        public float minIdleTimeFed = 1f;
-        public float maxIdleTimeFed = 3f;
+        [Header("Movement Bounds (Tọa độ Local trong chuồng)")]
+        [Tooltip("Giới hạn di chuyển nhỏ nhất bên trong hàng rào chuồng")]
+        public Vector2 localBoundsMin = new Vector2(-1.15f, -0.6f);
+        [Tooltip("Giới hạn di chuyển lớn nhất bên trong hàng rào chuồng")]
+        public Vector2 localBoundsMax = new Vector2(1.15f, 0.45f);
+        [Tooltip("Tự động nhận diện biên chuồng (để false để dùng tọa độ chính xác bên trong hàng rào)")]
+        public bool autoCalculateBounds = false;
 
-        private Vector3 startPosition;
-        private Vector3 targetPosition;
+        [Header("Speeds")]
+        public float walkSpeed = 0.5f;
+        public float hungryWalkSpeed = 0.95f;
+
+        [Header("Idle Durations")]
+        [Tooltip("Thời gian đứng yên khi ĐÓI (đi lại nhiều, đứng ít)")]
+        public float minIdleHungry = 1.0f;
+        public float maxIdleHungry = 2.5f;
+
+        [Tooltip("Thời gian đứng yên khi ĐÃ CHO ĂN (no nê, ngoan ngoãn, đứng lâu)")]
+        public float minIdleFed = 3.5f;
+        public float maxIdleFed = 7.0f;
+
+        [Header("Audio (Âm thanh kêu lúc đói)")]
+        public AudioClip[] soundClips;
+        [Range(0f, 1f)] public float soundVolume = 0.6f;
+        [Range(0f, 1f)] public float hungryCryChance = 0.4f;
+
+        [Header("Sorting")]
+        public string sortingLayerName = "CongTrinh";
+        public int baseSortingOrder = 600;
+
+        private Vector3 startLocalPos;
+        private Vector3 targetLocalPos;
         private bool isMoving;
         private PenMiniPanelUI parentPen;
+        private Animator animator;
+        private SortingGroup sortingGroup;
+        private AudioSource audioSource;
         private Coroutine roamCoroutine;
-        private SpriteRenderer[] renderers;
-        private UnityEngine.Rendering.SortingGroup sortingGroup;
+        private float originalScaleX;
+        private static readonly int SpeedHash = Animator.StringToHash("Speed");
+
+        private void Awake()
+        {
+            animator = GetComponentInChildren<Animator>(true);
+            sortingGroup = GetComponent<SortingGroup>();
+            if (sortingGroup == null)
+                sortingGroup = gameObject.AddComponent<SortingGroup>();
+
+            sortingGroup.sortingLayerName = sortingLayerName;
+            sortingGroup.sortingOrder = baseSortingOrder;
+
+            audioSource = GetComponent<AudioSource>();
+            if (audioSource == null)
+            {
+                audioSource = gameObject.AddComponent<AudioSource>();
+                audioSource.playOnAwake = false;
+                audioSource.spatialBlend = 0f; // 2D sound
+            }
+
+            originalScaleX = Mathf.Abs(transform.localScale.x);
+            if (originalScaleX < 0.01f) originalScaleX = 1f;
+        }
 
         private void Start()
         {
-            startPosition = transform.localPosition;
-            targetPosition = startPosition;
-            renderers = GetComponentsInChildren<SpriteRenderer>(true);
-            
-            sortingGroup = GetComponent<UnityEngine.Rendering.SortingGroup>();
-            if (sortingGroup == null)
+            startLocalPos = transform.localPosition;
+            targetLocalPos = startLocalPos;
+
+            FindParentPen();
+
+            if (autoCalculateBounds && transform.parent != null)
             {
-                sortingGroup = gameObject.AddComponent<UnityEngine.Rendering.SortingGroup>();
-                sortingGroup.sortingLayerName = "CongTrinh";
+                CalculatePenBounds();
             }
-            
-            // Find the pen this animal belongs to
+
+            // Đảm bảo vị trí ban đầu nằm trong bounds
+            ClampInsideBounds(ref startLocalPos);
+            transform.localPosition = startLocalPos;
+            targetLocalPos = startLocalPos;
+
+            // Thiết lập sorting nội bộ của các chi
+            SetupLimbSorting();
+
+            roamCoroutine = StartCoroutine(RoamRoutine());
+        }
+
+        private void FindParentPen()
+        {
             Transform current = transform;
             while (current != null)
             {
                 parentPen = current.GetComponentInChildren<PenMiniPanelUI>(true);
                 if (parentPen == null)
                     parentPen = current.GetComponentInParent<PenMiniPanelUI>();
-                    
+
                 if (parentPen != null)
                     break;
                 current = current.parent;
             }
+        }
 
-            roamCoroutine = StartCoroutine(RoamRoutine());
+        private void CalculatePenBounds()
+        {
+            Transform penRoot = transform.parent;
+            if (penRoot == null) return;
+
+            // Tìm collider hoặc BarnSprite của chuồng để tính kích thước sàn
+            BoxCollider2D box = penRoot.GetComponent<BoxCollider2D>();
+            if (box != null)
+            {
+                float halfW = Mathf.Max(1.2f, box.size.x * 0.35f);
+                float centerY = box.offset.y;
+                float halfH = Mathf.Max(0.5f, box.size.y * 0.25f);
+
+                localBoundsMin = new Vector2(-halfW, centerY - halfH * 0.8f);
+                localBoundsMax = new Vector2(halfW, centerY + halfH * 1.1f);
+            }
+            else
+            {
+                SpriteRenderer barnSr = penRoot.Find("BarnSprite")?.GetComponent<SpriteRenderer>();
+                if (barnSr != null && barnSr.sprite != null)
+                {
+                    Bounds b = barnSr.sprite.bounds;
+                    float halfW = Mathf.Max(1.2f, b.extents.x * 0.6f);
+                    float centerY = barnSr.transform.localPosition.y;
+                    localBoundsMin = new Vector2(-halfW, centerY - 0.6f);
+                    localBoundsMax = new Vector2(halfW, centerY + 0.7f);
+                }
+            }
+        }
+
+        private void SetupLimbSorting()
+        {
+            // SortingGroup đã gom tất cả các renderer con thành 1 khối.
+            // Chuẩn hóa sorting nội bộ để tứ chi không bị chồng chéo lỗi:
+            SpriteRenderer[] srs = GetComponentsInChildren<SpriteRenderer>(true);
+            foreach (var sr in srs)
+            {
+                string n = sr.gameObject.name.ToLower();
+                if (n.Contains("shadow"))
+                {
+                    sr.sortingOrder = -5;
+                }
+                else if (n.Contains("back") || n.Contains("sau") || n.Contains("leg_b") || n.Contains("leg1") || n.Contains("leg3"))
+                {
+                    sr.sortingOrder = 0;
+                }
+                else if (n.Contains("body") || n.Contains("than") || n.Contains("torso"))
+                {
+                    sr.sortingOrder = 2;
+                }
+                else if (n.Contains("tail") || n.Contains("duoi"))
+                {
+                    sr.sortingOrder = 1;
+                }
+                else if (n.Contains("head") || n.Contains("dau"))
+                {
+                    sr.sortingOrder = 4;
+                }
+                else if (n.Contains("front") || n.Contains("truoc") || n.Contains("leg_f") || n.Contains("leg0") || n.Contains("leg2"))
+                {
+                    sr.sortingOrder = 6;
+                }
+                else if (n.Contains("eye") || n.Contains("ear") || n.Contains("horn") || n.Contains("comb") || n.Contains("mat"))
+                {
+                    sr.sortingOrder = 8;
+                }
+            }
         }
 
         private void Update()
         {
-            UpdateSorting();
+            UpdateDynamicSorting();
         }
 
-        private void UpdateSorting()
+        private void UpdateDynamicSorting()
         {
             if (sortingGroup != null)
             {
-                // Base 500 để không bị chìm xuống dưới đất (World/Grass thường ở order thấp hơn)
-                // Dùng localPosition.y thay vì position.y để chỉ tính lệch nội bộ trong chuồng,
-                // tránh việc Y thế giới quá lớn làm order bị âm -> chìm dưới đất.
-                sortingGroup.sortingOrder = 500 + Mathf.RoundToInt(transform.localPosition.y * -100f);
+                // Dynamic sorting theo trục Y: con đứng thấp hơn (Y nhỏ hơn) sẽ ở phía trước (Order cao hơn)
+                sortingGroup.sortingLayerName = sortingLayerName;
+                sortingGroup.sortingOrder = baseSortingOrder + Mathf.RoundToInt(-transform.localPosition.y * 50f);
             }
         }
 
@@ -73,68 +205,124 @@ namespace Assetsgame.Animals
         {
             while (true)
             {
-                // Determine current state
                 PenMiniPanelUI.PenState state = PenMiniPanelUI.PenState.Idle;
                 if (parentPen != null)
                 {
                     state = parentPen.CurrentState;
                 }
 
+                // ── 1. TRẠNG THÁI READY (Đã có sản phẩm / sẵn sàng thu hoạch) ───────
                 if (state == PenMiniPanelUI.PenState.Ready)
                 {
-                    // Ready to harvest: stand still near the front/start
-                    if (Vector3.Distance(transform.localPosition, startPosition) > 0.1f)
-                    {
-                        MoveTowardsLocal(startPosition, walkSpeed);
-                    }
-                    yield return new WaitForSeconds(1f);
+                    SetMoving(false);
+                    // Đứng hướng ra trước, ngoan ngoãn chờ thu hoạch
+                    SetFacing(1f);
+                    yield return new WaitForSeconds(1.5f);
                     continue;
                 }
 
+                // ── 2. CHỌN ĐIỂM ĐẾN MỚI TRONG BOUNDS CHUỒNG ─────────────────────────
                 if (!isMoving)
                 {
-                    // Pick a random point within roam radius
-                    Vector2 randomCircle = Random.insideUnitCircle * roamRadius;
-                    targetPosition = startPosition + new Vector3(randomCircle.x, randomCircle.y, 0);
+                    targetLocalPos = GetRandomTargetInBounds();
                     isMoving = true;
+                    SetMoving(true);
+
+                    // Nếu đang đói, thỉnh thoảng kêu la đòi ăn
+                    if (state == PenMiniPanelUI.PenState.Idle && Random.value < hungryCryChance)
+                    {
+                        PlayAnimalSound();
+                    }
                 }
 
-                // Move towards target
-                float speed = state == PenMiniPanelUI.PenState.Processing ? fastWalkSpeed : walkSpeed;
-                MoveTowardsLocal(targetPosition, speed);
+                // ── 3. DI CHUYỂN TỚI ĐÍCH ─────────────────────────────────────────────
+                float currentSpeed = (state == PenMiniPanelUI.PenState.Idle) ? hungryWalkSpeed : walkSpeed;
 
-                // Flip sprite based on direction by scaling parent X
-                float dirX = targetPosition.x - transform.localPosition.x;
-                if (Mathf.Abs(dirX) > 0.05f)
+                while (Vector3.Distance(transform.localPosition, targetLocalPos) > 0.06f)
                 {
-                    float sign = dirX < 0 ? -1f : 1f;
-                    Vector3 scale = transform.localScale;
-                    scale.x = Mathf.Abs(scale.x) * sign;
-                    transform.localScale = scale;
-                }
+                    // Cập nhật hướng quay mặt
+                    float dx = targetLocalPos.x - transform.localPosition.x;
+                    if (Mathf.Abs(dx) > 0.02f)
+                    {
+                        SetFacing(Mathf.Sign(dx));
+                    }
 
-                // Check if reached target
-                if (Vector3.Distance(transform.localPosition, targetPosition) < 0.1f)
-                {
-                    isMoving = false;
-                    
-                    // Idle based on state
-                    float waitTime = state == PenMiniPanelUI.PenState.Processing 
-                        ? Random.Range(minIdleTimeFed, maxIdleTimeFed) 
-                        : Random.Range(minIdleTimeHungry, maxIdleTimeHungry);
-                    
-                    yield return new WaitForSeconds(waitTime);
-                }
-                else
-                {
+                    transform.localPosition = Vector3.MoveTowards(transform.localPosition, targetLocalPos, currentSpeed * Time.deltaTime);
                     yield return null;
                 }
+
+                // ── 4. ĐÃ TỚI ĐÍCH: DỪNG LẠI & NGHỈ NGƠI ─────────────────────────────
+                transform.localPosition = targetLocalPos;
+                isMoving = false;
+                SetMoving(false);
+
+                // Thời gian nghỉ: Đói thì bồn chồn (nghỉ ngắn), No thì ngoan ngoãn (nghỉ lâu)
+                float idleWait = (state == PenMiniPanelUI.PenState.Processing)
+                    ? Random.Range(minIdleFed, maxIdleFed)
+                    : Random.Range(minIdleHungry, maxIdleHungry);
+
+                yield return new WaitForSeconds(idleWait);
             }
         }
 
-        private void MoveTowardsLocal(Vector3 target, float speed)
+        private Vector3 GetRandomTargetInBounds()
         {
-            transform.localPosition = Vector3.MoveTowards(transform.localPosition, target, speed * Time.deltaTime);
+            float rx = Random.Range(localBoundsMin.x, localBoundsMax.x);
+            float ry = Random.Range(localBoundsMin.y, localBoundsMax.y);
+
+            // Điều chỉnh biên góc để con vật không đi vào 4 góc nhọn của hàng rào quả trám
+            float xRatio = Mathf.Abs(rx) / Mathf.Max(0.1f, localBoundsMax.x);
+            float yMaxAllowed = Mathf.Lerp(localBoundsMax.y, 0f, xRatio * 0.45f);
+            float yMinAllowed = Mathf.Lerp(localBoundsMin.y, 0f, xRatio * 0.45f);
+            ry = Mathf.Clamp(ry, yMinAllowed, yMaxAllowed);
+
+            return new Vector3(rx, ry, transform.localPosition.z);
+        }
+
+        private void ClampInsideBounds(ref Vector3 pos)
+        {
+            pos.x = Mathf.Clamp(pos.x, localBoundsMin.x, localBoundsMax.x);
+            float xRatio = Mathf.Abs(pos.x) / Mathf.Max(0.1f, localBoundsMax.x);
+            float yMaxAllowed = Mathf.Lerp(localBoundsMax.y, 0f, xRatio * 0.45f);
+            float yMinAllowed = Mathf.Lerp(localBoundsMin.y, 0f, xRatio * 0.45f);
+            pos.y = Mathf.Clamp(pos.y, yMinAllowed, yMaxAllowed);
+        }
+
+        private void SetMoving(bool moving)
+        {
+            if (animator != null)
+            {
+                animator.SetFloat(SpeedHash, moving ? 1f : 0f);
+            }
+        }
+
+        private void SetFacing(float sign)
+        {
+            Vector3 scale = transform.localScale;
+            scale.x = originalScaleX * sign;
+            transform.localScale = scale;
+        }
+
+        private void PlayAnimalSound()
+        {
+            if (soundClips == null || soundClips.Length == 0 || audioSource == null) return;
+            AudioClip clip = soundClips[Random.Range(0, soundClips.Length)];
+            if (clip != null)
+            {
+                audioSource.pitch = Random.Range(0.92f, 1.08f);
+                audioSource.PlayOneShot(clip, soundVolume);
+            }
+        }
+
+        private void OnDrawGizmosSelected()
+        {
+            // Vẽ hộp giới hạn di chuyển trong Editor
+            Transform p = transform.parent != null ? transform.parent : transform;
+            Vector3 center = p.TransformPoint(new Vector3((localBoundsMin.x + localBoundsMax.x) * 0.5f, (localBoundsMin.y + localBoundsMax.y) * 0.5f, 0f));
+            Vector3 size = new Vector3(Mathf.Abs(localBoundsMax.x - localBoundsMin.x), Mathf.Abs(localBoundsMax.y - localBoundsMin.y), 0.1f);
+
+            Gizmos.color = Color.green;
+            Gizmos.DrawWireCube(center, size);
         }
     }
 }

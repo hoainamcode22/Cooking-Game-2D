@@ -1,0 +1,58 @@
+[
+  {
+    "id": "pen_01",
+    "category": "animal_pen",
+    "food1_itemId": "rice",
+    "food2_itemId": "ngo",
+    "product_itemId": "beef",
+    "second_product_itemId": null,
+    "product_amount": 1,
+    "second_product_amount": 1,
+    "food_amount_per_feed": 3,
+    "duration_s": 240,
+    "exp": 30,
+    "asset_path": "Assets/_Game/Farm/data/PenConfig/Config_Pen01_BoThit.asset"
+  },
+  {
+    "id": "pen_02",
+    "category": "animal_pen",
+    "food1_itemId": "bapcai",
+    "food2_itemId": "carot",
+    "product_itemId": "pork",
+    "second_product_itemId": null,
+    "product_amount": 1,
+    "second_product_amount": 1,
+    "food_amount_per_feed": 2,
+    "duration_s": 150,
+    "exp": 19,
+    "asset_path": "Assets/_Game/Farm/data/PenConfig/Config_Pen02_Heo.asset"
+  },
+  {
+    "id": "pen_03",
+    "category": "animal_pen",
+    "food1_itemId": "rice",
+    "food2_itemId": "ngo",
+    "product_itemId": "chicken_meat",
+    "second_product_itemId": "egg",
+    "product_amount": 1,
+    "second_product_amount": 1,
+    "food_amount_per_feed": 2,
+    "duration_s": 90,
+    "exp": 11,
+    "asset_path": "Assets/_Game/Farm/data/PenConfig/Config_Pen03_Ga.asset"
+  },
+  {
+    "id": "pen_04",
+    "category": "animal_pen",
+    "food1_itemId": "carot",
+    "food2_itemId": "khoaitay",
+    "product_itemId": "milk",
+    "second_product_itemId": null,
+    "product_amount": 2,
+    "second_product_amount": 1,
+    "food_amount_per_feed": 3,
+    "duration_s": 300,
+    "exp": 38,
+    "asset_path": "Assets/_Game/Farm/data/PenConfig/Config_Pen04_BoSua.asset"
+  }
+]

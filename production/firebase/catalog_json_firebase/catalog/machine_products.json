@@ -1,0 +1,29 @@
+[
+  {
+    "itemId": "bot_gao",
+    "name_vi": "Bột gạo",
+    "category": "machine_product",
+    "sprite_guid": null,
+    "sprite_path": null,
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_May_Che_Bien/Item_BotGao.asset"
+  },
+  {
+    "itemId": "nuoc_mia_ep",
+    "name_vi": "Nước mía ép",
+    "category": "machine_product",
+    "sprite_guid": null,
+    "sprite_path": null,
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_May_Che_Bien/Item_NuocMiaEp.asset"
+  },
+  {
+    "itemId": "pho_mai",
+    "name_vi": "Phô mai",
+    "category": "machine_product",
+    "sprite_guid": null,
+    "sprite_path": null,
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_May_Che_Bien/Item_PhoMai.asset"
+  }
+]

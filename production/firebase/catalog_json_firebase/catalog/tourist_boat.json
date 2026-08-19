@@ -1,0 +1,16 @@
+{
+  "unlockLevel": 10,
+  "dock2Level": 12,
+  "dock2GoldCost": 2000,
+  "dock3Level": 14,
+  "dock3GemCost": 25,
+  "dockMinutes": 40,
+  "hideMinutes": 15,
+  "staggerMinutes": 12,
+  "boatSpeed": 300,
+  "fallbackTravelSeconds": 20,
+  "bobAmplitude": 8,
+  "bobFrequency": 0.8,
+  "debugTimeScale": 1,
+  "asset_path": "Assets/_Game/ScriptableObjects/TouristBoatConfig.asset"
+}

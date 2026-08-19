@@ -1,0 +1,668 @@
+[
+  {
+    "itemId": "rice",
+    "buy_price": 10,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 1,
+    "weight": 100
+  },
+  {
+    "itemId": "bapcai",
+    "buy_price": 15,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 1,
+    "weight": 95
+  },
+  {
+    "itemId": "ngo",
+    "buy_price": 20,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 2,
+    "weight": 95
+  },
+  {
+    "itemId": "carot",
+    "buy_price": 26,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 3,
+    "weight": 90
+  },
+  {
+    "itemId": "cachua",
+    "buy_price": 30,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 3,
+    "weight": 90
+  },
+  {
+    "itemId": "khoaitay",
+    "buy_price": 45,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 5,
+    "weight": 80
+  },
+  {
+    "itemId": "mushroom",
+    "buy_price": 51,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 6,
+    "weight": 70
+  },
+  {
+    "itemId": "sugarcane",
+    "buy_price": 69,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 7,
+    "weight": 65
+  },
+  {
+    "itemId": "lemon",
+    "buy_price": 78,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 8,
+    "weight": 60
+  },
+  {
+    "itemId": "chili",
+    "buy_price": 102,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 9,
+    "weight": 55
+  },
+  {
+    "itemId": "pepper",
+    "buy_price": 114,
+    "min_qty": 3,
+    "max_qty": 12,
+    "category_code": 1,
+    "level_unlock": 10,
+    "weight": 50
+  },
+  {
+    "itemId": "seed_rice",
+    "buy_price": 16,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 1,
+    "weight": 100
+  },
+  {
+    "itemId": "seed_huong_duong",
+    "buy_price": 20,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 1,
+    "weight": 70
+  },
+  {
+    "itemId": "seed_bapcai",
+    "buy_price": 22,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 1,
+    "weight": 95
+  },
+  {
+    "itemId": "seed_ngo",
+    "buy_price": 28,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 2,
+    "weight": 95
+  },
+  {
+    "itemId": "ca_rot",
+    "buy_price": 38,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 3,
+    "weight": 90
+  },
+  {
+    "itemId": "seed_cachua",
+    "buy_price": 44,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 3,
+    "weight": 90
+  },
+  {
+    "itemId": "seed_hoa_hong",
+    "buy_price": 46,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 4,
+    "weight": 65
+  },
+  {
+    "itemId": "seed_hoa_oai_huong",
+    "buy_price": 56,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 4,
+    "weight": 60
+  },
+  {
+    "itemId": "khoai_tay",
+    "buy_price": 58,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 5,
+    "weight": 80
+  },
+  {
+    "itemId": "seed_nam",
+    "buy_price": 63,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 6,
+    "weight": 70
+  },
+  {
+    "itemId": "seed_hoa_lan",
+    "buy_price": 66,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 7,
+    "weight": 55
+  },
+  {
+    "itemId": "seed_hoa_cuc_trang",
+    "buy_price": 72,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 7,
+    "weight": 55
+  },
+  {
+    "itemId": "seed_sugarcane",
+    "buy_price": 80,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 7,
+    "weight": 65
+  },
+  {
+    "itemId": "seed_lemon",
+    "buy_price": 87,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 8,
+    "weight": 60
+  },
+  {
+    "itemId": "seed_tulip",
+    "buy_price": 88,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 9,
+    "weight": 50
+  },
+  {
+    "itemId": "seed_hoa_cuc_van_tho",
+    "buy_price": 98,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 9,
+    "weight": 50
+  },
+  {
+    "itemId": "seed_chili",
+    "buy_price": 105,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 9,
+    "weight": 55
+  },
+  {
+    "itemId": "seed_pepper",
+    "buy_price": 111,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 10,
+    "weight": 50
+  },
+  {
+    "itemId": "seed_hoa_mau_don",
+    "buy_price": 117,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 10,
+    "weight": 45
+  },
+  {
+    "itemId": "seed_hoa_cam_tu_cau",
+    "buy_price": 126,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 10,
+    "weight": 45
+  },
+  {
+    "itemId": "seed_hoa_anh_thao",
+    "buy_price": 135,
+    "min_qty": 1,
+    "max_qty": 5,
+    "category_code": 2,
+    "level_unlock": 10,
+    "weight": 45
+  },
+  {
+    "itemId": "huong_duong",
+    "buy_price": 12,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 3,
+    "level_unlock": 1,
+    "weight": 70
+  },
+  {
+    "itemId": "hoa_hong",
+    "buy_price": 34,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 3,
+    "level_unlock": 4,
+    "weight": 65
+  },
+  {
+    "itemId": "hoa_oai_huong",
+    "buy_price": 40,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 3,
+    "level_unlock": 4,
+    "weight": 60
+  },
+  {
+    "itemId": "hoa_lan",
+    "buy_price": 57,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 3,
+    "level_unlock": 7,
+    "weight": 55
+  },
+  {
+    "itemId": "hoa_cuc_trang",
+    "buy_price": 63,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 3,
+    "level_unlock": 7,
+    "weight": 55
+  },
+  {
+    "itemId": "tulip",
+    "buy_price": 86,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 3,
+    "level_unlock": 9,
+    "weight": 50
+  },
+  {
+    "itemId": "hoa_cuc_van_tho",
+    "buy_price": 94,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 3,
+    "level_unlock": 9,
+    "weight": 50
+  },
+  {
+    "itemId": "hoa_mau_don",
+    "buy_price": 122,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 3,
+    "level_unlock": 10,
+    "weight": 45
+  },
+  {
+    "itemId": "hoa_cam_tu_cau",
+    "buy_price": 132,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 3,
+    "level_unlock": 10,
+    "weight": 45
+  },
+  {
+    "itemId": "hoa_anh_thao",
+    "buy_price": 142,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 3,
+    "level_unlock": 10,
+    "weight": 45
+  },
+  {
+    "itemId": "egg",
+    "buy_price": 30,
+    "min_qty": 2,
+    "max_qty": 6,
+    "category_code": 4,
+    "level_unlock": 2,
+    "weight": 85
+  },
+  {
+    "itemId": "chicken_meat",
+    "buy_price": 44,
+    "min_qty": 2,
+    "max_qty": 6,
+    "category_code": 4,
+    "level_unlock": 2,
+    "weight": 75
+  },
+  {
+    "itemId": "pork",
+    "buy_price": 135,
+    "min_qty": 2,
+    "max_qty": 6,
+    "category_code": 4,
+    "level_unlock": 4,
+    "weight": 65
+  },
+  {
+    "itemId": "beef",
+    "buy_price": 248,
+    "min_qty": 2,
+    "max_qty": 6,
+    "category_code": 4,
+    "level_unlock": 8,
+    "weight": 60
+  },
+  {
+    "itemId": "milk",
+    "buy_price": 172,
+    "min_qty": 2,
+    "max_qty": 6,
+    "category_code": 4,
+    "level_unlock": 13,
+    "weight": 75
+  },
+  {
+    "itemId": "khoai_tay_chien",
+    "buy_price": 142,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 5,
+    "weight": 60
+  },
+  {
+    "itemId": "com_chien_trung",
+    "buy_price": 165,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 5,
+    "weight": 60
+  },
+  {
+    "itemId": "trung_chien_ca_chua",
+    "buy_price": 188,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 5,
+    "weight": 55
+  },
+  {
+    "itemId": "bap_cai_xao_nam",
+    "buy_price": 240,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 6,
+    "weight": 50
+  },
+  {
+    "itemId": "sup_ngo_nam",
+    "buy_price": 248,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 6,
+    "weight": 50
+  },
+  {
+    "itemId": "canh_khoai_tay_thit_heo",
+    "buy_price": 285,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 6,
+    "weight": 45
+  },
+  {
+    "itemId": "salad_nam_rau",
+    "buy_price": 262,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 7,
+    "weight": 45
+  },
+  {
+    "itemId": "thit_heo_luoc_cuon_rau",
+    "buy_price": 278,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 7,
+    "weight": 45
+  },
+  {
+    "itemId": "ga_nuong_lu",
+    "buy_price": 292,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 7,
+    "weight": 40
+  },
+  {
+    "itemId": "nuoc_mia_chanh",
+    "buy_price": 180,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 8,
+    "weight": 45
+  },
+  {
+    "itemId": "salad_bap_cai_chanh",
+    "buy_price": 195,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 8,
+    "weight": 45
+  },
+  {
+    "itemId": "nam_xao_thit_bo",
+    "buy_price": 398,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 8,
+    "weight": 40
+  },
+  {
+    "itemId": "trung_op_la_bo_ne",
+    "buy_price": 458,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 8,
+    "weight": 45
+  },
+  {
+    "itemId": "bo_ham_ca_rot",
+    "buy_price": 525,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 8,
+    "weight": 35
+  },
+  {
+    "itemId": "ga_xao_ot",
+    "buy_price": 360,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 9,
+    "weight": 35
+  },
+  {
+    "itemId": "suon_heo_xao_chua_ngot",
+    "buy_price": 450,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 9,
+    "weight": 30
+  },
+  {
+    "itemId": "pho_bo_tai",
+    "buy_price": 600,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 9,
+    "weight": 30
+  },
+  {
+    "itemId": "bo_xao_tieu",
+    "buy_price": 472,
+    "min_qty": 1,
+    "max_qty": 3,
+    "category_code": 6,
+    "level_unlock": 10,
+    "weight": 30
+  },
+  {
+    "itemId": "salt",
+    "buy_price": 18,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 7,
+    "level_unlock": 1,
+    "weight": 90
+  },
+  {
+    "itemId": "herbs",
+    "buy_price": 27,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 7,
+    "level_unlock": 3,
+    "weight": 85
+  },
+  {
+    "itemId": "soysauce",
+    "buy_price": 39,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 7,
+    "level_unlock": 4,
+    "weight": 80
+  },
+  {
+    "itemId": "fishsauce",
+    "buy_price": 42,
+    "min_qty": 2,
+    "max_qty": 8,
+    "category_code": 7,
+    "level_unlock": 4,
+    "weight": 80
+  },
+  {
+    "itemId": "da",
+    "buy_price": 60,
+    "min_qty": 1,
+    "max_qty": 4,
+    "category_code": 8,
+    "level_unlock": 6,
+    "weight": 55
+  },
+  {
+    "itemId": "go",
+    "buy_price": 68,
+    "min_qty": 1,
+    "max_qty": 4,
+    "category_code": 8,
+    "level_unlock": 6,
+    "weight": 55
+  },
+  {
+    "itemId": "dinh",
+    "buy_price": 82,
+    "min_qty": 1,
+    "max_qty": 4,
+    "category_code": 8,
+    "level_unlock": 7,
+    "weight": 50
+  },
+  {
+    "itemId": "son",
+    "buy_price": 90,
+    "min_qty": 1,
+    "max_qty": 4,
+    "category_code": 8,
+    "level_unlock": 8,
+    "weight": 45
+  },
+  {
+    "itemId": "kinh",
+    "buy_price": 105,
+    "min_qty": 1,
+    "max_qty": 4,
+    "category_code": 8,
+    "level_unlock": 8,
+    "weight": 45
+  }
+]

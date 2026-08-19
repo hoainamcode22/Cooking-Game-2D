@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class PopupManager : MonoBehaviour
 {
@@ -50,14 +50,12 @@ public class PopupManager : MonoBehaviour
 
         bool anyOpen = IsAnyPopupOpen();
 
-        // Self-healing: nếu popupLockCount bị kẹt > 0 nhưng không có popup nào thực sự mở,
+        // Self-healing: nếu popupLockCount hoặc input lock bị kẹt nhưng không có popup nào thực sự mở,
         // reset để tránh block click mãi mãi.
         if (!anyOpen
-            && FarmInputLock.IsPopupOpen
-            && !FarmInputLock.IsSeedPopupOpen
-            && !FarmInputLock.IsMarketPopupOpen
             && !FarmInputLock.IsDraggingSeed
-            && !FarmInputLock.IsDraggingSickle)
+            && !FarmInputLock.IsDraggingSickle
+            && (FarmInputLock.IsPopupOpen || FarmInputLock.IsMarketPopupOpen))
         {
             FarmInputLock.ResetAll();
         }
@@ -72,24 +70,18 @@ public class PopupManager : MonoBehaviour
 
     public bool IsAnyPopupOpen()
     {
-        return (warehousePopup    != null && warehousePopup.IsOpen)
-            || (marketPopup       != null && marketPopup.IsOpen)
-            || (trainProcessPopup != null && trainProcessPopup.IsOpen)
-            || (trainLoadPopup    != null && trainLoadPopup.IsOpen)
-            || (shopPopup         != null && shopPopup.IsOpen)
-            || (ewarPopup         != null && ewarPopup.IsOpen)
-            // Popup managers truy cập qua Singleton, không cần kéo vào Inspector
-            || (WelfareEventManager.Instance  != null && WelfareEventManager.Instance.IsOpen)
-            || (AttendanceManager.Instance    != null && AttendanceManager.Instance.IsOpen)
-            || (AvatarProfilePopupUI.Instance != null && AvatarProfilePopupUI.Instance.IsOpen)
-            || (HomeMenuController.Instance   != null && HomeMenuController.Instance.IsOpen)
-            || (HomeMenuManager.Instance      != null && HomeMenuManager.Instance.IsOpen)
+        return (warehousePopup    != null && warehousePopup.gameObject.activeInHierarchy && warehousePopup.IsOpen)
+            || (marketPopup       != null && marketPopup.gameObject.activeInHierarchy && marketPopup.IsOpen)
+            || (trainProcessPopup != null && trainProcessPopup.gameObject.activeInHierarchy && trainProcessPopup.IsOpen)
+            || (trainLoadPopup    != null && trainLoadPopup.gameObject.activeInHierarchy && trainLoadPopup.IsOpen)
+            || (shopPopup         != null && shopPopup.gameObject.activeInHierarchy && shopPopup.IsOpen)
+            || (ewarPopup         != null && ewarPopup.gameObject.activeInHierarchy && ewarPopup.IsOpen)
+            || (WelfareEventManager.Instance  != null && WelfareEventManager.Instance.gameObject.activeInHierarchy && WelfareEventManager.Instance.IsOpen)
+            || (AttendanceManager.Instance    != null && AttendanceManager.Instance.gameObject.activeInHierarchy && AttendanceManager.Instance.IsOpen)
+            || (AvatarProfilePopupUI.Instance != null && AvatarProfilePopupUI.Instance.gameObject.activeInHierarchy && AvatarProfilePopupUI.Instance.IsOpen)
             || CropProcessPopupUI.AnyOpen
-            // BẢNG ĐƠN HÀNG (DEV-B). Cố ý hỏi qua cờ static thay vì thêm một
-            // [SerializeField] nữa: DEV-A đang sửa đúng khối field ở đầu file này để gỡ
-            // `houseOrderPopup`. Thêm dòng độc lập ở cuối thì hai người không đụng nhau,
-            // và popup mới cũng không cần ai kéo tham chiếu vào Inspector mới chạy đúng.
-            || OrderBoardPopupUI.AnyOpen;
+            || OrderBoardPopupUI.AnyOpen
+            || UnifiedTaskPopupUI.IsOpenStatic;
     }
     
 }

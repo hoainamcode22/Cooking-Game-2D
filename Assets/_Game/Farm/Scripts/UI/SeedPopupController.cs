@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -82,26 +82,39 @@ public class SeedPopupController : MonoBehaviour
     {
         if (content == null)
         {
-            Debug.LogError("[SeedPopup] content chÆ°a gÃ¡n!");
-            return;
-        }
-
-        // DestroyImmediate: xÃ³a item cÅ© Ä‘á»“ng bá»™ trÆ°á»›c khi spawn má»›i.
-        for (int i = content.childCount - 1; i >= 0; i--)
-            DestroyImmediate(content.GetChild(i).gameObject);
-
-        if (seedItemPrefab == null)
-        {
-            Debug.LogError("[SeedPopup] seedItemPrefab chÆ°a gÃ¡n!");
+            Debug.LogError("[SeedPopup] content chưa gán!");
             return;
         }
 
         if (cropDataList == null || cropDataList.Length == 0)
         {
-            Debug.LogWarning("[SeedPopup] cropDataList rá»—ng â€” gÃ¡n CropData trong inspector SeedPopupController.");
+            Debug.LogWarning("[SeedPopup] cropDataList rỗng — gán CropData trong inspector SeedPopupController.");
             return;
         }
 
+        // Tái sử dụng item nếu đã sinh rồi để không bị khựng/lag mỗi lần click mở
+        if (content.childCount == cropDataList.Length)
+        {
+            for (int i = 0; i < cropDataList.Length; i++)
+            {
+                var child = content.GetChild(i);
+                var item = child.GetComponent<SeedDragItem>();
+                if (item != null && cropDataList[i] != null)
+                {
+                    item.SetData(cropDataList[i]);
+                }
+            }
+            return;
+        }
+
+        for (int i = content.childCount - 1; i >= 0; i--)
+            DestroyImmediate(content.GetChild(i).gameObject);
+
+        if (seedItemPrefab == null)
+        {
+            Debug.LogError("[SeedPopup] seedItemPrefab chưa gán!");
+            return;
+        }
 
         int count = 0;
         foreach (var data in cropDataList)
@@ -110,7 +123,6 @@ public class SeedPopupController : MonoBehaviour
 
             GameObject go = Instantiate(seedItemPrefab, content);
 
-            // Inject LayoutElement Ä‘á»ƒ HorizontalLayoutGroup khÃ´ng set item width = 0.
             LayoutElement le = go.GetComponent<LayoutElement>();
             if (le == null) le = go.AddComponent<LayoutElement>();
             le.preferredWidth  = itemPreferredWidth;
@@ -124,10 +136,9 @@ public class SeedPopupController : MonoBehaviour
             }
             else
             {
-                Debug.LogError($"[SeedPopup] Prefab thiáº¿u SeedDragItem!");
+                Debug.LogError($"[SeedPopup] Prefab thiếu SeedDragItem!");
             }
         }
-
     }
 
     private void AcquirePopupInputBlock()

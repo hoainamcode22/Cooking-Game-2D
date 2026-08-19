@@ -1,0 +1,11 @@
+﻿<svg viewBox="0 0 300 36" width="300" height="36" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <linearGradient id="blueGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#4FC3F7" />
+            <stop offset="100%" stop-color="#0277BD" />
+        </linearGradient>
+    </defs>
+    <rect x="0" y="0" width="300" height="36" rx="18" ry="18" fill="url(#blueGrad)" />
+    <!-- Top Highlight -->
+    <rect x="4" y="2" width="292" height="12" rx="6" ry="6" fill="#B3E5FC" opacity="0.5" />
+</svg>

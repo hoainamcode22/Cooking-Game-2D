@@ -1,0 +1,537 @@
+[
+  {
+    "itemId": "bap_cai_xao_nam",
+    "name_vi": "Bắp cải xào nấm",
+    "subtitle": "Bắp cải · Nấm",
+    "category": "dish",
+    "difficulty": 1,
+    "level_unlock": 6,
+    "target_flavor": {
+      "sweet": 2,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 4,
+      "texture": 1
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Cabbage.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Mushroom.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_FishSauce.asset"
+    ],
+    "required_names": [],
+    "exp": 27,
+    "reward_gold": 40,
+    "sell_price": 160,
+    "sprite_guid": "80983d354252dbe42a2ec238d577a885",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Bắp cải xào nấm.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_bap_cai_xao_nam.asset"
+  },
+  {
+    "itemId": "bo_ham_ca_rot",
+    "name_vi": "Bò hầm cà rốt",
+    "subtitle": "Thịt bò · Cà rốt",
+    "category": "dish",
+    "difficulty": 2,
+    "level_unlock": 8,
+    "target_flavor": {
+      "sweet": 1,
+      "spicy": 1,
+      "sour": 1,
+      "umami": 4,
+      "texture": 3
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Beef.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Carot.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Pepper.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Salt.asset"
+    ],
+    "required_names": [
+      "Beef",
+      "Cà Rốt"
+    ],
+    "exp": 48,
+    "reward_gold": 88,
+    "sell_price": 350,
+    "sprite_guid": "16f2f8a3075d32144a7d080f37d1b683",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Bò hầm cà rốt.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_bo_ham_ca_rot.asset"
+  },
+  {
+    "itemId": "bo_xao_tieu",
+    "name_vi": "Bò xào tiêu",
+    "subtitle": "Thịt bò · Tiêu",
+    "category": "dish",
+    "difficulty": 1,
+    "level_unlock": 10,
+    "target_flavor": {
+      "sweet": 1,
+      "spicy": 1,
+      "sour": 0,
+      "umami": 5,
+      "texture": 2
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Beef.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Pepper.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_SoySauce.asset"
+    ],
+    "required_names": [
+      "Beef",
+      "Pepper"
+    ],
+    "exp": 45,
+    "reward_gold": 79,
+    "sell_price": 315,
+    "sprite_guid": "155565d961f741c43a6a92cefbcbf79e",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Bò xào tiêu.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_bo_xao_tieu.asset"
+  },
+  {
+    "itemId": "canh_khoai_tay_thit_heo",
+    "name_vi": "Canh khoai tây thịt heo",
+    "subtitle": "Khoai tây · Cà rốt · Thịt heo",
+    "category": "dish",
+    "difficulty": 2,
+    "level_unlock": 6,
+    "target_flavor": {
+      "sweet": 1,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 5,
+      "texture": 2
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Pork.asset",
+      "Assets/_Game/Data/Data_cooking/ING_KhoaiTay.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Salt.asset"
+    ],
+    "required_names": [
+      "Thịt heo",
+      "Khoai Tây"
+    ],
+    "exp": 36,
+    "reward_gold": 48,
+    "sell_price": 190,
+    "sprite_guid": "3a66e1bf706ec9145a4296552e0d9ab4",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Canh khoai tây thịt heo.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_canh_khoai_tay_thit_heo.asset"
+  },
+  {
+    "itemId": "com_chien_trung",
+    "name_vi": "Cơm chiên trứng",
+    "subtitle": "Lúa · Trứng gà",
+    "category": "dish",
+    "difficulty": 0,
+    "level_unlock": 5,
+    "target_flavor": {
+      "sweet": 2,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 3,
+      "texture": 3
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Rice.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Egg.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_SoySauce.asset"
+    ],
+    "required_names": [
+      "Rice",
+      "Trứng"
+    ],
+    "exp": 15,
+    "reward_gold": 28,
+    "sell_price": 110,
+    "sprite_guid": "627c44244ff1a36449a7de95b38c0aef",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Cơm chiên trứng.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_com_chien_trung.asset"
+  },
+  {
+    "itemId": "ga_nuong_lu",
+    "name_vi": "Gà nướng lu mật mía",
+    "subtitle": "Thịt gà · Mía",
+    "category": "dish",
+    "difficulty": 1,
+    "level_unlock": 7,
+    "target_flavor": {
+      "sweet": 0,
+      "spicy": 1,
+      "sour": 0,
+      "umami": 3,
+      "texture": 2
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Chicken.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Pepper.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Salt.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Sugarcane.asset"
+    ],
+    "required_names": [
+      "Chicken",
+      "Mía"
+    ],
+    "exp": 32,
+    "reward_gold": 49,
+    "sell_price": 195,
+    "sprite_guid": "ce0dd0b7e0b7528409da91ffa79eecd3",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Gà nướng lu.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_ga_nuong_lu.asset"
+  },
+  {
+    "itemId": "ga_xao_ot",
+    "name_vi": "Gà xào ớt",
+    "subtitle": "Thịt gà · Ớt",
+    "category": "dish",
+    "difficulty": 1,
+    "level_unlock": 9,
+    "target_flavor": {
+      "sweet": 0,
+      "spicy": 3,
+      "sour": 0,
+      "umami": 4,
+      "texture": 3
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Chicken.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Chili.asset"
+    ],
+    "required_names": [
+      "Chicken",
+      "Ớt"
+    ],
+    "exp": 41,
+    "reward_gold": 60,
+    "sell_price": 240,
+    "sprite_guid": "62b195d16a872fa44be2c338cf58561b",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Gà xào ớt.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_ga_xao_ot.asset"
+  },
+  {
+    "itemId": "khoai_tay_chien",
+    "name_vi": "Khoai tây chiên",
+    "subtitle": "Khoai tây",
+    "category": "dish",
+    "difficulty": 0,
+    "level_unlock": 5,
+    "target_flavor": {
+      "sweet": 1,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 2,
+      "texture": 0
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_KhoaiTay.asset"
+    ],
+    "required_names": [
+      "Khoai Tây"
+    ],
+    "exp": 15,
+    "reward_gold": 24,
+    "sell_price": 95,
+    "sprite_guid": "506edd55eb19ec34b9dcdd1aa28fb2e5",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Khoai tây chiên.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_khoai_tay_chien.asset"
+  },
+  {
+    "itemId": "nam_xao_thit_bo",
+    "name_vi": "Nấm xào thịt bò",
+    "subtitle": "Nấm · Thịt bò",
+    "category": "dish",
+    "difficulty": 1,
+    "level_unlock": 8,
+    "target_flavor": {
+      "sweet": 1,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 7,
+      "texture": 3
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Mushroom.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Beef.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_SoySauce.asset"
+    ],
+    "required_names": [
+      "Mushroom",
+      "Beef"
+    ],
+    "exp": 36,
+    "reward_gold": 66,
+    "sell_price": 265,
+    "sprite_guid": "359310b9e1b2cbc4aa5aeb85bc9d66e9",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Nấm xào thịt bò.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_nam_xao_thit_bo.asset"
+  },
+  {
+    "itemId": "nuoc_mia_chanh",
+    "name_vi": "Nước mía chanh",
+    "subtitle": "Mía · Chanh",
+    "category": "dish",
+    "difficulty": 0,
+    "level_unlock": 8,
+    "target_flavor": {
+      "sweet": 3,
+      "spicy": 0,
+      "sour": 3,
+      "umami": 0,
+      "texture": 0
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Sugarcane.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Lemon.asset"
+    ],
+    "required_names": [
+      "Mía",
+      "Chanh"
+    ],
+    "exp": 24,
+    "reward_gold": 30,
+    "sell_price": 120,
+    "sprite_guid": "fcbf07e621aaf0f4d86841f67367c8be",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Nước mía chanh.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_nuoc_mia_chanh.asset"
+  },
+  {
+    "itemId": "pho_bo_tai",
+    "name_vi": "Phở bò tái",
+    "subtitle": "Lúa · Thịt bò · Chanh · Ớt",
+    "category": "dish",
+    "difficulty": 2,
+    "level_unlock": 9,
+    "target_flavor": {
+      "sweet": 1,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 6,
+      "texture": 5
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Beef.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Rice.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Herbs.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Lemon.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Chili.asset"
+    ],
+    "required_names": [
+      "Beef",
+      "Rice"
+    ],
+    "exp": 54,
+    "reward_gold": 100,
+    "sell_price": 400,
+    "sprite_guid": "f29f7ee17ae5e7f448949506935154aa",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Phở bò tái.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_pho_bo_tai.asset"
+  },
+  {
+    "itemId": "salad_bap_cai_chanh",
+    "name_vi": "Salad bắp cải chanh",
+    "subtitle": "Bắp cải · Chanh",
+    "category": "dish",
+    "difficulty": 0,
+    "level_unlock": 8,
+    "target_flavor": {
+      "sweet": 2,
+      "spicy": 0,
+      "sour": 3,
+      "umami": 1,
+      "texture": 1
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Cabbage.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Lemon.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Herbs.asset"
+    ],
+    "required_names": [
+      "Bắp Cải",
+      "Chanh"
+    ],
+    "exp": 24,
+    "reward_gold": 32,
+    "sell_price": 130,
+    "sprite_guid": "63b4fa4fa54b6b443b2ca9c2ed795f57",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Salad bắp cải chanh.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_salad_bap_cai_chanh.asset"
+  },
+  {
+    "itemId": "salad_nam_rau",
+    "name_vi": "Salad nấm và rau",
+    "subtitle": "Nấm · Rau",
+    "category": "dish",
+    "difficulty": 1,
+    "level_unlock": 7,
+    "target_flavor": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 3,
+      "umami": 3,
+      "texture": 2
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Mushroom.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Herbs.asset"
+    ],
+    "required_names": [
+      "Mushroom",
+      "Herbs"
+    ],
+    "exp": 32,
+    "reward_gold": 44,
+    "sell_price": 175,
+    "sprite_guid": "638f782735316b5488619efe42b16dd2",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Salad nấm và rau.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_salad_nam_rau.asset"
+  },
+  {
+    "itemId": "suon_heo_xao_chua_ngot",
+    "name_vi": "Sườn heo xào chua ngọt",
+    "subtitle": "Thịt heo · Cà chua · Chanh · Ớt",
+    "category": "dish",
+    "difficulty": 2,
+    "level_unlock": 9,
+    "target_flavor": {
+      "sweet": 3,
+      "spicy": 0,
+      "sour": 3,
+      "umami": 3,
+      "texture": 2
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Pork.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Chili.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Lemon.asset",
+      "Assets/_Game/Data/Data_cooking/ING_cachua.asset"
+    ],
+    "required_names": [
+      "Thịt heo",
+      "Cà Chua"
+    ],
+    "exp": 54,
+    "reward_gold": 75,
+    "sell_price": 300,
+    "sprite_guid": "a00ccb6ebe53d314fb8883e89a809b2d",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Sườn heo xào chua ngọt.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_suon_heo_xao_chua_ngot.asset"
+  },
+  {
+    "itemId": "sup_ngo_nam",
+    "name_vi": "Súp ngô nấm",
+    "subtitle": "Ngô · Nấm · Trứng gà",
+    "category": "dish",
+    "difficulty": 1,
+    "level_unlock": 6,
+    "target_flavor": {
+      "sweet": 1,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 3,
+      "texture": 1
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Corn.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Mushroom.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Egg.asset"
+    ],
+    "required_names": [
+      "Ngô",
+      "Mushroom"
+    ],
+    "exp": 27,
+    "reward_gold": 41,
+    "sell_price": 165,
+    "sprite_guid": "7882b075d127ef14593abbb381d7b90a",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Súp ngô nấm.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_sup_ngo_nam.asset"
+  },
+  {
+    "itemId": "thit_heo_luoc_cuon_rau",
+    "name_vi": "Thịt heo luộc cuốn rau",
+    "subtitle": "Thịt heo · Rau",
+    "category": "dish",
+    "difficulty": 1,
+    "level_unlock": 7,
+    "target_flavor": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 6,
+      "texture": 3
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Pork.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Herbs.asset"
+    ],
+    "required_names": [
+      "Thịt heo",
+      "Herbs"
+    ],
+    "exp": 32,
+    "reward_gold": 46,
+    "sell_price": 185,
+    "sprite_guid": "5375fa516464d464ca62d1abf0b531a0",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Thịt heo luộc cuốn rau.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_thit_heo_luoc_cuon_rau.asset"
+  },
+  {
+    "itemId": "trung_chien_ca_chua",
+    "name_vi": "Trứng chiên cà chua",
+    "subtitle": "Trứng gà · Cà chua",
+    "category": "dish",
+    "difficulty": 1,
+    "level_unlock": 5,
+    "target_flavor": {
+      "sweet": 0,
+      "spicy": 0,
+      "sour": 0,
+      "umami": 3,
+      "texture": 1
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Egg.asset",
+      "Assets/_Game/Data/Data_cooking/ING_cachua.asset"
+    ],
+    "required_names": [
+      "Trứng",
+      "Cà Chua"
+    ],
+    "exp": 23,
+    "reward_gold": 31,
+    "sell_price": 125,
+    "sprite_guid": "d42002313065a1147885748fd5b6db66",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Trứng chiên cà chua.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_trung_chien_ca_chua.asset"
+  },
+  {
+    "itemId": "trung_op_la_bo_ne",
+    "name_vi": "Trứng ốp la bò né",
+    "subtitle": "Trứng gà · Thịt bò · Cà chua",
+    "category": "dish",
+    "difficulty": 0,
+    "level_unlock": 8,
+    "target_flavor": {
+      "sweet": 0,
+      "spicy": 1,
+      "sour": 0,
+      "umami": 4,
+      "texture": 3
+    },
+    "required_ingredients": [
+      "Assets/_Game/Data/Data_cooking/ING_Egg.asset",
+      "Assets/_Game/Data/Data_cooking/ING_Beef.asset",
+      "Assets/_Game/Data/Data_cooking/SEA_Pepper.asset",
+      "Assets/_Game/Data/Data_cooking/ING_cachua.asset"
+    ],
+    "required_names": [
+      "Trứng",
+      "Beef"
+    ],
+    "exp": 24,
+    "reward_gold": 76,
+    "sell_price": 305,
+    "sprite_guid": "153977f51a1ef40478fa44421dd9969d",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Trứng ốp la bò né.png",
+    "asset_path": "Assets/_Game/Farm/data/Farm_Cooking/Dish_trung_op_la_bo_ne.asset"
+  }
+]

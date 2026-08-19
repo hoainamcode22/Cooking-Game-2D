@@ -1,0 +1,47 @@
+[
+  {
+    "itemId": "go",
+    "name_vi": "Gỗ",
+    "category": "train_material",
+    "sprite_guid": "1949807e11e35604c923915186458b4d",
+    "sprite_path": "Assets/Taulua/bovatpham/bovatpham.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/item_taulua/Gỗ.asset"
+  },
+  {
+    "itemId": "kinh",
+    "name_vi": "Kính",
+    "category": "train_material",
+    "sprite_guid": "1949807e11e35604c923915186458b4d",
+    "sprite_path": "Assets/Taulua/bovatpham/bovatpham.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/item_taulua/Kính.asset"
+  },
+  {
+    "itemId": "son",
+    "name_vi": "Sơn",
+    "category": "train_material",
+    "sprite_guid": "1949807e11e35604c923915186458b4d",
+    "sprite_path": "Assets/Taulua/bovatpham/bovatpham.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/item_taulua/Sơn.asset"
+  },
+  {
+    "itemId": "dinh",
+    "name_vi": "Đinh",
+    "category": "train_material",
+    "sprite_guid": "1949807e11e35604c923915186458b4d",
+    "sprite_path": "Assets/Taulua/bovatpham/bovatpham.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/item_taulua/Đinh.asset"
+  },
+  {
+    "itemId": "da",
+    "name_vi": "Đá",
+    "category": "train_material",
+    "sprite_guid": "1949807e11e35604c923915186458b4d",
+    "sprite_path": "Assets/Taulua/bovatpham/bovatpham.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/item_taulua/Đá.asset"
+  }
+]

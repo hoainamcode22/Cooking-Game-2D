@@ -70,6 +70,7 @@ public class FarmEconomyManager : MonoBehaviour
         Gold -= amount;
         SaveCurrency();
         NotifyCurrencyChanged();
+        AudioManager.Instance?.PlayBuySell();
         return true;
     }
 
@@ -84,6 +85,7 @@ public class FarmEconomyManager : MonoBehaviour
         Gems -= amount;
         SaveCurrency();
         NotifyCurrencyChanged();
+        AudioManager.Instance?.PlayBuySell();
         return true;
     }
 
@@ -96,6 +98,7 @@ public class FarmEconomyManager : MonoBehaviour
         SaveCurrency();
         NotifyCurrencyChanged();
         OnGoldAddedFx?.Invoke(amount);
+        AudioManager.Instance?.PlayBuySell();
     }
 
     public void AddGems(int amount)
@@ -106,6 +109,7 @@ public class FarmEconomyManager : MonoBehaviour
         Gems += amount;
         SaveCurrency();
         NotifyCurrencyChanged();
+        AudioManager.Instance?.PlayBuySell();
     }
 
     /// <summary>

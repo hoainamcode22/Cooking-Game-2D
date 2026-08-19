@@ -1,0 +1,462 @@
+fileFormatVersion: 2
+guid: 7169cd78990e5c94ea5f42402ca03d92
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7109115923290091357
+    second: nhanvientaulua_0
+  - first:
+      213: -7392193010644425861
+    second: nhanvientaulua_1
+  - first:
+      213: 1176479265260224754
+    second: nhanvientaulua_2
+  - first:
+      213: 3791118608609355484
+    second: nhanvientaulua_3
+  - first:
+      213: 5423993665810657575
+    second: nhanvientaulua_4
+  - first:
+      213: -2629373340426952014
+    second: nhanvientaulua_5
+  - first:
+      213: -1533472040522447856
+    second: nhanvientaulua_6
+  - first:
+      213: 4026943993211109049
+    second: nhanvientaulua_7
+  - first:
+      213: -5723782934885568932
+    second: nhanvientaulua_8
+  - first:
+      213: -6908945536882719969
+    second: nhanvientaulua_9
+  - first:
+      213: -4088402287509299999
+    second: nhanvientaulua_10
+  - first:
+      213: -6861392468638176159
+    second: nhanvientaulua_11
+  - first:
+      213: -3462606663770348539
+    second: nhanvientaulua_12
+  - first:
+      213: 1661594541839217104
+    second: nhanvientaulua_13
+  - first:
+      213: -1319890723439163729
+    second: nhanvientaulua_14
+  - first:
+      213: 6336091582045271360
+    second: nhanvientaulua_15
+  - first:
+      213: 3429879363255047052
+    second: nhanvientaulua_16
+  - first:
+      213: -4867993130064309107
+    second: nhanvientaulua_17
+  - first:
+      213: -7679244975729671714
+    second: nhanvientaulua_18
+  - first:
+      213: 4007844962464420291
+    second: nhanvientaulua_19
+  - first:
+      213: 745828778026407218
+    second: nhanvientaulua_20
+  - first:
+      213: 3362943037863100550
+    second: nhanvientaulua_21
+  - first:
+      213: -7069667383363415477
+    second: nhanvientaulua_22
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 9
+  spritePivot: {x: 0.5, y: 0}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 1024
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: nhanvientaulua_10
+      rect:
+        serializedVersion: 2
+        x: 319
+        y: 10
+        width: 88
+        height: 125
+      alignment: 9
+      pivot: {x: 0.4757347, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ec1d12e7c31347c0800000000000000
+      internalID: -4088402287509299999
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_11
+      rect:
+        serializedVersion: 2
+        x: 469
+        y: 10
+        width: 81
+        height: 125
+      alignment: 9
+      pivot: {x: 0.44724113, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 16ce74a27ef67c0a0800000000000000
+      internalID: -6861392468638176159
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_00
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 295
+        width: 67
+        height: 122
+      alignment: 9
+      pivot: {x: 0.50771856, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c3cf0dcc57e22ac41bea7082d81c616b
+      internalID: -1740425591
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_01
+      rect:
+        serializedVersion: 2
+        x: 179
+        y: 295
+        width: 81
+        height: 122
+      alignment: 9
+      pivot: {x: 0.44384483, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: beabcfa082c85e440af10526b10bfe14
+      internalID: -2039296796
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_02
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 295
+        width: 82
+        height: 122
+      alignment: 9
+      pivot: {x: 0.45878527, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 001d77dd4a3e5f24c933103f1f111b45
+      internalID: -812207911
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_03
+      rect:
+        serializedVersion: 2
+        x: 465
+        y: 295
+        width: 84
+        height: 122
+      alignment: 9
+      pivot: {x: 0.4524812, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2a38834332e38bb4aba60f8191bde021
+      internalID: 1513261034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_04
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 152
+        width: 80
+        height: 122
+      alignment: 9
+      pivot: {x: 0.4283476, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c5fcc046e772b114dbb69fcd74fd497c
+      internalID: 778253548
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_05
+      rect:
+        serializedVersion: 2
+        x: 177
+        y: 152
+        width: 87
+        height: 121
+      alignment: 9
+      pivot: {x: 0.4450154, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 505711c4bdfb2b3458f67259872a56e3
+      internalID: -1526289645
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_06
+      rect:
+        serializedVersion: 2
+        x: 322
+        y: 152
+        width: 82
+        height: 121
+      alignment: 9
+      pivot: {x: 0.46581882, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 65ab1c3e3c251e044974c5e5b1b214ac
+      internalID: 1298419090
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_07
+      rect:
+        serializedVersion: 2
+        x: 469
+        y: 152
+        width: 81
+        height: 122
+      alignment: 9
+      pivot: {x: 0.4276127, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 39bc8c990c2211547867363ec6afc54c
+      internalID: -271152848
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_08
+      rect:
+        serializedVersion: 2
+        x: 36
+        y: 10
+        width: 82
+        height: 125
+      alignment: 9
+      pivot: {x: 0.4250398, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 166a1df7e817a7f4cb0089b6224d6aac
+      internalID: -470881571
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: nhanvientaulua_09
+      rect:
+        serializedVersion: 2
+        x: 182
+        y: 10
+        width: 81
+        height: 125
+      alignment: 9
+      pivot: {x: 0.41835868, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 84a12b86f48b1054e823acd3162915f6
+      internalID: -1399918640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 12862fb03a13b334abbaa9b7e350e6be
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      nhanvientaulua_00: -1740425591
+      nhanvientaulua_01: -2039296796
+      nhanvientaulua_02: -812207911
+      nhanvientaulua_03: 1513261034
+      nhanvientaulua_04: 778253548
+      nhanvientaulua_05: -1526289645
+      nhanvientaulua_06: 1298419090
+      nhanvientaulua_07: -271152848
+      nhanvientaulua_08: -470881571
+      nhanvientaulua_09: -1399918640
+      nhanvientaulua_10: -4088402287509299999
+      nhanvientaulua_11: -6861392468638176159
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

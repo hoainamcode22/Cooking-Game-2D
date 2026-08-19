@@ -1,0 +1,209 @@
+[
+  {
+    "itemId": "beef",
+    "name_vi": "Thịt bò",
+    "category": "animal_product",
+    "sprite_guid": "7c146c31094766a4888de50bc8013caa",
+    "sprite_path": "Assets/Assetsgame/Thịt/thitbo-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Beef.asset",
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_Beef.asset"
+  },
+  {
+    "itemId": "chicken_meat",
+    "name_vi": "Thịt gà",
+    "category": "animal_product",
+    "sprite_guid": "888289491956e5347952a87ca3ec06d1",
+    "sprite_path": "Assets/Assetsgame/Thịt/thitga-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Chicken.asset",
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_ChickenMeat.asset"
+  },
+  {
+    "itemId": "egg",
+    "name_vi": "Trứng",
+    "category": "animal_product",
+    "sprite_guid": "20cfa699d7411b0499297e423fec3d8a",
+    "sprite_path": "Assets/Anh/rotrungga-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Egg.asset",
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_Egg.asset"
+  },
+  {
+    "itemId": "milk",
+    "name_vi": "Sữa",
+    "category": "animal_product",
+    "sprite_guid": "309bc08c5417bfc48a42313d16d33afb",
+    "sprite_path": "Assets/Assetsgame/suamilk.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/SEA_Milk.asset",
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_Milk.asset"
+  },
+  {
+    "itemId": "pork",
+    "name_vi": "Thịt heo",
+    "category": "animal_product",
+    "sprite_guid": "de16df85269be62459a51c70a1ac2585",
+    "sprite_path": "Assets/Assetsgame/Thịt/thitheo-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Pork.asset",
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_Pork.asset"
+  },
+  {
+    "itemId": "bap_cai_xao_nam",
+    "name_vi": "Bắp cải xào nấm",
+    "category": "animal_product",
+    "sprite_guid": "80983d354252dbe42a2ec238d577a885",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Bắp cải xào nấm.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_bap_cai_xao_nam.asset"
+  },
+  {
+    "itemId": "bo_ham_ca_rot",
+    "name_vi": "Bò hầm cà rót",
+    "category": "animal_product",
+    "sprite_guid": "16f2f8a3075d32144a7d080f37d1b683",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Bò hầm cà rốt.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_bo_ham_ca_rot.asset"
+  },
+  {
+    "itemId": "bo_xao_tieu",
+    "name_vi": "Bò xào tiêu",
+    "category": "animal_product",
+    "sprite_guid": "155565d961f741c43a6a92cefbcbf79e",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Bò xào tiêu.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_bo_xao_tieu.asset"
+  },
+  {
+    "itemId": "canh_khoai_tay_thit_heo",
+    "name_vi": "Canh khoai tay thit heo",
+    "category": "animal_product",
+    "sprite_guid": "3a66e1bf706ec9145a4296552e0d9ab4",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Canh khoai tây thịt heo.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_canh_khoai_tay_thit_heo.asset"
+  },
+  {
+    "itemId": "com_chien_trung",
+    "name_vi": "Cơm chiên trứng",
+    "category": "animal_product",
+    "sprite_guid": "627c44244ff1a36449a7de95b38c0aef",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Cơm chiên trứng.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_com_chien_trung.asset"
+  },
+  {
+    "itemId": "ga_nuong_lu",
+    "name_vi": "Gà nướng lu",
+    "category": "animal_product",
+    "sprite_guid": "ce0dd0b7e0b7528409da91ffa79eecd3",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Gà nướng lu.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_ga_nuong_lu.asset"
+  },
+  {
+    "itemId": "ga_xao_ot",
+    "name_vi": "Gà xào ớt",
+    "category": "animal_product",
+    "sprite_guid": "62b195d16a872fa44be2c338cf58561b",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Gà xào ớt.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_ga_xao_ot.asset"
+  },
+  {
+    "itemId": "khoai_tay_chien",
+    "name_vi": "Khoai tây chiên",
+    "category": "animal_product",
+    "sprite_guid": "506edd55eb19ec34b9dcdd1aa28fb2e5",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Khoai tây chiên.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_khoai_tay_chien.asset"
+  },
+  {
+    "itemId": "nam_xao_thit_bo",
+    "name_vi": "Nấm xào thịt bò",
+    "category": "animal_product",
+    "sprite_guid": "359310b9e1b2cbc4aa5aeb85bc9d66e9",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Nấm xào thịt bò.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_nam_xao_thit_bo.asset"
+  },
+  {
+    "itemId": "nuoc_mia_chanh",
+    "name_vi": "Nước mía chanh",
+    "category": "animal_product",
+    "sprite_guid": "fcbf07e621aaf0f4d86841f67367c8be",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Nước mía chanh.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_nuoc_mia_chanh.asset"
+  },
+  {
+    "itemId": "pho_bo_tai",
+    "name_vi": "Phở bò tái",
+    "category": "animal_product",
+    "sprite_guid": "f29f7ee17ae5e7f448949506935154aa",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Phở bò tái.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_pho_bo_tai.asset"
+  },
+  {
+    "itemId": "salad_bap_cai_chanh",
+    "name_vi": "Salad bắp cải chanh",
+    "category": "animal_product",
+    "sprite_guid": "63b4fa4fa54b6b443b2ca9c2ed795f57",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Salad bắp cải chanh.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_salad_bap_cai_chanh.asset"
+  },
+  {
+    "itemId": "salad_nam_rau",
+    "name_vi": "Salad nấm rau",
+    "category": "animal_product",
+    "sprite_guid": "638f782735316b5488619efe42b16dd2",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Salad nấm và rau.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_salad_nam_rau.asset"
+  },
+  {
+    "itemId": "suon_heo_xao_chua_ngot",
+    "name_vi": "Sườn heo xào chua ngọt",
+    "category": "animal_product",
+    "sprite_guid": "a00ccb6ebe53d314fb8883e89a809b2d",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Sườn heo xào chua ngọt.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_suon_heo_xao_chua_ngot.asset"
+  },
+  {
+    "itemId": "sup_ngo_nam",
+    "name_vi": "Súp ngo nấm",
+    "category": "animal_product",
+    "sprite_guid": "7882b075d127ef14593abbb381d7b90a",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Súp ngô nấm.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_sup_ngo_nam.asset"
+  },
+  {
+    "itemId": "thit_heo_luoc_cuon_rau",
+    "name_vi": "Thịt heo luộc cuốn rau",
+    "category": "animal_product",
+    "sprite_guid": "5375fa516464d464ca62d1abf0b531a0",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Thịt heo luộc cuốn rau.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_thit_heo_luoc_cuon_rau.asset"
+  },
+  {
+    "itemId": "trung_chien_ca_chua",
+    "name_vi": "Trứng chiên cà chua",
+    "category": "animal_product",
+    "sprite_guid": "d42002313065a1147885748fd5b6db66",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Trứng chiên cà chua.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_trung_chien_ca_chua.asset"
+  },
+  {
+    "itemId": "trung_op_la_bo_ne",
+    "name_vi": "Trứng óp la bò né",
+    "category": "animal_product",
+    "sprite_guid": "153977f51a1ef40478fa44421dd9969d",
+    "sprite_path": "Assets/Assetsgame/Món ăn/Trứng ốp la bò né.png",
+    "cooking_ingredient_ref": null,
+    "asset_path": "Assets/_Game/Farm/data/Farm_dong_vat/Item_trung_op_la_bo_ne.asset"
+  }
+]

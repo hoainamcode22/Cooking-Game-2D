@@ -1,0 +1,533 @@
+fileFormatVersion: 2
+guid: 0d5165f38d673c744ae266cb852abab8
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -8466861436097330065
+    second: mayxaymia_0
+  - first:
+      213: -2864579043525167239
+    second: mayxaymia_1
+  - first:
+      213: 1765284208370994845
+    second: mayxaymia_2
+  - first:
+      213: 196835120446726003
+    second: mayxaymia_3
+  - first:
+      213: -2326411387119911616
+    second: mayxaymia_4
+  - first:
+      213: 7367491390125091587
+    second: mayxaymia_5
+  - first:
+      213: 5722853108729649790
+    second: mayxaymia_6
+  - first:
+      213: 5433839490693241700
+    second: mayxaymia_7
+  - first:
+      213: 5021294089902264998
+    second: mayxaymia_8
+  - first:
+      213: 291130975612483707
+    second: mayxaymia_9
+  - first:
+      213: -1140836026190383904
+    second: mayxaymia_10
+  - first:
+      213: -2829339056012565893
+    second: mayxaymia_11
+  - first:
+      213: 1910515027321376092
+    second: mayxaymia_12
+  - first:
+      213: 2792103669331466659
+    second: mayxaymia_13
+  - first:
+      213: -2191106436256767155
+    second: mayxaymia_14
+  - first:
+      213: -2996073942392399195
+    second: mayxaymia_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 7
+  spritePivot: {x: 0.5, y: 0}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 1024
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: mayxaymia_10
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 108
+        width: 130
+        height: 104
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e434f7bdafea20f0800000000000000
+      internalID: -1140836026190383904
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_11
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 108
+        width: 130
+        height: 104
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b726b397e1b2cb8d0800000000000000
+      internalID: -2829339056012565893
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_12
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 1
+        width: 130
+        height: 105
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5d49858b43838a10800000000000000
+      internalID: 1910515027321376092
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_13
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 1
+        width: 130
+        height: 105
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3a9119a7e7b8fb620800000000000000
+      internalID: 2792103669331466659
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_14
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 1
+        width: 130
+        height: 105
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d43e7d12e40a791e0800000000000000
+      internalID: -2191106436256767155
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_15
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 1
+        width: 130
+        height: 105
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5aa95ee8f9ecb66d0800000000000000
+      internalID: -2996073942392399195
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_00
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 317
+        width: 130
+        height: 106
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e518c86b435ee934ca9e0925331bb011
+      internalID: 1096713885
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_01
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 317
+        width: 130
+        height: 106
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ed815d9f597aa924fb6eaf4a475bed06
+      internalID: 1187709852
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_02
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 317
+        width: 130
+        height: 106
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 04a63264b12651d41a28d2fd89d454a0
+      internalID: -633215682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_03
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 317
+        width: 130
+        height: 106
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 65faf866692de62439f7bc87cf5aa232
+      internalID: -1829852925
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_04
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 213
+        width: 130
+        height: 104
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aa655a53baa3652458245e4c61491809
+      internalID: -534252634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_05
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 213
+        width: 130
+        height: 104
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b6eb0243af929d0449a9d8973411c9fa
+      internalID: -1490971006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_06
+      rect:
+        serializedVersion: 2
+        x: 295
+        y: 213
+        width: 130
+        height: 104
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e17f5b53deb9f4a45800d778c49178f6
+      internalID: 1507225134
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_07
+      rect:
+        serializedVersion: 2
+        x: 440
+        y: 213
+        width: 130
+        height: 104
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3bcfb7aa5e62b8e4ca35a3611dd7c9bc
+      internalID: -1956271105
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_08
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 108
+        width: 130
+        height: 104
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e523391071129af40a998d989c3f7272
+      internalID: -252412976
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: mayxaymia_09
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 108
+        width: 130
+        height: 104
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8077559ae31b660438f9e403f2e535df
+      internalID: -2031350634
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 6e6949c8e10483f49ac1366305398fb8
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      mayxaymia_00: 1096713885
+      mayxaymia_01: 1187709852
+      mayxaymia_02: -633215682
+      mayxaymia_03: -1829852925
+      mayxaymia_04: -534252634
+      mayxaymia_05: -1490971006
+      mayxaymia_06: 1507225134
+      mayxaymia_07: -1956271105
+      mayxaymia_08: -252412976
+      mayxaymia_09: -2031350634
+      mayxaymia_10: -1140836026190383904
+      mayxaymia_11: -2829339056012565893
+      mayxaymia_12: 1910515027321376092
+      mayxaymia_13: 2792103669331466659
+      mayxaymia_14: -2191106436256767155
+      mayxaymia_15: -2996073942392399195
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -143,11 +143,16 @@ MonoBehaviour:
   animalPrefab: {fileID: 6625395460638792448, guid: ae8359af6fad488bb8032d045019a30c, type: 3}
   legacyChildName: bonam1
   spawnedChildName: HappyHarvest_Cow_Brown
-  localPosition: {x: 0.03, y: 1.8, z: 0}
-  localScale: {x: 0.8, y: 0.8, z: 0.8}
-  sortingOrderOffset: 10
+  localPosition: {x: 0, y: 0, z: 0}
+  localScale: {x: 0.85, y: 0.85, z: 0.85}
+  sortingOrderOffset: 50
   animalCount: 2
-  horizontalSpacing: 1.4
+  horizontalSpacing: 1.2
+  walkBoundsMin: {x: -1.15, y: -0.6}
+  walkBoundsMax: {x: 1.15, y: 0.45}
+  soundClips:
+  - {fileID: 8300000, guid: 26b8396f64fe4dcdb8d42b960bad1fbc, type: 3}
+  - {fileID: 8300000, guid: 00adf13314684a9dbc5ad5ef37ecef13, type: 3}
 --- !u!114 &4677469043166589633
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -538,7 +543,7 @@ PrefabInstance:
     - target: {fileID: 736988142960254716, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
     - target: {fileID: 1037848967059955010, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Size.x
       value: 442.5832
@@ -690,7 +695,7 @@ PrefabInstance:
     - target: {fileID: 3796745679944943026, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -3810440115334909774, guid: 1bbb08395055ade4f9eb9ee6dd21bf59, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
     - target: {fileID: 4355131913021778495, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25
@@ -722,7 +727,7 @@ PrefabInstance:
     - target: {fileID: 7645119900833754873, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
     - target: {fileID: 8008097636037535231, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_IsActive
       value: 0

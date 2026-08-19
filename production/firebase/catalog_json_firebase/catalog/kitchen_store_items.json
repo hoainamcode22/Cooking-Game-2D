@@ -1,0 +1,137 @@
+[
+  {
+    "itemId": "carot",
+    "name_vi": "Cà Rốt",
+    "category": "kitchen_store_item",
+    "sprite_guid": "056a5265973e3024785694e5f2f4e236",
+    "sprite_path": "Assets/Assetsgame/hatgiong/carot-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Carot.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_Carot.asset"
+  },
+  {
+    "itemId": "chili",
+    "name_vi": "Ớt",
+    "category": "kitchen_store_item",
+    "sprite_guid": "e07bc155db7814a4db8dd70af2ab53c0",
+    "sprite_path": "Assets/Assetsgame/hatgiong/ot-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/SEA_Chili.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_Chili.asset"
+  },
+  {
+    "itemId": "fishsauce",
+    "name_vi": "Nước mắm",
+    "category": "kitchen_store_item",
+    "sprite_guid": "e05efc49d25b1ac4d8fc62cc1760bf9f",
+    "sprite_path": "Assets/Anh/fish_sauce.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/SEA_FishSauce.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_FishSauce.asset"
+  },
+  {
+    "itemId": "herbs",
+    "name_vi": "Rau thơm",
+    "category": "kitchen_store_item",
+    "sprite_guid": "050a1194adf72f046adc525bddd7bb28",
+    "sprite_path": "Assets/Anh/rau.jpg",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Herbs.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_Herbs.asset"
+  },
+  {
+    "itemId": "khoaitay",
+    "name_vi": "Khoai Tây",
+    "category": "kitchen_store_item",
+    "sprite_guid": "c0014274ce5b13e48b90062dd2280b80",
+    "sprite_path": "Assets/Assetsgame/hatgiong/iconKhoaiTay.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_KhoaiTay.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_KhoaiTay.asset"
+  },
+  {
+    "itemId": "lemon",
+    "name_vi": "Chanh",
+    "category": "kitchen_store_item",
+    "sprite_guid": "2fb67aa1523f6cf499fd0815f52679bc",
+    "sprite_path": "Assets/Assetsgame/hatgiong/chanh-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/SEA_Lemon.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_Lemon.asset"
+  },
+  {
+    "itemId": "mushroom",
+    "name_vi": "Nấm",
+    "category": "kitchen_store_item",
+    "sprite_guid": "4d849149e4c04714a9c1b16b0cae29ed",
+    "sprite_path": "Assets/Assetsgame/hatgiong/VES8N-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Mushroom.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_Mushroom.asset"
+  },
+  {
+    "itemId": "pepper",
+    "name_vi": "Tiêu",
+    "category": "kitchen_store_item",
+    "sprite_guid": "cd4948aa0afe3c14e87ee94fb4c5a9f6",
+    "sprite_path": "Assets/Assetsgame/hatgiong/tieu.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/SEA_Pepper.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_Pepper.asset"
+  },
+  {
+    "itemId": "rice",
+    "name_vi": "Gạo",
+    "category": "kitchen_store_item",
+    "sprite_guid": "35d011bc0d40a0f4d8f5b4d58f965248",
+    "sprite_path": "Assets/Assetsgame/hatgiong/lua-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Rice.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_Rice.asset"
+  },
+  {
+    "itemId": "salt",
+    "name_vi": "Muối",
+    "category": "kitchen_store_item",
+    "sprite_guid": "a849ade4905cf98419e62a9cf5b043e5",
+    "sprite_path": "Assets/Anh/salt.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/SEA_Salt.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_Salt.asset"
+  },
+  {
+    "itemId": "soysauce",
+    "name_vi": "Nước tương",
+    "category": "kitchen_store_item",
+    "sprite_guid": "0d8b9e5342fcc9e4ba5df2a11bf75d31",
+    "sprite_path": "Assets/Anh/soy_sauce.jpg",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/SEA_SoySauce.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_SoySauce.asset"
+  },
+  {
+    "itemId": "bapcai",
+    "name_vi": "Bắp Cải",
+    "category": "kitchen_store_item",
+    "sprite_guid": "ec131f41709eb97428b2f0a821ad1a55",
+    "sprite_path": "Assets/Assetsgame/hatgiong/bapcailuc1-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Cabbage.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_bapcai.asset"
+  },
+  {
+    "itemId": "cachua",
+    "name_vi": "Cà Chua",
+    "category": "kitchen_store_item",
+    "sprite_guid": "96c480eebb5cbec4a91d9fd42fd43b54",
+    "sprite_path": "Assets/Assetsgame/cachualever3-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_cachua.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_cachua.asset"
+  },
+  {
+    "itemId": "ngo",
+    "name_vi": "Ngô",
+    "category": "kitchen_store_item",
+    "sprite_guid": "7052130bafa12124e87e8448046bae07",
+    "sprite_path": "Assets/Assetsgame/hatgiong/bap-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Corn.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_ngo.asset"
+  },
+  {
+    "itemId": "sugarcane",
+    "name_vi": "Mía",
+    "category": "kitchen_store_item",
+    "sprite_guid": "e6c12ff2d0ad38b45af17c41ab41112e",
+    "sprite_path": "Assets/Assetsgame/hatgiong/mia-removebg-preview.png",
+    "cooking_ingredient_ref": "Assets/_Game/Data/Data_cooking/ING_Sugarcane.asset",
+    "asset_path": "Assets/_Game/Farm/data/Item_Kho_Cook/Item_sugarcane.asset"
+  }
+]

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PenClickDetector : MonoBehaviour
@@ -88,7 +88,7 @@ public class PenClickDetector : MonoBehaviour
             return;
         }
 
-        if (FarmInputLock.BlockMapPan)
+        if (FarmInputLock.IsDraggingSeed || FarmInputLock.IsDraggingSickle)
         {
             return;
         }

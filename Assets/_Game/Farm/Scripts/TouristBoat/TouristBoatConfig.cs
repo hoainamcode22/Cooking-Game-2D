@@ -74,6 +74,31 @@ public class TouristBoatConfig : ScriptableObject
         "Nhìn kìa — chuyến tàu đầu tiên đang tới!",
     };
 
+    // ─── Cỡ tàu trong world ─────────────────────────────────────────────
+    [Header("Cỡ tàu — unit world")]
+    [Tooltip("Chiều rộng sprite tàu. 3 bến cách nhau ~740 unit nên tàu ~300 là vừa 1 ô đậu. Đặt 0 để KHÔNG can thiệp (giữ nguyên cỡ bạn tự chỉnh).")]
+    public float boatVisualWidth = 300f;
+
+    [Tooltip("Chiều cao sprite tàu. Đặt 0 để suy theo tỉ lệ gốc của ảnh.")]
+    public float boatVisualHeight = 0f;
+
+    // ─── Cỡ bảng khóa (LockUI) trong world ──────────────────────────────
+    // Map của game dùng hệ toạ độ RẤT lớn (3 bến cách nhau ~740-840 unit) nên
+    // bảng khóa phải tính theo unit world, không phải pixel UI. Số mặc định dưới
+    // đây canh theo khoảng cách bến thật: bảng 620 rộng để 3 bảng không chạm nhau.
+    [Header("Cỡ bảng khóa (LockUI) — unit world")]
+    [Tooltip("Chiều rộng bảng khóa. Nên nhỏ hơn khoảng cách giữa 2 bến (~740) để 2 bảng không chạm nhau.")]
+    public float lockPanelWidth = 520f;
+
+    [Tooltip("Chiều cao bảng khóa.")]
+    public float lockPanelHeight = 250f;
+
+    [Tooltip("Đường kính icon ổ khóa.")]
+    public float lockIconSize = 100f;
+
+    [Tooltip("Cỡ chữ teaser ('Mở ở Lv12 · 2.000 vàng'). Đây là chiều cao chữ tính bằng unit world — 96 đọc rõ ở mức zoom thường.")]
+    public float lockTeaserFontSize = 80f;
+
     // ─── Debug ──────────────────────────────────────────────────────────
 
     [Header("Debug")]

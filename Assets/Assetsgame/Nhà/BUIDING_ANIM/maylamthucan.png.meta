@@ -1,0 +1,429 @@
+fileFormatVersion: 2
+guid: 3a7f5cb2ca730b341ae9687ea96d7436
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 305854043962348622
+    second: maylamthucan_0
+  - first:
+      213: -3808690501772614930
+    second: maylamthucan_1
+  - first:
+      213: 8857273691615640358
+    second: maylamthucan_2
+  - first:
+      213: 7134218083818440870
+    second: maylamthucan_3
+  - first:
+      213: -933807414621117407
+    second: maylamthucan_4
+  - first:
+      213: -8566460170424435292
+    second: maylamthucan_5
+  - first:
+      213: 505426521882380852
+    second: maylamthucan_6
+  - first:
+      213: -4251652042053325745
+    second: maylamthucan_7
+  - first:
+      213: -753746757294354223
+    second: maylamthucan_8
+  - first:
+      213: -3622941546363701379
+    second: maylamthucan_9
+  - first:
+      213: 3595412901546543333
+    second: maylamthucan_10
+  - first:
+      213: -7698806054044129367
+    second: maylamthucan_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 0
+  alignment: 7
+  spritePivot: {x: 0.5, y: 0}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 1024
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 0
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: maylamthucan_10
+      rect:
+        serializedVersion: 2
+        x: 294
+        y: 5
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5e8c9811cf875e130800000000000000
+      internalID: 3595412901546543333
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_11
+      rect:
+        serializedVersion: 2
+        x: 438
+        y: 5
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a7a2121fa8582590800000000000000
+      internalID: -7698806054044129367
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_00
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 291
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 20b7cc382f1e29d4799206586f908902
+      internalID: 1851582373
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_01
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 291
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 17122b5a1718477498069fa0266703c5
+      internalID: -948203597
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_02
+      rect:
+        serializedVersion: 2
+        x: 294
+        y: 291
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0679fe75318f128469565def348a83a6
+      internalID: -1671738738
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_03
+      rect:
+        serializedVersion: 2
+        x: 438
+        y: 291
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 63b94de921df0a4448851b1a101de987
+      internalID: 2069788377
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_04
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 147
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5820a66b1230f2c4b83f29d4ac15e037
+      internalID: 1921221669
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_05
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 147
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c7c489ad543d8e64ebd2db7697e905ee
+      internalID: -1593437386
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_06
+      rect:
+        serializedVersion: 2
+        x: 294
+        y: 147
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 99051f9e74f81ca4f910f93a9590d29a
+      internalID: -1098570984
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_07
+      rect:
+        serializedVersion: 2
+        x: 438
+        y: 147
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: f02bc6631669e1346be73183124a921a
+      internalID: 336313277
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_08
+      rect:
+        serializedVersion: 2
+        x: 5
+        y: 5
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 3a6a25892b7503041a9d7972c4f1a3c5
+      internalID: -5410084
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_09
+      rect:
+        serializedVersion: 2
+        x: 149
+        y: 5
+        width: 136
+        height: 138
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4c5ee5688b6ee46469331fea1af925f3
+      internalID: 13331811
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5b1ed62030ac85340861ac0da98bbfc3
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      maylamthucan_00: 1851582373
+      maylamthucan_01: -948203597
+      maylamthucan_02: -1671738738
+      maylamthucan_03: 2069788377
+      maylamthucan_04: 1921221669
+      maylamthucan_05: -1593437386
+      maylamthucan_06: -1098570984
+      maylamthucan_07: 336313277
+      maylamthucan_08: -5410084
+      maylamthucan_09: 13331811
+      maylamthucan_10: 3595412901546543333
+      maylamthucan_11: -7698806054044129367
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

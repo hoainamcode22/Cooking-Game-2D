@@ -1,0 +1,530 @@
+[
+  {
+    "level": 2,
+    "gold": 150,
+    "gems": 2,
+    "gift_items": [
+      {
+        "itemId": "seed_ngo",
+        "name_vi": "Hạt Ngô",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Mở khóa hạt Ngô",
+      "Chuồng gà đã mở bán trong Shop",
+      "Nhà dân mới sẽ mở ở cấp 3"
+    ],
+    "hint": "Bạn đã lên cấp 2! Hạt giống mới đã sẵn sàng để trồng.",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset"
+  },
+  {
+    "level": 3,
+    "gold": 200,
+    "gems": 2,
+    "gift_items": [
+      {
+        "itemId": "seed_cachua",
+        "name_vi": "Hạt Cà chua",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Mở khóa Cà chua và Cà rốt",
+      "Thêm 1 nhà dân nhận đơn hàng"
+    ],
+    "hint": "Trồng Cà chua và Cà rốt để hoàn thành đơn hàng từ nhà dân mới nhé!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset"
+  },
+  {
+    "level": 4,
+    "gold": 250,
+    "gems": 3,
+    "gift_items": [
+      {
+        "itemId": "seed_hoa_hong",
+        "name_vi": "Hạt Hoa hồng",
+        "amount": 2
+      }
+    ],
+    "unlock_descriptions": [
+      "Mở khóa Hoa hồng và Oải hương",
+      "Chuồng heo đã mở bán trong Shop"
+    ],
+    "hint": "Hoa hồng và Oải hương đã có trong Shop. Ghé xem chuồng heo mới nhé!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset"
+  },
+  {
+    "level": 5,
+    "gold": 300,
+    "gems": 3,
+    "gift_items": [
+      {
+        "itemId": "khoai_tay",
+        "name_vi": "Khoai tây giống",
+        "amount": 5
+      }
+    ],
+    "unlock_descriptions": [
+      "MỞ KHÓA NHÀ BẾP — nấu ăn ngay!",
+      "Mở khóa Khoai tây",
+      "Thêm 1 nhà dân nhận đơn hàng"
+    ],
+    "hint": "Bếp nấu ăn đã mở! Hãy nấu món đầu tiên rồi mang về kho để giao cho dân làng.",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset"
+  },
+  {
+    "level": 6,
+    "gold": 350,
+    "gems": 3,
+    "gift_items": [
+      {
+        "itemId": "seed_nam",
+        "name_vi": "Hạt Nấm",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Mở khóa Nấm",
+      "Chuồng bò đã mở bán trong Shop",
+      "Nhiệm vụ hằng ngày đã mở"
+    ],
+    "hint": "Nấm đã có trong Shop. Đừng quên làm nhiệm vụ hằng ngày để nhận thêm thưởng!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset"
+  },
+  {
+    "level": 7,
+    "gold": 400,
+    "gems": 4,
+    "gift_items": [
+      {
+        "itemId": "seed_sugarcane",
+        "name_vi": "Hạt Mía",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Mở khóa Mía",
+      "Mở khóa Hoa lan, Cúc trắng",
+      "Thêm 1 nhà dân nhận đơn hàng"
+    ],
+    "hint": "Mía ngọt và hoa mới đã sẵn sàng. Thêm nhà dân là thêm đơn hàng mới!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset"
+  },
+  {
+    "level": 8,
+    "gold": 450,
+    "gems": 4,
+    "gift_items": [
+      {
+        "itemId": "seed_lemon",
+        "name_vi": "Hạt Chanh",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Mở khóa Chanh",
+      "Dân làng bắt đầu đặt món thịt bò"
+    ],
+    "hint": "Chanh đã có trong Shop. Dân làng bắt đầu thèm các món thịt bò đấy!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset"
+  },
+  {
+    "level": 9,
+    "gold": 500,
+    "gems": 5,
+    "gift_items": [
+      {
+        "itemId": "seed_chili",
+        "name_vi": "Hạt Ớt",
+        "amount": 2
+      }
+    ],
+    "unlock_descriptions": [
+      "Mở khóa Ớt",
+      "Mở khóa Tulip, Cúc vạn thọ",
+      "Thêm 1 nhà dân nhận đơn hàng"
+    ],
+    "hint": "Ớt đã sẵn sàng để trồng. Tulip và Cúc vạn thọ sẽ tô điểm cho nông trại.",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset"
+  },
+  {
+    "level": 10,
+    "gold": 600,
+    "gems": 8,
+    "gift_items": [
+      {
+        "itemId": "seed_pepper",
+        "name_vi": "Hạt Tiêu",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Mở khóa Tiêu và các loại hoa còn lại",
+      "Bạn đã hoàn thành hành trình Cấp 1-10!"
+    ],
+    "hint": "Chúc mừng! Bạn đã hoàn thành hành trình Cấp 1-10. Hãy tiếp tục phát triển nông trại nhé!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset"
+  },
+  {
+    "level": 11,
+    "gold": 700,
+    "gems": 5,
+    "gift_items": [
+      {
+        "itemId": "seed_sugarcane",
+        "name_vi": "Hạt Mía",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Máy Xay Bột đã mở bán trong Shop",
+      "Mở khóa bột gạo"
+    ],
+    "hint": "Máy Xay Bột đã có trong Shop — xay lúa thành bột gạo để bán hoặc nấu ăn!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset"
+  },
+  {
+    "level": 12,
+    "gold": 760,
+    "gems": 5,
+    "gift_items": [
+      {
+        "itemId": "seed_ngo",
+        "name_vi": "Hạt Ngô",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Nâng cấp kho lần 1",
+      "Mở thêm cây trồng mới"
+    ],
+    "hint": "Kho đã có thể nâng cấp — chứa được nhiều nông sản hơn.",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset"
+  },
+  {
+    "level": 13,
+    "gold": 820,
+    "gems": 5,
+    "gift_items": [
+      {
+        "itemId": "seed_lemon",
+        "name_vi": "Hạt Chanh",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Máy Ép Mía đã mở bán trong Shop",
+      "Mở khóa nước mía"
+    ],
+    "hint": "Máy Ép Mía đã có trong Shop — ép mía thành nước mía giải khát!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset"
+  },
+  {
+    "level": 14,
+    "gold": 880,
+    "gems": 5,
+    "gift_items": [
+      {
+        "itemId": "seed_hoa_hong",
+        "name_vi": "Hạt Hoa hồng",
+        "amount": 2
+      }
+    ],
+    "unlock_descriptions": [
+      "Đơn 2 món xuất hiện nhiều hơn",
+      "Mở thêm hoa mới"
+    ],
+    "hint": "Dân làng bắt đầu đặt nhiều đơn 2 món hơn — chuẩn bị nguyên liệu nhé!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset"
+  },
+  {
+    "level": 15,
+    "gold": 1000,
+    "gems": 10,
+    "gift_items": [
+      {
+        "itemId": "seed_nam",
+        "name_vi": "Hạt Nấm",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Máy Phô Mai đã mở bán trong Shop",
+      "Mở khóa phô mai",
+      "🏅 Danh hiệu \"Đầu bếp khéo\""
+    ],
+    "hint": "Máy Phô Mai đã có trong Shop — làm phô mai từ sữa bò!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset"
+  },
+  {
+    "level": 16,
+    "gold": 1100,
+    "gems": 6,
+    "gift_items": [
+      {
+        "itemId": "seed_cachua",
+        "name_vi": "Hạt Cà chua",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Hồ Cá đã mở — bắt đầu câu cá",
+      "Mở khóa các món cá"
+    ],
+    "hint": "Hồ Cá đã mở! Thả cần câu để bắt cá cho các món mới.",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset"
+  },
+  {
+    "level": 17,
+    "gold": 1200,
+    "gems": 6,
+    "gift_items": [
+      {
+        "itemId": "seed_chili",
+        "name_vi": "Hạt Ớt",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Món cá vào pool đơn hàng",
+      "Mở khóa loại cá mới"
+    ],
+    "hint": "Các món cá đã xuất hiện trong đơn hàng của dân làng.",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset"
+  },
+  {
+    "level": 18,
+    "gold": 1300,
+    "gems": 6,
+    "gift_items": [
+      {
+        "itemId": "seed_pepper",
+        "name_vi": "Hạt Tiêu",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Mở rộng đất khu 2 (ô 9–14)"
+    ],
+    "hint": "Đã mở rộng đất khu 2 — thêm nhiều ô để trồng trọt!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset"
+  },
+  {
+    "level": 19,
+    "gold": 1400,
+    "gems": 6,
+    "gift_items": [
+      {
+        "itemId": "seed_sugarcane",
+        "name_vi": "Hạt Mía",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Pet đi quanh trại (nhặt xu rơi)",
+      "Mở khóa decor cho pet"
+    ],
+    "hint": "Thú cưng đầu tiên đã xuất hiện — đi quanh trại nhặt xu giúp bạn!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset"
+  },
+  {
+    "level": 20,
+    "gold": 1600,
+    "gems": 15,
+    "gift_items": [
+      {
+        "itemId": "seed_lemon",
+        "name_vi": "Hạt Chanh",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Cây & đơn hàng cao cấp",
+      "Trang trí cấp 2",
+      "🏅 Danh hiệu \"Chủ trại giỏi\""
+    ],
+    "hint": "Chúc mừng cấp 20! Nội dung cao cấp và trang trí mới đã mở.",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset"
+  },
+  {
+    "level": 21,
+    "gold": 1700,
+    "gems": 7,
+    "gift_items": [
+      {
+        "itemId": "seed_pepper",
+        "name_vi": "Hạt Tiêu",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Nâng cấp kho lần 2",
+      "Thêm slot sản xuất"
+    ],
+    "hint": "Kho đã nâng cấp lần 2 — sản xuất nhiều hơn cùng lúc!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset"
+  },
+  {
+    "level": 22,
+    "gold": 1800,
+    "gems": 7,
+    "gift_items": [
+      {
+        "itemId": "seed_chili",
+        "name_vi": "Hạt Ớt",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Đơn cá nhiều hơn",
+      "Mở khóa cây hiếm"
+    ],
+    "hint": "Dân làng đặt nhiều món cá hơn — câu cá đều tay nhé!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset"
+  },
+  {
+    "level": 23,
+    "gold": 1950,
+    "gems": 7,
+    "gift_items": [
+      {
+        "itemId": "seed_sugarcane",
+        "name_vi": "Hạt Mía",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Bến Tàu Du Lịch đã mở"
+    ],
+    "hint": "Bến Tàu Du Lịch đã mở — phục vụ khách du lịch để kiếm lớn!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset"
+  },
+  {
+    "level": 24,
+    "gold": 2050,
+    "gems": 7,
+    "gift_items": [
+      {
+        "itemId": "seed_lemon",
+        "name_vi": "Hạt Chanh",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Nhà hàng ven biển",
+      "Đơn tàu cao cấp"
+    ],
+    "hint": "Nhà hàng ven biển đã mở — đón các đơn tàu giá trị cao.",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset"
+  },
+  {
+    "level": 25,
+    "gold": 2200,
+    "gems": 15,
+    "gift_items": [
+      {
+        "itemId": "seed_pepper",
+        "name_vi": "Hạt Tiêu",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Trang trí cấp 3",
+      "Đơn combo 3 món",
+      "🏅 Danh hiệu \"Ông/Bà chủ lớn\""
+    ],
+    "hint": "Cấp 25! Combo 3 món và trang trí cấp 3 đã mở khóa.",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset"
+  },
+  {
+    "level": 26,
+    "gold": 2300,
+    "gems": 8,
+    "gift_items": [
+      {
+        "itemId": "seed_pepper",
+        "name_vi": "Hạt Tiêu",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Công thức cao cấp",
+      "Trang trí theo mùa"
+    ],
+    "hint": "Các công thức nấu cao cấp đã mở — thử món mới nhé!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset"
+  },
+  {
+    "level": 27,
+    "gold": 2400,
+    "gems": 8,
+    "gift_items": [
+      {
+        "itemId": "seed_chili",
+        "name_vi": "Hạt Ớt",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Đơn tàu khó (payout x3)",
+      "Mở khóa cây cao cấp"
+    ],
+    "hint": "Đơn tàu khó trả thưởng gấp 3 — đáng để thử sức!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset"
+  },
+  {
+    "level": 28,
+    "gold": 2480,
+    "gems": 8,
+    "gift_items": [
+      {
+        "itemId": "seed_sugarcane",
+        "name_vi": "Hạt Mía",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Sự kiện mùa (placeholder)",
+      "Decor hiếm"
+    ],
+    "hint": "Sự kiện theo mùa sắp ra mắt — tiếp tục phát triển nông trại!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset"
+  },
+  {
+    "level": 29,
+    "gold": 2550,
+    "gems": 8,
+    "gift_items": [
+      {
+        "itemId": "seed_pepper",
+        "name_vi": "Hạt Tiêu",
+        "amount": 3
+      }
+    ],
+    "unlock_descriptions": [
+      "Mở toàn bộ pool nội dung",
+      "Trang trí top"
+    ],
+    "hint": "Gần tới đỉnh cao! Toàn bộ nội dung sắp trong tầm tay.",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset"
+  },
+  {
+    "level": 30,
+    "gold": 2600,
+    "gems": 30,
+    "gift_items": [
+      {
+        "itemId": "seed_pepper",
+        "name_vi": "Hạt Tiêu",
+        "amount": 5
+      }
+    ],
+    "unlock_descriptions": [
+      "Đạt nội dung tối đa của bản demo",
+      "🏅 Danh hiệu \"BẬC THẦY NÔNG TRẠI\""
+    ],
+    "hint": "BẬC THẦY NÔNG TRẠI! Nông trại của bạn thật huyền thoại — cảm ơn bạn đã chơi!",
+    "asset_path": "Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset"
+  }
+]
