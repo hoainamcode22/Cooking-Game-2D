@@ -11,6 +11,8 @@ using UnityEngine.UI;
 /// </summary>
 public class CropProcessPopupUI : MonoBehaviour
 {
+    public static CropProcessPopupUI Instance { get; private set; }
+
     [Header("Info")]
     public TMP_Text txtCropName;
     public TMP_Text txtTimeRemaining;
@@ -23,13 +25,9 @@ public class CropProcessPopupUI : MonoBehaviour
     public TMP_Text txtGemCost;
     public Image imgDiamondIcon;
 
-    /// <summary>
-    /// F9 — giá gem KHÔNG còn là số cứng trong Inspector.
-    /// Nó phụ thuộc thời gian còn lại của đúng ô đất đang mở popup
-    /// (<see cref="PlotController.GetSpeedUpGemCost"/>), nên phải đọc lại mỗi frame:
-    /// người chơi mở popup rồi ngồi xem thì con số phải giảm dần theo cây.
-    /// </summary>
-    public int CurrentGemCost => currentPlot != null ? currentPlot.GetSpeedUpGemCost() : 0;
+    public int CurrentGemCost => currentPlot != null
+        ? currentPlot.GetSpeedUpGemCost()
+        : (currentPen != null ? currentPen.SpeedUpGemCost : 0);
 
     public bool IsOpen => gameObject.activeSelf;
     public RectTransform SpeedUpButtonRect =>
@@ -40,21 +38,21 @@ public class CropProcessPopupUI : MonoBehaviour
     public static bool AnyOpen => _openInstances.Count > 0;
 
     private PlotController currentPlot;
+    private PenMiniPanelUI currentPen;
     private bool popupInputLockHeld;
-    // Thanh XANH thật = Image con của progressFill (type Filled).
-    private Image _fillImage;
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
     private void Awake()
     {
+        if (Instance == null) Instance = this;
         AutoBindComponents();
-        bool startOpen = gameObject.activeSelf;
-        if (!startOpen) gameObject.SetActive(false);
+        gameObject.SetActive(false);
     }
 
     private void Start()
     {
+        if (Instance == null) Instance = this;
         AutoBindComponents();
     }
 
@@ -71,12 +69,24 @@ public class CropProcessPopupUI : MonoBehaviour
         {
             if (currentPlot.IsGrowing)
             {
-                UpdatePositionToCurrentPlot();
+                UpdatePosition();
                 RefreshDisplay();
             }
             else
             {
-                // Cây đã chín tự nhiên trong lúc popup đang mở → đóng popup
+                ClosePopup();
+                return;
+            }
+        }
+        else if (currentPen != null)
+        {
+            if (currentPen.CurrentState == PenMiniPanelUI.PenState.Processing)
+            {
+                UpdatePosition();
+                RefreshDisplay();
+            }
+            else
+            {
                 ClosePopup();
                 return;
             }
@@ -95,23 +105,43 @@ public class CropProcessPopupUI : MonoBehaviour
         if (plot == null || !plot.IsGrowing) return;
 
         currentPlot = plot;
+        currentPen = null;
 
         AutoBindComponents();
         RefreshDisplay();
-        UpdatePositionToCurrentPlot();
+        UpdatePosition();
         gameObject.SetActive(true);
         AcquirePopupInputBlock();
         TutorialManager.Instance?.NotifyOpenCropProcess();
     }
 
-    private void UpdatePositionToCurrentPlot()
+    /// <summary>Bật popup cho Chuồng Gia Súc / Máy Chế Biến đang nuôi/sản xuất (Processing).</summary>
+    public void OpenForPen(PenMiniPanelUI pen)
     {
-        if (currentPlot == null) return;
+        if (pen == null || pen.CurrentState != PenMiniPanelUI.PenState.Processing) return;
+
+        currentPen = pen;
+        currentPlot = null;
+
+        AutoBindComponents();
+        RefreshDisplay();
+        UpdatePosition();
+        gameObject.SetActive(true);
+        AcquirePopupInputBlock();
+    }
+
+    private void UpdatePosition()
+    {
+        Vector3 worldPos = Vector3.zero;
+        if (currentPlot != null)
+            worldPos = currentPlot.transform.position + new Vector3(0f, 0.7f, 0f);
+        else if (currentPen != null)
+            worldPos = currentPen.transform.position + new Vector3(0f, 1.85f, 0f);
+        else
+            return;
 
         Camera cam = Camera.main;
         if (cam == null) return;
-
-        Vector3 worldPos = currentPlot.transform.position + new Vector3(0f, 0.7f, 0f);
 
         Canvas parentCanvas = GetComponentInParent<Canvas>();
         if (parentCanvas == null) return;
@@ -152,6 +182,7 @@ public class CropProcessPopupUI : MonoBehaviour
         ReleasePopupInputBlock();
         gameObject.SetActive(false);
         currentPlot = null;
+        currentPen = null;
     }
 
     /// <summary>
@@ -159,38 +190,43 @@ public class CropProcessPopupUI : MonoBehaviour
     /// </summary>
     public void OnGemClick()
     {
-        if (currentPlot == null)
+        if (currentPlot != null)
         {
-            Debug.LogError("[CropProcessPopup] OnGemClick: currentPlot là NULL — OpenForPlot chưa được gọi hoặc popup bị mở sai.");
-            return;
-        }
+            if (!currentPlot.IsGrowing)
+            {
+                ClosePopup();
+                return;
+            }
 
-        if (!currentPlot.IsGrowing)
-        {
-            Debug.LogWarning("[CropProcessPopup] OnGemClick: ô đất không đang Growing, bỏ qua.");
+            if (FarmEconomyManager.Instance == null)
+            {
+                Debug.LogError("[CropProcessPopup] OnGemClick: FarmEconomyManager.Instance NULL.");
+                return;
+            }
+
+            int cost = CurrentGemCost;
+            if (FarmEconomyManager.Instance.Gems < cost)
+            {
+                FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
+                return;
+            }
+
+            // InstantGrow tự trừ gem + ép trạng thái Ready
+            currentPlot.InstantGrow();
+            TutorialManager.Instance?.NotifySpeedUp();
             ClosePopup();
-            return;
         }
-
-        if (FarmEconomyManager.Instance == null)
+        else if (currentPen != null)
         {
-            Debug.LogError("[CropProcessPopup] OnGemClick: FarmEconomyManager.Instance NULL.");
-            return;
-        }
+            if (currentPen.CurrentState != PenMiniPanelUI.PenState.Processing)
+            {
+                ClosePopup();
+                return;
+            }
 
-        int cost = CurrentGemCost;
-        if (FarmEconomyManager.Instance.Gems < cost)
-        {
-            FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
-            return;
+            currentPen.TrySpeedUpGem();
+            ClosePopup();
         }
-
-        // InstantGrow tự trừ gem + ép trạng thái Ready
-        currentPlot.InstantGrow();
-        TutorialManager.Instance?.NotifySpeedUp();
-        ReleasePopupInputBlock();
-        gameObject.SetActive(false);
-        currentPlot = null;
     }
 
     // ── Internal ─────────────────────────────────────────────────────────────
@@ -250,33 +286,69 @@ public class CropProcessPopupUI : MonoBehaviour
 
     private void RefreshDisplay()
     {
-        if (currentPlot == null) return;
+        if (currentPlot == null && currentPen == null) return;
 
         if (txtCropName == null || progressFill == null || txtTimeRemaining == null || btnSpeedUp == null)
         {
             AutoBindComponents();
         }
 
-        if (txtCropName != null)
+        if (currentPlot != null)
         {
-            txtCropName.text = currentPlot.CurrentCrop != null
-                ? currentPlot.CurrentCrop.displayName
-                : "Đang lớn...";
-        }
+            if (txtCropName != null)
+            {
+                txtCropName.text = currentPlot.CurrentCrop != null
+                    ? currentPlot.CurrentCrop.displayName.ToUpper()
+                    : "ĐANG TRỒNG...";
+                txtCropName.color = Color.white;
+            }
 
-        if (txtTimeRemaining != null)
-        {
-            txtTimeRemaining.text = currentPlot.GetRemainingTimeText();
-        }
+            if (txtTimeRemaining != null)
+            {
+                txtTimeRemaining.text = currentPlot.GetRemainingTimeText();
+                txtTimeRemaining.color = Color.white;
+            }
 
-        if (txtGemCost != null)
-        {
-            txtGemCost.text = CurrentGemCost.ToString();
-        }
+            if (txtGemCost != null)
+            {
+                txtGemCost.text = CurrentGemCost.ToString();
+                txtGemCost.color = Color.white;
+            }
 
-        if (progressFill != null)
+            if (progressFill != null)
+            {
+                progressFill.fillAmount = currentPlot.GetGrowProgress01();
+            }
+        }
+        else if (currentPen != null)
         {
-            progressFill.fillAmount = currentPlot.GetGrowProgress01();
+            if (txtCropName != null)
+            {
+                txtCropName.text = currentPen.GetPenDisplayName();
+                txtCropName.color = Color.white;
+            }
+
+            if (txtTimeRemaining != null)
+            {
+                float remaining = currentPen.GetRemainingSeconds();
+                int m = Mathf.FloorToInt(remaining / 60f);
+                int s = Mathf.FloorToInt(remaining % 60f);
+                txtTimeRemaining.text = $"{m}:{s:D2}";
+                txtTimeRemaining.color = Color.white;
+            }
+
+            if (txtGemCost != null)
+            {
+                txtGemCost.text = currentPen.SpeedUpGemCost.ToString();
+                txtGemCost.color = Color.white;
+            }
+
+            if (progressFill != null)
+            {
+                float remaining = currentPen.GetRemainingSeconds();
+                float total = Mathf.Max(1f, currentPen.EffectiveFeedSeconds);
+                progressFill.fillAmount = Mathf.Clamp01(1f - remaining / total);
+            }
         }
     }
 

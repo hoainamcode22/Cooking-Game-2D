@@ -43,7 +43,7 @@ public static class BuildingProcessUIBuilderTool
         int trainCount = 0;
         foreach (var trainUI in allTrainPopups)
         {
-            ReskinTrainProcessPopup(trainUI, frameBgSpr);
+            ReskinTrainProcessPopup(trainUI, frameBgSpr, trackBgSpr, fillGreenSpr, btnBlueSpr, diamondIconSpr, fontVo);
             trainCount++;
         }
 
@@ -164,18 +164,89 @@ public static class BuildingProcessUIBuilderTool
         EditorUtility.SetDirty(rootGO);
     }
 
-    public static void ReskinTrainProcessPopup(TrainProcessPopupUI trainUI, Sprite frameBgSpr)
+    public static void ReskinTrainProcessPopup(TrainProcessPopupUI trainUI, Sprite frameBgSpr, Sprite trackBgSpr, Sprite fillGreenSpr, Sprite btnBlueSpr, Sprite diamondIconSpr, TMP_FontAsset fontVo)
     {
         if (trainUI == null) return;
         GameObject rootGO = trainUI.gameObject;
         Undo.RegisterFullObjectHierarchyUndo(rootGO, "Reskin Train Process UI");
 
-        Image bgImg = rootGO.GetComponent<Image>();
-        if (bgImg != null)
+        // 1. Xoá sạch các con cũ bên trong
+        List<GameObject> toDelete = new List<GameObject>();
+        for (int i = 0; i < rootGO.transform.childCount; i++)
         {
-            bgImg.sprite = frameBgSpr;
-            bgImg.type = Image.Type.Sliced;
+            toDelete.Add(rootGO.transform.GetChild(i).gameObject);
         }
+        foreach (var go in toDelete)
+        {
+            Object.DestroyImmediate(go);
+        }
+
+        // 2. Căn chỉnh Root RectTransform & Scale
+        RectTransform rootRect = rootGO.GetComponent<RectTransform>();
+        if (rootRect == null) rootRect = rootGO.AddComponent<RectTransform>();
+        rootRect.sizeDelta = new Vector2(360f, 84f);
+        rootRect.localScale = Vector3.one;
+
+        // Khung Nền Kem Viền Gỗ Nâu (Frame Base)
+        Image rootImg = rootGO.GetComponent<Image>();
+        if (rootImg == null) rootImg = rootGO.AddComponent<Image>();
+        rootImg.sprite = frameBgSpr;
+        rootImg.type = Image.Type.Sliced;
+        rootImg.raycastTarget = true;
+
+        // 3. Header Status - Màu Trắng Nổi Bật
+        RectTransform nameRect = CreateRect(rootGO.transform, "Txt_Status", new Vector2(230f, 28f), new Vector2(-48f, 52f));
+        TMP_Text txtStatus = CreateText(nameRect, "GA TÀU HOẢ", 22f, Color.white, fontVo, TextAlignmentOptions.Center, true);
+        var nameOutline = nameRect.gameObject.AddComponent<Outline>();
+        nameOutline.effectColor = new Color(0.2f, 0.12f, 0.05f, 1f);
+        nameOutline.effectDistance = new Vector2(1.5f, -1.5f);
+
+        // 4. Rãnh Tiến Độ Nâu (Track Bar)
+        RectTransform trackRect = CreateRect(rootGO.transform, "Track_Bar", new Vector2(230f, 38f), new Vector2(-48f, 0f));
+        Image trackImg = trackRect.gameObject.AddComponent<Image>();
+        trackImg.sprite = trackBgSpr;
+        trackImg.type = Image.Type.Sliced;
+        trackImg.raycastTarget = false;
+
+        // 5. Thanh Xanh Lá Gradient 3D Fill (Progress Fill)
+        RectTransform fillRect = CreateRect(trackRect, "Progress_Fill", new Vector2(222f, 30f), Vector2.zero);
+        Image fillImg = fillRect.gameObject.AddComponent<Image>();
+        fillImg.sprite = fillGreenSpr;
+        fillImg.type = Image.Type.Filled;
+        fillImg.fillMethod = Image.FillMethod.Horizontal;
+        fillImg.fillOrigin = (int)Image.OriginHorizontal.Left;
+        fillImg.fillAmount = 0.65f;
+        fillImg.raycastTarget = false;
+
+        // 6. Text Thời Gian Còn Lại ("00:45") Căn Giữa Thanh Xanh
+        RectTransform timeRect = CreateRect(trackRect, "Txt_TimeRemaining", new Vector2(210f, 30f), Vector2.zero);
+        TMP_Text txtTimeRemaining = CreateText(timeRect, "00:45", 20f, Color.white, fontVo, TextAlignmentOptions.Center, true);
+        var timeOutline = timeRect.gameObject.AddComponent<Outline>();
+        timeOutline.effectColor = new Color(0.18f, 0.31f, 0.06f, 1f);
+        timeOutline.effectDistance = new Vector2(1f, -1f);
+
+        // 7. Nút Kim Cương Xanh Dương 3D (Btn_SpeedUp) - Nằm bên phải khung
+        RectTransform btnRect = CreateRect(rootGO.transform, "Btn_SpeedUp", new Vector2(88f, 60f), new Vector2(124f, 0f));
+        Image btnImg = btnRect.gameObject.AddComponent<Image>();
+        btnImg.sprite = btnBlueSpr;
+        btnImg.type = Image.Type.Sliced;
+        Button btnSpeedUp = btnRect.gameObject.AddComponent<Button>();
+
+        // 7a. Icon Kim Cương Đồng Bộ Trong Game
+        RectTransform diaIconRect = CreateRect(btnRect, "Icon_Diamond", new Vector2(32f, 32f), new Vector2(-16f, 0f));
+        Image diaIconImg = diaIconRect.gameObject.AddComponent<Image>();
+        diaIconImg.sprite = diamondIconSpr;
+        diaIconImg.preserveAspect = true;
+        diaIconImg.raycastTarget = false;
+
+        // 7b. Text Số Lượng Kim Cương Cần Dùng
+        RectTransform costRect = CreateRect(btnRect, "Txt_GemCost", new Vector2(36f, 30f), new Vector2(18f, 0f));
+        TMP_Text txtGemCost = CreateText(costRect, "1", 22f, Color.white, fontVo, TextAlignmentOptions.Center, true);
+        var costOutline = costRect.gameObject.AddComponent<Outline>();
+        costOutline.effectColor = new Color(0.11f, 0.36f, 0.53f, 1f);
+        costOutline.effectDistance = new Vector2(1f, -1f);
+
+        trainUI.AutoBindComponents();
 
         EditorUtility.SetDirty(trainUI);
         EditorUtility.SetDirty(rootGO);
@@ -187,10 +258,10 @@ public static class BuildingProcessUIBuilderTool
         string[] penPrefabPaths = new string[]
         {
             "Assets/_Game/Farm/Prefabs/PF_PenMiniPanel.prefab",
-            "Assets/_Game/Farm/CƯỜNG TRÌNH/Pen_01.prefab",
-            "Assets/_Game/Farm/CƯỜNG TRÌNH/Pen_02.prefab",
-            "Assets/_Game/Farm/CƯỜNG TRÌNH/Pen_03.prefab",
-            "Assets/_Game/Farm/CƯỜNG TRÌNH/Pen_04.prefab",
+            "Assets/_Game/Farm/CÔNG TRÌNH/Pen_01.prefab",
+            "Assets/_Game/Farm/CÔNG TRÌNH/Pen_02.prefab",
+            "Assets/_Game/Farm/CÔNG TRÌNH/Pen_03.prefab",
+            "Assets/_Game/Farm/CÔNG TRÌNH/Pen_04.prefab",
             "Assets/_Game/Farm/Frefab_home/May_01.prefab",
             "Assets/_Game/Farm/Frefab_home/May_02.prefab",
             "Assets/_Game/Farm/Frefab_home/May_03.prefab"

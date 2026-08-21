@@ -115,6 +115,7 @@ public class StallPopupUI : MonoBehaviour
     private float     _nextSlotRefresh;
 
     public bool IsOpen => popupRoot != null && popupRoot.activeSelf;
+    public static bool AnyOpen { get; private set; }
 
     // ─────────────────────────────────────────────────────────────────────────
     //  VÒNG ĐỜI
@@ -157,22 +158,15 @@ public class StallPopupUI : MonoBehaviour
             buttonConfirm.onClick.AddListener(ConfirmPost);
         }
 
-        // Popup phải TẮT lúc khởi động. Đây chính là chỗ chợ đang hỏng (LỖI 1 mục 1
-        // file TEAM): `MarketPopupUI.Start()` gọi SetActive(false) trên đúng cái root
-        // vừa được bật lên, nên popup tự đóng ngay khi mở. Ở đây tắt trong Awake —
-        // Awake chỉ chạy MỘT LẦN lúc object sinh ra, không chạy lại mỗi lần bật popup,
-        // nên không bao giờ có chuyện tự đóng.
+        // Popup phải TẮT lúc khởi động.
         if (popupRoot != null) popupRoot.SetActive(false);
+        AnyOpen = false;
     }
 
     private void OnEnable() => Resubscribe();
 
     private void Start()
     {
-        // Đăng ký LẠI ở Start. Thứ tự Awake giữa các object không được bảo đảm, và
-        // `FarmEconomyManager` là DontDestroyOnLoad nên ở lần vào scene đầu tiên nó
-        // hoàn toàn có thể Awake SAU popup — lúc đó OnEnable không tìm thấy gì để nghe
-        // và số vàng trên popup sẽ đứng im mãi mãi.
         Resubscribe();
         RefreshGold();
     }
@@ -200,14 +194,22 @@ public class StallPopupUI : MonoBehaviour
 
         if (PlayerStallManager.Instance != null)
             PlayerStallManager.Instance.OnStallChanged -= OnStallChanged;
+
+        AnyOpen = false;
     }
 
     private void Update()
     {
         if (!IsOpen) return;
 
-        // Đồng hồ "còn lại" trên các ô đang bán nhích mỗi giây. Vẽ lại mỗi frame là
-        // phí: một ô có 4 TMP_Text, 10 ô là 40 lần dựng lưới chữ mỗi frame.
+        if (UnityEngine.InputSystem.Keyboard.current != null &&
+            UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            ClosePopup();
+            return;
+        }
+
+        // Đồng hồ "còn lại" trên các ô đang bán nhích mỗi giây.
         if (Time.unscaledTime < _nextSlotRefresh) return;
         _nextSlotRefresh = Time.unscaledTime + 1f;
         RefreshSlots();
@@ -231,12 +233,18 @@ public class StallPopupUI : MonoBehaviour
         if (popupRoot == null) return;
         if (IsOpen) return;
 
-        popupRoot.SetActive(true);
-        Resubscribe();   // manager có thể mới sinh ra sau lần Start đầu tiên
+        Transform p = popupRoot.transform.parent;
+        while (p != null)
+        {
+            if (!p.gameObject.activeSelf)
+                p.gameObject.SetActive(true);
+            p = p.parent;
+        }
 
-        // Khoá thao tác bản đồ trong lúc popup mở. Dùng FarmInputLock chứ không đụng
-        // `PopupManager`: PopupManager là danh sách cứng do người khác cũng đang sửa,
-        // thêm trường vào đó là mời xung đột với DEV-A ở cùng một file.
+        popupRoot.SetActive(true);
+        AnyOpen = true;
+        Resubscribe();
+
         FarmInputLock.RegisterPopupOpen();
         FarmInputLock.SetPopupRaycastBlock(popupRoot, true);
 
@@ -252,6 +260,7 @@ public class StallPopupUI : MonoBehaviour
 
         HidePickerImmediate();
         popupRoot.SetActive(false);
+        AnyOpen = false;
 
         FarmInputLock.SetPopupRaycastBlock(popupRoot, false);
         FarmInputLock.RegisterPopupClose();

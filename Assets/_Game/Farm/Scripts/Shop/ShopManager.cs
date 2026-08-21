@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -53,7 +53,6 @@ public class ShopManager : MonoBehaviour
     private int currentTabIndex = 0;
     private bool popupInputLockHeld;
     private Coroutine toastRoutine;
-    private GameObject cachedHomeMenu;
 
     public bool IsOpen => shopPanel != null && shopPanel.activeSelf;
 
@@ -96,7 +95,6 @@ public class ShopManager : MonoBehaviour
 
     private void OnEnable()
     {
-        SetHomeMenuVisible(false);
         RefreshCurrencyBalances();
         ShowTab(currentTabIndex);
     }
@@ -119,7 +117,6 @@ public class ShopManager : MonoBehaviour
             if (parentCanvas != null)
                 parentCanvas.sortingOrder = 150;
         }
-        SetHomeMenuVisible(false);
         AcquirePopupInputBlock();
         if (searchBar != null) searchBar.text = "";
         RefreshCurrencyBalances();
@@ -130,32 +127,30 @@ public class ShopManager : MonoBehaviour
     public void CloseShop()
     {
         ReleasePopupInputBlock();
-        SetHomeMenuVisible(true);
         if (shopPanel != null) shopPanel.SetActive(false);
         TutorialManager.Instance?.NotifyCloseShop();
     }
 
     private void OnDisable()
     {
-        SetHomeMenuVisible(true);
         ReleasePopupInputBlock();
     }
 
-    private void SetHomeMenuVisible(bool visible)
-    {
-        if (cachedHomeMenu == null)
-        {
-            cachedHomeMenu = GameObject.Find("HomeMenu");
-            if (cachedHomeMenu == null)
-            {
-                var btn = GameObject.Find("Btn_Home");
-                if (btn != null) cachedHomeMenu = btn.transform.parent != null ? btn.transform.parent.gameObject : btn;
-            }
-        }
-
-        if (cachedHomeMenu != null)
-            cachedHomeMenu.SetActive(visible);
-    }
+    // ── ĐÃ GỠ SetHomeMenuVisible (21/08) ─────────────────────────────────────
+    //
+    // Hàm cũ ẩn/hiện "HomeMenu"/"Btn_Home" mỗi lần mở/đóng shop. Hai object đó đã bị
+    // XOÁ KHỎI SCENE khi chuyển sang thanh tab đáy màn hình (CỬA HÀNG / KHO / BẢNG TIN
+    // CHỢ / NẤU ĂN), nên hàm chỉ còn gây hại:
+    //
+    //  1) GameObject.Find bị gọi từ OnDisable. Start() tắt shopPanel; ShopManager nằm
+    //     TRÊN CHÍNH shopPanel nên SetActive(false) kéo OnDisable chạy ĐỒNG BỘ ngay trong
+    //     lòng SetActive — Unity cấm Find trong lúc đang vô hiệu hoá cây object, bắn
+    //     "Assertion failed on expression: 'go.IsActive()'" ×2 mỗi lần vào Play.
+    //  2) Find theo tên không bao giờ trúng (object đã xoá) ⇒ toàn bộ hàm là no-op.
+    //
+    // Nếu sau này cần ẩn UI nào đó khi mở shop: thêm field [SerializeField] GameObject,
+    // kéo thả trong Inspector, và BẬT/TẮT nó trong OpenShop/CloseShop — KHÔNG Find theo
+    // tên, KHÔNG đụng gì trong OnDisable.
 
     private void AcquirePopupInputBlock()
     {

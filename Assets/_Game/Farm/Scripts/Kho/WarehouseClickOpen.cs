@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
@@ -58,8 +58,6 @@ public class WarehouseClickOpen : MonoBehaviour
         // Không mở khi Edit Mode đang bật
         if (EditModeManager.IsEditMode) return;
 
-        if (FarmInputLock.BlockMapPan) return;
-
         // Không mở khi đang có popup khác mở
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;
@@ -69,25 +67,21 @@ public class WarehouseClickOpen : MonoBehaviour
             return;
 
         if (mainCamera == null)
-        {
-            return;
-        }
+            mainCamera = Camera.main;
 
         if (targetCollider == null)
-        {
-            return;
-        }
+            targetCollider = GetComponent<Collider2D>();
 
         if (warehousePopupUI == null)
-        {
+            warehousePopupUI = Object.FindFirstObjectByType<WarehousePopupUI>(FindObjectsInactive.Include);
+
+        if (mainCamera == null || targetCollider == null || warehousePopupUI == null)
             return;
-        }
 
         Vector3 world3 = mainCamera.ScreenToWorldPoint(screenPos);
         Vector2 world2 = new Vector2(world3.x, world3.y);
 
         bool hit = targetCollider.OverlapPoint(world2);
-
         if (!hit)
             return;
 
@@ -100,22 +94,23 @@ public class WarehouseClickOpen : MonoBehaviour
         if (EventSystem.current == null)
             return false;
 
-        PointerEventData eventData = new PointerEventData(EventSystem.current);
-        eventData.position = screenPos;
-
+        PointerEventData eventData = new PointerEventData(EventSystem.current) { position = screenPos };
         List<RaycastResult> results = new List<RaycastResult>();
         EventSystem.current.RaycastAll(eventData, results);
 
         for (int i = 0; i < results.Count; i++)
         {
-            Transform t = results[i].gameObject.transform;
+            var hitGO = results[i].gameObject;
+            if (hitGO == null) continue;
 
-            if (t.GetComponentInParent<Canvas>() != null)
+            // Nếu không có popup nào đang mở thì không chặn
+            if (PopupManager.Instance != null && !PopupManager.Instance.IsAnyPopupOpen())
+                continue;
+
+            Canvas parentCanvas = hitGO.GetComponentInParent<Canvas>();
+            if (parentCanvas != null && (parentCanvas.name == "Canvas_Popup" || parentCanvas.name == "Canvas_MarketPopup" || parentCanvas.name == "Canvas_StallPopup"))
             {
-                Canvas parentCanvas = t.GetComponentInParent<Canvas>();
-
-                if (parentCanvas != null && parentCanvas.name == "Canvas_Popup")
-                    return true;
+                return true;
             }
         }
 

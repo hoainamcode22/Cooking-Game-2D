@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "PenConfig_", menuName = "Farm/Pen Mini Panel Config")]
 public class PenMiniPanelConfig : ScriptableObject
@@ -12,6 +12,40 @@ public class PenMiniPanelConfig : ScriptableObject
     public string food2ItemId;   // "ngo" / "bapcai" / "carot"
     public Sprite food1Icon;
     public Sprite food2Icon;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    //  THỨC ĂN CAO CẤP — TÚI CÁM TỪ MÁY XAY THỨC ĂN  (thêm 20/08)
+    //
+    //  Ý TƯỞNG: ruộng → máy xay → túi cám vào kho → cho gia súc ăn.
+    //  Chuồng vẫn ăn được nông sản THÔ (food1/food2) như cũ, nên save cũ không hỏng và
+    //  người chơi mới không bị chặn ở cửa ải "phải mở máy xay trước".
+    //  Túi cám là đường CAO CẤP: tốn công xay nhưng nuôi nhanh hơn + ra nhiều sản phẩm hơn.
+    //
+    //  BỎ TRỐNG premiumFoodItemId ⇒ chuồng này chưa có túi cám, ô thức ăn thứ 3 TỰ ẨN.
+    //  Nhờ vậy bật/tắt từng chuồng chỉ bằng data, không phải sửa code.
+    // ═══════════════════════════════════════════════════════════════════════════
+    [Header("Thức ăn cao cấp (túi cám từ máy xay)")]
+    [Tooltip("outputItemId của công thức trong MillConfig. VD: cam_ga / cam_heo / " +
+             "co_tron_bo / cam_bo_sua. Để TRỐNG nếu chuồng này chưa dùng túi cám.")]
+    public string premiumFoodItemId;
+
+    [Tooltip("Icon túi cám hiện trên ô thức ăn thứ 3.")]
+    public Sprite premiumFoodIcon;
+
+    [Tooltip("Số túi cám cho một lượt nuôi. Cám đã cô đặc nhiều nông sản nên thường = 1, " +
+             "ít hơn foodAmountPerFeed của nông sản thô.")]
+    [Min(1)] public int premiumFoodAmountPerFeed = 1;
+
+    [Tooltip("Nuôi NHANH gấp mấy lần khi cho ăn cám. 2 = chỉ mất một nửa thời gian. " +
+             "Để 1 nếu không muốn thưởng tốc độ.")]
+    [Min(1f)] public float premiumSpeedMultiplier = 2f;
+
+    [Tooltip("CỘNG THÊM bao nhiêu sản phẩm chính khi cho ăn cám (áp cả sản phẩm thứ 2). " +
+             "0 = không thưởng sản lượng.")]
+    [Min(0)] public int premiumProductBonus = 1;
+
+    [Tooltip("CỘNG THÊM bao nhiêu EXP khi cho ăn cám.")]
+    [Min(0)] public int premiumExpBonus = 10;
 
     [Header("Sản phẩm")]
     public string productItemId;          // "beef" / "pork" / "chicken_meat" / "milk"

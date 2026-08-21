@@ -91,6 +91,16 @@ public class WarehousePopupUI : MonoBehaviour
 
     private void Awake()
     {
+        Canvas parentCanvas = GetComponentInParent<Canvas>(true);
+        if (parentCanvas != null && !parentCanvas.gameObject.activeSelf)
+            parentCanvas.gameObject.SetActive(true);
+
+        if (popupRoot != null)
+            popupRoot.SetActive(false);
+
+        if (slotPrefab != null && slotPrefab.transform.parent == itemGridContainer)
+            slotPrefab.SetActive(false);
+
         LoadWarehouseProgress();
         BuildLookups();
         WireButtons();
@@ -104,6 +114,11 @@ public class WarehousePopupUI : MonoBehaviour
             FarmInventoryManager.Instance.OnInventoryChanged += RefreshUI;
 
         RefreshUI();
+    }
+
+    private void OnDisable()
+    {
+        ReleasePopupInputBlock();
     }
 
     private void OnDestroy()
@@ -152,9 +167,38 @@ public class WarehousePopupUI : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        if (IsOpen)
+        {
+            if (UnityEngine.InputSystem.Keyboard.current != null &&
+                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame)
+            {
+                ClosePopup();
+            }
+        }
+    }
+
     private void WireButtons()
     {
-        if (btnClose != null) btnClose.onClick.AddListener(ClosePopup);
+        if (btnClose != null)
+        {
+            btnClose.onClick.RemoveAllListeners();
+            btnClose.onClick.AddListener(ClosePopup);
+        }
+
+        if (popupRoot != null)
+        {
+            Transform dim = popupRoot.transform.Find("Panel_Dim");
+            if (dim != null)
+            {
+                Button dimBtn = dim.GetComponent<Button>();
+                if (dimBtn == null) dimBtn = dim.gameObject.AddComponent<Button>();
+                dimBtn.transition = Selectable.Transition.None;
+                dimBtn.onClick.RemoveAllListeners();
+                dimBtn.onClick.AddListener(ClosePopup);
+            }
+        }
 
         if (btnTabNongSan != null) btnTabNongSan.onClick.AddListener(() => SetCategory(WarehouseCategory.NongSan));
         if (btnTabChanNuoi != null) btnTabChanNuoi.onClick.AddListener(() => SetCategory(WarehouseCategory.ChanNuoi));
@@ -172,10 +216,15 @@ public class WarehousePopupUI : MonoBehaviour
     {
         if (popupRoot != null)
         {
+            Transform p = popupRoot.transform.parent;
+            while (p != null)
+            {
+                if (!p.gameObject.activeSelf)
+                    p.gameObject.SetActive(true);
+                p = p.parent;
+            }
+
             popupRoot.SetActive(true);
-            Canvas parentCanvas = popupRoot.GetComponentInParent<Canvas>();
-            if (parentCanvas != null)
-                parentCanvas.sortingOrder = 150;
             EnsurePopupRaycastBlock();
         }
 
@@ -235,20 +284,34 @@ public class WarehousePopupUI : MonoBehaviour
         RefreshUpgradeBox();
     }
 
-    private void RefreshSlots()
+    private void EnsureSlotPool(int totalSlotsToRender)
     {
         if (itemGridContainer == null) return;
 
-        List<WarehouseViewItem> categoryItems = GetItemsForCategory(currentCategory);
+        if (slotPrefab != null && slotPrefab.transform.parent == itemGridContainer)
+        {
+            slotPrefab.SetActive(false);
+        }
 
-        int totalSlotsToRender = Mathf.Max(categoryItems.Count, minDisplaySlots);
+        if (slots.Count == 0)
+        {
+            var existing = itemGridContainer.GetComponentsInChildren<WarehouseSlotUI>(true);
+            foreach (var s in existing)
+            {
+                if (slotPrefab != null && s.gameObject == slotPrefab) continue;
+                s.SetSprites(slotNormalSprite, slotSelectedSprite, slotEmptySprite);
+                slots.Add(s);
+            }
+        }
 
-        // Ensure we have enough slot instances
         while (slots.Count < totalSlotsToRender)
         {
             GameObject slotGO = null;
             if (slotPrefab != null)
+            {
                 slotGO = Instantiate(slotPrefab, itemGridContainer);
+                slotGO.SetActive(true);
+            }
             else
             {
                 slotGO = new GameObject("slot_" + (slots.Count + 1), typeof(RectTransform));
@@ -263,15 +326,18 @@ public class WarehousePopupUI : MonoBehaviour
                 slots.Add(slotUI);
             }
         }
+    }
 
-        // Hide excessive slots if list shrunk
-        for (int i = totalSlotsToRender; i < slots.Count; i++)
-        {
-            if (slots[i] != null) slots[i].gameObject.SetActive(false);
-        }
+    private void RefreshSlots()
+    {
+        if (itemGridContainer == null) return;
 
-        // Populate slots
-        for (int i = 0; i < totalSlotsToRender; i++)
+        List<WarehouseViewItem> categoryItems = GetItemsForCategory(currentCategory);
+        int totalSlotsToRender = Mathf.Max(categoryItems.Count, minDisplaySlots);
+
+        EnsureSlotPool(totalSlotsToRender);
+
+        for (int i = 0; i < slots.Count; i++)
         {
             WarehouseSlotUI slotUI = slots[i];
             if (slotUI == null) continue;
@@ -282,10 +348,16 @@ public class WarehousePopupUI : MonoBehaviour
                 bool isSelected = !string.IsNullOrEmpty(selectedItemId) &&
                                   string.Equals(selectedItemId, item.itemId, StringComparison.OrdinalIgnoreCase);
                 slotUI.SetData(item.itemId, item.icon, item.amount, isSelected, OnSlotClicked);
+                slotUI.gameObject.SetActive(true);
+            }
+            else if (i < totalSlotsToRender)
+            {
+                slotUI.SetEmpty();
+                slotUI.gameObject.SetActive(true);
             }
             else
             {
-                slotUI.SetEmpty();
+                slotUI.gameObject.SetActive(false);
             }
         }
     }
@@ -351,37 +423,38 @@ public class WarehousePopupUI : MonoBehaviour
         if (txtTransferCount != null)
             txtTransferCount.text = transferQuantity.ToString();
 
-        if (btnMinus != null) btnMinus.interactable = transferQuantity > 1;
-        if (btnPlus != null) btnPlus.interactable = transferQuantity < available;
-        if (btnMax != null) btnMax.interactable = transferQuantity < available;
-        if (btnTransferKitchen != null) btnTransferKitchen.interactable = available > 0;
+        bool canTransfer = IsTransferrableToKitchen(selectedItemId);
+        if (btnMinus != null) btnMinus.interactable = canTransfer && transferQuantity > 1;
+        if (btnPlus != null) btnPlus.interactable = canTransfer && transferQuantity < available;
+        if (btnMax != null) btnMax.interactable = canTransfer && transferQuantity < available;
+        if (btnTransferKitchen != null) btnTransferKitchen.interactable = canTransfer && available > 0;
     }
 
     private void RefreshUpgradeBox()
     {
-        bool isMax = warehouseLevel >= WarehouseMaxLevel;
-        int nextLevel = Mathf.Min(WarehouseMaxLevel, warehouseLevel + 1);
-        int curCap = FarmInventoryManager.CapacityForLevel(warehouseLevel);
-        int nextCap = FarmInventoryManager.CapacityForLevel(nextLevel);
-
         if (txtUpgradeInfo != null)
         {
-            if (isMax)
-                txtUpgradeInfo.text = $"Cấp {warehouseLevel} · {curCap} Slot\n(Đạt cấp tối đa)";
+            if (warehouseLevel < WarehouseMaxLevel)
+            {
+                int nextCap = FarmInventoryManager.CapacityForLevel(warehouseLevel + 1);
+                txtUpgradeInfo.text = $"Cấp {warehouseLevel} · Sức chứa: {slotCapacity} Slot (Nâng cấp: +25 Slot)";
+            }
             else
-                txtUpgradeInfo.text = $"Cấp {warehouseLevel} · {curCap} Slot →\nCấp {nextLevel} · {nextCap} Slot";
+            {
+                txtUpgradeInfo.text = $"Cấp Tối Đa ({warehouseLevel}) · Sức chứa: {slotCapacity} Slot";
+            }
         }
 
         if (btnUpgrade != null)
-            btnUpgrade.interactable = !isMax;
+            btnUpgrade.interactable = warehouseLevel < WarehouseMaxLevel;
     }
 
     private void AutoSelectFirstItem()
     {
-        List<WarehouseViewItem> categoryItems = GetItemsForCategory(currentCategory);
-        if (categoryItems.Count > 0)
+        List<WarehouseViewItem> items = GetItemsForCategory(currentCategory);
+        if (items.Count > 0)
         {
-            selectedItemId = categoryItems[0].itemId;
+            selectedItemId = items[0].itemId;
             transferQuantity = 1;
         }
         else
@@ -395,7 +468,6 @@ public class WarehousePopupUI : MonoBehaviour
     private void OnSlotClicked(string itemId)
     {
         if (string.IsNullOrEmpty(itemId)) return;
-
         selectedItemId = itemId;
         transferQuantity = 1;
         RefreshUI();
@@ -427,6 +499,11 @@ public class WarehousePopupUI : MonoBehaviour
     private void OnTransferKitchenClicked()
     {
         if (string.IsNullOrEmpty(selectedItemId) || transferQuantity <= 0) return;
+        if (!IsTransferrableToKitchen(selectedItemId))
+        {
+            Debug.LogWarning($"[WarehousePopupUI] '{selectedItemId}' không phải là nguyên liệu nấu ăn, không thể chuyển sang Bếp!");
+            return;
+        }
         if (FarmInventoryManager.Instance == null) return;
 
         int available = FarmInventoryManager.Instance.GetAmount(selectedItemId);
@@ -504,28 +581,38 @@ public class WarehousePopupUI : MonoBehaviour
 
         string key = itemId.Trim().ToLowerInvariant();
 
-        // 1. Check if Cooked Dish or Processed Good
-        if (IsCookedDish(key) || key.StartsWith("item_") || key.Contains("xao") || key.Contains("ham") ||
-            key.Contains("nuoc_mia") || key.Contains("bot_gao") || key.Contains("pho_mai") ||
-            key.Contains("salad") || key.Contains("sup_") || key.Contains("chien") || key.Contains("pho_"))
+        // 1. Check StallItemCatalog
+        if (StallItemCatalog.Instance != null)
         {
-            return WarehouseCategory.MonAn;
+            StallItemCategory cat = StallItemCatalog.Instance.GetCategory(key);
+            if (cat == StallItemCategory.NongSan || cat == StallItemCategory.Hoa || cat == StallItemCategory.HatGiong)
+                return WarehouseCategory.NongSan;
         }
 
-        // 2. Check if Animal product
+        // 2. Check Animal product
         if (AnimalItemIds.Contains(key) || key.Contains("egg") || key.Contains("milk") ||
-            key.Contains("beef") || key.Contains("pork") || key.Contains("chicken") || key.Contains("trung"))
+            key.Contains("beef") || key.Contains("pork") || key.Contains("chicken") ||
+            key.Contains("trung") || key.Contains("sua") || key.Contains("thit") || key.Contains("long_vu"))
         {
             return WarehouseCategory.ChanNuoi;
         }
 
-        // 3. Check Crop Database
+        // 3. Check Cooked Dish or Processed Good
+        if (IsCookedDish(key) || key.StartsWith("item_") || key.Contains("xao") || key.Contains("ham") ||
+            key.Contains("nuoc_mia") || key.Contains("bot_gao") || key.Contains("pho_mai") ||
+            key.Contains("salad") || key.Contains("sup_") || key.Contains("chien") || key.Contains("pho_") ||
+            key.Contains("banh") || key.Contains("nuoc") || key.Contains("che_bien"))
+        {
+            return WarehouseCategory.MonAn;
+        }
+
+        // 4. Check Crop Database
         if (cropLookup.ContainsKey(key))
         {
             return WarehouseCategory.NongSan;
         }
 
-        // 4. Default to Crop if not matched
+        // Default to NongSan
         return WarehouseCategory.NongSan;
     }
 
@@ -549,13 +636,24 @@ public class WarehousePopupUI : MonoBehaviour
 
         string key = itemId.Trim().ToLowerInvariant();
 
+        if (StallItemCatalog.Instance != null)
+        {
+            string catName = StallItemCatalog.Instance.GetDisplayName(key);
+            if (!string.IsNullOrEmpty(catName)) return catName;
+        }
+
         if (cropLookup.TryGetValue(key, out CropData crop) && crop != null)
-            return string.IsNullOrEmpty(crop.displayName) ? crop.cropId : crop.displayName;
+        {
+            if (!string.IsNullOrEmpty(crop.displayName)) return crop.displayName;
+            if (!string.IsNullOrEmpty(crop.cropId)) return crop.cropId;
+        }
 
         if (extraItemLookup.TryGetValue(key, out InventoryItemData extra) && extra != null)
-            return string.IsNullOrEmpty(extra.displayName) ? extra.itemId : extra.displayName;
+        {
+            if (!string.IsNullOrEmpty(extra.displayName)) return extra.displayName;
+            if (!string.IsNullOrEmpty(extra.itemId)) return extra.itemId;
+        }
 
-        // Fallback formatting
         return FormatFallbackName(itemId);
     }
 
@@ -565,13 +663,65 @@ public class WarehousePopupUI : MonoBehaviour
 
         string key = itemId.Trim().ToLowerInvariant();
 
-        if (cropLookup.TryGetValue(key, out CropData crop) && crop != null)
-            return crop.icon;
+        // 1. Master StallItemCatalog
+        if (StallItemCatalog.Instance != null)
+        {
+            Sprite catIcon = StallItemCatalog.Instance.GetIcon(key);
+            if (catIcon != null) return catIcon;
+        }
 
+        // 2. Crop Lookup (harvestIcon > itemIcon > readySprite)
+        if (cropLookup.TryGetValue(key, out CropData crop) && crop != null)
+        {
+            if (crop.harvestIcon != null) return crop.harvestIcon;
+            if (crop.itemIcon != null) return crop.itemIcon;
+            if (crop.readySprite != null) return crop.readySprite;
+        }
+
+        // 3. Extra Item Lookup
         if (extraItemLookup.TryGetValue(key, out InventoryItemData extra) && extra != null)
-            return extra.icon;
+        {
+            if (extra.icon != null) return extra.icon;
+        }
+
+        // 4. OrderBoard resolver
+        Sprite obIcon = OrderBoardIconResolver.GetIcon(key);
+        if (obIcon != null) return obIcon;
 
         return null;
+    }
+
+    private bool IsTransferrableToKitchen(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId)) return false;
+        string key = itemId.Trim().ToLowerInvariant();
+
+        // 1. Tuyệt đối không chuyển Công Trình / Trang Trí
+        if (key.StartsWith("building_") || key.StartsWith("deco_") || key.StartsWith("pen_") ||
+            key.Contains("cong_trinh") || key.Contains("trang_tri") || key.Contains("hang_rao") || key.Contains("cay_canh"))
+            return false;
+
+        // 2. Tuyệt đối không chuyển Hoa
+        if (key.StartsWith("hoa_") || key.Contains("flower") || key.Contains("rose") ||
+            key.Contains("tulip") || key.Contains("huong_duong") || key.Contains("cuc_hoa") || key.Contains("hoa_hong") ||
+            key.Contains("hoa_cuc") || key.Contains("hoa_huong_duong"))
+            return false;
+
+        if (StallItemCatalog.Instance != null)
+        {
+            var cat = StallItemCatalog.Instance.GetCategory(key);
+            if (cat == StallItemCategory.Hoa)
+                return false;
+        }
+
+        if (cropLookup.TryGetValue(key, out CropData crop) && crop != null)
+        {
+            if (crop.cropCategory == CropCategory.Flower)
+                return false;
+        }
+
+        // Hợp lệ: Nông sản ăn được, gia vị, chăn nuôi, chế biến, món ăn
+        return true;
     }
 
     private string GetItemDescription(string itemId)
@@ -579,6 +729,16 @@ public class WarehousePopupUI : MonoBehaviour
         if (string.IsNullOrEmpty(itemId)) return "";
 
         string key = itemId.Trim().ToLowerInvariant();
+
+        if (!IsTransferrableToKitchen(itemId))
+        {
+            if (key.StartsWith("seed_"))
+                return "Hạt giống dùng để gieo trồng tại các ô đất nông trại. Không dùng làm nguyên liệu nấu ăn.";
+            if (key.StartsWith("hoa_") || key.Contains("flower") || (cropLookup.TryGetValue(key, out var c) && c.cropCategory == CropCategory.Flower))
+                return "Hoa trang trí và cảnh quan nông trại. Không chuyển vào bếp nấu ăn.";
+            if (key.StartsWith("building_") || key.StartsWith("deco_"))
+                return "Công trình / Trang trí nông trại. Không chuyển vào bếp.";
+        }
 
         if (cropLookup.TryGetValue(key, out CropData crop) && crop != null)
         {

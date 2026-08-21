@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d27cf9680db49248955b87f61f4ee17, type: 3}
+  m_Name: MillRecipe_CamHeo
+  m_EditorClassIdentifier: Assembly-CSharp::MillRecipeData
+  recipeId: cam_heo
+  displayName: "C\xE1m cho heo"
+  animalTag: Heo
+  icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  animalBadgeIcon: {fileID: 593710246825333043, guid: ef2f6654eaf25fa48a43d523e062da32, type: 3}
+  brewMinutes: 4
+  outputItemId: cam_heo
+  outputAmount: 1
+  ingredients:
+  - itemId: carot
+    amount: 4
+    icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
+  - itemId: bapcai
+    amount: 3
+    icon: {fileID: -2398023241171923016, guid: 88f706f4b7de235498ec5a8931fe3396, type: 3}
+  unlockLevel: 1

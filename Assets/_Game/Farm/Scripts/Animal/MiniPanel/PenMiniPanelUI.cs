@@ -33,6 +33,13 @@ public class PenMiniPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text   slot2Amount;
 
     [Header("Slot Basket")]
+    // Ô THỨC ĂN THỨ 3 — túi cám từ máy xay (thêm 20/08).
+    // TỰ ẨN khi config.premiumFoodItemId trống, nên prefab chuồng chưa có node này vẫn
+    // chạy bình thường (cả 3 field null → mọi nhánh dưới đều no-op).
+    [SerializeField] private GameObject slot3Root;
+    [SerializeField] private Image      slot3Icon;
+    [SerializeField] private TMP_Text   slot3Amount;
+
     [SerializeField] private GameObject basketRoot;
     [SerializeField] private Image      basketIcon;
     [SerializeField] private GameObject basketActiveGlow;
@@ -124,7 +131,7 @@ public class PenMiniPanelUI : MonoBehaviour
     [Tooltip("Offset spawn FX")]
     [SerializeField] private float harvestSpawnUpOffset = 120f;
 
-    private int SpeedUpGemCost =>
+    public int SpeedUpGemCost =>
         CurrentState == PenState.Processing
             ? ConstructionManager.RushCostFor(GetRemainingSeconds())
             : 0;
@@ -156,6 +163,17 @@ public class PenMiniPanelUI : MonoBehaviour
     public void OpenPanel()
     {
         if (config == null) return;
+
+        if (CurrentState == PenState.Processing)
+        {
+            CropProcessPopupUI popup = CropProcessPopupUI.Instance ?? FindFirstObjectByType<CropProcessPopupUI>(FindObjectsInactive.Include);
+            if (popup != null)
+            {
+                popup.OpenForPen(this);
+                return;
+            }
+        }
+
         _openedAtFrame = Time.frameCount;
         if (panelRoot != null) panelRoot.SetActive(true);
         AcquirePopupInputBlock();
@@ -173,13 +191,17 @@ public class PenMiniPanelUI : MonoBehaviour
     public void OnSlot1Clicked()
     {
         if (config == null || CurrentState != PenState.Idle) return;
-        TryFeed(config.food1ItemId, transform.position);
+        string feedItemId = !string.IsNullOrEmpty(config.food1ItemId) ? config.food1ItemId : config.premiumFoodItemId;
+        TryFeed(feedItemId, transform.position);
     }
 
     public void OnSlot2Clicked()
     {
-        if (config == null || CurrentState != PenState.Idle) return;
-        TryFeed(config.food2ItemId, transform.position);
+    }
+
+    public void OnSlot3Clicked()
+    {
+        OnSlot1Clicked();
     }
 
     public void OnBasketClicked()
@@ -190,13 +212,16 @@ public class PenMiniPanelUI : MonoBehaviour
 
     public bool TryFeed(string foodItemId, Vector3 vfxWorldPosition)
     {
-        if (CurrentState != PenState.Idle) return false;
-        if (foodItemId != config.food1ItemId && foodItemId != config.food2ItemId) return false;
+        if (CurrentState != PenState.Idle || config == null) return false;
 
-        int need = FoodNeeded;
+        string validFeedId = !string.IsNullOrEmpty(config.food1ItemId) ? config.food1ItemId : config.premiumFoodItemId;
+        if (foodItemId != validFeedId && foodItemId != config.food1ItemId && foodItemId != config.premiumFoodItemId)
+            return false;
+
+        int need = FoodNeededFor(foodItemId);
         if (!FarmInventoryManager.Instance.HasItem(foodItemId, need))
         {
-            FarmUIManager.Instance?.ShowHint($"Cần {need} phần thức ăn cho một lượt nuôi.");
+            FarmUIManager.Instance?.ShowHint($"Cần {need} bao thức ăn cho một lượt nuôi. Hãy xay tại Máy Xay Thức Ăn!");
             return false;
         }
 
@@ -237,16 +262,24 @@ public class PenMiniPanelUI : MonoBehaviour
             }
         }
 
+        // Chốt cờ cám NGAY ĐÂY: cuối hàm activeFoodId bị xoá về null, đọc sau là mất thưởng.
+        bool anCam = DangNuoiBangCam;
+        int bonus  = anCam ? Mathf.Max(0, config.premiumProductBonus) : 0;
+
         Vector3 productSpawn = vfxWorldPosition + Vector3.up * harvestSpawnUpOffset;
-        int productAmount = Mathf.Max(1, config.productAmount);
+        int productAmount = Mathf.Max(1, config.productAmount) + bonus;
         SpawnHarvestFX(config.productItemId, config.productIcon, productAmount, productSpawn);
+
+        int secondAmount = Mathf.Max(1, config.secondProductAmount) + bonus;
 
         if (!string.IsNullOrEmpty(config.secondProductItemId))
             SpawnHarvestFX(config.secondProductItemId, config.secondProductIcon,
-                Mathf.Max(1, config.secondProductAmount), productSpawn);
+                secondAmount, productSpawn);
+
+        int expThuong = config.expReward + (anCam ? Mathf.Max(0, config.premiumExpBonus) : 0);
 
         if (HarvestFeedbackSpawner.Instance != null)
-            HarvestFeedbackSpawner.Instance.SpawnExpFly(transform.position + Vector3.up * harvestSpawnUpOffset, config.expReward);
+            HarvestFeedbackSpawner.Instance.SpawnExpFly(transform.position + Vector3.up * harvestSpawnUpOffset, expThuong);
 
         AudioManager.Instance?.PlayHarvest();
 
@@ -254,8 +287,8 @@ public class PenMiniPanelUI : MonoBehaviour
         MissionProgressTracker.ReportEvent(MissionEventType.CollectAnimalProduct, config.productItemId, productAmount);
         if (!string.IsNullOrEmpty(config.secondProductItemId))
         {
-            FarmInventoryManager.Instance.AddItem(config.secondProductItemId, Mathf.Max(1, config.secondProductAmount));
-            MissionProgressTracker.ReportEvent(MissionEventType.CollectAnimalProduct, config.secondProductItemId, Mathf.Max(1, config.secondProductAmount));
+            FarmInventoryManager.Instance.AddItem(config.secondProductItemId, secondAmount);
+            MissionProgressTracker.ReportEvent(MissionEventType.CollectAnimalProduct, config.secondProductItemId, secondAmount);
         }
 
         activeFoodId = null;
@@ -343,13 +376,48 @@ public class PenMiniPanelUI : MonoBehaviour
         }
     }
 
-    private int FoodNeeded =>
-        config != null ? Mathf.Max(1, config.foodAmountPerFeed) : 1;
+    /// <summary>TRUE nếu itemId chính là túi cám của chuồng này (và config có khai báo).</summary>
+    private bool LaThucAnCam(string itemId)
+    {
+        if (config == null || string.IsNullOrEmpty(config.premiumFoodItemId)) return false;
+        return itemId == config.premiumFoodItemId;
+    }
 
-    private float EffectiveFeedSeconds =>
-        config != null ? FarmManager.ScaleSeconds(config.feedDurationSeconds) : 1f;
+    /// <summary>Có đang nuôi bằng túi cám hay không (đọc activeFoodId nên sống qua save).</summary>
+    private bool DangNuoiBangCam => LaThucAnCam(activeFoodId);
 
-    private float GetRemainingSeconds()
+    /// <summary>
+    /// Số đơn vị thức ăn cho một lượt, THEO TỪNG LOẠI.
+    /// Túi cám đã cô đặc nhiều nông sản nên dùng số riêng (premiumFoodAmountPerFeed),
+    /// thường = 1 thay vì 2-3 như nông sản thô.
+    /// ⚠ Trước đây chỉ có một `FoodNeeded` dùng chung cho mọi ô ⇒ ô cám sẽ hiện "1/3" SAI,
+    ///   và nhánh hoàn thức ăn lúc load save sẽ hoàn SAI số lượng.
+    /// </summary>
+    private int FoodNeededFor(string itemId)
+    {
+        if (config == null) return 1;
+        return LaThucAnCam(itemId)
+            ? Mathf.Max(1, config.premiumFoodAmountPerFeed)
+            : Mathf.Max(1, config.foodAmountPerFeed);
+    }
+
+    private int FoodNeeded => FoodNeededFor(activeFoodId);
+
+    /// <summary>
+    /// Thời gian nuôi thực tế. Cho ăn túi cám thì CHIA cho premiumSpeedMultiplier
+    /// (2 = nhanh gấp đôi). Đọc activeFoodId nên đóng game mở lại vẫn đúng mốc thời gian.
+    /// </summary>
+    public float EffectiveFeedSeconds
+    {
+        get
+        {
+            if (config == null) return 1f;
+            float giay = config.feedDurationSeconds;
+            return FarmManager.ScaleSeconds(giay);
+        }
+    }
+
+    public float GetRemainingSeconds()
     {
         double startUnix = processStartUnix;
         double nowUnix   = GetUnixNow();
@@ -369,23 +437,44 @@ public class PenMiniPanelUI : MonoBehaviour
         if (panelContent != null)
         {
             panelContent.gameObject.SetActive(isIdle);
+            RectTransform pcRect = panelContent.GetComponent<RectTransform>();
+            if (pcRect != null)
+            {
+                pcRect.sizeDelta = new Vector2(136f, 136f);
+            }
         }
+
+        string feedItemId = !string.IsNullOrEmpty(config.food1ItemId) ? config.food1ItemId : config.premiumFoodItemId;
+        Sprite feedIcon = config.food1Icon != null ? config.food1Icon : config.premiumFoodIcon;
 
         if (slot1Root != null)
         {
             slot1Root.SetActive(isIdle);
-            if (isIdle) RefreshFoodSlot(slot1Icon, slot1Amount, config.food1ItemId, config.food1Icon);
+            if (isIdle)
+            {
+                RectTransform r = slot1Root.GetComponent<RectTransform>();
+                if (r != null) r.anchoredPosition = Vector2.zero; // CANH GIỮA CENTER
+
+                RefreshFoodSlot(slot1Icon, slot1Amount, feedItemId, feedIcon);
+
+                var drag = slot1Root.GetComponent<DraggableFeedItem>();
+                if (drag != null)
+                {
+                    drag.feedItemId = feedItemId;
+                    drag.imgFeedIcon = slot1Icon;
+                }
+            }
         }
 
-        if (slot2Root != null)
-        {
-            slot2Root.SetActive(isIdle);
-            if (isIdle) RefreshFoodSlot(slot2Icon, slot2Amount, config.food2ItemId, config.food2Icon);
-        }
+        if (slot2Root != null) slot2Root.SetActive(false);
+        if (slot3Root != null) slot3Root.SetActive(false);
 
         if (basketRoot != null)
         {
             basketRoot.SetActive(isReady);
+            RectTransform br = basketRoot.GetComponent<RectTransform>();
+            if (br != null) br.anchoredPosition = Vector2.zero; // CANH GIỮA CENTER
+
             if (basketActiveGlow != null)
                 basketActiveGlow.SetActive(isReady);
         }
@@ -439,20 +528,19 @@ public class PenMiniPanelUI : MonoBehaviour
 
         if (amtText != null)
         {
-            amtText.text = $"{amount}/{FoodNeeded}";
-            amtText.color = amount >= FoodNeeded ? new Color(1f, 0.97f, 0.84f, 1f) : new Color(1f, 0.45f, 0.45f, 1f);
+            int need = FoodNeededFor(itemId);
+            amtText.text = $"{amount}/{need}";
+            amtText.color = amount >= need ? new Color(1f, 0.97f, 0.84f, 1f) : new Color(1f, 0.45f, 0.45f, 1f);
         }
     }
 
     private void PlayFeedVFX(string foodItemId, Vector3 vfxWorldPosition)
     {
-        if (FarmCropVFXSpawner.Instance == null) return;
+        if (FarmCropVFXSpawner.Instance == null || config == null) return;
 
-        Sprite foodIcon = foodItemId == config.food1ItemId
-            ? config.food1Icon
-            : config.food2Icon;
-
-        FarmCropVFXSpawner.Instance.PlayItemDropVFX(foodIcon, vfxWorldPosition, 1);
+        Sprite feedIcon = config.food1Icon != null ? config.food1Icon : config.premiumFoodIcon;
+        if (feedIcon != null)
+            FarmCropVFXSpawner.Instance.PlayItemDropVFX(feedIcon, vfxWorldPosition, 1);
     }
 
     private void SpawnHarvestFX(string itemId, Sprite icon, int amount, Vector3 vfxWorldPosition)
@@ -504,7 +592,7 @@ public class PenMiniPanelUI : MonoBehaviour
         if (verCu < PenSaveVersion && coSaveCu && CurrentState == PenState.Processing)
         {
             if (!string.IsNullOrEmpty(activeFoodId) && FarmInventoryManager.Instance != null)
-                FarmInventoryManager.Instance.AddItem(activeFoodId, FoodNeeded);
+                FarmInventoryManager.Instance.AddItem(activeFoodId, FoodNeededFor(activeFoodId));
 
             CurrentState      = PenState.Idle;
             activeFoodId      = "";
@@ -513,7 +601,7 @@ public class PenMiniPanelUI : MonoBehaviour
         }
     }
 
-    private string GetPenDisplayName()
+    public string GetPenDisplayName()
     {
         if (config != null && !string.IsNullOrEmpty(config.penName))
             return config.penName.ToUpper();

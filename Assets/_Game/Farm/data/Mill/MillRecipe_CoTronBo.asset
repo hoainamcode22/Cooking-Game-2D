@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8d27cf9680db49248955b87f61f4ee17, type: 3}
+  m_Name: MillRecipe_CoTronBo
+  m_EditorClassIdentifier: Assembly-CSharp::MillRecipeData
+  recipeId: co_tron_bo
+  displayName: "C\u1ECF tr\u1ED9n cho b\xF2"
+  animalTag: "B\xF2"
+  icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  animalBadgeIcon: {fileID: 0}
+  brewMinutes: 6
+  outputItemId: co_tron_bo
+  outputAmount: 1
+  ingredients:
+  - itemId: rice
+    amount: 5
+    icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
+  - itemId: 
+    amount: 4
+    icon: {fileID: 0}
+  unlockLevel: 1

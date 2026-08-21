@@ -1,0 +1,572 @@
+{
+ "huong_duong": [
+  {
+   "stage": 1,
+   "file": "huong_duong_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "huong_duong_s2.png",
+   "w": 208,
+   "h": 170,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "huong_duong_s3.png",
+   "w": 296,
+   "h": 177,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "huong_duong_s4.png",
+   "w": 262,
+   "h": 335,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "huong_duong_s5.png",
+   "w": 300,
+   "h": 460,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "hoa_hong": [
+  {
+   "stage": 1,
+   "file": "hoa_hong_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "hoa_hong_s2.png",
+   "w": 208,
+   "h": 168,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "hoa_hong_s3.png",
+   "w": 296,
+   "h": 177,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "hoa_hong_s4.png",
+   "w": 262,
+   "h": 300,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "hoa_hong_s5.png",
+   "w": 300,
+   "h": 384,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "hoa_oai_huong": [
+  {
+   "stage": 1,
+   "file": "hoa_oai_huong_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "hoa_oai_huong_s2.png",
+   "w": 208,
+   "h": 168,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "hoa_oai_huong_s3.png",
+   "w": 194,
+   "h": 183,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "hoa_oai_huong_s4.png",
+   "w": 222,
+   "h": 325,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "hoa_oai_huong_s5.png",
+   "w": 402,
+   "h": 460,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "hoa_lan": [
+  {
+   "stage": 1,
+   "file": "hoa_lan_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "hoa_lan_s2.png",
+   "w": 208,
+   "h": 168,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "hoa_lan_s3.png",
+   "w": 210,
+   "h": 188,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "hoa_lan_s4.png",
+   "w": 186,
+   "h": 299,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "hoa_lan_s5.png",
+   "w": 332,
+   "h": 329,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "hoa_cuc_trang": [
+  {
+   "stage": 1,
+   "file": "hoa_cuc_trang_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "hoa_cuc_trang_s2.png",
+   "w": 208,
+   "h": 168,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "hoa_cuc_trang_s3.png",
+   "w": 296,
+   "h": 177,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "hoa_cuc_trang_s4.png",
+   "w": 262,
+   "h": 322,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "hoa_cuc_trang_s5.png",
+   "w": 446,
+   "h": 460,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "tulip": [
+  {
+   "stage": 1,
+   "file": "tulip_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "tulip_s2.png",
+   "w": 208,
+   "h": 168,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "tulip_s3.png",
+   "w": 210,
+   "h": 188,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "tulip_s4.png",
+   "w": 252,
+   "h": 318,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "tulip_s5.png",
+   "w": 486,
+   "h": 411,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "hoa_cuc_van_tho": [
+  {
+   "stage": 1,
+   "file": "hoa_cuc_van_tho_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "hoa_cuc_van_tho_s2.png",
+   "w": 208,
+   "h": 168,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "hoa_cuc_van_tho_s3.png",
+   "w": 194,
+   "h": 183,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "hoa_cuc_van_tho_s4.png",
+   "w": 186,
+   "h": 299,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "hoa_cuc_van_tho_s5.png",
+   "w": 340,
+   "h": 441,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "hoa_mau_don": [
+  {
+   "stage": 1,
+   "file": "hoa_mau_don_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "hoa_mau_don_s2.png",
+   "w": 208,
+   "h": 168,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "hoa_mau_don_s3.png",
+   "w": 296,
+   "h": 177,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "hoa_mau_don_s4.png",
+   "w": 262,
+   "h": 334,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "hoa_mau_don_s5.png",
+   "w": 354,
+   "h": 393,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "hoa_cam_tu_cau": [
+  {
+   "stage": 1,
+   "file": "hoa_cam_tu_cau_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "hoa_cam_tu_cau_s2.png",
+   "w": 208,
+   "h": 168,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "hoa_cam_tu_cau_s3.png",
+   "w": 296,
+   "h": 177,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "hoa_cam_tu_cau_s4.png",
+   "w": 262,
+   "h": 333,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "hoa_cam_tu_cau_s5.png",
+   "w": 296,
+   "h": 371,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "hoa_anh_thao": [
+  {
+   "stage": 1,
+   "file": "hoa_anh_thao_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "hoa_anh_thao_s2.png",
+   "w": 208,
+   "h": 168,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "hoa_anh_thao_s3.png",
+   "w": 296,
+   "h": 177,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "hoa_anh_thao_s4.png",
+   "w": 262,
+   "h": 322,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "hoa_anh_thao_s5.png",
+   "w": 422,
+   "h": 452,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ]
+}

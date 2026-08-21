@@ -13,10 +13,17 @@ MonoBehaviour:
   m_Name: Config_Pen01_BoThit
   m_EditorClassIdentifier: Assembly-CSharp::PenMiniPanelConfig
   penId: pen_01
-  food1ItemId: rice
-  food2ItemId: ngo
-  food1Icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
-  food2Icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
+  penName: 
+  food1ItemId: co_tron_bo
+  food2ItemId: 
+  food1Icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  food2Icon: {fileID: 0}
+  premiumFoodItemId: co_tron_bo
+  premiumFoodIcon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  premiumFoodAmountPerFeed: 1
+  premiumSpeedMultiplier: 1
+  premiumProductBonus: 0
+  premiumExpBonus: 0
   productItemId: beef
   secondProductItemId: 
   productIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
@@ -24,6 +31,6 @@ MonoBehaviour:
   secondProductAmount: 1
   secondProductIcon: {fileID: 0}
   basketIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-  foodAmountPerFeed: 3
-  feedDurationSeconds: 240
+  foodAmountPerFeed: 1
+  feedDurationSeconds: 120
   expReward: 30

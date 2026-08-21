@@ -13,10 +13,17 @@ MonoBehaviour:
   m_Name: Config_Pen02_Heo
   m_EditorClassIdentifier: Assembly-CSharp::PenMiniPanelConfig
   penId: pen_02
-  food1ItemId: bapcai
-  food2ItemId: carot
-  food1Icon: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}
-  food2Icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
+  penName: 
+  food1ItemId: cam_heo
+  food2ItemId: 
+  food1Icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  food2Icon: {fileID: 0}
+  premiumFoodItemId: cam_heo
+  premiumFoodIcon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  premiumFoodAmountPerFeed: 1
+  premiumSpeedMultiplier: 1
+  premiumProductBonus: 0
+  premiumExpBonus: 0
   productItemId: pork
   secondProductItemId: 
   productIcon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}
@@ -24,6 +31,6 @@ MonoBehaviour:
   secondProductAmount: 1
   secondProductIcon: {fileID: 0}
   basketIcon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-  foodAmountPerFeed: 2
-  feedDurationSeconds: 150
+  foodAmountPerFeed: 1
+  feedDurationSeconds: 75
   expReward: 19

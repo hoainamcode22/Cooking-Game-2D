@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 985750531fe49b14d82cc996c5dd49ef, type: 3}
+  m_Name: MillConfig
+  m_EditorClassIdentifier: Assembly-CSharp::MillConfig
+  title: "M\xC1Y XAY TH\u1EE8C \u0102N"
+  recipes:
+  - {fileID: 11400000, guid: 72c1fca99784edf4eafd3d5b00ec0c04, type: 2}
+  - {fileID: 11400000, guid: 1ac6f296c467eca41acd83af3c6daa3e, type: 2}
+  - {fileID: 11400000, guid: fb9e6d3fc779fa34fbeeeae3a5024630, type: 2}
+  - {fileID: 11400000, guid: a29e9b5723f44fd47a931ae7f9973891, type: 2}
+  slotCount: 5
+  slotsUnlockedAtStart: 3
+  gemCostUnlockSlot: 15
+  levelRequiredLastSlot: 18
+  gearLargeDegPerSec: 90
+  gearSmallDegPerSec: 144
+  beltScrollPxPerSec: 42
+  beltStripePeriodPx: 30
+  itemCycleSeconds: 3
+  itemTravelPx: 230
+  itemStaggerSeconds: 1.5
+  gemPerMinuteSpeedUp: 3

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -82,10 +82,27 @@ public class FarmInventoryManager : MonoBehaviour
 
     private void OnApplicationPause(bool pauseStatus)
     {
-        if (pauseStatus) SaveInventory();
+        if (pauseStatus)
+        {
+            SaveInventory();
+            LuuGopPrefs.LuuNgay();
+            PlayerPrefs.Save();
+        }
     }
 
-    private void OnApplicationQuit() => SaveInventory();
+    private void OnApplicationQuit()
+    {
+        SaveInventory();
+        LuuGopPrefs.LuuNgay();
+        PlayerPrefs.Save();
+    }
+
+    private void OnDisable()
+    {
+        SaveInventory();
+        LuuGopPrefs.LuuNgay();
+        PlayerPrefs.Save();
+    }
 
     // ── Key Normalization ─────────────────────────────────────────────────────
     // BUG-FIX (key mismatch): all keys are stored and queried lowercase + trimmed.

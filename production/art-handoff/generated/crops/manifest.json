@@ -1,0 +1,629 @@
+{
+ "rice": [
+  {
+   "stage": 1,
+   "file": "rice_s1.png",
+   "w": 234,
+   "h": 86,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "rice_s2.png",
+   "w": 202,
+   "h": 164,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "rice_s3.png",
+   "w": 188,
+   "h": 236,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "rice_s4.png",
+   "w": 288,
+   "h": 321,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "rice_s5.png",
+   "w": 370,
+   "h": 427,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "bapcai": [
+  {
+   "stage": 1,
+   "file": "bapcai_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "bapcai_s2.png",
+   "w": 208,
+   "h": 160,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "bapcai_s3.png",
+   "w": 222,
+   "h": 188,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "bapcai_s4.png",
+   "w": 314,
+   "h": 256,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "bapcai_s5.png",
+   "w": 406,
+   "h": 326,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "ngo": [
+  {
+   "stage": 1,
+   "file": "ngo_s1.png",
+   "w": 236,
+   "h": 86,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "ngo_s2.png",
+   "w": 204,
+   "h": 165,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "ngo_s3.png",
+   "w": 190,
+   "h": 244,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "ngo_s4.png",
+   "w": 294,
+   "h": 299,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "ngo_s5.png",
+   "w": 282,
+   "h": 426,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "cachua": [
+  {
+   "stage": 1,
+   "file": "cachua_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "cachua_s2.png",
+   "w": 208,
+   "h": 169,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "cachua_s3.png",
+   "w": 264,
+   "h": 270,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "cachua_s4.png",
+   "w": 282,
+   "h": 376,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "cachua_s5.png",
+   "w": 314,
+   "h": 460,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "carot": [
+  {
+   "stage": 1,
+   "file": "carot_s1.png",
+   "w": 234,
+   "h": 86,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "carot_s2.png",
+   "w": 202,
+   "h": 163,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "carot_s3.png",
+   "w": 234,
+   "h": 195,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "carot_s4.png",
+   "w": 314,
+   "h": 267,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "carot_s5.png",
+   "w": 394,
+   "h": 339,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "khoaitay": [
+  {
+   "stage": 1,
+   "file": "khoaitay_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "khoaitay_s2.png",
+   "w": 208,
+   "h": 165,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "khoaitay_s3.png",
+   "w": 194,
+   "h": 267,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "khoaitay_s4.png",
+   "w": 220,
+   "h": 375,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "khoaitay_s5.png",
+   "w": 286,
+   "h": 460,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "nam": [
+  {
+   "stage": 1,
+   "file": "nam_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "nam_s2.png",
+   "w": 208,
+   "h": 154,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "nam_s3.png",
+   "w": 286,
+   "h": 240,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "nam_s4.png",
+   "w": 418,
+   "h": 338,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "nam_s5.png",
+   "w": 472,
+   "h": 436,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "mia": [
+  {
+   "stage": 1,
+   "file": "mia_s1.png",
+   "w": 236,
+   "h": 87,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "mia_s2.png",
+   "w": 204,
+   "h": 164,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "mia_s3.png",
+   "w": 216,
+   "h": 277,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "mia_s4.png",
+   "w": 248,
+   "h": 394,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "mia_s5.png",
+   "w": 300,
+   "h": 460,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "chanh": [
+  {
+   "stage": 1,
+   "file": "chanh_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "chanh_s2.png",
+   "w": 208,
+   "h": 169,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "chanh_s3.png",
+   "w": 264,
+   "h": 271,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "chanh_s4.png",
+   "w": 284,
+   "h": 376,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "chanh_s5.png",
+   "w": 314,
+   "h": 460,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "ot": [
+  {
+   "stage": 1,
+   "file": "ot_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "ot_s2.png",
+   "w": 208,
+   "h": 169,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "ot_s3.png",
+   "w": 244,
+   "h": 261,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "ot_s4.png",
+   "w": 252,
+   "h": 367,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "ot_s5.png",
+   "w": 286,
+   "h": 460,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "tieu": [
+  {
+   "stage": 1,
+   "file": "tieu_s1.png",
+   "w": 240,
+   "h": 88,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "tieu_s2.png",
+   "w": 208,
+   "h": 165,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "tieu_s3.png",
+   "w": 238,
+   "h": 294,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "tieu_s4.png",
+   "w": 266,
+   "h": 399,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "tieu_s5.png",
+   "w": 286,
+   "h": 460,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ]
+}

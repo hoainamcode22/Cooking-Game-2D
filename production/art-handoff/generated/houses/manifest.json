@@ -1,0 +1,342 @@
+{
+ "house_01": [
+  {
+   "stage": 1,
+   "file": "house_01_s1.png",
+   "w": 306,
+   "h": 348,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "house_01_s2.png",
+   "w": 400,
+   "h": 304,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "house_01_s3.png",
+   "w": 316,
+   "h": 348,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "house_01_s4.png",
+   "w": 312,
+   "h": 380,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "house_01_s5.png",
+   "w": 308,
+   "h": 401,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 6,
+   "file": "house_01_s6.png",
+   "w": 406,
+   "h": 421,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "house_02": [
+  {
+   "stage": 1,
+   "file": "house_02_s1.png",
+   "w": 286,
+   "h": 384,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "house_02_s2.png",
+   "w": 374,
+   "h": 335,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "house_02_s3.png",
+   "w": 296,
+   "h": 384,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "house_02_s4.png",
+   "w": 290,
+   "h": 419,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "house_02_s5.png",
+   "w": 286,
+   "h": 434,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 6,
+   "file": "house_02_s6.png",
+   "w": 390,
+   "h": 461,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "house_03": [
+  {
+   "stage": 1,
+   "file": "house_03_s1.png",
+   "w": 378,
+   "h": 377,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "house_03_s2.png",
+   "w": 488,
+   "h": 329,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "house_03_s3.png",
+   "w": 392,
+   "h": 377,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "house_03_s4.png",
+   "w": 388,
+   "h": 411,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "house_03_s5.png",
+   "w": 382,
+   "h": 443,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 6,
+   "file": "house_03_s6.png",
+   "w": 498,
+   "h": 460,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "house_04": [
+  {
+   "stage": 1,
+   "file": "house_04_s1.png",
+   "w": 278,
+   "h": 368,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "house_04_s2.png",
+   "w": 364,
+   "h": 322,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "house_04_s3.png",
+   "w": 286,
+   "h": 368,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "house_04_s4.png",
+   "w": 282,
+   "h": 402,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "house_04_s5.png",
+   "w": 276,
+   "h": 416,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 6,
+   "file": "house_04_s6.png",
+   "w": 376,
+   "h": 442,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ],
+ "house_05": [
+  {
+   "stage": 1,
+   "file": "house_05_s1.png",
+   "w": 332,
+   "h": 352,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 2,
+   "file": "house_05_s2.png",
+   "w": 430,
+   "h": 307,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 3,
+   "file": "house_05_s3.png",
+   "w": 344,
+   "h": 352,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 4,
+   "file": "house_05_s4.png",
+   "w": 340,
+   "h": 384,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 5,
+   "file": "house_05_s5.png",
+   "w": 334,
+   "h": 409,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  },
+  {
+   "stage": 6,
+   "file": "house_05_s6.png",
+   "w": 438,
+   "h": 427,
+   "pivot": [
+    0.5,
+    0.0
+   ],
+   "ppu": 100
+  }
+ ]
+}

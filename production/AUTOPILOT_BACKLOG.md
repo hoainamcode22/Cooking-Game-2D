@@ -28,7 +28,8 @@
 | ID | Task | Loại | Owner | Dep | Acceptance | Status |
 |----|------|------|-------|-----|------------|--------|
 | M0-1 | **Xoá debug override** `Gold/Gems=1000` trong Editor (FarmEconomyManager) | 🤖 | gameplay-programmer | — | Play Mode bắt đầu đúng 400/15; grep không còn override | TODO |
-| M0-2 | **SaveSystem JSON**: gom mọi state vào `SaveData`, ghi/đọc `persistentDataPath/save.json`, có `saveVersion` để migrate, auto-save khi đổi state + pause/quit | 🤖 | lead-programmer | — | Tắt/mở game giữ nguyên vàng/level/inventory/ô đất/chuồng/mission; có log `[Save]` | TODO |
+| M0-2 | **SaveSystem JSON**: gom mọi state vào `SaveData`, ghi/đọc `persistentDataPath/save.json`, có `saveVersion` để migrate, auto-save khi đổi state + pause/quit — SCAN phát hiện 20+ hệ ĐÃ tự lưu PlayerPrefs; gói mới = save.json hợp nhất/backup + lưu hệ TÀU còn thiếu + SaveDebugTool. Code tại `Scripts/Save/`, docs `production/savesystem/` | 🤝 | lead-programmer | — | Tắt/mở game giữ nguyên vàng/level/inventory/ô đất/chuồng/mission; có log `[Save]`; TrainManager.PATCH chờ duyệt | REVIEW |
+| M0-2b | **Điều tra bug "mất vật phẩm khi thoát Play Mode"** user báo — nghi: debug override Gold/Gems (M0-1), StarterInventorySetup, tool reset, hoặc hệ chưa flush khi ExitPlayMode. Cần log phiên test của user để chẩn đoán | 🤝 | qa-lead | M0-2 | Tái hiện được bug + xác định hệ gây mất; có fix hoặc task fix riêng | TODO |
 | M0-3 | Chuyển các manager đang dùng PlayerPrefs cho DỮ LIỆU LỚN sang SaveSystem (giữ PlayerPrefs cho cài đặt nhỏ) | 🤖 | gameplay-programmer | M0-2 | Không còn state quan trọng nằm rải rác ở PlayerPrefs; smoke test pass | TODO |
 | M0-4 | **Backup an toàn**: xác nhận Git remote (GitHub private) tồn tại; nếu chưa, hướng dẫn bạn tạo | 🤝 | devops-engineer | — | `git remote -v` có remote; bạn đã push ít nhất 1 lần | TODO |
 | M0-5 | `/smoke-check` + `/regression-suite` chạy được, 0 lỗi đỏ console | 🤖 | qa-lead | M0-2 | Báo cáo smoke PASS | TODO |
@@ -91,6 +92,20 @@
 | M4-4 | **Pass JUICE**: tween nút nảy + popup pop + số đếm + squash/stretch + screen shake nhẹ trên mọi hành động cốt lõi | 🤖 | ui-programmer | — | Mỗi hành động có ≥1 animation; giữ 60fps | TODO |
 | M4-5 | **VFX**: đất tơi, nước, lấp lánh khi lớn, confetti lên cấp (tái dùng Lana Studio) | 🤖 | technical-artist | — | Particle hợp tông, không tụt fps máy yếu | TODO |
 | M4-6 | **Audio thật**: coin/plant/cook/level-up/bubble/harvest (mua/royalty-free) + wire AudioManager | 🧑 | audio-director | — | Cần bạn cấp/duyệt file mp3 → agent wire | BLOCKED |
+
+---
+
+## MILESTONE 4.5 — Xã hội online kiểu Hay Day (⏸ HOÃN — quyết định 2026-08-19, kích hoạt tiền-soft-launch)
+
+> Plan chi tiết: `production/PLAN_XA_HOI_ONLINE.md` · Thiết kế: `production/firebase/FIREBASE_DATABASE_DESIGN.md`
+> Catalog import sẵn sàng: `production/firebase/catalog_json_firebase.zip`. Toàn bộ 0 đồng (Spark) tới khi cần Functions.
+
+| ID | Task | Loại | Owner | Dep | Acceptance | Status |
+|----|------|------|-------|-----|------------|--------|
+| MS-A | Setup Firebase console (project, Auth Anonymous, Firestore asia-southeast1, RTDB, dán Rules, import catalog) — Claude lái Chrome ~45' | 🤝 | technical-director | M6-2 gần kề | Console đủ 4 dịch vụ, rules deploy, catalog 20 file lên đủ | BLOCKED (hoãn chủ động) |
+| MS-B | Nền client: Firebase SDK, đăng nhập ẩn danh, username duy nhất, FarmSnapshotBuilder (tái dùng SaveAdapters) đẩy `farmSnapshots/{uid}` | 🤝 | network-programmer | MS-A, M0-2 PASS | 2 account thấy snapshot của nhau | BLOCKED |
+| MS-C | Thăm làng read-only + chợ async MVP (claim model) + tab hàng xóm (user thật + seed accounts + NPC) + leaderboard | 🤝 | gameplay-programmer | MS-B | Thăm được làng thật, mua được ở quầy người khác | BLOCKED |
+| MS-D | Trước soft launch: Blaze + 4 Cloud Functions chống hack + App Check + budget alert $5 | 🧑 | security-engineer | MS-C | Giao dịch chợ 100% qua server | BLOCKED |
 
 ---
 

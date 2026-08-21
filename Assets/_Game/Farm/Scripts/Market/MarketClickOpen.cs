@@ -119,6 +119,14 @@ return;
 
         for (int i = 0; i < results.Count; i++)
         {
+            // SỬA 21/08 — đồng bộ với WarehouseClickOpen (dòng 107 bên đó):
+            // KHÔNG chặn khi không có popup nào đang mở. Thiếu dòng này, một graphic
+            // "mồ côi" còn active dưới Canvas_MarketPopup (popup đóng dở, panel quên tắt)
+            // sẽ thành BỨC TƯỜNG TÀNG HÌNH chặn vĩnh viễn cú click mở lại chợ —
+            // đúng ca F9 debug bắt được: Panel_Dim active vô hình đè giữa màn hình.
+            if (PopupManager.Instance != null && !PopupManager.Instance.IsAnyPopupOpen())
+                continue;
+
             Transform t = results[i].gameObject.transform;
             Canvas parentCanvas = t.GetComponentInParent<Canvas>();
 

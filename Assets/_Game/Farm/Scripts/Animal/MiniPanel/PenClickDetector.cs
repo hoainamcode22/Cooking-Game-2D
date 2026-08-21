@@ -104,6 +104,16 @@ public class PenClickDetector : MonoBehaviour
 
         if (!hit) return;
 
+        if (miniPanel.CurrentState == PenMiniPanelUI.PenState.Processing)
+        {
+            CropProcessPopupUI popup = CropProcessPopupUI.Instance ?? FindFirstObjectByType<CropProcessPopupUI>(FindObjectsInactive.Include);
+            if (popup != null)
+            {
+                popup.OpenForPen(miniPanel);
+                return;
+            }
+        }
+
         if (miniPanel.IsPanelOpen())
         {
             miniPanel.ClosePanel();

@@ -36,9 +36,8 @@ public static class WarehouseNewUIBuilder
         GameObject popupRootGO = warehousePopup.gameObject;
         Undo.RegisterFullObjectHierarchyUndo(popupRootGO, "Build New Warehouse UI");
 
-        // Remove old KhoSkin component if present to avoid runtime override bugs
-        KhoSkin oldSkin = warehousePopup.GetComponent<KhoSkin>();
-        if (oldSkin != null) Object.DestroyImmediate(oldSkin);
+        // Clean up any missing scripts on popupRootGO
+        GameObjectUtility.RemoveMonoBehavioursWithMissingScript(popupRootGO);
 
         // Clear old children of popupRoot
         for (int i = popupRootGO.transform.childCount - 1; i >= 0; i--)

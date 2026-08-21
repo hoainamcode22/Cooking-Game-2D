@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Máy Xay Thức Ăn - Full UI Assets</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&display=swap');
+
+        :root {
+            --wood-outer: #C08C5D;
+            --wood-stripe: #B38052;
+            --wood-border: #8B5933;
+            --ribbon-main: #FDD157;
+            --ribbon-end: #D9692A;
+            --inner-bg: #FFF6E5;
+            --text-brown: #7D5133;
+            --text-light-brown: #A07455;
+            --tab-inactive: #D09F67;
+            --sky-top: #E6F3E6;
+            --sky-bottom: #CBE6CF;
+            --ground-main: #B48D64;
+            --ground-stripe: #A68058;
+            --machine-body: #A15234;
+            --machine-funnel: #8C472C;
+            --conveyor: #3F2C21;
+            --btn-green: #82C94F;
+            --btn-blue: #40A4E5;
+            --locked-bg: #D9CDB9;
+        }
+
+        body {
+            background-color: #2D4329;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Nunito', sans-serif;
+            user-select: none;
+        }
+
+        /* --- OUTER FRAME --- */
+        .popup-window {
+            position: relative;
+            width: 1000px;
+            height: 680px;
+            background-color: var(--wood-outer);
+            background-image: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 40px,
+                var(--wood-stripe) 40px,
+                var(--wood-stripe) 80px
+            );
+            border-radius: 25px;
+            box-shadow: inset 0 0 0 6px var(--wood-border), 0 15px 30px rgba(0,0,0,0.4);
+            padding: 30px;
+            box-sizing: border-box;
+        }
+
+        /* Rivets */
+        .rivet {
+            position: absolute;
+            width: 16px; height: 16px;
+            background: #DDAE80;
+            border: 2px solid var(--wood-border);
+            border-radius: 50%;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
+        }
+        .r-tl { top: 12px; left: 12px; }
+        .r-tr { top: 12px; right: 12px; }
+        .r-bl { bottom: 12px; left: 12px; }
+        .r-br { bottom: 12px; right: 12px; }
+
+        /* --- RIBBON HEADER --- */
+        .ribbon-container {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 480px;
+            height: 90px;
+            z-index: 10;
+        }
+        .ribbon-tail {
+            position: absolute;
+            top: 25px;
+            width: 80px; height: 50px;
+            background: var(--ribbon-end);
+            z-index: 1;
+        }
+        .rt-left { left: -40px; clip-path: polygon(100% 0, 100% 100%, 0 100%, 30% 50%, 0 0); }
+        .rt-right { right: -40px; clip-path: polygon(0 0, 0 100%, 100% 100%, 70% 50%, 100% 0); }
+        .ribbon-center {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 75px;
+            background: var(--ribbon-main);
+            border: 4px solid #DF8B21;
+            border-radius: 16px;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: inset 0 -5px 0 rgba(223, 139, 33, 0.4), 0 5px 10px rgba(0,0,0,0.3);
+        }
+        .ribbon-text {
+            color: white;
+            font-size: 32px;
+            font-weight: 900;
+            -webkit-text-stroke: 1.5px #A1591A;
+            text-shadow: 0 4px 0 #A1591A;
+            letter-spacing: 1px;
+        }
+
+        /* Close Button */
+        .btn-close {
+            position: absolute;
+            top: -10px; right: -10px;
+            width: 45px; height: 45px;
+            background: #D45B4B;
+            border: 3px solid #FFF;
+            border-radius: 12px;
+            color: white;
+            font-size: 28px;
+            font-weight: 900;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* --- INNER PANEL --- */
+        .inner-panel {
+            background-color: var(--inner-bg);
+            width: 100%; height: 100%;
+            border-radius: 15px;
+            border: 3px solid #D6B798;
+            padding: 15px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* --- TABS ROW --- */
+        .tabs-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 45px;
+        }
+        .tabs-left { display: flex; gap: 10px; height: 100%; }
+        .tab {
+            padding: 0 20px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border: 2px solid #C0A183;
+        }
+        .tab.active { background: white; color: var(--text-brown); border-color: #D6B798; }
+        .tab.inactive { background: var(--tab-inactive); color: #6A4429; border-color: #BA8A55; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.1); }
+        .diamond-counter {
+            background: white;
+            border: 2px solid #D6B798;
+            border-radius: 20px;
+            padding: 0 15px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 900;
+            color: var(--text-brown);
+        }
+
+        /* --- MAIN CONTENT SPLIT --- */
+        .main-content {
+            display: flex;
+            gap: 15px;
+            flex-grow: 1;
+            height: 490px;
+        }
+
+        /* --- LEFT: RECIPE LIST --- */
+        .recipe-list-container {
+            width: 260px;
+            background: white;
+            border: 3px solid #D6B798;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .list-header {
+            text-align: center;
+            color: var(--text-brown);
+            font-weight: 900;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        .scroll-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding-right: 5px;
+        }
+        
+        /* Recipe Card */
+        .recipe-card {
+            border: 2px solid #E4D5C2;
+            border-radius: 12px;
+            padding: 8px;
+            position: relative;
+        }
+        .recipe-card.active {
+            background: #FEF3D2;
+            border-color: #E2BB6D;
+            box-shadow: 0 4px 0 #E2BB6D;
+            margin-bottom: 4px;
+        }
+        .recipe-info { display: flex; gap: 10px; align-items: center; }
+        .recipe-icon-circle {
+            width: 50px; height: 50px;
+            background: #EEDABB;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px;
+        }
+        .recipe-name { color: var(--text-brown); font-weight: 900; font-size: 15px; margin: 0; line-height: 1.2; }
+        .recipe-time { color: var(--text-light-brown); font-size: 12px; font-weight: 800; margin: 0; }
+        
+        /* Animal Tag */
+        .animal-tag {
+            position: absolute; top: -8px; right: 8px;
+            background: white; border: 2px solid #E4D5C2; border-radius: 10px;
+            padding: 2px 8px; font-size: 10px; font-weight: 900; color: var(--text-brown);
+            display: flex; align-items: center; gap: 4px;
+        }
+        
+        /* Cost Chips */
+        .cost-row { display: flex; gap: 5px; margin-top: 8px; }
+        .cost-chip {
+            background: white; border: 2px solid #82C94F; border-radius: 10px;
+            padding: 2px 8px; font-size: 11px; font-weight: 900; color: #5B9533;
+            display: flex; align-items: center; gap: 4px;
+        }
+
+        /* LOCKED RECIPE CARD */
+        .recipe-card.recipe-locked {
+            background: #B4ACA0;
+            border-color: #9C9588;
+            position: relative;
+            overflow: hidden;
+        }
+        .recipe-card.recipe-locked .recipe-name { color: #5B5448; }
+        .recipe-card.recipe-locked .recipe-time { color: #6E685D; }
+        .recipe-card.recipe-locked .recipe-icon-circle { background: #9E9689; filter: grayscale(100%); opacity: 0.5; }
+        .recipe-card.recipe-locked .animal-tag { background: #D9D2C6; border-color: #B4ACA0; color: #787063; }
+        .recipe-card.recipe-locked .cost-chip { background: #C5BCAD; border-color: #9C9588; color: #827A6E; opacity: 0.7; }
+        
+        .recipe-lock-overlay {
+            position: absolute;
+            top: 25px; left: 15px;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
+            z-index: 5;
+        }
+        .big-lock {
+            font-size: 32px; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.3));
+        }
+        .lock-text {
+            font-size: 13px; font-weight: 900; color: #423E37; text-shadow: 1px 1px 0 rgba(255,255,255,0.3);
+            background: rgba(180, 172, 160, 0.8); padding: 0 5px; border-radius: 5px;
+        }
+
+        .btn-empty-slot {
+            margin-top: 10px;
+            background: #B9B4AA;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 0;
+            font-size: 16px;
+            font-weight: 900;
+            text-align: center;
+            box-shadow: 0 4px 0 #9E9A91;
+        }
+
+        /* --- RIGHT SIDE --- */
+        .right-column {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        /* --- ANIMATION AREA (The Machine) --- */
+        .animation-box {
+            height: 250px;
+            border: 3px solid #D6B798;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Sky */
+        .anim-sky {
+            position: absolute; top: 0; left: 0; width: 100%; height: 60%;
+            background: linear-gradient(to bottom, var(--sky-top), var(--sky-bottom));
+        }
+        /* Ground */
+        .anim-ground {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 40%;
+            background-color: var(--ground-main);
+            background-image: repeating-linear-gradient(90deg, transparent, transparent 30px, var(--ground-stripe) 30px, var(--ground-stripe) 60px);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            position: absolute; top: 15px; left: 15px;
+            background: #F4E2C7; border: 2px solid #C4A882; border-radius: 20px;
+            padding: 6px 12px; font-size: 14px; font-weight: 900; color: var(--text-brown);
+            display: flex; align-items: center; gap: 8px;
+        }
+        .status-dot { width: 12px; height: 12px; background: #62E15D; border: 2px solid #3DA239; border-radius: 50%; }
+
+        /* Floating Input Bubble */
+        .input-bubble {
+            position: absolute; top: 70px; left: 20px;
+            background: #BA9054; border: 3px solid #9A723D; border-radius: 15px;
+            padding: 10px 20px; color: white; font-weight: 900; font-size: 18px;
+            display: flex; align-items: center; gap: 5px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+
+        /* Conveyor Belt */
+        .conveyor-sys {
+            position: absolute; bottom: 40px; left: 60px;
+            width: 380px; height: 35px;
+            background: var(--conveyor);
+            border-radius: 15px;
+            border: 2px solid #231812;
+            overflow: hidden;
+        }
+        .conveyor-stripes-anim {
+            width: 200%; height: 100%;
+            background-image: repeating-linear-gradient(-45deg, transparent, transparent 15px, #2A1D15 15px, #2A1D15 30px);
+            animation: scrollBelt 1s linear infinite;
+        }
+        .conveyor-wheels {
+            position: absolute; bottom: 30px; left: 70px;
+            width: 360px; display: flex; justify-content: space-between;
+        }
+        .wheel {
+            width: 14px; height: 14px; background: #1C120C; border: 2px solid #4D3728; border-radius: 50%;
+            box-sizing: border-box;
+        }
+
+        @keyframes scrollBelt { to { transform: translateX(-42px); } }
+
+        /* Moving Items */
+        .moving-item {
+            position: absolute; bottom: 75px;
+            font-size: 24px; filter: drop-shadow(0 3px 2px rgba(0,0,0,0.4));
+            animation: moveItem 3s linear infinite;
+        }
+        .mi-1 { left: 50px; animation-delay: 0s; }
+        .mi-2 { left: 50px; animation-delay: 1.5s; }
+        
+        @keyframes moveItem {
+            0% { transform: translateX(0); opacity: 1; }
+            80% { transform: translateX(230px); opacity: 1; }
+            85% { transform: translateX(250px) translateY(10px); opacity: 0; }
+            100% { transform: translateX(250px); opacity: 0; }
+        }
+
+        /* The Machine SVG */
+        .machine-wrapper {
+            position: absolute; bottom: 35px; right: 140px;
+            width: 180px; height: 180px;
+            filter: drop-shadow(0 10px 5px rgba(0,0,0,0.3));
+        }
+
+        /* Output Bubble */
+        .output-bubble {
+            position: absolute; bottom: 50px; right: 20px;
+            width: 80px; height: 80px;
+            background: #F8E6CA; border: 4px solid #DFB980; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 30px; box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+        }
+        .output-tag {
+            position: absolute; bottom: -12px;
+            background: white; border: 2px solid #D6B798; border-radius: 10px;
+            padding: 2px 10px; font-size: 12px; font-weight: 900; color: var(--text-brown);
+        }
+
+        /* --- BOTTOM: SLOTS AREA --- */
+        .slots-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .slots-header {
+            font-size: 14px; font-weight: 900; color: var(--text-brown);
+            text-transform: uppercase;
+        }
+        .slots-header span { color: var(--text-light-brown); text-transform: none; font-weight: 800; }
+        
+        .slots-container {
+            display: flex; gap: 10px; height: 180px;
+        }
+        .slot-card {
+            flex: 1;
+            background: white;
+            border: 2px solid #E4D5C2;
+            border-radius: 12px;
+            display: flex; flex-direction: column; align-items: center;
+            padding: 10px 5px; box-sizing: border-box;
+            position: relative;
+        }
+        .slot-num { position: absolute; top: 8px; left: 8px; font-size: 12px; font-weight: 900; color: #BDB09F; }
+        .slot-icon-bg {
+            width: 50px; height: 50px; background: #F6E7D1; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 24px;
+            margin-top: 15px; margin-bottom: 10px;
+        }
+        .slot-name { font-size: 13px; font-weight: 900; color: var(--text-brown); text-align: center; line-height: 1.1; margin-bottom: auto; }
+        
+        /* Progress & Buttons */
+        .slot-progress {
+            width: 90%; height: 14px; background: #D9D9D9; border-radius: 7px; margin-bottom: 8px;
+            overflow: hidden; position: relative;
+        }
+        .progress-bar-fill { height: 100%; background: #82C94F; }
+        .progress-time { position: absolute; top: 0; width: 100%; text-align: center; font-size: 10px; font-weight: 900; color: white; line-height: 14px; text-shadow: 1px 1px 0 rgba(0,0,0,0.3); }
+
+        .btn-thu {
+            width: 90%; background: var(--btn-green); color: white; border: none; border-radius: 8px;
+            padding: 6px 0; font-size: 14px; font-weight: 900; box-shadow: 0 4px 0 #5E9B34; cursor: pointer;
+        }
+        .btn-speed {
+            width: 90%; background: var(--btn-blue); color: white; border: none; border-radius: 8px;
+            padding: 6px 0; font-size: 14px; font-weight: 900; box-shadow: 0 4px 0 #287AB1; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; gap: 4px;
+        }
+
+        /* Locked Slot */
+        .slot-locked { background: var(--locked-bg); border-color: #C2B6A3; }
+        .lock-icon { width: 40px; height: 40px; background: #645747; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; margin-top: 25px; }
+        .locked-text { font-size: 12px; font-weight: 900; color: #726352; margin-top: 10px; }
+        .locked-btn { width: 80%; background: #AFA28F; color: white; border-radius: 15px; padding: 4px 0; font-size: 12px; font-weight: 900; text-align: center; margin-top: auto; margin-bottom: 10px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="popup-window">
+        <!-- Rivets -->
+        <div class="rivet r-tl"></div><div class="rivet r-tr"></div>
+        <div class="rivet r-bl"></div><div class="rivet r-br"></div>
+
+        <div class="ribbon-container">
+            <div class="ribbon-tail rt-left"></div>
+            <div class="ribbon-tail rt-right"></div>
+            <div class="ribbon-center">
+                <div class="ribbon-text">MÁY XAY THỨC ĂN</div>
+            </div>
+        </div>
+
+        <div class="btn-close">✖</div>
+
+        <div class="inner-panel">
+            
+            <!-- TABS -->
+            <div class="tabs-row">
+                <div class="tabs-left">
+                    <div class="tab active"><span>🌾</span> Thức ăn gia súc</div>
+                    <div class="tab inactive"><span>🎋</span> Máy xay mía</div>
+                    <div class="tab inactive"><span>🐟</span> Máy làm nước mắm</div>
+                </div>
+                <div class="diamond-counter">
+                    <span style="color: #40A4E5; font-size: 18px;">💎</span> 27
+                </div>
+            </div>
+
+            <div class="main-content">
+                
+                <!-- LEFT: RECIPES -->
+                <div class="recipe-list-container">
+                    <div class="list-header">CÔNG THỨC</div>
+                    
+                    <div class="scroll-area">
+                        <!-- Active Card -->
+                        <div class="recipe-card active">
+                            <div class="animal-tag">🐔 Gà</div>
+                            <div class="recipe-info">
+                                <div class="recipe-icon-circle">🛍️</div>
+                                <div>
+                                    <p class="recipe-name">Cám cho gà</p>
+                                    <p class="recipe-time">Ủ 2p00</p>
+                                </div>
+                            </div>
+                            <div class="cost-row">
+                                <div class="cost-chip">🌾 x3</div>
+                                <div class="cost-chip" style="border-color: #E2BB6D; color: #A07455;">⚡ x2</div>
+                            </div>
+                        </div>
+
+                        <!-- Inactive Cards -->
+                        <div class="recipe-card">
+                            <div class="animal-tag" style="color: #C67468;">🐷 Heo</div>
+                            <div class="recipe-info">
+                                <div class="recipe-icon-circle">🛍️</div>
+                                <div>
+                                    <p class="recipe-name">Cám cho heo</p>
+                                    <p class="recipe-time">Ủ 4p00</p>
+                                </div>
+                            </div>
+                            <div class="cost-row">
+                                <div class="cost-chip">🌾 x4</div>
+                                <div class="cost-chip" style="border-color: #4B793B; color: #4B793B;">🥦 x3</div>
+                            </div>
+                        </div>
+
+                        <div class="recipe-card">
+                            <div class="animal-tag" style="color: #6C4931;">🐮 Bò</div>
+                            <div class="recipe-info">
+                                <div class="recipe-icon-circle" style="background: #E4F1DB;">🌽</div>
+                                <div>
+                                    <p class="recipe-name">Cỏ trộn cho bò</p>
+                                    <p class="recipe-time">Ủ 6p00</p>
+                                </div>
+                            </div>
+                            <div class="cost-row">
+                                <div class="cost-chip" style="border-color: #E2BB6D; color: #A07455;">⚡ x5</div>
+                                <div class="cost-chip" style="border-color: #4B793B; color: #4B793B;">🥦 x4</div>
+                            </div>
+                        </div>
+
+                        <!-- NEW: Locked Card -->
+                        <div class="recipe-card recipe-locked">
+                            <div class="animal-tag">🥛 Bò sữa</div>
+                            
+                            <div class="recipe-lock-overlay">
+                                <div class="big-lock">🔒</div>
+                                <div class="lock-text">Mở ở cấp 14</div>
+                            </div>
+
+                            <div class="recipe-info">
+                                <div class="recipe-icon-circle">🌽</div>
+                                <div>
+                                    <p class="recipe-name">Cám cho bò sữa</p>
+                                    <p class="recipe-time">Ủ 10p00</p>
+                                </div>
+                            </div>
+                            <div class="cost-row">
+                                <div class="cost-chip">🌽 x6</div>
+                                <div class="cost-chip">⚡ x6</div>
+                                <div class="cost-chip">🥦 x4</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn-empty-slot">HẾT SLOT TRỐNG</button>
+                </div>
+
+                <!-- RIGHT: ANIMATION & SLOTS -->
+                <div class="right-column">
+                    
+                    <!-- ANIMATION AREA -->
+                    <div class="animation-box">
+                        <div class="anim-sky"></div>
+                        <div class="anim-ground"></div>
+                        
+                        <div class="status-badge">
+                            <div class="status-dot"></div> Đang xay - 1 slot
+                        </div>
+
+                        <div class="input-bubble">
+                            🌾 x8
+                        </div>
+
+                        <div class="conveyor-sys">
+                            <div class="conveyor-stripes-anim"></div>
+                        </div>
+                        <div class="conveyor-wheels">
+                            <div class="wheel"></div><div class="wheel"></div><div class="wheel"></div><div class="wheel"></div>
+                        </div>
+
+                        <div class="moving-item mi-1">🌾</div>
+                        <div class="moving-item mi-2">🌾</div>
+
+                        <!-- Complete Machine SVG inline for perfect rendering -->
+                        <div class="machine-wrapper">
+                            <svg viewBox="0 0 200 200" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Funnel -->
+                                <polygon points="50,10 150,10 120,60 80,60" fill="#8C472C" />
+                                <!-- Body -->
+                                <rect x="10" y="60" width="180" height="130" rx="15" fill="#A15234" stroke="#682F19" stroke-width="6" />
+                                <!-- Highlight -->
+                                <rect x="20" y="70" width="160" height="15" rx="5" fill="#BE6A48" opacity="0.8" />
+                                
+                                <!-- Large Gear (Animated via CSS) -->
+                                <g transform="translate(65, 125)">
+                                    <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="360 0 0" dur="4s" repeatCount="indefinite" />
+                                    <circle cx="0" cy="0" r="45" fill="#C69260" stroke="#75482C" stroke-width="4" />
+                                    <!-- Inner triangles pattern -->
+                                    <path d="M0 -45 L15 -25 L-15 -25 Z M45 0 L25 -15 L25 15 Z M0 45 L15 25 L-15 25 Z M-45 0 L-25 -15 L-25 15 Z" fill="#75482C" />
+                                    <circle cx="0" cy="0" r="20" fill="#EBD2AA" stroke="#75482C" stroke-width="4" />
+                                    <circle cx="0" cy="0" r="6" fill="#75482C" />
+                                </g>
+
+                                <!-- Small Gear (Animated via CSS) -->
+                                <g transform="translate(145, 135)">
+                                    <animateTransform attributeName="transform" type="rotate" from="0 0 0" to="-360 0 0" dur="2.5s" repeatCount="indefinite" />
+                                    <circle cx="0" cy="0" r="30" fill="#C69260" stroke="#75482C" stroke-width="4" />
+                                    <path d="M0 -30 L10 -15 L-10 -15 Z M30 0 L15 -10 L15 10 Z M0 30 L10 15 L-10 15 Z M-30 0 L-15 -10 L-15 10 Z" fill="#75482C" />
+                                    <circle cx="0" cy="0" r="12" fill="#EBD2AA" stroke="#75482C" stroke-width="4" />
+                                    <circle cx="0" cy="0" r="4" fill="#75482C" />
+                                </g>
+                            </svg>
+                        </div>
+
+                        <div class="output-bubble">
+                            🛍️
+                            <div class="output-tag">Cám gà</div>
+                        </div>
+
+                    </div>
+
+                    <!-- SLOTS AREA -->
+                    <div class="slots-area">
+                        <div class="slots-header">
+                            SLOT XAY <span>4/5 slot đã mở • 1 đang xay • 3 chờ thu</span>
+                        </div>
+                        
+                        <div class="slots-container">
+                            <!-- Slot 1 -->
+                            <div class="slot-card">
+                                <div class="slot-num">#1</div>
+                                <div class="slot-icon-bg">🛍️</div>
+                                <div class="slot-name">Cám gà</div>
+                                <button class="btn-thu">THU</button>
+                                <div style="position: absolute; bottom: 35px; right: 5px; width:10px; height:10px; background: #FF4A4A; border: 2px solid white; border-radius: 50%;"></div>
+                            </div>
+
+                            <!-- Slot 2 -->
+                            <div class="slot-card">
+                                <div class="slot-num">#2</div>
+                                <div class="slot-icon-bg">🛍️</div>
+                                <div class="slot-name">Cám heo</div>
+                                <button class="btn-thu">THU</button>
+                                <div style="position: absolute; bottom: 35px; right: 5px; width:10px; height:10px; background: #FF4A4A; border: 2px solid white; border-radius: 50%;"></div>
+                            </div>
+
+                            <!-- Slot 3 -->
+                            <div class="slot-card">
+                                <div class="slot-num">#3</div>
+                                <div class="slot-icon-bg" style="background: #E4F1DB;">🌽</div>
+                                <div class="slot-name">Cỏ trộn cho bò</div>
+                                <div class="slot-progress">
+                                    <div class="progress-bar-fill" style="width: 25%;"></div>
+                                    <div class="progress-time">1p56</div>
+                                </div>
+                                <button class="btn-speed">💎 x6</button>
+                            </div>
+
+                            <!-- Slot 4 -->
+                            <div class="slot-card">
+                                <div class="slot-num">#4</div>
+                                <div class="slot-icon-bg">🛍️</div>
+                                <div class="slot-name">Cám gà</div>
+                                <button class="btn-thu">THU</button>
+                                <div style="position: absolute; bottom: 35px; right: 5px; width:10px; height:10px; background: #FF4A4A; border: 2px solid white; border-radius: 50%;"></div>
+                            </div>
+
+                            <!-- Slot 5 Locked -->
+                            <div class="slot-card slot-locked">
+                                <div class="slot-num">#5</div>
+                                <div class="lock-icon">🔒</div>
+                                <div class="locked-text">Chưa đủ cấp</div>
+                                <div class="locked-btn">Cấp 18</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

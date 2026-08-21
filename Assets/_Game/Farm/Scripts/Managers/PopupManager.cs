@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PopupManager : MonoBehaviour
 {
@@ -45,28 +45,26 @@ public class PopupManager : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (blockingOverlay == null)
-            return;
-
         bool anyOpen = IsAnyPopupOpen();
 
         // Self-healing: nếu popupLockCount hoặc input lock bị kẹt nhưng không có popup nào thực sự mở,
-        // reset để tránh block click mãi mãi.
+        // reset ngay lập tức để tránh khóa di chuyển camera / click map.
         if (!anyOpen
             && !FarmInputLock.IsDraggingSeed
-            && !FarmInputLock.IsDraggingSickle
-            && (FarmInputLock.IsPopupOpen || FarmInputLock.IsMarketPopupOpen))
+            && !FarmInputLock.IsDraggingSickle)
         {
             FarmInputLock.ResetAll();
         }
 
-        if (anyOpen == _prevAnyOpen)
-            return;
-
-        _prevAnyOpen = anyOpen;
-        blockingOverlay.blocksRaycasts = anyOpen;
+        if (blockingOverlay != null)
+        {
+            if (anyOpen != _prevAnyOpen)
+            {
+                _prevAnyOpen = anyOpen;
+                blockingOverlay.blocksRaycasts = anyOpen;
+            }
+        }
     }
-
 
     public bool IsAnyPopupOpen()
     {
@@ -81,6 +79,13 @@ public class PopupManager : MonoBehaviour
             || (AvatarProfilePopupUI.Instance != null && AvatarProfilePopupUI.Instance.gameObject.activeInHierarchy && AvatarProfilePopupUI.Instance.IsOpen)
             || CropProcessPopupUI.AnyOpen
             || OrderBoardPopupUI.AnyOpen
+            || StallPopupUI.AnyOpen
+            || MillPopupUI.AnyOpen
+            // POPUP CHO (21/08): field `marketPopup` trong scene dang NULL/chua gan —
+            // F9 debug chup duoc canh popup cho MO nhung IsAnyPopupOpen van False,
+            // blockingOverlay khong bat, click world xuyen qua popup cho. Doc thang
+            // MarketManager.Instance de khong phu thuoc keo-tha Inspector.
+            || (MarketManager.Instance != null && MarketManager.Instance.IsOpen)
             || UnifiedTaskPopupUI.IsOpenStatic;
     }
     

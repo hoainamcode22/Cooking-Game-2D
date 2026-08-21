@@ -1,0 +1,17 @@
+<svg viewBox="0 0 1000 680" width="1000" height="680" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+        <pattern id="stripes" width="80" height="80" patternUnits="userSpaceOnUse">
+            <rect width="40" height="80" fill="#C08C5D" />
+            <rect x="40" width="40" height="80" fill="#B38052" />
+        </pattern>
+        <filter id="shadow">
+            <feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="#000" flood-opacity="0.4"/>
+        </filter>
+    </defs>
+    <rect x="20" y="20" width="960" height="640" rx="25" fill="url(#stripes)" stroke="#8B5933" stroke-width="12" filter="url(#shadow)" />
+    <!-- Rivets -->
+    <g stroke="#8B5933" stroke-width="2" fill="#DDAE80">
+        <circle cx="50" cy="50" r="8" /><circle cx="950" cy="50" r="8" />
+        <circle cx="50" cy="630" r="8" /><circle cx="950" cy="630" r="8" />
+    </g>
+</svg>
