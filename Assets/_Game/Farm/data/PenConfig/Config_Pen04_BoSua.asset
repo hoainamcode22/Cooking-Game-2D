@@ -16,10 +16,10 @@ MonoBehaviour:
   penName: 
   food1ItemId: cam_bo_sua
   food2ItemId: 
-  food1Icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  food1Icon: {fileID: 21300000, guid: 83f693b8185f3a04496df43d2dbcb94f, type: 3}
   food2Icon: {fileID: 0}
   premiumFoodItemId: cam_bo_sua
-  premiumFoodIcon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  premiumFoodIcon: {fileID: 21300000, guid: 83f693b8185f3a04496df43d2dbcb94f, type: 3}
   premiumFoodAmountPerFeed: 1
   premiumSpeedMultiplier: 1
   premiumProductBonus: 0

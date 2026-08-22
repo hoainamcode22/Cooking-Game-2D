@@ -16,10 +16,10 @@ MonoBehaviour:
   penName: 
   food1ItemId: co_tron_bo
   food2ItemId: 
-  food1Icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  food1Icon: {fileID: 21300000, guid: 22126e56570c85b47bfcbf36ee2b7136, type: 3}
   food2Icon: {fileID: 0}
   premiumFoodItemId: co_tron_bo
-  premiumFoodIcon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  premiumFoodIcon: {fileID: 21300000, guid: 22126e56570c85b47bfcbf36ee2b7136, type: 3}
   premiumFoodAmountPerFeed: 1
   premiumSpeedMultiplier: 1
   premiumProductBonus: 0

@@ -23,6 +23,24 @@ using TMPro;
 /// KHÔNG có field tab, KHÔNG có code tab chết. Đừng "khôi phục theo video".
 ///
 /// ══════════════════════════════════════════════════════════════════════════
+///  BẮT ĐẦU MỘT MẺ XAY = KÉO-THẢ, KHÔNG PHẢI BẤM NÚT  (chốt 21/08)
+/// ══════════════════════════════════════════════════════════════════════════
+/// Người chơi KÉO một card công thức từ danh sách bên trái và THẢ vào một slot trống.
+/// Chuỗi gọi:
+///     MillRecipeDragSource.OnBeginDrag  (card)      → BatDauKeo()      ← chọn + sáng viền
+///     MillSlotUI.OnDrop                 (slot)      → ThaVaoSlot(idx)  ← chỗ chặn thật
+///                                                   → BatDauXay(idx)   ← trừ nguyên liệu
+///     MillRecipeDragSource.OnEndDrag    (card)      → KetThucKeo()     ← tắt viền
+///
+/// Nút "XAY NGAY" cũ ĐÃ BỎ. Node `btnMain` được giữ lại làm BẢNG GỢI Ý (cùng chỗ, cùng
+/// sprite, component Button bị tắt) — xem `GanSuKienNut` để biết vì sao tắt component chứ
+/// không đặt interactable = false.
+///
+/// ⚠ ĐỪNG "khôi phục nút cho tiện": bấm nút thì máy tự chọn slot, kéo-thả thì người chơi
+/// chọn slot. Hai lối vào cùng tồn tại sẽ có hai thứ tự kiểm tra khác nhau và sớm muộn lệch
+/// nhau ở chỗ trừ nguyên liệu.
+///
+/// ══════════════════════════════════════════════════════════════════════════
 ///  AI GIỮ TRẠNG THÁI
 /// ══════════════════════════════════════════════════════════════════════════
 /// File này là chỗ DUY NHẤT giữ trạng thái slot. `MillSlotUI` chỉ vẽ, `RotatingGear` /
@@ -174,6 +192,29 @@ public class MillPopupUI : MonoBehaviour
     [Tooltip("Thời gian mờ dần của toast, giây.")]
     [SerializeField] private float toastFadeGiay = 0.35f;
 
+    // ── Hiệu ứng: cả ba đều TUỲ CHỌN, để trống popup vẫn chạy đúng logic ──
+
+    [Header("Hiệu ứng (TUỲ CHỌN)")]
+    [Tooltip("TUỲ CHỌN. Hạt nguyên liệu bay vào phễu máy khi một mẻ bắt đầu.\n" +
+             "Để trống ⇒ mẻ xay vẫn bắt đầu, chỉ không có hạt bay.")]
+    [SerializeField] private MillIntakeFX fxNguyenLieu;
+
+    [Tooltip("TUỲ CHỌN. Bao thành phẩm nảy ra + vòng sáng chờ thu ở vòng tròn đầu ra.\n" +
+             "Để trống ⇒ không có nhịp nảy và không có vòng sáng.")]
+    [SerializeField] private MillOutputBagFX fxBaoRa;
+
+    [Tooltip("TUỲ CHỌN. Icon sản phẩm bay từ slot về nút KHO ở HUD khi bấm THU.\n" +
+             "Để trống ⇒ hàng vẫn vào kho, chỉ không có icon bay.")]
+    [SerializeField] private MillCollectFlyFX fxBayVeKho;
+
+    [Tooltip("TUỲ CHỌN. Pháo hoa \"bùm bùm\" nổ ở bao thành phẩm khi một mẻ xay xong.\n" +
+             "Để trống ⇒ vẫn có nhịp nảy bao, chỉ không có pháo hoa.")]
+    [SerializeField] private MillCelebrationFX fxPhaoHoa;
+
+    [Tooltip("TUỲ CHỌN. Khói + bong bóng phun khỏi phễu KHI MÁY ĐANG XAY.\n" +
+             "Để trống ⇒ không có khói; máy rảnh và máy đang chạy nhìn giống nhau hơn.")]
+    [SerializeField] private MillSmokeFX fxKhoi;
+
     // ═════════════════════════════ TRẠNG THÁI ═════════════════════════════
 
     /// <summary>Một slot của máy — chỉ tồn tại trong bộ nhớ, được lưu/nạp qua PlayerPrefs.</summary>
@@ -240,6 +281,7 @@ public class MillPopupUI : MonoBehaviour
                 _toastGroup = toastRoot.AddComponent<CanvasGroup>();
         }
 
+        BaoDamCoRaycaster();
         KhoiTaoTrangThai();
         GanSuKienNut();
 
@@ -249,6 +291,50 @@ public class MillPopupUI : MonoBehaviour
             r.SetActive(false);
 
         AnToast(true);
+    }
+
+    /// <summary>
+    /// ⚠ TỰ VÁ LỖI "POPUP NHƯ MỘT TẤM ẢNH" — bug thật, phát hiện 21/08.
+    ///
+    /// `MillPopupBuilderTool` dựng node gốc popup thành một **Canvas LỒNG**
+    /// (`overrideSorting = true`, `sortingOrder = 400`) để nó luôn nằm trên mọi popup khác.
+    /// Nhưng canvas lồng đăng ký toàn bộ Graphic con vào CHÍNH NÓ trong `GraphicRegistry`,
+    /// và một `GraphicRaycaster` chỉ raycast những Graphic đăng ký vào canvas mà nó nằm
+    /// trên. Nên `GraphicRaycaster` của `Canvas_Popup` KHÔNG thấy gì bên trong popup này.
+    ///
+    /// Thiếu raycaster ⇒ popup vẽ ra hoàn hảo, bánh răng vẫn quay, băng tải vẫn chạy,
+    /// NHƯNG không một pixel nào hit-test được: nút X chết, card chết, nút THU chết,
+    /// kéo-thả không bao giờ nổ `OnBeginDrag`. **Console hoàn toàn sạch** — không lỗi đỏ,
+    /// không warning. Đó là kiểu bug tốn nhiều giờ nhất nếu không biết chỗ mà nhìn.
+    ///
+    /// Tool đã được sửa để luôn gắn raycaster. Hàm này là lưới an toàn thứ hai, cho
+    /// trường hợp scene/prefab cũ chưa dựng lại, hoặc ai đó xoá component sau này.
+    /// Nó CỘNG THÊM, không sửa gì đang chạy, nên an toàn tuyệt đối.
+    /// </summary>
+    private void BaoDamCoRaycaster()
+    {
+        // Quét cả nhánh, kể cả node đang tắt (popupRoot mặc định tắt): canvas lồng có thể
+        // nằm ở node gốc HOẶC ở một node con, tuỳ phiên bản tool đã dựng.
+        Canvas[] ds = GetComponentsInChildren<Canvas>(true);
+        if (ds == null) return;
+
+        for (int i = 0; i < ds.Length; i++)
+        {
+            Canvas cv = ds[i];
+            if (cv == null) continue;
+
+            // So tường minh `== null`: component thiếu trả về "fake-null", `?.`/`??` coi
+            // như ĐÃ CÓ và bỏ qua — đúng cái bẫy đang phải vá ở đây.
+            GraphicRaycaster gr = cv.GetComponent<GraphicRaycaster>();
+            if (gr != null) continue;
+
+            cv.gameObject.AddComponent<GraphicRaycaster>();
+
+            Debug.LogWarning(LOG + "Canvas '" + cv.gameObject.name + "' thiếu GraphicRaycaster " +
+                             "⇒ đã tự thêm lúc chạy để popup bấm được. Chạy " +
+                             "Tools/Farm/Popup May Xay/1. Dung Popup để sửa hẳn trong scene + prefab.",
+                             cv.gameObject);
+        }
     }
 
     private void OnDestroy()
@@ -313,12 +399,35 @@ public class MillPopupUI : MonoBehaviour
             }
         }
 
+        // Đọc TRƯỚC khi CapNhatBadgeVaTongKet ghi đè — cần giá trị của frame trước để
+        // phát hiện "vừa có thêm một mẻ xong" (xem khối dưới).
+        int choThuTruoc = _soChoThuDaHien;
+
         CapNhatBadgeVaTongKet(soDangXay, soChoThu);
         CapNhatSoDuGem();
         CapNhatNutLon(soTrong);
         // KHÔNG truyền soDangXay: bánh răng/băng tải chạy LIÊN TỤC, xem chú thích trong
         // DatChayAnimation().
         DatChayAnimation();
+
+        // Khói phun khi VÀ CHỈ KHI có slot đang xay — đây là thứ duy nhất phân biệt "máy
+        // đang làm việc" với "máy rảnh" mà không cần đọc chữ. Có hàng rào bên trong nên gọi
+        // mỗi frame là an toàn.
+        if (fxKhoi != null) fxKhoi.DatChay(soDangXay > 0);
+
+        // Sự kiện "vừa có thêm một mẻ xong": số chờ thu TĂNG so với frame trước.
+        // Bỏ qua frame đầu sau Open() (_soChoThuDaHien = int.MinValue) — lúc đó "tăng" chỉ
+        // là hàng còn tồn từ phiên trước, ăn mừng ở đây là báo động sai.
+        bool vuaXongMotMe = (choThuTruoc != int.MinValue) && (soChoThu > choThuTruoc);
+
+        if (fxBaoRa != null)
+        {
+            // Trạng thái: còn hàng chưa thu ⇒ vòng sáng thở.
+            fxBaoRa.DatSanSang(soChoThu > 0);
+
+            if (vuaXongMotMe) fxBaoRa.PhatRoi();
+        }
+
     }
 
     // ═════════════════════════════ MỞ / ĐÓNG ═════════════════════════════
@@ -404,6 +513,27 @@ public class MillPopupUI : MonoBehaviour
     /// <summary>Đóng popup, dừng toàn bộ animation và lưu trạng thái ngay.</summary>
     public void Close()
     {
+        // Nút X nằm NGOÀI ScrollRect nên vẫn bấm được giữa lúc người chơi đang kéo bao.
+        // Khi đó card bị disable trước khi Unity kịp gửi OnEndDrag ⇒ bóng kéo sẽ nằm lại
+        // trên màn hình vĩnh viễn. Dọn ở đây là đường thoát cuối cùng.
+        MillDragSession.HuyNgay();
+        SangVienSlot(false);
+
+        // Icon bay-về-kho được gắn thẳng vào CANVAS (để nằm trên popup), không vào popupRoot
+        // ⇒ tắt popupRoot KHÔNG tắt nó. Component MillCollectFlyFX cũng nằm trên node gốc
+        // vẫn active nên OnDisable của nó không chạy. Phải dọn tường minh ở đây, nếu không
+        // icon lơ lửng trên đồng ruộng sau khi đóng popup.
+        if (fxBayVeKho != null) fxBayVeKho.DonSach();
+
+        // Hai FX này nằm dưới popupRoot nên OnDisable của chúng cũng tự dọn. Gọi tường minh
+        // ở đây để thứ tự dọn không phụ thuộc vào thứ tự Unity gửi OnDisable cho cây con.
+        if (fxPhaoHoa != null) fxPhaoHoa.DonSach();
+        if (fxKhoi != null)
+        {
+            fxKhoi.DatChay(false);
+            fxKhoi.DonSach();
+        }
+
         DungAnimation();
         LuuTrangThai();
 
@@ -521,14 +651,19 @@ public class MillPopupUI : MonoBehaviour
         _trangThaiNutDaHien = int.MinValue;   // buộc vẽ lại nút lớn
     }
 
-    // ═════════════════════════════ NÚT LỚN ═════════════════════════════
+    // ═════════════════════════════ BẢNG GỢI Ý (chỗ nút XAY NGAY cũ) ═════════════════════════════
 
-    // Mã trạng thái nút, dùng cho hàng rào chống dựng chuỗi.
-    private const int NUT_XAY_NGAY   = 0;
+    // Mã trạng thái bảng, dùng cho hàng rào chống dựng chuỗi mỗi frame.
+    private const int NUT_XAY_NGAY   = 0;   // sẵn sàng: kéo là xay được
     private const int NUT_THIEU_NL   = 1;
     private const int NUT_HET_SLOT   = 2;
     private const int NUT_CHUA_CHON  = 3;
 
+    /// <summary>
+    /// Cập nhật BẢNG GỢI Ý dưới danh sách công thức. Đây KHÔNG còn là nút bấm — nó chỉ nói
+    /// cho người chơi biết vì sao chưa xay được (hoặc nhắc thao tác kéo-thả).
+    /// Nút bị tắt trong <see cref="GanSuKienNut"/>.
+    /// </summary>
     private void CapNhatNutLon(int soSlotTrong)
     {
         int trangThai;
@@ -542,54 +677,157 @@ public class MillPopupUI : MonoBehaviour
         _trangThaiNutDaHien = trangThai;
 
         string chu;
-        bool   bamDuoc;
+        bool   sanSang;
 
         switch (trangThai)
         {
-            case NUT_HET_SLOT:  chu = "HẾT SLOT TRỐNG";     bamDuoc = false; break;
-            case NUT_THIEU_NL:  chu = "THIẾU NGUYÊN LIỆU";  bamDuoc = false; break;
-            case NUT_CHUA_CHON: chu = "XAY NGAY";           bamDuoc = false; break;
-            default:            chu = "XAY NGAY";           bamDuoc = true;  break;
+            case NUT_HET_SLOT:  chu = "HẾT SLOT TRỐNG";        sanSang = false; break;
+            case NUT_THIEU_NL:  chu = "THIẾU NGUYÊN LIỆU";     sanSang = false; break;
+            case NUT_CHUA_CHON: chu = "CHỌN MỘT CÔNG THỨC";    sanSang = false; break;
+            default:            chu = "KÉO VÀO SLOT ĐỂ XAY";   sanSang = true;  break;
         }
 
-        if (txtMainButton != null)   txtMainButton.text     = chu;
-        if (btnMain != null)         btnMain.interactable   = bamDuoc;
-        if (imgMainButtonBg != null) imgMainButtonBg.color  = bamDuoc ? mauNutBamDuoc : mauNutKhoa;
+        if (txtMainButton != null)   txtMainButton.text    = chu;
+        if (imgMainButtonBg != null) imgMainButtonBg.color = sanSang ? mauNutBamDuoc : mauNutKhoa;
     }
 
-    private void BamXayNgay()
+    // ═════════════════════════════ KÉO-THẢ ═════════════════════════════
+
+    /// <summary>
+    /// Người chơi vừa nhấc một công thức lên. Gọi từ
+    /// <see cref="MillRecipeDragSource.OnBeginDrag"/>.
+    ///
+    /// Chọn luôn công thức đó: bong bóng đầu ra và các bó cỏ trên băng tải đi theo công thức
+    /// ĐANG CHỌN (xem <see cref="ChonCongThuc"/>), không đồng bộ thì người chơi kéo "Cám heo"
+    /// mà máy vẫn hiện "Cám gà".
+    /// </summary>
+    public void BatDauKeo(MillRecipeData r)
     {
-        if (_congThucChon == null)
+        if (r != null && r != _congThucChon) ChonCongThuc(r);
+        SangVienSlot(true);
+    }
+
+    /// <summary>
+    /// Người chơi vừa nhả tay. Gọi từ <see cref="MillRecipeDragSource.OnEndDrag"/>.
+    /// </summary>
+    /// <param name="aiNhan">Có slot nào nhận cú thả này không.</param>
+    public void KetThucKeo(bool aiNhan)
+    {
+        SangVienSlot(false);
+
+        if (aiNhan) return;
+
+        // Thả ra chỗ trống mà im lặng thì người chơi tưởng game lỗi. Nói rõ vì sao.
+        if (TimSlotTrongDauTien() < 0)
+            HienToast("Hết slot trống — thu hàng đã xong rồi thả tiếp nhé!");
+        else
+            HienToast("Thả bao vào một SLOT TRỐNG để máy xay");
+    }
+
+    /// <summary>
+    /// Slot <paramref name="idx"/> có nhận được một cú thả không: đã mở VÀ đang trống.
+    /// Dùng cho viền sáng gợi ý; việc chặn thật nằm trong <see cref="ThaVaoSlot"/>.
+    /// </summary>
+    public bool SlotNhanDuoc(int idx)
+    {
+        if (!ChiSoHopLe(idx)) return false;
+        if (idx >= _soSlotDaMo) return false;
+
+        return _slotStates[idx].recipe == null;
+    }
+
+    /// <summary>
+    /// NGƯỜI CHƠI THẢ công thức <paramref name="r"/> vào slot <paramref name="idx"/>.
+    /// Đây là CHỖ CHẶN THẬT — mọi thông báo "vì sao không được" nằm ở đây, không ở UI.
+    /// Gọi từ <see cref="MillSlotUI.OnDrop"/> qua closure trong <see cref="GanSuKienSlot"/>.
+    /// </summary>
+    public void ThaVaoSlot(int idx, MillRecipeData r)
+    {
+        if (r == null) return;
+        if (!ChiSoHopLe(idx)) return;
+
+        if (idx >= _soSlotDaMo)
         {
-            HienToast("Hãy chọn một công thức");
+            HienToast("Slot #" + (idx + 1) + " chưa mở");
             return;
         }
 
-        int slotTrong = TimSlotTrongDauTien();
-        if (slotTrong < 0)
+        if (_slotStates[idx].recipe != null)
         {
-            HienToast("Hết slot trống");
+            HienToast("Slot #" + (idx + 1) + " đang có hàng");
             return;
         }
 
-        if (!MillInventoryBridge.TruNguyenLieu(_congThucChon))
+        BatDauXay(idx, r);
+    }
+
+    /// <summary>
+    /// Bật/tắt viền sáng gợi ý trên MỌI slot nhận được.
+    ///
+    /// Sáng cả hàng ngay khi nhấc bao lên (không đợi con trỏ đi tới) là điều kiện để
+    /// kéo-thả dùng được trên mobile: ngón tay che mất slot, người chơi phải THẤY TRƯỚC
+    /// chỗ nào thả được.
+    /// </summary>
+    private void SangVienSlot(bool on)
+    {
+        if (slots == null) return;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            MillSlotUI ui = slots[i];
+            if (ui == null) continue;
+
+            ui.SetDropHighlight(on && SlotNhanDuoc(i), false);
+        }
+    }
+
+    /// <summary>
+    /// Bắt đầu một mẻ xay ở slot <paramref name="idx"/>. Trừ nguyên liệu, ghi trạng thái,
+    /// lưu, phát hiệu ứng.
+    ///
+    /// KHÔNG vẽ slot ở đây: `Update` là nơi duy nhất vẽ slot (hàng rào `_modeDaVe`), frame
+    /// sau nó tự thấy slot có recipe và chuyển sang Running.
+    /// </summary>
+    /// <returns>true nếu mẻ xay đã bắt đầu.</returns>
+    private bool BatDauXay(int idx, MillRecipeData r)
+    {
+        if (r == null || !ChiSoHopLe(idx)) return false;
+        if (idx >= _soSlotDaMo) return false;
+        if (_slotStates[idx].recipe != null) return false;
+
+        // Trừ nguyên liệu là bước CUỐI CÙNG có thể thất bại ⇒ đặt sát trước lúc ghi trạng
+        // thái. TruNguyenLieu kiểm-hết-rồi-mới-trừ nên không bao giờ trừ một phần.
+        if (!MillInventoryBridge.TruNguyenLieu(r))
         {
             HienToast("Thiếu nguyên liệu");
-            return;
+            return false;
         }
 
-        float tong = _congThucChon.BrewSeconds;
+        float tong = r.BrewSeconds;
 
-        SlotState st   = _slotStates[slotTrong];
-        st.recipe      = _congThucChon;
+        SlotState st   = _slotStates[idx];
+        st.recipe      = r;
         st.totalSec    = tong;
         st.endTicksUtc = DateTime.UtcNow.Ticks + (long)(tong * TimeSpan.TicksPerSecond);
 
         LuuTrangThai();
 
-        // slotTrong là chỉ số 0-based, nhãn cho người chơi là 1-based (#1..#5).
-        HienToast("Đã cho " + _congThucChon.displayName + " vào slot " + (slotTrong + 1));
+        // Hạt nguyên liệu chảy vào phễu máy — dùng icon nguyên liệu ĐẦU TIÊN, giống hệt các
+        // bó cỏ trên băng tải (xem DatAnhBeltItems). Không có thì lấy icon sản phẩm.
+        if (fxNguyenLieu != null)
+        {
+            MillIngredient ing0 = (r.ingredients != null && r.ingredients.Length > 0) ? r.ingredients[0] : null;
+            fxNguyenLieu.Chay((ing0 != null && ing0.icon != null) ? ing0.icon : r.icon);
+        }
+
+        // Một cụm khói ngay lúc nhận nguyên liệu. Dòng khói liên tục do Update bật (theo số
+        // slot đang xay) chỉ khởi động ở frame sau — chờ tới đó là mất liên hệ nhân-quả.
+        if (fxKhoi != null) fxKhoi.PhunMotNhip();
+
+        // idx là chỉ số 0-based, nhãn cho người chơi là 1-based (#1..#5).
+        HienToast("Đã cho " + r.displayName + " vào slot " + (idx + 1));
         _trangThaiNutDaHien = int.MinValue;
+        return true;
     }
 
     // ═════════════════════════════ HÀNH ĐỘNG TRÊN SLOT ═════════════════════════════
@@ -620,6 +858,26 @@ public class MillPopupUI : MonoBehaviour
         st.totalSec    = 0f;
 
         LuuTrangThai();
+
+        RectTransform oSlot = (slots != null && idx < slots.Length && slots[idx] != null)
+                            ? slots[idx].transform as RectTransform
+                            : null;
+
+        // Icon bay từ slot về nút KHO ở HUD. Chỉ phát SAU khi CongSanPham thành công —
+        // thấy hàng bay vào kho mà kho không tăng là lỗi tệ nhất có thể có ở đây.
+        if (fxBayVeKho != null) fxBayVeKho.Bay(r.icon, oSlot);
+
+        // PHÁO HOA nổ NGAY TẠI Ô SLOT vừa bấm.
+        //
+        // ⚠ SỬA 21/08 — trước đây nổ lúc MẺ XAY XONG, và chủ dự án không bao giờ thấy:
+        // mẻ thường xong khi popup đang ĐÓNG (ủ 2–10 phút), mà `Update` cố ý bỏ qua khung
+        // hình đầu sau `Open()` để không ăn mừng oan cho hàng tồn từ phiên trước. Kết quả
+        // là mở popup ra thấy 5 slot "chờ thu" mà chẳng có pháo hoa nào.
+        //
+        // Nổ lúc BẤM THU thì luôn đúng khoảnh khắc người chơi đang nhìn, và đó cũng là lúc
+        // phần thưởng thực sự vào tay. Nhịp nảy + vòng sáng của bao (fxBaoRa) vẫn giữ ở
+        // thời điểm xay xong để làm tín hiệu "có hàng mới".
+        if (fxPhaoHoa != null && oSlot != null) fxPhaoHoa.BumTai(oSlot);
 
         // KHÔNG gọi slots[idx].BindEmpty() ở đây: Update là nơi DUY NHẤT vẽ slot, và nó
         // dùng hàng rào _modeDaVe. Vẽ ở hai chỗ thì hai chỗ sẽ lệch nhau lúc nào không biết.
@@ -938,8 +1196,16 @@ public class MillPopupUI : MonoBehaviour
 
         if (btnMain != null)
         {
+            // KHÔNG còn nút "XAY NGAY" — luồng bắt đầu xay đã chuyển hẳn sang KÉO-THẢ
+            // (chốt 21/08, xem khối ghi chú đầu file). Node giữ lại làm BẢNG GỢI Ý.
+            //
+            // ⚠ TẮT COMPONENT, KHÔNG dùng `interactable = false`:
+            // interactable = false kích hoạt Disabled tint của Button (MillPopupBuilderTool
+            // đặt disabled alpha = 0.55) ⇒ bảng gợi ý bị mờ đi trông như đang lỗi, và
+            // `CapNhatNutLon` tô màu vào imgMainButtonBg sẽ bị Button tô lại đè lên.
+            // Tắt component thì màu do CapNhatNutLon giữ nguyên và click cũng không vào.
             btnMain.onClick.RemoveAllListeners();
-            btnMain.onClick.AddListener(BamXayNgay);
+            btnMain.enabled = false;
         }
     }
 
@@ -964,6 +1230,10 @@ public class MillPopupUI : MonoBehaviour
             ui.OnCollect = () => BamThu(idx);
             ui.OnSpeedUp = () => BamTangToc(idx);
             ui.OnUnlock  = () => BamMoSlot(idx);
+
+            // Kéo-thả: slot không biết nó là slot thứ mấy, closure `idx` là cầu nối.
+            ui.OnDropRecipe = r => ThaVaoSlot(idx, r);
+            ui.CoTheNhanTha = () => SlotNhanDuoc(idx);
         }
     }
 

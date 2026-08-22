@@ -40,6 +40,7 @@ public class CropProcessPopupUI : MonoBehaviour
     private PlotController currentPlot;
     private PenMiniPanelUI currentPen;
     private bool popupInputLockHeld;
+    private int _openedAtFrame = -999; // Guard: tránh đóng ngay frame vừa mở
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
@@ -93,8 +94,13 @@ public class CropProcessPopupUI : MonoBehaviour
         }
 
         // Click ra ngoài popup → đóng
-        if (Input.GetMouseButtonDown(0) && !IsPointerOverPopupUI(Input.mousePosition))
+        // Guard: bỏ qua frame vừa mở để tránh click-to-open đóng ngay lập tức
+        if (Time.frameCount > _openedAtFrame + 2
+            && Input.GetMouseButtonDown(0)
+            && !IsPointerOverPopupUI(Input.mousePosition))
+        {
             ClosePopup();
+        }
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -106,6 +112,7 @@ public class CropProcessPopupUI : MonoBehaviour
 
         currentPlot = plot;
         currentPen = null;
+        _openedAtFrame = Time.frameCount;
 
         AutoBindComponents();
         RefreshDisplay();
@@ -122,6 +129,7 @@ public class CropProcessPopupUI : MonoBehaviour
 
         currentPen = pen;
         currentPlot = null;
+        _openedAtFrame = Time.frameCount;
 
         AutoBindComponents();
         RefreshDisplay();

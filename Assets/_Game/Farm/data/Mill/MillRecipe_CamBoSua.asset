@@ -15,8 +15,8 @@ MonoBehaviour:
   recipeId: cam_bo_sua
   displayName: "C\xE1m cho b\xF2 s\u1EEFa"
   animalTag: "B\xF2 s\u1EEFa"
-  icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
-  animalBadgeIcon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 83f693b8185f3a04496df43d2dbcb94f, type: 3}
+  animalBadgeIcon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
   brewMinutes: 10
   outputItemId: cam_bo_sua
   outputAmount: 1

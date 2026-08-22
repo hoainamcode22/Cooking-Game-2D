@@ -94,6 +94,15 @@ public class MillRecipeCardUI : MonoBehaviour
     /// <summary>Card có mở (đủ cấp) hay không.</summary>
     public bool IsUnlocked => _unlocked;
 
+    /// <summary>
+    /// Sprite đang hiện trong vòng tròn icon của card.
+    ///
+    /// Dùng bởi <see cref="MillRecipeDragSource"/> để vẽ bóng kéo GIỐNG HỆT cái người chơi
+    /// đang nhìn. Đọc từ `imgIcon.sprite` chứ không từ `_recipe.icon`: nếu sau này icon
+    /// đổi theo cấp/skin thì bóng kéo tự đúng, không phải sửa hai nơi.
+    /// </summary>
+    public Sprite IconSprite => (imgIcon != null) ? imgIcon.sprite : null;
+
     private MillRecipeData _recipe;
     private bool           _unlocked;
     private bool           _selected;
@@ -164,9 +173,19 @@ public class MillRecipeCardUI : MonoBehaviour
         if (_canvasGroup != null)
         {
             _canvasGroup.alpha = unlocked ? 1f : alphaKhiKhoa;
-            // Chặn raycast luôn: chỉ tắt interactable thì click vẫn bị card khoá "hút" và
-            // không xuyên xuống scroll view bên dưới, làm kéo danh sách bị kẹt.
-            _canvasGroup.blocksRaycasts = unlocked;
+
+            // ⚠ SỬA 21/08 — TRƯỚC ĐÂY: `blocksRaycasts = unlocked`.
+            // Ý định ban đầu là "cho click xuyên xuống ScrollRect để vẫn kéo cuộn được".
+            // Nhưng KHÔNG CÓ GÌ ĐỠ Ở DƯỚI: Viewport chỉ có RectMask2D (không Image),
+            // RecipeList/InnerPanel đều raycastTarget = false ⇒ raycast xuyên thẳng tới
+            // `Window`, và Window không phải ScrollRect. Kết quả thật: đặt ngón tay lên card
+            // khoá (vd "Cám cho bò sữa", mở ở cấp 14) thì danh sách KHÔNG cuộn được chút nào.
+            //
+            // Nay luôn để true và để `MillRecipeDragSource` lo: card khoá không nhấc được
+            // bao (nó tự kiểm `IsUnlocked`) nhưng vẫn FORWARD cú kéo cho ScrollRect ⇒ cuộn
+            // được. Click vào card khoá vẫn vô hại: `btnSelect.interactable = false` và
+            // `BamChon()` còn một hàng rào `!_unlocked` nữa.
+            _canvasGroup.blocksRaycasts = true;
         }
 
         // Card khoá không bao giờ ở trạng thái được chọn.

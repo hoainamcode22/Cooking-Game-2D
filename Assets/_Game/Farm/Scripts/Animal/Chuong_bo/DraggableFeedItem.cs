@@ -45,16 +45,18 @@ public class DraggableFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
 
         Image ghostImg = ghostObj.AddComponent<Image>();
         ghostImg.sprite = imgFeedIcon != null ? imgFeedIcon.sprite : null;
+        ghostImg.preserveAspect = true;
         ghostImg.raycastTarget = false;
 
         RectTransform ghostRect = ghostObj.GetComponent<RectTransform>();
-        ghostRect.sizeDelta = new Vector2(80f, 80f);
+        // Phóng to ghost để dễ thấy khi kéo thả vào chuồng
+        ghostRect.sizeDelta = new Vector2(120f, 120f);
         ghostRect.anchorMin = ghostRect.anchorMax = Vector2.zero;
         ghostRect.pivot = new Vector2(0.5f, 0.5f);
-        ghostRect.position = eventData.position; // screen pixels → đúng ngay cursor
+        ghostRect.position = eventData.position;
 
         CanvasGroup ghostCG = ghostObj.AddComponent<CanvasGroup>();
-        ghostCG.alpha = 0.85f;
+        ghostCG.alpha = 0.92f;
         ghostCG.blocksRaycasts = false;
     }
 

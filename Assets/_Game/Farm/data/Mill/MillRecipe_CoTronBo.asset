@@ -15,8 +15,8 @@ MonoBehaviour:
   recipeId: co_tron_bo
   displayName: "C\u1ECF tr\u1ED9n cho b\xF2"
   animalTag: "B\xF2"
-  icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
-  animalBadgeIcon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 22126e56570c85b47bfcbf36ee2b7136, type: 3}
+  animalBadgeIcon: {fileID: -1350929398316438488, guid: f79c462433b24e449837b40518dc0a10, type: 3}
   brewMinutes: 6
   outputItemId: co_tron_bo
   outputAmount: 1

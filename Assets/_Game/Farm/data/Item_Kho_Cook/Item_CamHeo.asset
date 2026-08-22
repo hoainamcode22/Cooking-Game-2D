@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: cam_heo
   displayName: "C\xE1m cho heo"
-  icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  icon: {fileID: 21300000, guid: 72b6f3e2dad104c44a4e256b5e34510b, type: 3}
   cookingData: {fileID: 0}

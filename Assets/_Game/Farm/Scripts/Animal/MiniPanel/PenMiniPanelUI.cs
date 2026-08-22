@@ -57,6 +57,10 @@ public class PenMiniPanelUI : MonoBehaviour
     private int     _openedAtFrame = -10;
     private bool    popupInputLockHeld;
 
+    // Giữ panel mở đủ lâu để user kéo thức ăn vào (không bị đóng ngay sau khi mở)
+    private const float PanelKeepOpenSeconds = 1.5f;
+    private float _openedAtTime = -99f;
+
     private void Awake()
     {
         if (panelRoot != null) panelRoot.SetActive(false);
@@ -82,7 +86,9 @@ public class PenMiniPanelUI : MonoBehaviour
 
         if (FarmInputLock.IsDraggingSeed) return;
 
-        if (Time.frameCount <= _openedAtFrame) return;
+        // Giữ panel mở trong PanelKeepOpenSeconds đầu sau khi mở
+        // → user có đủ thời gian nhìn vào khung và bắt đầu kéo thức ăn
+        if (Time.unscaledTime < _openedAtTime + PanelKeepOpenSeconds) return;
 
         bool clicked = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
                     || Input.GetMouseButtonDown(0);
@@ -166,15 +172,21 @@ public class PenMiniPanelUI : MonoBehaviour
 
         if (CurrentState == PenState.Processing)
         {
-            CropProcessPopupUI popup = CropProcessPopupUI.Instance ?? FindFirstObjectByType<CropProcessPopupUI>(FindObjectsInactive.Include);
+            var popup = PenProcessPopupUI.Instance ?? FindFirstObjectByType<PenProcessPopupUI>(FindObjectsInactive.Include);
+            if (popup == null)
+            {
+                var go = new GameObject("PenProcessPopupUI_Host", typeof(PenProcessPopupUI));
+                popup = go.GetComponent<PenProcessPopupUI>();
+            }
             if (popup != null)
             {
-                popup.OpenForPen(this);
+                popup.Open(this);
                 return;
             }
         }
 
         _openedAtFrame = Time.frameCount;
+        _openedAtTime = Time.unscaledTime; // Bắt đầu tính giờ giữ panel
         if (panelRoot != null) panelRoot.SetActive(true);
         AcquirePopupInputBlock();
         RefreshUI();
@@ -237,12 +249,27 @@ public class PenMiniPanelUI : MonoBehaviour
         StopTimerIfRunning();
         timerCoroutine = StartCoroutine(ProcessTimerCoroutine(EffectiveFeedSeconds));
 
+        // Đóng mini panel (Idle) và mở CropProcessPopupUI (thanh process mới giống ruộng)
+        // Xoá flow cũ: progressOverlay hiện ngay → thay bằng popup riêng
+        ClosePanel();
+        var popup = PenProcessPopupUI.Instance ?? FindFirstObjectByType<PenProcessPopupUI>(FindObjectsInactive.Include);
+        if (popup == null)
+        {
+            var go = new GameObject("PenProcessPopupUI_Host", typeof(PenProcessPopupUI));
+            popup = go.GetComponent<PenProcessPopupUI>();
+        }
+        if (popup != null)
+            popup.Open(this);
+
         if (IsPenTutorialStep("L2_08_FeedPen"))
-            ClosePanel();
+        {
+            // Tutorial đã ClosePanel ở trên rồi, không cần gọi lại
+        }
 
         TutorialManager.Instance?.NotifyFeed();
         return true;
     }
+
 
     public bool TryHarvest(Vector3 vfxWorldPosition)
     {
@@ -440,7 +467,8 @@ public class PenMiniPanelUI : MonoBehaviour
             RectTransform pcRect = panelContent.GetComponent<RectTransform>();
             if (pcRect != null)
             {
-                pcRect.sizeDelta = new Vector2(136f, 136f);
+                // Thu nhỏ khung chứa thức ăn – gọn hơn, không che khuất chuồng
+                pcRect.sizeDelta = new Vector2(110f, 110f);
             }
         }
 
@@ -453,7 +481,19 @@ public class PenMiniPanelUI : MonoBehaviour
             if (isIdle)
             {
                 RectTransform r = slot1Root.GetComponent<RectTransform>();
-                if (r != null) r.anchoredPosition = Vector2.zero; // CANH GIỮA CENTER
+                if (r != null)
+                {
+                    r.anchoredPosition = Vector2.zero;
+                    // Phóng to túi thức ăn để dễ kéo thả
+                    r.sizeDelta = new Vector2(90f, 90f);
+                }
+
+                // Phóng to icon hình ảnh thức ăn bên trong slot
+                if (slot1Icon != null)
+                {
+                    RectTransform iconRt = slot1Icon.GetComponent<RectTransform>();
+                    if (iconRt != null) iconRt.sizeDelta = new Vector2(72f, 72f);
+                }
 
                 RefreshFoodSlot(slot1Icon, slot1Amount, feedItemId, feedIcon);
 
@@ -473,7 +513,7 @@ public class PenMiniPanelUI : MonoBehaviour
         {
             basketRoot.SetActive(isReady);
             RectTransform br = basketRoot.GetComponent<RectTransform>();
-            if (br != null) br.anchoredPosition = Vector2.zero; // CANH GIỮA CENTER
+            if (br != null) br.anchoredPosition = Vector2.zero;
 
             if (basketActiveGlow != null)
                 basketActiveGlow.SetActive(isReady);
@@ -482,8 +522,22 @@ public class PenMiniPanelUI : MonoBehaviour
         if (progressOverlay != null)
         {
             progressOverlay.SetActive(isProcessing);
+
+            // FIX LỖI BIẾN SẮC: Reset màu của toàn bộ Image trong overlay về trắng
+            // Lỗi xảy ra do một số Image bị tinted (đổi màu) từ lần trước mà không reset lại
             if (isProcessing)
             {
+                foreach (var img in progressOverlay.GetComponentsInChildren<Image>(true))
+                {
+                    // Chỉ reset nếu màu bị lệch khỏi trắng và không phải fillBar
+                    if (img != progressFill && img.color.a > 0.05f)
+                    {
+                        Color c = img.color;
+                        // Chỉ kéo RGB về trắng, giữ nguyên alpha để không làm mất hiệu ứng
+                        img.color = new Color(1f, 1f, 1f, c.a);
+                    }
+                }
+
                 progressOverlay.transform.SetAsLastSibling();
                 if (processOverlayCanvas != null)
                 {
@@ -501,6 +555,12 @@ public class PenMiniPanelUI : MonoBehaviour
                     txtPenTitle.text = GetPenDisplayName();
                     txtPenTitle.color = Color.white;
                 }
+            }
+            else
+            {
+                // Khi tắt overlay đi — reset sortingOrder để không bị sót
+                if (processOverlayCanvas != null)
+                    processOverlayCanvas.overrideSorting = false;
             }
         }
 

@@ -16,10 +16,10 @@ MonoBehaviour:
   penName: 
   food1ItemId: cam_heo
   food2ItemId: 
-  food1Icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  food1Icon: {fileID: 21300000, guid: 72b6f3e2dad104c44a4e256b5e34510b, type: 3}
   food2Icon: {fileID: 0}
   premiumFoodItemId: cam_heo
-  premiumFoodIcon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  premiumFoodIcon: {fileID: 21300000, guid: 72b6f3e2dad104c44a4e256b5e34510b, type: 3}
   premiumFoodAmountPerFeed: 1
   premiumSpeedMultiplier: 1
   premiumProductBonus: 0

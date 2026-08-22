@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: co_tron_bo
   displayName: "C\u1ECF tr\u1ED9n cho b\xF2"
-  icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  icon: {fileID: 21300000, guid: 22126e56570c85b47bfcbf36ee2b7136, type: 3}
   cookingData: {fileID: 0}

@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: cam_ga
   displayName: "C\xE1m cho g\xE0"
-  icon: {fileID: -3389455229126603321, guid: cb6c7b1aff5980e4b8135bd8172d5e1e, type: 3}
+  icon: {fileID: 21300000, guid: 40c20f1a0804deb4a89be0854eb26619, type: 3}
   cookingData: {fileID: 0}

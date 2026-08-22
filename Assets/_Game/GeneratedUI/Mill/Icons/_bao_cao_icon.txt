@@ -1,0 +1,123 @@
+﻿═══════════════════════════════════════════════════════════════
+ ICON CÁM — SINH + GÁN
+═══════════════════════════════════════════════════════════════
+
+── ẢNH NGUỒN (bắt buộc) ──
+  có     Assets/thietke/Redesign popup nhiệm vụ game1/Export_Popups_Chon/assets/shop/baothoc.png
+  có     Assets/Anh/conga-removebg-preview.png
+  có     Assets/Anh/conheo-removebg-preview.png
+  có     Assets/Anh/conbotrongchuong-removebg-preview.png
+  có     Assets/Assetsgame/suamilk.png
+
+── BẢNG CHUỒNG → CÁM (suy ra từ dữ liệu, không hardcode) ──
+  Config_May01_XayBot   penId=may_01   food1ItemId=rice   premiumFoodItemId=(trống)   productItemId=bot_gao
+  Config_May02_EpMia   penId=may_02   food1ItemId=sugarcane   premiumFoodItemId=(trống)   productItemId=nuoc_mia_ep
+  Config_May03_PhoMai   penId=may_03   food1ItemId=milk   premiumFoodItemId=(trống)   productItemId=pho_mai
+  Config_Pen01_BoThit   penId=pen_01   food1ItemId=co_tron_bo   premiumFoodItemId=co_tron_bo   productItemId=beef
+  Config_Pen02_Heo   penId=pen_02   food1ItemId=cam_heo   premiumFoodItemId=cam_heo   productItemId=pork
+  Config_Pen03_Ga   penId=pen_03   food1ItemId=cam_ga   premiumFoodItemId=cam_ga   productItemId=chicken_meat
+  Config_Pen04_BoSua   penId=pen_04   food1ItemId=cam_bo_sua   premiumFoodItemId=cam_bo_sua   productItemId=milk
+
+── PNG ĐÃ SINH ──
+  ✔ feed_cam_ga.png   225×225 px (vuông)
+      nền baothoc.png 563×443 → cắt hộp alpha (164,120) 212×195, dán tâm tại (6,15)
+      màu hue→38° sat×1,45 val×1,12 (vàng ngô ấm (hạt/ngũ cốc))
+      badge conga-removebg-preview.png 669×373 → bao alpha 231×307 → khung đầu (0,00,0,00,0,50,0,46) 116×141 → bao alpha lần 2 116×141 → 76×92, canh giữa ngang + tụt xuống
+      lấy mẫu: trung bình ô → 116px → Lanczos3 → 76px → làm nét r=0,8 lượng=0,55
+      vòng tròn: r=112,5  rb=62,6  d=44,5  ⇒ d+rb=107,2 ≤ r−4=108,5  ✔ THOẢ (dư 1,3px)
+      bộ nhớ: RGBA32 không nén + mipmap = 263 KiB (không mip: 197 KiB), mipBias=-0,4 aniso=1
+  ✔ feed_cam_heo.png   225×225 px (vuông)
+      nền baothoc.png 563×443 → cắt hộp alpha (164,120) 212×195, dán tâm tại (6,15)
+      màu hue→350° sat×0,80 val×1,10 (hồng phấn (màu con heo))
+      badge conheo-removebg-preview.png 669×373 → bao alpha 254×213 → khung đầu (0,00,0,02,0,34,0,52) 86×107 → bao alpha lần 2 86×107 → 76×95, canh giữa ngang + tụt xuống
+      lấy mẫu: trung bình ô → 86px → Lanczos3 → 76px → làm nét r=0,8 lượng=0,55
+      vòng tròn: r=112,5  rb=63,9  d=43,0  ⇒ d+rb=106,9 ≤ r−4=108,5  ✔ THOẢ (dư 1,6px)
+      bộ nhớ: RGBA32 không nén + mipmap = 263 KiB (không mip: 197 KiB), mipBias=-0,4 aniso=1
+  ✔ feed_co_tron_bo.png   225×225 px (vuông)
+      nền baothoc.png 563×443 → cắt hộp alpha (164,120) 212×195, dán tâm tại (6,15)
+      màu hue→110° sat×1,05 val×1,00 (xanh lá tươi (cỏ trộn))
+      badge conbotrongchuong-removebg-preview.png 606×412 → bao alpha 385×297 → khung đầu (0,00,0,00,0,32,0,54) 123×160 → bao alpha lần 2 123×160 → 76×99, canh giữa ngang + tụt xuống
+      lấy mẫu: trung bình ô → 123px → Lanczos3 → 76px → làm nét r=0,8 lượng=0,55
+      vòng tròn: r=112,5  rb=65,5  d=41,0  ⇒ d+rb=106,5 ≤ r−4=108,5  ✔ THOẢ (dư 2,0px)
+      bộ nhớ: RGBA32 không nén + mipmap = 263 KiB (không mip: 197 KiB), mipBias=-0,4 aniso=1
+  ✔ feed_cam_bo_sua.png   225×225 px (vuông)
+      nền baothoc.png 563×443 → cắt hộp alpha (164,120) 212×195, dán tâm tại (6,15)
+      màu hue→205° sat×0,42 val×1,22 (trắng sữa pha xanh lơ (bơ sữa))
+      badge suamilk.png 500×500 → bao alpha 370×392 → GIỮ CẢ ẢNH 370×392 → 76×81, canh giữa ngang + tụt xuống
+      lấy mẫu: trung bình ô → 152px → Lanczos3 → 76px → làm nét r=0,8 lượng=0,55
+      vòng tròn: r=112,5  rb=58,3  d=49,0  ⇒ d+rb=107,3 ≤ r−4=108,5  ✔ THOẢ (dư 1,2px)
+      bộ nhớ: RGBA32 không nén + mipmap = 263 KiB (không mip: 197 KiB), mipBias=-0,4 aniso=1
+
+── Ô SPRITE ──
+  MillRecipe_CamGa.asset · icon  = đã đúng, khỏi ghi
+  MillRecipe_CamGa.asset · animalBadgeIcon  = đã đúng, khỏi ghi
+  Item_CamGa.asset · icon  = đã đúng, khỏi ghi
+  Config_Pen03_Ga.asset · food1Icon  = đã đúng, khỏi ghi
+  Config_Pen03_Ga.asset · premiumFoodIcon  = đã đúng, khỏi ghi
+  MillRecipe_CamHeo.asset · icon  = đã đúng, khỏi ghi
+  MillRecipe_CamHeo.asset · animalBadgeIcon  = đã đúng, khỏi ghi
+  Item_CamHeo.asset · icon  = đã đúng, khỏi ghi
+  Config_Pen02_Heo.asset · food1Icon  = đã đúng, khỏi ghi
+  Config_Pen02_Heo.asset · premiumFoodIcon  = đã đúng, khỏi ghi
+  MillRecipe_CoTronBo.asset · icon  = đã đúng, khỏi ghi
+  MillRecipe_CoTronBo.asset · animalBadgeIcon  = đã đúng, khỏi ghi
+  Item_CoTronBo.asset · icon  = đã đúng, khỏi ghi
+  Config_Pen01_BoThit.asset · food1Icon  = đã đúng, khỏi ghi
+  Config_Pen01_BoThit.asset · premiumFoodIcon  = đã đúng, khỏi ghi
+  MillRecipe_CamBoSua.asset · icon  = đã đúng, khỏi ghi
+  MillRecipe_CamBoSua.asset · animalBadgeIcon  = đã đúng, khỏi ghi
+  Item_CamBoSua.asset · icon  = đã đúng, khỏi ghi
+  Config_Pen04_BoSua.asset · food1Icon  = đã đúng, khỏi ghi
+  Config_Pen04_BoSua.asset · premiumFoodIcon  = đã đúng, khỏi ghi
+
+── TỔNG ──
+  ghi 0 ô · trùng sẵn 20 ô · bỏ qua 0 ô · lỗi 0 ô
+  bộ nhớ 4 icon (RGBA32 không nén + mipmap): 1052 KiB ≈ 1,03 MiB
+  ĐÂY LÀ QUYẾT ĐỊNH CÓ CHỦ Ý: đổi ~1 MiB để icon hết lem. Xem ghi chú
+  trong ApDatImport nếu cần siết lại bộ nhớ.
+
+═══ CẦN BẠN ═══
+  1. VẼ BAO CÁM THẬT cho CẢ 4 sản phẩm — cả 4 hiện chỉ là MỘT cái bao thóc
+     nhuộm 4 màu khác nhau, không phải 4 cái bao được vẽ riêng:
+       cam_ga      (vàng ngô)    ← nhuộm từ baothoc.png
+       cam_heo     (hồng phấn)   ← nhuộm từ baothoc.png
+       co_tron_bo  (xanh cỏ)     ← nhuộm từ baothoc.png
+       cam_bo_sua  (trắng sữa)   ← nhuộm từ baothoc.png
+     Vẽ xong: gán tay vào MillRecipe_*.icon + Item_*.icon +
+     Config_Pen0*.food1Icon/premiumFoodIcon, rồi xoá tool này.
+
+  2. CÓ MỘT ART VẼ TAY CHO CÁM HEO mà tool KHÔNG dùng, bạn tự quyết:
+       Assets/Anh/camheoo-removebg-preview.png
+     File này tồn tại, 468×533, và hiện KHÔNG asset nào trong dự án trỏ tới
+     (mồ côi hoàn toàn). Tool cố tình không gán nó vì nó là một VẬT KHÁC —
+     túi giấy đáy phẳng có ngôi sao vàng, không phải bao bố tròn như 3 cái
+     kia, và ngôi sao vàng trong game này mang nghĩa EXP/phần thưởng nên dán
+     lên bao thức ăn gia súc là sai nghĩa. Nếu bạn vẫn thích art vẽ tay hơn
+     bản nhuộm thì gán tay file này vào MillRecipe_CamHeo.icon +
+     Item_CamHeo.icon + Config_Pen02_Heo.food1Icon/premiumFoodIcon.
+
+  3. BADGE LÀ ẢNH CẮT LẤY ĐẦU con vật, không phải cả con.
+     Lý do: cỡ vẽ thật trên máy rất nhỏ —
+        đĩa slot 64px    → badge ~22px
+        card     98px    → badge ~33px
+        thành phẩm 192px → badge ~65px
+     Ở 22px, nhồi CẢ CON gà vào thì mào/mỏ/mắt đều nhỏ hơn 1 pixel và tan
+     thành một vệt nâu. Cắt lấy đầu trước khi thu nhỏ thì vẫn 22px đó mà
+     mào đỏ, mỏ vàng, mõm, sừng còn đọc được.
+
+     ⇒ NẾU BẠN ĐỔI ART CON VẬT thì phải NGẮM LẠI KHUNG CẮT, nếu không tool
+       sẽ cắt vào giữa thân con vật mới. Khung nằm ở 4 hằng đầu file:
+          KHUNG_DAU_GA   = (0.00, 0.00, 0.50, 0.46)
+          KHUNG_DAU_HEO  = (0.00, 0.02, 0.34, 0.52)
+          KHUNG_DAU_BO   = (0.00, 0.00, 0.32, 0.54)
+          KHUNG_CA_ANH   = (0.00, 0.00, 1.00, 1.00)  (bình sữa: giữ cả ảnh)
+       Toạ độ là PHÂN SỐ của hộp bao alpha, thứ tự (x0, yTrên0, x1, yTrên1),
+       y tính TỪ TRÊN xuống. Chạy lệnh 7 để xem cỡ khung cắt ra bao nhiêu px.
+
+  4. baothoc.png nằm trong Assets/thietke — thư mục này có lệnh xoá riêng
+     (Tools/Farm/Popup Nhiệm Vụ/4). PNG do tool sinh KHÔNG phụ thuộc nó lúc
+     chạy game (đã bake ra pixel), nhưng lệnh 9 (hoàn tác) và việc SINH LẠI
+     thì cần. Đừng xoá Assets/thietke trước khi có bao cám thật.
+
+  5. Kiểm mắt trong game: mở popup máy xay xem 4 card có phân biệt được
+     ở kích thước THẬT trên máy điện thoại không, không chỉ trong Inspector.

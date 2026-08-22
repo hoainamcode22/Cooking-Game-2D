@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 
@@ -43,9 +44,26 @@ public enum MillSlotMode
 /// `imgProgressFill` phải là Image có **Image Type = Filled, Fill Method = Horizontal,
 /// Fill Origin = Left**. Code điều khiển qua `fillAmount`; nếu để Type = Simple thì thanh
 /// tiến độ đứng yên mà không báo lỗi gì — đây là lỗi wire khó thấy nhất của file này.
+///
+/// ══ NƠI NHẬN CÚ THẢ (kéo-thả) ══
+/// Slot là ĐÍCH của thao tác kéo bao nguyên liệu từ danh sách công thức (xem
+/// <see cref="MillRecipeDragSource"/>). Nó hiện thực `IDropHandler` nên EventSystem tự gọi
+/// <see cref="OnDrop"/> khi người chơi nhả ngón tay trên slot này.
+///
+/// Hai điều kiện BẮT BUỘC để OnDrop nổ, cả hai đều được `Awake` tự bảo đảm:
+///   • node slot phải có một Graphic ăn raycast — `imgBg.raycastTarget = true`;
+///   • bóng kéo phải KHÔNG ăn raycast (đã xử trong `MillDragSession`).
+/// Unity phát OnDrop bằng `ExecuteEvents.ExecuteHierarchy` nên thả vào nút THU / nút tăng
+/// tốc (là node con) cũng nổi lên tới đây — không cần vùng thả riêng.
+///
+/// ══ VIỀN SÁNG KHI KÉO — KÊNH VẼ RIÊNG ══
+/// `MillPopupUI.Update` là nơi DUY NHẤT được vẽ 5 root trạng thái, thông qua hàng rào
+/// `_modeDaVe`. Viền sáng lúc kéo KHÔNG đi qua <see cref="SetMode"/> mà bật/tắt riêng node
+/// `dropHighlight` (<see cref="SetDropHighlight"/>). Nếu nhồi nó thành một MillSlotMode mới
+/// thì hàng rào sẽ coi "đang sáng" là một trạng thái và xoá mất trạng thái thật của slot.
 /// </summary>
 [DisallowMultipleComponent]
-public class MillSlotUI : MonoBehaviour
+public class MillSlotUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
     // ─────────────────────────── THAM CHIẾU (Dev B wire) ───────────────────────────
 
@@ -111,6 +129,18 @@ public class MillSlotUI : MonoBehaviour
     [Tooltip("Chấm đỏ nhắc \"có hàng chờ thu\", góc dưới phải slot.")]
     [SerializeField] private GameObject redDot;
 
+    [Tooltip("TUỲ CHỌN. Viền sáng phủ slot, hiện khi người chơi đang KÉO một công thức và " +
+             "slot này nhận được. Để trống ⇒ kéo-thả vẫn chạy, chỉ là không có gợi ý thị giác.")]
+    [SerializeField] private GameObject dropHighlight;
+
+    [Tooltip("Độ mờ viền sáng khi slot CHỈ đang sẵn sàng nhận (con trỏ ở nơi khác).")]
+    [Range(0f, 1f)]
+    [SerializeField] private float alphaVienSanSang = 0.45f;
+
+    [Tooltip("Độ mờ viền sáng khi con trỏ ĐANG Ở TRÊN slot này.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float alphaVienHover = 1f;
+
     // ─────────────────────────── SỰ KIỆN ───────────────────────────
 
     /// <summary>Người chơi bấm THU.</summary>
@@ -122,6 +152,20 @@ public class MillSlotUI : MonoBehaviour
     /// <summary>Người chơi bấm mở slot bằng kim cương.</summary>
     public System.Action OnUnlock;
 
+    /// <summary>
+    /// Người chơi THẢ một công thức vào slot này. Tham số là công thức đang được kéo.
+    /// `MillPopupUI` gán handler trong `GanSuKienSlot()` (gán thẳng, không dùng +=).
+    /// </summary>
+    public System.Action<MillRecipeData> OnDropRecipe;
+
+    /// <summary>
+    /// Hỏi `MillPopupUI` xem slot này có nhận được cú thả không (đã mở? còn trống?).
+    /// Chỉ dùng để quyết định VIỀN SÁNG — việc chặn thật vẫn nằm ở
+    /// `MillPopupUI.ThaVaoSlot`, không tin vào UI.
+    /// null ⇒ coi như nhận được (chỉ mất phần gợi ý, không sai logic).
+    /// </summary>
+    public System.Func<bool> CoTheNhanTha;
+
     // ─────────────────────────── TRẠNG THÁI TRÌNH BÀY ───────────────────────────
 
     /// <summary>Trạng thái đang hiển thị.</summary>
@@ -132,6 +176,7 @@ public class MillSlotUI : MonoBehaviour
     private int            _giayDangHien   = int.MinValue;   // hàng rào chống dựng chuỗi mỗi frame
     private int            _giaGemDangHien = int.MinValue;
     private int            _chiSoDangHien  = int.MinValue;
+    private Image          _imgVienSang;
 
     private void Awake()
     {
@@ -154,6 +199,16 @@ public class MillSlotUI : MonoBehaviour
             btnUnlockGem.onClick.RemoveAllListeners();
             btnUnlockGem.onClick.AddListener(BamMoSlot);
         }
+
+        // BẮT BUỘC cho kéo-thả: EventSystem chỉ gửi OnDrop tới node nằm DƯỚI con trỏ, và
+        // chỉ "thấy" node có Graphic ăn raycast. MillPopupBuilderTool dựng ảnh nền slot với
+        // raycastTarget = false (mặc định của MillUI.Img) ⇒ không bật ở đây thì thả vào
+        // vùng trống của slot rơi vào hư không mà không có lỗi nào để lần ra.
+        if (imgBg != null && !imgBg.raycastTarget)
+            imgBg.raycastTarget = true;
+
+        // Prefab có thể được lưu lúc viền sáng đang bật.
+        BatRoot(dropHighlight, false);
     }
 
     // ─────────────────────────── API CÔNG KHAI ───────────────────────────
@@ -176,8 +231,21 @@ public class MillSlotUI : MonoBehaviour
         BatRoot(redDot, m == MillSlotMode.ReadyToCollect);
 
         // Ổ khoá dùng chung cho hai kiểu chưa mở.
+        //
+        // ⚠ SỬA 21/08 — "MỞ SLOT RỒI MÀ Ổ KHOÁ VẪN CÒN".
+        // Bản trước chỉ đặt `imgLockIcon.enabled = false`. Nhưng `.enabled` của một Image
+        // CHỈ ẩn Image của ĐÚNG node đó — mọi node CON vẫn tiếp tục render bình thường.
+        // `MillPopupBuilderTool` dựng `Glyph_Lock` (hình ổ khoá TRẮNG) làm CON của node ổ
+        // khoá, nên nó nằm lại và đè lên bao thức ăn ở slot đã mở.
+        // Phải tắt cả GameObject mới ẩn được nhánh con.
         if (imgLockIcon != null)
-            imgLockIcon.enabled = (m == MillSlotMode.UnlockGem || m == MillSlotMode.LockedLevel);
+        {
+            bool khoa = (m == MillSlotMode.UnlockGem || m == MillSlotMode.LockedLevel);
+            imgLockIcon.enabled = khoa;
+
+            if (imgLockIcon.gameObject.activeSelf != khoa)
+                imgLockIcon.gameObject.SetActive(khoa);
+        }
 
         // Đổi mode ⇒ xoá hàng rào để lần Bind kế tiếp chắc chắn vẽ lại chữ.
         _giayDangHien   = int.MinValue;
@@ -303,6 +371,94 @@ public class MillSlotUI : MonoBehaviour
     {
         if (imgBg != null && s != null)
             imgBg.sprite = s;
+    }
+
+    /// <summary>
+    /// Bật/tắt viền sáng "thả được vào đây".
+    ///
+    /// KÊNH VẼ RIÊNG — không đi qua <see cref="SetMode"/>, xem khối ghi chú đầu file.
+    /// </summary>
+    /// <param name="sanSang">Đang có phiên kéo và slot này nhận được.</param>
+    /// <param name="dangHover">Con trỏ đang ở trên slot này (sáng đậm hơn).</param>
+    public void SetDropHighlight(bool sanSang, bool dangHover)
+    {
+        BatRoot(dropHighlight, sanSang);
+        if (!sanSang || dropHighlight == null) return;
+
+        Image v = VienSang;
+        if (v == null) return;
+
+        Color c = v.color;
+        c.a = dangHover ? alphaVienHover : alphaVienSanSang;
+        v.color = c;
+    }
+
+    // ─────────────────────────── KÉO-THẢ ───────────────────────────
+
+    /// <summary>
+    /// Người chơi nhả ngón tay trên slot này. Unity gọi hàm này TRƯỚC
+    /// `MillRecipeDragSource.OnEndDrag`, nên `MillDragSession.Recipe` còn nguyên giá trị.
+    /// </summary>
+    public void OnDrop(PointerEventData eventData)
+    {
+        SetDropHighlight(false, false);
+
+        if (!MillDragSession.IsDragging) return;
+
+        // Cú thả này phải đến từ ĐÚNG ngón tay đang giữ phiên kéo. Hai ngón cùng lúc: ngón
+        // A nhấc "Cám gà", ngón B nhấc "Cám heo" (bị Bat() từ chối), ngón B nhả tay trên
+        // slot #2 ⇒ không kiểm thì slot #2 xay "Cám gà" và trừ nguyên liệu của ngón A.
+        if (eventData != null && !MillDragSession.ThuocVe(eventData.pointerId)) return;
+
+        MillRecipeData r = MillDragSession.Recipe;
+
+        // Ghi nhận TRƯỚC khi gọi handler: handler có thể hiện toast / mở popup khác, và
+        // bên gửi cần biết "đã có người nhận" để không báo huỷ kéo.
+        MillDragSession.GhiNhanTha();
+
+        if (OnDropRecipe != null) OnDropRecipe(r);
+    }
+
+    /// <summary>Con trỏ vào slot trong lúc đang kéo ⇒ viền sáng đậm lên.</summary>
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!MillDragSession.IsDragging) return;
+        if (!NhanDuoc()) return;
+
+        SetDropHighlight(true, true);
+    }
+
+    /// <summary>
+    /// Con trỏ rời slot. Nếu vẫn đang kéo thì hạ về mức "sẵn sàng" chứ không tắt hẳn —
+    /// tắt hẳn sẽ làm cả hàng slot nhấp nháy khi người chơi lướt ngón tay qua.
+    /// </summary>
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (MillDragSession.IsDragging && NhanDuoc())
+        {
+            SetDropHighlight(true, false);
+            return;
+        }
+
+        SetDropHighlight(false, false);
+    }
+
+    private bool NhanDuoc()
+    {
+        return (CoTheNhanTha == null) || CoTheNhanTha();
+    }
+
+    private Image VienSang
+    {
+        get
+        {
+            if (dropHighlight == null) return null;
+
+            if (_imgVienSang == null)
+                _imgVienSang = dropHighlight.GetComponent<Image>();
+
+            return _imgVienSang;
+        }
     }
 
     // ─────────────────────────── NỘI BỘ ───────────────────────────
