@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
@@ -219,8 +219,9 @@ public class MillRecipeCardUI : MonoBehaviour
     {
         if (img == null) return;
 
-        img.sprite  = s;
-        img.enabled = (s != null);
+        img.sprite         = s;
+        img.preserveAspect = true;
+        img.enabled        = (s != null);
     }
 
     /// <summary>

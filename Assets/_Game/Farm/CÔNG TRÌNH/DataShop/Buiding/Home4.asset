@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BuildingData
   itemID: 104
   itemName: "Nh\xE0 D\xE2n 4"
-  itemIcon: {fileID: -1007534356345164903, guid: a37cc19fe334c414fac5204b45fc2e41, type: 3}
-  goldPrice: 180
+  itemIcon: {fileID: 21300000, guid: f315c4f5dd4a807a543ff6d468dd5493, type: 3}
+  goldPrice: 1500
   diamondPrice: 0
   prefabToBuild: {fileID: 1582242620454337050, guid: d191c4718e8cc53458a6998072f063d4, type: 3}
   unlockLevel: 1
   gridSize: {x: 4, y: 4}
-  buildTimeSeconds: 30
+  buildTimeSeconds: 600
   rushGemCost: 0

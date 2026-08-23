@@ -70,44 +70,38 @@ public class MillSmokeFX : MonoBehaviour
 
     [Header("Khói")]
     [Tooltip("Khoảng cách giữa hai cụm khói KHI ĐANG XAY, giây.")]
-    [SerializeField] private float chuKyPhun = 0.4f;
+    [SerializeField] private float chuKyPhun = 0.28f;
 
     [Tooltip("Khoảng cách giữa hai cụm khói KHI MÁY RẢNH, giây. Lớn hơn ⇒ khói thưa hơn.\n" +
              "Đặt 0 để TẮT hẳn khói lúc rảnh.")]
-    [SerializeField] private float chuKyPhunRanh = 1.1f;
+    [SerializeField] private float chuKyPhunRanh = 0.75f;
 
     [Tooltip("Cụm khói lúc máy rảnh nhỏ và mờ đi bao nhiêu lần. 0.82 = còn 82%.\n" +
              "⚠ ĐỪNG hạ xuống dưới 0.7: nền phía sau là TRỜI SÁNG, khói mờ quá là vô hình.")]
     [Range(0.2f, 1f)]
-    [SerializeField] private float heSoRanh = 0.82f;
+    [SerializeField] private float heSoRanh = 0.85f;
 
     [Tooltip("Cạnh cụm khói lúc mới ra, pixel.")]
-    [SerializeField] private float khoiCoDau = 20f;
+    [SerializeField] private float khoiCoDau = 36f;
 
     [Tooltip("Cạnh cụm khói lúc tan, pixel. Khói LOÃNG RA khi bay lên nên phải lớn hơn.")]
-    [SerializeField] private float khoiCoCuoi = 54f;
+    [SerializeField] private float khoiCoCuoi = 120f;
 
-    [Tooltip("Khói bay lên cao bao nhiêu pixel trước khi TÂM cụm khói đi hết đường.\n" +
-             "⚠ GIỮ ≤ 58. Tính: đỉnh phễu cách mép trên khung 68px; cụm khói cuối đời rộng " +
-             "khoaiCoCuoi nên MÉP TRÊN của nó cao hơn tâm thêm khoiCoCuoi/2 = 27px. " +
-             "Khu animation KHÔNG có mask, nên chỉ có alpha đã tàn mới được phép chờm mép.")]
-    [SerializeField] private float caoBay = 56f;
+    [Tooltip("Khói bay lên cao bao nhiêu pixel trước khi TÂM cụm khói đi hết đường.")]
+    [SerializeField] private float caoBay = 160f;
 
     [Tooltip("Độ dạt ngang tối đa, pixel. Cho khói uốn nhẹ thay vì đi thẳng đứng.")]
-    [SerializeField] private float dat = 20f;
+    [SerializeField] private float dat = 32f;
 
     [Tooltip("Thời gian sống của một cụm khói, giây.")]
-    [SerializeField] private float thoiGianKhoi = 1.15f;
+    [SerializeField] private float thoiGianKhoi = 2.0f;
 
-    [Tooltip("Độ mờ tối đa của khói. Cao quá là thành cột mây che mất máy.")]
+    [Tooltip("Độ mờ tối đa của khói.")]
     [Range(0f, 1f)]
-    [SerializeField] private float alphaKhoi = 0.62f;
+    [SerializeField] private float alphaKhoi = 0.92f;
 
-    [Tooltip("Màu khói — XÁM ẤM, cố ý KHÔNG dùng gần-trắng.\n" +
-             "⚠ Bản trước để (0.94, 0.92, 0.88) tức gần như trắng, mà nền phía sau là trời " +
-             "xanh-trắng ⇒ khói không có độ tương phản nào, chủ dự án báo \"không thấy khói\". " +
-             "Xám đủ đậm mới nổi trên trời sáng.")]
-    [SerializeField] private Color mauKhoi = new Color(0.86f, 0.84f, 0.79f, 1f);
+    [Tooltip("Màu khói.")]
+    [SerializeField] private Color mauKhoi = Color.white;
 
     [Tooltip("Lệch ngang điểm phun so với đỉnh phễu, pixel. Âm = lệch trái.")]
     [SerializeField] private float lechMieng = 0f;
@@ -244,9 +238,8 @@ public class MillSmokeFX : MonoBehaviour
 
         RectTransform rt = img.rectTransform;
 
-        // Khói phải nằm SAU mọi thứ khác trong khung: nó là hậu cảnh của máy, không được
-        // phủ lên bánh răng hay bao thành phẩm.
-        rt.SetAsFirstSibling();
+        // Khói nổi lên trên mặt trước máy và nền trời
+        rt.SetAsLastSibling();
 
         float huongDat = Random.Range(-1f, 1f);
         float xoay     = Random.Range(-40f, 40f);
@@ -290,7 +283,7 @@ public class MillSmokeFX : MonoBehaviour
         if (img == null) yield break;
 
         RectTransform rt = img.rectTransform;
-        rt.SetAsFirstSibling();
+        rt.SetAsLastSibling();
 
         float pha  = Random.Range(0f, 6.28f);
         float tong = Mathf.Max(0.2f, thoiGianBong * Random.Range(0.85f, 1.15f));
@@ -343,6 +336,7 @@ public class MillSmokeFX : MonoBehaviour
         Vector2 tam = MillRectUtil.QuyVeCucBo(noiChua, MillRectUtil.TamWorld(mieng), _canvas);
         float nuaCao = mieng.rect.height * 0.5f;
 
-        return tam + new Vector2(lechMieng, nuaCao + nangMieng);
+        float offsetSpreadX = Random.Range(-20f, 25f);
+        return tam + new Vector2(lechMieng + offsetSpreadX, nuaCao + nangMieng);
     }
 }

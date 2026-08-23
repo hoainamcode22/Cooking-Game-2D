@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -145,10 +145,8 @@ public class PlantDragController : MonoBehaviour
         if (plantedThisDrag.Contains(plot)) return;
 
         // Kiểm tra kho còn đủ hạt giống không trước khi trồng
-        string seedId    = currentDragCrop.seedItemId;
-        int    seedStock = WarehouseManager.Instance != null
-                           ? WarehouseManager.Instance.GetAmount(seedId)
-                           : 0;
+        string seedId;
+        int seedStock = GetSeedStock(currentDragCrop, out seedId);
 
         if (seedStock <= 0)
         {
@@ -160,13 +158,66 @@ public class PlantDragController : MonoBehaviour
         if (!planted) return;
 
         // Trừ 1 hạt giống khỏi kho sau khi trồng thành công
-        WarehouseManager.Instance?.RemoveItem(seedId, 1);
+        if (!string.IsNullOrEmpty(seedId))
+        {
+            if (FarmInventoryManager.Instance != null)
+                FarmInventoryManager.Instance.RemoveItem(seedId, 1);
+            else if (WarehouseManager.Instance != null)
+                WarehouseManager.Instance.RemoveItem(seedId, 1);
+        }
 
         plantedThisDrag.Add(plot);
         plantedAnyThisDrag = true;
 
         SpawnSeedRain(plot.transform.position);
+    }
 
+    private int GetSeedStock(CropData crop, out string seedIdToDeduct)
+    {
+        seedIdToDeduct = string.Empty;
+        if (crop == null) return 0;
+
+        string s1 = crop.seedItemId;
+        string s2 = crop.itemID;
+        string s3 = crop.cropId;
+
+        if (FarmInventoryManager.Instance != null)
+        {
+            if (!string.IsNullOrEmpty(s1))
+            {
+                int c = FarmInventoryManager.Instance.GetAmount(s1);
+                if (c > 0) { seedIdToDeduct = s1; return c; }
+            }
+            if (!string.IsNullOrEmpty(s2) && s2 != s1)
+            {
+                int c = FarmInventoryManager.Instance.GetAmount(s2);
+                if (c > 0) { seedIdToDeduct = s2; return c; }
+            }
+            if (!string.IsNullOrEmpty(s3) && s3 != s1 && s3 != s2)
+            {
+                int c = FarmInventoryManager.Instance.GetAmount(s3);
+                if (c > 0) { seedIdToDeduct = s3; return c; }
+                c = FarmInventoryManager.Instance.GetAmount("seed_" + s3);
+                if (c > 0) { seedIdToDeduct = "seed_" + s3; return c; }
+            }
+        }
+
+        if (WarehouseManager.Instance != null)
+        {
+            if (!string.IsNullOrEmpty(s1))
+            {
+                int c = WarehouseManager.Instance.GetAmount(s1);
+                if (c > 0) { seedIdToDeduct = s1; return c; }
+            }
+            if (!string.IsNullOrEmpty(s2) && s2 != s1)
+            {
+                int c = WarehouseManager.Instance.GetAmount(s2);
+                if (c > 0) { seedIdToDeduct = s2; return c; }
+            }
+        }
+
+        seedIdToDeduct = !string.IsNullOrEmpty(s1) ? s1 : (!string.IsNullOrEmpty(s2) ? s2 : s3);
+        return 0;
     }
 
     // ── Seed Rain FX ──────────────────────────────────────────────────────────

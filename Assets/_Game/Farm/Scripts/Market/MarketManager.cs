@@ -94,6 +94,15 @@ public class MarketManager : MonoBehaviour
             buttonClose.onClick.AddListener(CloseMarketPopup);
         }
 
+        if (popupRoot != null)
+        {
+            if (popupRoot.TryGetComponent(out UnityEngine.UI.Button dimBtn))
+            {
+                dimBtn.onClick.RemoveListener(CloseMarketPopup);
+                dimBtn.onClick.AddListener(CloseMarketPopup);
+            }
+        }
+
         BuildVisualLookup();
 
         refreshTimer = new MarketRefreshTimer(refreshDurationSeconds, baseGoldRefreshCost, maxGoldRefreshCost);
@@ -179,6 +188,14 @@ public class MarketManager : MonoBehaviour
                 if (!parent.gameObject.activeSelf)
                     parent.gameObject.SetActive(true);
                 parent = parent.parent;
+            }
+
+            // Đảm bảo Canvas của Chợ luôn hiển thị trên HUD (order 125 > 100)
+            Canvas cv = popupRoot.GetComponentInParent<Canvas>();
+            if (cv != null && cv.sortingOrder < 125)
+            {
+                cv.overrideSorting = true;
+                cv.sortingOrder = 125;
             }
 
             popupRoot.SetActive(true);

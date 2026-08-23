@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -406,9 +406,8 @@ public class MillPopupUI : MonoBehaviour
         CapNhatBadgeVaTongKet(soDangXay, soChoThu);
         CapNhatSoDuGem();
         CapNhatNutLon(soTrong);
-        // KHÔNG truyền soDangXay: bánh răng/băng tải chạy LIÊN TỤC, xem chú thích trong
-        // DatChayAnimation().
-        DatChayAnimation();
+        // Chỉ chạy animation bánh răng/băng tải khi máy CÓ THỨC ĂN đang xay (soDangXay > 0)
+        DatChayAnimation(soDangXay > 0);
 
         // Khói phun khi VÀ CHỈ KHI có slot đang xay — đây là thứ duy nhất phân biệt "máy
         // đang làm việc" với "máy rảnh" mà không cần đọc chữ. Có hàng rào bên trong nên gọi
@@ -503,9 +502,8 @@ public class MillPopupUI : MonoBehaviour
         _gemDaHien          = int.MinValue;
         _trangThaiNutDaHien = int.MinValue;
 
-        // Chạy animation NGAY trong frame mở, không đợi Update: nếu đợi thì frame đầu
-        // người chơi thấy máy đứng im.
-        DatChayAnimation();
+        // Đặt trạng thái ban đầu của animation
+        DatChayAnimation(false);
 
         AnToast(true);
     }
@@ -1074,24 +1072,14 @@ public class MillPopupUI : MonoBehaviour
     }
 
     /// <summary>
-    /// Bật animation của khối máy: bánh răng lớn/nhỏ, băng tải, các bó cỏ trên băng tải.
-    ///
-    /// ⚠ SỬA NGÀY 20/08 — TRƯỚC ĐÂY GẮN VỚI `soDangXay > 0`, ĐÓ LÀ SAI SO VỚI THIẾT KẾ.
-    /// Bản HTML gốc (Assets/Assetsgame/popup/ui_mill_assets/full_mill_ui.html) khai báo
-    ///     &lt;animateTransform ... repeatCount="indefinite"&gt;   (2 bánh răng, 4s và 2.5s)
-    ///     @keyframes beltScroll / moveItem ... infinite          (băng tải + 2 bó cỏ)
-    /// nghĩa là máy QUAY MÃI, không phụ thuộc có mẻ hàng hay không — nó là hoạt cảnh trang
-    /// trí của popup. Bản v1 chỉ chạy khi đang xay, nên lần đầu mở popup (5 slot trống,
-    /// badge "Máy đang rảnh") mọi thứ đứng cứng ⇒ người chơi đọc là popup bị lỗi/ảnh tĩnh.
-    ///
-    /// Vẫn giữ hàng rào `IsRunning != true` để không gọi SetRunning mỗi frame (hàm này chạy
-    /// trong Update).
+    /// Bật/tắt animation của khối máy: bánh răng lớn/nhỏ, băng tải, các bó cỏ trên băng tải.
+    /// Chỉ chạy khi máy CÓ THỨC ĂN đang xay (soDangXay > 0).
     /// </summary>
-    private void DatChayAnimation()
+    private void DatChayAnimation(bool dangChay)
     {
-        if (gearLarge != null && !gearLarge.IsRunning) gearLarge.SetRunning(true);
-        if (gearSmall != null && !gearSmall.IsRunning) gearSmall.SetRunning(true);
-        if (belt != null && !belt.IsRunning)           belt.SetRunning(true);
+        if (gearLarge != null && gearLarge.IsRunning != dangChay) gearLarge.SetRunning(dangChay);
+        if (gearSmall != null && gearSmall.IsRunning != dangChay) gearSmall.SetRunning(dangChay);
+        if (belt != null && belt.IsRunning != dangChay)           belt.SetRunning(dangChay);
 
         if (beltItems == null) return;
 
@@ -1099,7 +1087,7 @@ public class MillPopupUI : MonoBehaviour
         {
             ConveyorItem it = beltItems[i];
             if (it == null) continue;
-            if (!it.IsRunning) it.SetRunning(true);
+            if (it.IsRunning != dangChay) it.SetRunning(dangChay);
         }
     }
 

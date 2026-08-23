@@ -27,7 +27,7 @@ public class CropProcessPopupUI : MonoBehaviour
 
     public int CurrentGemCost => currentPlot != null
         ? currentPlot.GetSpeedUpGemCost()
-        : (currentPen != null ? currentPen.SpeedUpGemCost : 0);
+        : (currentPen != null ? currentPen.SpeedUpGemCost : (currentHouse != null ? currentHouse.SpeedUpGemCost : 0));
 
     public bool IsOpen => gameObject.activeSelf;
     public RectTransform SpeedUpButtonRect =>
@@ -39,6 +39,7 @@ public class CropProcessPopupUI : MonoBehaviour
 
     private PlotController currentPlot;
     private PenMiniPanelUI currentPen;
+    private HouseGrowthController currentHouse;
     private bool popupInputLockHeld;
     private int _openedAtFrame = -999; // Guard: tránh đóng ngay frame vừa mở
 
@@ -92,6 +93,19 @@ public class CropProcessPopupUI : MonoBehaviour
                 return;
             }
         }
+        else if (currentHouse != null)
+        {
+            if (currentHouse.State == HouseGrowthController.GrowthState.Building)
+            {
+                UpdatePosition();
+                RefreshDisplay();
+            }
+            else
+            {
+                ClosePopup();
+                return;
+            }
+        }
 
         // Click ra ngoài popup → đóng
         // Guard: bỏ qua frame vừa mở để tránh click-to-open đóng ngay lập tức
@@ -112,6 +126,7 @@ public class CropProcessPopupUI : MonoBehaviour
 
         currentPlot = plot;
         currentPen = null;
+        currentHouse = null;
         _openedAtFrame = Time.frameCount;
 
         AutoBindComponents();
@@ -129,6 +144,24 @@ public class CropProcessPopupUI : MonoBehaviour
 
         currentPen = pen;
         currentPlot = null;
+        currentHouse = null;
+        _openedAtFrame = Time.frameCount;
+
+        AutoBindComponents();
+        RefreshDisplay();
+        UpdatePosition();
+        gameObject.SetActive(true);
+        AcquirePopupInputBlock();
+    }
+
+    /// <summary>Bật popup cho Ngôi Nhà đang xây dựng (Stage 1..3).</summary>
+    public void OpenForHouse(HouseGrowthController house)
+    {
+        if (house == null || house.State != HouseGrowthController.GrowthState.Building) return;
+
+        currentHouse = house;
+        currentPlot = null;
+        currentPen = null;
         _openedAtFrame = Time.frameCount;
 
         AutoBindComponents();
@@ -145,6 +178,8 @@ public class CropProcessPopupUI : MonoBehaviour
             worldPos = currentPlot.transform.position + new Vector3(0f, 0.7f, 0f);
         else if (currentPen != null)
             worldPos = currentPen.transform.position + new Vector3(0f, 1.85f, 0f);
+        else if (currentHouse != null)
+            worldPos = currentHouse.transform.position + new Vector3(0f, 2.6f, 0f);
         else
             return;
 
@@ -191,6 +226,7 @@ public class CropProcessPopupUI : MonoBehaviour
         gameObject.SetActive(false);
         currentPlot = null;
         currentPen = null;
+        currentHouse = null;
     }
 
     /// <summary>
@@ -233,6 +269,17 @@ public class CropProcessPopupUI : MonoBehaviour
             }
 
             currentPen.TrySpeedUpGem();
+            ClosePopup();
+        }
+        else if (currentHouse != null)
+        {
+            if (currentHouse.State != HouseGrowthController.GrowthState.Building)
+            {
+                ClosePopup();
+                return;
+            }
+
+            currentHouse.TrySpeedUpWithGem();
             ClosePopup();
         }
     }
@@ -294,7 +341,7 @@ public class CropProcessPopupUI : MonoBehaviour
 
     private void RefreshDisplay()
     {
-        if (currentPlot == null && currentPen == null) return;
+        if (currentPlot == null && currentPen == null && currentHouse == null) return;
 
         if (txtCropName == null || progressFill == null || txtTimeRemaining == null || btnSpeedUp == null)
         {
@@ -358,26 +405,39 @@ public class CropProcessPopupUI : MonoBehaviour
                 progressFill.fillAmount = Mathf.Clamp01(1f - remaining / total);
             }
         }
+        else if (currentHouse != null)
+        {
+            if (txtCropName != null)
+            {
+                txtCropName.text = currentHouse.HouseName.ToUpper();
+                txtCropName.color = Color.white;
+            }
+
+            if (txtTimeRemaining != null)
+            {
+                float rem = currentHouse.RemainingSeconds;
+                int min = Mathf.FloorToInt(rem / 60f);
+                int sec = Mathf.FloorToInt(rem % 60f);
+                txtTimeRemaining.text = $"{min:00}:{sec:00}";
+                txtTimeRemaining.color = Color.white;
+            }
+
+            if (txtGemCost != null)
+            {
+                txtGemCost.text = currentHouse.SpeedUpGemCost.ToString();
+                txtGemCost.color = Color.white;
+            }
+
+            if (progressFill != null)
+            {
+                progressFill.fillAmount = currentHouse.Progress;
+            }
+        }
     }
 
     private void OnSpeedUpClicked()
     {
-        if (currentPlot == null || !currentPlot.IsGrowing) return;
-
-        if (FarmEconomyManager.Instance == null)
-        {
-            Debug.LogWarning("[CropProcessPopup] FarmEconomyManager NULL");
-            return;
-        }
-
-        if (!FarmEconomyManager.Instance.SpendGems(CurrentGemCost))
-        {
-            FarmUIManager.Instance?.ShowHint("Không đủ kim cương để tăng tốc.");
-            return;
-        }
-
-        currentPlot.CompleteInstantly();
-        ClosePopup();
+        OnGemClick();
     }
 
     // ── UI Raycast ────────────────────────────────────────────────────────────

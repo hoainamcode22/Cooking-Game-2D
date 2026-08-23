@@ -1254,6 +1254,15 @@ public class PlacementManager : MonoBehaviour
             plot.SetPlotId(assignedPlotId);
         }
 
+        // Khởi tạo tiến trình xây 6 giai đoạn nếu là Nhà
+        var houseGrowth = spawnedObj.GetComponent<HouseGrowthController>();
+        if (houseGrowth != null)
+        {
+            var bData = currentItem as BuildingData;
+            float bTime = (bData != null && bData.buildTimeSeconds > 0) ? bData.buildTimeSeconds : 30f;
+            houseGrowth.Initialize(bData, currentItem.name, bTime);
+        }
+
         // Lưu vào PlayerPrefs kèm plotId + hướng xoay
         placedBuildings.Add(new BuildingEntry
         {
@@ -1292,6 +1301,10 @@ public class PlacementManager : MonoBehaviour
     private static bool TryStartConstructionDev2(PlaceableItemData data, Vector3 pos, int rotSteps, int plotId)
     {
         if (data == null) return false;
+
+        // Nếu là Nhà có cơ chế HouseGrowthController 6 giai đoạn mới -> Không dùng giàn giáo cũ
+        if (data.prefabToBuild != null && data.prefabToBuild.GetComponent<HouseGrowthController>() != null)
+            return false;
 
         if (!_dev2Probed)
         {

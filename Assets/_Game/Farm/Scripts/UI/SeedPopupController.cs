@@ -98,6 +98,10 @@ public class SeedPopupController : MonoBehaviour
             for (int i = 0; i < cropDataList.Length; i++)
             {
                 var child = content.GetChild(i);
+                if (child.TryGetComponent(out CanvasGroup cg))
+                {
+                    cg.blocksRaycasts = true;
+                }
                 var item = child.GetComponent<SeedDragItem>();
                 if (item != null && cropDataList[i] != null)
                 {

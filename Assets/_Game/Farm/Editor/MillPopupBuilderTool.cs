@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -799,8 +799,8 @@ namespace Farm.EditorTools.Mill
         //
         // Bánh lớn tâm (92, 176) · bánh nhỏ tâm (196, 186) ⇒ hai bánh cách nhau 7px,
         // nhìn như đang ăn khớp. left/top = tâm − size/2.
-        public const float GearLargeSize = 116f, GearLargeLeft = 34f,  GearLargeTop = 118f;
-        public const float GearSmallSize =  78f, GearSmallLeft = 157f, GearSmallTop = 147f;
+        public const float GearLargeSize =  76f, GearLargeLeft =  82f,  GearLargeTop =  97f;
+        public const float GearSmallSize =  50f, GearSmallLeft = 153f, GearSmallTop = 111f;
 
         // ── Đĩa thành phẩm — mock.py OP/OX/OY ─────────────────────────────────────
         //  TO HƠN BẢN TRƯỚC 40% (112 → 240 trong hệ mới; 158 → 192 với icon).
@@ -2333,13 +2333,13 @@ namespace Farm.EditorTools.Mill
             s.panelWood = MillSpriteFactory.ApSlice(
                 MillSpriteFactory.Tim("panel_outer"), 420f, 34f, 34f, 34f, 34f);
 
-            // ── 2. CARD CÔNG THỨC — recipe_card_*.png 720×240 ⇒ 9-slice 44 (mock.py 44) ──
+            // ── 2. CARD CÔNG THỨC — recipe_card_*.png 480×160 ⇒ 9-slice 24 ─────────────
             s.cardActive = MillSpriteFactory.ApSlice(
-                MillSpriteFactory.Tim("recipe_card_active"),   720f, 44f, 44f, 44f, 44f);
+                MillSpriteFactory.Tim("recipe_card_active"),   480f, 24f, 24f, 24f, 24f);
             s.cardInactive = MillSpriteFactory.ApSlice(
-                MillSpriteFactory.Tim("recipe_card_inactive"), 720f, 44f, 44f, 44f, 44f);
+                MillSpriteFactory.Tim("recipe_card_inactive"), 480f, 24f, 24f, 24f, 24f);
             s.cardLocked = MillSpriteFactory.ApSlice(
-                MillSpriteFactory.Tim("recipe_card_locked"),   720f, 44f, 44f, 44f, 44f);
+                MillSpriteFactory.Tim("recipe_card_locked"),   480f, 24f, 24f, 24f, 24f);
 
             // ── 3. MÁY XAY + BĂNG TẢI ────────────────────────────────────────────
             s.machineBody = MillSpriteFactory.ApSimple(MillSpriteFactory.Tim("machine_body"));
@@ -3873,20 +3873,20 @@ namespace Farm.EditorTools.Mill
                 //  34 + chữ như bản duyệt.
                 //  ⚠ Nếu sau này có người gán `animalBadgeIcon` thật thì THÊM
                 //    MillUI.CoDinh(tgi, 26f, 26f) và spacing 6 ở đây — không thêm sẵn vì nó
-                //    chiếm 32px chỗ trống vĩnh viễn, làm chữ lệch khỏi tâm viên thuốc.
-                RectTransform tag = MillUI.TL(MillUI.Node(rt, "Badge_Animal"), 60f,
-                    MillDesign.CardTagH, MillDesign.CardTagLeft, MillDesign.CardTagTop);
+                // ── Thẻ con vật — chuẩn HTML .animal-tag (Góc trên-phải card) ─────
+                RectTransform tag = MillUI.TR(MillUI.Node(rt, "Badge_Animal"), 74f, 28f, 10f, 8f);
                 MillUI.Img(tag, sk.pillBg, Color.white);
-                MillUI.HangNgang(tag, 0f, MillDesign.CardTagPadX, MillDesign.CardTagPadX,
-                                 0f, 0f, true);
+                var hg = MillUI.HangNgang(tag, 4f, 8f, 8f, 0f, 0f, true);
+                hg.childAlignment = TextAnchor.MiddleCenter;
                 RectTransform tgi = MillUI.Node(tag, "Img_Badge");
+                MillUI.CoDinh(tgi, 20f, 20f);
                 Image imgBadge = MillUI.Img(tgi, null, Color.white);
+                imgBadge.preserveAspect = true;
                 imgBadge.enabled = false;
                 RectTransform tgt = MillUI.Node(tag, "Txt_Badge");
-                var txtBadge = MillUI.Txt(tgt, "Gà", MillDesign.CardTagFont, Color.white,
-                    TextAlignmentOptions.Center);
-                MillUI.CoDinhCao(tgt, MillDesign.CardTagFont + 6f);
-                MillUI.Vien(txtBadge, 0.12f, MillSpriteFactory.Hex(MillDesign.CVienNau));
+                var txtBadge = MillUI.Txt(tgt, "Gà", MillDesign.CardTagFont,
+                    MillSpriteFactory.Hex(MillDesign.CTextBrown), TextAlignmentOptions.Center);
+                MillUI.CoDinhCao(tgt, MillDesign.CardTagFont + 4f);
 
                 // ── Lớp phủ KHOÁ ────────────────────────────────────────────────
                 RectTransform ov = MillUI.Stretch(MillUI.Node(rt, "Lock_Overlay"), 0, 0, 0, 0);

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
@@ -35,15 +35,18 @@ private const float kDragThreshold = 25f;
         ? (!string.IsNullOrEmpty(cropData.displayName) ? cropData.displayName : cropData.cropId)
         : "NULL";
 
-    // â”€â”€ VÃ²ng Ä‘á»i Unity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ VÃ²ng Ä‘á» i Unity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void Awake()
     {
         rectTransform    = GetComponent<RectTransform>();
         canvasGroup      = GetComponent<CanvasGroup>();
+        if (canvasGroup == null)
+            canvasGroup = gameObject.AddComponent<CanvasGroup>();
+
         parentScrollRect = GetComponentInParent<ScrollRect>();
 
-        // Override iconImage vá» child "Icon_item" â€” trÃ¡nh prefab gÃ¡n sai Image áº©n
+        // Override iconImage vá»  child "Icon_item" â€” trÃ¡nh prefab gÃ¡n sai Image áº©n
         Transform iconChild = transform.Find("Icon_item");
         if (iconChild != null)
         {
@@ -54,16 +57,44 @@ private const float kDragThreshold = 25f;
 
     private void OnEnable()
     {
+        dragMode = DragMode.None;
+        scrollBeginForwarded = false;
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = true;
+        }
+
         if (WarehouseManager.Instance != null)
+        {
+            WarehouseManager.Instance.OnWarehouseChanged -= RefreshStockDisplay;
             WarehouseManager.Instance.OnWarehouseChanged += RefreshStockDisplay;
+        }
+
+        if (FarmInventoryManager.Instance != null)
+        {
+            FarmInventoryManager.Instance.OnInventoryChanged -= RefreshStockDisplay;
+            FarmInventoryManager.Instance.OnInventoryChanged += RefreshStockDisplay;
+        }
 
         RefreshStockDisplay();
     }
 
     private void OnDisable()
     {
+        dragMode = DragMode.None;
+        scrollBeginForwarded = false;
+
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = true;
+        }
+
         if (WarehouseManager.Instance != null)
             WarehouseManager.Instance.OnWarehouseChanged -= RefreshStockDisplay;
+
+        if (FarmInventoryManager.Instance != null)
+            FarmInventoryManager.Instance.OnInventoryChanged -= RefreshStockDisplay;
     }
 
     // â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -72,12 +103,12 @@ private const float kDragThreshold = 25f;
     {
         cropData = data;
 
-        if (iconImage != null)
+        if (iconImage != null && data != null)
         {
             iconImage.sprite = data.icon;
         }
 
-        if (txtName != null)
+        if (txtName != null && data != null)
             txtName.text = data.displayName;
 
         RefreshStockDisplay();
@@ -224,12 +255,48 @@ private const float kDragThreshold = 25f;
 
     private int GetCurrentStock()
     {
-        if (cropData == null || string.IsNullOrEmpty(cropData.seedItemId))
+        if (cropData == null)
             return 0;
 
-        if (WarehouseManager.Instance == null)
-            return 0;
+        string s1 = cropData.seedItemId;
+        string s2 = cropData.itemID;
+        string s3 = cropData.cropId;
 
-        return WarehouseManager.Instance.GetAmount(cropData.seedItemId);
+        if (FarmInventoryManager.Instance != null)
+        {
+            if (!string.IsNullOrEmpty(s1))
+            {
+                int c = FarmInventoryManager.Instance.GetAmount(s1);
+                if (c > 0) return c;
+            }
+            if (!string.IsNullOrEmpty(s2) && s2 != s1)
+            {
+                int c = FarmInventoryManager.Instance.GetAmount(s2);
+                if (c > 0) return c;
+            }
+            if (!string.IsNullOrEmpty(s3) && s3 != s1 && s3 != s2)
+            {
+                int c = FarmInventoryManager.Instance.GetAmount(s3);
+                if (c > 0) return c;
+                c = FarmInventoryManager.Instance.GetAmount("seed_" + s3);
+                if (c > 0) return c;
+            }
+        }
+
+        if (WarehouseManager.Instance != null)
+        {
+            if (!string.IsNullOrEmpty(s1))
+            {
+                int c = WarehouseManager.Instance.GetAmount(s1);
+                if (c > 0) return c;
+            }
+            if (!string.IsNullOrEmpty(s2) && s2 != s1)
+            {
+                int c = WarehouseManager.Instance.GetAmount(s2);
+                if (c > 0) return c;
+            }
+        }
+
+        return 0;
     }
 }

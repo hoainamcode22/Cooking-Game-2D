@@ -1,12 +1,3 @@
-<#
-.SYNOPSIS
-    PIPELINE TỰ ĐỘNG HÓA XỬ LÝ & BÀN GIAO ART COOKING-GAME-2D
-    1. Bóc tách nền Chroma-Key Magenta (#FF00FF) và gọt sạch 100% mảng đất ở chân cây.
-    2. Tự động lấy ô đất thật 'plotdat-removebg-preview.png' và trồng thử nghiệm 12 cây theo phối cảnh Isometric 2:1.
-    3. Xuất file preview 'PREVIEW_<tên>_TRONG_THU_O_DAT.png' để Sếp nghiệm thu độ đẹp.
-    4. Bàn giao Sprite sạch sẽ, chuẩn Pivot Bottom-Center (0.5, 0) vào đúng thư mục Assets của Unity.
-#>
-
 Add-Type -AssemblyName System.Drawing
 
 $projectRoot = "e:\Game2\Cooking-Game-2D"
@@ -18,7 +9,6 @@ $plotPath = "$projectRoot\Assets\maptitle\plotdat-removebg-preview.png"
 if (-not (Test-Path $inputDir)) { New-Item -ItemType Directory -Path $inputDir -Force | Out-Null }
 if (-not (Test-Path $previewDir)) { New-Item -ItemType Directory -Path $previewDir -Force | Out-Null }
 
-# Tọa độ 12 điểm CropPoint trên ô đất Isometric (700 x 345 px)
 $cropPoints = @(
     @{ X = 350; Y = 60 },
     @{ X = 270; Y = 100 }, @{ X = 430; Y = 100 },
@@ -75,10 +65,8 @@ function Clean-And-Trim-Sprite {
         for ($x = 0; $x -lt $w; $x++) {
             $px = $srcBmp.GetPixel($x, $y)
             
-            # Bóc tách Magenta
             $isMagenta = ($px.R -gt 170 -and $px.B -gt 170 -and $px.G -lt 130)
             
-            # Gọt sạch các đốm đất nâu lấm tấm ở chân cây nếu có
             $isSoilOrFringe = $false
             if ($y -gt ($h * 0.82)) {
                 if ($px.R -gt 60 -and $px.R -lt 145 -and $px.G -gt 35 -and $px.G -lt 95 -and $px.B -lt 60) {
@@ -119,34 +107,29 @@ function Generate-PlotPreview {
     $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
     $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
     
-    # Nền cỏ xanh nông trại
     $g.Clear([System.Drawing.Color]::FromArgb(255, 75, 130, 55))
     
-    # Vẽ ô đất thật ở giữa
     $plotX = [int](($resW - $plotBmp.Width) / 2)
     $plotY = 65
     $g.DrawImage($plotBmp, $plotX, $plotY, $plotBmp.Width, $plotBmp.Height)
     
-    # Tỉ lệ cây vừa vặn ô đất
     $targetHeight = 85
     $scale = $targetHeight / [Math]::Max($plantSprite.Height, 1)
     if ($scale -gt 0.45) { $scale = 0.45 }
     $pW = [int]($plantSprite.Width * $scale)
     $pH = [int]($plantSprite.Height * $scale)
     
-    # Trồng 12 cây sạch đất lên ô đất
     foreach ($pt in $sortedPoints) {
         $drawX = $plotX + $pt.X - [int]($pW / 2)
         $drawY = $plotY + $pt.Y - $pH + 8
         $g.DrawImage($plantSprite, $drawX, $drawY, $pW, $pH)
     }
     
-    # Nhãn tiêu đề
     $font = New-Object System.Drawing.Font("Segoe UI", 13, [System.Drawing.FontStyle]::Bold)
     $brush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::White)
     $bgBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(200, 30, 20, 10))
-    $g.FillRectangle($bgBrush, 20, 15, 380, 32)
-    $g.DrawString("TRỒNG THỬ 12 CÂY: $assetName", $font, $brush, 28, 20)
+    $g.FillRectangle($bgBrush, 20, 15, 420, 32)
+    $g.DrawString("TRONG THU 12 CAY: $assetName", $font, $brush, 28, 20)
     
     $g.Dispose()
     $plotBmp.Dispose()
@@ -155,18 +138,18 @@ function Generate-PlotPreview {
     $res.Dispose()
 }
 
-$inputFiles = Get-ChildItem -Path $inputDir -Include *.png, *.jpg, *.jpeg -File | Where-Object { $_.DirectoryName -eq $inputDir }
+$inputFiles = Get-ChildItem -Path $inputDir -File | Where-Object { $_.Extension -match '\.(png|jpg|jpeg)$' }
 
 if ($inputFiles.Count -eq 0) {
-    Write-Host "Thư mục 'art_raw_input' đang trống! Sếp hãy thả ảnh vẽ vào rồi chạy lại nhé." -ForegroundColor Yellow
+    Write-Host "Thu muc art_raw_input dang trong!" -ForegroundColor Yellow
     exit 0
 }
 
-Write-Host "=== BẮT ĐẦU XỬ LÝ & TRỒNG THỬ NGHIỆM $($inputFiles.Count) ẢNH ===" -ForegroundColor Cyan
+Write-Host "=== BAT DAU XU LY $($inputFiles.Count) ANH ===" -ForegroundColor Cyan
 
 foreach ($file in $inputFiles) {
     $fileName = $file.BaseName.ToLower()
-    Write-Host "-> Đang xử lý: $($file.Name)" -ForegroundColor Green
+    Write-Host "-> Dang xu ly: $($file.Name)" -ForegroundColor Green
     
     $targetSubDir = "misc"
     $isCropOrFlower = $false
@@ -186,21 +169,19 @@ foreach ($file in $inputFiles) {
     $srcBmp = [System.Drawing.Bitmap]::FromFile($file.FullName)
     $cleanBmp = Clean-And-Trim-Sprite -srcBmp $srcBmp
     
-    # 1. Xuất Sprite sạch đất vào Unity
     $outFileName = "$($file.BaseName).png"
     $outFilePath = Join-Path $destFolder $outFileName
     $cleanBmp.Save($outFilePath, [System.Drawing.Imaging.ImageFormat]::Png)
-    Write-Host "   + [BÀN GIAO] Đã lưu sprite sạch đất: Assets/Assetsgame/$targetSubDir/$outFileName" -ForegroundColor White
+    Write-Host "   + [BAN GIAO] Da luu: Assets/Assetsgame/$targetSubDir/$outFileName" -ForegroundColor White
     
-    # 2. Nếu là cây trồng / hoa -> Trồng thử 12 cây lên ô đất và xuất ảnh preview
     if ($isCropOrFlower) {
         $previewOutFile = Join-Path $previewDir "PREVIEW_$($file.BaseName)_TRONG_THU_O_DAT.png"
         Generate-PlotPreview -plantSprite $cleanBmp -assetName $file.BaseName -outPreviewPath $previewOutFile
-        Write-Host "   + [PREVIEW] Đã xuất ảnh trồng thử 12 cây: art_raw_input/PREVIEW_KIEM_TRA_O_DAT/..." -ForegroundColor Yellow
+        Write-Host "   + [PREVIEW] Da xuat anh trong thu 12 cay!" -ForegroundColor Yellow
     }
     
     $cleanBmp.Dispose()
     $srcBmp.Dispose()
 }
 
-Write-Host "`n=== HOÀN TẤT BÀN GIAO! SẾP VÀO THƯ MỤC 'PREVIEW_KIEM_TRA_O_DAT' ĐỂ NGẮM THỬ NHÉ! ===" -ForegroundColor Cyan
+Write-Host "=== HOAN TAT BAN GIAO VA XUAT PREVIEW! ===" -ForegroundColor Cyan
