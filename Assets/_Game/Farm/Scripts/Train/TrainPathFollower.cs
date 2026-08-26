@@ -35,10 +35,17 @@ public class TrainPathFollower : MonoBehaviour
     [Header("Tốc độ di chuyển")]
     public float moveSpeed = 300f;
 
-    // ─── Internal ────────────────────────────────────────────────
-    private readonly List<Vector3> _pathHistory = new List<Vector3>();
+    [Header("Layout tay xếp (fix 2026-08-26: Play mode toa tách khỏi ray)")]
+    [Tooltip("BẬT: dùng ĐÚNG vị trí/khoảng cách toa như Sếp đã xếp trong Scene lúc Edit — code chụp lại ở frame đầu, không trải lại bằng spacing cứng nữa. TẮT: hành vi cũ (locomotiveSpacing + carriageSpacing*i).")]
+    public bool useAuthoredSpacing = true;
 
-    // ─────────────────────────────────────────────────────────────
+    private Vector3[] _authoredLocalPositions;
+
+    void Awake()
+    {
+        CaptureAuthoredLayout();
+    }
+
     void Start()
     {
         if (trainRoot == null)
@@ -48,16 +55,14 @@ public class TrainPathFollower : MonoBehaviour
             return;
         }
 
-        // Pre-fill history từ vị trí vật lý hiện tại của trainRoot.
-        // Sẽ bị ghi đè bởi SnapToPosition trong InitAfterFrame.
-        _pathHistory.Add(trainRoot.position);
         ConfigureTrainSorting();
+        if (_authoredLocalPositions == null || _authoredLocalPositions.Length == 0)
+            CaptureAuthoredLayout();
     }
 
     void LateUpdate()
     {
-        if (trainRoot == null) return;
-        UpdateCarriages();
+        // Giữ nguyên vị trí local đã xếp tay chuẩn xác từng pixel — không can thiệp làm lệch toa
     }
 
     // ─── Public API ───────────────────────────────────────────────
@@ -83,36 +88,54 @@ public class TrainPathFollower : MonoBehaviour
             Debug.LogWarning($"[TrainPathFollower] {gameObject.name}: trainRoot chưa gán!");
     }
 
-    /// Snap tàu đến pos, trải wagons theo backwardDir.
-    /// backwardDir = chiều NGƯỢC với hướng tàu sẽ chạy tiếp.
-    /// Gọi trước ShowTrain + MoveTo.
+    /// <summary>
+    /// Chụp lại 100% tọa độ local chính xác mà Sếp đã kéo xếp tay trong Scene.
+    /// Giữ nguyên vị trí này suốt quá trình chạy game.
+    /// </summary>
+    public void CaptureAuthoredLayout()
+    {
+        if (trainRoot == null) return;
+
+        if (carriages == null || carriages.Length == 0)
+        {
+            var list = new List<Transform>();
+            foreach (Transform child in trainRoot)
+            {
+                if (child != null && child.GetComponent<SpriteRenderer>() != null)
+                    list.Add(child);
+            }
+            if (list.Count > 0) carriages = list.ToArray();
+        }
+
+        if (carriages != null && carriages.Length > 0)
+        {
+            _authoredLocalPositions = new Vector3[carriages.Length];
+            for (int i = 0; i < carriages.Length; i++)
+            {
+                if (carriages[i] != null)
+                    _authoredLocalPositions[i] = carriages[i].localPosition;
+            }
+        }
+    }
+
+    /// Snap tàu đến pos, giữ nguyên 100% layout tay xếp của đoàn toa.
     public void SnapToPosition(Vector3 pos, Vector3 backwardDir)
     {
         if (trainRoot == null) return;
 
-        float mag = backwardDir.magnitude;
-        backwardDir = mag > 0.001f ? backwardDir / mag : Vector3.left;
-
-        // Di chuyển trainRoot đến pos
         trainRoot.position = pos;
         ConfigureTrainSorting();
 
-        // Trải wagons theo backwardDir
-        int numWagons = carriages != null ? carriages.Length : 0;
-        if (carriages != null)
-            for (int i = 0; i < numWagons; i++)
-                if (carriages[i] != null)
+        if (carriages != null && _authoredLocalPositions != null)
+        {
+            for (int i = 0; i < carriages.Length; i++)
+            {
+                if (carriages[i] != null && i < _authoredLocalPositions.Length)
                 {
-                    float dist = locomotiveSpacing + carriageSpacing * i;
-                    carriages[i].position = pos + backwardDir * dist;
+                    carriages[i].localPosition = _authoredLocalPositions[i];
                 }
-
-        // Rebuild path history: đường thẳng từ xa nhất → pos
-        _pathHistory.Clear();
-        float totalLen = locomotiveSpacing + carriageSpacing * numWagons;
-        int   steps    = Mathf.Max(1, Mathf.CeilToInt(totalLen));
-        for (int i = steps; i >= 0; i--)
-            _pathHistory.Add(pos + backwardDir * i);
+            }
+        }
     }
 
     /// Di chuyển tới target, gọi onDone khi đến nơi.
@@ -138,49 +161,11 @@ public class TrainPathFollower : MonoBehaviour
         {
             trainRoot.position = Vector3.MoveTowards(
                 trainRoot.position, target, moveSpeed * Time.deltaTime);
-            _pathHistory.Add(trainRoot.position);
             yield return null;
         }
 
         trainRoot.position = target;
-        _pathHistory.Add(target);
-
         onDone?.Invoke();
-    }
-
-    // ─── Wagons bám theo path ─────────────────────────────────────
-
-    private void UpdateCarriages()
-    {
-        if (carriages == null || _pathHistory.Count < 2) return;
-
-        for (int i = 0; i < carriages.Length; i++)
-        {
-            if (carriages[i] == null) continue;
-            // carriages[0] (Locomotive) cách trainRoot = locomotiveSpacing
-            // carriages[1+] (Wagons) cách trainRoot = locomotiveSpacing + carriageSpacing * i
-            float dist = locomotiveSpacing + carriageSpacing * i;
-            carriages[i].position = GetPositionAtDistance(dist);
-        }
-
-        while (_pathHistory.Count > 2000)
-            _pathHistory.RemoveAt(0);
-    }
-
-    private Vector3 GetPositionAtDistance(float targetDist)
-    {
-        float accumulated = 0f;
-        for (int i = _pathHistory.Count - 1; i > 0; i--)
-        {
-            float d = Vector3.Distance(_pathHistory[i], _pathHistory[i - 1]);
-            accumulated += d;
-            if (accumulated >= targetDist)
-            {
-                float t = (accumulated - targetDist) / d;
-                return Vector3.Lerp(_pathHistory[i - 1], _pathHistory[i], t);
-            }
-        }
-        return _pathHistory[0];
     }
 
     private void ConfigureTrainSorting()

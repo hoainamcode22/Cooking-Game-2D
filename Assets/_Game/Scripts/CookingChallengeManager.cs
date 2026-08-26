@@ -21,6 +21,23 @@ public class CookingChallengeManager : MonoBehaviour
     [SerializeField] private CookingTimingMiniGameUI timingMiniGame;
 
 
+    // ── Events cho Kitchen UI v2 (additive 2026-08-26 — view mới nghe, KHÔNG đổi logic) ──
+    /// <summary>Bắn khi minigame pass và bắt đầu nấu thật (lò nhóm lửa).</summary>
+    public static event System.Action<DishData> OnCookStarted;
+    /// <summary>Bắn khi nấu xong ĐẠT — (món, điểm). Lò chuyển 'Xong', món lên dĩa chờ cất.</summary>
+    public static event System.Action<DishData, int> OnDishCooked;
+    /// <summary>Bắn khi nấu TRƯỢT — (món, điểm).</summary>
+    public static event System.Action<DishData, int> OnDishFailed;
+    /// <summary>Bắn khi món được cất vào kho thành công (chạm bàn trình bày).</summary>
+    public static event System.Action<DishData> OnDishCollected;
+
+    /// <summary>Món đang nằm trên dĩa chờ cất (null = không có) — UI v2 đọc.</summary>
+    public DishData CookedDishOnPlate => cookedDishOnPlate;
+    /// <summary>Món đang chọn nấu — UI v2 đọc.</summary>
+    public DishData CurrentDish => currentDishData;
+    /// <summary>Đang trong nhịp nấu (sau minigame) — UI v2 đọc.</summary>
+    public bool IsCooking => isCooking;
+
     private DishData cookedDishOnPlate;
     private DishData currentDishData;
 
@@ -133,6 +150,7 @@ public class CookingChallengeManager : MonoBehaviour
     private IEnumerator CookSubmitRoutine()
     {
         isCooking = true;
+        OnCookStarted?.Invoke(currentDishData);
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayCookStart();
 
@@ -215,6 +233,8 @@ public class CookingChallengeManager : MonoBehaviour
         {
             deliveryCharacterMover.MoveFromCookingToWarehouse();
         }
+
+        OnDishCollected?.Invoke(cookedDishOnPlate);
 
 
 
@@ -362,6 +382,7 @@ public class CookingChallengeManager : MonoBehaviour
     private IEnumerator HandleCookingSuccess(CookingScoreResult result)
     {
         cookedDishOnPlate = currentDishData;
+        OnDishCooked?.Invoke(currentDishData, result.finalScore);
 
         // ── THƯỞNG THEO ĐỘ KHÓ × HỆ SỐ ĐIỂM (A5) ──
         // Trước đây cộng CỨNG 20 EXP và 0 vàng cho MỌI món: nấu "Phở bò tái" (5 nguyên
@@ -377,6 +398,9 @@ public class CookingChallengeManager : MonoBehaviour
         int vangNhan = currentDishData != null
             ? Mathf.CeilToInt(currentDishData.rewardGold * heSo)
             : 0;
+
+        // MÓN HÔM NAY (duyệt 2026-08-26): món nằm trong bảng đen hôm nay được thưởng thêm vàng.
+        vangNhan = KitchenUIv2.DailySpecialManager.ApplyGoldBonus(currentDishData, vangNhan);
 
         if (expNhan > 0 && PlayerProgressManager.Instance != null)
             PlayerProgressManager.Instance.AddExp(expNhan);
@@ -411,6 +435,7 @@ public class CookingChallengeManager : MonoBehaviour
 
     private IEnumerator HandleCookingFailed(CookingScoreResult result)
     {
+        OnDishFailed?.Invoke(currentDishData, result.finalScore);
 
         cookingSelectionManager.EnableIngredientSelection();
 

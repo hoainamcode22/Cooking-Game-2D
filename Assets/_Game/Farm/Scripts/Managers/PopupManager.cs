@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class PopupManager : MonoBehaviour
 {
@@ -86,6 +86,9 @@ public class PopupManager : MonoBehaviour
             // blockingOverlay khong bat, click world xuyen qua popup cho. Doc thang
             // MarketManager.Instance de khong phu thuoc keo-tha Inspector.
             || (MarketManager.Instance != null && MarketManager.Instance.IsOpen)
+            || (ExportTrainUIPackage.TrainStationMasterPopupUI.Instance != null && ExportTrainUIPackage.TrainStationMasterPopupUI.Instance.gameObject.activeInHierarchy)
+            || (ExportTrainUIPackage.TrainLoadPopupUI.Instance != null && ExportTrainUIPackage.TrainLoadPopupUI.Instance.gameObject.activeInHierarchy)
+            || (ExportTrainUIPackage.TrainProcessPopupUI.Instance != null && ExportTrainUIPackage.TrainProcessPopupUI.Instance.gameObject.activeInHierarchy)
             || UnifiedTaskPopupUI.IsOpenStatic;
     }
     

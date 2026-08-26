@@ -102,6 +102,16 @@ public static class MarketSellerDirectory
         new Color(0.48f, 0.66f, 0.78f)
     };
 
+    public static Sprite GetAvatarSprite(int avatarIndex)
+    {
+        int safe = ((avatarIndex % 6) + 6) % 6;
+#if UNITY_EDITOR
+        return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/_Game/Farm/Art/UI_MarketBoard/avatar_npc_{safe}.png");
+#else
+        return null;
+#endif
+    }
+
     public static Color GetAvatarColor(int avatarIndex)
     {
         if (AvatarColors.Length == 0)

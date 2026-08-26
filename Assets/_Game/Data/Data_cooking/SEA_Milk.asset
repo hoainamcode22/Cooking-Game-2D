@@ -17,6 +17,7 @@ MonoBehaviour:
   icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
   kind: 1
   tier: 1
+  unlockLevel: 14
   vector:
     sweet: 3
     spicy: 0

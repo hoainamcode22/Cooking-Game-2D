@@ -66,6 +66,11 @@ public class FarmInventoryManager : MonoBehaviour
     /// </summary>
     public static Action<string> OnAddRejectedByCapacity;
 
+    /// <summary>Bắn khi CỘNG vật phẩm thành công (itemId đã normalize, amount) —
+    /// WarehouseGainToastUI nghe để hiện thanh kho + hiệu ứng +N. Mọi nguồn nhận đồ
+    /// (thu hoạch, chuồng, chợ, tàu, thưởng nhiệm vụ) đều đi qua đây.</summary>
+    public static Action<string, int> OnItemAddedFx;
+
     private readonly Dictionary<string, int> items     = new Dictionary<string, int>();
     private readonly List<string>            itemOrder = new List<string>();
 
@@ -158,6 +163,7 @@ public class FarmInventoryManager : MonoBehaviour
 
         SaveInventory();
         OnInventoryChanged?.Invoke();
+        OnItemAddedFx?.Invoke(key, amount);
         return true;
     }
 

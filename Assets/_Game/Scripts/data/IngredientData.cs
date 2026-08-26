@@ -13,6 +13,9 @@ public class IngredientData : ScriptableObject
     public IngredientKind kind;
     public IngredientTier tier;
 
+    [Tooltip("Cấp người chơi cần để dùng nguyên liệu này trong bếp (K2 2026-08-26). 1 = mở sẵn.")]
+    public int unlockLevel = 1;
+
     [Header("Flavor Vector")]
     public FlavorVector vector;
 

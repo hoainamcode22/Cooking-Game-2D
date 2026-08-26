@@ -1385,6 +1385,137 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 153992532}
   m_CullTransparentMesh: 1
+--- !u!1 &154229295
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 154229298}
+  - component: {fileID: 154229297}
+  - component: {fileID: 154229296}
+  m_Layer: 0
+  m_Name: Kitchen_UI_v2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &154229296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 154229295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 714531cb453e8604aa44a0df87822717, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KitchenUIv2.DailySpecialManager
+  dishBook: {fileID: 11400000, guid: 722ecf39bf0ef5b4999e7587becaf3bb, type: 2}
+  goldBonusMultiplier: 1.5
+  dishesPerDay: 3
+--- !u!114 &154229297
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 154229295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d7cba55cdcbe754eacc3e0cba060ba7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KitchenUIv2.KitchenSceneV2UI
+  allIngredients:
+  - {fileID: 11400000, guid: bca8dffa2ead0a1458794f98ac2594ce, type: 2}
+  - {fileID: 11400000, guid: e8ff296568c88e84c8ee3c7a64b0615a, type: 2}
+  - {fileID: 11400000, guid: e3b733d266196064bbe31fc48e40f7e1, type: 2}
+  - {fileID: 11400000, guid: b0631d5b8894e8b4c988c34191d84120, type: 2}
+  - {fileID: 11400000, guid: ec1bd42123fd58842880a4a88b780874, type: 2}
+  - {fileID: 11400000, guid: fc7f3c85c12966b4f993aeca2a544016, type: 2}
+  - {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}
+  - {fileID: 11400000, guid: 65f23ad20a871e24fa3c77769c5cbe4c, type: 2}
+  - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
+  - {fileID: 11400000, guid: e0b72888953ad72479d8eb9c8462d0c6, type: 2}
+  - {fileID: 11400000, guid: a709c3d40f4f1b64b96d6ce35aa30e8a, type: 2}
+  - {fileID: 11400000, guid: 3f7a1c9b4e2d58c4a91b6d0e7c53f8a2, type: 2}
+  - {fileID: 11400000, guid: d497d41e2fee904489fe75f7a8f6d927, type: 2}
+  - {fileID: 11400000, guid: 047a75f3fbcb9974b91428681e2e96ac, type: 2}
+  - {fileID: 11400000, guid: 7df2822734955c543a8459823997157a, type: 2}
+  - {fileID: 11400000, guid: cdf2556cba1e8fe4e9b7fabb9944f804, type: 2}
+  - {fileID: 11400000, guid: 7ec4c04aa13cb9f44b904d3efc4a59ea, type: 2}
+  - {fileID: 11400000, guid: 068c729ad2bb67e4d9a7cea8aec07a6d, type: 2}
+  - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
+  - {fileID: 11400000, guid: 7f96869f08d4e0a4687f826acd150dfc, type: 2}
+  - {fileID: 11400000, guid: 1c4f147355611e044beec9c27dc0c752, type: 2}
+  dishBook: {fileID: 11400000, guid: 722ecf39bf0ef5b4999e7587becaf3bb, type: 2}
+  skin:
+    wallTile: {fileID: 0}
+    floorTile: {fileID: 0}
+    shelfProps: {fileID: 0}
+    plantPot: {fileID: 0}
+    sackFlour: {fileID: 0}
+    catSleeping: {fileID: 0}
+    ovenBody: {fileID: 0}
+    ovenGlow: {fileID: 0}
+    ovenFire:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    smokePuff: {fileID: 0}
+    prepTable: {fileID: 0}
+    platingTable: {fileID: 0}
+    warehouseHatch: {fileID: 0}
+    chalkboard: {fileID: 0}
+    manekiIdle:
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    - {fileID: 0}
+    panelBoard: {fileID: 0}
+    panelPaper: {fileID: 0}
+    cardIngredient: {fileID: 0}
+    cardSelectedGlow: {fileID: 0}
+    cardLocked: {fileID: 0}
+    iconLock: {fileID: 0}
+    tasteTrack: {fileID: 0}
+    tasteFill: {fileID: 0}
+    tasteMarker: {fileID: 0}
+    btnGreen: {fileID: 0}
+    btnGray: {fileID: 0}
+    btnRedSmall: {fileID: 0}
+    tabOn: {fileID: 0}
+    tabOff: {fileID: 0}
+    chipTaste: {fileID: 0}
+    ribbon: {fileID: 0}
+  challenge: {fileID: 453846586}
+  selection: {fileID: 453846584}
+  canvasSortingOrder: 5
+  pollInterval: 0.15
+--- !u!224 &154229298
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 154229295}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &156833278
 GameObject:
   m_ObjectHideFlags: 0
@@ -1725,7 +1856,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 233.85, y: -137.11496}
+  m_AnchoredPosition: {x: 233.85, y: -137.1147}
   m_SizeDelta: {x: 430, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &207288232
@@ -5547,9 +5678,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 2158307079235096892, guid: 55bd37a79e4f32344b796901b9bda061, type: 3}
       insertIndex: -1
       addedObject: {fileID: 717496962}
-    - targetCorrespondingSourceObject: {fileID: 2158307079235096892, guid: 55bd37a79e4f32344b796901b9bda061, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 55bd37a79e4f32344b796901b9bda061, type: 3}
 --- !u!224 &717496952 stripped
 RectTransform:
@@ -5563,17 +5691,6 @@ MonoBehaviour:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
---- !u!114 &717496958 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3971293615285375879, guid: 55bd37a79e4f32344b796901b9bda061, type: 3}
-  m_PrefabInstance: {fileID: 717496951}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -8685,6 +8802,8 @@ MonoBehaviour:
   seasoningsCountText: {fileID: 303161271}
   ingredientCardSample: {fileID: 1472207265}
   seasoningCardSample: {fileID: 265275953}
+  ingredientCardPrefab: {fileID: 0}
+  seasoningCardPrefab: {fileID: 0}
 --- !u!114 &1069223696
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15185,17 +15304,24 @@ MonoBehaviour:
   bgmSource: {fileID: 1898416656}
   uiSource: {fileID: 1898416656}
   fxSource: {fileID: 1898416656}
+  waterAmbienceSource: {fileID: 0}
   bgmMain: {fileID: 8300000, guid: 6f6ed4940482a57448a5c9fca85f90c8, type: 3}
   uiClick: {fileID: 8300000, guid: 3d007f0ef76c6704a99ada93d3621692, type: 3}
   ingredientPop: {fileID: 8300000, guid: 6b1bd5306215ebe488598c3d6f923ee7, type: 3}
   cookStart: {fileID: 8300000, guid: 0c7a71ffd02b0f04090229467e7f8600, type: 3}
   successJingle: {fileID: 8300000, guid: dba70f310f3041241bf80c478ea8996b, type: 3}
   coinReward: {fileID: 8300000, guid: dba70f310f3041241bf80c478ea8996b, type: 3}
+  plantingClip: {fileID: 0}
+  harvestClip: {fileID: 0}
+  buySellClip: {fileID: 0}
+  waterFlowClip: {fileID: 0}
   bgmVolume: 0.12
   uiVolume: 0.22
   fxVolume: 0.45
+  waterVolume: 0.25
   uiClickCooldown: 0.06
   ingredientCooldown: 0.05
+  farmCooldown: 0.06
   uiCutoffTime: 0.05
 --- !u!1 &1904099720
 GameObject:
@@ -15722,7 +15848,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1025846864}
   m_Direction: 2
   m_Value: 0
-  m_Size: 0.99230444
+  m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -18260,3 +18386,4 @@ SceneRoots:
   - {fileID: 619394802}
   - {fileID: 1894416972}
   - {fileID: 796646487}
+  - {fileID: 154229298}

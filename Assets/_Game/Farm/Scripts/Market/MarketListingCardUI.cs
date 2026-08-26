@@ -128,12 +128,27 @@ public class MarketListingCardUI : MonoBehaviour, IInitializePotentialDragHandle
             imageCardFrame.color = Color.Lerp(MarketBoardPalette.CardBase, accent, 0.35f);
         }
 
-        // ── Tầng dưới ────────────────────────────────────────────────────
+        // ── Tầng dưới: Người bán ─────────────────────────────────────────
         if (imageSellerAvatar != null)
-            imageSellerAvatar.color = MarketSellerDirectory.GetAvatarColor(listing.SellerAvatarIndex);
-
-        if (textSellerInitial != null)
-            textSellerInitial.text = MarketSellerDirectory.GetAvatarInitial(listing.SellerName);
+        {
+            Sprite avSp = MarketSellerDirectory.GetAvatarSprite(listing.SellerAvatarIndex);
+            if (avSp != null)
+            {
+                imageSellerAvatar.sprite = avSp;
+                imageSellerAvatar.color  = Color.white;
+                imageSellerAvatar.preserveAspect = true;
+                if (textSellerInitial != null) textSellerInitial.gameObject.SetActive(false);
+            }
+            else
+            {
+                imageSellerAvatar.color = MarketSellerDirectory.GetAvatarColor(listing.SellerAvatarIndex);
+                if (textSellerInitial != null)
+                {
+                    textSellerInitial.gameObject.SetActive(true);
+                    textSellerInitial.text = MarketSellerDirectory.GetAvatarInitial(listing.SellerName);
+                }
+            }
+        }
 
         if (textSellerName != null)
             textSellerName.text = listing.SellerName;

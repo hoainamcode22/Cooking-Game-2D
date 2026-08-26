@@ -1,9 +1,10 @@
 using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class WarehouseSlotUI : MonoBehaviour
+public class WarehouseSlotUI : MonoBehaviour, IInitializePotentialDragHandler, IBeginDragHandler, IDragHandler, IEndDragHandler, IScrollHandler
 {
     [Header("Visual Components")]
     [SerializeField] private Image bgCard;
@@ -20,9 +21,45 @@ public class WarehouseSlotUI : MonoBehaviour
     private string currentItemId;
     private Action<string> onClickCallback;
     private bool isCurrentSelected;
+    private ScrollRect _parentScrollRect;
 
     public string CurrentItemId => currentItemId;
     public bool IsEmpty => string.IsNullOrEmpty(currentItemId);
+
+    private ScrollRect ParentScrollRect
+    {
+        get
+        {
+            if (_parentScrollRect == null)
+                _parentScrollRect = GetComponentInParent<ScrollRect>();
+            return _parentScrollRect;
+        }
+    }
+
+    public void OnInitializePotentialDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnInitializePotentialDrag(eventData);
+    }
+
+    public void OnBeginDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnBeginDrag(eventData);
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnDrag(eventData);
+    }
+
+    public void OnEndDrag(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnEndDrag(eventData);
+    }
+
+    public void OnScroll(PointerEventData eventData)
+    {
+        if (ParentScrollRect != null) ParentScrollRect.OnScroll(eventData);
+    }
 
     private void Awake()
     {
@@ -119,13 +156,13 @@ public class WarehouseSlotUI : MonoBehaviour
         if (badgeRoot != null)
         {
             badgeRoot.SetActive(amount > 0);
-            badgeRoot.transform.SetAsLastSibling(); // Luôn hiển thị trên cùng
+            badgeRoot.transform.SetAsLastSibling();
         }
 
         if (txtSoLuong != null)
         {
             txtSoLuong.text = amount.ToString();
-            txtSoLuong.color = new Color(1.0f, 0.93f, 0.77f, 1f); // #FFE9BD vàng kem sáng
+            txtSoLuong.color = new Color(1.0f, 0.93f, 0.77f, 1f);
             txtSoLuong.fontStyle = FontStyles.Bold;
             txtSoLuong.alignment = TextAlignmentOptions.Center;
             txtSoLuong.gameObject.SetActive(true);

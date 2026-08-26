@@ -246,6 +246,13 @@ public class WarehousePopupUI : MonoBehaviour
         UpdateTabVisuals();
         selectedItemId = null;
         transferQuantity = 1;
+
+        if (itemGridContainer != null)
+        {
+            ScrollRect sr = itemGridContainer.GetComponentInParent<ScrollRect>();
+            if (sr != null) sr.verticalNormalizedPosition = 1f;
+        }
+
         RefreshUI();
         AutoSelectFirstItem();
     }

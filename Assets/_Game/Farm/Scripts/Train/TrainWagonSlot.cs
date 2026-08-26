@@ -53,15 +53,21 @@ public class TrainWagonSlot : MonoBehaviour
     [Tooltip("0 = Wagon_01 / WorldSlot_01, 1 = Wagon_02, â€¦")]
     [SerializeField] public int slotIndex = 0;
 
+    [Header("Icon Fit — icon hàng nằm gọn trên toa (yêu cầu Sếp 2026-08-26)")]
+    [Tooltip("Bề rộng icon tối đa = tỉ lệ này x bề rộng vùng click toa (BoxCollider2D). Mọi loại hàng (thịt, lúa, đá, kính...) đều bị co về cùng 1 cỡ. Đặt 0 = giữ size gốc như cũ.")]
+    [SerializeField] private float iconFitRatio = 0.45f;
+
     // â”€â”€â”€ Runtime â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private TrainWagonSlotData _data;
     private BoxCollider2D      _col;
+    private Vector3            _iconBaseScale = Vector3.one;
 
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     void Awake()
     {
         _col = GetComponent<BoxCollider2D>();
+        if (iconSprite != null) _iconBaseScale = iconSprite.transform.localScale;
         // áº¨n cargo icon máº·c Ä‘á»‹nh â€” chá»‰ hiá»‡n sau khi cháº¥t hÃ ng láº§n Ä‘áº§u
         if (iconSprite != null) iconSprite.enabled = false;
     }
@@ -141,6 +147,7 @@ public class TrainWagonSlot : MonoBehaviour
             }
         }
 
+        FitIconToWagon();
         SetLabel($"{data.currentAmount}/{data.requiredAmount}");
 
         // Toa Ä‘áº§y â†’ táº¯t collider (khÃ´ng cho click thÃªm)
@@ -151,9 +158,34 @@ public class TrainWagonSlot : MonoBehaviour
     {
         if (emptyRoot != null) emptyRoot.SetActive(false);
         SetIcon(data.icon);
+        FitIconToWagon();
         SetLabel($"x{data.rewardAmount}");
 
         _col.enabled = true;
+    }
+
+    /// <summary>
+    /// Chuẩn hoá icon về CÙNG 1 cỡ nhỏ gọn trên toa — mọi loại hàng bằng nhau,
+    /// không còn icon nguồn to (thịt, món ăn...) lòi ra khỏi toa tàu.
+    /// Dùng BoxCollider2D.size (không phụ thuộc enabled) nên gọi lúc nào cũng đúng;
+    /// reset về scale gốc trước khi đo nên gọi lặp lại không bị nhân dồn.
+    /// </summary>
+    private void FitIconToWagon()
+    {
+        if (iconSprite == null || iconSprite.sprite == null || _col == null) return;
+        if (iconFitRatio <= 0f) return; // 0 = giữ hành vi cũ
+
+        iconSprite.transform.localScale = _iconBaseScale;
+
+        float target = _col.size.x * Mathf.Abs(transform.lossyScale.x) * iconFitRatio;
+
+        Vector2 sb = iconSprite.sprite.bounds.size;
+        float lossy = Mathf.Abs(iconSprite.transform.lossyScale.x);
+        float current = Mathf.Max(sb.x, sb.y) * lossy;
+
+        if (current <= 0.0001f || target <= 0.0001f) return;
+
+        iconSprite.transform.localScale = _iconBaseScale * (target / current);
     }
 
     private void SetIcon(Sprite sprite)

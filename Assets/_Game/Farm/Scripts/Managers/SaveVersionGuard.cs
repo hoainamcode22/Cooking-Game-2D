@@ -1,29 +1,6 @@
 using UnityEngine;
 
-/// <summary>
-/// ══════════════════════════════════════════════════════════════════════════
-///  CỔNG PHIÊN BẢN CHUNG CHO MỌI KHOÁ PLAYERPREFS (B4)
-/// ══════════════════════════════════════════════════════════════════════════
-///
-/// VÌ SAO CẦN: dự án có 6 hệ save đã tự quản `saveVersion` bên trong JSON
-/// (`WarehouseManager`, `PlacementManager`, `ConstructionManager`, `OrderBoardManager`,
-/// `PlayerStallManager`, `MarketRefreshTimer`) nhưng còn hơn 20 khoá **ghi thẳng số/chuỗi**
-/// chứ không qua JSON — `PLAYER_LEVEL`, `FARM_ECONOMY_GOLD`, `WAREHOUSE_LEVEL`, `PenState_*`,
-/// mọi cờ tutorial… Những khoá đó KHÔNG có chỗ nào để nhét `saveVersion` vào.
-///
-/// Không có version thì lần sau đổi ý nghĩa dữ liệu là **không phân biệt được** save cũ với
-/// save mới. Ví dụ thật vừa xảy ra trong đợt này: `growSeconds` đổi từ "giây × 0.3" sang
-/// "giây thật", và `plotId` được cấp lại (F1) làm ĐỔI KHOÁ LƯU của 8 ô đất. Save cũ đọc bằng
-/// code mới cho ra kết quả sai mà không ai biết.
-///
-/// CÁCH DÙNG: mỗi hệ gọi <see cref="Ensure"/> đúng MỘT LẦN, ngay trước khi đọc save.
-/// Hàm trả về phiên bản CŨ tìm thấy (0 = save đời chưa có version, hoặc chưa từng có save),
-/// và tự đóng dấu phiên bản hiện tại để lần sau không chuyển đổi lần thứ hai.
-///
-/// VÌ SAO tách riêng một khoá `SAVE_VER_&lt;họ&gt;` thay vì gói version vào từng khoá:
-/// gói vào là ĐỔI ĐỊNH DẠNG của chính khoá đang có dữ liệu — người chơi hiện tại mất sạch
-/// ngay lần cập nhật này. Khoá phụ thì dữ liệu cũ vẫn đọc được nguyên vẹn.
-/// </summary>
+
 public static class SaveVersionGuard
 {
     private const string Prefix = "SAVE_VER_";

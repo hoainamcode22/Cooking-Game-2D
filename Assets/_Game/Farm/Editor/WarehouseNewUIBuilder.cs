@@ -211,15 +211,47 @@ public static class WarehouseNewUIBuilder
         innerGridImg.sprite = innerPanelSpr;
         innerGridImg.type = Image.Type.Sliced;
 
-        // Item Grid Container (GridLayoutGroup)
-        RectTransform gridContainer = CreateRect(innerGridBox, "ItemGrid", new Vector2(760f, 530f), new Vector2(0f, 15f));
+        // ScrollRect for Items
+        RectTransform scrollRT = CreateRect(innerGridBox, "Scroll_Items", new Vector2(790f, 594f), Vector2.zero);
+        ScrollRect scroll = scrollRT.gameObject.AddComponent<ScrollRect>();
+        scroll.horizontal = false;
+        scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Elastic;
+        scroll.elasticity = 0.1f;
+        scroll.scrollSensitivity = 36f;
+
+        // Viewport with RectMask2D
+        RectTransform viewport = CreateRect(scrollRT, "Viewport", new Vector2(790f, 594f), Vector2.zero);
+        viewport.anchorMin = Vector2.zero;
+        viewport.anchorMax = Vector2.one;
+        viewport.sizeDelta = Vector2.zero;
+        viewport.pivot = new Vector2(0.5f, 1f);
+        Image vpImg = viewport.gameObject.AddComponent<Image>();
+        vpImg.color = Color.clear;
+        vpImg.raycastTarget = true;
+        viewport.gameObject.AddComponent<RectMask2D>();
+
+        // Item Grid Container (GridLayoutGroup + ContentSizeFitter)
+        RectTransform gridContainer = CreateRect(viewport, "ItemGrid", new Vector2(790f, 594f), Vector2.zero);
+        gridContainer.anchorMin = new Vector2(0f, 1f);
+        gridContainer.anchorMax = new Vector2(1f, 1f);
+        gridContainer.pivot = new Vector2(0.5f, 1f);
+        gridContainer.anchoredPosition = Vector2.zero;
+        gridContainer.sizeDelta = new Vector2(0f, 594f);
+
         GridLayoutGroup gridLayout = gridContainer.gameObject.AddComponent<GridLayoutGroup>();
         gridLayout.cellSize = new Vector2(170f, 155f);
         gridLayout.spacing = new Vector2(18f, 18f);
         gridLayout.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         gridLayout.constraintCount = 4;
-        gridLayout.padding = new RectOffset(20, 20, 20, 20);
+        gridLayout.padding = new RectOffset(16, 16, 16, 16);
         gridLayout.childAlignment = TextAnchor.UpperLeft;
+
+        ContentSizeFitter gridFitter = gridContainer.gameObject.AddComponent<ContentSizeFitter>();
+        gridFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        scroll.viewport = viewport;
+        scroll.content = gridContainer;
 
         // Create Slot Template
         GameObject slotTemplate = CreateSlotTemplate(gridContainer, slotNormalSpr, slotSelectedSpr, slotEmptySpr, badgeCountSpr, fontVo);

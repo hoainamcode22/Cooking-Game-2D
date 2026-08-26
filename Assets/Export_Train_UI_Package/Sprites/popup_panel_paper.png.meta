@@ -1,0 +1,32 @@
+fileFormatVersion: 2
+guid: aaaaaaaaaaaaaaaaaaaaaaaa50a7dba8
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+  bumpmap:
+    convertToNormalMap: 0
+  isReadable: 1
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMasterTextureLimit: 0
+  doesAlphaRepresentTransparency: 1
+  alphaIsTransparency: 1
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 20, y: 20, z: 20, w: 20}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  filterMode: 1
+  aniso: 1
+  wrapU: 1
+  wrapV: 1
+  wrapW: 1

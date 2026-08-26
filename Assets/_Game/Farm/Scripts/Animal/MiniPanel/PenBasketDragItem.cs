@@ -102,17 +102,26 @@ public class PenBasketDragItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
             }
         }
 
-        // Fallback: Nếu thả gần vị trí chuồng (trong bán kính 4 unit)
+        // Fallback: Nếu thả gần vị trí chuồng (tăng bán kính 4→6 cho chuồng bò/heo lớn)
         var parentPen = GetComponentInParent<PenMiniPanelUI>();
         if (parentPen != null)
         {
             float dist = Vector2.Distance(world2, parentPen.transform.position);
-            if (dist < 4f)
+            if (dist < 6f)
             {
                 return parentPen.GetComponent<PenDropTarget>() ?? parentPen.GetComponentInChildren<PenDropTarget>() ?? parentPen.GetComponentInParent<PenDropTarget>();
             }
         }
 
-        return null;
+        // Fallback cuối: tìm PenDropTarget gần nhất trong scene (bán kính 6 unit)
+        var allTargets = Object.FindObjectsByType<PenDropTarget>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        PenDropTarget closest = null;
+        float closestDist = 6f;
+        foreach (var t in allTargets)
+        {
+            float d = Vector2.Distance(world2, (Vector2)t.transform.position);
+            if (d < closestDist) { closestDist = d; closest = t; }
+        }
+        return closest;
     }
 }

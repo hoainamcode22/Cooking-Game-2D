@@ -5,6 +5,9 @@ public class HarvestFeedbackSpawner : MonoBehaviour
 {
     public static HarvestFeedbackSpawner Instance { get; private set; }
 
+    /// <summary>Icon kho trên HUD — cho UI khác (vd popup tàu) bay vật phẩm về đúng chỗ.</summary>
+    public Transform WarehouseTarget => warehouseTarget;
+
     [Header("Fly FX")]
     [SerializeField] private HarvestFlyItemFX harvestFlyPrefab;
     [SerializeField] private Transform warehouseTarget;

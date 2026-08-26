@@ -64,6 +64,53 @@ public class PenMiniPanelUI : MonoBehaviour
     private void Awake()
     {
         if (panelRoot != null) panelRoot.SetActive(false);
+        EnsurePanelLayout();
+    }
+
+    private void EnsurePanelLayout()
+    {
+        // 1. Đảm bảo Canvas luôn Override Sorting ở lớp cao (1500) để nổi lên trên chuồng và cây cối
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 1500;
+        }
+
+        // 2. Định vị Panel chính giữa chuồng, nổi cao ráo trên đỉnh hàng rào
+        RectTransform rt = GetComponent<RectTransform>();
+        if (rt != null)
+        {
+            rt.anchoredPosition = new Vector2(0f, 3.2f);
+            rt.sizeDelta = new Vector2(130f, 130f);
+        }
+
+        // 3. Chuẩn hóa kích thước khung chứa gọn gàng, bo góc đẹp
+        if (panelRoot != null)
+        {
+            RectTransform prRt = panelRoot.GetComponent<RectTransform>();
+            if (prRt != null)
+            {
+                prRt.anchoredPosition = Vector2.zero;
+                prRt.sizeDelta = new Vector2(120f, 120f);
+            }
+
+            Transform bg = panelRoot.transform.Find("Background");
+            if (bg != null)
+            {
+                RectTransform bgRt = bg.GetComponent<RectTransform>();
+                if (bgRt != null)
+                {
+                    bgRt.anchoredPosition = Vector2.zero;
+                    bgRt.sizeDelta = new Vector2(120f, 120f);
+                }
+                Image bgImg = bg.GetComponent<Image>();
+                if (bgImg != null)
+                {
+                    bgImg.color = new Color(1f, 0.98f, 0.94f, 0.96f);
+                }
+            }
+        }
     }
 
     private void Start()
@@ -135,7 +182,7 @@ public class PenMiniPanelUI : MonoBehaviour
     [SerializeField] private TMP_Text txtPenTitle;
 
     [Tooltip("Offset spawn FX")]
-    [SerializeField] private float harvestSpawnUpOffset = 120f;
+    [SerializeField] private float harvestSpawnUpOffset = 280f;
 
     public int SpeedUpGemCost =>
         CurrentState == PenState.Processing
@@ -144,14 +191,14 @@ public class PenMiniPanelUI : MonoBehaviour
 
     [Header("Sorting")]
     [SerializeField] private Canvas processOverlayCanvas;
-    [SerializeField] private int processSortingOrder = 300;
+    [SerializeField] private int processSortingOrder = 1500;
 
     [Header("Tutorial")]
     [SerializeField] private Sprite gemButtonBgSprite;
     [SerializeField] private Sprite gemIconSprite;
     [SerializeField] private Sprite readyBubbleBgSprite;
     [SerializeField] private Vector2 readyBubbleLocalPos = new Vector2(0f, 320f);
-    [SerializeField] private int readyBubbleSortingOrder = 1300;
+    [SerializeField] private int readyBubbleSortingOrder = 1500;
 
     public bool IsPanelOpen() => panelRoot != null && panelRoot.activeSelf;
     public RectTransform FirstFeedSlotRect => slot1Root != null ? slot1Root.GetComponent<RectTransform>() : null;

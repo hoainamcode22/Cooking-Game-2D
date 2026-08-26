@@ -28,6 +28,9 @@ public class FarmEconomyManager : MonoBehaviour
     // FX: bắn khi cộng vàng để UI chạy hiệu ứng "coin bay về ví" (xem CoinFlyFX)
     public static event Action<int> OnGoldAddedFx;
 
+    /// <summary>Bắn khi CỘNG kim cương — GemFlyFX nghe để bay gem về icon HUD (mirror OnGoldAddedFx).</summary>
+    public static event Action<int> OnGemAddedFx;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -110,6 +113,7 @@ public class FarmEconomyManager : MonoBehaviour
         SaveCurrency();
         NotifyCurrencyChanged();
         AudioManager.Instance?.PlayBuySell();
+        OnGemAddedFx?.Invoke(amount);
     }
 
     /// <summary>

@@ -34,6 +34,18 @@ Chơi liền mạch L1→L30 không kẹt tiền/kẹt đơn · tutorial L1 chu�
 
 ## Nhật ký sprint (agent tự ghi thêm mỗi phiên)
 
+### Hệ Tàu Hỏa — 2026-08-26 (hợp nhất logic + UI package, QA pass)
+- Hợp nhất 2 hệ (TrainManager cũ vs Export_Train_UI_Package của sprite-forge) về 1 nguồn sự thật:
+  popup = view thuần đọc TrainManager; bỏ toàn bộ data giả TrainItemDatabase + SendMessage hack.
+- Khôi phục state Processing: timer unix 10-15 phút (Inspector `tripDurationSeconds`=600), chạy nền + offline,
+  persistence PlayerPrefs `train_trip_state_v1`, mọi nhánh restore tự thoát kẹt (đã vá deadlock M1 theo QA).
+- TĂNG TỐC trừ kim cương thật theo RushCostFor (trước đây skip MIỄN PHÍ). Thưởng = vật liệu asset + 80 vàng/chuyến
+  (bỏ 450 vàng + 8 gem chưa duyệt). Thu thưởng check kho đầy + EXP + FX + mission event như cũ.
+- Input lock đủ cho 3 popup mới; sprite build-safe (TrainSpriteLoader.Assign — hết trắng UI khi build).
+- Báo cáo đầy đủ + việc cần anh: `production/session-state/TRAIN_SYSTEM_IMPLEMENTATION_REPORT.md`.
+  Prompt assets world bổ sung cho GPT/sprite-forge: `production/session-state/PROMPT_SPRITE_FORGE_TRAIN_ASSETS.md`.
+  Backup 6 file gốc: `production/backup_train_2026-08-26/`.
+
 ### Sprint 3+4+6 — 2026-06-12 (phiên 4, 3 agent song song)
 - **Animal guide** (`AnimalGuideController.cs` — KHÔNG đụng TutorialManager): toast hướng dẫn theo level (L2 gà → L4 heo → L6 bò → L8 bò sữa), toast "cho gà ăn" khi đặt chuồng đầu tiên, chống spam khi nhảy cấp. UI toast tự tạo runtime, không cần prefab.
 - **OrderItem_Milk** (L8, 45g/đv) + SetupAll giờ **tự đồng bộ TẤT CẢ OrderItemDefinition** vào VillageOrderManager.availableItems — order item mới chỉ cần tạo asset + chạy Setup All.

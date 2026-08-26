@@ -80,18 +80,15 @@ public class TrainManager : MonoBehaviour
     [Header("Config")]
     [Tooltip("EXP thÆ°á»Ÿng má»—i láº§n thu 1 slot reward")]
     [SerializeField] private int   expPerReward        = 10;
-    // ── TIMER Ở HẦM: ĐÃ GỠ HẲN (CS-2) ────────────────────────────────────
-    // Trước đây chỗ này có `[SerializeField] float tripDurationSeconds = 4f` bọc trong
-    // `#pragma warning disable 0414`. Cái pragma chính là lời thú nhận: KHÔNG AI ĐỌC
-    // biến đó. Luồng tàu chạy liền một mạch — `OnShippingReachedTunnel()` áp thưởng rồi
-    // cho tàu cũ ra khỏi hầm NGAY, không chờ giây nào.
-    //
-    // VÌ SAO XOÁ chứ không bật lại timer: luồng "chạy liền" là quyết định thiết kế cố ý
-    // và đang chạy ĐÚNG. Nhưng để lại một trường Inspector chết thì ai mở TrainManager
-    // cũng tưởng chỉnh số đó là đổi được thời gian tàu — trường Inspector NÓI DỐI người
-    // chỉnh số còn tệ hơn là không có trường nào. Muốn có timer thật thì thêm lại cả
-    // cụm (field + `_tripEndTime` + `Update()` + state Processing) một lượt, đừng để
-    // nửa nọ nửa kia.
+
+    [Tooltip("Thời gian 1 chuyến vận chuyển (giây). Đã duyệt 2026-08-26: 10-15 phút (600-900).")]
+    [SerializeField] private float tripDurationSeconds = 600f;
+
+    [Tooltip("Vàng thưởng chốt chuyến khi thu đủ mọi toa (đã duyệt: 50-100).")]
+    [SerializeField] private int   goldBonusPerTrip    = 80;
+
+    [Tooltip("Hiện icon hàng/thưởng trên toa NGOÀI WORLD. Sếp chốt 2026-08-26: TẮT — mọi nạp/nhận đều trong popup, tàu world chỉ chạy làm cảnh.")]
+    [SerializeField] private bool  showWagonIconsInWorld = false;
 
     // â”€â”€â”€ Runtime â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -101,16 +98,32 @@ public class TrainManager : MonoBehaviour
     private int               _tripIndex      = 0;
     private TrainRewardItem[] _pendingRewards;
 
+    /// <summary>Sự kiện đổi state — UI package đăng ký để đồng bộ view.</summary>
+    public event System.Action<TrainState> OnStateChanged;
+
+    /// <summary>Tổng thời gian 1 chuyến vận chuyển (giây).</summary>
+    public float TripTotalDuration => tripDurationSeconds;
+
+    /// <summary>Snapshot hàng đã gửi của chuyến hiện tại (cho popup 'Đang vận chuyển').</summary>
+    public TrainWagonSlotData[] LastSentCargo => _lastSentCargo;
+
+    /// <summary>Giá kim cương tăng tốc hiện tại — đồng nhất công thức hệ xây dựng.</summary>
+    public int SpeedUpCost => State == TrainState.Processing
+        ? Mathf.Max(1, ConstructionManager.RushCostFor(TripRemainingTime))
+        : 0;
+
     /// <summary>
-    /// Thời gian còn lại của chuyến tàu, tính bằng giây — LUÔN BẰNG 0.
-    ///
-    /// GIỮ LẠI property này vì `TrainStationBuilding.HandleClick()` đang gọi (xoá là vỡ
-    /// biên dịch), nhưng nó không còn biến nào để đọc: hệ timer đã bị gỡ (xem khối
-    /// "TIMER Ở HẦM" ở trên). Trả thẳng 0 chứ không đọc `_tripEndTime` chết — hành vi y
-    /// hệt bản cũ (`_tripEndTime` chưa từng được gán nên hiệu luôn âm và bị kẹp về 0),
-    /// chỉ khác là giờ đọc code là hiểu ngay, không phải dò xem ai gán biến đó.
+    /// Thời gian còn lại của chuyến (giây) — timer THẬT theo đồng hồ hệ thống,
+    /// chạy nền kể cả khi đóng popup hoặc tắt game (persist qua PlayerPrefs).
     /// </summary>
-    public float TripRemainingTime => 0f;
+    public float TripRemainingTime => State == TrainState.Processing
+        ? Mathf.Max(0f, (float)(_tripEndUnix - NowUnix()))
+        : 0f;
+
+    private double _tripEndUnix;
+    private TrainWagonSlotData[] _lastSentCargo;
+
+    private static double NowUnix() => System.DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -118,6 +131,13 @@ public class TrainManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+    }
+
+    void Update()
+    {
+        // Timer chuyến tàu — tính theo unix time nên tự "chạy" cả khi offline/đóng popup
+        if (State == TrainState.Processing && NowUnix() >= _tripEndUnix)
+            FinishProcessing();
     }
 
     void Start()
@@ -156,6 +176,7 @@ public class TrainManager : MonoBehaviour
     public void ResetTrain()
     {
         StopAllCoroutines();
+        PlayerPrefs.DeleteKey(SaveKey);
         shippingPathFollower?.ShowTrain();
         rewardPathFollower?.HideTrain();
         HideAllRewardSlots();
@@ -172,12 +193,16 @@ public class TrainManager : MonoBehaviour
     {
         yield return null;
 
-        // Äáº£m báº£o tÃ u Má»šI hiá»‡n trÆ°á»›c khi HideTrain() lÃ m báº¥t cá»© Ä‘iá»u gÃ¬
+        // Đảm bảo tàu MỚI hiện trước khi HideTrain() làm bất cứ điều gì
         shippingPathFollower.ShowTrain();
 
-        // TÃ u CÅ¨ áº©n hoÃ n toÃ n lÃºc Ä‘áº§u
+        // Tàu CŨ ẩn hoàn toàn lúc đầu
         rewardPathFollower.HideTrain();
         HideAllRewardSlots();
+
+        // Khôi phục chuyến dở dang (timer chạy nền cả khi tắt game)
+        if (TryRestoreTrainState())
+            yield break;
 
         GenerateNewTrip();
 
@@ -227,9 +252,19 @@ public class TrainManager : MonoBehaviour
         if (slot.mode != TrainWagonSlotMode.CargoRequest) return;
         if (slot.IsCargoComplete)                         return;
 
+        // Ưu tiên popup nạp hàng mới (Export_Train_UI_Package) — cùng đọc SlotData, 1 nguồn sự thật
+        var pkgLoad = ExportTrainUIPackage.TrainLoadPopupUI.Instance;
+        if (pkgLoad == null)
+            pkgLoad = FindFirstObjectByType<ExportTrainUIPackage.TrainLoadPopupUI>(FindObjectsInactive.Include);
+        if (pkgLoad != null)
+        {
+            pkgLoad.OpenForWagon(slotIndex);
+            return;
+        }
+
         if (loadPopup == null)
         {
-            Debug.LogWarning("[Train] loadPopup == null â€” kÃ©o Popup_item_Train vÃ o Inspector.");
+            Debug.LogWarning("[Train] loadPopup == null — kéo Popup_item_Train vào Inspector.");
             return;
         }
 
@@ -248,20 +283,19 @@ public class TrainManager : MonoBehaviour
 
         if (!TrainInventoryAdapter.HasItem(slot.itemId, 1))
         {
-            Debug.LogWarning($"[Train] KhÃ´ng Ä‘á»§ '{slot.displayName}' trong kho.");
-            return; // Popup váº«n má»Ÿ Ä‘á»ƒ user tá»± Ä‘Ã³ng
+            FarmUIManager.Instance?.ShowHint($"Bạn chưa đủ {slot.displayName} — trồng/sản xuất thêm nhé!");
+            return; // Popup vẫn mở để user tự đóng
         }
 
         if (!TrainInventoryAdapter.RemoveItem(slot.itemId, 1)) return;
 
         slot.currentAmount++;
 
-        // F5 — báo nhiệm vụ. Trước đây nạp cả 4 toa tàu mà không nhiệm vụ nào nhích:
-        // tàu là một trong bốn nguồn thu chính nhưng lại đứng ngoài hệ tiến độ.
         MissionProgressTracker.ReportEvent(MissionEventType.LoadTrainCargo, slot.itemId, 1);
 
         loadPopup?.RefreshPopup();
         RefreshShippingSlotUI(slotIndex);
+        SaveTrainState();
 
         if (slot.IsCargoComplete)
         {
@@ -270,8 +304,49 @@ public class TrainManager : MonoBehaviour
         }
     }
 
+    /// <summary>Nút "NẠP TẤT CẢ" — nạp tối đa có thể từ kho vào toa. Trả về số đã nạp.</summary>
+    public int TryLoadAllToSlot(int slotIndex)
+    {
+        if (State != TrainState.WaitingForLoad) return 0;
+        if (!IsValidSlot(slotIndex))            return 0;
+
+        var slot = SlotData[slotIndex];
+        if (slot.mode != TrainWagonSlotMode.CargoRequest) return 0;
+        if (slot.IsCargoComplete)                         return 0;
+
+        int needed  = slot.requiredAmount - slot.currentAmount;
+        int inStock = FarmInventoryManager.Instance != null
+            ? FarmInventoryManager.Instance.GetAmount(slot.itemId) : 0;
+        int toAdd   = Mathf.Min(needed, inStock);
+
+        if (toAdd <= 0)
+        {
+            FarmUIManager.Instance?.ShowHint($"Bạn chưa đủ {slot.displayName} — trồng/sản xuất thêm nhé!");
+            return 0;
+        }
+
+        if (!TrainInventoryAdapter.RemoveItem(slot.itemId, toAdd)) return 0;
+
+        slot.currentAmount += toAdd;
+        MissionProgressTracker.ReportEvent(MissionEventType.LoadTrainCargo, slot.itemId, toAdd);
+
+        loadPopup?.RefreshPopup();
+        RefreshShippingSlotUI(slotIndex);
+        SaveTrainState();
+
+        if (slot.IsCargoComplete)
+        {
+            loadPopup?.ClosePopup();
+            CheckAllLoaded();
+        }
+        return toAdd;
+    }
+
     /// NgÆ°á»i chÆ¡i click toa cá»§a tÃ u CÅ¨ Ä‘á»ƒ thu reward.
-    public void CollectReward(int slotIndex)
+    public void CollectReward(int slotIndex) => CollectReward(slotIndex, true);
+
+    /// <summary>spawnWorldFx=false khi gọi từ popup — popup tự vẽ FX bay vào kho, tránh FX world thừa sau lớp dim.</summary>
+    public void CollectReward(int slotIndex, bool spawnWorldFx)
     {
         if (State != TrainState.RewardReadyToCollect) return;
         if (!IsValidSlot(slotIndex))                  return;
@@ -297,26 +372,33 @@ public class TrainManager : MonoBehaviour
             PlayerProgressManager.Instance.AddExp(expPerReward);
 
 
-        SpawnItemFlyFX(slotIndex, slot);
-        SpawnExpFlyFX(slotIndex);
+        if (spawnWorldFx)
+        {
+            SpawnItemFlyFX(slotIndex, slot);
+            SpawnExpFlyFX(slotIndex);
+        }
         RefreshRewardSlotUI(slotIndex);
+        SaveTrainState();
         CheckAllCollected();
     }
 
     // â”€â”€â”€ Flow: WaitingForLoad â†’ ShipDeparting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    private void CheckAllLoaded()
+    public void CheckAllLoaded()
     {
+        if (State != TrainState.WaitingForLoad) return;
         if (SlotData == null) return;
         foreach (var s in SlotData)
             if (s.mode == TrainWagonSlotMode.CargoRequest && !s.IsCargoComplete) return;
 
-
-        // Táº¯t collider (giá»¯ visual cargo trÃªn toa suá»‘t hÃ nh trÃ¬nh)
+        // Tàu chạy SẠCH — ẩn hết icon hàng trên toa khi khởi hành (yêu cầu Sếp 2026-08-26:
+        // "tàu ngoài world chỉ chạy thôi, đừng chất hàng lên"). Hàng đã gửi xem trong popup vận chuyển.
         DisableAllShippingSlotInteractions();
+        HideAllShippingSlots();
         ChangeState(TrainState.ShipDeparting);
+        SaveTrainState(); // M1: đóng cửa sổ hở — thoát game lúc tàu đang vào hầm vẫn khôi phục đúng
 
-        // Cháº·ng 2: StationShip â†’ TunnelShip
+        // Chặng 2: StationShip -> TunnelShip
         SendShippingFromStationToTunnel();
     }
 
@@ -335,29 +417,90 @@ public class TrainManager : MonoBehaviour
         Vector3 backwardDir = (hiddenPos - stationPos).normalized;
         shippingPathFollower.SnapToPosition(hiddenPos, backwardDir);
 
-        // 3. Ãp reward vÃ o slot data
+        // 3. Chốt "hàng đã gửi" cho popup 'Đang vận chuyển'
+        SnapshotSentCargo();
+
+        // 4. Bắt đầu đếm ngược chuyến vận chuyển (timer thật, chạy nền + offline)
+        StartProcessing(tripDurationSeconds);
+    }
+    // ─── Flow: Processing (timer thật — khôi phục có duyệt 2026-08-26) ───────────
+
+    /// <summary>Bắt đầu state Processing với timer thật — persist để chạy nền và offline.</summary>
+    private void StartProcessing(float durationSeconds)
+    {
+        _tripEndUnix = NowUnix() + Mathf.Max(1f, durationSeconds);
+        ChangeState(TrainState.Processing);
+        SaveTrainState();
+    }
+
+    /// <summary>Timer hết (hoặc tăng tốc) → áp thưởng, tàu CŨ ra khỏi hầm.</summary>
+    private void FinishProcessing()
+    {
+        if (State != TrainState.Processing) return;
+
         ApplyRewardsToSlots();
 
-        // 4. TÃ u reward xuáº¥t hiá»‡n tá»« háº§m cháº¡y vá» ga NGAY Láº¬P Tá»¨C
         ChangeState(TrainState.RewardArriving);
         RefreshAllRewardSlots();
         DisableAllRewardSlotInteractions();
         ShowRewardAtTunnelThenMoveToStation(OnRewardArrivedAtStation);
+        SaveTrainState();
     }
-    // OnProcessingTimerExpired() ĐÃ XOÁ (CS-2): chỉ có khối comment trong Update()
-    // gọi nó — 0 lời gọi thật. Phần việc của nó (áp thưởng → cho tàu cũ ra khỏi hầm)
-    // đã nằm nguyên trong OnShippingReachedTunnel() ở trên, không mất bước nào.
+
+    /// <summary>
+    /// Tăng tốc chuyến đang vận chuyển bằng kim cương.
+    /// Giá = ConstructionManager.RushCostFor(thời gian còn lại) — đồng nhất hệ xây dựng.
+    /// Trả false (kèm hint) nếu không đủ kim cương.
+    /// </summary>
+    public bool TrySpeedUp()
+    {
+        if (State != TrainState.Processing) return false;
+
+        int cost = SpeedUpCost;
+        if (FarmEconomyManager.Instance == null || !FarmEconomyManager.Instance.SpendGems(cost))
+        {
+            FarmUIManager.Instance?.ShowHint("Không đủ kim cương để tăng tốc tàu.");
+            return false;
+        }
+
+        _tripEndUnix = NowUnix();
+        FinishProcessing();
+        return true;
+    }
+
+    /// <summary>Chụp lại hàng đã nạp trước khi SlotData bị ApplyRewardsToSlots() ghi đè.</summary>
+    private void SnapshotSentCargo()
+    {
+        if (SlotData == null) { _lastSentCargo = null; return; }
+        _lastSentCargo = new TrainWagonSlotData[SlotData.Length];
+        for (int i = 0; i < SlotData.Length; i++)
+        {
+            var s = SlotData[i];
+            if (s == null) continue;
+            _lastSentCargo[i] = new TrainWagonSlotData
+            {
+                itemId         = s.itemId,
+                displayName    = s.displayName,
+                icon           = s.icon,
+                mode           = s.mode,
+                currentAmount  = s.currentAmount,
+                requiredAmount = s.requiredAmount
+            };
+        }
+    }
 
 
     // â”€â”€â”€ Flow: RewardArriving â†’ RewardReadyToCollect â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void OnRewardArrivedAtStation()
     {
-
         ChangeState(TrainState.RewardReadyToCollect);
 
-        // Refresh láº¡i Ä‘á»ƒ báº­t collider cho user click
+        // Refresh lại để bật collider cho user click
         RefreshAllRewardSlots();
+
+        FarmUIManager.Instance?.ShowHint("Tàu đã về ga — chạm vào ga tàu để nhận hàng!");
+        SaveTrainState();
     }
 
     // â”€â”€â”€ Flow: RewardReadyToCollect â†’ RewardDeparting â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -368,12 +511,19 @@ public class TrainManager : MonoBehaviour
         foreach (var s in SlotData)
             if (s.mode == TrainWagonSlotMode.Reward && !s.isCollected) return;
 
+        // Vàng thưởng chốt chuyến (đã duyệt 2026-08-26: vật liệu + ít vàng)
+        if (goldBonusPerTrip > 0 && FarmEconomyManager.Instance != null)
+        {
+            FarmEconomyManager.Instance.AddGold(goldBonusPerTrip);
+            FarmUIManager.Instance?.ShowHint($"+{goldBonusPerTrip} vàng thưởng chuyến tàu!");
+        }
 
         HideAllRewardSlots();
         ChangeState(TrainState.RewardDeparting);
 
-        // Cháº·ng 4: StationReward â†’ HiddenReward
+        // Chặng 4: StationReward -> HiddenReward
         SendRewardFromStationToHidden();
+        SaveTrainState();
     }
 
     // â”€â”€â”€ Flow: RewardDeparting â†’ WaitingForLoad â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -400,6 +550,7 @@ public class TrainManager : MonoBehaviour
         {
             ChangeState(TrainState.WaitingForLoad);
             RefreshAllShippingSlots();
+            SaveTrainState();
         });
     }
 
@@ -520,10 +671,11 @@ public class TrainManager : MonoBehaviour
     {
         State = newState;
 
-        // áº¨n process popup má»i state ngoáº¡i trá»« Processing
-        // (Processing tá»± show trong StartProcessing)
+        // Ẩn process popup cũ ở mọi state ngoại trừ Processing
         if (newState != TrainState.Processing)
             processPopup?.Hide();
+
+        OnStateChanged?.Invoke(newState);
     }
 
     // â”€â”€â”€ UI helpers â€” Shipping slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -531,6 +683,7 @@ public class TrainManager : MonoBehaviour
     private void RefreshAllShippingSlots()
     {
         if (shippingWagonSlots == null || SlotData == null) return;
+        if (!showWagonIconsInWorld) { HideAllShippingSlots(); return; }
         for (int i = 0; i < shippingWagonSlots.Length; i++)
         {
             if (shippingWagonSlots[i] == null) continue;
@@ -541,6 +694,7 @@ public class TrainManager : MonoBehaviour
 
     private void RefreshShippingSlotUI(int i)
     {
+        if (!showWagonIconsInWorld) return;
         if (shippingWagonSlots == null || i >= shippingWagonSlots.Length) return;
         if (shippingWagonSlots[i] == null || i >= SlotData.Length)        return;
         shippingWagonSlots[i].Refresh(SlotData[i]);
@@ -563,6 +717,7 @@ public class TrainManager : MonoBehaviour
     private void RefreshAllRewardSlots()
     {
         if (rewardWagonSlots == null || SlotData == null) return;
+        if (!showWagonIconsInWorld) { HideAllRewardSlots(); return; }
         for (int i = 0; i < rewardWagonSlots.Length; i++)
         {
             if (rewardWagonSlots[i] == null) continue;
@@ -573,6 +728,7 @@ public class TrainManager : MonoBehaviour
 
     private void RefreshRewardSlotUI(int i)
     {
+        if (!showWagonIconsInWorld) return;
         if (rewardWagonSlots == null || i >= rewardWagonSlots.Length) return;
         if (rewardWagonSlots[i] == null || i >= SlotData.Length)      return;
         rewardWagonSlots[i].Refresh(SlotData[i]);
@@ -676,5 +832,130 @@ public class TrainManager : MonoBehaviour
                 new TrainRewardItem { itemId = "kim",  displayName = "Kim",  rewardAmount = 1 },
             }
         };
+    }
+    // ─── Persistence — chuyến tàu sống sót qua tắt game (duyệt 2026-08-26) ───────
+
+    private const string SaveKey = "train_trip_state_v1";
+
+    [System.Serializable]
+    private class TrainSaveData
+    {
+        public int    state;
+        public int    tripIndex;
+        public double tripEndUnix;
+        public int[]  currentAmounts;
+        public bool[] collected;
+    }
+
+    private void SaveTrainState()
+    {
+        try
+        {
+            var d = new TrainSaveData
+            {
+                state       = (int)State,
+                tripIndex   = _tripIndex,
+                tripEndUnix = _tripEndUnix,
+            };
+            if (SlotData != null)
+            {
+                d.currentAmounts = new int[SlotData.Length];
+                d.collected      = new bool[SlotData.Length];
+                for (int i = 0; i < SlotData.Length; i++)
+                {
+                    d.currentAmounts[i] = SlotData[i] != null ? SlotData[i].currentAmount : 0;
+                    d.collected[i]      = SlotData[i] != null && SlotData[i].isCollected;
+                }
+            }
+            PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(d));
+            PlayerPrefs.Save();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[Train] Không lưu được trạng thái tàu: {e.Message}");
+        }
+    }
+
+    /// <summary>true nếu khôi phục được chuyến dở dang (tự set state + visual tương ứng).</summary>
+    private bool TryRestoreTrainState()
+    {
+        if (!PlayerPrefs.HasKey(SaveKey)) return false;
+
+        TrainSaveData d;
+        try   { d = JsonUtility.FromJson<TrainSaveData>(PlayerPrefs.GetString(SaveKey)); }
+        catch { return false; }
+        if (d == null) return false;
+
+        _tripIndex   = Mathf.Max(0, d.tripIndex);
+        _tripEndUnix = d.tripEndUnix;
+        GenerateNewTrip();
+
+        var saved = (TrainState)d.state;
+        switch (saved)
+        {
+            case TrainState.WaitingForLoad:
+                if (d.currentAmounts != null && SlotData != null)
+                    for (int i = 0; i < SlotData.Length && i < d.currentAmounts.Length; i++)
+                        SlotData[i].currentAmount = d.currentAmounts[i];
+                ShowShippingAtHiddenThenMoveToStation(() =>
+                {
+                    ChangeState(TrainState.WaitingForLoad);
+                    RefreshAllShippingSlots();
+                    CheckAllLoaded(); // M1: save cũ đã đủ hàng → tự khởi hành, không kẹt ga
+                });
+                return true;
+
+            case TrainState.ShipDeparting:
+                // Thoát game giữa animation ga→hầm: timer CHƯA từng chạy → bắt đầu chuyến đủ giờ
+                SnapshotSentCargo();
+                shippingPathFollower.HideTrain();
+                HideAllShippingSlots();
+                shippingPathFollower.SnapToPosition(pointHiddenShip.position,
+                    (pointHiddenShip.position - pointStationShip.position).normalized);
+                StartProcessing(tripDurationSeconds);
+                return true;
+
+            case TrainState.Processing:
+                // Đang vận chuyển — 2 tàu ẩn, Update() sẽ tự kết thúc nếu đã hết giờ (kể cả offline)
+                SnapshotSentCargo();
+                shippingPathFollower.HideTrain();
+                HideAllShippingSlots();
+                shippingPathFollower.SnapToPosition(pointHiddenShip.position,
+                    (pointHiddenShip.position - pointStationShip.position).normalized);
+                ChangeState(TrainState.Processing);
+                return true;
+
+            case TrainState.RewardArriving:
+            case TrainState.RewardReadyToCollect:
+                SnapshotSentCargo();
+                shippingPathFollower.HideTrain();
+                HideAllShippingSlots();
+                shippingPathFollower.SnapToPosition(pointHiddenShip.position,
+                    (pointHiddenShip.position - pointStationShip.position).normalized);
+                ApplyRewardsToSlots();
+                if (d.collected != null && SlotData != null)
+                    for (int i = 0; i < SlotData.Length && i < d.collected.Length; i++)
+                        SlotData[i].isCollected = d.collected[i];
+                RefreshAllRewardSlots();
+                DisableAllRewardSlotInteractions();
+                ShowRewardAtTunnelThenMoveToStation(() =>
+                {
+                    OnRewardArrivedAtStation();
+                    CheckAllCollected(); // save hiếm: đã thu hết nhưng chưa kịp rời ga → tự rời
+                });
+                return true;
+
+            default:
+                // RewardDeparting — coi như chuyến đã xong, sang chuyến mới
+                _tripIndex++;
+                GenerateNewTrip();
+                ShowShippingAtHiddenThenMoveToStation(() =>
+                {
+                    ChangeState(TrainState.WaitingForLoad);
+                    RefreshAllShippingSlots();
+                    SaveTrainState();
+                });
+                return true;
+        }
     }
 }

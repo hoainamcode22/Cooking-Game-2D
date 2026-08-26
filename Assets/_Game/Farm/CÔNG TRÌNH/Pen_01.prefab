@@ -590,11 +590,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_SizeDelta.x
-      value: 400
+      value: 130
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_SizeDelta.y
-      value: 150
+      value: 130
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_LocalPosition.x
@@ -626,11 +626,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -3.41
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.28
+      value: 3.2
       objectReference: {fileID: 0}
     - target: {fileID: 1435085710780094715, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -668,6 +668,30 @@ PrefabInstance:
       propertyPath: config
       value: 
       objectReference: {fileID: 11400000, guid: 9d321f1ba32489945b703734fe701134, type: 2}
+    - target: {fileID: 2904645104350905686, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: processSortingOrder
+      value: 1500
+      objectReference: {fileID: 0}
+    - target: {fileID: 2904645104350905686, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: harvestSpawnUpOffset
+      value: 280
+      objectReference: {fileID: 0}
+    - target: {fileID: 2904645104350905686, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: readyBubbleLocalPos.y
+      value: 320
+      objectReference: {fileID: 0}
+    - target: {fileID: 2904645104350905686, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: readyBubbleSortingOrder
+      value: 1500
+      objectReference: {fileID: 0}
+    - target: {fileID: 3510000934354691957, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 3510000934354691957, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 120
+      objectReference: {fileID: 0}
     - target: {fileID: 3547952657155914218, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: feedItemId
       value: rice
@@ -696,6 +720,18 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
+    - target: {fileID: 3920328398925747657, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 270
+      objectReference: {fileID: 0}
+    - target: {fileID: 3920328398925747657, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 136
+      objectReference: {fileID: 0}
+    - target: {fileID: 4355131913021778495, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1500
+      objectReference: {fileID: 0}
     - target: {fileID: 4355131913021778495, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25

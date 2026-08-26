@@ -99,26 +99,45 @@ public class DraggableFeedItem : MonoBehaviour, IBeginDragHandler, IDragHandler,
                 PenDropTarget target = hit.GetComponent<PenDropTarget>() ?? hit.GetComponentInParent<PenDropTarget>();
                 if (target != null)
                 {
+                    Debug.Log($"[FeedDrop] ✅ Thả trúng PenDropTarget={target.name}, food={feedItemId}");
                     return target.ReceiveFoodDrop(feedItemId);
                 }
             }
         }
 
-        // Fallback: Nếu thả gần chuồng cha
+        // Fallback: Nếu thả gần chuồng cha — tăng bán kính 4→6 để chuồng bò/heo lớn vẫn nhận
         var parentPen = GetComponentInParent<PenMiniPanelUI>();
         if (parentPen != null)
         {
             float dist = Vector2.Distance(world2, parentPen.transform.position);
-            if (dist < 4f)
+            Debug.Log($"[FeedDrop] Fallback check dist={dist:F2} to {parentPen.name}, food={feedItemId}");
+            if (dist < 6f)
             {
                 var target = parentPen.GetComponent<PenDropTarget>() ?? parentPen.GetComponentInChildren<PenDropTarget>() ?? parentPen.GetComponentInParent<PenDropTarget>();
                 if (target != null)
                 {
+                    Debug.Log($"[FeedDrop] ✅ Fallback thả vào {target.name}");
                     return target.ReceiveFoodDrop(feedItemId);
                 }
             }
         }
 
+        // Fallback cuối: tìm tất cả PenDropTarget trong scene, chọn cái gần nhất trong 6 unit
+        var allTargets = Object.FindObjectsByType<PenDropTarget>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        PenDropTarget closest = null;
+        float closestDist = 6f;
+        foreach (var t in allTargets)
+        {
+            float d = Vector2.Distance(world2, (Vector2)t.transform.position);
+            if (d < closestDist) { closestDist = d; closest = t; }
+        }
+        if (closest != null)
+        {
+            Debug.Log($"[FeedDrop] ✅ Scene fallback thả vào {closest.name}, dist={closestDist:F2}");
+            return closest.ReceiveFoodDrop(feedItemId);
+        }
+
+        Debug.LogWarning($"[FeedDrop] ❌ Không tìm thấy PenDropTarget nào gần vị trí drop, food={feedItemId}");
         return false;
     }
 }

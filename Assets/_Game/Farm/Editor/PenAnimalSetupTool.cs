@@ -121,6 +121,52 @@ public static class PenAnimalSetupTool
             SetPrivateField(spawner, "soundClips", sounds);
             SetPrivateField(spawner, "sortingOrderOffset", 50);
 
+            // Cấu hình PF_PenMiniPanel nằm chính giữa phía trên chuồng và sorting cao hơn chuồng
+            PenMiniPanelUI miniPanel = prefabRoot.GetComponentInChildren<PenMiniPanelUI>(true);
+            if (miniPanel != null)
+            {
+                Canvas panelCanvas = miniPanel.GetComponent<Canvas>();
+                if (panelCanvas != null)
+                {
+                    panelCanvas.overrideSorting = true;
+                    panelCanvas.sortingOrder = 1500;
+                }
+
+                RectTransform panelRt = miniPanel.GetComponent<RectTransform>();
+                if (panelRt != null)
+                {
+                    panelRt.anchoredPosition = new Vector2(0f, 3.2f);
+                    panelRt.sizeDelta = new Vector2(130f, 130f);
+                }
+
+                SetPrivateField(miniPanel, "harvestSpawnUpOffset", 280f);
+                SetPrivateField(miniPanel, "readyBubbleLocalPos", new Vector2(0f, 320f));
+                SetPrivateField(miniPanel, "readyBubbleSortingOrder", 1500);
+                SetPrivateField(miniPanel, "processSortingOrder", 1500);
+
+                Transform panelContent = miniPanel.transform.Find("PanelContent");
+                if (panelContent != null)
+                {
+                    RectTransform pcRt = panelContent.GetComponent<RectTransform>();
+                    if (pcRt != null)
+                    {
+                        pcRt.anchoredPosition = Vector2.zero;
+                        pcRt.sizeDelta = new Vector2(120f, 120f);
+                    }
+
+                    Transform bg = panelContent.Find("Background");
+                    if (bg != null)
+                    {
+                        RectTransform bgRt = bg.GetComponent<RectTransform>();
+                        if (bgRt != null)
+                        {
+                            bgRt.anchoredPosition = Vector2.zero;
+                            bgRt.sizeDelta = new Vector2(120f, 120f);
+                        }
+                    }
+                }
+            }
+
             PrefabUtility.SaveAsPrefabAsset(prefabRoot, targetPath);
             PrefabUtility.UnloadPrefabContents(prefabRoot);
         }

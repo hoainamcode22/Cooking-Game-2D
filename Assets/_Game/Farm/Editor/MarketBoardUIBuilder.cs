@@ -9,60 +9,37 @@ using UnityEngine.UI;
 
 /// <summary>
 /// ══════════════════════════════════════════════════════════════════════════
-///  DỰNG HIERARCHY BẢNG TIN CHỢ + 2 PREFAB (A8)
+///  DỰNG HIERARCHY BẢNG TIN CHỢ + PREFABS VỚI ASSETS SVG CAO CẤP
 /// ══════════════════════════════════════════════════════════════════════════
-///
-/// VÌ SAO dựng ở Editor chứ không dựng lúc chạy:
-/// dự án đã có bài học UnifiedTaskPopupUI — 1433 dòng `new GameObject()` lúc runtime,
-/// muốn dịch một cái nút sang phải 10px cũng phải đọc hết file rồi build lại.
-/// Dựng bằng tool: chạy một lần ra hierarchy thật trong scene, sau đó chủ dự án
-/// kéo thả trong Inspector như mọi UI bình thường. Cần dựng lại thì bấm menu.
-///
-/// ⚠️ Tool này XOÁ toàn bộ con của Canvas_MarketPopup (trừ object mang MarketManager)
-/// rồi dựng lại từ đầu. Chỉnh tay xong mà chạy lại là mất chỉnh tay.
-///
-/// ── TRANG TRÍ KHÁC VIDEO THAM CHIẾU (tránh đạo ý tưởng) ─────────────────
-/// Video: nền cam đất · mái hiên SỌC xanh-trắng · thẻ khung vé GÓC KHUYẾT ·
-///        icon danh mục treo DÂY THỪNG.
-/// Bản này: nền xanh mòng két · dải CHẤM BI tím-kem · thẻ BO GÓC TRÒN ĐỀU ·
-///        tab danh mục dạng VIÊN THUỐC gắn trên thanh ray dọc.
-/// Bố cục (lọc dọc bên trái · đếm ngược + làm mới trên phải · thẻ 2 tầng có người bán)
-/// giữ theo video vì đó là bố cục tốt, còn diện mạo thì đổi hẳn.
 /// </summary>
 public static class MarketBoardUIBuilder
 {
-    // ── Kích thước ───────────────────────────────────────────────────────
-    private const float PopupWidth   = 1180f;
-    private const float PopupHeight  = 860f;
-    private const float RibbonHeight = 64f;
-    private const float RailWidth    = 120f;
-    private const float CardWidth    = MarketBoardPalette.CardWidth;
-    private const float CardHeight   = MarketBoardPalette.CardHeight;
-    private const float CardSpacing  = 16f;
-    private const float TabHeight    = 70f;
-    private const float TabSpacing   = 8f;
+    private const string ShopSvgDir     = "Assets/Assetsgame/popup/ui_shop_svg/generated_sprites";
+    private const string PerfectSvgDir  = "Assets/Assetsgame/popup/ui_svg_perfect/generated_sprites";
+    private const string BuildingSvgDir = "Assets/Assetsgame/popup/ui_building_svg/generated_sprites";
+    private const string RedesignArtDir = "Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets";
+    private const string MarketArtDir   = "Assets/_Game/Farm/Art/UI_MarketBoard";
 
-    /// <summary>
-    /// Khoảng chừa phía trên cho dải trang trí + tiêu đề + hàng chip đồng hồ.
-    /// Đổi số này là cả ray danh mục lẫn vùng lưới cùng dịch — để hai chỗ rời rạc
-    /// thì sửa một bên quên bên kia, ray sẽ đè lên nút làm mới.
-    /// </summary>
-    private const float ContentTopInset = 186f;
+    // ── Kích thước Full-Screen ───────────────────────────────────────────
+    private const float PopupWidth      = 1420f;
+    private const float PopupHeight     = 840f;
+    private const float RailWidth       = 192f;
+    private const float CardWidth       = 265f;
+    private const float CardHeight      = 268f;
+    private const float CardSpacing     = 16f;
+    private const float TabHeight       = 66f;
+    private const float TabSpacing      = 8f;
+    private const float ContentTopInset = 176f;
 
-    private const string PrefabFolder    = "Assets/_Game/Prefab/ui/Market";
-    private const string CardPrefabPath  = PrefabFolder + "/MarketListingCard_Prefab.prefab";
-    private const string TabPrefabPath   = PrefabFolder + "/MarketCategoryTab_Prefab.prefab";
-    private const string CanvasName      = "Canvas_MarketPopup";
+    private const string PrefabFolder   = "Assets/_Game/Prefab/ui/Market";
+    private const string CardPrefabPath = PrefabFolder + "/MarketListingCard_Prefab.prefab";
+    private const string TabPrefabPath  = PrefabFolder + "/MarketCategoryTab_Prefab.prefab";
+    private const string CanvasName     = "Canvas_MarketPopup";
 
     // ══════════════════════════════════════════════════════════════════════
     //  MENU
     // ══════════════════════════════════════════════════════════════════════
 
-    /// <summary>
-    /// Một nút làm hết. Thứ tự BẮT BUỘC: sprite → dữ liệu → hierarchy → nguồn icon.
-    /// Dựng hierarchy trước khi có sprite thì mọi Image ra ô vuông trắng; gán nguồn icon
-    /// trước khi có MarketManager mới thì gán vào object sắp bị xoá.
-    /// </summary>
     [MenuItem("Tools/Farm/Chợ/0 · CHẠY TẤT CẢ (sprite → dữ liệu → UI → icon)", false, 0)]
     public static void RunEverything()
     {
@@ -72,7 +49,6 @@ public static class MarketBoardUIBuilder
             return;
         }
 
-        MarketBoardSpriteFactory.GenerateAll(false);
         MarketDatabaseGeneratorTool.Generate();
         BuildAll();
         RefillVisualSources();
@@ -87,8 +63,6 @@ public static class MarketBoardUIBuilder
             return;
         }
 
-        MarketBoardSpriteFactory.GenerateAll(false);
-
         GameObject cardPrefab = BuildCardPrefab();
         GameObject tabPrefab  = BuildTabPrefab();
 
@@ -102,7 +76,7 @@ public static class MarketBoardUIBuilder
 
         EditorUtility.DisplayDialog("Chợ",
             ok
-                ? "Đã dựng lại Bảng Tin Chợ.\n\nPrefab:\n" + CardPrefabPath + "\n" + TabPrefabPath +
+                ? "Đã dựng lại Bảng Tin Chợ với bộ Frame Gỗ & Tab cao cấp thành công!\n\nPrefab:\n" + CardPrefabPath + "\n" + TabPrefabPath +
                   "\n\nNhớ Ctrl+S để lưu scene."
                 : "Không tìm thấy " + CanvasName + " trong scene đang mở.",
             "OK");
@@ -157,16 +131,13 @@ public static class MarketBoardUIBuilder
 
         Undo.RegisterFullObjectHierarchyUndo(canvasGO, "Dựng lại Bảng Tin Chợ");
 
-        // MarketManager phải được GIỮ NGUYÊN component: PopupManager, MarketClickOpen,
-        // BuildingInteractable đang trỏ tới nó bằng tham chiếu scene. Tạo mới là ba
-        // chỗ đó thành null mà không có lỗi biên dịch nào cảnh báo.
         MarketManager manager = Object.FindFirstObjectByType<MarketManager>(FindObjectsInactive.Include);
         GameObject boardGO;
 
         if (manager != null)
         {
             boardGO = manager.gameObject;
-            boardGO.transform.SetParent(canvasGO.transform, false);   // gỡ khỏi cây cũ trước khi xoá cây cũ
+            boardGO.transform.SetParent(canvasGO.transform, false);
         }
         else
         {
@@ -175,7 +146,7 @@ public static class MarketBoardUIBuilder
             manager = boardGO.AddComponent<MarketManager>();
         }
 
-        // Xoá cây cũ (Panel_Background và mọi thứ bên trong)
+        // Xoá cây cũ
         for (int i = canvasGO.transform.childCount - 1; i >= 0; i--)
         {
             Transform child = canvasGO.transform.GetChild(i);
@@ -184,170 +155,154 @@ public static class MarketBoardUIBuilder
             Object.DestroyImmediate(child.gameObject);
         }
 
-        // ── Panel_Dim: gốc popup, tắt sẵn ────────────────────────────────
+        // ── 1. Panel_Dim: Overlay phủ tối toàn màn hình ───────────────────
         RectTransform dim = NewRect("Panel_Dim", canvasGO.transform);
         StretchFull(dim);
-        AddImage(dim, SpritePanel(), MarketBoardPalette.Dim, Image.Type.Sliced);
+        dim.sizeDelta = new Vector2(3840f, 2160f);
+        Image dimImg = dim.gameObject.AddComponent<Image>();
+        dimImg.color = new Color(0.04f, 0.08f, 0.03f, 0.75f);
+        dimImg.raycastTarget = true;
 
         boardGO.name = "Popup_Board";
         boardGO.transform.SetParent(dim, false);
 
-        RectTransform board = boardGO.GetComponent<RectTransform>();
-        if (board == null)
-            board = boardGO.AddComponent<RectTransform>();
-
+        RectTransform board = boardGO.GetComponent<RectTransform>() ?? boardGO.AddComponent<RectTransform>();
         Center(board, new Vector2(PopupWidth, PopupHeight));
-        Image boardImage = Ensure<Image>(boardGO);
-        boardImage.sprite = SpritePanel();
-        boardImage.type   = Image.Type.Sliced;
-        boardImage.color  = MarketBoardPalette.PanelBase;
 
-        // Dọn sạch con cũ của board rồi dựng lại
+        // ── 2. Khung gỗ chính (shop_panel.png) ────────────────────────────
+        Image boardImage = Ensure<Image>(boardGO);
+        boardImage.sprite = LoadSprite($"{ShopSvgDir}/shop_panel.png");
+        boardImage.type   = Image.Type.Sliced;
+        boardImage.color  = Color.white;
+
+        // Dọn con cũ
         for (int i = board.childCount - 1; i >= 0; i--)
             Object.DestroyImmediate(board.GetChild(i).gameObject);
 
         MarketBoardUI boardUI = Ensure<MarketBoardUI>(boardGO);
 
-        // ── 4 Đinh sắt góc ───────────────────────────────────────────────
-        Vector2[] studPositions = {
-            new Vector2(-680f, 380f), new Vector2(680f, 380f),
-            new Vector2(-680f, -380f), new Vector2(680f, -380f)
-        };
-        for (int i = 0; i < studPositions.Length; i++)
-        {
-            Vector2 pos = studPositions[i];
-            RectTransform sRim = NewRect($"Stud_{i}_Rim", board);
-            Center(sRim, new Vector2(30f, 30f));
-            sRim.anchoredPosition = pos;
-            AddImage(sRim, SpriteCircle(), TaskPopupDesign.DinhSatVien, Image.Type.Simple);
-
-            RectTransform sBase = NewRect($"Stud_{i}_Base", board);
-            Center(sBase, new Vector2(26f, 26f));
-            sBase.anchoredPosition = pos;
-            AddImage(sBase, SpriteCircle(), TaskPopupDesign.DinhSatToi, Image.Type.Simple);
-
-            RectTransform sShine = NewRect($"Stud_{i}_Shine", board);
-            Center(sShine, new Vector2(13f, 13f));
-            sShine.anchoredPosition = pos + new Vector2(-2f, 2f);
-            AddImage(sShine, SpriteCircle(), TaskPopupDesign.DinhSatSang, Image.Type.Simple);
-        }
-
-        // ── Tiêu đề Ruy băng 3D ("BẢNG TIN CHỢ") ────────────────────────
-        Sprite bannerRibbonSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_banner_ribbon.png");
+        // ── 3. Tiêu đề Ruy băng 3D ("BẢNG TIN CHỢ") ──────────────────────
         RectTransform bannerRect = NewRect("Header_Banner", board);
-        AnchorTop(bannerRect, new Vector2(620f, 126f), new Vector2(0f, 18f));
+        AnchorTop(bannerRect, new Vector2(620f, 126f), new Vector2(0f, 16f));
         Image bannerImg = bannerRect.gameObject.AddComponent<Image>();
-        bannerImg.sprite = bannerRibbonSpr;
+        bannerImg.sprite = LoadSprite($"{ShopSvgDir}/shop_banner_ribbon.png");
         bannerImg.type = Image.Type.Sliced;
+        bannerImg.color = Color.white;
         bannerImg.raycastTarget = false;
 
         RectTransform titleText = NewRect("Text_Title", bannerRect);
         StretchFull(titleText);
-        TMP_Text txtTitle = AddText(titleText, "BẢNG TIN CHỢ", 46f, TaskPopupDesign.ChuTieuDe,
+        TMP_Text txtTitle = AddText(titleText, "BẢNG TIN CHỢ", 44f, new Color(0.36f, 0.20f, 0.09f),
                 TextAlignmentOptions.Center, FontStyles.Bold);
         txtTitle.characterSpacing = 4f;
         txtTitle.textWrappingMode = TextWrappingModes.NoWrap;
 
-        // ── Nút Đóng [X] (btnX.png 90x90) ────────────────────────────────
-        Sprite btnCloseSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/btnX.png");
+        // ── 4. Nút Đóng [X] (btn_close.png / btnX.png) ───────────────────
         RectTransform closeRT = NewRect("Btn_Close", board);
-        AnchorTopRight(closeRT, new Vector2(90f, 90f), new Vector2(26f, 26f));
+        AnchorTopRight(closeRT, new Vector2(86f, 86f), new Vector2(-15f, -15f));
         Image closeImage = closeRT.gameObject.AddComponent<Image>();
-        closeImage.sprite = btnCloseSpr ?? SpriteCircle();
+        closeImage.sprite = LoadSprite($"{PerfectSvgDir}/btn_close.png") 
+                         ?? LoadSprite("Assets/Assetsgame/btnX.png");
         closeImage.preserveAspect = true;
+        closeImage.color = Color.white;
         Button closeButton = closeRT.gameObject.AddComponent<Button>();
         closeButton.targetGraphic = closeImage;
 
-        // ── Ví vàng, góc trên trái ───────────────────────────────────────
+        // ── 5. Ví tiền vàng, góc trên trái ───────────────────────────────
         RectTransform goldChip = NewRect("Chip_Gold", board);
-        AnchorTopLeft(goldChip, new Vector2(230f, 60f), new Vector2(26f, 110f));
-        AddImage(goldChip, SpritePill(), MarketBoardPalette.PanelInset, Image.Type.Sliced);
+        AnchorTopLeft(goldChip, new Vector2(240f, 54f), new Vector2(32f, 96f));
+        Image goldChipImg = AddImage(goldChip, LoadSprite($"{ShopSvgDir}/shop_currency_chip.png") ?? LoadSprite($"{PerfectSvgDir}/stepper_box.png"), Color.white, Image.Type.Sliced);
 
-        RectTransform goldIcon = NewRect("Icon_Gold_ChoArt", goldChip);
-        AnchorLeft(goldIcon, new Vector2(40f, 40f), 14f);
-        AddImage(goldIcon, SpriteCircle(), MarketBoardPalette.TextGold, Image.Type.Simple);
+        RectTransform goldIcon = NewRect("Icon_Gold", goldChip);
+        AnchorLeft(goldIcon, new Vector2(38f, 38f), 10f);
+        Image gIconImg = goldIcon.gameObject.AddComponent<Image>();
+        gIconImg.sprite = LoadSprite($"{RedesignArtDir}/Icon_vang.png");
+        gIconImg.preserveAspect = true;
 
         RectTransform goldText = NewRect("Text_Gold", goldChip);
-        StretchFull(goldText, 62f, 0f, 16f, 0f);
-        TMP_Text textGold = AddText(goldText, "0", 30f, MarketBoardPalette.TextGold,
+        StretchFull(goldText, 56f, 0f, 14f, 0f);
+        TMP_Text textGold = AddText(goldText, "0", 28f, new Color(0.48f, 0.29f, 0.06f),
                                     TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
 
-        // ── Đếm ngược + nút làm mới, góc trên phải ───────────────────────
+        // ── 6. Đếm ngược làm mới chợ (Progress Bar) ─────────────────────
         RectTransform timerChip = NewRect("Chip_Timer", board);
-        AnchorTopRight(timerChip, new Vector2(300f, 60f), new Vector2(304f, 110f));
-        AddImage(timerChip, SpritePill(), MarketBoardPalette.PanelInset, Image.Type.Sliced);
+        AnchorTopRight(timerChip, new Vector2(280f, 52f), new Vector2(310f, 96f));
+        Image timerTrackImg = AddImage(timerChip, LoadSprite($"{BuildingSvgDir}/proc_track_bg.png") ?? LoadSprite($"{PerfectSvgDir}/progress_track.png"), Color.white, Image.Type.Sliced);
 
         RectTransform timerFill = NewRect("Fill_Timer", timerChip);
         StretchFull(timerFill, 4f, 4f, 4f, 4f);
-        Image fillTimer = AddImage(timerFill, SpritePill(), MarketBoardPalette.TabIdle, Image.Type.Filled);
-        fillTimer.fillMethod  = Image.FillMethod.Horizontal;
-        fillTimer.fillOrigin  = 0;
-        fillTimer.fillAmount  = 1f;
+        Image fillTimer = AddImage(timerFill, LoadSprite($"{BuildingSvgDir}/proc_fill_green.png") ?? LoadSprite($"{PerfectSvgDir}/progress_fill.png"), Color.white, Image.Type.Filled);
+        fillTimer.fillMethod    = Image.FillMethod.Horizontal;
+        fillTimer.fillOrigin    = 0;
+        fillTimer.fillAmount    = 1f;
         fillTimer.raycastTarget = false;
 
         RectTransform timerLabel = NewRect("Text_TimerLabel", timerChip);
-        StretchFull(timerLabel, 18f, 0f, 118f, 0f);
-        AddText(timerLabel, "Làm mới sau", 22f, MarketBoardPalette.TextMuted,
-                TextAlignmentOptions.MidlineLeft);
+        StretchFull(timerLabel, 14f, 0f, 100f, 0f);
+        AddText(timerLabel, "Làm mới sau:", 18f, new Color(0.36f, 0.20f, 0.09f),
+                TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
 
         RectTransform timerValue = NewRect("Text_Timer", timerChip);
-        StretchFull(timerValue, 180f, 0f, 18f, 0f);
-        TMP_Text textTimer = AddText(timerValue, "05:00", 28f, MarketBoardPalette.TextOnPanel,
+        StretchFull(timerValue, 160f, 0f, 14f, 0f);
+        TMP_Text textTimer = AddText(timerValue, "05:00", 22f, new Color(0.20f, 0.45f, 0.05f),
                                      TextAlignmentOptions.MidlineRight, FontStyles.Bold);
 
+        // ── 7. Nút Làm mới ngay (btn_green.png) ──────────────────────────
         RectTransform refreshRT = NewRect("Btn_Refresh", board);
-        AnchorTopRight(refreshRT, new Vector2(262f, 64f), new Vector2(26f, 108f));
-        Image refreshImage = AddImage(refreshRT, SpritePill(), MarketBoardPalette.ButtonGold, Image.Type.Sliced);
+        AnchorTopRight(refreshRT, new Vector2(260f, 54f), new Vector2(32f, 96f));
+        Image refreshImage = AddImage(refreshRT, LoadSprite($"{PerfectSvgDir}/btn_green.png"), Color.white, Image.Type.Sliced);
         Button refreshButton = refreshRT.gameObject.AddComponent<Button>();
         refreshButton.targetGraphic = refreshImage;
 
-        RectTransform refreshIcon = NewRect("Icon_Gold_ChoArt", refreshRT);
-        AnchorLeft(refreshIcon, new Vector2(34f, 34f), 14f);
-        AddImage(refreshIcon, SpriteCircle(), MarketBoardPalette.TextGold, Image.Type.Simple);
+        RectTransform refreshIcon = NewRect("Icon_Gold", refreshRT);
+        AnchorLeft(refreshIcon, new Vector2(32f, 32f), 10f);
+        Image rIconImg = refreshIcon.gameObject.AddComponent<Image>();
+        rIconImg.sprite = LoadSprite($"{RedesignArtDir}/Icon_vang.png");
+        rIconImg.preserveAspect = true;
 
         RectTransform refreshCost = NewRect("Text_RefreshCost", refreshRT);
-        AnchorLeft(refreshCost, new Vector2(84f, 40f), 52f);
-        TMP_Text textRefreshCost = AddText(refreshCost, "150", 26f, MarketBoardPalette.TextOnCard,
+        AnchorLeft(refreshCost, new Vector2(70f, 36f), 46f);
+        TMP_Text textRefreshCost = AddText(refreshCost, "150", 24f, Color.white,
                                            TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
 
         RectTransform refreshLabel = NewRect("Text_RefreshLabel", refreshRT);
-        StretchFull(refreshLabel, 138f, 0f, 14f, 0f);
-        TMP_Text textRefreshLabel = AddText(refreshLabel, "LÀM MỚI NGAY", 20f, MarketBoardPalette.TextOnCard,
+        StretchFull(refreshLabel, 116f, 0f, 10f, 0f);
+        TMP_Text textRefreshLabel = AddText(refreshLabel, "LÀM MỚI", 20f, Color.white,
                                             TextAlignmentOptions.Midline, FontStyles.Bold);
 
-        // ── Thanh ray + dải lọc danh mục dọc bên trái ────────────────────
+        // ── 8. Thanh ray dải lọc danh mục (bên trái) ─────────────────────
         RectTransform rail = NewRect("Rail_Categories", board);
         AnchorLeftStretch(rail, RailWidth, 24f, 24f, ContentTopInset);
-        AddImage(rail, SpritePanel(), MarketBoardPalette.TabRail, Image.Type.Sliced);
+        AddImage(rail, LoadSprite($"{ShopSvgDir}/shop_card_outer.png") ?? LoadSprite($"{PerfectSvgDir}/inner_panel.png"), Color.white, Image.Type.Sliced);
 
         RectTransform railContent = NewRect("Content_Categories", rail);
-        AnchorTopStretch(railContent, 10f, 8f, 8f, 12f);
+        AnchorTopStretch(railContent, 10f, 6f, 6f, 10f);
         railContent.pivot = new Vector2(0.5f, 1f);
 
         VerticalLayoutGroup vlg = railContent.gameObject.AddComponent<VerticalLayoutGroup>();
-        vlg.spacing              = TabSpacing;
-        vlg.childAlignment       = TextAnchor.UpperCenter;
-        vlg.childControlWidth    = true;
-        vlg.childControlHeight   = true;
+        vlg.spacing                = TabSpacing;
+        vlg.childAlignment         = TextAnchor.UpperCenter;
+        vlg.childControlWidth      = true;
+        vlg.childControlHeight     = true;
         vlg.childForceExpandWidth  = true;
         vlg.childForceExpandHeight = false;
 
         ContentSizeFitter railFitter = railContent.gameObject.AddComponent<ContentSizeFitter>();
         railFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
-        // ── Vùng lưới thẻ ────────────────────────────────────────────────
+        // ── 9. Vùng lưới thẻ hàng (Panel_ListingArea) ────────────────────
         RectTransform listingArea = NewRect("Panel_ListingArea", board);
-        StretchFull(listingArea, 24f + RailWidth + 16f, 24f, 24f, ContentTopInset);
-        AddImage(listingArea, SpritePanel(), MarketBoardPalette.PanelInset, Image.Type.Sliced);
+        StretchFull(listingArea, 24f + RailWidth + 14f, 24f, 24f, ContentTopInset);
+        AddImage(listingArea, LoadSprite($"{ShopSvgDir}/shop_card_inner.png") ?? LoadSprite($"{PerfectSvgDir}/inner_panel.png"), Color.white, Image.Type.Sliced);
 
         RectTransform scrollRT = NewRect("Scroll_Listings", listingArea);
-        StretchFull(scrollRT, 10f, 10f, 10f, 10f);
+        StretchFull(scrollRT, 8f, 8f, 8f, 8f);
         ScrollRect scroll = scrollRT.gameObject.AddComponent<ScrollRect>();
-        scroll.horizontal          = false;
-        scroll.vertical            = true;
-        scroll.movementType        = ScrollRect.MovementType.Elastic;
-        scroll.elasticity          = 0.1f;
-        scroll.scrollSensitivity   = 32f;
+        scroll.horizontal        = false;
+        scroll.vertical          = true;
+        scroll.movementType      = ScrollRect.MovementType.Elastic;
+        scroll.elasticity        = 0.1f;
+        scroll.scrollSensitivity = 32f;
 
         RectTransform viewport = NewRect("Viewport", scrollRT);
         StretchFull(viewport);
@@ -362,44 +317,39 @@ public static class MarketBoardUIBuilder
         content.pivot = new Vector2(0.5f, 1f);
 
         GridLayoutGroup grid = content.gameObject.AddComponent<GridLayoutGroup>();
-        grid.cellSize    = new Vector2(CardWidth, CardHeight);
-        grid.spacing     = new Vector2(CardSpacing, CardSpacing);
-        grid.constraint  = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = MarketBoardPalette.GridColumns;
+        grid.cellSize        = new Vector2(CardWidth, CardHeight);
+        grid.spacing         = new Vector2(CardSpacing, CardSpacing);
+        grid.constraint      = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = 4;
         grid.childAlignment  = TextAnchor.UpperCenter;
-        grid.padding = new RectOffset(16, 16, 16, 16);
+        grid.padding         = new RectOffset(16, 16, 16, 16);
 
-        // ContentSizeFitter — bản cũ THIẾU cái này nên cuộn không tới hàng cuối
         ContentSizeFitter contentFitter = content.gameObject.AddComponent<ContentSizeFitter>();
         contentFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
         scroll.viewport = viewport;
         scroll.content  = content;
 
-        // ── Trạng thái rỗng ──────────────────────────────────────────────
+        // ── 10. Trạng thái rỗng & Thông báo ngắn Toast ───────────────────
         RectTransform empty = NewRect("Panel_Empty", listingArea);
         StretchFull(empty, 40f, 40f, 40f, 40f);
         RectTransform emptyText = NewRect("Text_Empty", empty);
         StretchFull(emptyText);
         TMP_Text textEmpty = AddText(emptyText, "CHƯA CÓ VẬT PHẨM NÀO ĐƯỢC ĐĂNG BÁN",
-                                     30f, MarketBoardPalette.TextMuted,
+                                     28f, new Color(0.54f, 0.39f, 0.22f),
                                      TextAlignmentOptions.Center, FontStyles.Bold);
         empty.gameObject.SetActive(false);
 
-        // ── Thông báo ngắn ───────────────────────────────────────────────
         RectTransform toast = NewRect("Panel_Toast", board);
-        AnchorBottom(toast, new Vector2(420f, 62f), new Vector2(0f, 34f));
-        AddImage(toast, SpritePill(), MarketBoardPalette.PanelEdge, Image.Type.Sliced);
+        AnchorBottom(toast, new Vector2(460f, 62f), new Vector2(0f, 36f));
+        AddImage(toast, LoadSprite($"{ShopSvgDir}/shop_toast.png") ?? LoadSprite($"{ShopSvgDir}/shop_card_outer.png"), Color.white, Image.Type.Sliced);
         RectTransform toastText = NewRect("Text_Toast", toast);
         StretchFull(toastText);
-        TMP_Text textToast = AddText(toastText, "", 26f, MarketBoardPalette.TextOnPanel,
+        TMP_Text textToast = AddText(toastText, "", 24f, Color.white,
                                      TextAlignmentOptions.Center, FontStyles.Bold);
         toast.gameObject.SetActive(false);
 
-        // ══════════════════════════════════════════════════════════════════
-        //  NỐI DÂY
-        // ══════════════════════════════════════════════════════════════════
-
+        // ── 11. Nối dây Component ────────────────────────────────────────
         MarketListingCardUI cardComponent = cardPrefab.GetComponent<MarketListingCardUI>();
         MarketCategoryTabUI tabComponent  = tabPrefab.GetComponent<MarketCategoryTabUI>();
 
@@ -435,30 +385,21 @@ public static class MarketBoardUIBuilder
         }
         soManager.ApplyModifiedPropertiesWithoutUndo();
 
-        // MarketPopupUI vẫn còn trên object này để PopupManager / DisableStartupPopupsTool
-        // không bị đứt tham chiếu — trỏ popupRoot của nó về đúng Panel_Dim mới
         MarketPopupUI legacyPopup = boardGO.GetComponent<MarketPopupUI>();
         if (legacyPopup != null)
         {
             SerializedObject soLegacy = new SerializedObject(legacyPopup);
             SetRef(soLegacy, "popupRoot", dim.gameObject);
-            // btnClose để TRỐNG có chủ đích: MarketPopupUI.Start() gọi RemoveAllListeners()
-            // nên nếu cũng trỏ vào nút X thì nó sẽ xoá listener mà MarketBoardUI vừa gắn.
-            // Ba script cùng tranh một nút là kiểu lỗi rất khó lần ra.
-            SetRef(soLegacy, "btnClose", null);
+            SetRef(soLegacy, "btnClose",  null);
             soLegacy.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        // Popup phải TẮT khi vào scene, nếu không mở game là chợ đè lên màn hình
-        dim.gameObject.SetActive(false);
-
-        EditorUtility.SetDirty(boardGO);
-        EditorSceneManager.MarkSceneDirty(canvasGO.scene);
+        EditorSceneManager.MarkSceneDirty(boardGO.scene);
         return true;
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  PREFAB THẺ HÀNG (2 tầng)
+    //  PREFAB THẺ HÀNG CHỢ (MarketListingCard_Prefab)
     // ══════════════════════════════════════════════════════════════════════
 
     private static GameObject BuildCardPrefab()
@@ -468,108 +409,121 @@ public static class MarketBoardUIBuilder
         RectTransform root = NewRect("MarketListingCard", null);
         root.sizeDelta = new Vector2(CardWidth, CardHeight);
 
-        Image frame = AddImage(root, SpriteCard(), MarketBoardPalette.CardBase, Image.Type.Sliced);
-        root.gameObject.AddComponent<CanvasGroup>();
-        Button buyButton = root.gameObject.AddComponent<Button>();
-        buyButton.targetGraphic = frame;
+        // Khung ngoài thẻ hàng (shop_card_outer.png)
+        Image cardBg = AddImage(root, LoadSprite($"{ShopSvgDir}/shop_card_outer.png"), Color.white, Image.Type.Sliced);
+
         MarketListingCardUI cardUI = root.gameObject.AddComponent<MarketListingCardUI>();
+        root.gameObject.AddComponent<CanvasGroup>();
 
-        // ── Tầng trên: ô lõm chứa icon + tên + số lượng + giá ─────────────
-        // Chiều cao thẻ 250 = 10 (mép) + 158 (ô hàng) + 6 + 66 (tầng người bán) + 10
-        RectTransform slot = NewRect("Panel_ItemSlot", root);
-        StretchFull(slot, 10f, 82f, 10f, 10f);
-        AddImage(slot, SpriteInset(), MarketBoardPalette.CardInset, Image.Type.Sliced);
+        // ── 1. Đĩa tròn đựng nông sản/vật phẩm (shop_circle_plate.png) ───
+        RectTransform disc = NewRect("Item_Plate", root);
+        AnchorTop(disc, new Vector2(104f, 104f), new Vector2(0f, 18f));
+        AddImage(disc, LoadSprite($"{ShopSvgDir}/shop_circle_plate.png") ?? LoadSprite($"{PerfectSvgDir}/circle_preview.png"), Color.white, Image.Type.Simple);
 
-        RectTransform icon = NewRect("Image_Icon", slot);
-        AnchorTop(icon, new Vector2(78f, 78f), new Vector2(0f, 6f));
-        Image imageIcon = AddImage(icon, null, Color.white, Image.Type.Simple);
+        // Icon nông sản
+        RectTransform iconRT = NewRect("Image_Icon", disc);
+        Center(iconRT, new Vector2(80f, 80f));
+        Image imageIcon = iconRT.gameObject.AddComponent<Image>();
         imageIcon.preserveAspect = true;
+        imageIcon.raycastTarget  = false;
 
-        RectTransform nameRT = NewRect("Text_ItemName", slot);
-        AnchorTopStretch(nameRT, 34f, 6f, 6f, 86f);
-        TMP_Text textItemName = AddText(nameRT, "Tên vật phẩm", 21f, MarketBoardPalette.TextOnCard,
-                                        TextAlignmentOptions.Center, FontStyles.Bold);
-        textItemName.textWrappingMode = TextWrappingModes.Normal;
-        textItemName.enableAutoSizing = true;
-        textItemName.fontSizeMin      = 13f;
-        textItemName.fontSizeMax      = 21f;
-
-        RectTransform qtyBadge = NewRect("Badge_Quantity", slot);
-        AnchorBottomLeft(qtyBadge, new Vector2(54f, 32f), new Vector2(6f, 6f));
-        AddImage(qtyBadge, SpritePill(), MarketBoardPalette.PanelBase, Image.Type.Sliced);
+        // Huy hiệu số lượng (badge_count.png)
+        RectTransform qtyBadge = NewRect("Badge_Quantity", disc);
+        AnchorBottomRight(qtyBadge, new Vector2(36f, 36f), new Vector2(-4f, -4f));
+        AddImage(qtyBadge, LoadSprite($"{PerfectSvgDir}/badge_count.png") ?? LoadSprite($"{BuildingSvgDir}/proc_btn_blue.png"), Color.white, Image.Type.Simple);
         RectTransform qtyText = NewRect("Text_Quantity", qtyBadge);
         StretchFull(qtyText);
-        TMP_Text textQuantity = AddText(qtyText, "0", 22f, MarketBoardPalette.TextOnPanel,
+        TMP_Text textQuantity = AddText(qtyText, "1", 20f, Color.white,
                                         TextAlignmentOptions.Center, FontStyles.Bold);
 
-        RectTransform priceRow = NewRect("Row_Price", slot);
-        AnchorBottomRight(priceRow, new Vector2(104f, 32f), new Vector2(6f, 6f));
-        RectTransform priceIcon = NewRect("Icon_Gold_ChoArt", priceRow);
-        AnchorLeft(priceIcon, new Vector2(24f, 24f), 0f);
-        AddImage(priceIcon, SpriteCircle(), MarketBoardPalette.ButtonGold, Image.Type.Simple);
-        RectTransform priceText = NewRect("Text_Price", priceRow);
-        StretchFull(priceText, 28f, 0f, 0f, 0f);
-        TMP_Text textPrice = AddText(priceText, "0", 23f, MarketBoardPalette.TextOnCard,
-                                     TextAlignmentOptions.MidlineRight, FontStyles.Bold);
+        // Tên mặt hàng
+        RectTransform nameRT = NewRect("Text_ItemName", root);
+        AnchorTop(nameRT, new Vector2(220f, 26f), new Vector2(0f, 126f));
+        TMP_Text textItemName = AddText(nameRT, "Lúa mì", 20f, new Color(0.36f, 0.20f, 0.09f),
+                                        TextAlignmentOptions.Center, FontStyles.Bold);
+        textItemName.textWrappingMode = TextWrappingModes.NoWrap;
+        textItemName.overflowMode     = TextOverflowModes.Ellipsis;
 
-        // ── Tầng dưới: người bán ─────────────────────────────────────────
+        // ── 2. Nút Mua / Giá vàng (shop_btn_buy_gold.png) ────────────────
+        RectTransform buyRT = NewRect("Btn_Buy", root);
+        AnchorTop(buyRT, new Vector2(210f, 46f), new Vector2(0f, 156f));
+        Image buyImg = AddImage(buyRT, LoadSprite($"{ShopSvgDir}/shop_btn_buy_gold.png") ?? LoadSprite($"{PerfectSvgDir}/btn_green.png"), Color.white, Image.Type.Sliced);
+        Button buyButton = buyRT.gameObject.AddComponent<Button>();
+        buyButton.targetGraphic = buyImg;
+
+        RectTransform priceIcon = NewRect("Icon_Gold", buyRT);
+        AnchorLeft(priceIcon, new Vector2(28f, 28f), 14f);
+        Image pIconImg = priceIcon.gameObject.AddComponent<Image>();
+        pIconImg.sprite = LoadSprite($"{RedesignArtDir}/Icon_vang.png");
+        pIconImg.preserveAspect = true;
+
+        RectTransform priceText = NewRect("Text_Price", buyRT);
+        StretchFull(priceText, 46f, 0f, 12f, 0f);
+        TMP_Text textPrice = AddText(priceText, "120", 23f, Color.white,
+                                     TextAlignmentOptions.Midline, FontStyles.Bold);
+
+        // ── 3. Tầng dưới: Người bán (shop_card_inner.png) ────────────────
         RectTransform seller = NewRect("Panel_Seller", root);
-        AnchorBottomStretch(seller, 66f, 10f, 10f, 10f);
-        AddImage(seller, SpriteInset(), MarketBoardPalette.CardSellerBar, Image.Type.Sliced);
+        AnchorBottomStretch(seller, 52f, 12f, 12f, 8f);
+        AddImage(seller, LoadSprite($"{ShopSvgDir}/shop_card_inner.png") ?? LoadSprite($"{PerfectSvgDir}/inner_panel.png"), Color.white, Image.Type.Sliced);
 
-        RectTransform avatar = NewRect("Image_SellerAvatar_ChoArt", seller);
-        AnchorLeft(avatar, new Vector2(44f, 44f), 6f);
-        Image imageAvatar = AddImage(avatar, SpriteCircle(), MarketSellerDirectory.GetAvatarColor(0), Image.Type.Simple);
+        RectTransform avatar = NewRect("Image_SellerAvatar", seller);
+        AnchorLeft(avatar, new Vector2(40f, 40f), 6f);
+        Image imageAvatar = avatar.gameObject.AddComponent<Image>();
+        imageAvatar.sprite = LoadSprite($"{MarketArtDir}/avatar_npc_0.png");
+        imageAvatar.color  = Color.white;
+        imageAvatar.preserveAspect = true;
 
         RectTransform initial = NewRect("Text_SellerInitial", avatar);
         StretchFull(initial);
-        TMP_Text textInitial = AddText(initial, "?", 24f, MarketBoardPalette.TextOnCard,
+        TMP_Text textInitial = AddText(initial, "A", 20f, Color.white,
                                        TextAlignmentOptions.Center, FontStyles.Bold);
+        initial.gameObject.SetActive(false);
 
         RectTransform sellerName = NewRect("Text_SellerName", seller);
-        StretchFull(sellerName, 56f, 4f, 44f, 4f);
-        TMP_Text textSellerName = AddText(sellerName, "Người bán", 18f, MarketBoardPalette.TextOnCard,
-                                          TextAlignmentOptions.MidlineLeft);
+        StretchFull(sellerName, 52f, 2f, 40f, 2f);
+        TMP_Text textSellerName = AddText(sellerName, "Bác Năm", 17f, new Color(0.36f, 0.20f, 0.09f),
+                                          TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
         textSellerName.textWrappingMode = TextWrappingModes.NoWrap;
         textSellerName.overflowMode     = TextOverflowModes.Ellipsis;
 
         RectTransform levelBadge = NewRect("Badge_SellerLevel", seller);
-        AnchorRight(levelBadge, new Vector2(36f, 30f), 4f);
-        AddImage(levelBadge, SpritePill(), MarketBoardPalette.BadgePlayer, Image.Type.Sliced);
+        AnchorRight(levelBadge, new Vector2(34f, 28f), 6f);
+        AddImage(levelBadge, LoadSprite($"{ShopSvgDir}/shop_currency_chip.png") ?? LoadSprite($"{PerfectSvgDir}/stepper_box.png"), Color.white, Image.Type.Sliced);
         RectTransform levelText = NewRect("Text_SellerLevel", levelBadge);
         StretchFull(levelText);
-        TMP_Text textSellerLevel = AddText(levelText, "1", 19f, MarketBoardPalette.TextOnPanel,
+        TMP_Text textSellerLevel = AddText(levelText, "3", 16f, new Color(0.48f, 0.29f, 0.06f),
                                            TextAlignmentOptions.Center, FontStyles.Bold);
 
-        // ── Nhãn ─────────────────────────────────────────────────────────
+        // ── 4. Nhãn & Trạng thái (HỜI / CỦA BẠN / ĐÃ BÁN) ────────────────
         RectTransform dealBadge = NewRect("Badge_Deal", root);
-        AnchorTopLeft(dealBadge, new Vector2(76f, 36f), new Vector2(-6f, -6f));
-        AddImage(dealBadge, SpritePill(), MarketBoardPalette.BadgeDeal, Image.Type.Sliced);
+        AnchorTopLeft(dealBadge, new Vector2(74f, 34f), new Vector2(-4f, -4f));
+        AddImage(dealBadge, LoadSprite($"{BuildingSvgDir}/proc_btn_blue.png") ?? LoadSprite($"{PerfectSvgDir}/btn_green.png"), Color.white, Image.Type.Sliced);
         RectTransform dealText = NewRect("Text_Deal", dealBadge);
         StretchFull(dealText);
-        TMP_Text textDeal = AddText(dealText, "-20%", 20f, MarketBoardPalette.TextOnPanel,
+        TMP_Text textDeal = AddText(dealText, "-20%", 18f, Color.white,
                                     TextAlignmentOptions.Center, FontStyles.Bold);
         dealBadge.gameObject.SetActive(false);
 
         RectTransform playerBadge = NewRect("Badge_Player", root);
-        AnchorTopRight(playerBadge, new Vector2(92f, 36f), new Vector2(-6f, -6f));
-        AddImage(playerBadge, SpritePill(), MarketBoardPalette.BadgePlayer, Image.Type.Sliced);
+        AnchorTopRight(playerBadge, new Vector2(90f, 34f), new Vector2(-4f, -4f));
+        AddImage(playerBadge, LoadSprite($"{PerfectSvgDir}/btn_green.png"), Color.white, Image.Type.Sliced);
         RectTransform playerText = NewRect("Text_Player", playerBadge);
         StretchFull(playerText);
-        AddText(playerText, "CỦA BẠN", 17f, MarketBoardPalette.TextOnPanel,
+        AddText(playerText, "CỦA BẠN", 15f, Color.white,
                 TextAlignmentOptions.Center, FontStyles.Bold);
         playerBadge.gameObject.SetActive(false);
 
         RectTransform soldOut = NewRect("Overlay_SoldOut", root);
         StretchFull(soldOut);
-        AddImage(soldOut, SpriteCard(), MarketBoardPalette.SoldOutVeil, Image.Type.Sliced);
+        AddImage(soldOut, LoadSprite($"{ShopSvgDir}/shop_card_outer.png"), new Color(0.08f, 0.10f, 0.10f, 0.75f), Image.Type.Sliced);
         RectTransform soldText = NewRect("Text_SoldOut", soldOut);
         StretchFull(soldText);
-        AddText(soldText, "ĐÃ BÁN", 30f, MarketBoardPalette.TextOnPanel,
+        AddText(soldText, "ĐÃ BÁN", 28f, Color.white,
                 TextAlignmentOptions.Center, FontStyles.Bold);
         soldOut.gameObject.SetActive(false);
 
-        // ── Nối dây trong prefab ─────────────────────────────────────────
+        // ── Nối dây Component trong Prefab ───────────────────────────────
         SerializedObject so = new SerializedObject(cardUI);
         SetRef(so, "imageIcon",         imageIcon);
         SetRef(so, "textItemName",      textItemName);
@@ -583,7 +537,7 @@ public static class MarketBoardUIBuilder
         SetRef(so, "textDeal",          textDeal);
         SetRef(so, "badgePlayer",       playerBadge.gameObject);
         SetRef(so, "overlaySoldOut",    soldOut.gameObject);
-        SetRef(so, "imageCardFrame",    frame);
+        SetRef(so, "imageCardFrame",    cardBg);
         SetRef(so, "buttonBuy",         buyButton);
         SetRef(so, "canvasGroup",       root.GetComponent<CanvasGroup>());
         so.ApplyModifiedPropertiesWithoutUndo();
@@ -594,7 +548,7 @@ public static class MarketBoardUIBuilder
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  PREFAB TAB DANH MỤC
+    //  PREFAB TAB DANH MỤC (Rộng, hiện rõ cả Icon và Tên)
     // ══════════════════════════════════════════════════════════════════════
 
     private static GameObject BuildTabPrefab()
@@ -602,45 +556,47 @@ public static class MarketBoardUIBuilder
         EnsureFolder(PrefabFolder);
 
         RectTransform root = NewRect("MarketCategoryTab", null);
-        root.sizeDelta = new Vector2(104f, TabHeight);
+        root.sizeDelta = new Vector2(178f, TabHeight);
 
-        Image background = AddImage(root, SpritePill(), MarketBoardPalette.TabIdle, Image.Type.Sliced);
+        Image background = AddImage(root, LoadSprite($"{PerfectSvgDir}/tab_inactive.png"), Color.white, Image.Type.Sliced);
         Button button = root.gameObject.AddComponent<Button>();
         button.targetGraphic = background;
 
-        // Không có LayoutElement thì VerticalLayoutGroup (childControlHeight = true)
-        // sẽ bóp mọi tab về chiều cao tối thiểu và cả dải lọc dẹp lép
         LayoutElement layout = root.gameObject.AddComponent<LayoutElement>();
         layout.preferredHeight = TabHeight;
         layout.minHeight       = TabHeight;
 
         MarketCategoryTabUI tabUI = root.gameObject.AddComponent<MarketCategoryTabUI>();
 
-        // Ô màu đại diện — CHỖ CHỜ ART: thay sprite là thành icon danh mục thật
-        RectTransform accent = NewRect("Image_Accent_ChoArt", root);
-        AnchorTop(accent, new Vector2(40f, 40f), new Vector2(0f, 4f));
-        Image imageAccent = AddImage(accent, SpriteCircle(), Color.white, Image.Type.Simple);
+        // Icon danh mục tròn bên trái
+        RectTransform accent = NewRect("Image_Accent", root);
+        AnchorLeft(accent, new Vector2(44f, 44f), 10f);
+        Image imageAccent = AddImage(accent, LoadSprite($"{MarketArtDir}/tab_icon_0.png"), Color.white, Image.Type.Simple);
+        imageAccent.preserveAspect = true;
 
         RectTransform shortRT = NewRect("Text_Short", accent);
         StretchFull(shortRT);
-        TMP_Text textShort = AddText(shortRT, "TC", 19f, MarketBoardPalette.TextOnCard,
+        TMP_Text textShort = AddText(shortRT, "", 18f, Color.white,
                                      TextAlignmentOptions.Center, FontStyles.Bold);
+        shortRT.gameObject.SetActive(false);
 
+        // Tên danh mục to rõ bên phải
         RectTransform labelRT = NewRect("Text_Label", root);
-        AnchorBottomStretch(labelRT, 22f, 4f, 4f, 3f);
-        TMP_Text textLabel = AddText(labelRT, "Tất cả", 16f, MarketBoardPalette.TextOnCard,
-                                     TextAlignmentOptions.Center, FontStyles.Bold);
-        textLabel.enableAutoSizing = true;
-        textLabel.fontSizeMin      = 10f;
-        textLabel.fontSizeMax      = 16f;
+        StretchFull(labelRT, 58f, 0f, 8f, 0f);
+        TMP_Text textLabel = AddText(labelRT, "Tất cả", 18f, new Color(0.98f, 0.94f, 0.86f),
+                                     TextAlignmentOptions.MidlineLeft, FontStyles.Bold);
+        textLabel.textWrappingMode = TextWrappingModes.NoWrap;
+        textLabel.characterSpacing = 1f;
 
         SerializedObject so = new SerializedObject(tabUI);
-        SetRef(so, "imageBackground", background);
-        SetRef(so, "imageAccent",     imageAccent);
-        SetRef(so, "textShort",       textShort);
-        SetRef(so, "textLabel",       textLabel);
-        SetRef(so, "button",          button);
-        SetRef(so, "scaleTarget",     root);
+        SetRef(so, "imageBackground",   background);
+        SetRef(so, "imageAccent",       imageAccent);
+        SetRef(so, "textShort",         textShort);
+        SetRef(so, "textLabel",         textLabel);
+        SetRef(so, "button",            button);
+        SetRef(so, "scaleTarget",       root);
+        SetRef(so, "tabActiveSprite",   LoadSprite($"{PerfectSvgDir}/tab_active.png"));
+        SetRef(so, "tabInactiveSprite", LoadSprite($"{PerfectSvgDir}/tab_inactive.png"));
         so.ApplyModifiedPropertiesWithoutUndo();
 
         GameObject saved = PrefabUtility.SaveAsPrefabAsset(root.gameObject, TabPrefabPath);
@@ -649,15 +605,13 @@ public static class MarketBoardUIBuilder
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    //  TIỆN ÍCH
+    //  TIỆN ÍCH LOAD SPRITE & TẠO RECT
     // ══════════════════════════════════════════════════════════════════════
 
-    private static Sprite SpritePanel()  => MarketBoardSpriteFactory.LoadOrGenerate(MarketBoardSpriteFactory.PanelName);
-    private static Sprite SpriteCard()   => MarketBoardSpriteFactory.LoadOrGenerate(MarketBoardSpriteFactory.CardName);
-    private static Sprite SpriteInset()  => MarketBoardSpriteFactory.LoadOrGenerate(MarketBoardSpriteFactory.InsetName);
-    private static Sprite SpritePill()   => MarketBoardSpriteFactory.LoadOrGenerate(MarketBoardSpriteFactory.PillName);
-    private static Sprite SpriteCircle() => MarketBoardSpriteFactory.LoadOrGenerate(MarketBoardSpriteFactory.CircleName);
-    private static Sprite SpriteDots()   => MarketBoardSpriteFactory.LoadOrGenerate(MarketBoardSpriteFactory.DotsName);
+    private static Sprite LoadSprite(string assetPath)
+    {
+        return AssetDatabase.LoadAssetAtPath<Sprite>(assetPath);
+    }
 
     private static void EnsureFolder(string assetFolder)
     {
@@ -732,9 +686,7 @@ public static class MarketBoardUIBuilder
         Image image = rt.gameObject.AddComponent<Image>();
         image.sprite = sprite;
         image.color  = color;
-
-        // Sliced/Tiled trên sprite không có border sẽ ra cảnh báo đỏ mỗi frame
-        image.type = sprite != null ? type : Image.Type.Simple;
+        image.type   = sprite != null ? type : Image.Type.Simple;
         return image;
     }
 
@@ -747,7 +699,7 @@ public static class MarketBoardUIBuilder
         text.color         = color;
         text.alignment     = alignment;
         text.fontStyle     = style;
-        text.raycastTarget = false;   // chữ nuốt mất cú bấm vào nút là lỗi rất khó tìm
+        text.raycastTarget = false;
         return text;
     }
 
@@ -790,6 +742,24 @@ public static class MarketBoardUIBuilder
         rt.anchoredPosition = new Vector2(offset.x, offset.y);
     }
 
+    private static void AnchorBottomRight(RectTransform rt, Vector2 size, Vector2 offset)
+    {
+        rt.anchorMin        = new Vector2(1f, 0f);
+        rt.anchorMax        = new Vector2(1f, 0f);
+        rt.pivot            = new Vector2(1f, 0f);
+        rt.sizeDelta        = size;
+        rt.anchoredPosition = new Vector2(-offset.x, offset.y);
+    }
+
+    private static void AnchorBottomLeft(RectTransform rt, Vector2 size, Vector2 offset)
+    {
+        rt.anchorMin        = new Vector2(0f, 0f);
+        rt.anchorMax        = new Vector2(0f, 0f);
+        rt.pivot            = new Vector2(0f, 0f);
+        rt.sizeDelta        = size;
+        rt.anchoredPosition = offset;
+    }
+
     private static void AnchorTopLeft(RectTransform rt, Vector2 size, Vector2 offset)
     {
         rt.anchorMin        = new Vector2(0f, 1f);
@@ -806,24 +776,6 @@ public static class MarketBoardUIBuilder
         rt.pivot            = new Vector2(1f, 1f);
         rt.sizeDelta        = size;
         rt.anchoredPosition = new Vector2(-offset.x, -offset.y);
-    }
-
-    private static void AnchorBottomLeft(RectTransform rt, Vector2 size, Vector2 offset)
-    {
-        rt.anchorMin        = new Vector2(0f, 0f);
-        rt.anchorMax        = new Vector2(0f, 0f);
-        rt.pivot            = new Vector2(0f, 0f);
-        rt.sizeDelta        = size;
-        rt.anchoredPosition = offset;
-    }
-
-    private static void AnchorBottomRight(RectTransform rt, Vector2 size, Vector2 offset)
-    {
-        rt.anchorMin        = new Vector2(1f, 0f);
-        rt.anchorMax        = new Vector2(1f, 0f);
-        rt.pivot            = new Vector2(1f, 0f);
-        rt.sizeDelta        = size;
-        rt.anchoredPosition = new Vector2(-offset.x, offset.y);
     }
 
     private static void AnchorLeft(RectTransform rt, Vector2 size, float leftOffset)
@@ -866,7 +818,6 @@ public static class MarketBoardUIBuilder
         rt.anchoredPosition = new Vector2(rt.anchoredPosition.x, bottom);
     }
 
-    /// <summary>Dải dọc bám mép trái: rộng cố định, cao co giãn theo cha.</summary>
     private static void AnchorLeftStretch(RectTransform rt, float width, float left, float bottom, float topInset)
     {
         rt.anchorMin = new Vector2(0f, 0f);
