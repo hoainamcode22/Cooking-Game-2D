@@ -327,3 +327,179 @@ P2 (17 edits) + P2B (2 edits):
 
 Verify: 22 edits tổng, count==1 mỗi anchor, braces 149/149, parens 1059/1059 cân.
 ANH CẦN LÀM: Tools → Farm Game → Kitchen → Setup Kitchen UI v2, rồi Ctrl+S. Console phải 0 đỏ.
+
+## 2026-08-26 — Kitchen R3: nút Về nông trại + nồi + mèo đi dạo + lửa prefab + decor — CODE XONG, CHỜ ART
+Backup mới: KitchenSceneV2UI_v3.cs, KitchenV2SetupTool_v2.cs (cùng thư mục backup).
+
+Code (KitchenSceneV2UI.cs — 8 edits, braces 163/163, parens 1163/1163):
+- Banner ĐƠN CỦA KHÁCH hạ từ y-8 → y-42 (ruy băng hết bị mép màn hình cắt)
+- Nút VỀ NÔNG TRẠI góc trái trên (170×92): gọi CookingSceneUI.BackToFarm() CŨ (logic scene giữ nguyên);
+  skin.btnBackFarm — tạm dùng btn_back_to_farm.png cũ, chờ biển gỗ treo dây mới
+- Skin mới: btnBackFarm, btnPaperSmall (Xem món khác), cookPot, decorGarlic/Onion/Herbs/Lights, catChefWalk[]
+- Decor treo tường 2 cụm (tỏi/hành/thảo mộc) + 2 đoạn dây đèn + nồi nấu cạnh khay (600,-300)
+- KitchenCatWalker (class mới cùng file): mèo đầu bếp đi qua lại sàn phải (x 500–900), đi→dừng 1.2–3.2s→quay đầu,
+  lật localScale.x theo hướng, 6 frame walk; chỉ dựng khi có frame art
+- Lửa lò prefab: TrySpawnFirePrefab() — có ovenFirePrefab thì chuyển canvas sang ScreenSpaceCamera,
+  spawn Area_fire_red (Lana Studio) vào Oven_Mouth, sortingOrder = canvas+1, tắt lửa frame cũ;
+  bỏ trống prefab = fallback lửa frame như cũ. fireScale chỉnh được trên inspector.
+
+Tool (KitchenV2SetupTool.cs — 2 edits, braces 41/41): SOpt/SArrOpt — asset CHƯA giao chỉ log "(chờ art)",
+không tính lỗi; tự gán prefab Area_fire_red vào ovenFirePrefab.
+
+Prompt đội vẽ: production/PROMPT_SPRITE_FORGE_KITCHEN_R3.md (19 file: 7 nút/tab, 5 nồi+decor, 6 frame mèo + luật NO TEXT).
+
+## 2026-08-26 — Kitchen R3: ART VỀ ĐỦ 18 FILE ✔ + nới tiêu đề/bảng, hạ khung
+Verify art: 18/18 file đúng kích thước spec 100%, meta spriteMode Single, không text, nền trong suốt,
+6 frame mèo cùng canvas 256×240. Snapshot: production/backup_train_2026-08-26/Kitchen_R3_delivered/ (18 file).
+
+Layout (6 edits, braces 163/163):
+- Banner ĐƠN CỦA KHÁCH hạ tiếp -42 → -70 (Sếp: còn cao quá)
+- Ruy băng ĐƠN CỦA KHÁCH 270×42 → 330×46; BẢNG CÔNG THỨC 258×42 → 310×46 (title hết chật)
+- Bảng MÓN HÔM NAY 236×128 @(222,-122) → 300×140 @(240,-180) — dài ra, tụt xuống dưới banner, text nằm gọn trong bảng
+- Kệ treo xoong -118 → -185, mèo thần tài x -170 → -230 (tránh bị banner hạ xuống đè lên)
+
+ANH CẦN LÀM: Setup Kitchen UI v2 + Ctrl+S → Play xem: nút mọng mới, biển Về nông trại, nồi, dây đèn,
+tỏi/hành treo tường, mèo đầu bếp đi dạo sàn phải, lửa prefab trong lò.
+
+## 2026-08-26 — HOTFIX: UI cũ nổi lên trong Play — NGUYÊN NHÂN lửa prefab
+Bug: TrySpawnFirePrefab đổi canvas mới sang ScreenSpaceCamera → canvas UI CŨ (Overlay) luôn được
+Unity vẽ ĐÈ lên canvas camera → toàn bộ UI cũ hiện lên trên. UI mới không mất, chỉ bị đè.
+Fix: thêm cờ useCameraCanvasForFire (mặc định FALSE, tooltip cảnh báo); TrySpawnFirePrefab return sớm
+khi cờ tắt; tool GỠ prefab khỏi ovenFirePrefab + ép cờ false. Lửa quay về frame 4 khung như cũ.
+Lửa prefab sẽ bật lại ở K3 sau khi xóa hẳn UI cũ (gán prefab + tick cờ).
+ANH CẦN LÀM: chạy lại Setup Kitchen UI v2 + Ctrl+S → Play: UI mới phủ lại như trước.
+
+## 2026-08-26 — Kitchen R4: trả lại 11 file art lệch style + dời vùng mèo đi dạo
+Sếp chê R3: nồi/tỏi/hành/thảo mộc/đèn vẽ vector bẹt "như game khác", mèo sai dáng (cần chibi đứng 2 chân
+như ảnh mẫu). Nút + biển Về nông trại + tab ĐƯỢC DUYỆT, giữ nguyên.
+- Code (2 edits): vùng mèo đi dạo dời từ sàn phải (500..900, y-350) → dải sàn DƯỚI 2 bàn trưng bày
+  (x -280..260, y -120) — hết vướng nút CHỌN NGUYÊN LIỆU.
+- Prompt vẽ lại: production/PROMPT_SPRITE_FORGE_KITCHEN_R4_REDRAW.md (11 file ghi đè cùng tên:
+  cook_pot, 4 decor, 6 frame mèo chibi đứng thẳng waddle). Sếp cần đính kèm 2 ảnh tham chiếu khi gửi.
+- Bản R3 cũ vẫn còn snapshot ở backup Kitchen_R3_delivered/ nếu cần đối chiếu.
+
+## 2026-08-26 — Kitchen R4b: hạ decor xuống sàn + kệ mèo thần tài + thêm 3 file vẽ lại
+Sếp soi: "2 cục" dưới lò = sack_flour + cat_sleeping (art xấu, nhìn không ra) đang LƠ LỬNG trên tường;
+mèo thần tài không có kệ; muốn 2 nồi treo (shelf_props) vẽ như asset farm.
+- Code (4 edits, braces 163/163): Plant_L hạ y 60→-172 + thêm Plant_L2 (-232,-172) [mockup 2 chậu];
+  Sack_Flour (−190,20)→(−150,−176); Cat_Sleeping (−120,14)→(−60,−184) — tất cả ngồi trên đường viền sàn;
+  kệ gỗ panelBoard (126×20) + bảng tên panelPaper "Mèo Thần Tài" dưới mèo thần tài như mockup.
+- Prompt R4 nâng 11→14 file: thêm kitchen_shelf_props (giàn treo 2 nồi đồng/gang + chuỗi ớt/tỏi),
+  sack_flour, cat_sleeping vẽ lại.
+
+## 2026-08-26 — Kitchen R4: NGHIỆM THU 14 FILE VẼ LẠI ✔
+- Kích thước 14/14 đúng spec 100%; ghi đè đúng tên cũ (meta Single giữ nguyên); nền trong suốt, không text.
+- Visual: nồi có khối + ánh kim + bệ gạch ✔; giàn treo 2 chảo đồng/gang + chuỗi ớt/tỏi ✔; bao bột nhìn ra
+  bao bột ✔; mèo ngủ cuộn tròn thấy tai/đuôi ✔; mèo đầu bếp ĐỨNG 2 CHÂN mũ trắng + tạp dề hồng viền bèo ✔.
+- Kiểm tra động: 6 frame mèo lệch nhau 5k–13.6k pixel, centroid nhấp nhô 113→120 → waddle chạy đúng.
+- Snapshot: backup_train_2026-08-26/Kitchen_R4_delivered/ (14 file).
+- Nhận xét thật: style đã có khối/gradient tốt hơn nhiều, vẫn hơi "vector sạch" hơn ảnh mẫu painterly,
+  nhưng ở cỡ hiển thị in-game (48–120px) nhìn ổn — chờ Sếp duyệt trên màn hình thật.
+ANH CẦN LÀM: Setup Kitchen UI v2 + Ctrl+S → Play xem tổng thể; mèo đi dưới 2 bàn + kệ/bảng tên mèo thần tài
++ decor ngồi trên sàn đã vào từ đợt code trước.
+
+## 2026-08-26 — Kitchen R5: feedback vòng Play — 14 edits code + prompt vẽ lò
+Làm rõ hiểu nhầm: "cái nồi như mẫu" Sếp muốn = CÁI LÒ TO trong mockup. Nồi súp nhỏ cạnh nút → XÓA.
+Code (14 edits, braces 180/180, parens cân):
+- Xóa Deco_CookPot (nồi nhỏ cạnh nút CHỌN NGUYÊN LIỆU)
+- Chữ MÓN HÔM NAY hết tràn viền: inset 22/16 (trước 10/6)
+- Bảng công thức hạ -118 → -152 (tránh chạm nhầm nút Về nông trại)
+- Lò phóng to 230×190 → 280×240 (mouth 140×100, body 260×225, glow/fire to theo) — chờ art R5
+- Chấm màu tròn trước tên vị (Ngọt hồng/Cay đỏ/Chua xanh/Đậm dương/Kết cấu nâu) — sprite tròn
+  GetDotSprite() vẽ bằng code, không cần asset; label dời x30
+- Khay: MakeGrid bọc ScrollRect (Viewport+RectMask2D+ContentSizeFitter, kéo tay/chuột + lăn chuột,
+  Clamped, sensitivity 24) — CẢ nguyên liệu & gia vị; ShowTrayTab toggle cụm scroll
+- Hệ mua slot: mặc định 7 "Ô trống"/tab (PlayerPrefs kitchen_extra_slots_v2_*), nút xanh dương
+  "+ Mở 7 ô · N vàng" — SpendGold qua FarmEconomyManager cũ, giá leo thang baseCost×(gói+1),
+  serialized slotPackSize=7 / slotPackBaseCostGold=500 (⚠ CHỜ SẾP DUYỆT GIÁ); toast báo đủ/thiếu vàng
+Prompt: production/PROMPT_SPRITE_FORGE_KITCHEN_R5_OVEN.md (oven_body 512×512 + oven_glow theo mockup).
+
+## 2026-08-26 — Kitchen R5 lò NGHIỆM THU ✔ + chốt hướng art theo Sếp (giữ góc, chỉ repaint)
+- Sếp bác phương án isometric full (A+B+C) — GIỮ góc nhìn + layout + assets hiện tại,
+  chỉ nâng nét vẽ cho cùng chất farm. Không đổi code.
+- oven_body 512×512 + oven_glow 300×220: đúng spec, đúng mockup (vòm+ống khói+miệng rỗng+bệ 2 hộc củi),
+  backup Kitchen_R5_oven_delivered/. Đạt kết cấu; chất liệu sẽ nâng ở đợt repaint.
+- Prompt mới: production/PROMPT_SPRITE_FORGE_KITCHEN_R6_REPAINT.md — công thức chất liệu 6 điều
+  (3 lớp shading, texture, outline ấm biến thiên, bóng trong, palette farm) + 3 đợt file ưu tiên,
+  GHI ĐÈ cùng tên, không cần sửa code/tool.
+
+## 2026-08-26 — R6 mở rộng theo lệnh Sếp: REPAINT TOÀN BỘ SCENE (48 file, 3 đợt)
+Sếp làm rõ: vẽ lại cả scene bếp cho nét thật hơn, đỡ AI — giữ nguyên mọi thứ khác.
+Prompt R6 viết lại: công thức "đỡ AI" 7 điều (thêm luật bất đối xứng có chủ ý, cấm gradient máy móc)
++ đủ 48 file chia 3 đợt (10 nền/công trình → 17 prop/nhân vật/lửa → 21 UI skin). Ghi đè cùng tên,
+0 thay đổi code. File: production/PROMPT_SPRITE_FORGE_KITCHEN_R6_REPAINT.md
+
+## 2026-08-26 — R6 đợt 1: nghiệm thu 8/10, TRẢ 2 file giao bản cũ
+- Kiểm pixel vs backup: oven_body chỉ 1,7% khác R5, kitchen_shelf_props 0,1% khác R4 → giao lại hàng cũ,
+  TRẢ (production/PROMPT_SPRITE_FORGE_KITCHEN_R6_TRA_HANG_DOT1.md).
+- ĐẠT: wall_tile (vân gỗ ✔), floor_tile (bevel+ron ✔), chalkboard (vệt phấn, canvas 400×320),
+  warehouse_hatch (thiết kế mới vuông 380×380, góc đinh tán + biển trống), prep/plating table (512×300,
+  có thớt/dao/đĩa viền xanh — tạm đạt, dặn đợt 2 đậm chất liệu hơn), panel_board_wood, oven_glow.
+- Code fit canvas mới (2 edits, braces 180/180): VÀO KHO rect 190×96 → 160×152 @(-250,108)
+  (art vuông, tránh bóp méo); bảng đen 300×140 → 280×175 (art 1.25:1).
+- Snapshot: Kitchen_R6_dot1_delivered/ (10 file).
+ANH CẦN LÀM: gửi prompt trả hàng cho đội vẽ; Setup Kitchen UI v2 + Ctrl+S xem 8 file mới trên scene.
+
+## 2026-08-26 — Sự cố mất hình + trả nền gỗ + nghiệm thu 2 file vẽ lại
+- NGUYÊN NHÂN scene trắng: đội vẽ ghi đè .meta bản rút gọn THIẾU `textureType: 8` → Unity import
+  thành Texture thường, mất Sprite sub-asset → mọi tham chiếu null (tường trắng, lò khối nâu, kho/bàn mất).
+  Tool LoadSpriteFixed tự sửa khi chạy lại. Đã ghi luật mới vào prompt: đội vẽ KHÔNG ĐƯỢC ghi đè .meta.
+- Theo lệnh Sếp: KHÔI PHỤC nền cũ từ git local (git show HEAD: → ghi đè, không commit/push):
+  kitchen_wall_tile, kitchen_floor_diamond_tile, panel_board_wood (+ meta gốc). Gỡ wall/floor/panel/
+  paper/maneki/nút R3 khỏi danh sách repaint (giữ nguyên vĩnh viễn theo ý Sếp).
+- Lưu ý: .git/index.lock bị kẹt do mount cấm xóa → đã rename thành .git/index.lock.stale_20260826
+  (vô hại; Sếp có thể xóa tay).
+- Nghiệm thu 2 file vẽ lại: oven_body khác 24,5% (loang đất nung + gạch mạch vữa + củi vân năm ✔),
+  shelf_props khác 19,8% (chảo đồng nhiều lớp + tỏi bất đối xứng + ớt cong ✔) — ĐẠT.
+  Backup: Kitchen_R6_trahang_redelivered/.
+ANH CẦN LÀM: mở SCENE BẾP (SampleScene) → Setup Kitchen UI v2 + Ctrl+S (tool tự sửa toàn bộ meta hỏng
+và gắn lại sprite) → Play kiểm tra: nền gỗ cũ trở lại, lò + giàn treo bản đẹp mới.
+
+## 2026-08-26 — R7: căn giữa chữ bảng + zZz mèo ngủ + chuẩn nhân vật cho đợt 2
+- Code (3 edits, braces 183/183): _txtChalk TopLeft → Left (khối chữ nằm giữa bảng theo chiều dọc);
+  mèo ngủ có "z Z z" bay lên lơ lửng (KitchenZzzFloat — sin ngang + trôi lên + fade + scale, cycle 2.4s,
+  thuần code không cần art).
+- Prompt R6 bổ sung: chuẩn nhân vật = balaohangrong.png (cel-shading mềm, outline ấm biến thiên,
+  chibi mũm mĩm); cat_sleeping vẽ lại hẳn (không bake zZz), cat_chef_walk 6 frame theo cùng chất.
+ANH CẦN LÀM: Setup Kitchen UI v2 + Ctrl+S → Play xem chữ bảng + zZz; gửi prompt bổ sung + ảnh bà lão
+cho đội vẽ trước khi họ chạy đợt 2.
+
+## 2026-08-26 — Hệ "chỉnh tay giữ qua Play" cho Kitchen UI
+Sếp muốn kéo object trong edit mode và Play vẫn giữ. Cơ chế (4 edits, braces 191/191 + tool 45/45):
+- LayoutOverride[] serialized trên Kitchen_UI_v2 (path=tên khối cấp 1, pos/size/scale) — lưu theo scene
+- ApplyLayoutOverrides() chạy CUỐI EnsureBuilt → chỉnh tay LUÔN thắng code, cả edit/Play/rebuild/tool
+- CaptureLayoutOverrides(): chụp hiện trạng → rebuild chuẩn code → so lệch >0.5px → CHỈ lưu khối đã kéo
+  → áp lại ngay (thông minh: không đóng băng khối chưa đụng, code sau này sửa layout vẫn ăn)
+- Menu mới: Tools/Farm Game/Kitchen/「Lưu vị trí chỉnh tay」 và 「Xóa toàn bộ vị trí chỉnh tay」(có Undo)
+- Giới hạn: chỉ khối CẤP 1 (Order_Banner, Chalkboard, Oven, Prep_Table, Warehouse_Box, decor...) —
+  đủ cho nhu cầu kéo bố cục; chỉnh sâu bên trong khối vẫn cần code.
+QUY TRÌNH SẾP: kéo/resize khối trong edit mode → menu Lưu vị trí chỉnh tay → Ctrl+S → Play giữ nguyên.
+
+## 2026-08-26 — R6 đợt 2: nghiệm thu 6/22 file, TRẢ 11, khôi phục maneki
+Kiểm pixel từng file:
+- ĐẠT: oven_fire_01..04 (~29% khác, giữ đúng canvas 256), plant_pot (32,9% — chậu mới có nụ hồng, đạt),
+  sack_flour (11% — tạm nhận, xem trong game).
+- TRẢ 11 file: cat_chef_walk×6 + deco_garlic/onion/herb/lights = 0,0% khác R4 (giao hàng cũ lần 2);
+  cat_sleeping chỉ sửa 8,9% chưa đạt chuẩn bà lão. Phiếu: PROMPT_SPRITE_FORGE_KITCHEN_R6_TRA_HANG_DOT2.md
+- VI PHẠM: (1) lại ghi đè 36 .meta thiếu textureType:8 — tool auto-repair khi chạy, luật CHỈ GIAO PNG
+  ghi vào phiếu; (2) maneki_idle×4 bị vẽ lại TRÁI LỆNH giữ nguyên → đã khôi phục bản cũ từ git
+  (bản mới còn ở backup Kitchen_R6_dot2_delivered — Sếp thích thì áp lại 1 phút).
+- .git/index.lock kẹt lần 2 → rename .stale_2 (mount cấm xóa; vô hại).
+ANH CẦN LÀM: Setup Kitchen UI v2 + Ctrl+S (tool tự sửa 36 meta hỏng) → Play xem lửa lò mới + chậu cây;
+gửi phiếu trả hàng đợt 2 cho đội vẽ.
+
+## 2026-08-26 — R6 đợt 2 vẽ lại: NGHIỆM THU 9/11 ✔, trả nốt 2 file lần 3
+- ĐẠT (pixel-diff thật + hình đúng chuẩn): cat_sleeping 34,3% khác (mềm, tai/đuôi rõ, má hồng),
+  cat_chef_walk×6 ~15% (mũ 3 múi + tạp dề viền bèo, giữ dáng/canvas, frame vẫn lệch nhau đúng nhịp),
+  deco_garlic 26,9% (củ to nhỏ + gốc tím), deco_onion 26,9% (nâu-cam/tím bóng).
+- TRẢ LẦN 3: deco_herb_bunch + deco_string_lights = 0,0% khác R4 (lần 3 giao bản cũ).
+  Phiếu: PROMPT_SPRITE_FORGE_KITCHEN_R6_TRA_HANG_DOT2_LAN2.md (chuẩn đối chiếu = tỏi/hành vừa duyệt).
+- Backup: Kitchen_R6_dot2_redelivered/ (11 file).
+ANH CẦN LÀM: Setup Kitchen UI v2 + Ctrl+S → Play ngắm mèo bếp mới đi lạch bạch + mèo ngủ + tỏi hành;
+gửi phiếu trả 2 file cho đội vẽ.
+
+## 2026-08-26 — R6 đợt 2 CHỐT SỔ ✔ + nâng mèo bếp
+- 2 file cuối vẽ thật: deco_herb_bunch 54,2% khác (bó lá + oải hương — hơi rậm, chờ Sếp duyệt in-game),
+  deco_string_lights 19,9% (bóng có lõi sáng + vệt thủy tinh + đui lệch góc — ĐẠT). Đợt 2 xong 11/11.
+- Mèo đầu bếp nâng y -120 → -84 để thấy nguyên thân, không bị khay che chân.
+Còn lại R6: đợt 3 UI skin (thẻ/thanh vị/ruy băng/chip/khóa) — chờ lệnh Sếp.

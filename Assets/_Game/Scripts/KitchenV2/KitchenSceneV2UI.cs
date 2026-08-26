@@ -57,9 +57,27 @@ namespace KitchenUIv2
         [SerializeField] private int canvasSortingOrder = 5;
         [SerializeField] private float pollInterval = 0.15f;
 
+        [System.Serializable]
+        public class LayoutOverride
+        {
+            public string path;   // tên khối con cấp 1 dưới Kitchen_UI_v2
+            public Vector2 pos;
+            public Vector2 size;
+            public Vector3 scale = Vector3.one;
+        }
+
+        [Header("Vị trí Sếp chỉnh tay — lưu bằng menu Tools/Farm Game/Kitchen/Lưu vị trí chỉnh tay")]
+        [SerializeField] private List<LayoutOverride> layoutOverrides = new List<LayoutOverride>();
+
+        [Header("Mở rộng ô khay — Sếp chỉnh giá tại đây")]
+        [SerializeField] private int slotPackSize = 7;
+        [SerializeField] private int slotPackBaseCostGold = 500; // giá gói 1; gói sau = giá × (số gói đã mua + 1)
+
         [Header("Lửa lò — prefab hạt (bỏ trống = dùng lửa frame như cũ)")]
         [SerializeField] private GameObject ovenFirePrefab;
         [SerializeField] private float fireScale = 1f;
+        [Tooltip("CHỈ BẬT SAU KHI XÓA UI CŨ! Đổi canvas sang ScreenSpaceCamera để particle nổi lên UI — nhưng canvas UI CŨ (Overlay) sẽ đè lên canvas camera → UI cũ nổi lên lại.")]
+        [SerializeField] private bool useCameraCanvasForFire = false;
 
         // ── Runtime refs ────────────────────────────────────────────
         private Canvas _canvas;
@@ -548,7 +566,62 @@ namespace KitchenUIv2
             BuildActionButton();
             BuildBackFarmButton();
 
+            ApplyLayoutOverrides(); // vị trí Sếp chỉnh tay LUÔN thắng code — cả edit lẫn Play
             _built = true;
+        }
+
+        /// <summary>Áp các vị trí Sếp đã chỉnh tay (khối cấp 1) đè lên layout code dựng.</summary>
+        private void ApplyLayoutOverrides()
+        {
+            if (layoutOverrides == null) return;
+            foreach (var o in layoutOverrides)
+            {
+                if (o == null || string.IsNullOrEmpty(o.path)) continue;
+                var t = transform.Find(o.path) as RectTransform;
+                if (t == null) continue;
+                t.anchoredPosition = o.pos;
+                t.sizeDelta = o.size;
+                t.localScale = o.scale;
+            }
+        }
+
+        /// <summary>EDITOR gọi: so hiện trạng với bản code dựng để CHỈ lưu những khối Sếp đã kéo/đổi size.
+        /// Trả về số chỗ đã lưu. Sau đó vị trí chỉnh tay giữ nguyên qua Play/rebuild.</summary>
+        public int CaptureLayoutOverrides()
+        {
+            var current = new Dictionary<string, LayoutOverride>();
+            foreach (Transform c in transform)
+            {
+                var rt = c as RectTransform;
+                if (rt == null) continue;
+                current[c.name] = new LayoutOverride
+                { path = c.name, pos = rt.anchoredPosition, size = rt.sizeDelta, scale = c.localScale };
+            }
+
+            layoutOverrides.Clear();
+            RebuildNow(); // dựng chuẩn theo code để so sánh
+
+            foreach (Transform c in transform)
+            {
+                if (!current.TryGetValue(c.name, out var was)) continue;
+                var rt = c as RectTransform;
+                if (rt == null) continue;
+                bool moved = (rt.anchoredPosition - was.pos).sqrMagnitude > 0.25f
+                          || (rt.sizeDelta - was.size).sqrMagnitude > 0.25f
+                          || (c.localScale - was.scale).sqrMagnitude > 0.0001f;
+                if (!moved) continue;
+                layoutOverrides.Add(was);
+                rt.anchoredPosition = was.pos;
+                rt.sizeDelta = was.size;
+                c.localScale = was.scale;
+            }
+            return layoutOverrides.Count;
+        }
+
+        public void ClearLayoutOverrides()
+        {
+            if (layoutOverrides != null) layoutOverrides.Clear();
+            RebuildNow();
         }
 
         private void BuildTopBar()
@@ -572,12 +645,12 @@ namespace KitchenUIv2
         private void BuildOrderBanner()
         {
             var banner = MakePanel(_root, "Order_Banner", new Color(0.52f, 0.33f, 0.16f));
-            Anchor(banner, 0.5f, 1f, new Vector2(60f, -42f), new Vector2(460f, 104f), new Vector2(0.5f, 1f));
+            Anchor(banner, 0.5f, 1f, new Vector2(60f, -70f), new Vector2(460f, 104f), new Vector2(0.5f, 1f));
             Skin9(banner, skin.panelBoard);
 
             // Ribbon to + chữ TRẮNG đậm nằm TRONG ribbon → không bao giờ tràn/chìm
             var ribbonB = MakePanel((RectTransform)banner.transform, "Ribbon", new Color(0.90f, 0.55f, 0.12f));
-            Anchor(ribbonB, 0.5f, 1f, new Vector2(0f, 12f), new Vector2(270f, 42f), new Vector2(0.5f, 0.5f));
+            Anchor(ribbonB, 0.5f, 1f, new Vector2(0f, 12f), new Vector2(330f, 46f), new Vector2(0.5f, 0.5f));
             Skin9(ribbonB, skin.ribbon);
             var title = MakeText(ribbonB.transform, "Txt_Title", "ĐƠN CỦA KHÁCH", 19, Color.white);
             StretchText(title, 8f, 2f);
@@ -605,11 +678,11 @@ namespace KitchenUIv2
         private void BuildRecipeBoard()
         {
             var board = MakePanel(_root, "Recipe_Board", new Color(0.52f, 0.33f, 0.16f));
-            Anchor(board, 0f, 1f, new Vector2(14f, -118f), new Vector2(318f, 520f), new Vector2(0f, 1f));
+            Anchor(board, 0f, 1f, new Vector2(14f, -152f), new Vector2(318f, 520f), new Vector2(0f, 1f));
             Skin9(board, skin.panelBoard);
 
             var ribbonR = MakePanel((RectTransform)board.transform, "Ribbon", new Color(0.90f, 0.55f, 0.12f));
-            Anchor(ribbonR, 0.5f, 1f, new Vector2(0f, 12f), new Vector2(258f, 42f), new Vector2(0.5f, 0.5f));
+            Anchor(ribbonR, 0.5f, 1f, new Vector2(0f, 12f), new Vector2(310f, 46f), new Vector2(0.5f, 0.5f));
             Skin9(ribbonR, skin.ribbon);
 
             var hdr = MakeText(ribbonR.transform, "Txt_Header", "BẢNG CÔNG THỨC", 18, Color.white);
@@ -708,8 +781,20 @@ namespace KitchenUIv2
         {
             var row = new FlavorRow();
 
+            // Chấm màu tròn nhỏ trước tên vị (theo mockup: Ngọt hồng, Cay đỏ, Chua xanh, Đậm dương, Kết cấu nâu)
+            var dotCols = new[] {
+                new Color(0.93f, 0.45f, 0.65f), new Color(0.88f, 0.28f, 0.22f), new Color(0.45f, 0.75f, 0.30f),
+                new Color(0.35f, 0.60f, 0.88f), new Color(0.65f, 0.45f, 0.28f) };
+            var dot = new GameObject($"Flavor_Dot_{index}", typeof(RectTransform), typeof(Image));
+            dot.transform.SetParent(parent, false);
+            var dimg = dot.GetComponent<Image>();
+            dimg.sprite = GetDotSprite();
+            dimg.color = dotCols[index % dotCols.Length];
+            dimg.raycastTarget = false;
+            Anchor((RectTransform)dot.transform, 0f, 1f, new Vector2(14f, y - 5f), new Vector2(12f, 12f), new Vector2(0f, 1f));
+
             row.label = MakeText(parent, $"Flavor_Label_{index}", "", 14, new Color(0.36f, 0.20f, 0.09f));
-            Anchor(row.label.rectTransform, 0f, 1f, new Vector2(12f, y), new Vector2(62f, 22f), new Vector2(0f, 1f));
+            Anchor(row.label.rectTransform, 0f, 1f, new Vector2(30f, y), new Vector2(58f, 22f), new Vector2(0f, 1f));
 
             var track = MakePanel(parent, $"Flavor_Track_{index}", new Color(0.85f, 0.76f, 0.60f));
             Anchor(track, 0f, 1f, new Vector2(80f, y - 3f), new Vector2(160f, 14f), new Vector2(0f, 1f));
@@ -778,21 +863,32 @@ namespace KitchenUIv2
         {
             // Bảng đen MÓN HÔM NAY
             var chalk = MakePanel(_root, "Chalkboard", new Color(0.16f, 0.14f, 0.12f));
-            Anchor(chalk, 0.5f, 1f, new Vector2(222f, -122f), new Vector2(236f, 128f), new Vector2(0.5f, 1f));
+            Anchor(chalk, 0.5f, 1f, new Vector2(240f, -180f), new Vector2(280f, 175f), new Vector2(0.5f, 1f));
             SkinFlat(chalk, skin.chalkboard, false);
 
             // Decor bếp (chỉ hiện khi có skin)
-            MakeDecor(_root, "Shelf_Props", skin.shelfProps, 0.5f, 1f, new Vector2(-40f, -118f), new Vector2(180f, 90f), new Vector2(0.5f, 1f));
-            MakeDecor(_root, "Plant_L", skin.plantPot, 0.5f, 0.5f, new Vector2(-290f, 60f), new Vector2(58f, 70f), new Vector2(0.5f, 0.5f));
-            MakeDecor(_root, "Sack_Flour", skin.sackFlour, 1f, 0.5f, new Vector2(-190f, 20f), new Vector2(62f, 66f), new Vector2(1f, 0.5f));
-            MakeDecor(_root, "Cat_Sleeping", skin.catSleeping, 1f, 0.5f, new Vector2(-120f, 14f), new Vector2(74f, 48f), new Vector2(1f, 0.5f));
+            MakeDecor(_root, "Shelf_Props", skin.shelfProps, 0.5f, 1f, new Vector2(-40f, -185f), new Vector2(180f, 90f), new Vector2(0.5f, 1f));
+            MakeDecor(_root, "Plant_L", skin.plantPot, 0.5f, 0.5f, new Vector2(-292f, -172f), new Vector2(58f, 70f), new Vector2(0.5f, 0.5f));
+            MakeDecor(_root, "Plant_L2", skin.plantPot, 0.5f, 0.5f, new Vector2(-232f, -172f), new Vector2(58f, 70f), new Vector2(0.5f, 0.5f));
+            MakeDecor(_root, "Sack_Flour", skin.sackFlour, 1f, 0.5f, new Vector2(-150f, -176f), new Vector2(62f, 66f), new Vector2(1f, 0.5f));
+            var sleepCat = MakeDecor(_root, "Cat_Sleeping", skin.catSleeping, 1f, 0.5f, new Vector2(-60f, -184f), new Vector2(74f, 48f), new Vector2(1f, 0.5f));
+            if (sleepCat != null)
+            {
+                var zzz = MakeText(sleepCat.transform, "Txt_Zzz", "z Z z", 15, new Color(0.42f, 0.52f, 0.72f));
+                zzz.fontStyle = FontStyles.Bold | FontStyles.Italic;
+                zzz.alignment = TextAlignmentOptions.Center;
+                zzz.raycastTarget = false;
+                Anchor(zzz.rectTransform, 0.5f, 1f, new Vector2(12f, 6f), new Vector2(64f, 24f), new Vector2(0.5f, 0f));
+                var fl = sleepCat.gameObject.AddComponent<KitchenZzzFloat>();
+                fl.txt = zzz;
+            }
             _txtChalk = MakeText(chalk.transform, "Txt_Chalk", "MÓN HÔM NAY", 15, new Color(0.97f, 0.94f, 0.88f));
-            StretchText(_txtChalk, 10f, 6f);
-            _txtChalk.alignment = TextAlignmentOptions.TopLeft;
+            StretchText(_txtChalk, 22f, 16f);
+            _txtChalk.alignment = TextAlignmentOptions.Left; // giữa dọc + trái ngang — khối chữ nằm chính giữa bảng
 
             // Mèo Thần Tài — có skin thì animation 4 frame, chưa có thì placeholder chữ
             var cat = MakePanel(_root, "ManekiCat", new Color(0.97f, 0.96f, 0.93f));
-            Anchor(cat, 0.5f, 1f, new Vector2(-170f, -130f), new Vector2(86f, 92f), new Vector2(0.5f, 1f));
+            Anchor(cat, 0.5f, 1f, new Vector2(-230f, -130f), new Vector2(86f, 92f), new Vector2(0.5f, 1f));
             if (skin.manekiIdle != null && skin.manekiIdle.Length > 0)
             {
                 var catImg = cat.GetComponent<Image>();
@@ -808,28 +904,40 @@ namespace KitchenUIv2
                 catTxt.alignment = TextAlignmentOptions.Center;
             }
 
+            // Kệ gỗ đỡ mèo + bảng tên "Mèo Thần Tài" (theo mockup Kitchen Cook Flow)
+            var catShelf = MakePanel(_root, "Maneki_Shelf", new Color(0.55f, 0.36f, 0.18f));
+            Skin9(catShelf, skin.panelBoard);
+            Anchor(catShelf, 0.5f, 1f, new Vector2(-230f, -220f), new Vector2(126f, 20f), new Vector2(0.5f, 1f));
+            var catPlate = MakePanel(_root, "Maneki_Label", new Color(0.98f, 0.94f, 0.84f));
+            Skin9(catPlate, skin.panelPaper);
+            Anchor(catPlate, 0.5f, 1f, new Vector2(-230f, -244f), new Vector2(114f, 28f), new Vector2(0.5f, 1f));
+            var catName = MakeText(catPlate.transform, "Txt", "Mèo Thần Tài", 12, new Color(0.36f, 0.20f, 0.09f));
+            StretchText(catName, 4f, 2f);
+            catName.alignment = TextAlignmentOptions.Center;
+            catName.fontStyle = FontStyles.Bold;
+
             // Lò nướng
             var oven = MakePanel(_root, "Oven", new Color(0.72f, 0.45f, 0.30f));
-            Anchor(oven, 1f, 1f, new Vector2(-20f, -110f), new Vector2(230f, 190f), new Vector2(1f, 1f));
+            Anchor(oven, 1f, 1f, new Vector2(-20f, -110f), new Vector2(280f, 240f), new Vector2(1f, 1f));
             _ovenRect = (RectTransform)oven.transform;
 
             var mouth = MakePanel((RectTransform)oven.transform, "Oven_Mouth", new Color(0.25f, 0.13f, 0.08f));
-            Anchor(mouth, 0.5f, 0.5f, new Vector2(0f, 14f), new Vector2(120f, 84f), new Vector2(0.5f, 0.5f));
+            Anchor(mouth, 0.5f, 0.5f, new Vector2(0f, 16f), new Vector2(140f, 100f), new Vector2(0.5f, 0.5f));
 
             if (skin.ovenBody != null)
             {
                 // Có art thật: thân lò vẽ đè, tắt 2 khối màu phẳng
                 oven.GetComponent<Image>().color = Color.clear;
                 mouth.GetComponent<Image>().color = Color.clear;
-                var body = MakeDecor(_ovenRect, "Oven_Body", skin.ovenBody, 0.5f, 0.5f, new Vector2(0f, 10f), new Vector2(210f, 175f), new Vector2(0.5f, 0.5f));
+                var body = MakeDecor(_ovenRect, "Oven_Body", skin.ovenBody, 0.5f, 0.5f, new Vector2(0f, 12f), new Vector2(260f, 225f), new Vector2(0.5f, 0.5f));
                 if (body != null) body.transform.SetAsFirstSibling();
 
-                var glow = MakeDecor(_ovenRect, "Oven_Glow", skin.ovenGlow, 0.5f, 0.5f, new Vector2(0f, 6f), new Vector2(130f, 96f), new Vector2(0.5f, 0.5f));
+                var glow = MakeDecor(_ovenRect, "Oven_Glow", skin.ovenGlow, 0.5f, 0.5f, new Vector2(0f, 8f), new Vector2(150f, 112f), new Vector2(0.5f, 0.5f));
                 if (glow != null) { _imgOvenGlow = glow; glow.enabled = false; }
 
                 if (skin.ovenFire != null && skin.ovenFire.Length > 0)
                 {
-                    var fire = MakeDecor(_ovenRect, "Oven_Fire", skin.ovenFire[0], 0.5f, 0.5f, new Vector2(0f, 2f), new Vector2(84f, 74f), new Vector2(0.5f, 0.5f));
+                    var fire = MakeDecor(_ovenRect, "Oven_Fire", skin.ovenFire[0], 0.5f, 0.5f, new Vector2(0f, 4f), new Vector2(100f, 88f), new Vector2(0.5f, 0.5f));
                     if (fire != null) { _imgOvenFire = fire; fire.enabled = false; }
                 }
             }
@@ -879,7 +987,7 @@ namespace KitchenUIv2
             // Hộp VÀO KHO
             var wh = MakePanel(_root, "Warehouse_Box", new Color(0.45f, 0.26f, 0.12f));
             SkinFlat(wh, skin.warehouseHatch, false); // false: sprite phủ kín khung → chữ luôn nằm TRÊN nền sprite
-            Anchor(wh, 1f, 0.5f, new Vector2(-244f, 94f), new Vector2(190f, 96f), new Vector2(1f, 0.5f));
+            Anchor(wh, 1f, 0.5f, new Vector2(-250f, 108f), new Vector2(160f, 152f), new Vector2(1f, 0.5f));
             var whLbl = MakeText(wh.transform, "Txt_Wh", "VÀO KHO", 17, new Color(1f, 0.93f, 0.55f));
             Anchor(whLbl.rectTransform, 0.5f, 1f, new Vector2(0f, -10f), new Vector2(176f, 24f), new Vector2(0.5f, 1f));
             whLbl.alignment = TextAlignmentOptions.Center;
@@ -896,7 +1004,6 @@ namespace KitchenUIv2
             MakeDecor(_root, "Deco_Garlic_L", skin.decorGarlic, 0.5f, 1f, new Vector2(-478f, -6f), new Vector2(48f, 82f), new Vector2(0.5f, 1f));
             MakeDecor(_root, "Deco_Lights_L", skin.decorLights, 0.5f, 1f, new Vector2(-360f, 0f), new Vector2(280f, 40f), new Vector2(0.5f, 1f));
             MakeDecor(_root, "Deco_Lights_R", skin.decorLights, 0.5f, 1f, new Vector2(520f, 0f), new Vector2(300f, 40f), new Vector2(0.5f, 1f));
-            MakeDecor(_root, "Deco_CookPot",  skin.cookPot,     0.5f, 0.5f, new Vector2(600f, -300f), new Vector2(120f, 108f), new Vector2(0.5f, 0f));
 
             if (skin.catChefWalk != null && skin.catChefWalk.Length > 0 && skin.catChefWalk[0] != null)
             {
@@ -904,10 +1011,10 @@ namespace KitchenUIv2
                 catGo.transform.SetParent(_root, false);
                 var ci = catGo.GetComponent<Image>();
                 ci.sprite = skin.catChefWalk[0]; ci.preserveAspect = true; ci.raycastTarget = false;
-                Anchor((RectTransform)catGo.transform, 0.5f, 0.5f, new Vector2(700f, -350f), new Vector2(96f, 88f), new Vector2(0.5f, 0.5f));
+                Anchor((RectTransform)catGo.transform, 0.5f, 0.5f, new Vector2(-100f, -84f), new Vector2(96f, 88f), new Vector2(0.5f, 0.5f)); // nâng lên để thấy hết thân (Sếp 2026-08-26)
                 var walker = catGo.GetComponent<KitchenCatWalker>();
                 walker.frames = skin.catChefWalk;
-                walker.minX = 500f; walker.maxX = 900f;
+                walker.minX = -280f; walker.maxX = 260f;
             }
 
             TrySpawnFirePrefab();
@@ -943,22 +1050,44 @@ namespace KitchenUIv2
 
         private Transform MakeGrid(RectTransform parent, string name)
         {
-            var go = new GameObject(name, typeof(RectTransform), typeof(GridLayoutGroup));
-            go.transform.SetParent(parent, false);
+            // ScrollRect bọc grid — kéo bằng tay/chuột + lăn chuột đều được (Sếp yêu cầu 2026-08-26)
+            var scroll = new GameObject("Scroll_" + name, typeof(RectTransform), typeof(Image), typeof(ScrollRect));
+            scroll.transform.SetParent(parent, false);
+            var srt = (RectTransform)scroll.transform;
+            srt.anchorMin = new Vector2(0f, 0f); srt.anchorMax = new Vector2(1f, 1f);
+            srt.offsetMin = new Vector2(12f, 10f); srt.offsetMax = new Vector2(-12f, -48f);
+            scroll.GetComponent<Image>().color = Color.clear; // cần Graphic trong suốt để bắt drag
+
+            var viewport = new GameObject("Viewport", typeof(RectTransform), typeof(RectMask2D));
+            viewport.transform.SetParent(scroll.transform, false);
+            var vrt = (RectTransform)viewport.transform;
+            vrt.anchorMin = Vector2.zero; vrt.anchorMax = Vector2.one;
+            vrt.offsetMin = Vector2.zero; vrt.offsetMax = Vector2.zero;
+
+            var go = new GameObject(name, typeof(RectTransform), typeof(GridLayoutGroup), typeof(ContentSizeFitter));
+            go.transform.SetParent(viewport.transform, false);
             var rt = (RectTransform)go.transform;
-            rt.anchorMin = new Vector2(0f, 0f); rt.anchorMax = new Vector2(1f, 1f);
-            rt.offsetMin = new Vector2(12f, 10f); rt.offsetMax = new Vector2(-12f, -48f);
+            rt.anchorMin = new Vector2(0f, 1f); rt.anchorMax = new Vector2(1f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
             var grid = go.GetComponent<GridLayoutGroup>();
             grid.cellSize = new Vector2(112f, 88f);
             grid.spacing = new Vector2(9f, 9f);
             grid.childAlignment = TextAnchor.UpperLeft;
+            go.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            var sr = scroll.GetComponent<ScrollRect>();
+            sr.viewport = vrt; sr.content = rt;
+            sr.horizontal = false; sr.vertical = true;
+            sr.movementType = ScrollRect.MovementType.Clamped;
+            sr.scrollSensitivity = 24f;
             return go.transform;
         }
 
         private void ShowTrayTab(bool ingredients)
         {
-            if (_gridIngredients != null) _gridIngredients.gameObject.SetActive(ingredients);
-            if (_gridSeasonings != null)  _gridSeasonings.gameObject.SetActive(!ingredients);
+            if (_gridIngredients != null) _gridIngredients.parent.parent.gameObject.SetActive(ingredients);
+            if (_gridSeasonings != null)  _gridSeasonings.parent.parent.gameObject.SetActive(!ingredients);
 
             if (skin.tabOn != null && skin.tabOff != null)
             {
@@ -1052,6 +1181,73 @@ namespace KitchenUIv2
             selection.RegisterAllLeftCards(_gridIngredients, _gridSeasonings);
             selection.EnableIngredientSelection();
             RefreshCardQuantities();
+
+            // Ô trống + nút mua thêm slot (mockup: "Ô trống" + "Mở 7 ô") — cả nguyên liệu lẫn gia vị
+            BuildSlotShop(_gridIngredients, "ing");
+            BuildSlotShop(_gridSeasonings, "sea");
+        }
+
+        private const string SlotKeyPrefix = "kitchen_extra_slots_v2_";
+
+        private int GetExtraSlots(string tab) => PlayerPrefs.GetInt(SlotKeyPrefix + tab, slotPackSize); // mặc định có sẵn 1 hàng ô trống như mockup
+
+        private void BuildSlotShop(Transform parent, string tab)
+        {
+            if (parent == null) return;
+
+            int empty = GetExtraSlots(tab);
+            for (int i = 0; i < empty; i++)
+            {
+                var cell = new GameObject("Slot_Empty_" + i, typeof(RectTransform), typeof(Image));
+                cell.transform.SetParent(parent, false);
+                var img = cell.GetComponent<Image>();
+                img.color = new Color(0.72f, 0.62f, 0.50f, 0.4f);
+                Skin9(cell, skin.cardLocked);
+                if (skin.cardLocked != null) img.color = new Color(1f, 1f, 1f, 0.45f);
+                var t = MakeText(cell.transform, "Txt", "+\nÔ trống", 11, new Color(0.55f, 0.45f, 0.35f));
+                StretchText(t, 4f, 8f);
+                t.alignment = TextAlignmentOptions.Center;
+            }
+
+            int bought = PlayerPrefs.GetInt(SlotKeyPrefix + "bought_" + tab, 0);
+            int cost = slotPackBaseCostGold * (bought + 1);
+            var buy = MakeButton((RectTransform)parent, "Btn_BuySlots",
+                $"+ Mở {slotPackSize} ô\n{cost:N0} vàng", new Color(0.30f, 0.55f, 0.90f), () => TryBuySlots(tab));
+            var bl = buy.GetComponentInChildren<TMP_Text>();
+            if (bl != null) { bl.fontSize = 13; bl.fontStyle = FontStyles.Bold; }
+        }
+
+        /// <summary>Mua thêm gói ô khay bằng VÀNG (FarmEconomyManager cũ — không sửa logic tiền).</summary>
+        private void TryBuySlots(string tab)
+        {
+            int bought = PlayerPrefs.GetInt(SlotKeyPrefix + "bought_" + tab, 0);
+            int cost = slotPackBaseCostGold * (bought + 1);
+            var eco = FarmEconomyManager.Instance;
+            if (eco == null || !eco.SpendGold(cost))
+            {
+                if (_txtPrepToast != null)
+                { _txtPrepToast.text = $"Không đủ {cost:N0} vàng để mở ô!"; _txtPrepToast.color = new Color(0.85f, 0.25f, 0.18f); }
+                return;
+            }
+            PlayerPrefs.SetInt(SlotKeyPrefix + tab, GetExtraSlots(tab) + slotPackSize);
+            PlayerPrefs.SetInt(SlotKeyPrefix + "bought_" + tab, bought + 1);
+            PlayerPrefs.Save();
+            if (_txtPrepToast != null)
+            { _txtPrepToast.text = $"Đã mở thêm {slotPackSize} ô khay!"; _txtPrepToast.color = new Color(0.30f, 0.55f, 0.15f); }
+            RebuildSlotShop(tab);
+        }
+
+        private void RebuildSlotShop(string tab)
+        {
+            var parent = tab == "ing" ? _gridIngredients : _gridSeasonings;
+            if (parent == null) return;
+            for (int i = parent.childCount - 1; i >= 0; i--)
+            {
+                var c = parent.GetChild(i);
+                if (c.name.StartsWith("Slot_Empty_") || c.name == "Btn_BuySlots")
+                    Destroy(c.gameObject);
+            }
+            BuildSlotShop(parent, tab);
         }
 
         private void BuildLockedCard(Transform parent, IngredientData data)
@@ -1131,6 +1327,9 @@ namespace KitchenUIv2
         private void TrySpawnFirePrefab()
         {
             if (ovenFirePrefab == null || !Application.isPlaying) return;
+            // AN TOÀN LAYERING: UI cũ vẫn còn (Overlay). Đổi canvas mới sang ScreenSpaceCamera
+            // sẽ khiến UI cũ đè lên trên (bug 2026-08-26). Chỉ chạy khi Sếp bật cờ SAU KHI xóa UI cũ.
+            if (!useCameraCanvasForFire) return;
             var cam = Camera.main;
             if (cam == null || _canvas == null || _ovenRect == null) return;
 
@@ -1172,6 +1371,29 @@ namespace KitchenUIv2
         }
 
         // ── Skin helpers (K2) ──────────────────────────────────────
+
+        private static Sprite _dotSprite;
+        /// <summary>Sprite hình tròn 24px vẽ bằng code — dùng cho chấm màu, không cần art.</summary>
+        private static Sprite GetDotSprite()
+        {
+            if (_dotSprite != null) return _dotSprite;
+            const int S = 24;
+            var tex = new Texture2D(S, S, TextureFormat.ARGB32, false);
+            tex.hideFlags = HideFlags.DontSave;
+            float c = (S - 1) * 0.5f, r = S * 0.5f - 1f;
+            var px = new Color[S * S];
+            for (int yy = 0; yy < S; yy++)
+                for (int xx = 0; xx < S; xx++)
+                {
+                    float d = Mathf.Sqrt((xx - c) * (xx - c) + (yy - c) * (yy - c));
+                    float a = Mathf.Clamp01(r - d + 0.5f); // mép mềm 1px
+                    px[yy * S + xx] = new Color(1f, 1f, 1f, a);
+                }
+            tex.SetPixels(px); tex.Apply();
+            _dotSprite = Sprite.Create(tex, new Rect(0, 0, S, S), new Vector2(0.5f, 0.5f));
+            _dotSprite.hideFlags = HideFlags.DontSave;
+            return _dotSprite;
+        }
 
         private static void Skin9(GameObject go, Sprite sp)
         {
@@ -1424,6 +1646,28 @@ namespace KitchenUIv2
             rt.pivot = pivot;
             rt.anchoredPosition = pos;
             rt.sizeDelta = size;
+        }
+    }
+
+    /// <summary>Chữ zZz bay lên lơ lửng trên mèo đang ngủ — thuần code, không cần art.</summary>
+    public class KitchenZzzFloat : MonoBehaviour
+    {
+        public TMP_Text txt;
+        public float cycle = 2.4f;
+        private float _t;
+
+        private void Update()
+        {
+            if (txt == null) return;
+            _t += Time.unscaledDeltaTime;
+            float p = (_t % cycle) / cycle;
+            var rt = txt.rectTransform;
+            rt.anchoredPosition = new Vector2(12f + 7f * Mathf.Sin(p * 6.283f), 6f + 36f * p);
+            var c = txt.color;
+            c.a = p < 0.15f ? p / 0.15f : 1f - (p - 0.15f) / 0.85f;
+            txt.color = c;
+            float sc = 0.7f + 0.45f * p;
+            rt.localScale = new Vector3(sc, sc, 1f);
         }
     }
 

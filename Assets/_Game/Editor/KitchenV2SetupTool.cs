@@ -10,6 +10,31 @@ using UnityEngine;
 /// </summary>
 public static class KitchenV2SetupTool
 {
+    [MenuItem("Tools/Farm Game/Kitchen/Lưu vị trí chỉnh tay (giữ qua Play + rebuild)")]
+    public static void CaptureManualLayout()
+    {
+        var ui = Object.FindFirstObjectByType<KitchenUIv2.KitchenSceneV2UI>(FindObjectsInactive.Include);
+        if (ui == null) { Debug.LogWarning("[KitchenV2] Không thấy Kitchen_UI_v2 trong scene."); return; }
+        Undo.RegisterFullObjectHierarchyUndo(ui.gameObject, "Capture kitchen layout");
+        int n = ui.CaptureLayoutOverrides();
+        EditorUtility.SetDirty(ui);
+        EditorSceneManager.MarkSceneDirty(ui.gameObject.scene);
+        Debug.Log($"[KitchenV2] Đã lưu {n} khối Sếp chỉnh tay ✔ — từ giờ giữ nguyên qua Play & rebuild. NHỚ Ctrl+S. " +
+                  "(Danh sách xem/xóa từng dòng: inspector Kitchen_UI_v2 → Layout Overrides)");
+    }
+
+    [MenuItem("Tools/Farm Game/Kitchen/Xóa toàn bộ vị trí chỉnh tay (về layout code)")]
+    public static void ClearManualLayout()
+    {
+        var ui = Object.FindFirstObjectByType<KitchenUIv2.KitchenSceneV2UI>(FindObjectsInactive.Include);
+        if (ui == null) { Debug.LogWarning("[KitchenV2] Không thấy Kitchen_UI_v2 trong scene."); return; }
+        Undo.RegisterFullObjectHierarchyUndo(ui.gameObject, "Clear kitchen layout overrides");
+        ui.ClearLayoutOverrides();
+        EditorUtility.SetDirty(ui);
+        EditorSceneManager.MarkSceneDirty(ui.gameObject.scene);
+        Debug.Log("[KitchenV2] Đã xóa hết chỉnh tay — layout về chuẩn code. NHỚ Ctrl+S.");
+    }
+
     [MenuItem("Tools/Farm Game/Kitchen/Setup Kitchen UI v2")]
     public static void SetupKitchenV2()
     {
@@ -149,17 +174,17 @@ public static class KitchenV2SetupTool
         SOpt(so, "skin.decorLights",   KDir + "/deco_string_lights.png", null);
         SArrOpt(so, "skin.catChefWalk", KDir + "/cat_chef_walk_0{0}.png", 6);
 
-        // Lửa lò: gán prefab hạt có sẵn trong project (Sếp chỉnh Fire Scale nếu to/nhỏ)
+        // Lửa lò prefab: TẠM TẮT (2026-08-26) — bật cần đổi canvas sang ScreenSpaceCamera,
+        // làm canvas UI CŨ (Overlay) đè lên UI mới. Bật lại ở K3 sau khi xóa UI cũ:
+        // gán Area_fire_red vào ovenFirePrefab + tick useCameraCanvasForFire.
         var fireProp = so.FindProperty("ovenFirePrefab");
-        if (fireProp != null && fireProp.objectReferenceValue == null)
+        if (fireProp != null && fireProp.objectReferenceValue != null)
         {
-            var fire = AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Lana Studio/Hyper Casual FX/Prefabs/Area/Area_fire_red.prefab");
-            if (fire != null)
-            {
-                fireProp.objectReferenceValue = fire;
-                Debug.Log("[KitchenV2] Lửa lò: gán prefab Area_fire_red ✔ (nếu lửa quá to/nhỏ → chỉnh Fire Scale trên Kitchen_UI_v2)");
-            }
+            fireProp.objectReferenceValue = null;
+            Debug.Log("[KitchenV2] Lửa lò: GỠ prefab (tạm dùng lửa frame — chờ K3 xóa UI cũ mới bật lại được)");
         }
+        var camFlag = so.FindProperty("useCameraCanvasForFire");
+        if (camFlag != null) camFlag.boolValue = false;
     }
 
     private static int _skinOk, _skinFail;
