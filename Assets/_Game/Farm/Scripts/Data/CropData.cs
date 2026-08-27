@@ -41,6 +41,16 @@ public class CropData : BaseItemData   // ← Đổi từ ScriptableObject sang 
     public Vector3 growingScale = new Vector3(1f, 1.5f, 1f);
     public Vector3 readyScale   = new Vector3(1f, 2f,   1f);
 
+    // ── BỘ 5 STAGE (đội vẽ giao 2026-08-27) ───────────────────────────────────
+    // hạt → mầm → lá → nụ/ra hoa → chín. Sprite pivot Bottom-Center, PPU 100.
+    //
+    // 3 field cũ ở TRÊN GIỮ NGUYÊN, không xoá: cây nào chưa gán bộ mới thì
+    // StageCount tự trả về 3 và toàn bộ hành vi y như trước (không vỡ save, không
+    // vỡ cây/hoa chưa chuyển). Có đủ mảng mới → tự chạy 5 stage.
+    [Header("World Visual — bộ 5 stage (2026-08-27)")]
+    public Sprite[]  stageSprites = new Sprite[0];
+    public Vector3[] stageScales  = new Vector3[0];
+
     [Header("Visual")]
     public int displayCount = 4;
 
@@ -92,8 +102,46 @@ public class CropData : BaseItemData   // ← Đổi từ ScriptableObject sang 
 #endif
 
     // ── Methods ───────────────────────────────────────────────────────────────
+
+    /// <summary>Đã gán đủ bộ stage mới chưa (mọi ô trong stageSprites đều có sprite).</summary>
+    public bool HasStageSet
+    {
+        get
+        {
+            if (stageSprites == null || stageSprites.Length < 2) return false;
+            for (int i = 0; i < stageSprites.Length; i++)
+                if (stageSprites[i] == null) return false;
+            return true;
+        }
+    }
+
+    /// <summary>Số stage thực tế: có bộ mới → theo độ dài mảng (5); chưa có → 3 như cũ.</summary>
+    public int StageCount => HasStageSet ? stageSprites.Length : 3;
+
+    /// <summary>progress 0..1 → index stage. Chia đều; progress = 1 luôn ra stage cuối.</summary>
+    public int StageFromProgress(float progress01)
+    {
+        int n = StageCount;
+        return Mathf.Clamp(Mathf.FloorToInt(Mathf.Clamp01(progress01) * n), 0, n - 1);
+    }
+
+    /// <summary>Scale của stage: bộ mới đọc stageScales, chưa có thì về 3 field cũ.</summary>
+    public Vector3 GetScale(int stage)
+    {
+        if (HasStageSet && stageScales != null && stageScales.Length > 0)
+        {
+            Vector3 s = stageScales[Mathf.Clamp(stage, 0, stageScales.Length - 1)];
+            return s == Vector3.zero ? Vector3.one : s;
+        }
+        if (stage <= 0) return sproutScale;
+        if (stage == 1) return growingScale;
+        return readyScale;
+    }
+
     public Sprite GetStageSprite(float progress01)
     {
+        if (HasStageSet) return GetSprite(StageFromProgress(progress01));
+
         progress01 = Mathf.Clamp01(progress01);
 
         if (progress01 >= 1f)
@@ -120,7 +168,10 @@ public class CropData : BaseItemData   // ← Đổi từ ScriptableObject sang 
 
     public Sprite GetSprite(int stage)
     {
-        if (stage == 0) return sproutSprite;
+        if (HasStageSet)
+            return stageSprites[Mathf.Clamp(stage, 0, stageSprites.Length - 1)];
+
+        if (stage <= 0) return sproutSprite;
         if (stage == 1) return growingSprite;
         return readySprite;
     }

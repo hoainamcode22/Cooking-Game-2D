@@ -27,7 +27,19 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 50, y: 50, z: 1}
   readyScale: {x: 50, y: 50, z: 1}
-  displayCount: 1
+  stageSprites:
+  - {fileID: 21300000, guid: 57e44ed097b51d92c32cf871031da7b4, type: 3}
+  - {fileID: 21300000, guid: ae49dbc60d3202ce2dd27eb8ebb9e194, type: 3}
+  - {fileID: 21300000, guid: 46972b0871d74efb60ce92c9bb784a57, type: 3}
+  - {fileID: 21300000, guid: 377c46881e6fea0644308d3bf6ef6ae9, type: 3}
+  - {fileID: 21300000, guid: 624111d0cd34a762545e911ff6c38c78, type: 3}
+  stageScales:
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  displayCount: 12
   seedItemId: seed_hoa_mau_don
   harvestItemId: hoa_mau_don
   unlockLevel: 10

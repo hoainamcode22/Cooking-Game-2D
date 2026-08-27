@@ -76,6 +76,11 @@ public static class FarmFxSetupTool
             }
         }
 
+        if (warehouseSprite == null)
+        {
+            warehouseSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/bocaycoitrangtri/ICON_HUB/icon_warehouse_v2_1786984374562-removebg-preview.png");
+        }
+
         var soToast = new SerializedObject(toast);
         soToast.FindProperty("canvas").objectReferenceValue = canvas;
         if (warehouseSprite != null)

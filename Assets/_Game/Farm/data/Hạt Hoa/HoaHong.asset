@@ -27,7 +27,19 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 50, y: 50, z: 1}
   readyScale: {x: 50, y: 50, z: 1}
-  displayCount: 1
+  stageSprites:
+  - {fileID: 21300000, guid: f97981733817a62a326a344529c2d08b, type: 3}
+  - {fileID: 21300000, guid: d71b8c9013c2a4574d14b4e3d7c58771, type: 3}
+  - {fileID: 21300000, guid: 5674bdf275d71c6805cabf83e8ed5e2b, type: 3}
+  - {fileID: 21300000, guid: ce3128e97c5ddc6f542fa22355d519e0, type: 3}
+  - {fileID: 21300000, guid: be0c4fe7a8892c3453a1f98d153172d4, type: 3}
+  stageScales:
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  displayCount: 12
   seedItemId: seed_hoa_hong
   harvestItemId: hoa_hong
   unlockLevel: 4

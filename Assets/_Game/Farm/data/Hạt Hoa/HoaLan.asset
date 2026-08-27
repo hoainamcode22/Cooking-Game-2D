@@ -27,7 +27,19 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 50, y: 50, z: 1}
   readyScale: {x: 50, y: 50, z: 1}
-  displayCount: 1
+  stageSprites:
+  - {fileID: 21300000, guid: 0c8904921d27d27d08b5ae6672f2f5a1, type: 3}
+  - {fileID: 21300000, guid: d445e908e1a3065a4b1dfbb41cdc8387, type: 3}
+  - {fileID: 21300000, guid: e322a2cbc1be24bb18781e90ea2f7afc, type: 3}
+  - {fileID: 21300000, guid: 1b50e6f70c3ac46c18a3caa18dff4c28, type: 3}
+  - {fileID: 21300000, guid: 3f78b4da17fde2fd98469cb4274fbddc, type: 3}
+  stageScales:
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  displayCount: 12
   seedItemId: seed_hoa_lan
   harvestItemId: hoa_lan
   unlockLevel: 7

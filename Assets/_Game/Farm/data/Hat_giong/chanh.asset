@@ -27,6 +27,18 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 60, y: 60, z: 1}
   readyScale: {x: 70, y: 70, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: 8ae8abf743f98356663e0097d79612ca, type: 3}
+  - {fileID: 21300000, guid: c098dfb601f2a34cba031bc94d4fed8e, type: 3}
+  - {fileID: 21300000, guid: 9cbc8f998de04c70b9cec400ff9f330c, type: 3}
+  - {fileID: 21300000, guid: 45026bf4c80d0a2a769d113b64bda1c5, type: 3}
+  - {fileID: 21300000, guid: 16ed40e0b919e6ae784209d6bd2e1535, type: 3}
+  stageScales:
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
   displayCount: 12
   seedItemId: seed_lemon
   harvestItemId: lemon

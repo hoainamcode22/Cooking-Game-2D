@@ -22,6 +22,17 @@ public class PlotCropVisual : MonoBehaviour
     [SerializeField] private string sortingLayerName = "Crop";
     [SerializeField] private int    sortingOrder     = 20;
 
+    [Header("Lattice — rải cây đều theo lưới iso (2026-08-27)")]
+    // Thay cho việc rải tay CropPoint trong prefab: tính lưới ngay lúc chạy theo
+    // ĐÚNG hình thoi của sprite nền plot, nên số cây bao nhiêu cũng đều (6, 12, 16...).
+    [SerializeField] private bool      useIsoLattice  = true;
+    [SerializeField] private Transform groundRef;                 // trống = tự tìm "GroundSprite"
+    [SerializeField] private float     latticeInset   = 0.86f;    // 1 = sát mép ô, nhỏ hơn = thụt vào
+    [SerializeField] private Vector2   latticeOffset  = Vector2.zero;
+    // Đẩy cả lưới về phía TRƯỚC (xuống dưới) theo % nửa chiều cao ô: gốc cây nằm ở lưới
+    // nên tán lá vươn lên trên; dịch xuống một chút thì khối cây phủ giữa ô, không hở mép trước.
+    [SerializeField] private float     latticeDepthBias = -0.12f;
+
     [Header("Ripe Wind Sway")]
     [SerializeField] private bool  enableReadySway = true;
     [SerializeField] private float swayAngle       = 4.5f;
@@ -37,6 +48,7 @@ public class PlotCropVisual : MonoBehaviour
     private float swayTimer;
     private bool  isReadySwayActive;
     private bool  isSetupDone;
+    private int   lastLatticeCount = -1;
 
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -123,8 +135,11 @@ public class PlotCropVisual : MonoBehaviour
 
         currentCrop = crop;
         progress01  = Mathf.Clamp01(progress01);
-        int  stage   = progress01 >= 1f ? 2 : (progress01 < 0.5f ? 0 : 1);
-        bool isReady = stage == 2;
+        // 2026-08-27: số stage do CropData quyết định (bộ mới = 5, cây chưa chuyển = 3).
+        int  stage   = crop.StageFromProgress(progress01);
+        bool isReady = stage >= crop.StageCount - 1;
+
+        ApplyLattice(crop.displayCount);
 
         SetReadySwayActive(isReady);
         UpdateVisual(stage);
@@ -138,16 +153,127 @@ public class PlotCropVisual : MonoBehaviour
                 cropPoints[i].gameObject.SetActive(i < crop.displayCount);
     }
 
+    // ── Lưới iso ──────────────────────────────────────────────────────────────
+    /// <summary>
+    /// Rải n CropPoint thành lưới đều bên trong hình thoi của ô đất, rồi đánh
+    /// sortingOrder theo độ sâu (cây xa vẽ trước, cây gần vẽ sau).
+    ///
+    /// Toán: hình thoi = ảnh của hình vuông (s,t) ∈ [-0.5,0.5]² qua
+    ///   P(s,t) = tâm + (s+t)·E_phải + (s−t)·E_trên
+    /// với E_phải/E_trên là vector từ tâm ra đỉnh phải/đỉnh trên. Lưới đều trong
+    /// hình vuông (s,t) ⇒ lưới đều theo 2 trục iso của ô đất. Lấy 4 đỉnh từ AABB
+    /// của sprite nền nên tự đúng với mọi kích cỡ/độ nghiêng của plot.
+    /// </summary>
+    public void ApplyLattice(int n)
+    {
+        if (!useIsoLattice || cropPoints == null || cropPoints.Length == 0) return;
+        n = Mathf.Clamp(n, 1, cropPoints.Length);
+        if (n == lastLatticeCount) return;
+
+        SpriteRenderer ground = FindGround();
+        if (ground == null) { lastLatticeCount = n; return; }
+
+        Bounds  b = ground.bounds;                                  // world-space
+        Vector3 c = transform.InverseTransformPoint(new Vector3(b.center.x, b.center.y, 0f));
+        Vector3 eR = transform.InverseTransformPoint(new Vector3(b.max.x, b.center.y, 0f)) - c;
+        Vector3 eT = transform.InverseTransformPoint(new Vector3(b.center.x, b.max.y, 0f)) - c;
+
+        int nc, nr; GetGrid(n, out nc, out nr);
+
+        for (int i = 0; i < n; i++)
+        {
+            if (cropPoints[i] == null) continue;
+            int   col = i % nc, row = i / nc;
+            float s = latticeInset * ((col + 0.5f) / nc - 0.5f);
+            float tt = latticeInset * ((row + 0.5f) / nr - 0.5f);
+            Vector3 pos = c + (s + tt) * eR + (s - tt) * eT + latticeDepthBias * eT;
+            cropPoints[i].localPosition = new Vector3(pos.x + latticeOffset.x,
+                                                     pos.y + latticeOffset.y, 0f);
+        }
+
+        // Sorting theo độ sâu: y world lớn = ở xa = vẽ trước (order nhỏ).
+        var order = new System.Collections.Generic.List<int>();
+        for (int i = 0; i < n; i++) if (cropPoints[i] != null) order.Add(i);
+        order.Sort((a, bb) => cropPoints[bb].position.y.CompareTo(cropPoints[a].position.y));
+        for (int rank = 0; rank < order.Count; rank++)
+        {
+            int idx = order[rank];
+            if (slotRenderers != null && idx < slotRenderers.Length && slotRenderers[idx] != null)
+                slotRenderers[idx].sortingOrder = sortingOrder + rank;
+        }
+
+        lastLatticeCount = n;
+    }
+
+    /// <summary>Chia n cây thành lưới cols×rows. Ưu tiên rộng hơn cao cho khớp hình thoi 2:1.</summary>
+    private static void GetGrid(int n, out int nc, out int nr)
+    {
+        switch (n)
+        {
+            case 1:  nc = 1; nr = 1; return;
+            case 2:  nc = 2; nr = 1; return;
+            case 3:  nc = 3; nr = 1; return;
+            case 4:  nc = 2; nr = 2; return;
+            case 5:  nc = 5; nr = 1; return;
+            case 6:  nc = 3; nr = 2; return;
+            case 8:  nc = 4; nr = 2; return;
+            case 9:  nc = 3; nr = 3; return;
+            case 10: nc = 5; nr = 2; return;
+            case 12: nc = 4; nr = 3; return;
+            case 15: nc = 5; nr = 3; return;
+            case 16: nc = 4; nr = 4; return;
+            case 20: nc = 5; nr = 4; return;
+            case 25: nc = 5; nr = 5; return;
+        }
+        nc = Mathf.Max(1, Mathf.CeilToInt(Mathf.Sqrt(n * 1.35f)));
+        nr = Mathf.Max(1, Mathf.CeilToInt(n / (float)nc));
+    }
+
+    private SpriteRenderer FindGround()
+    {
+        if (groundRef != null)
+        {
+            var g0 = groundRef.GetComponent<SpriteRenderer>();
+            if (g0 != null) return g0;
+        }
+        Transform root = transform.parent != null ? transform.parent : transform;
+        Transform t = root.Find("GroundSprite");
+        if (t != null)
+        {
+            var g1 = t.GetComponent<SpriteRenderer>();
+            if (g1 != null) { groundRef = t; return g1; }
+        }
+        // Dự phòng: sprite lớn nhất dưới plot mà KHÔNG nằm trong CropGroup
+        SpriteRenderer best = null; float bestArea = 0f;
+        foreach (var sr in root.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (sr == null || sr.sprite == null) continue;
+            if (sr.transform.IsChildOf(transform)) continue;
+            float a = sr.bounds.size.x * sr.bounds.size.y;
+            if (a > bestArea) { bestArea = a; best = sr; }
+        }
+        if (best != null) groundRef = best.transform;
+        return best;
+    }
+
+    [ContextMenu("Xem trước lưới 12 cây")]
+    private void PreviewLattice12() { EnsureSetup(); lastLatticeCount = -1; ApplyLattice(12); }
+
+    [ContextMenu("Xem trước lưới 6 cây")]
+    private void PreviewLattice6()  { EnsureSetup(); lastLatticeCount = -1; ApplyLattice(6); }
+
     /// <summary>Cáº­p nháº­t sprite vÃ  scale cho stage hiá»‡n táº¡i (0=Sprout, 1=Growing, 2=Ready).</summary>
     public void UpdateVisual(int stage)
     {
         if (currentCrop == null || slotRenderers == null) return;
 
-        Vector3 targetScale = stage == 0 ? currentCrop.sproutScale
-                            : stage == 1 ? currentCrop.growingScale
-                            : currentCrop.readyScale;
+        Vector3 targetScale = currentCrop.GetScale(stage);
 
-        float offsetY = (targetScale.y - currentCrop.sproutScale.y) * 0.3f;
+        // Bộ 5 stage mới vẽ pivot Bottom-Center → gốc cây nằm ĐÚNG tại CropPoint,
+        // không cần đẩy lên. Cây cũ (3 stage) giữ nguyên offset như trước.
+        float offsetY = currentCrop.HasStageSet
+                      ? 0f
+                      : (targetScale.y - currentCrop.GetScale(0).y) * 0.3f;
 
         for (int i = 0; i < slotRenderers.Length; i++)
         {
@@ -208,7 +334,11 @@ public class PlotCropVisual : MonoBehaviour
 
     private void EnsureSetup()
     {
-        AutoFindPoints();
+        // 2026-08-27 (hiệu năng): trước đây gọi AutoFindPoints() MỖI FRAME cho MỖI plot
+        // (ShowCrop ← RefreshVisual ← PlotController.Update) → GetComponentsInChildren +
+        // cấp phát List liên tục. Chỉ quét lại khi thật sự chưa có điểm.
+        if (!isSetupDone || cropPoints == null || cropPoints.Length == 0)
+            AutoFindPoints();
 
         bool needRebuild = !isSetupDone
                         || slotRenderers == null
@@ -264,6 +394,7 @@ public class PlotCropVisual : MonoBehaviour
         swayTimer         = Random.Range(0f, 10f);
         isReadySwayActive = false;
         isSetupDone       = true;
+        lastLatticeCount  = -1;   // slot vừa dựng lại → lưới phải tính lại
     }
 
 

@@ -30,7 +30,9 @@ public class CookingItemConsumer : MonoBehaviour
 
                 if (!string.IsNullOrEmpty(itemId))
                 {
-                    cookedItemIds.Add(itemId);
+                    // Thẻ UI v2 mang id BẾP (IngredientData.id) — kho lưu itemId NÔNG TRẠI.
+                    // Dịch ngược trước khi trừ, id trùng thì giữ nguyên. [Sếp 2026-08-27]
+                    cookedItemIds.Add(KitchenIdMap.ToFarm(itemId));
                 }
             }
         }
@@ -45,7 +47,7 @@ public class CookingItemConsumer : MonoBehaviour
 
                 if (!string.IsNullOrEmpty(itemId))
                 {
-                    cookedItemIds.Add(itemId);
+                    cookedItemIds.Add(KitchenIdMap.ToFarm(itemId)); // như trên [Sếp 2026-08-27]
                 }
             }
         }

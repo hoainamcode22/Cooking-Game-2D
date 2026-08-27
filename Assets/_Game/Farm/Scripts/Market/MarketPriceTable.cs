@@ -248,6 +248,10 @@ public static class MarketPriceTable
         Add("lemon",             "Chanh",            MarketCategory.NongSan,  52, 8,  60);
         Add("chili",             "Ớt",               MarketCategory.NongSan,  68, 9,  55);
         Add("pepper",            "Tiêu",             MarketCategory.NongSan,  76, 10, 50);
+        // Bí đỏ / dưa hấu (thêm 2026-08-27): cây "quả to", cấp 11-12, chưa dùng để nấu
+        // nên giá bán cao bù lại. Lãi/giây 0.308 → 0.317, tiếp đúng đường cong của Tiêu (0.304).
+        Add("pumpkin",           "Bí Đỏ",            MarketCategory.NongSan,  84, 11, 45);
+        Add("watermelon",        "Dưa Hấu",          MarketCategory.NongSan,  95, 12, 45);
 
         // ── HOA ──────────────────────────────────────────────────────────
         // 10 loại hoa trước đây chín CÙNG LÚC (54 giây) nên giá cũ chỉ chênh 12 → 32.
@@ -288,6 +292,8 @@ public static class MarketPriceTable
         Add("seed_hoa_mau_don",      "Hạt Hoa Mẫu Đơn",     MarketCategory.HatGiong,  78, 10, 45);
         Add("seed_hoa_cam_tu_cau",   "Hạt Hoa Cẩm Tú Cầu",  MarketCategory.HatGiong,  84, 10, 45);
         Add("seed_hoa_anh_thao",     "Hạt Hoa Anh Thảo",    MarketCategory.HatGiong,  90, 10, 45);
+        Add("seed_pumpkin",          "Hạt Bí Đỏ",           MarketCategory.HatGiong,  80, 11, 45);
+        Add("seed_watermelon",       "Hạt Dưa Hấu",         MarketCategory.HatGiong,  87, 12, 45);
 
         // ── CHĂN NUÔI ────────────────────────────────────────────────────
         // ⚠️ CÂN BẰNG LẠI (nhóm E). Trước đây 1 hạt lúa (7 vàng) thả vào chuồng gà trả

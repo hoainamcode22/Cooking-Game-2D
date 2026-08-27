@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: nam
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_nam
+  itemName: "N\u1EA5m"
+  itemIcon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
+  goldPrice: 76
+  diamondPrice: 0
+  cropCategory: 0
+  cropId: nam
+  plantSeedFxIcon: {fileID: 4208644412692552619, guid: 7a15c25bc6b86f0438b86042fe3bfb6d, type: 3}
+  harvestIcon: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
+  sproutSprite: {fileID: 4208644412692552619, guid: 7a15c25bc6b86f0438b86042fe3bfb6d, type: 3}
+  growingSprite: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
+  readySprite: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 60, y: 60, z: 1}
+  readyScale: {x: 70, y: 70, z: 1}
+  displayCount: 6
+  seedItemId: seed_nam
+  harvestItemId: mushroom
+  unlockLevel: 6
+  growSeconds: 250
+  sellGold: 34
+  harvestAmount: 4
+  plantCost: 1
+  expReward: 25
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1

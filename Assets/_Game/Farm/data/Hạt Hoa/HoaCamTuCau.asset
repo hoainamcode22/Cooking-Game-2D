@@ -27,7 +27,19 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 50, y: 50, z: 1}
   readyScale: {x: 50, y: 50, z: 1}
-  displayCount: 1
+  stageSprites:
+  - {fileID: 21300000, guid: 8e2ad88354452576360058f5d43a75e8, type: 3}
+  - {fileID: 21300000, guid: 936343c8dc3b2b45a5fa0e8b94517018, type: 3}
+  - {fileID: 21300000, guid: d40c9bdd4b3c20eaf47604a7bec4cb7f, type: 3}
+  - {fileID: 21300000, guid: 9045aabdf61b1bb18f99e9fa2f6e4806, type: 3}
+  - {fileID: 21300000, guid: 0c3f15540452eff156112febaac89635, type: 3}
+  stageScales:
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  displayCount: 12
   seedItemId: seed_hoa_cam_tu_cau
   harvestItemId: hoa_cam_tu_cau
   unlockLevel: 10

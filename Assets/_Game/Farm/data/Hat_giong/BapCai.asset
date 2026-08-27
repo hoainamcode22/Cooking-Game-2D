@@ -27,6 +27,18 @@ MonoBehaviour:
   sproutScale: {x: 10, y: 10, z: 1}
   growingScale: {x: 30, y: 30, z: 1}
   readyScale: {x: 33, y: 33, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: 0c948df09e43bd357730811a8a6ea95f, type: 3}
+  - {fileID: 21300000, guid: 7bad211088f7979798775d3ea212f8e9, type: 3}
+  - {fileID: 21300000, guid: 3412f23511b90824dde30f3875a7b73f, type: 3}
+  - {fileID: 21300000, guid: 68f78c1594bf2f7c795a3c84f1d232a2, type: 3}
+  - {fileID: 21300000, guid: 150f0f32b03882654044c3f1f04d547b, type: 3}
+  stageScales:
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
   displayCount: 6
   seedItemId: seed_bapcai
   harvestItemId: bapcai

@@ -27,6 +27,18 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 60, y: 60, z: 1}
   readyScale: {x: 70, y: 70, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: fd8d9eca5bb50d838a35e3b6245c10e0, type: 3}
+  - {fileID: 21300000, guid: 210b52f501c821588631d20b9226c632, type: 3}
+  - {fileID: 21300000, guid: a0064ad8b09aea314baa7a33ba63f1ad, type: 3}
+  - {fileID: 21300000, guid: 33c97f5392f989034f40fe4b84a48c31, type: 3}
+  - {fileID: 21300000, guid: f4c15453beca135ba17ff167431cd684, type: 3}
+  stageScales:
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
   displayCount: 12
   seedItemId: seed_chili
   harvestItemId: chili

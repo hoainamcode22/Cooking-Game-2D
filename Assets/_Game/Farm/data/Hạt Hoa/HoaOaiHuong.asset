@@ -27,7 +27,19 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 50, y: 50, z: 1}
   readyScale: {x: 50, y: 50, z: 1}
-  displayCount: 1
+  stageSprites:
+  - {fileID: 21300000, guid: 480a18b796ccccb49a1bdbcf91d1f17f, type: 3}
+  - {fileID: 21300000, guid: 8a3dd6f4e8b3c614814c832e2dfd5fe4, type: 3}
+  - {fileID: 21300000, guid: 1356349a8d0294a568aea68735930614, type: 3}
+  - {fileID: 21300000, guid: d761076bd693c728fe9621b1c2ccbf30, type: 3}
+  - {fileID: 21300000, guid: ee6ac0028bd5c22ddd495d5980c46c26, type: 3}
+  stageScales:
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  displayCount: 12
   seedItemId: seed_hoa_oai_huong
   harvestItemId: hoa_oai_huong
   unlockLevel: 4

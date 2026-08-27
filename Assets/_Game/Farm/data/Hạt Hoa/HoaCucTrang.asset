@@ -27,7 +27,19 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 50, y: 50, z: 1}
   readyScale: {x: 50, y: 50, z: 1}
-  displayCount: 1
+  stageSprites:
+  - {fileID: 21300000, guid: b957e721e7e48f056a61c65ff9c3bc2f, type: 3}
+  - {fileID: 21300000, guid: 73fd45d4be13d4b5de0710da95edf020, type: 3}
+  - {fileID: 21300000, guid: 14a36acd8f9d22fe28e7eee2811521a8, type: 3}
+  - {fileID: 21300000, guid: 379f0404e2141250ede317a1c775ac34, type: 3}
+  - {fileID: 21300000, guid: 9311b9c9277c012f6b9d3f255f9b721d, type: 3}
+  stageScales:
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  displayCount: 12
   seedItemId: seed_hoa_cuc_trang
   harvestItemId: hoa_cuc_trang
   unlockLevel: 7

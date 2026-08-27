@@ -27,6 +27,18 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 60, y: 60, z: 1}
   readyScale: {x: 70, y: 70, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: f4bc47d0dc926a6fd70c1c0c64c71407, type: 3}
+  - {fileID: 21300000, guid: cc380a9c920ce8086047fd4bd37eb849, type: 3}
+  - {fileID: 21300000, guid: c109fb7b7e8283811e28645a94833fe9, type: 3}
+  - {fileID: 21300000, guid: 31ce422208f969c31a0558c0e3f3a522, type: 3}
+  - {fileID: 21300000, guid: ae57e095e7c075fa0608243cc5cf73fd, type: 3}
+  stageScales:
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
   displayCount: 12
   seedItemId: seed_rice
   harvestItemId: rice

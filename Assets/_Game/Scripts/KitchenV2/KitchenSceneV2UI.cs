@@ -36,11 +36,21 @@ namespace KitchenUIv2
         public Sprite btnBackFarm, btnPaperSmall, cookPot;
         public Sprite decorGarlic, decorOnion, decorHerbs, decorLights;
         public Sprite[] catChefWalk;
+
+        [Header("Icon nhỏ & Polish R7 (2026-08-27)")]
+        public Sprite iconGold;
+        public Sprite plaqueOvenState, decoCrateStack, decoFirewood;
     }
 
     public class KitchenSceneV2UI : MonoBehaviour
     {
         public static KitchenSceneV2UI Instance { get; private set; }
+
+        /// <summary>Màu chấm vị dùng chung: Ngọt hồng, Cay đỏ, Chua xanh, Đậm dương, Kết cấu nâu.</summary>
+        private static readonly Color[] FlavorDotColors = {
+            new Color(0.93f, 0.45f, 0.65f), new Color(0.88f, 0.28f, 0.22f), new Color(0.45f, 0.75f, 0.30f),
+            new Color(0.35f, 0.60f, 0.88f), new Color(0.65f, 0.45f, 0.28f)
+        };
 
         [Header("Data — tool Setup gán")]
         [SerializeField] private IngredientData[] allIngredients;
@@ -57,18 +67,6 @@ namespace KitchenUIv2
         [SerializeField] private int canvasSortingOrder = 5;
         [SerializeField] private float pollInterval = 0.15f;
 
-        [System.Serializable]
-        public class LayoutOverride
-        {
-            public string path;   // tên khối con cấp 1 dưới Kitchen_UI_v2
-            public Vector2 pos;
-            public Vector2 size;
-            public Vector3 scale = Vector3.one;
-        }
-
-        [Header("Vị trí Sếp chỉnh tay — lưu bằng menu Tools/Farm Game/Kitchen/Lưu vị trí chỉnh tay")]
-        [SerializeField] private List<LayoutOverride> layoutOverrides = new List<LayoutOverride>();
-
         [Header("Mở rộng ô khay — Sếp chỉnh giá tại đây")]
         [SerializeField] private int slotPackSize = 7;
         [SerializeField] private int slotPackBaseCostGold = 500; // giá gói 1; gói sau = giá × (số gói đã mua + 1)
@@ -83,7 +81,7 @@ namespace KitchenUIv2
         private Canvas _canvas;
         private RectTransform _root;
 
-        private TMP_Text _txtChef, _txtGold, _txtOrderName, _txtOrderChips;
+        private TMP_Text _txtChef, _txtGold, _txtOrderName;
         private Image _imgChefExpFill, _imgOrderIcon;
 
         private GameObject _boardDetail, _boardList;
@@ -91,6 +89,7 @@ namespace KitchenUIv2
         private Image _imgDishIcon;
         private Transform _needChipsRoot;
         private readonly FlavorRow[] _flavorRows = new FlavorRow[5];
+        private readonly TMP_Text[] _orderChipValues = new TMP_Text[5];
         private Transform _dishListContent;
         private int _listFilter = -1; // -1 = tất cả, else (int)DishDifficulty
 
@@ -109,6 +108,7 @@ namespace KitchenUIv2
         private TMP_Text _txtAction, _txtActionSub;
 
         private readonly Dictionary<string, SelectableIngredientCard> _cards = new Dictionary<string, SelectableIngredientCard>();
+        private TMP_Text _hintEmptyIng, _hintEmptySea; // gợi ý khi khay trống (Sếp 2026-08-27: chỉ hiện món đã gửi)
         private float _pollT;
         private bool _built;
         private bool _ovenBusy;
@@ -167,7 +167,11 @@ namespace KitchenUIv2
             if (challenge == null) challenge = FindFirstObjectByType<CookingChallengeManager>(FindObjectsInactive.Include);
             if (selection == null) selection = FindFirstObjectByType<CookingSelectionManager>(FindObjectsInactive.Include);
 
-            RebuildNow();
+            // UI SỐNG TRONG HIERARCHY (từ 2026-08-26): scene đã có sẵn khung → chỉ NỐI logic,
+            // KHÔNG dựng lại — mọi chỉnh tay của Sếp ngoài editor giữ nguyên khi Play.
+            if (transform.Find("Order_Banner") != null) BindExistingHierarchy();
+            else RebuildNow(); // scene trống → dựng khung lần đầu (sau đó Ctrl+S là thành hierarchy cố định)
+
             RaiseLegacyOverlays();
             BuildTrayCards();
             PickDefaultDish();
@@ -314,9 +318,13 @@ namespace KitchenUIv2
             if (dish != null)
             {
                 var f = dish.targetFlavor;
-                SetText(_txtOrderChips, $"Ngọt {f.sweet} · Cay {f.spicy} · Chua {f.sour} · Đậm {f.umami} · Kết cấu {f.texture}");
+                var chipVals = new[] { f.sweet, f.spicy, f.sour, f.umami, f.texture };
+                for (int i = 0; i < 5; i++) SetText(_orderChipValues[i], chipVals[i].ToString());
             }
-            else SetText(_txtOrderChips, "");
+            else
+            {
+                for (int i = 0; i < 5; i++) SetText(_orderChipValues[i], "");
+            }
 
             SetText(_txtDishName, dish != null ? dish.dishName : "—");
             if (_imgDishIcon != null)
@@ -456,13 +464,78 @@ namespace KitchenUIv2
             var map = new Dictionary<string, int>();
             if (items != null)
                 foreach (var kv in items)
-                    if (!string.IsNullOrEmpty(kv.Key)) map[kv.Key.Trim().ToLower()] = kv.Value;
+                    if (!string.IsNullOrEmpty(kv.Key))
+                    {
+                        // Khoá kho là itemId NÔNG TRẠI (vd chicken_meat/nam) → dịch sang id BẾP
+                        // (chicken/mushroom) bằng đúng bảng CookingBoot đang dùng. Id trùng thì giữ nguyên.
+                        string kitchenKey = KitchenIdMap.ToKitchen(kv.Key);
+                        map[kitchenKey] = map.TryGetValue(kitchenKey, out int cur) ? cur + kv.Value : kv.Value;
+                    }
 
+            // Thẻ ĐANG CHỌN đã trừ tạm 1 trên hiển thị (TrySelect) — poll không được cộng ngược lại.
+            var selIngQ = selection != null ? selection.GetSelectedIngredientCards() : null;
+            var selSeaQ = selection != null ? selection.GetSelectedSeasoningCards() : null;
+
+            // Sếp 2026-08-27 (chốt qua hỏi đáp): khay CHỈ hiện món đã gửi vào bếp — thẻ x0 ẩn đi
+            // (trừ thẻ đang chọn: còn nằm trong nồi thì phải thấy). GridLayout tự dồn ô khi ẩn.
+            int visibleIng = 0, visibleSea = 0;
             foreach (var kv in _cards)
             {
-                int qty = map.TryGetValue(kv.Key, out int v) ? v : 0;
-                kv.Value.SetQuantityFromKitchen(qty);
+                int raw = map.TryGetValue(kv.Key, out int v) ? v : 0;
+                bool isSel = (selIngQ != null && selIngQ.Contains(kv.Value))
+                          || (selSeaQ != null && selSeaQ.Contains(kv.Value));
+                kv.Value.SetQuantityFromKitchen(Mathf.Max(raw - (isSel ? 1 : 0), 0));
+
+                bool show = raw > 0 || isSel;
+                var go = kv.Value.gameObject;
+                if (go.activeSelf != show) go.SetActive(show);
+                if (show)
+                {
+                    if (kv.Value.isSeasoning) visibleSea++;
+                    else visibleIng++;
+                }
             }
+            UpdateTrayEmptyHints(visibleIng, visibleSea);
+        }
+
+        /// <summary>Khay trống → chỉ đường cho người chơi cách gửi nguyên liệu từ Kho nông trại.</summary>
+        private void UpdateTrayEmptyHints(int nIng, int nSea)
+        {
+            if (_hintEmptyIng == null && _gridIngredients != null)
+                _hintEmptyIng = MakeTrayEmptyHint(_gridIngredients, "Khay trống — về nông trại mở KHO,\nchọn nguyên liệu rồi bấm GỬI BẾP nhé!");
+            if (_hintEmptySea == null && _gridSeasonings != null)
+                _hintEmptySea = MakeTrayEmptyHint(_gridSeasonings, "Chưa có gia vị — về nông trại mở KHO,\nchọn gia vị rồi bấm GỬI BẾP nhé!");
+
+            if (_hintEmptyIng != null && _hintEmptyIng.gameObject.activeSelf != (nIng == 0))
+                _hintEmptyIng.gameObject.SetActive(nIng == 0);
+            if (_hintEmptySea != null && _hintEmptySea.gameObject.activeSelf != (nSea == 0))
+                _hintEmptySea.gameObject.SetActive(nSea == 0);
+        }
+
+        private TMP_Text MakeTrayEmptyHint(Transform grid, string message)
+        {
+            // Treo lên gốc Scroll (ông của grid) để không bị GridLayout xếp như một ô thẻ.
+            Transform host = grid.parent != null && grid.parent.parent != null ? grid.parent.parent : grid;
+
+            var existed = host.Find("Txt_EmptyHint");
+            if (existed != null) return existed.GetComponent<TMP_Text>();
+
+            var go = new GameObject("Txt_EmptyHint", typeof(RectTransform));
+            go.transform.SetParent(host, false);
+            var t = go.AddComponent<TextMeshProUGUI>();
+            ApplyFont(t);
+            t.text = message;
+            t.fontSize = 14;
+            t.alignment = TextAlignmentOptions.Center;
+            t.color = new Color(0.55f, 0.42f, 0.28f);
+            t.raycastTarget = false;
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.offsetMin = new Vector2(20f, 8f);
+            rt.offsetMax = new Vector2(-20f, -8f);
+            go.SetActive(false);
+            return t;
         }
 
         private void SetFlavorRow(int i, string label, int cur, int target)
@@ -481,13 +554,9 @@ namespace KitchenUIv2
                        : hit  ? new Color(0.30f, 0.70f, 0.20f)
                               : new Color(0.55f, 0.75f, 0.35f);
             }
+            // Sếp 2026-08-27: bỏ vạch đỏ (đè lên thanh) — fill bar + số cur/target là đủ.
             if (row.marker != null)
-            {
-                var parent = row.marker.parent as RectTransform;
-                float w = parent != null ? parent.rect.width : 140f;
-                row.marker.anchoredPosition = new Vector2(w * Mathf.Clamp01(target / barMax), 0f);
-                row.marker.gameObject.SetActive(target > 0);
-            }
+                row.marker.gameObject.SetActive(false);
             if (row.value != null) row.value.text = $"{cur}/{target}";
         }
 
@@ -566,62 +635,255 @@ namespace KitchenUIv2
             BuildActionButton();
             BuildBackFarmButton();
 
-            ApplyLayoutOverrides(); // vị trí Sếp chỉnh tay LUÔN thắng code — cả edit lẫn Play
             _built = true;
         }
 
-        /// <summary>Áp các vị trí Sếp đã chỉnh tay (khối cấp 1) đè lên layout code dựng.</summary>
-        private void ApplyLayoutOverrides()
+        /// <summary>UI đã nằm sẵn trong Hierarchy (Sếp chỉnh tay tự do, Ctrl+S là vĩnh viễn).
+        /// Hàm này chỉ NỐI tham chiếu + gắn listener + dọn nội dung động để runtime sinh lại.
+        /// Đổi tên/xóa object trong hierarchy sẽ được log warning rõ ràng, không crash.</summary>
+        private void BindExistingHierarchy()
         {
-            if (layoutOverrides == null) return;
-            foreach (var o in layoutOverrides)
+            _canvas = GetComponent<Canvas>();
+            _root = (RectTransform)transform;
+
+            RectTransform F(string path)
             {
-                if (o == null || string.IsNullOrEmpty(o.path)) continue;
-                var t = transform.Find(o.path) as RectTransform;
-                if (t == null) continue;
-                t.anchoredPosition = o.pos;
-                t.sizeDelta = o.size;
-                t.localScale = o.scale;
+                var t = transform.Find(path);
+                if (t == null) Debug.LogWarning($"[KitchenV2] Bind: thiếu '{path}' trong hierarchy (bị đổi tên/xóa?)");
+                return t as RectTransform;
             }
+            TMP_Text FT(string path) { var t = F(path); return t != null ? t.GetComponent<TMP_Text>() : null; }
+            Image FI(string path) { var t = F(path); return t != null ? t.GetComponent<Image>() : null; }
+            Button FB(string path, UnityEngine.Events.UnityAction fn)
+            {
+                var t = F(path); if (t == null) return null;
+                var b = t.GetComponent<Button>(); if (b == null) return null;
+                b.onClick.RemoveAllListeners();
+                if (fn != null) b.onClick.AddListener(fn);
+                return b;
+            }
+
+            // ── Banner đơn khách ──
+            _imgOrderIcon  = FI("Order_Banner/Order_Card/Img_Dish");
+            _txtOrderName  = FT("Order_Banner/Order_Card/Txt_Name");
+            var orderCardT = F("Order_Banner/Order_Card");
+            if (orderCardT != null)
+            {
+                var oldChips = orderCardT.Find("Txt_Chips"); // bản cũ trước 2026-08-27 — thay bằng chip icon màu
+                if (oldChips != null) DestroyImmediate(oldChips.gameObject);
+                for (int i = 0; i < 5; i++)
+                {
+                    var chip = orderCardT.Find($"Chip_{i}");
+                    if (chip == null)
+                    {
+                        BuildOrderChip(orderCardT, i, 66f + i * 71f);
+                    }
+                    else
+                    {
+                        var vt = chip.Find("Txt_Val");
+                        _orderChipValues[i] = vt != null ? vt.GetComponent<TMP_Text>() : null;
+                        var dotT = chip.Find("Dot");
+                        if (dotT != null)
+                        {
+                            var dimg2 = dotT.GetComponent<Image>();
+                            if (dimg2 != null && dimg2.sprite == null) dimg2.sprite = GetDotSprite();
+                        }
+                    }
+                }
+            }
+
+            // ── Bảng công thức: DETAIL ──
+            var det = F("Recipe_Board/Board_Detail");
+            _boardDetail = det != null ? det.gameObject : null;
+            FB("Recipe_Board/Board_Detail/Btn_OtherDish", () => ShowBoardDetail(false));
+            _imgDishIcon   = FI("Recipe_Board/Board_Detail/Img_Dish");
+            _txtDishName   = FT("Recipe_Board/Board_Detail/Txt_DishName");
+            _txtDishMeta   = FT("Recipe_Board/Board_Detail/Txt_DishMeta");
+            _txtNeedTitle  = FT("Recipe_Board/Board_Detail/Txt_NeedTitle");
+            _needChipsRoot = F("Recipe_Board/Board_Detail/Need_Chips");
+            _txtRewards    = FT("Recipe_Board/Board_Detail/Txt_Rewards");
+            _txtProjection = FT("Recipe_Board/Board_Detail/Txt_Projection");
+            for (int i = 0; i < 5; i++)
+            {
+                var row = new FlavorRow();
+                row.label = FT($"Recipe_Board/Board_Detail/Flavor_Label_{i}");
+                var track = F($"Recipe_Board/Board_Detail/Flavor_Track_{i}");
+                if (track != null)
+                {
+                    var fill = track.Find("Fill");
+                    if (fill != null) row.fill = fill.GetComponent<Image>();
+                    row.marker = track.Find("Marker") as RectTransform;
+                }
+                row.value = FT($"Recipe_Board/Board_Detail/Flavor_Value_{i}");
+                _flavorRows[i] = row;
+
+                // Chấm màu vị: sprite tròn tạo bằng code không lưu được vào scene → gán lại mỗi lần chạy
+                var dot = transform.Find($"Recipe_Board/Board_Detail/Flavor_Dot_{i}");
+                if (dot != null)
+                {
+                    var im = dot.GetComponent<Image>();
+                    if (im != null && im.sprite == null) im.sprite = GetDotSprite();
+                }
+            }
+
+            // ── Bảng công thức: LIST ──
+            var lst = F("Recipe_Board/Board_List");
+            _boardList = lst != null ? lst.gameObject : null;
+            for (int i = 0; i < 4; i++)
+            {
+                int filter = i - 1;
+                FB($"Recipe_Board/Board_List/Tab_{i}", () => { _listFilter = filter; RebuildDishList(); });
+            }
+            _dishListContent = F("Recipe_Board/Board_List/Dish_Scroll/Content");
+
+            // ── Sân khấu ──
+            _txtChalk = FT("Chalkboard/Txt_Chalk");
+            if (_txtChalk != null) { _txtChalk.enableAutoSizing = true; _txtChalk.fontSizeMin = 9f; _txtChalk.fontSizeMax = 15f; } // chữ tràn viền (Sếp 2026-08-27) — tự co vừa bảng
+            EnsureChalkGoldIcon(F("Chalkboard"));
+            _ovenRect = F("Oven");
+            if (_ovenRect != null)
+            {
+                var g = _ovenRect.Find("Oven_Glow");
+                if (g != null) _imgOvenGlow = g.GetComponent<Image>();
+                var fr = _ovenRect.Find("Oven_Fire");
+                if (fr != null) _imgOvenFire = fr.GetComponent<Image>();
+                var sbar = _ovenRect.Find("Oven_StateBar");
+                if (sbar != null)
+                {
+                    Skin9(sbar.gameObject, skin.plaqueOvenState != null ? skin.plaqueOvenState : skin.panelPaper);
+                    var f2 = sbar.Find("Fill");
+                    if (f2 != null)
+                    {
+                        _imgOvenFill = f2.GetComponent<Image>();
+                        if (_imgOvenFill != null)
+                        {
+                            _imgOvenFill.sprite = GetDotSprite();
+                            _imgOvenFill.type = Image.Type.Filled;
+                            _imgOvenFill.fillAmount = 0f;
+                        }
+                    }
+                    var st = sbar.Find("Txt_State");
+                    if (st != null)
+                    {
+                        _txtOvenState = st.GetComponent<TMP_Text>();
+                        if (_txtOvenState != null)
+                        {
+                            _txtOvenState.color = new Color(0.99f, 0.96f, 0.88f);
+                            _txtOvenState.fontStyle = FontStyles.Bold;
+                        }
+                    }
+                }
+            }
+
+            // Xóa triệt để các decor thừa nếu từng sinh
+            var oldCrates = transform.Find("Deco_Crates");
+            if (oldCrates != null) DestroyImmediate(oldCrates.gameObject);
+            var oldWood = transform.Find("Deco_Firewood");
+            if (oldWood != null) DestroyImmediate(oldWood.gameObject);
+            var maneki = F("ManekiCat");
+            if (maneki != null) _imgManeki = maneki.GetComponent<Image>();
+            _txtPrepToast = FT("Txt_PrepToast");
+            var plat = F("Plating_Table");
+            if (plat != null)
+            {
+                _btnPlating = plat.GetComponent<Button>();
+                if (_btnPlating != null)
+                {
+                    _btnPlating.onClick.RemoveAllListeners();
+                    _btnPlating.onClick.AddListener(OnPlatingClicked);
+                }
+                _txtPlating = plat.GetComponentInChildren<TMP_Text>(true);
+            }
+            var wh = F("Warehouse_Box");
+            if (wh != null)
+            {
+                var sc = wh.Find("Txt_Sent");
+                if (sc != null) _txtSentCount = sc.GetComponent<TMP_Text>();
+            }
+
+            // ── Khay ──
+            var tabI = F("Tray/Tab_Ingredients");
+            if (tabI != null)
+            {
+                _tabIngredients = tabI.gameObject;
+                _txtTabIng = tabI.GetComponentInChildren<TMP_Text>(true);
+                var b = tabI.GetComponent<Button>();
+                if (b != null) { b.onClick.RemoveAllListeners(); b.onClick.AddListener(() => ShowTrayTab(true)); }
+            }
+            var tabS = F("Tray/Tab_Seasonings");
+            if (tabS != null)
+            {
+                _tabSeasonings = tabS.gameObject;
+                _txtTabSea = tabS.GetComponentInChildren<TMP_Text>(true);
+                var b = tabS.GetComponent<Button>();
+                if (b != null) { b.onClick.RemoveAllListeners(); b.onClick.AddListener(() => ShowTrayTab(false)); }
+            }
+            _btnClearAll = FB("Tray/Btn_ClearAll", OnClearAllClicked);
+            _gridIngredients = F("Tray/Scroll_Grid_Ingredients/Viewport/Grid_Ingredients");
+            _gridSeasonings  = F("Tray/Scroll_Grid_Seasonings/Viewport/Grid_Seasonings");
+
+            // ── Nút hành động + Về nông trại ──
+            var act = F("Btn_Action");
+            if (act != null)
+            {
+                _btnAction = act.GetComponent<Button>();
+                if (_btnAction != null)
+                {
+                    _btnAction.onClick.RemoveAllListeners();
+                    _btnAction.onClick.AddListener(OnActionClicked);
+                }
+                _imgAction = act.GetComponent<Image>();
+                var tl = act.Find("Txt_Label");
+                if (tl != null) _txtAction = tl.GetComponent<TMP_Text>();
+                var ts = act.Find("Txt_Sub");
+                if (ts != null) _txtActionSub = ts.GetComponent<TMP_Text>();
+            }
+            FB("Btn_BackFarm", OnBackFarmClicked);
+
+            // ── Polish R3/R4: Mèo đầu bếp & mèo ngủ ──
+            var catChef = F("Cat_Chef");
+            if (catChef != null)
+            {
+                var walker = catChef.GetComponent<KitchenCatWalker>();
+                if (walker == null) walker = catChef.gameObject.AddComponent<KitchenCatWalker>();
+                if (skin.catChefWalk != null && skin.catChefWalk.Length > 0) walker.frames = skin.catChefWalk;
+                walker.minX = -280f;
+                walker.maxX = 260f;
+                var ci = catChef.GetComponent<Image>();
+                if (ci != null && skin.catChefWalk != null && skin.catChefWalk.Length > 0 && skin.catChefWalk[0] != null)
+                    ci.sprite = skin.catChefWalk[0];
+            }
+
+            var sleepCat = F("Cat_Sleeping");
+            if (sleepCat != null)
+            {
+                var fl = sleepCat.GetComponent<KitchenZzzFloat>();
+                if (fl == null) fl = sleepCat.gameObject.AddComponent<KitchenZzzFloat>();
+                var zzz = sleepCat.Find("Txt_Zzz");
+                if (zzz != null) fl.txt = zzz.GetComponent<TMP_Text>();
+                var si = sleepCat.GetComponent<Image>();
+                if (si != null && skin.catSleeping != null) si.sprite = skin.catSleeping;
+            }
+
+            // ── Dọn nội dung ĐỘNG đã bake (thẻ, ô trống, danh sách món, chip) → runtime sinh lại ──
+            ClearDynamicChildren(_gridIngredients);
+            ClearDynamicChildren(_gridSeasonings);
+            ClearDynamicChildren(_dishListContent);
+            ClearDynamicChildren(_needChipsRoot);
+            _cards.Clear();
+            _lastSelected.Clear();
+
+            ShowTrayTab(true);
+            TrySpawnFirePrefab();
+            _built = true;
         }
 
-        /// <summary>EDITOR gọi: so hiện trạng với bản code dựng để CHỈ lưu những khối Sếp đã kéo/đổi size.
-        /// Trả về số chỗ đã lưu. Sau đó vị trí chỉnh tay giữ nguyên qua Play/rebuild.</summary>
-        public int CaptureLayoutOverrides()
+        /// <summary>Xóa ngay con của container động (thẻ/chip bake trong scene) trước khi runtime sinh lại.</summary>
+        private static void ClearDynamicChildren(Transform t)
         {
-            var current = new Dictionary<string, LayoutOverride>();
-            foreach (Transform c in transform)
-            {
-                var rt = c as RectTransform;
-                if (rt == null) continue;
-                current[c.name] = new LayoutOverride
-                { path = c.name, pos = rt.anchoredPosition, size = rt.sizeDelta, scale = c.localScale };
-            }
-
-            layoutOverrides.Clear();
-            RebuildNow(); // dựng chuẩn theo code để so sánh
-
-            foreach (Transform c in transform)
-            {
-                if (!current.TryGetValue(c.name, out var was)) continue;
-                var rt = c as RectTransform;
-                if (rt == null) continue;
-                bool moved = (rt.anchoredPosition - was.pos).sqrMagnitude > 0.25f
-                          || (rt.sizeDelta - was.size).sqrMagnitude > 0.25f
-                          || (c.localScale - was.scale).sqrMagnitude > 0.0001f;
-                if (!moved) continue;
-                layoutOverrides.Add(was);
-                rt.anchoredPosition = was.pos;
-                rt.sizeDelta = was.size;
-                c.localScale = was.scale;
-            }
-            return layoutOverrides.Count;
-        }
-
-        public void ClearLayoutOverrides()
-        {
-            if (layoutOverrides != null) layoutOverrides.Clear();
-            RebuildNow();
+            if (t == null) return;
+            for (int i = t.childCount - 1; i >= 0; i--)
+                DestroyImmediate(t.GetChild(i).gameObject);
         }
 
         private void BuildTopBar()
@@ -671,8 +933,7 @@ namespace KitchenUIv2
             _txtOrderName = MakeText(card.transform, "Txt_Name", "—", 20, new Color(0.30f, 0.16f, 0.07f));
             Anchor(_txtOrderName.rectTransform, 0f, 1f, new Vector2(66f, -5f), new Vector2(356f, 28f), new Vector2(0f, 1f));
 
-            _txtOrderChips = MakeText(card.transform, "Txt_Chips", "", 14, new Color(0.52f, 0.35f, 0.18f));
-            Anchor(_txtOrderChips.rectTransform, 0f, 0f, new Vector2(66f, 5f), new Vector2(356f, 22f), new Vector2(0f, 0f));
+            for (int i = 0; i < 5; i++) BuildOrderChip(card.transform, i, 66f + i * 71f);
         }
 
         private void BuildRecipeBoard()
@@ -723,7 +984,7 @@ namespace KitchenUIv2
             Anchor((RectTransform)chips.transform, 0f, 1f, new Vector2(12f, -134f), new Vector2(290f, 64f), new Vector2(0f, 1f));
             _needChipsRoot = chips.transform;
 
-            var tasteTitle = MakeText(dt, "Txt_TasteTitle", "VỊ KHÁCH MUỐN · vạch đỏ là mốc", 13, new Color(0.55f, 0.38f, 0.22f));
+            var tasteTitle = MakeText(dt, "Txt_TasteTitle", "VỊ KHÁCH MUỐN", 13, new Color(0.55f, 0.38f, 0.22f));
             Anchor(tasteTitle.rectTransform, 0f, 1f, new Vector2(12f, -206f), new Vector2(280f, 18f), new Vector2(0f, 1f));
 
             for (int i = 0; i < 5; i++)
@@ -782,14 +1043,11 @@ namespace KitchenUIv2
             var row = new FlavorRow();
 
             // Chấm màu tròn nhỏ trước tên vị (theo mockup: Ngọt hồng, Cay đỏ, Chua xanh, Đậm dương, Kết cấu nâu)
-            var dotCols = new[] {
-                new Color(0.93f, 0.45f, 0.65f), new Color(0.88f, 0.28f, 0.22f), new Color(0.45f, 0.75f, 0.30f),
-                new Color(0.35f, 0.60f, 0.88f), new Color(0.65f, 0.45f, 0.28f) };
             var dot = new GameObject($"Flavor_Dot_{index}", typeof(RectTransform), typeof(Image));
             dot.transform.SetParent(parent, false);
             var dimg = dot.GetComponent<Image>();
             dimg.sprite = GetDotSprite();
-            dimg.color = dotCols[index % dotCols.Length];
+            dimg.color = FlavorDotColors[index % FlavorDotColors.Length];
             dimg.raycastTarget = false;
             Anchor((RectTransform)dot.transform, 0f, 1f, new Vector2(14f, y - 5f), new Vector2(12f, 12f), new Vector2(0f, 1f));
 
@@ -814,6 +1072,31 @@ namespace KitchenUIv2
             Anchor(row.value.rectTransform, 0f, 1f, new Vector2(248f, y), new Vector2(52f, 22f), new Vector2(0f, 1f));
 
             _flavorRows[index] = row;
+        }
+
+        /// <summary>Chip nhỏ dot-màu + số trên banner đơn khách (Sếp yêu cầu icon vị 2026-08-27).</summary>
+        private void BuildOrderChip(Transform cardT, int index, float x)
+        {
+            var chip = new GameObject($"Chip_{index}", typeof(RectTransform), typeof(Image));
+            chip.transform.SetParent(cardT, false);
+            var cimg = chip.GetComponent<Image>();
+            cimg.raycastTarget = false;
+            Skin9(chip, skin.chipTaste); // nền chip bo góc (chờ art "chip_taste"); trống thì trong suốt
+            if (skin.chipTaste == null) cimg.color = Color.clear;
+            Anchor((RectTransform)chip.transform, 0f, 0f, new Vector2(x, 4f), new Vector2(66f, 24f), new Vector2(0f, 0f));
+
+            var dot = new GameObject("Dot", typeof(RectTransform), typeof(Image));
+            dot.transform.SetParent(chip.transform, false);
+            var dimg = dot.GetComponent<Image>();
+            dimg.sprite = GetDotSprite();
+            dimg.color = FlavorDotColors[index % FlavorDotColors.Length];
+            dimg.raycastTarget = false;
+            Anchor((RectTransform)dot.transform, 0f, 0.5f, new Vector2(6f, 0f), new Vector2(13f, 13f), new Vector2(0f, 0.5f));
+
+            var val = MakeText(chip.transform, "Txt_Val", "0", 15, new Color(0.36f, 0.20f, 0.09f));
+            Anchor(val.rectTransform, 0f, 0.5f, new Vector2(22f, 0f), new Vector2(40f, 22f), new Vector2(0f, 0.5f));
+            val.fontStyle = FontStyles.Bold;
+            _orderChipValues[index] = val;
         }
 
         private void RebuildDishList()
@@ -885,6 +1168,8 @@ namespace KitchenUIv2
             _txtChalk = MakeText(chalk.transform, "Txt_Chalk", "MÓN HÔM NAY", 15, new Color(0.97f, 0.94f, 0.88f));
             StretchText(_txtChalk, 22f, 16f);
             _txtChalk.alignment = TextAlignmentOptions.Left; // giữa dọc + trái ngang — khối chữ nằm chính giữa bảng
+            _txtChalk.enableAutoSizing = true; _txtChalk.fontSizeMin = 9f; _txtChalk.fontSizeMax = 15f; // Sếp báo chữ tràn viền (2026-08-27) — tự co vừa bảng
+            EnsureChalkGoldIcon(chalk.transform);
 
             // Mèo Thần Tài — có skin thì animation 4 frame, chưa có thì placeholder chữ
             var cat = MakePanel(_root, "ManekiCat", new Color(0.97f, 0.96f, 0.93f));
@@ -942,11 +1227,12 @@ namespace KitchenUIv2
                 }
             }
             var stateBar = MakePanel((RectTransform)oven.transform, "Oven_StateBar", new Color(0.98f, 0.94f, 0.84f));
-            Skin9(stateBar, skin.panelPaper);
+            Skin9(stateBar, skin.plaqueOvenState != null ? skin.plaqueOvenState : skin.panelPaper);
             Anchor(stateBar, 0.5f, 0f, new Vector2(0f, 8f), new Vector2(214f, 34f), new Vector2(0.5f, 0f));
             _imgOvenFill = MakeFill((RectTransform)stateBar.transform, new Color(0.95f, 0.65f, 0.2f));
             _imgOvenFill.fillAmount = 0f;
-            _txtOvenState = MakeText(stateBar.transform, "Txt_State", "Lò chưa nhóm", 16, new Color(0.32f, 0.17f, 0.07f));
+            _txtOvenState = MakeText(stateBar.transform, "Txt_State", "Lò chưa nhóm", 15, new Color(0.99f, 0.96f, 0.88f));
+            _txtOvenState.fontStyle = FontStyles.Bold;
             StretchText(_txtOvenState, 6f, 0f);
             _txtOvenState.alignment = TextAlignmentOptions.Center;
 
@@ -1115,12 +1401,10 @@ namespace KitchenUIv2
                 bool isSea = data.kind == IngredientKind.Seasoning;
                 var parent = isSea ? _gridSeasonings : _gridIngredients;
 
-                // Nguyên liệu chưa mở khoá (vd Sữa cấp 14) → thẻ khoá xám, không chọn được
+                // Sếp 2026-08-27: khay chỉ hiện món ĐÃ GỬI — nguyên liệu chưa mở khoá thì chưa thể
+                // gửi nên bỏ luôn thẻ khoá (BuildLockedCard giữ lại phòng khi đổi ý về chế độ danh mục).
                 if (data.unlockLevel > playerLevel)
-                {
-                    BuildLockedCard(parent, data);
                     continue;
-                }
 
                 var card = new GameObject("Card_" + data.id, typeof(RectTransform), typeof(Image));
                 card.transform.SetParent(parent, false);
@@ -1164,6 +1448,13 @@ namespace KitchenUIv2
                 st.raycastTarget = false;
                 Stretch((RectTransform)status.transform, 0f, 0f, 1f, 1f);
                 status.SetActive(false);
+
+                // Sếp 2026-08-27: thẻ phải "nhún" khi chạm + có bóng đổ mềm cho khối bo góc.
+                var juice = card.AddComponent<UIJuiceFeedback>();
+                juice.SetSound(UIJuiceFeedback.SoundType.Ingredient);
+                var cardShadow = card.AddComponent<UnityEngine.UI.Shadow>();
+                cardShadow.effectColor = new Color(0.25f, 0.15f, 0.05f, 0.35f);
+                cardShadow.effectDistance = new Vector2(0f, -4f);
 
                 var sel = card.AddComponent<SelectableIngredientCard>();
                 sel.SetIngredientData(data);
@@ -1213,8 +1504,17 @@ namespace KitchenUIv2
             int cost = slotPackBaseCostGold * (bought + 1);
             var buy = MakeButton((RectTransform)parent, "Btn_BuySlots",
                 $"+ Mở {slotPackSize} ô\n{cost:N0} vàng", new Color(0.30f, 0.55f, 0.90f), () => TryBuySlots(tab));
+            Skin9(buy.gameObject, skin.btnGreen); // Sếp báo khung trống chưa có card bo góc (2026-08-27) — dùng lại art nút xanh đã có
             var bl = buy.GetComponentInChildren<TMP_Text>();
             if (bl != null) { bl.fontSize = 13; bl.fontStyle = FontStyles.Bold; }
+            if (skin.iconGold != null)
+            {
+                var goldGo = new GameObject("Img_Gold", typeof(RectTransform), typeof(Image));
+                goldGo.transform.SetParent(buy.transform, false);
+                var gi = goldGo.GetComponent<Image>();
+                gi.sprite = skin.iconGold; gi.preserveAspect = true; gi.raycastTarget = false;
+                Anchor((RectTransform)goldGo.transform, 0.5f, 0f, new Vector2(0f, 6f), new Vector2(16f, 16f), new Vector2(0.5f, 0f));
+            }
         }
 
         /// <summary>Mua thêm gói ô khay bằng VÀNG (FarmEconomyManager cũ — không sửa logic tiền).</summary>
@@ -1371,6 +1671,18 @@ namespace KitchenUIv2
         }
 
         // ── Skin helpers (K2) ──────────────────────────────────────
+
+        /// <summary>Icon vàng nhỏ góc bảng đen, thay chữ "(+vàng)" — tự lên khi đội vẽ giao icon_gold (chờ art R7).</summary>
+        private void EnsureChalkGoldIcon(Transform chalkT)
+        {
+            if (chalkT == null || skin.iconGold == null) return;
+            if (chalkT.Find("Chalk_Gold") != null) return;
+            var goldGo = new GameObject("Chalk_Gold", typeof(RectTransform), typeof(Image));
+            goldGo.transform.SetParent(chalkT, false);
+            var gi = goldGo.GetComponent<Image>();
+            gi.sprite = skin.iconGold; gi.preserveAspect = true; gi.raycastTarget = false;
+            Anchor((RectTransform)goldGo.transform, 1f, 1f, new Vector2(-10f, -8f), new Vector2(22f, 22f), new Vector2(1f, 1f));
+        }
 
         private static Sprite _dotSprite;
         /// <summary>Sprite hình tròn 24px vẽ bằng code — dùng cho chấm màu, không cần art.</summary>
@@ -1611,7 +1923,8 @@ namespace KitchenUIv2
             img.type = Image.Type.Filled;
             img.fillMethod = Image.FillMethod.Horizontal;
             img.fillOrigin = (int)Image.OriginHorizontal.Left;
-            img.sprite = null;
+            img.sprite = GetDotSprite();
+            img.fillAmount = 0f;
             var rt = (RectTransform)go.transform;
             rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
             rt.offsetMin = new Vector2(2f, 2f); rt.offsetMax = new Vector2(-2f, -2f);
@@ -1649,17 +1962,34 @@ namespace KitchenUIv2
         }
     }
 
-    /// <summary>Chữ zZz bay lên lơ lửng trên mèo đang ngủ — thuần code, không cần art.</summary>
+    /// <summary>Chữ zZz bay lên lơ lửng + mèo ngủ thở phập phồng và quẫy đuôi nhấp nhô nhẹ.</summary>
     public class KitchenZzzFloat : MonoBehaviour
     {
         public TMP_Text txt;
         public float cycle = 2.4f;
         private float _t;
+        private RectTransform _catRt;
+
+        private void Awake()
+        {
+            _catRt = (RectTransform)transform;
+        }
 
         private void Update()
         {
-            if (txt == null) return;
             _t += Time.unscaledDeltaTime;
+
+            // Thân mèo thở phập phồng + quẫy đuôi nhấp nhô theo nhịp ngủ
+            if (_catRt != null)
+            {
+                float breath = Mathf.Sin(_t * (6.283f / cycle));
+                float scaleY = 1f + 0.045f * breath;
+                float rotZ = 1.2f * Mathf.Sin(_t * 3.5f);
+                _catRt.localScale = new Vector3(1f, scaleY, 1f);
+                _catRt.localEulerAngles = new Vector3(0f, 0f, rotZ);
+            }
+
+            if (txt == null) return;
             float p = (_t % cycle) / cycle;
             var rt = txt.rectTransform;
             rt.anchoredPosition = new Vector2(12f + 7f * Mathf.Sin(p * 6.283f), 6f + 36f * p);
@@ -1676,7 +2006,7 @@ namespace KitchenUIv2
     {
         public Sprite[] frames;
         public float speed = 85f;
-        public float minX = 500f, maxX = 900f;
+        public float minX = -280f, maxX = 260f;
         public float frameTime = 0.14f;
         public Vector2 pauseRange = new Vector2(1.2f, 3.2f);
 
@@ -1693,6 +2023,17 @@ namespace KitchenUIv2
             _rt = (RectTransform)transform;
         }
 
+        private void Start()
+        {
+            if (_rt != null)
+            {
+                var pos = _rt.anchoredPosition;
+                if (pos.x < minX) pos.x = minX;
+                if (pos.x > maxX) pos.x = maxX;
+                _rt.anchoredPosition = pos;
+            }
+        }
+
         private void Update()
         {
             if (_img == null || _rt == null || frames == null || frames.Length == 0) return;
@@ -1706,8 +2047,18 @@ namespace KitchenUIv2
 
             var pos = _rt.anchoredPosition;
             pos.x += _dir * speed * Time.unscaledDeltaTime;
-            if (pos.x >= maxX) { pos.x = maxX; _dir = -1f; _pauseT = Random.Range(pauseRange.x, pauseRange.y); }
-            else if (pos.x <= minX) { pos.x = minX; _dir = 1f; _pauseT = Random.Range(pauseRange.x, pauseRange.y); }
+            if (pos.x >= maxX)
+            {
+                pos.x = maxX;
+                _dir = -1f;
+                _pauseT = Random.Range(pauseRange.x, pauseRange.y);
+            }
+            else if (pos.x <= minX)
+            {
+                pos.x = minX;
+                _dir = 1f;
+                _pauseT = Random.Range(pauseRange.x, pauseRange.y);
+            }
             _rt.anchoredPosition = pos;
 
             // Lật mặt theo hướng đi (frame gốc vẽ hướng PHẢI)

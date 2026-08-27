@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: BapCai
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_bapcai
+  itemName: "B\u1EAFp C\u1EA3i"
+  itemIcon: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}
+  goldPrice: 28
+  diamondPrice: 0
+  cropCategory: 0
+  cropId: bapcai
+  plantSeedFxIcon: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}
+  harvestIcon: {fileID: -2398023241171923016, guid: 88f706f4b7de235498ec5a8931fe3396, type: 3}
+  sproutSprite: {fileID: 4127951513348639789, guid: 64aebe8e3984f02429c586d5d28e984a, type: 3}
+  growingSprite: {fileID: -842988855527424611, guid: b0b144ddc7537a348b0c7d8ec7c4b7e4, type: 3}
+  readySprite: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}
+  sproutScale: {x: 10, y: 10, z: 1}
+  growingScale: {x: 30, y: 30, z: 1}
+  readyScale: {x: 33, y: 33, z: 1}
+  displayCount: 6
+  seedItemId: seed_bapcai
+  harvestItemId: bapcai
+  unlockLevel: 1
+  growSeconds: 70
+  sellGold: 10
+  harvestAmount: 4
+  plantCost: 1
+  expReward: 7
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1

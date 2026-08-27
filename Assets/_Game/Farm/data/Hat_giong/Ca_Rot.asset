@@ -27,7 +27,19 @@ MonoBehaviour:
   sproutScale: {x: 35, y: 35, z: 1}
   growingScale: {x: 40, y: 40, z: 1}
   readyScale: {x: 50, y: 50, z: 1}
-  displayCount: 6
+  stageSprites:
+  - {fileID: 21300000, guid: a1a35d06707932b7cf9d87b20572e15f, type: 3}
+  - {fileID: 21300000, guid: 9b48ecd3a415bd91781eb51e29ea37b4, type: 3}
+  - {fileID: 21300000, guid: b81a1a5af18924e67bc7fa3972a1fa40, type: 3}
+  - {fileID: 21300000, guid: b834a86f1a930b42a63d487f8801d727, type: 3}
+  - {fileID: 21300000, guid: 279d68aa1fc400c7c9b54e5a67fe6ada, type: 3}
+  stageScales:
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  displayCount: 12
   seedItemId: ca_rot
   harvestItemId: carot
   unlockLevel: 3

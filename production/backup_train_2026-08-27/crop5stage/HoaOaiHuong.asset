@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: HoaOaiHuong
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_hoa_oai_huong
+  itemName: "Hoa O\u1EA3i H\u01B0\u01A1ng"
+  itemIcon: {fileID: -4118618964313991323, guid: 26647bd056cabc64595625b3fe52a382, type: 3}
+  goldPrice: 67
+  diamondPrice: 0
+  cropCategory: 1
+  cropId: hoa_oai_huong
+  plantSeedFxIcon: {fileID: 0}
+  harvestIcon: {fileID: 0}
+  sproutSprite: {fileID: -3296009508219700567, guid: 26647bd056cabc64595625b3fe52a382, type: 3}
+  growingSprite: {fileID: -3970551025893700117, guid: 26647bd056cabc64595625b3fe52a382, type: 3}
+  readySprite: {fileID: -4118618964313991323, guid: 26647bd056cabc64595625b3fe52a382, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 50, y: 50, z: 1}
+  readyScale: {x: 50, y: 50, z: 1}
+  displayCount: 1
+  seedItemId: seed_hoa_oai_huong
+  harvestItemId: hoa_oai_huong
+  unlockLevel: 4
+  growSeconds: 195
+  sellGold: 27
+  harvestAmount: 4
+  plantCost: 1
+  expReward: 20
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1

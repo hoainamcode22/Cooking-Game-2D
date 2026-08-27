@@ -38,10 +38,20 @@ public static class SkinKit
     {
         get
         {
-            if (!_daTimFontVo)
+            if (!_daTimFontVo || _fontVo == null)
             {
                 _daTimFontVo = true;
-                _fontVo = Resources.Load<TMP_FontAsset>("Fonts/FontVo");
+                if (TMP_Settings.defaultFontAsset != null)
+                    _fontVo = TMP_Settings.defaultFontAsset;
+
+                if (_fontVo == null)
+                    _fontVo = Resources.Load<TMP_FontAsset>("Fonts/FontVo");
+#if UNITY_EDITOR
+                if (_fontVo == null)
+                    _fontVo = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Fonts/Baloo2 SDF.asset");
+                if (_fontVo == null)
+                    _fontVo = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/FontVo.asset");
+#endif
             }
             return _fontVo;
         }
@@ -53,7 +63,13 @@ public static class SkinKit
         var f = FontVo;
         if (f == null || goc == null) return;
         foreach (var t in goc.GetComponentsInChildren<TMP_Text>(true))
-            if (t.font != f) t.font = f;
+        {
+            if (t.font != f)
+            {
+                t.font = f;
+                if (f.material != null) t.fontSharedMaterial = f.material;
+            }
+        }
     }
 
     // ═════════════════════════════════════════════════════════════════════════

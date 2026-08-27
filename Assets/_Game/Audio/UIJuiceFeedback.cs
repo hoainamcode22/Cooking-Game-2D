@@ -2,7 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class UIJuiceFeedback : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+public class UIJuiceFeedback : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
 {
     public enum SoundType
     {
@@ -21,7 +21,12 @@ public class UIJuiceFeedback : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     [SerializeField] private float bounceTime = 0.07f;
     [SerializeField] private float settleTime = 0.06f;
 
+    [Header("Hover (nhún nhẹ khi đưa trỏ vào — Sếp 2026-08-27)")]
+    [SerializeField] private float hoverScale = 1.06f;
+    [SerializeField] private float hoverTime = 0.08f;
+
     private Vector3 baseScale;
+    private bool isPressed;
     private Coroutine routine;
 
     private void Awake()
@@ -53,6 +58,7 @@ public class UIJuiceFeedback : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         if (routine != null)
             StopCoroutine(routine);
 
+        isPressed = true;
         routine = StartCoroutine(PressRoutine());
     }
 
@@ -63,7 +69,39 @@ public class UIJuiceFeedback : MonoBehaviour, IPointerDownHandler, IPointerUpHan
         if (routine != null)
             StopCoroutine(routine);
 
+        isPressed = false;
         routine = StartCoroutine(BounceRoutine());
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (target == null || isPressed) return;
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        routine = StartCoroutine(LerpToRoutine(baseScale * hoverScale, hoverTime));
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (target == null || isPressed) return;
+
+        if (routine != null)
+            StopCoroutine(routine);
+
+        routine = StartCoroutine(LerpToRoutine(baseScale, hoverTime));
+    }
+
+    /// <summary>Đổi loại âm thanh từ code (field là SerializeField private) — thẻ nguyên liệu dùng tiếng "pop".</summary>
+    public void SetSound(SoundType type)
+    {
+        soundType = type;
+    }
+
+    private IEnumerator LerpToRoutine(Vector3 to, float duration)
+    {
+        yield return LerpScale(target.localScale, to, duration);
     }
 
     // Tương thích API cũ nếu có script khác trực tiếp gọi PlayFeedback

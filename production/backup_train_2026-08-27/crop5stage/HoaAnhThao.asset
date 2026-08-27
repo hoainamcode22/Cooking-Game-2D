@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: HoaAnhThao
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_hoa_anh_thao
+  itemName: "Hoa Anh Th\u1EA3o"
+  itemIcon: {fileID: -3401004264720572072, guid: bcec67a80c8219646a69a6c3f218ea64, type: 3}
+  goldPrice: 164
+  diamondPrice: 0
+  cropCategory: 1
+  cropId: hoa_anh_thao
+  plantSeedFxIcon: {fileID: 0}
+  harvestIcon: {fileID: 0}
+  sproutSprite: {fileID: 8425963492085121604, guid: bcec67a80c8219646a69a6c3f218ea64, type: 3}
+  growingSprite: {fileID: 4630077017141565443, guid: bcec67a80c8219646a69a6c3f218ea64, type: 3}
+  readySprite: {fileID: -3401004264720572072, guid: bcec67a80c8219646a69a6c3f218ea64, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 50, y: 50, z: 1}
+  readyScale: {x: 50, y: 50, z: 1}
+  displayCount: 1
+  seedItemId: seed_hoa_anh_thao
+  harvestItemId: hoa_anh_thao
+  unlockLevel: 10
+  growSeconds: 700
+  sellGold: 95
+  harvestAmount: 4
+  plantCost: 1
+  expReward: 70
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1

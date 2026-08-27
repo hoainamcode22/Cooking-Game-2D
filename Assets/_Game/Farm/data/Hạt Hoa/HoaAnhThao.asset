@@ -27,7 +27,19 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 50, y: 50, z: 1}
   readyScale: {x: 50, y: 50, z: 1}
-  displayCount: 1
+  stageSprites:
+  - {fileID: 21300000, guid: 127b9ed9c66910b72c6f4ac946e7a437, type: 3}
+  - {fileID: 21300000, guid: 4f1283200a9c350b3473818af3daf4a5, type: 3}
+  - {fileID: 21300000, guid: b0c6aa853ec3d3609658266325d88c28, type: 3}
+  - {fileID: 21300000, guid: d56898c42dafc4f13d6e6695f44bb312, type: 3}
+  - {fileID: 21300000, guid: 9c2821558409be8be21c8005f23963bd, type: 3}
+  stageScales:
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  displayCount: 12
   seedItemId: seed_hoa_anh_thao
   harvestItemId: hoa_anh_thao
   unlockLevel: 10

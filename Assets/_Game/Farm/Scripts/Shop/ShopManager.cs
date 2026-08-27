@@ -322,7 +322,19 @@ public class ShopManager : MonoBehaviour
 
         string keyLower = string.IsNullOrEmpty(keyword) ? "" : keyword.ToLower().Trim();
 
-        foreach (BaseItemData item in currentActiveList.OrderBy(GetUnlockLevel))
+        // 2026-08-27 (Sếp): "hạt giống ra hạt giống, hoa ra hoa" + xếp theo độ hiếm.
+        //   1. Nhóm: hạt rau củ TRƯỚC, hạt hoa SAU (hết cảnh xen kẽ theo cấp như trước).
+        //   2. Trong nhóm: theo cấp mở khoá → cây mua được luôn nằm trên cây còn khoá.
+        //   3. Cùng cấp: cây lâu chín/hiếm hơn xếp sau (growSeconds là thước đo độ hiếm
+        //      sẵn có trong data — trùng khớp với thứ tự "cây cho món khó thì xếp sau").
+        int cellCount = 0;
+        int lastGroup = -1;
+
+        foreach (BaseItemData item in currentActiveList
+                                        .OrderBy(GroupRank)
+                                        .ThenBy(GetUnlockLevel)
+                                        .ThenBy(RarityRank)
+                                        .ThenBy(NameKey))
         {
             if (item == null) continue;
 
@@ -331,13 +343,64 @@ public class ShopManager : MonoBehaviour
 
             if (!match) continue;
 
+            // Sang nhóm khác (rau củ → hoa): chèn ô trống cho hết hàng đang dở, để nhóm
+            // mới BẮT ĐẦU Ở HÀNG MỚI. Grid ô 296×335 nên không đặt được dòng tiêu đề
+            // (một ô tiêu đề sẽ cao 335px, trông như lỗi) — khoảng trống là cách phân
+            // nhóm gọn nhất mà không phải sửa scene. [Sếp 2026-08-27]
+            int group = GroupRank(item);
+            if (lastGroup >= 0 && group != lastGroup)
+                PadRowWithSpacers(ref cellCount);
+            lastGroup = group;
+
             GameObject go = Instantiate(itemPrefab, contentParent);
             go.SetActive(true);
             var ui = go.GetComponent<ShopItemUI>();
             if (ui != null)
                 ui.Setup(item);
+            cellCount++;
         }
     }
+
+    /// <summary>Số cột của GridLayoutGroup đang dùng cho danh sách (mặc định 4).</summary>
+    private int GridColumns()
+    {
+        GridLayoutGroup grid = contentParent != null
+                             ? contentParent.GetComponent<GridLayoutGroup>() : null;
+        if (grid != null && grid.constraint == GridLayoutGroup.Constraint.FixedColumnCount)
+            return Mathf.Max(1, grid.constraintCount);
+        return 4;
+    }
+
+    /// <summary>Chèn ô rỗng (không vẽ gì) cho tới hết hàng hiện tại.</summary>
+    private void PadRowWithSpacers(ref int cellCount)
+    {
+        int cols = GridColumns();
+        int guard = 0;
+        while (cellCount % cols != 0 && guard++ < 16)
+        {
+            GameObject spacer = new GameObject("GroupSpacer", typeof(RectTransform));
+            spacer.transform.SetParent(contentParent, false);
+            cellCount++;
+        }
+    }
+
+    /// <summary>0 = hạt rau củ, 1 = hạt hoa, 2 = còn lại (công trình/trang trí).</summary>
+    private static int GroupRank(BaseItemData item)
+    {
+        CropData crop = item as CropData;
+        if (crop == null) return 2;
+        return crop.cropCategory == CropCategory.Flower ? 1 : 0;
+    }
+
+    /// <summary>Độ hiếm trong cùng một cấp: thời gian lớn càng dài càng hiếm → xếp sau.</summary>
+    private static int RarityRank(BaseItemData item)
+    {
+        CropData crop = item as CropData;
+        return crop != null ? crop.growSeconds : 0;
+    }
+
+    private static string NameKey(BaseItemData item)
+        => item != null && item.itemName != null ? item.itemName : "";
 
     private static int GetUnlockLevel(BaseItemData item)
     {

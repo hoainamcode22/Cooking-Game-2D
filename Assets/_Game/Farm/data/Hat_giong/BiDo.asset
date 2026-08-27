@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: BiDo
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_pumpkin
+  itemName: "B\xED \u0110\u1ECF"
+  itemIcon: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
+  goldPrice: 145
+  diamondPrice: 0
+  cropCategory: 0
+  cropId: pumpkin
+  plantSeedFxIcon: {fileID: 21300000, guid: 1897fac469fe0ad84e621f59dcd45b69, type: 3}
+  harvestIcon: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
+  sproutSprite: {fileID: 21300000, guid: 1897fac469fe0ad84e621f59dcd45b69, type: 3}
+  growingSprite: {fileID: 21300000, guid: 8d0a6032026ab332d272683906186ed7, type: 3}
+  readySprite: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
+  sproutScale: {x: 78.125, y: 78.125, z: 1}
+  growingScale: {x: 78.125, y: 78.125, z: 1}
+  readyScale: {x: 78.125, y: 78.125, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: 1897fac469fe0ad84e621f59dcd45b69, type: 3}
+  - {fileID: 21300000, guid: 87f20d286bdaa851997b0a1e6170bb9c, type: 3}
+  - {fileID: 21300000, guid: 8d0a6032026ab332d272683906186ed7, type: 3}
+  - {fileID: 21300000, guid: 3e0799339735f8047edbce1f8ba64c51, type: 3}
+  - {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
+  stageScales:
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
+  displayCount: 6
+  seedItemId: seed_pumpkin
+  harvestItemId: pumpkin
+  unlockLevel: 11
+  growSeconds: 620
+  sellGold: 84
+  harvestAmount: 4
+  plantCost: 1
+  expReward: 62
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1

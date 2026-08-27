@@ -27,6 +27,18 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 60, y: 60, z: 1}
   readyScale: {x: 70, y: 70, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: 5e393c7f1bbddd949e080c2bace32e95, type: 3}
+  - {fileID: 21300000, guid: ef943618587553704a35aedf0ea7d49f, type: 3}
+  - {fileID: 21300000, guid: 2c6faa1da3ceb98efac811f57a2f7219, type: 3}
+  - {fileID: 21300000, guid: 01a6cac1e64a1503d98dba6b8f4bf81e, type: 3}
+  - {fileID: 21300000, guid: 7fce419485a092ee2c776f935640d6d0, type: 3}
+  stageScales:
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
   displayCount: 12
   seedItemId: seed_cachua
   harvestItemId: cachua

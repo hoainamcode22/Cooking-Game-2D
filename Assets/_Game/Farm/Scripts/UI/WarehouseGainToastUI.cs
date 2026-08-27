@@ -166,11 +166,18 @@ public class WarehouseGainToastUI : MonoBehaviour
         int cap  = Mathf.Max(1, inv.SlotCapacity);
         if (_txtCount != null)
         {
-            _txtCount.text  = $"{used}/{cap}";
-            _txtCount.color = used >= cap ? new Color(0.86f, 0.22f, 0.16f) : new Color(0.36f, 0.20f, 0.09f);
+            _txtCount.text  = $"Kho: {used}/{cap}";
+            _txtCount.color = used >= cap ? new Color(0.96f, 0.13f, 0.18f) : Color.white;
         }
 
         float target = Mathf.Clamp01((float)used / cap);
+        if (_imgFill != null)
+        {
+            if (target >= 1f) _imgFill.color = new Color(0.96f, 0.13f, 0.18f); // Đỏ khi đầy
+            else if (target >= 0.8f) _imgFill.color = new Color(0.98f, 0.55f, 0.09f); // Cam khi gần đầy
+            else _imgFill.color = new Color(0.32f, 0.77f, 0.10f); // Xanh lá chuẩn
+        }
+
         if (!animate || !_panel.gameObject.activeInHierarchy)
         {
             _shownFill = target;
@@ -297,6 +304,16 @@ public class WarehouseGainToastUI : MonoBehaviour
                 var img = spawner.WarehouseTarget.GetComponent<Image>();
                 if (img != null) iconSprite = img.sprite;
             }
+#if UNITY_EDITOR
+            if (iconSprite == null)
+                iconSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/bocaycoitrangtri/ICON_HUB/icon_warehouse_v2_1786984374562-removebg-preview.png");
+            if (panelSprite == null)
+                panelSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Export_Train_UI_Package/Sprites/popup_panel_paper.png");
+            if (barTrackSprite == null)
+                barTrackSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Export_Train_UI_Package/Sprites/progress_track_bar.png");
+            if (barFillSprite == null)
+                barFillSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Export_Train_UI_Package/Sprites/progress_fill_green.png");
+#endif
         }
 
         // Panel pill

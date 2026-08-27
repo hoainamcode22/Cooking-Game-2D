@@ -27,6 +27,18 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 60, y: 60, z: 1}
   readyScale: {x: 70, y: 70, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: 566c8761ed513b4106500172d7a2bb68, type: 3}
+  - {fileID: 21300000, guid: e3e249629583cf6c9863132a3d3f3503, type: 3}
+  - {fileID: 21300000, guid: 3a9fa81e67d7ece3c3c6e8b31a49e678, type: 3}
+  - {fileID: 21300000, guid: 2c6e9ab546b0b729cb96c4b2cb372cdd, type: 3}
+  - {fileID: 21300000, guid: 3ba22ba7e73b62bb65e0266bf968d77a, type: 3}
+  stageScales:
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
   displayCount: 12
   seedItemId: seed_pepper
   harvestItemId: pepper

@@ -1,30 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-/// <summary>
-/// CHƠI LẠI TỪ ĐẦU — đưa máy về đúng trạng thái của một người vừa cài game.
-///
-/// VÌ SAO PHẢI CÓ TOOL NÀY dù đã có "Force Level 1" và "Reset Player Save":
-/// hai tool cũ chỉ xoá 4 key `PLAYER_LEVEL`, `PLAYER_EXP`, `FARM_ECONOMY_GOLD`,
-/// `FARM_ECONOMY_GEMS`. Toàn bộ phần còn lại của save vẫn nguyên:
-///
-///   • `FARM_WAREHOUSE`      — kho hạt. Còn key này thì `StarterInventorySetup` thấy
-///                             `DaCoSaveKho == true` và KHÔNG cấp 10 lúa + 10 hướng dương.
-///                             Đây đúng là cảnh "về cấp 1 mà không có lúa", trong khi
-///                             cà chua/bắp cải của lần chơi trước vẫn nằm đó.
-///   • `TUTORIAL_MAIN_DONE`  — tutorial tưởng đã xong hoặc dở dang, chạy lệch pha với cấp.
-///   • `MISSION_PROGRESS_V1` — nhiệm vụ vẫn 2/2 ngay từ giây đầu.
-///   • `FARM_INVENTORY_SAVE`, `OrderBoard_Save`, `FARM_PLAYER_STALL`, `PenState_*`,
-///     `FARM_PLACED_BUILDINGS`, `FARM_CONSTRUCTION_SITES`, `STARTER_ITEMS_GIVEN`…
-///
-/// Nên tool này dùng <c>PlayerPrefs.DeleteAll()</c> — quét sạch, kể cả những key sinh
-/// động kiểu `PenState_<id>` mà không cách nào liệt kê hết bằng tay.
-///
-/// BẪY LỚN NHẤT và lý do tool tự thoát Play Mode: các manager là `DontDestroyOnLoad` và
-/// giữ dữ liệu TRONG BỘ NHỚ. Xoá PlayerPrefs giữa lúc đang Play thì lần `Save()` kế tiếp
-/// (thu hoạch, mua bán, đổi cấp) ghi nguyên si dữ liệu cũ trở lại — người dùng tưởng đã
-/// reset mà thật ra chưa. Thoát Play trước rồi mới xoá là cách duy nhất chắc chắn.
-/// </summary>
+
 public static class ChoiLaiTuDauTool
 {
     private const string Menu = "Tools/Farm/⚠ CHƠI LẠI TỪ ĐẦU (như người chơi mới)";
@@ -84,12 +61,7 @@ public static class ChoiLaiTuDauTool
     {
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
-
-        Debug.Log("[ChơiLại] ✅ Đã xoá sạch dữ liệu lưu.\n" +
-                  "Bấm Play — game sẽ chạy đúng như lần đầu cài đặt:\n" +
-                  "  · Cấp 1, kho có 10 hạt lúa + 10 hạt hướng dương\n" +
-                  "  · Tutorial bắt đầu từ bước chào\n" +
-                  "  · HUD nhiệm vụ ẩn cho tới khi xong tutorial và đạt cấp 3");
+        Debug.Log("[ChơiLại] ✅ ĐÃ XOÁ SẠCH TOÀN BỘ SAVE (PlayerPrefs.DeleteAll). Lần Play tới game sẽ ở trạng thái người chơi mới hoàn toàn!");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -130,4 +102,7 @@ public static class ChoiLaiTuDauTool
 
         Debug.Log(sb.ToString());
     }
+
+
+
 }

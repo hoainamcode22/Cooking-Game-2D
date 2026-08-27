@@ -536,3 +536,31 @@ MonoBehaviour:
     Category: 8
     UnlockLevel: 8
     Weight: 45
+  - ItemID: pumpkin
+    BuyPrice: 126
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 11
+    Weight: 45
+  - ItemID: watermelon
+    BuyPrice: 142
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 12
+    Weight: 45
+  - ItemID: seed_pumpkin
+    BuyPrice: 120
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 2
+    UnlockLevel: 11
+    Weight: 45
+  - ItemID: seed_watermelon
+    BuyPrice: 130
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 2
+    UnlockLevel: 12
+    Weight: 45

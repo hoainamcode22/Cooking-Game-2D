@@ -27,6 +27,18 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 60, y: 60, z: 1}
   readyScale: {x: 70, y: 70, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: 6e9b103212deb8ae02b44c8d8027baa1, type: 3}
+  - {fileID: 21300000, guid: 8a5686cca6f7988d58ba10a6668e7a94, type: 3}
+  - {fileID: 21300000, guid: c2d9b7e6602e8f1517b4da05358b5009, type: 3}
+  - {fileID: 21300000, guid: 2fa129666527cb4289d1ecf4c530aa1e, type: 3}
+  - {fileID: 21300000, guid: 0cf5d73bd8f6b0aeb387f311c9842a7b, type: 3}
+  stageScales:
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
   displayCount: 12
   seedItemId: seed_ngo
   harvestItemId: ngo

@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: Ngo
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_ngo
+  itemName: "Ng\xF4"
+  itemIcon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
+  goldPrice: 35
+  diamondPrice: 0
+  cropCategory: 0
+  cropId: ngo
+  plantSeedFxIcon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+  harvestIcon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+  sproutSprite: {fileID: 3938912592072765698, guid: 3eef62c56eb694b4ab936992d151a020, type: 3}
+  growingSprite: {fileID: 3954842684570580545, guid: fc39a502c1c61914984f49c90bf5a099, type: 3}
+  readySprite: {fileID: 2778021726456339881, guid: ed2788fb0865b5444883bedfd7afa696, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 60, y: 60, z: 1}
+  readyScale: {x: 70, y: 70, z: 1}
+  displayCount: 12
+  seedItemId: seed_ngo
+  harvestItemId: ngo
+  unlockLevel: 2
+  growSeconds: 95
+  sellGold: 13
+  harvestAmount: 4
+  plantCost: 1
+  expReward: 10
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1

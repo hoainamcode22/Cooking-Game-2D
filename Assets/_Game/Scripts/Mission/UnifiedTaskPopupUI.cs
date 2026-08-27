@@ -352,6 +352,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         _canvasGroup.blocksRaycasts = true;
 
         AcquireInputBlock();
+        SkinKit.ApFont(_root);
         ShowTab(tab);
     }
 
@@ -2339,6 +2340,12 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     {
         RectTransform rect = CreateRect(parent, name, position, rectSize);
         TextMeshProUGUI tmp = rect.gameObject.AddComponent<TextMeshProUGUI>();
+        var f = SkinKit.FontVo;
+        if (f != null)
+        {
+            tmp.font = f;
+            if (f.material != null) tmp.fontSharedMaterial = f.material;
+        }
         tmp.text = text;
         tmp.fontSize = size;
         tmp.color = color;

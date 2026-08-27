@@ -27,6 +27,18 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 60, y: 60, z: 1}
   readyScale: {x: 70, y: 70, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: cf7f70a7ebd46e75bdfb8167aa87be07, type: 3}
+  - {fileID: 21300000, guid: 3a1acde31bba957df29ca278f80886f9, type: 3}
+  - {fileID: 21300000, guid: 2fd4a7bf82a60ca6d166ecd8ba7903d6, type: 3}
+  - {fileID: 21300000, guid: 802384e20a8768dcfb373afa91ed3bd3, type: 3}
+  - {fileID: 21300000, guid: ce3f5a3dd1f918c3229f92eef96d61cd, type: 3}
+  stageScales:
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
   displayCount: 12
   seedItemId: seed_sugarcane
   harvestItemId: sugarcane

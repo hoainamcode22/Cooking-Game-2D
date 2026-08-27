@@ -145,7 +145,10 @@ public class CookingChallengeManager : MonoBehaviour
         if (!CanStartCooking())
             return;
 
-        StartRandomMiniGame();
+        // Sếp 2026-08-27: GỠ minigame khỏi luồng nấu — bấm NẤU là nấu thẳng,
+        // thành/bại do điểm hương vị quyết định (CookSubmitRoutine). Minigame cũ
+        // (StartRandomMiniGame + 2 panel) không còn được gọi, chờ xoá hẳn đợt dọn UI cũ.
+        StartCoroutine(CookSubmitRoutine());
     }
     private IEnumerator CookSubmitRoutine()
     {
@@ -212,6 +215,14 @@ public class CookingChallengeManager : MonoBehaviour
         if (deliveryCharacterMover != null)
         {
             deliveryCharacterMover.ShowDeliveryOnly();
+        }
+
+        if (FarmInventoryManager.Instance == null)
+        {
+            // Play thẳng scene bếp (dev) — không có kho nông trại để nhận món. GIỮ món trên
+            // dĩa thay vì NullReference làm gãy luồng. [Sếp 2026-08-27]
+            Debug.LogWarning("[Cooking] Không có FarmInventoryManager (Play thẳng scene bếp?) — món vẫn trên dĩa.");
+            return;
         }
 
         if (!FarmInventoryManager.Instance.AddItem(cookedDishOnPlate.dishId, 1))
@@ -335,11 +346,7 @@ public class CookingChallengeManager : MonoBehaviour
             return false;
         }
 
-        if (timingMiniGame == null || letterMiniGame == null)
-        {
-            Debug.LogWarning("Mini game is missing.");
-            return false;
-        }
+        // Sếp 2026-08-27: minigame đã gỡ khỏi luồng nấu — không bắt buộc tham chiếu nữa.
 
         return true;
     }

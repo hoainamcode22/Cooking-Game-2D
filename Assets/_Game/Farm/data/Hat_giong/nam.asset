@@ -27,6 +27,18 @@ MonoBehaviour:
   sproutScale: {x: 50, y: 50, z: 1}
   growingScale: {x: 60, y: 60, z: 1}
   readyScale: {x: 70, y: 70, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: bb7704e11a3c2a3b8f43896e04a521cd, type: 3}
+  - {fileID: 21300000, guid: 12550d47ff6d1afcbbe3f936f31eaea6, type: 3}
+  - {fileID: 21300000, guid: 2e17773d815a816d681b527e4408ff95, type: 3}
+  - {fileID: 21300000, guid: 80bdb5f99f03c5a2c4ba5ecd95fbca2b, type: 3}
+  - {fileID: 21300000, guid: d6156bfa83ac61eb62673109c8233f1f, type: 3}
+  stageScales:
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
+  - {x: 78.125, y: 78.125, z: 1}
   displayCount: 6
   seedItemId: seed_nam
   harvestItemId: mushroom

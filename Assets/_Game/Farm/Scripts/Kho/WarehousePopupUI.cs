@@ -434,7 +434,16 @@ public class WarehousePopupUI : MonoBehaviour
         if (btnMinus != null) btnMinus.interactable = canTransfer && transferQuantity > 1;
         if (btnPlus != null) btnPlus.interactable = canTransfer && transferQuantity < available;
         if (btnMax != null) btnMax.interactable = canTransfer && transferQuantity < available;
-        if (btnTransferKitchen != null) btnTransferKitchen.interactable = canTransfer && available > 0;
+        if (btnTransferKitchen != null)
+        {
+            btnTransferKitchen.interactable = canTransfer && available > 0;
+
+            // Sếp 2026-08-27: nút phải TỰ NÓI lý do khi không gửi được (hạt giống/món ăn/đồ
+            // linh tinh) — tránh hiểu nhầm "gửi bếp bị hỏng" khi thực ra item không nấu được.
+            var lbl = btnTransferKitchen.GetComponentInChildren<TMPro.TMP_Text>(true);
+            if (lbl != null) lbl.text = canTransfer ? "CHUYỂN BẾP" : "KHÔNG PHẢI ĐỒ NẤU";
+        }
+        Debug.Log($"[WarehousePopupUI] Chọn '{selectedItemId}' → gửi bếp: {(canTransfer ? "ĐƯỢC" : "KHÔNG (không phải nguyên liệu nấu)")}");
     }
 
     private void RefreshUpgradeBox()
@@ -505,7 +514,7 @@ public class WarehousePopupUI : MonoBehaviour
 
     private void OnTransferKitchenClicked()
     {
-        if (string.IsNullOrEmpty(selectedItemId) || transferQuantity <= 0) return;
+        if (string.IsNullOrWhiteSpace(selectedItemId) || transferQuantity <= 0) return; // WhiteSpace: chặn cả id ' ' (Sếp 2026-08-27)
         if (!IsTransferrableToKitchen(selectedItemId))
         {
             Debug.LogWarning($"[WarehousePopupUI] '{selectedItemId}' không phải là nguyên liệu nấu ăn, không thể chuyển sang Bếp!");
@@ -513,23 +522,33 @@ public class WarehousePopupUI : MonoBehaviour
         }
         if (FarmInventoryManager.Instance == null) return;
 
-        int available = FarmInventoryManager.Instance.GetAmount(selectedItemId);
+        // ══ BUG GỐC (có từ trước, tìm ra 2026-08-27): RemoveItem bắn sự kiện "kho đổi" →
+        // RefreshUI chạy NGAY GIỮA hàm này → khi chuyển HẾT SẠCH một món (bấm MAX), món đó
+        // biến khỏi danh sách → selectedItemId bị reset thành null TRƯỚC khi kịp cộng vào
+        // bếp → AddTransferredItem(null) lặng lẽ bỏ qua → "Đã chuyển Nx ''" và hàng bốc hơi
+        // (kho nông trại đã trừ, bếp không nhận). Gửi 1 cái thì không sao vì món chưa hết.
+        // FIX: CHỐT id + số lượng vào biến cục bộ TRƯỚC khi đụng RemoveItem.
+        string rawId = selectedItemId;
+        string kitchenId = KitchenIdMap.NormalizeFarmId(rawId);
+
+        int available = FarmInventoryManager.Instance.GetAmount(rawId);
         int amountToTransfer = Mathf.Min(transferQuantity, available);
         if (amountToTransfer <= 0) return;
 
-        // Deduct from farm inventory
-        bool removed = FarmInventoryManager.Instance.RemoveItem(selectedItemId, amountToTransfer);
+        // Deduct from farm inventory (có thể gọi ngược RefreshUI — từ đây chỉ dùng biến cục bộ)
+        bool removed = FarmInventoryManager.Instance.RemoveItem(rawId, amountToTransfer);
         if (removed)
         {
-            // Add to kitchen transfer
+            // Add to kitchen transfer — lưu id CHUẨN (itemId của InventoryItemData) để bếp
+            // nhận diện được cả các món có id kho khác id item (vd 'nam' → 'mushroom').
             if (KitchenTransferManager.Instance != null)
-                KitchenTransferManager.Instance.AddTransferredItem(selectedItemId, amountToTransfer);
+                KitchenTransferManager.Instance.AddTransferredItem(kitchenId, amountToTransfer);
 
-            Debug.Log($"[WarehousePopupUI] Đã chuyển {amountToTransfer}x '{selectedItemId}' sang Bếp thành công!");
+            Debug.Log($"[WarehousePopupUI] Đã chuyển {amountToTransfer}x '{rawId}' (id bếp '{kitchenId}') sang Bếp thành công!");
         }
 
         // Refresh UI
-        int remain = FarmInventoryManager.Instance.GetAmount(selectedItemId);
+        int remain = FarmInventoryManager.Instance.GetAmount(rawId);
         if (remain <= 0)
             AutoSelectFirstItem();
         else
@@ -565,6 +584,12 @@ public class WarehousePopupUI : MonoBehaviour
             string id = kv.Key;
             int amount = kv.Value;
             if (amount <= 0) continue;
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                // Entry hỏng trong save (id rỗng) — không hiển thị để khỏi bấm gửi nhầm nữa.
+                Debug.LogWarning($"[WarehousePopupUI] Kho có entry id RỖNG (x{amount}) trong save — đã ẩn khỏi danh sách. [Sếp 2026-08-27]");
+                continue;
+            }
 
             WarehouseCategory itemCat = ClassifyItem(id);
             if (itemCat == category)
@@ -698,37 +723,42 @@ public class WarehousePopupUI : MonoBehaviour
         return null;
     }
 
+    /// <summary>
+    /// Bảng id NẤU ĐƯỢC — đã xác minh từng asset InventoryItemData (itemId + cookingData
+    /// không rỗng, 2026-08-27). Đây là FALLBACK khi extraItemDatabase trong scene chưa nạp
+    /// đủ (Editor giữ scene cũ trong RAM khi file bị sửa ngoài — bug Sếp gặp: 'bapcai' bị
+    /// từ chối dù id đúng). Luật Sếp chốt: nông sản trồng ruộng + đồ chăn nuôi (trứng, thịt,
+    /// sữa, cá) + nguyên liệu mua chợ (nước mắm...) đều gửi bếp được; hạt giống, vật liệu,
+    /// công trình, món ăn thành phẩm thì KHÔNG. Thêm nguyên liệu mới → thêm id vào đây HOẶC
+    /// chỉ cần gán cookingData cho asset (nhánh tra database phía dưới tự nhận).
+    /// </summary>
+    private static readonly HashSet<string> CookableIdsVerified = new HashSet<string>
+    {
+        // nông sản trồng ruộng
+        "bapcai", "cachua", "khoaitay", "carot", "ngo", "sugarcane", "rice", "chili",
+        "pepper", "lemon", "mushroom",
+        // chăn nuôi
+        "beef", "pork", "chicken_meat", "egg", "milk",
+        // gia vị / nguyên liệu mua chợ
+        "fishsauce", "salt", "soysauce", "herbs",
+    };
+
     private bool IsTransferrableToKitchen(string itemId)
     {
-        if (string.IsNullOrEmpty(itemId)) return false;
-        string key = itemId.Trim().ToLowerInvariant();
+        // Sếp 2026-08-27 — DANH SÁCH CHO PHÉP (cổng cũ chỉ cấm công trình/hoa nên hạt giống
+        // và entry id rỗng lọt qua, item "bốc hơi"). Điều kiện: item có cookingData (tra
+        // database) HOẶC nằm trong bảng đã xác minh ở trên (miễn nhiễm scene cũ trong RAM).
+        if (string.IsNullOrWhiteSpace(itemId)) return false;
+        string raw = KitchenIdMap.NormalizeFarmId(itemId); // alias đã xác minh: 'nam' → 'mushroom'
 
-        // 1. Tuyệt đối không chuyển Công Trình / Trang Trí
-        if (key.StartsWith("building_") || key.StartsWith("deco_") || key.StartsWith("pen_") ||
-            key.Contains("cong_trinh") || key.Contains("trang_tri") || key.Contains("hang_rao") || key.Contains("cay_canh"))
-            return false;
+        InventoryItemData item;
+        if (!extraItemLookup.TryGetValue(raw, out item) || item == null)
+            extraItemLookup.TryGetValue(raw.ToLowerInvariant(), out item);
 
-        // 2. Tuyệt đối không chuyển Hoa
-        if (key.StartsWith("hoa_") || key.Contains("flower") || key.Contains("rose") ||
-            key.Contains("tulip") || key.Contains("huong_duong") || key.Contains("cuc_hoa") || key.Contains("hoa_hong") ||
-            key.Contains("hoa_cuc") || key.Contains("hoa_huong_duong"))
-            return false;
+        if (item != null && item.cookingData != null)
+            return true;
 
-        if (StallItemCatalog.Instance != null)
-        {
-            var cat = StallItemCatalog.Instance.GetCategory(key);
-            if (cat == StallItemCategory.Hoa)
-                return false;
-        }
-
-        if (cropLookup.TryGetValue(key, out CropData crop) && crop != null)
-        {
-            if (crop.cropCategory == CropCategory.Flower)
-                return false;
-        }
-
-        // Hợp lệ: Nông sản ăn được, gia vị, chăn nuôi, chế biến, món ăn
-        return true;
+        return CookableIdsVerified.Contains(raw.ToLowerInvariant());
     }
 
     private string GetItemDescription(string itemId)

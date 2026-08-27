@@ -27,7 +27,19 @@ MonoBehaviour:
   sproutScale: {x: 40, y: 40, z: 1}
   growingScale: {x: 45, y: 45, z: 1}
   readyScale: {x: 45, y: 45, z: 1}
-  displayCount: 6
+  stageSprites:
+  - {fileID: 21300000, guid: 246b6275dc392f19ea4d2bf2bc184755, type: 3}
+  - {fileID: 21300000, guid: 7e2a5d6a1486bca721c9414ca47461af, type: 3}
+  - {fileID: 21300000, guid: a2b498a006642eb0e5659e4e76ff1786, type: 3}
+  - {fileID: 21300000, guid: 8eab5d8bce28dd6e1d6ffcacc1fba1e9, type: 3}
+  - {fileID: 21300000, guid: 77bf994d9162b0d02f25fdda8c13bc39, type: 3}
+  stageScales:
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  - {x: 68.359, y: 68.359, z: 1}
+  displayCount: 12
   seedItemId: khoai_tay
   harvestItemId: khoaitay
   unlockLevel: 5

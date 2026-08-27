@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: HoaLan
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_hoa_lan
+  itemName: Hoa Lan
+  itemIcon: {fileID: -5282305146031929904, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
+  goldPrice: 80
+  diamondPrice: 0
+  cropCategory: 1
+  cropId: hoa_lan
+  plantSeedFxIcon: {fileID: 0}
+  harvestIcon: {fileID: 0}
+  sproutSprite: {fileID: 4276873430628212148, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
+  growingSprite: {fileID: -4761241310524006394, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
+  readySprite: {fileID: -5282305146031929904, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 50, y: 50, z: 1}
+  readyScale: {x: 50, y: 50, z: 1}
+  displayCount: 1
+  seedItemId: seed_hoa_lan
+  harvestItemId: hoa_lan
+  unlockLevel: 7
+  growSeconds: 280
+  sellGold: 38
+  harvestAmount: 4
+  plantCost: 1
+  expReward: 28
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1
