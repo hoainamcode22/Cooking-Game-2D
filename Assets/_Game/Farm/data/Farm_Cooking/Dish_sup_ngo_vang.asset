@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
+  m_Name: Dish_sup_ngo_vang
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: sup_ngo_vang
+  dishName: "S\xFAp ng\xF4 tr\u1EE9ng"
+  dishSubTitle: "Ng\xF4 \xB7 Tr\u1EE9ng"
+  dishSprite: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+  difficulty: 0
+  unlockLevel: 2
+  targetFlavor:
+    sweet: 1
+    spicy: 0
+    sour: 0
+    umami: 2
+    texture: 1
+  requiredIngredients:
+  - {fileID: 11400000, guid: ec1bd42123fd58842880a4a88b780874, type: 2}
+  - {fileID: 11400000, guid: fc7f3c85c12966b4f993aeca2a544016, type: 2}
+  - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
+  rewardExp: 6
+  rewardGold: 19
+  sellPrice: 76

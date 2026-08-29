@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
+  m_Name: Dish_banh_khoai_tay_nam_chien
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: banh_khoai_tay_nam_chien
+  dishName: "B\xE1nh khoai t\xE2y n\u1EA5m chi\xEAn"
+  dishSubTitle: "Khoai T\xE2y \xB7 N\u1EA5m"
+  dishSprite: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
+  difficulty: 0
+  unlockLevel: 10
+  targetFlavor:
+    sweet: 1
+    spicy: 1
+    sour: 0
+    umami: 4
+    texture: 1
+  requiredIngredients:
+  - {fileID: 11400000, guid: 65f23ad20a871e24fa3c77769c5cbe4c, type: 2}
+  - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
+  - {fileID: 11400000, guid: 068c729ad2bb67e4d9a7cea8aec07a6d, type: 2}
+  - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
+  rewardExp: 30
+  rewardGold: 59
+  sellPrice: 236

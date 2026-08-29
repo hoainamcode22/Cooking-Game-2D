@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
+  m_Name: Dish_sup_nam_ca_chua
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: sup_nam_ca_chua
+  dishName: "Canh n\u1EA5m c\xE0 chua"
+  dishSubTitle: "N\u1EA5m \xB7 C\xE0 Chua \xB7 Rau Th\u01A1m"
+  dishSprite: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}
+  difficulty: 0
+  unlockLevel: 8
+  targetFlavor:
+    sweet: 2
+    spicy: 0
+    sour: 2
+    umami: 4
+    texture: 2
+  requiredIngredients:
+  - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
+  - {fileID: 11400000, guid: d497d41e2fee904489fe75f7a8f6d927, type: 2}
+  - {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}
+  - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
+  rewardExp: 24
+  rewardGold: 42
+  sellPrice: 168

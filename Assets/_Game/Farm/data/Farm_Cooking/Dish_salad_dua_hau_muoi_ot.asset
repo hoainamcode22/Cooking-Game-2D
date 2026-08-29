@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
+  m_Name: Dish_salad_dua_hau_muoi_ot
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: salad_dua_hau_muoi_ot
+  dishName: "D\u01B0a h\u1EA5u tr\u1ED9n mu\u1ED1i \u1EDBt"
+  dishSubTitle: "D\u01B0a H\u1EA5u \xB7 Rau Th\u01A1m"
+  dishSprite: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
+  difficulty: 0
+  unlockLevel: 13
+  targetFlavor:
+    sweet: 4
+    spicy: 3
+    sour: 1
+    umami: 2
+    texture: 2
+  requiredIngredients:
+  - {fileID: 11400000, guid: 6fd3ae8eeaa2fd4f7c201299a10bd0e0, type: 2}
+  - {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}
+  - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
+  - {fileID: 11400000, guid: 047a75f3fbcb9974b91428681e2e96ac, type: 2}
+  rewardExp: 39
+  rewardGold: 74
+  sellPrice: 296

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
+  m_Name: Dish_sup_ca_chua_ca_rot
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: sup_ca_chua_ca_rot
+  dishName: "Canh c\xE0 chua c\xE0 r\u1ED1t"
+  dishSubTitle: "C\xE0 Chua \xB7 C\xE0 R\u1ED1t \xB7 Rau Th\u01A1m"
+  dishSprite: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
+  difficulty: 0
+  unlockLevel: 6
+  targetFlavor:
+    sweet: 3
+    spicy: 0
+    sour: 3
+    umami: 3
+    texture: 2
+  requiredIngredients:
+  - {fileID: 11400000, guid: d497d41e2fee904489fe75f7a8f6d927, type: 2}
+  - {fileID: 11400000, guid: e3b733d266196064bbe31fc48e40f7e1, type: 2}
+  - {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}
+  - {fileID: 11400000, guid: 7df2822734955c543a8459823997157a, type: 2}
+  rewardExp: 18
+  rewardGold: 35
+  sellPrice: 140

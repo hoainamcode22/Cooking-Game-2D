@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
+  m_Name: Dish_ga_xao_bap_cai
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: ga_xao_bap_cai
+  dishName: "G\xE0 x\xE0o b\u1EAFp c\u1EA3i"
+  dishSubTitle: "Th\u1ECBt G\xE0 \xB7 B\u1EAFp C\u1EA3i"
+  dishSprite: {fileID: -2283333445584976228, guid: 888289491956e5347952a87ca3ec06d1, type: 3}
+  difficulty: 0
+  unlockLevel: 4
+  targetFlavor:
+    sweet: 2
+    spicy: 0
+    sour: 0
+    umami: 3
+    texture: 2
+  requiredIngredients:
+  - {fileID: 11400000, guid: b0631d5b8894e8b4c988c34191d84120, type: 2}
+  - {fileID: 11400000, guid: e8ff296568c88e84c8ee3c7a64b0615a, type: 2}
+  - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
+  rewardExp: 12
+  rewardGold: 26
+  sellPrice: 104

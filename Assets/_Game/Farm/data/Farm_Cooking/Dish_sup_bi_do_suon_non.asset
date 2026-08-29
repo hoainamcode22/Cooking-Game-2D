@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
+  m_Name: Dish_sup_bi_do_suon_non
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: sup_bi_do_suon_non
+  dishName: "Canh b\xED \u0111\u1ECF s\u01B0\u1EDDn non"
+  dishSubTitle: "B\xED \u0110\u1ECF \xB7 Th\u1ECBt Heo"
+  dishSprite: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
+  difficulty: 1
+  unlockLevel: 17
+  targetFlavor:
+    sweet: 2
+    spicy: 1
+    sour: 0
+    umami: 5
+    texture: 3
+  requiredIngredients:
+  - {fileID: 11400000, guid: fba7063083d12455543efa95c500c921, type: 2}
+  - {fileID: 11400000, guid: e0b72888953ad72479d8eb9c8462d0c6, type: 2}
+  - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
+  - {fileID: 11400000, guid: 068c729ad2bb67e4d9a7cea8aec07a6d, type: 2}
+  rewardExp: 77
+  rewardGold: 106
+  sellPrice: 422

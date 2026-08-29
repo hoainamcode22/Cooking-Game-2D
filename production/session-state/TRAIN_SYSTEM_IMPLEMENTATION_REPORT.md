@@ -1259,3 +1259,226 @@ bắt đầu ở HÀNG MỚI. Bố cục 4 cột sau khi sửa:
   hàng 5+: hướng dương · hoa hồng · oải hương · lan · cúc trắng · tulip · vạn thọ · mẫu đơn ·
            cẩm tú cầu · anh thảo
 KHÔNG dùng dòng tiêu đề chữ vì ô grid cao 335px — một ô chỉ để chữ sẽ trông như lỗi layout.
+
+
+---
+
+## [2026-08-27, tiếp 14] Gọt sạch nền: 2 lỗi THẬT trong pipeline tách nền (không phải "sót nền")
+
+Sếp zoom vào thấy vệt hồng ở chân bí đỏ/dưa hấu. Đã truy tới gốc, hoá ra là HAI lỗi khác nhau —
+không chỉ đơn giản là "sót nền":
+
+### LỖI 1 — despill + unpremultiply khuếch đại màu nền thành vành hồng 1px (ảnh hưởng ~104/115 sprite)
+- Art gốc do máy vẽ blend outline tối với nền magenta ⇒ viền thành magenta TỐI (155,7,143), cách nền
+  dist≈128, nằm ngay đỉnh dải feather [62,130] nên bị coi là "art thật".
+- Bản v1 despill bằng công thức (C − (1−a)·bg)/a với a nhỏ, rồi resize theo lối
+  premultiply → LANCZOS → chia lại cho alpha. Hai phép CHIA cho alpha nhỏ khuếch đại cặn magenta
+  thành magenta CHÓI ở alpha ~16-35% ⇒ đúng vệt hồng Sếp thấy. Đo được: pumpkin_s5 có 1641 px
+  magenta nguyên chất (252,0,252) đang hiện.
+- SỬA (recut v4):
+  · despill CHỈ ở vùng alpha ≥ 0.6; vùng mờ lấy màu của pixel SẠCH gần nhất (alpha-bleed) ⇒ trong
+    file không còn màu nền để khuếch đại.
+  · magenta SÁNG (min(R,B)>120) ⇒ alpha 0 (đã đo: không có art thật nào sáng vậy — art bị bắt oan
+    tối đa chỉ tới (96,0,80)).
+  · magenta TỐI = OUTLINE của tranh ⇒ KHÔNG xoá, chỉ trung hoà sắc về nâu-đen theo độ sáng
+    (giữ nguyên nét viền — nếu xoá là mất outline, đây là chỗ dễ làm sai nhất).
+  · resize BỎ premultiply: RGB đã bleed nên resize thẳng kênh RGB, alpha resize riêng
+    ("bleed + resize riêng kênh" — cách chuẩn, không sinh vành).
+  Kết quả: bapcai từ 236 px hồng (0.34% vùng hiện) xuống 21 px (0.03%).
+
+### LỖI 2 — art gốc bí đỏ/dưa hấu BAKE SẴN vũng đất đỏ + bóng tiếp đất
+Soi ảnh nguồn zoom 2× (`REF_src_zoom.jpg`): dưới quả và sau lá có vẽ hẳn một vũng ĐẤT ĐỎ-NÂU. Đây
+là art thật chứ không phải cặn nền — và nó VI PHẠM luật ART_RULES_STUDIO mục 2 ("KHÔNG NỀN, KHÔNG
+BÓNG ĐỔ — bóng do game tự vẽ"). Trong game 6 cây chồng nhau nên vũng đất lộ ra thành vệt hồng.
+- Đã thử 3 luật trước khi ra luật đúng (ghi lại để sau khỏi mò lại):
+  · "vùng nền không nối viền" → sai, vũng đất không phải màu nền.
+  · "đỏ + tiếp xúc biên trong suốt" → sai, bắt trúng OUTLINE nâu của lá.
+  · "đỏ + vùng dày (erode/dilate)" → sai, vành đỏ MỎNG nên bị lọc mất.
+- LUẬT ĐÚNG (chỉ áp cho pumpkin/watermelon — 2 cây KHÔNG có art đỏ thật):
+  · đất đỏ: r∈[95,205] & g<95 & r>g+45 & b∈[12,95] & r>b+30  (loại được outline nâu r<95, cà chua/
+    ớt r>205, và bóng cam của bí đỏ b≈0)
+  · sắc hồng: r>g+50 & b>g+20 & g<130  (R và B đều vượt G ⇒ cam/vàng/nâu/xanh không thể trúng)
+  Đã kiểm bằng ảnh overlay trước khi xoá; quả/lá/hoa nguyên vẹn (px đặc pumpkin_s5 74.597).
+
+### KIỂM CHỨNG
+`qa-reports/REF_final_A.jpg` — dựng lại y công thức lưới trong code: bí đỏ, dưa hấu (stage 4 và 5),
+cà rốt, cà chua — SẠCH hồng hoàn toàn, quả cà chua đỏ vẫn nguyên. Ảnh quá trình:
+REF_src_zoom (art gốc có vũng đất), REF_soil_mask/mask2 (2 luật sai), REF_soil_kill_QA, REF_peel_QA.
+
+### GHI CHÚ TRIỂN KHAI
+115 PNG bị GHI ĐÈ đúng đường dẫn cũ ⇒ .meta và guid KHÔNG đổi ⇒ không phải nối lại data, không sửa
+scene. Unity chỉ cần re-import texture. Script tái lập: `~/farmart/recut.py` (chạy lại cho ra y hệt).
+
+
+---
+
+## [2026-08-27, tiếp 15] SỬA LỖI CỦA CHÍNH EM: art tím/hồng bị bán trong suốt + bị gọt thủng
+
+Sếp báo: mía, hoa lan, mẫu đơn, oải hương, cẩm tú cầu bị "mất màu / trắng", bí đỏ "như bị sâu ăn".
+Đúng — do em, và có HAI lỗi riêng biệt:
+
+### LỖI A (v3/v4) — luật "diệt sắc magenta" ăn vào art tím
+Em thêm luật: pixel có G thấp hơn cả R và B ⇒ coi là nhiễm nền ⇒ xoá (nếu sáng) hoặc trung hoà về
+xám (nếu tối). Luật đó đúng với cặn nền nhưng SAI NGHIÊM TRỌNG với art thật: thân mía tím, cánh lan
+tím, mẫu đơn hồng, oải hương tím, cẩm tú cầu hồng đều thoả ⇒ bị xoá thủng và bị chuyển xám.
+⇒ v5 BỎ HOÀN TOÀN mọi luật theo màu sắc.
+
+### LỖI B (tồn tại từ v1, mới lộ ra khi Sếp zoom) — alpha tính theo KHOẢNG CÁCH MÀU
+alpha = clip((dist_tới_nền − 62)/68). Nền là magenta, nên art màu HỒNG/TÍM có dist nhỏ
+(vd cánh mẫu đơn deep-pink dist≈105) ⇒ alpha chỉ ~0.63 ⇒ CÁNH HOA BÁN TRONG SUỐT, nhìn thấy nền
+xuyên qua ⇒ đúng hiện tượng "mất màu/trắng". Đây là khuyết điểm cố hữu của chroma-key thuần theo màu
+khi nền và art cùng tông.
+
+### v6 — cách làm đúng (nền theo VÙNG LIÊN THÔNG, không theo màu)
+1. NỀN = pixel gần màu nền (dist<45) VÀ nối liền với viền ảnh (flood 4 biên), cộng các "hốc kín"
+   chắc chắn là nền (p90 dist < 30, size ≥ 12 px).
+2. Mọi pixel NGOÀI vùng nền ⇒ alpha = 1. Art màu gì cũng đục hoàn toàn — hết bán trong suốt.
+3. Chỉ dải sát biên nền (≤ 2 px) mới lấy alpha theo màu ⇒ giữ răng cưa mềm và despill đúng chỗ pixel
+   thật sự pha với nền.
+4. Giữ 2 điểm tốt của v4: despill chỉ ở alpha ≥ 0.6; RGB vùng mờ lấy từ pixel sạch gần nhất; resize
+   tách kênh (không premultiply) ⇒ không sinh vành hồng.
+
+Đo sau v6: tỉ lệ pixel ĐỤC HOÀN TOÀN trên vùng hiện = 85-98% (phần còn lại là viền răng cưa 1-2px,
+đúng như art cut-out bình thường). Đối chiếu ảnh gốc vs v6 (`REF_v6_vs_goc.jpg`): mẫu đơn, lan,
+cẩm tú cầu, oải hương, mía — màu KHỚP ẢNH GỐC, không thủng, không xám.
+
+### Dọn vũng đất bake sẵn của bí đỏ/dưa hấu — hạ xuống mức siêu bảo thủ
+Dải màu HẸP đúng màu đất đã đo (R 105-180, G 12-48, B 14-62, R>G+60, R>B+45), KHÔNG dilation, chỉ xoá
+vùng liền khối ≥ 60 px. Quả bí (cam, G≥60) và lá (R<G) nằm ngoài dải nên không thể trúng.
+Còn sót một chút vệt sẫm sau lá — CHẤP NHẬN, vì gọt thêm là bắt đầu ăn vào lá (đúng như Sếp cảnh báo).
+
+### LƯU Ý QUAN TRỌNG
+Toàn bộ 23 sheet GỐC trong `Assetsgame/hatgiong/Hatgiong` + `/Hoa` em CHƯA HỀ sửa một byte nào ⇒ luôn
+khôi phục lại được. Script tái lập: `~/farmart/recut.py` (chạy lại ra y hệt). 115 PNG ghi đè đúng
+đường cũ ⇒ .meta/guid không đổi, không phải nối lại data.
+
+---
+
+## 2026-08-28 · THÊM 20 MÓN ĂN MỚI (15 dễ · 3 vừa · 2 khó)
+
+**Yêu cầu Sếp:** thêm ~20 món để người chơi luôn có thứ để build; vào cooking, sổ công thức,
+đơn hàng dân làng, chợ; id vật phẩm kho→cooking và cooking→farm bắt chước đúng logic món cũ;
+dễ L1–15 vàng cân bằng, vừa L15–22 nhiều vàng hơn, khó L22–30 nhiều vàng; món dễ dựa vào hạt
+giống mở ở từng cấp; có món dùng bí đỏ + dưa hấu mới.
+
+### SCAN — đọc gì trước khi làm
+- `DishData.cs` (dishId/dishName/dishSubTitle/dishSprite/difficulty/unlockLevel/targetFlavor/
+  requiredIngredients/rewardExp/rewardGold/sellPrice).
+- `CookingScoreCalculator`: `ingredientScore` trần 70 (khớp ĐÚNG tập nguyên liệu `kind: 0`,
+  bỏ qua gia vị) + `flavorScore100 = 100 − 5·ManhattanDistance` rồi ×0,3 (trần 30).
+  ⇒ **`targetFlavor` phải bằng TỔNG ĐÚNG vector của mọi `requiredIngredients` (nguyên liệu +
+  gia vị)**, nếu không thì 100 điểm là bất khả thi. Đã tự động kiểm 20/20 món.
+- `CookingSelectionManager`: `maxIngredients = 4`, `maxSeasonings = 3` ⇒ mọi công thức mới
+  đều ≤ 3 nguyên liệu và ≤ 2 gia vị, nằm trong giới hạn.
+- `WarehousePopupUI.ClassifyItem`: THỨ TỰ quan trọng — StallItemCatalog → ChanNuoi → MonAn.
+  ⇒ id món mới phải chứa từ khoá MonAn (`sup_`, `banh`, `chien`, `xao`, `ham`, `salad`, `nuoc`…)
+  và **tuyệt đối không chứa** `trung`/`sua`/`thit`/`egg`/`milk`/`beef`/`pork`/`chicken`.
+  Vì vậy: "Súp ngô trứng" → id `sup_ngo_vang`; "Chè ngô sữa kem" → id `nuoc_che_ngo_kem`;
+  "Dưa hấu dầm sữa đá" → id `nuoc_dua_hau_dam_kem`.
+- `OrderGenerator.BuildPool` đi theo `MarketPriceTable.AllItems` ⇒ có dòng giá là món tự vào
+  đơn hàng dân làng, không phải khai thêm chỗ nào.
+
+### PLAN — công thức giá (rút ra từ 18 món cũ, không bịa)
+- `rewardGold = round(sellPrice × 0,25)` · `rewardExp = round(mult × unlockLevel)`
+  với mult 3 (Dễ) / 4,5 (Vừa) / 6 (Khó) — đúng như 18 món cũ.
+- `sell = max(sàn_theo_cấp, round(giá_nguyên_liệu × hệ_số)) + 8 × (số_thành_phần − 2)`,
+  sàn = Dễ `40+14L` · Vừa `60+18L` · Khó `80+26L`; hệ số 1,45 / 1,55 / 1,70.
+  Sau đó ép **đơn điệu tăng** (mỗi món ≥ món trước +6) để không có món cấp cao bán rẻ hơn cấp thấp.
+- `MarketDatabase.BuyPrice = BasePrice × 1,5` (banker's rounding) — giữ đúng quy ước cũ.
+- `Weight = clamp(round(65 − 1,5L), 20, 60)` — món cấp cao ra chợ thưa hơn.
+- Sàn lãi đạt: Dễ ≥ 48 % · Vừa ≥ 61 % · Khó ≥ 75 % (yêu cầu tài liệu là 35/45/60 %).
+
+### IMPLEMENT — đã sửa/tạo gì
+| Nơi | Thay đổi |
+|---|---|
+| `Assets/_Game/Farm/data/Farm_Cooking/Dish_*.asset` | **+20 file mới** (+20 `.meta`) |
+| `Assets/_Game/Farm/data/Farm_dong_vat/Item_*.asset` | **+20 file mới** (+20 `.meta`), `cookingData: {fileID: 0}` — món ăn KHÔNG chuyển lại vào bếp |
+| `Farm_Cooking/All_Data.asset` | `allDishes` 18 → 38 (sổ công thức + `DailySpecialManager` tự thấy) |
+| `Farm/Scripts/Market/MarketPriceTable.cs` | +20 dòng `MarketCategory.MonAn` (18 → 38), +10 dòng ghi chú |
+| `Farm/data/Market/MarketDatabase.asset` | 78 → 98 dòng (`Category: 6`, `MinQuantity 1`, `MaxQuantity 3`) |
+| `Scenes/SCN_Farm.unity` | `WarehousePopupUI.extraItemDatabase` 52→72 · `cookedDishIds` 18→38 · `MarketManager.itemDatabase` 52→72 · `StallItemCatalog.itemDatabase` 48→68 |
+| `Farm/Scripts/OrderBoard/OrderGenerator.cs` | CHỈ sửa ghi chú `ValueRefPremium` (xem "Chờ Sếp quyết") — không đổi hành vi |
+
+### 20 MÓN
+
+| id | Tên | Độ khó | Cấp | Nguyên liệu + gia vị | Bán | Vàng | EXP | Lãi |
+|---|---|---|---|---|---|---|---|---|
+| `com_chien_bap_cai` | Cơm chiên bắp cải | Dễ | L1 | rice, bapcai + salt | 62 | 16 | 3 | +114% |
+| `sup_ngo_vang` | Súp ngô trứng | Dễ | L2 | ngo, egg + salt | 76 | 19 | 6 | +69% |
+| `salad_bap_cai_ca_rot` | Salad bắp cải cà rốt | Dễ | L3 | bapcai, carot + salt | 90 | 23 | 9 | +131% |
+| `ga_xao_bap_cai` | Gà xào bắp cải | Dễ | L4 | chicken, bapcai + salt | 104 | 26 | 12 | +104% |
+| `banh_ngo_chien` | Bánh ngô chiên giòn | Dễ | L5 | ngo, rice, egg + salt | 126 | 32 | 15 | +142% |
+| `sup_ca_chua_ca_rot` | Canh cà chua cà rốt | Dễ | L6 | cachua, carot, herbs + fishsauce | 140 | 35 | 18 | +69% |
+| `khoai_tay_xao_ca_rot` | Khoai tây xào cà rốt | Dễ | L7 | khoaitay, carot + salt, soysauce | 154 | 39 | 21 | +81% |
+| `sup_nam_ca_chua` | Canh nấm cà chua | Dễ | L8 | mushroom, cachua, herbs + salt | 168 | 42 | 24 | +100% |
+| `banh_ngo_nuong_mia` | Bánh ngô nướng mật mía | Dễ | L9 | ngo, sugarcane + salt | 174 | 44 | 27 | +145% |
+| `banh_khoai_tay_nam_chien` | Bánh khoai tây nấm chiên | Dễ | L10 | khoaitay, mushroom + pepper, salt | 236 | 59 | 30 | +55% |
+| `banh_bi_do_hap` | Bánh bí đỏ hấp mía | Dễ | L11 | pumpkin, rice, sugarcane + salt | 242 | 61 | 33 | +62% |
+| `nuoc_ep_dua_hau_chanh` | Nước ép dưa hấu chanh | Dễ | L12 | watermelon + lemon | 248 | 62 | 36 | +69% |
+| `salad_dua_hau_muoi_ot` | Dưa hấu trộn muối ớt | Dễ | L13 | watermelon, herbs + salt, chili | 296 | 74 | 39 | +53% |
+| `sup_bi_do_kem` | Súp bí đỏ kem sữa | Dễ | L14 | pumpkin + milk, salt | 314 | 79 | 42 | +49% |
+| `nuoc_dua_hau_dam_kem` | Dưa hấu dầm sữa đá | Dễ | L15 | watermelon, sugarcane + milk | 379 | 95 | 45 | +48% |
+| `sup_bi_do_suon_non` | Canh bí đỏ sườn non | Vừa | L17 | pumpkin, pork + salt, pepper | 422 | 106 | 77 | +61% |
+| `ga_ham_nam_ca_rot` | Gà hầm nấm cà rốt | Vừa | L20 | chicken, mushroom, carot + fishsauce, pepper | 444 | 111 | 90 | +141% |
+| `nuoc_che_ngo_kem` | Chè ngô sữa kem | Vừa | L22 | ngo, rice, sugarcane + milk | 472 | 118 | 99 | +161% |
+| `bo_ham_bi_do_kem` | Bò hầm bí đỏ sốt kem | Khó | L26 | beef, pumpkin, khoaitay + milk, pepper | 823 | 206 | 156 | +75% |
+| `salad_dua_hau_bo_ap_chao` | Salad dưa hấu bò áp chảo | Khó | L30 | watermelon, beef, herbs + lemon, chili | 884 | 221 | 180 | +122% |
+
+### CHECK — 9 phép kiểm tự động, 0 lỗi
+1. Đọc lại **38** `DishData` từ file (không tin dữ liệu trong RAM).
+2. `sellPrice` của asset **trùng** `MarketPriceTable` cho cả 38 món · `unlockLevel` cũng trùng.
+3. `targetFlavor` = **tổng đúng** vector `requiredIngredients` — 20/20.
+4. `rewardGold`/`rewardExp` khớp công thức — 20/20.
+5. `cookedDishIds` trong scene = **đúng 38 id**, không thiếu không lạ.
+6. Mỗi `Item_<id>` tồn tại, guid trong `.meta` đúng, và xuất hiện **đúng 3 lần** trong scene
+   (extraItemDatabase + MarketManager + StallItemCatalog).
+7. `All_Data` 38 dòng · `MarketDatabase` 98 dòng · `BuyPrice` khớp `sell × 1,5`.
+8. Phân loại tab: 20/20 id vào MonAn, 0 id bị hút về ChanNuoi.
+9. **Toàn vẹn scene**: 585.372 → 585.452 dòng (**+80 đúng như dự tính**), số document
+   `--- !u!` **6.907 giữ nguyên**. `MarketPriceTable.cs` và `OrderGenerator.cs` cân ngoặc 0/0.
+10. **Không trùng GUID**: quét 4.759 file `.meta` trong `Assets/` — 40 guid mới xuất hiện
+    đúng 1 lần mỗi cái, 0 xung đột.
+
+### ICON — hiện đang dùng TẠM
+20 món đang trỏ `dishSprite` + `icon` vào **icon nguyên liệu chính** (bí đỏ, dưa hấu, ngô…).
+Cố ý làm vậy vì `MarketDatabaseGeneratorTool` **bỏ qua id không có icon** — để trống là món
+không lên chợ được. Đã lập **hồ sơ bàn giao đội vẽ tự đọc** tại `production/art-briefs/2026-08-28_Icon-Mon-An/` — đội vẽ chỉ cần vào đúng thư mục này,
+đọc `00_DOC_FILE_NAY_TRUOC.md` rồi làm theo, không phải hỏi ai:
+- `00_DOC_FILE_NAY_TRUOC.md` — cửa vào: sơ đồ thư mục, thứ tự đọc, tóm tắt 30 giây.
+- `01_LUAT_DONG_BO_STYLE.md` — **sổ tay đồng bộ style, dán nguyên khối vào mọi prompt vẽ món
+  từ nay về sau** (farm = isometric 45°, cooking/icon = hình phẳng 40–50°; chỉ nói về nét vẽ,
+  màu sắc, vật đựng, quy cách file — KHÔNG đổi phối cảnh của bên nào).
+- `02_PROMPT_20_MON_MOI.md` — 20 icon mới, có bảng tên file tiếng Việt + vật đựng + nguyên
+  liệu phải thấy được, chia 3 lô giao dần.
+- `03_PROMPT_VE_LAI_18_MON_CU.md` — tuỳ chọn, vẽ lại 18 icon cũ cho đều style (ghi đè đúng tên
+  file cũ ⇒ GUID không đổi ⇒ không phải nối lại data). Bỏ 2 món cá đã xoá khỏi logic.
+- `04_KY_THUAT_GHEP_VAO_GAME.md` — **giải thích kỹ thuật cho đội vẽ**: một PNG được gán vào
+  `DishData.dishSprite` + `InventoryItemData.icon`, dùng lại ở 5 màn; icon thật chỉ hiện ở
+  **38 / 48 / 52 px** (số đo lấy từ code) nên silhouette quyết định tất cả; và 4 điều cấm
+  (chữ / nền / bóng đổ rời / đổi tên file) hỏng cái gì nếu vi phạm — kèm lý do GUID.
+- `05_BANG_GHEP_FILE_VAO_MON.csv` — bảng tra: file PNG nào → `dishId` nào → gán vào asset nào.
+- `THAM_CHIEU_ICON_CU/` — bản sao 20 icon đang chạy, để đội vẽ so style tại chỗ.
+- `GIAO_FILE_TAI_DAY/` — chỗ đội vẽ bỏ PNG, kèm `DOC_TRUOC_KHI_GIAO.md` (tự soát 8 điểm +
+  2 lỗi hay gặp nhất). Dev soát xong mới chuyển vào `Assets/Assetsgame/Món ăn/`.
+
+### SAO LƯU
+`production/backup_train_2026-08-28/dishes20/`: `SCN_Farm_before_20dishes.unity`,
+`All_Data.asset`, `MarketPriceTable.cs`, `MarketDatabase.asset`.
+
+### VIỆC SẾP CẦN LÀM TRONG UNITY
+1. Để Unity import 40 asset mới (tự động khi focus Editor).
+2. Chạy **`Tools ▸ Farm ▸ Chợ ▸ 2` (sinh lại MarketDatabase)** để `setupNotes` ghi lại số dòng
+   đúng — dữ liệu đã đúng sẵn, bước này chỉ để bảng tự ghi lại nguồn.
+3. Chạy `Tools ▸ Farm ▸ Quầy Hàng` nếu muốn tool tự soát lại `StallItemCatalog`.
+4. **KHÔNG bấm Ctrl+S** nếu scene đang mở từ trước phiên này — sẽ ghi đè mất 80 dòng vừa thêm.
+   Đóng scene không lưu rồi mở lại là an toàn.
+
+### CHỜ SẾP QUYẾT (không tự đổi)
+- `OrderGenerator.ValueRefPremium = 300`: mọi món ≥ 300 đều bị đơn hàng đặt ở **số lượng nhỏ nhất**.
+  Với 5 món mới giá 422–884 thì đây là hành vi ĐÚNG (món đắt đặt ít). Nếu Sếp muốn đơn hàng
+  món cao cấp "dày" hơn thì nâng mốc lên ~880 — nhưng như vậy các món 300–500 sẽ bị đặt nhiều
+  hơn hiện tại, tức đơn khó hơn. Em chỉ sửa ghi chú, chưa đổi số.
+- `sup_ngo_vang` / `nuoc_che_ngo_kem` / `nuoc_dua_hau_dam_kem`: **id** phải né chữ
+  `trung`/`sua` để không bị xếp sai tab; **tên hiển thị** vẫn là "Súp ngô trứng", "Chè ngô sữa
+  kem", "Dưa hấu dầm sữa đá" nên người chơi không thấy gì lạ. Nếu Sếp muốn id đọc "đúng tên"
+  thì phải sửa `WarehousePopupUI.ClassifyItem` trước — việc đó rủi ro hơn, em không tự làm.

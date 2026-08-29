@@ -394,6 +394,36 @@ public static class MarketPriceTable
         Add("bo_xao_tieu",             "Bò Xào Tiêu",              MarketCategory.MonAn, 315, 10, 30);  // NL 267 → +48 %
         Add("bo_ham_ca_rot",           "Bò Hầm Cà Rốt",            MarketCategory.MonAn, 350, 8, 35);   // NL 270 → +62 %
         Add("pho_bo_tai",              "Phở Bò Tái",               MarketCategory.MonAn, 400, 9, 30);   // NL 310 → +61 %
+
+        // ── 20 MÓN MỚI (28-08-2026) ─────────────────────────────────────
+        // Sinh bằng ~/dish20 (calc.py + wire.py). Ba quy ước bắt buộc, đã kiểm tự động:
+        //   · sellPrice ở đây PHẢI trùng `DishData.sellPrice` của asset cùng tên.
+        //   · targetFlavor của asset = TỔNG ĐÚNG vector của mọi requiredIngredients
+        //     (nguyên liệu + gia vị) ⇒ 100 điểm là đạt được, không phải mò.
+        //   · id chứa từ khoá MonAn và KHÔNG chứa từ khoá ChanNuoi, để
+        //     `WarehousePopupUI.ClassifyItem` xếp đúng tab. Vì vậy tên id tránh
+        //     'trung'/'sua'/'thit' (ví dụ chè ngô sữa → id `nuoc_che_ngo_kem`).
+        // Lãi = sell − tổng giá nguyên liệu: dễ ≥ 48 %, vừa ≥ 61 %, khó ≥ 75 %.
+        Add("com_chien_bap_cai",         "Cơm Chiên Bắp Cải",           MarketCategory.MonAn,   62,  1, 60);   // NL 29 → +114 %
+        Add("sup_ngo_vang",              "Súp Ngô Trứng",               MarketCategory.MonAn,   76,  2, 60);   // NL 45 → +69 %
+        Add("salad_bap_cai_ca_rot",      "Salad Bắp Cải Cà Rốt",        MarketCategory.MonAn,   90,  3, 60);   // NL 39 → +131 %
+        Add("ga_xao_bap_cai",            "Gà Xào Bắp Cải",              MarketCategory.MonAn,  104,  4, 59);   // NL 51 → +104 %
+        Add("banh_ngo_chien",            "Bánh Ngô Chiên Giòn",         MarketCategory.MonAn,  126,  5, 58);   // NL 52 → +142 %
+        Add("sup_ca_chua_ca_rot",        "Canh Cà Chua Cà Rốt",         MarketCategory.MonAn,  140,  6, 56);   // NL 83 → +69 %
+        Add("khoai_tay_xao_ca_rot",      "Khoai Tây Xào Cà Rốt",        MarketCategory.MonAn,  154,  7, 55);   // NL 85 → +81 %
+        Add("sup_nam_ca_chua",           "Canh Nấm Cà Chua",            MarketCategory.MonAn,  168,  8, 53);   // NL 84 → +100 %
+        Add("banh_ngo_nuong_mia",        "Bánh Ngô Nướng Mật Mía",      MarketCategory.MonAn,  174,  9, 52);   // NL 71 → +145 %
+        Add("banh_khoai_tay_nam_chien",  "Bánh Khoai Tây Nấm Chiên",    MarketCategory.MonAn,  236, 10, 50);   // NL 152 → +55 %
+        Add("banh_bi_do_hap",            "Bánh Bí Đỏ Hấp Mía",          MarketCategory.MonAn,  242, 11, 49);   // NL 149 → +62 %
+        Add("nuoc_ep_dua_hau_chanh",     "Nước Ép Dưa Hấu Chanh",       MarketCategory.MonAn,  248, 12, 47);   // NL 147 → +69 %
+        Add("salad_dua_hau_muoi_ot",     "Dưa Hấu Trộn Muối Ớt",        MarketCategory.MonAn,  296, 13, 46);   // NL 193 → +53 %
+        Add("sup_bi_do_kem",             "Súp Bí Đỏ Kem Sữa",           MarketCategory.MonAn,  314, 14, 44);   // NL 211 → +49 %
+        Add("nuoc_dua_hau_dam_kem",      "Dưa Hấu Dầm Sữa Đá",          MarketCategory.MonAn,  379, 15, 43);   // NL 256 → +48 %
+        Add("sup_bi_do_suon_non",        "Canh Bí Đỏ Sườn Non",         MarketCategory.MonAn,  422, 17, 40);   // NL 262 → +61 %
+        Add("ga_ham_nam_ca_rot",         "Gà Hầm Nấm Cà Rốt",           MarketCategory.MonAn,  444, 20, 35);   // NL 184 → +141 %
+        Add("nuoc_che_ngo_kem",          "Chè Ngô Sữa Kem",             MarketCategory.MonAn,  472, 22, 32);   // NL 181 → +161 %
+        Add("bo_ham_bi_do_kem",          "Bò Hầm Bí Đỏ Sốt Kem",        MarketCategory.MonAn,  823, 26, 26);   // NL 470 → +75 %
+        Add("salad_dua_hau_bo_ap_chao",  "Salad Dưa Hấu Bò Áp Chảo",    MarketCategory.MonAn,  884, 30, 20);   // NL 398 → +122 %
         // Hai món cá (`canh_chua_ca`, `ca_nuong_tieu`) đã bị XOÁ SẠCH khỏi dự án — không
         // còn DishData, InventoryItemData, IngredientData cá, và cũng không có hệ hồ cá.
         // Không để lại dòng giá "để dành": còn dòng ở đây là bộ sinh đơn hàng còn nhìn

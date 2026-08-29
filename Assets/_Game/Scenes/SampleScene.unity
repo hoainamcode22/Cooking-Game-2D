@@ -2879,6 +2879,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 4ba4533cfe4bd6c4e919953fe25fc342, type: 2}
   - {fileID: 11400000, guid: 7f96869f08d4e0a4687f826acd150dfc, type: 2}
   - {fileID: 11400000, guid: 1c4f147355611e044beec9c27dc0c752, type: 2}
+  - {fileID: 11400000, guid: fba7063083d12455543efa95c500c921, type: 2}
+  - {fileID: 11400000, guid: 6fd3ae8eeaa2fd4f7c201299a10bd0e0, type: 2}
   dishBook: {fileID: 11400000, guid: 722ecf39bf0ef5b4999e7587becaf3bb, type: 2}
   skin:
     wallTile: {fileID: 21300000, guid: 8a3c4b5813ed4fe797a4b5244bd4fc4b, type: 3}

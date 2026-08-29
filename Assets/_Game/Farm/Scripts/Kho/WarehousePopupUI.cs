@@ -741,6 +741,8 @@ public class WarehousePopupUI : MonoBehaviour
         "beef", "pork", "chicken_meat", "egg", "milk",
         // gia vị / nguyên liệu mua chợ
         "fishsauce", "salt", "soysauce", "herbs",
+        // quả to (2026-08-27) — đã có IngredientData nên bếp nấu được
+        "pumpkin", "watermelon",
     };
 
     private bool IsTransferrableToKitchen(string itemId)

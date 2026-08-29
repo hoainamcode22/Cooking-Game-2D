@@ -89,7 +89,12 @@ public static class OrderGenerator
     /// giữ mọi đơn ở cùng một tầm "công sức bỏ ra", bất kể món gì.
     /// </summary>
     private const int ValueRefCheap    = 7;     // giá lúa — món rẻ nhất bảng
-    private const int ValueRefPremium  = 300;   // phở bò tái — món đắt nhất giao được
+    private const int ValueRefPremium  = 300;   // mốc "đắt" — KHÔNG phải giá cao nhất
+    // 28-08-2026: thêm 20 món mới, món đắt nhất giờ là 884 (Salad dưa hấu bò áp chảo),
+    // không còn là phở bò tái 400. CỐ Ý GIỮ mốc ở 300: `Mathf.InverseLerp` tự kẹp về 1
+    // nên mọi món ≥ 300 đều rơi về `minAmt` — đúng ý muốn (món đắt thì đặt ít nhất).
+    // Nâng mốc lên 884 sẽ khiến các món 300–500 bị đặt số lượng LỚN hơn hiện tại,
+    // tức đơn khó hơn — đó là quyết định cân bằng, phải Sếp duyệt mới đổi.
 
     // ══════════════════════════════════════════════════════════════════════
     //  BẬC ĐỘ KHÓ

@@ -1,0 +1,566 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3621f8005805ec246a584a0a7af3be36, type: 3}
+  m_Name: MarketDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::MarketDatabase_SO
+  setupNotes: "SINH T\u1EF0 \u0110\u1ED8NG \u2014 KH\xD4NG G\xD5 TAY.\nNgu\u1ED3n:
+    MarketPriceTable.cs \xB7 Menu: Tools/Farm/Ch\u1EE3/2 \xB7 Sinh l\u1EA1i MarketDatabase
+    t\u1EEB b\u1EA3ng gi\xE1\nBuyPrice = BasePrice \xD7 1,5\nS\u1ED1 d\xF2ng: 74
+    \xB7 b\u1ECF v\xEC thi\u1EBFu icon: 0 \xB7 b\u1ECF v\xEC t\u1EAFt th\u1EE7 c\xF4ng:
+    3"
+  items:
+  - ItemID: rice
+    BuyPrice: 10
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 1
+    Weight: 100
+  - ItemID: bapcai
+    BuyPrice: 15
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 1
+    Weight: 95
+  - ItemID: ngo
+    BuyPrice: 20
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 2
+    Weight: 95
+  - ItemID: carot
+    BuyPrice: 26
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 3
+    Weight: 90
+  - ItemID: cachua
+    BuyPrice: 30
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 3
+    Weight: 90
+  - ItemID: khoaitay
+    BuyPrice: 45
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 5
+    Weight: 80
+  - ItemID: mushroom
+    BuyPrice: 51
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 6
+    Weight: 70
+  - ItemID: sugarcane
+    BuyPrice: 69
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 7
+    Weight: 65
+  - ItemID: lemon
+    BuyPrice: 78
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 8
+    Weight: 60
+  - ItemID: chili
+    BuyPrice: 102
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 9
+    Weight: 55
+  - ItemID: pepper
+    BuyPrice: 114
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 10
+    Weight: 50
+  - ItemID: seed_rice
+    BuyPrice: 16
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 1
+    Weight: 100
+  - ItemID: seed_huong_duong
+    BuyPrice: 20
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 1
+    Weight: 70
+  - ItemID: seed_bapcai
+    BuyPrice: 22
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 1
+    Weight: 95
+  - ItemID: seed_ngo
+    BuyPrice: 28
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 2
+    Weight: 95
+  - ItemID: ca_rot
+    BuyPrice: 38
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 3
+    Weight: 90
+  - ItemID: seed_cachua
+    BuyPrice: 44
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 3
+    Weight: 90
+  - ItemID: seed_hoa_hong
+    BuyPrice: 46
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 4
+    Weight: 65
+  - ItemID: seed_hoa_oai_huong
+    BuyPrice: 56
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 4
+    Weight: 60
+  - ItemID: khoai_tay
+    BuyPrice: 58
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 5
+    Weight: 80
+  - ItemID: seed_nam
+    BuyPrice: 63
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 6
+    Weight: 70
+  - ItemID: seed_hoa_lan
+    BuyPrice: 66
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 7
+    Weight: 55
+  - ItemID: seed_hoa_cuc_trang
+    BuyPrice: 72
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 7
+    Weight: 55
+  - ItemID: seed_sugarcane
+    BuyPrice: 80
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 7
+    Weight: 65
+  - ItemID: seed_lemon
+    BuyPrice: 87
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 8
+    Weight: 60
+  - ItemID: seed_tulip
+    BuyPrice: 88
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 9
+    Weight: 50
+  - ItemID: seed_hoa_cuc_van_tho
+    BuyPrice: 98
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 9
+    Weight: 50
+  - ItemID: seed_chili
+    BuyPrice: 105
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 9
+    Weight: 55
+  - ItemID: seed_pepper
+    BuyPrice: 111
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 10
+    Weight: 50
+  - ItemID: seed_hoa_mau_don
+    BuyPrice: 117
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 10
+    Weight: 45
+  - ItemID: seed_hoa_cam_tu_cau
+    BuyPrice: 126
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 10
+    Weight: 45
+  - ItemID: seed_hoa_anh_thao
+    BuyPrice: 135
+    MinQuantity: 1
+    MaxQuantity: 5
+    Category: 2
+    UnlockLevel: 10
+    Weight: 45
+  - ItemID: huong_duong
+    BuyPrice: 12
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 3
+    UnlockLevel: 1
+    Weight: 70
+  - ItemID: hoa_hong
+    BuyPrice: 34
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 3
+    UnlockLevel: 4
+    Weight: 65
+  - ItemID: hoa_oai_huong
+    BuyPrice: 40
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 3
+    UnlockLevel: 4
+    Weight: 60
+  - ItemID: hoa_lan
+    BuyPrice: 57
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 3
+    UnlockLevel: 7
+    Weight: 55
+  - ItemID: hoa_cuc_trang
+    BuyPrice: 63
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 3
+    UnlockLevel: 7
+    Weight: 55
+  - ItemID: tulip
+    BuyPrice: 86
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 3
+    UnlockLevel: 9
+    Weight: 50
+  - ItemID: hoa_cuc_van_tho
+    BuyPrice: 94
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 3
+    UnlockLevel: 9
+    Weight: 50
+  - ItemID: hoa_mau_don
+    BuyPrice: 122
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 3
+    UnlockLevel: 10
+    Weight: 45
+  - ItemID: hoa_cam_tu_cau
+    BuyPrice: 132
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 3
+    UnlockLevel: 10
+    Weight: 45
+  - ItemID: hoa_anh_thao
+    BuyPrice: 142
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 3
+    UnlockLevel: 10
+    Weight: 45
+  - ItemID: egg
+    BuyPrice: 30
+    MinQuantity: 2
+    MaxQuantity: 6
+    Category: 4
+    UnlockLevel: 2
+    Weight: 85
+  - ItemID: chicken_meat
+    BuyPrice: 44
+    MinQuantity: 2
+    MaxQuantity: 6
+    Category: 4
+    UnlockLevel: 2
+    Weight: 75
+  - ItemID: pork
+    BuyPrice: 135
+    MinQuantity: 2
+    MaxQuantity: 6
+    Category: 4
+    UnlockLevel: 4
+    Weight: 65
+  - ItemID: beef
+    BuyPrice: 248
+    MinQuantity: 2
+    MaxQuantity: 6
+    Category: 4
+    UnlockLevel: 8
+    Weight: 60
+  - ItemID: milk
+    BuyPrice: 172
+    MinQuantity: 2
+    MaxQuantity: 6
+    Category: 4
+    UnlockLevel: 13
+    Weight: 75
+  - ItemID: khoai_tay_chien
+    BuyPrice: 142
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 5
+    Weight: 60
+  - ItemID: com_chien_trung
+    BuyPrice: 165
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 5
+    Weight: 60
+  - ItemID: trung_chien_ca_chua
+    BuyPrice: 188
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 5
+    Weight: 55
+  - ItemID: bap_cai_xao_nam
+    BuyPrice: 240
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 6
+    Weight: 50
+  - ItemID: sup_ngo_nam
+    BuyPrice: 248
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 6
+    Weight: 50
+  - ItemID: canh_khoai_tay_thit_heo
+    BuyPrice: 285
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 6
+    Weight: 45
+  - ItemID: salad_nam_rau
+    BuyPrice: 262
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 7
+    Weight: 45
+  - ItemID: thit_heo_luoc_cuon_rau
+    BuyPrice: 278
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 7
+    Weight: 45
+  - ItemID: ga_nuong_lu
+    BuyPrice: 292
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 7
+    Weight: 40
+  - ItemID: nuoc_mia_chanh
+    BuyPrice: 180
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 8
+    Weight: 45
+  - ItemID: salad_bap_cai_chanh
+    BuyPrice: 195
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 8
+    Weight: 45
+  - ItemID: nam_xao_thit_bo
+    BuyPrice: 398
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 8
+    Weight: 40
+  - ItemID: trung_op_la_bo_ne
+    BuyPrice: 458
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 8
+    Weight: 45
+  - ItemID: bo_ham_ca_rot
+    BuyPrice: 525
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 8
+    Weight: 35
+  - ItemID: ga_xao_ot
+    BuyPrice: 360
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 9
+    Weight: 35
+  - ItemID: suon_heo_xao_chua_ngot
+    BuyPrice: 450
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 9
+    Weight: 30
+  - ItemID: pho_bo_tai
+    BuyPrice: 600
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 9
+    Weight: 30
+  - ItemID: bo_xao_tieu
+    BuyPrice: 472
+    MinQuantity: 1
+    MaxQuantity: 3
+    Category: 6
+    UnlockLevel: 10
+    Weight: 30
+  - ItemID: salt
+    BuyPrice: 18
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 7
+    UnlockLevel: 1
+    Weight: 90
+  - ItemID: herbs
+    BuyPrice: 27
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 7
+    UnlockLevel: 3
+    Weight: 85
+  - ItemID: soysauce
+    BuyPrice: 39
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 7
+    UnlockLevel: 4
+    Weight: 80
+  - ItemID: fishsauce
+    BuyPrice: 42
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 7
+    UnlockLevel: 4
+    Weight: 80
+  - ItemID: da
+    BuyPrice: 60
+    MinQuantity: 1
+    MaxQuantity: 4
+    Category: 8
+    UnlockLevel: 6
+    Weight: 55
+  - ItemID: go
+    BuyPrice: 68
+    MinQuantity: 1
+    MaxQuantity: 4
+    Category: 8
+    UnlockLevel: 6
+    Weight: 55
+  - ItemID: dinh
+    BuyPrice: 82
+    MinQuantity: 1
+    MaxQuantity: 4
+    Category: 8
+    UnlockLevel: 7
+    Weight: 50
+  - ItemID: son
+    BuyPrice: 90
+    MinQuantity: 1
+    MaxQuantity: 4
+    Category: 8
+    UnlockLevel: 8
+    Weight: 45
+  - ItemID: kinh
+    BuyPrice: 105
+    MinQuantity: 1
+    MaxQuantity: 4
+    Category: 8
+    UnlockLevel: 8
+    Weight: 45
+  - ItemID: pumpkin
+    BuyPrice: 126
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 11
+    Weight: 45
+  - ItemID: watermelon
+    BuyPrice: 142
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 1
+    UnlockLevel: 12
+    Weight: 45
+  - ItemID: seed_pumpkin
+    BuyPrice: 120
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 2
+    UnlockLevel: 11
+    Weight: 45
+  - ItemID: seed_watermelon
+    BuyPrice: 130
+    MinQuantity: 3
+    MaxQuantity: 12
+    Category: 2
+    UnlockLevel: 12
+    Weight: 45

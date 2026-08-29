@@ -1,0 +1,21 @@
+﻿Lo,Ten file PNG can ve,dishId (ma trong game),Ten hien thi trong game,Do kho,Cap mo,Nguyen lieu phai thay duoc,Gia vi (khong can ve ro),Gan vao file asset nao,Truong nao
+Lo 1,Cơm chiên bắp cải.png,com_chien_bap_cai,Cơm chiên bắp cải,Dễ,L1,"Lúa, Bắp Cải",Muối,Dish_com_chien_bap_cai.asset  +  Item_com_chien_bap_cai.asset,dishSprite  +  icon
+Lo 1,Súp ngô trứng.png,sup_ngo_vang,Súp ngô trứng,Dễ,L2,"Ngô, Trứng",Muối,Dish_sup_ngo_vang.asset  +  Item_sup_ngo_vang.asset,dishSprite  +  icon
+Lo 1,Salad bắp cải cà rốt.png,salad_bap_cai_ca_rot,Salad bắp cải cà rốt,Dễ,L3,"Bắp Cải, Cà Rốt",Muối,Dish_salad_bap_cai_ca_rot.asset  +  Item_salad_bap_cai_ca_rot.asset,dishSprite  +  icon
+Lo 1,Gà xào bắp cải.png,ga_xao_bap_cai,Gà xào bắp cải,Dễ,L4,"Thịt Gà, Bắp Cải",Muối,Dish_ga_xao_bap_cai.asset  +  Item_ga_xao_bap_cai.asset,dishSprite  +  icon
+Lo 1,Bánh ngô chiên giòn.png,banh_ngo_chien,Bánh ngô chiên giòn,Dễ,L5,"Ngô, Lúa, Trứng",Muối,Dish_banh_ngo_chien.asset  +  Item_banh_ngo_chien.asset,dishSprite  +  icon
+Lo 1,Canh cà chua cà rốt.png,sup_ca_chua_ca_rot,Canh cà chua cà rốt,Dễ,L6,"Cà Chua, Cà Rốt, Rau Thơm",Nước Mắm,Dish_sup_ca_chua_ca_rot.asset  +  Item_sup_ca_chua_ca_rot.asset,dishSprite  +  icon
+Lo 1,Khoai tây xào cà rốt.png,khoai_tay_xao_ca_rot,Khoai tây xào cà rốt,Dễ,L7,"Khoai Tây, Cà Rốt","Muối, Nước Tương",Dish_khoai_tay_xao_ca_rot.asset  +  Item_khoai_tay_xao_ca_rot.asset,dishSprite  +  icon
+Lo 1,Canh nấm cà chua.png,sup_nam_ca_chua,Canh nấm cà chua,Dễ,L8,"Nấm, Cà Chua, Rau Thơm",Muối,Dish_sup_nam_ca_chua.asset  +  Item_sup_nam_ca_chua.asset,dishSprite  +  icon
+Lo 2,Bánh ngô nướng mật mía.png,banh_ngo_nuong_mia,Bánh ngô nướng mật mía,Dễ,L9,"Ngô, Mía",Muối,Dish_banh_ngo_nuong_mia.asset  +  Item_banh_ngo_nuong_mia.asset,dishSprite  +  icon
+Lo 2,Bánh khoai tây nấm chiên.png,banh_khoai_tay_nam_chien,Bánh khoai tây nấm chiên,Dễ,L10,"Khoai Tây, Nấm","Tiêu, Muối",Dish_banh_khoai_tay_nam_chien.asset  +  Item_banh_khoai_tay_nam_chien.asset,dishSprite  +  icon
+Lo 2,Bánh bí đỏ hấp mía.png,banh_bi_do_hap,Bánh bí đỏ hấp mía,Dễ,L11,"Bí Đỏ, Lúa, Mía",Muối,Dish_banh_bi_do_hap.asset  +  Item_banh_bi_do_hap.asset,dishSprite  +  icon
+Lo 2,Nước ép dưa hấu chanh.png,nuoc_ep_dua_hau_chanh,Nước ép dưa hấu chanh,Dễ,L12,Dưa Hấu,Chanh,Dish_nuoc_ep_dua_hau_chanh.asset  +  Item_nuoc_ep_dua_hau_chanh.asset,dishSprite  +  icon
+Lo 2,Dưa hấu trộn muối ớt.png,salad_dua_hau_muoi_ot,Dưa hấu trộn muối ớt,Dễ,L13,"Dưa Hấu, Rau Thơm","Muối, Ớt",Dish_salad_dua_hau_muoi_ot.asset  +  Item_salad_dua_hau_muoi_ot.asset,dishSprite  +  icon
+Lo 2,Súp bí đỏ kem sữa.png,sup_bi_do_kem,Súp bí đỏ kem sữa,Dễ,L14,Bí Đỏ,"Sữa, Muối",Dish_sup_bi_do_kem.asset  +  Item_sup_bi_do_kem.asset,dishSprite  +  icon
+Lo 2,Dưa hấu dầm sữa đá.png,nuoc_dua_hau_dam_kem,Dưa hấu dầm sữa đá,Dễ,L15,"Dưa Hấu, Mía",Sữa,Dish_nuoc_dua_hau_dam_kem.asset  +  Item_nuoc_dua_hau_dam_kem.asset,dishSprite  +  icon
+Lo 3,Canh bí đỏ sườn non.png,sup_bi_do_suon_non,Canh bí đỏ sườn non,Vừa,L17,"Bí Đỏ, Thịt Heo","Muối, Tiêu",Dish_sup_bi_do_suon_non.asset  +  Item_sup_bi_do_suon_non.asset,dishSprite  +  icon
+Lo 3,Gà hầm nấm cà rốt.png,ga_ham_nam_ca_rot,Gà hầm nấm cà rốt,Vừa,L20,"Thịt Gà, Nấm, Cà Rốt","Nước Mắm, Tiêu",Dish_ga_ham_nam_ca_rot.asset  +  Item_ga_ham_nam_ca_rot.asset,dishSprite  +  icon
+Lo 3,Chè ngô sữa kem.png,nuoc_che_ngo_kem,Chè ngô sữa kem,Vừa,L22,"Ngô, Lúa, Mía",Sữa,Dish_nuoc_che_ngo_kem.asset  +  Item_nuoc_che_ngo_kem.asset,dishSprite  +  icon
+Lo 3,Bò hầm bí đỏ sốt kem.png,bo_ham_bi_do_kem,Bò hầm bí đỏ sốt kem,Khó,L26,"Thịt Bò, Bí Đỏ, Khoai Tây","Sữa, Tiêu",Dish_bo_ham_bi_do_kem.asset  +  Item_bo_ham_bi_do_kem.asset,dishSprite  +  icon
+Lo 3,Salad dưa hấu bò áp chảo.png,salad_dua_hau_bo_ap_chao,Salad dưa hấu bò áp chảo,Khó,L30,"Dưa Hấu, Thịt Bò, Rau Thơm","Chanh, Ớt",Dish_salad_dua_hau_bo_ap_chao.asset  +  Item_salad_dua_hau_bo_ap_chao.asset,dishSprite  +  icon

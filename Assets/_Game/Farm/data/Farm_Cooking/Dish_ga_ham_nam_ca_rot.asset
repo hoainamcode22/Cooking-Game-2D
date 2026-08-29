@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
+  m_Name: Dish_ga_ham_nam_ca_rot
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: ga_ham_nam_ca_rot
+  dishName: "G\xE0 h\u1EA7m n\u1EA5m c\xE0 r\u1ED1t"
+  dishSubTitle: "Th\u1ECBt G\xE0 \xB7 N\u1EA5m \xB7 C\xE0 R\u1ED1t"
+  dishSprite: {fileID: -2283333445584976228, guid: 888289491956e5347952a87ca3ec06d1, type: 3}
+  difficulty: 1
+  unlockLevel: 20
+  targetFlavor:
+    sweet: 1
+    spicy: 1
+    sour: 1
+    umami: 6
+    texture: 4
+  requiredIngredients:
+  - {fileID: 11400000, guid: b0631d5b8894e8b4c988c34191d84120, type: 2}
+  - {fileID: 11400000, guid: 5700753f9d0dfec44928569bf9e1d91e, type: 2}
+  - {fileID: 11400000, guid: e3b733d266196064bbe31fc48e40f7e1, type: 2}
+  - {fileID: 11400000, guid: 7df2822734955c543a8459823997157a, type: 2}
+  - {fileID: 11400000, guid: 068c729ad2bb67e4d9a7cea8aec07a6d, type: 2}
+  rewardExp: 90
+  rewardGold: 111
+  sellPrice: 444

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5a13562bf03b2748a19674d85954fef, type: 3}
+  m_Name: Dish_nuoc_dua_hau_dam_kem
+  m_EditorClassIdentifier: Assembly-CSharp::DishData
+  dishId: nuoc_dua_hau_dam_kem
+  dishName: "D\u01B0a h\u1EA5u d\u1EA7m s\u1EEFa \u0111\xE1"
+  dishSubTitle: "D\u01B0a H\u1EA5u \xB7 M\xEDa"
+  dishSprite: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
+  difficulty: 0
+  unlockLevel: 15
+  targetFlavor:
+    sweet: 10
+    spicy: 0
+    sour: 1
+    umami: 0
+    texture: 0
+  requiredIngredients:
+  - {fileID: 11400000, guid: 6fd3ae8eeaa2fd4f7c201299a10bd0e0, type: 2}
+  - {fileID: 11400000, guid: 3f7a1c9b4e2d58c4a91b6d0e7c53f8a2, type: 2}
+  - {fileID: 11400000, guid: 7ec4c04aa13cb9f44b904d3efc4a59ea, type: 2}
+  rewardExp: 45
+  rewardGold: 95
+  sellPrice: 379
