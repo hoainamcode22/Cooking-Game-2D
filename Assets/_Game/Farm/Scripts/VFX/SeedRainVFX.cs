@@ -4,10 +4,10 @@ using UnityEngine;
 public class SeedRainVFX : MonoBehaviour
 {
     [Header("Template")]
-    [Tooltip("Child IconTemplate (SpriteRenderer). Náº¿u null sáº½ tá»± tÃ¬m.")]
+    [Tooltip("Child IconTemplate (SpriteRenderer). Nếu null sẽ tự tìm.")]
     [SerializeField] private SpriteRenderer iconTemplate;
 
-    [Header("RÆ¡i")]
+    [Header("Rơi")]
     [SerializeField] private float spawnHeightMin  = 80f;
     [SerializeField] private float spawnHeightMax  = 160f;
     [SerializeField] private float spreadXMin      = -120f;
@@ -36,7 +36,7 @@ public class SeedRainVFX : MonoBehaviour
 
         if (iconTemplate == null)
         {
-            Debug.LogWarning("[VFX_DEBUG] SeedRainVFX: iconTemplate NULL â€” gÃ¡n SpriteRenderer child vÃ o slot IconTemplate trong prefab.");
+            Debug.LogWarning("[VFX_DEBUG] SeedRainVFX: iconTemplate NULL — gán SpriteRenderer child vào slot IconTemplate trong prefab.");
             Destroy(gameObject, 1f);
             return;
         }

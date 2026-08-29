@@ -42,15 +42,15 @@ public class TrainWagonSlotData
 public class TrainWagonSlot : MonoBehaviour
 {
     [Header("Visual References")]
-    [Tooltip("SpriteRenderer world-space hiá»‡n icon váº­t pháº©m")]
+    [Tooltip("SpriteRenderer world-space hiện icon vật phẩm")]
     [SerializeField] private SpriteRenderer iconSprite;
     [SerializeField] private TMP_Text       txtLabel;
 
-    [Header("Optional â€” hiá»‡n khi toa trá»‘ng")]
+    [Header("Optional — hiện khi toa trống")]
     [SerializeField] private GameObject emptyRoot;
 
     [Header("Config")]
-    [Tooltip("0 = Wagon_01 / WorldSlot_01, 1 = Wagon_02, â€¦")]
+    [Tooltip("0 = Wagon_01 / WorldSlot_01, 1 = Wagon_02, …")]
     [SerializeField] public int slotIndex = 0;
 
     [Header("Icon Fit — icon hàng nằm gọn trên toa (yêu cầu Sếp 2026-08-26)")]

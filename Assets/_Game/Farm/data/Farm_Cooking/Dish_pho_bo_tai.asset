@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: pho_bo_tai
   dishName: "Ph\u1EDF b\xF2 t\xE1i"
   dishSubTitle: "L\xFAa \xB7 Th\u1ECBt b\xF2 \xB7 Chanh \xB7 \u1EDAt"
-  dishSprite: {fileID: -5602094641536301895, guid: f29f7ee17ae5e7f448949506935154aa, type: 3}
+  dishSprite: {fileID: 21300000, guid: f29f7ee17ae5e7f448949506935154aa, type: 3}
   difficulty: 2
   unlockLevel: 9
   targetFlavor:

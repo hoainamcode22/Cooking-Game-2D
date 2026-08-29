@@ -129,7 +129,7 @@ public class FarmUIManager : MonoBehaviour
     public void RefreshTopBar()
     {
         if (txtDay != null)
-            txtDay.text = "NgÃ y 1";
+            txtDay.text = "Ngày 1";
 
         if (txtGold != null)
         {
@@ -265,7 +265,7 @@ public class FarmUIManager : MonoBehaviour
                 if (popupObjectsToForceClose[i].GetComponentInChildren<PermanentBuilding>(true) != null
                  || popupObjectsToForceClose[i].GetComponentInParent<PermanentBuilding>()    != null)
                 {
-                    Debug.LogWarning($"[FarmUI] Bá» qua HideAllPopups cho '{popupObjectsToForceClose[i].name}' â€” Ä‘Ã¢y lÃ  PermanentBuilding.");
+                    Debug.LogWarning($"[FarmUI] Bỏ qua HideAllPopups cho '{popupObjectsToForceClose[i].name}' — đây là PermanentBuilding.");
                     continue;
                 }
 
@@ -330,7 +330,7 @@ public class FarmUIManager : MonoBehaviour
         {
             if (!p.gameObject.activeSelf)
             {
-                Debug.LogWarning($"[FarmUI] Parent bá»‹ táº¯t, báº­t láº¡i: {p.name}");
+                Debug.LogWarning($"[FarmUI] Parent bị tắt, bật lại: {p.name}");
                 p.gameObject.SetActive(true);
             }
             p = p.parent;
@@ -348,9 +348,9 @@ public class FarmUIManager : MonoBehaviour
         TutorialManager.Instance?.NotifySeedPanelOpened();
 
         if (plot != null)
-            ShowHint($"KÃ©o háº¡t giá»‘ng Ä‘á»ƒ trá»“ng vÃ o Ã´ {plot.PlotId}");
+            ShowHint($"Kéo hạt giống để trồng vào ô {plot.PlotId}");
         else
-            ShowHint("KÃ©o háº¡t giá»‘ng Ä‘á»ƒ trá»“ng.");
+            ShowHint("Kéo hạt giống để trồng.");
     }
 
     public void ShowPlantSelectForFlower(PlotController plot)
@@ -361,7 +361,7 @@ public class FarmUIManager : MonoBehaviour
 
         if (popupSeedFlower == null)
         {
-            Debug.LogError("[FarmUI] popupSeedFlower is NULL â€” kÃ©o popup hoa vÃ o Inspector.");
+            Debug.LogError("[FarmUI] popupSeedFlower is NULL — kéo popup hoa vào Inspector.");
             return;
         }
 
@@ -380,9 +380,9 @@ public class FarmUIManager : MonoBehaviour
         TutorialManager.Instance?.NotifySeedPanelOpened();
 
         if (plot != null)
-            ShowHint($"KÃ©o háº¡t giá»‘ng hoa Ä‘á»ƒ trá»“ng vÃ o Ã´ {plot.PlotId}");
+            ShowHint($"Kéo hạt giống hoa để trồng vào ô {plot.PlotId}");
         else
-            ShowHint("KÃ©o háº¡t giá»‘ng hoa Ä‘á»ƒ trá»“ng.");
+            ShowHint("Kéo hạt giống hoa để trồng.");
     }
 
     /// <summary>Close seed popup (cáº£ 2 loáº¡i) vÃ  clear input locks.</summary>
@@ -434,25 +434,25 @@ public class FarmUIManager : MonoBehaviour
     public void OnClick_OpenInventory()
     {
         if (isCookingMode) return;
-        ShowHint("Má»Ÿ tÃºi Ä‘á»“.");
+        ShowHint("Mở túi đồ.");
     }
 
     public void OnClick_OpenWarehouse()
     {
         if (isCookingMode) return;
-        ShowHint("Má»Ÿ kho.");
+        ShowHint("Mở kho.");
     }
 
     public void OnClick_OpenMarket()
     {
         if (isCookingMode) return;
-        ShowHint("Má»Ÿ chá»£.");
+        ShowHint("Mở chợ.");
     }
 
     public void OnClick_OpenRanking()
     {
         if (isCookingMode) return;
-        ShowHint("Má»Ÿ báº£ng xáº¿p háº¡ng.");
+        ShowHint("Mở bảng xếp hạng.");
     }
 
     public void EnterCookingMode()

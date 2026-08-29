@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: nuoc_che_ngo_kem
   dishName: "Ch\xE8 ng\xF4 s\u1EEFa kem"
   dishSubTitle: "Ng\xF4 \xB7 L\xFAa \xB7 M\xEDa"
-  dishSprite: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+  dishSprite: {fileID: 21300000, guid: 963fe2c67ae411616da54dbaf6b17fc1, type: 3}
   difficulty: 1
   unlockLevel: 22
   targetFlavor:

@@ -85,7 +85,7 @@ namespace KitchenUIv2
         private Image _imgChefExpFill, _imgOrderIcon;
 
         private GameObject _boardDetail, _boardList;
-        private TMP_Text _txtDishName, _txtDishMeta, _txtNeedTitle, _txtRewards, _txtProjection;
+        private TMP_Text _txtDishName, _txtDishMeta, _txtNeedTitle, _txtTasteTitle, _txtRewards, _txtProjection;
         private Image _imgDishIcon;
         private Transform _needChipsRoot;
         private readonly FlavorRow[] _flavorRows = new FlavorRow[5];
@@ -117,10 +117,17 @@ namespace KitchenUIv2
 
         private struct FlavorRow
         {
+            public RectTransform rowRoot;
             public TMP_Text label;
             public Image fill;
             public RectTransform marker;
             public TMP_Text value;
+
+            public void SetY(float y)
+            {
+                if (rowRoot != null)
+                    rowRoot.anchoredPosition = new Vector2(10f, y);
+            }
         }
 
         // ── Vòng đời ────────────────────────────────────────────────
@@ -335,14 +342,35 @@ namespace KitchenUIv2
             SetText(_txtDishMeta, dish != null ? $"{DiffName(dish.difficulty)} · Cấp {dish.unlockLevel}" : "");
             SetText(_txtRewards, dish != null ? $"+{dish.rewardGold} vàng   +{dish.rewardExp} EXP   Bán {dish.sellPrice}" : "");
 
-            // Chip nguyên liệu cần
+            // Chip nguyên liệu cần (Xếp vào Grid: tối đa 4 thẻ/hàng, từ 5 thẻ tự động xuống hàng 2)
             if (_needChipsRoot != null && dish != null)
             {
                 for (int i = _needChipsRoot.childCount - 1; i >= 0; i--)
                     Destroy(_needChipsRoot.GetChild(i).gameObject);
+
                 if (dish.requiredIngredients != null)
+                {
+                    int count = dish.requiredIngredients.Count;
+                    bool twoRows = count >= 5;
+
+                    var rtChips = (RectTransform)_needChipsRoot;
+                    rtChips.sizeDelta = new Vector2(285f, twoRows ? 136f : 66f);
+
+                    if (_txtTasteTitle != null)
+                        _txtTasteTitle.rectTransform.anchoredPosition = new Vector2(12f, twoRows ? -276f : -206f);
+
+                    for (int i = 0; i < 5; i++)
+                    {
+                        float y = twoRows ? (-300f - i * 27f) : (-230f - i * 34f);
+                        _flavorRows[i].SetY(y);
+                    }
+
                     foreach (var ing in dish.requiredIngredients)
-                        if (ing != null) MakeNeedChip(_needChipsRoot, ing);
+                    {
+                        if (ing != null)
+                            MakeNeedChip(_needChipsRoot, ing, 66f, 64f, 38f, 11);
+                    }
+                }
             }
 
             // Bảng đen món hôm nay
@@ -976,16 +1004,19 @@ namespace KitchenUIv2
             _txtNeedTitle = MakeText(dt, "Txt_NeedTitle", "CẦN NHỮNG THỨ NÀY", 13, new Color(0.55f, 0.38f, 0.22f));
             Anchor(_txtNeedTitle.rectTransform, 0f, 1f, new Vector2(12f, -112f), new Vector2(280f, 18f), new Vector2(0f, 1f));
 
-            var chips = new GameObject("Need_Chips", typeof(RectTransform), typeof(HorizontalLayoutGroup));
+            var chips = new GameObject("Need_Chips", typeof(RectTransform), typeof(GridLayoutGroup));
             chips.transform.SetParent(dt, false);
-            var hl = chips.GetComponent<HorizontalLayoutGroup>();
-            hl.spacing = 8f; hl.childAlignment = TextAnchor.MiddleLeft;
-            hl.childControlWidth = false; hl.childControlHeight = false;
-            Anchor((RectTransform)chips.transform, 0f, 1f, new Vector2(12f, -134f), new Vector2(290f, 64f), new Vector2(0f, 1f));
+            var gl = chips.GetComponent<GridLayoutGroup>();
+            gl.cellSize = new Vector2(66f, 64f);
+            gl.spacing = new Vector2(6f, 6f);
+            gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            gl.constraintCount = 4;
+            gl.childAlignment = TextAnchor.UpperLeft;
+            Anchor((RectTransform)chips.transform, 0f, 1f, new Vector2(12f, -134f), new Vector2(285f, 66f), new Vector2(0f, 1f));
             _needChipsRoot = chips.transform;
 
-            var tasteTitle = MakeText(dt, "Txt_TasteTitle", "VỊ KHÁCH MUỐN", 13, new Color(0.55f, 0.38f, 0.22f));
-            Anchor(tasteTitle.rectTransform, 0f, 1f, new Vector2(12f, -206f), new Vector2(280f, 18f), new Vector2(0f, 1f));
+            _txtTasteTitle = MakeText(dt, "Txt_TasteTitle", "VỊ KHÁCH MUỐN", 13, new Color(0.55f, 0.38f, 0.22f));
+            Anchor(_txtTasteTitle.rectTransform, 0f, 1f, new Vector2(12f, -206f), new Vector2(280f, 18f), new Vector2(0f, 1f));
 
             for (int i = 0; i < 5; i++)
                 BuildFlavorRow(dt, i, -230f - i * 34f);
@@ -1040,22 +1071,28 @@ namespace KitchenUIv2
 
         private void BuildFlavorRow(RectTransform parent, int index, float y)
         {
-            var row = new FlavorRow();
+            var rowGo = new GameObject($"Flavor_Row_{index}", typeof(RectTransform));
+            rowGo.transform.SetParent(parent, false);
+            var rowRt = (RectTransform)rowGo.transform;
+            Anchor(rowRt, 0f, 1f, new Vector2(10f, y), new Vector2(285f, 22f), new Vector2(0f, 1f));
 
-            // Chấm màu tròn nhỏ trước tên vị (theo mockup: Ngọt hồng, Cay đỏ, Chua xanh, Đậm dương, Kết cấu nâu)
-            var dot = new GameObject($"Flavor_Dot_{index}", typeof(RectTransform), typeof(Image));
-            dot.transform.SetParent(parent, false);
+            var row = new FlavorRow();
+            row.rowRoot = rowRt;
+
+            // Chấm màu tròn nhỏ trước tên vị
+            var dot = new GameObject("Dot", typeof(RectTransform), typeof(Image));
+            dot.transform.SetParent(rowRt, false);
             var dimg = dot.GetComponent<Image>();
             dimg.sprite = GetDotSprite();
             dimg.color = FlavorDotColors[index % FlavorDotColors.Length];
             dimg.raycastTarget = false;
-            Anchor((RectTransform)dot.transform, 0f, 1f, new Vector2(14f, y - 5f), new Vector2(12f, 12f), new Vector2(0f, 1f));
+            Anchor((RectTransform)dot.transform, 0f, 0.5f, new Vector2(4f, 0f), new Vector2(12f, 12f), new Vector2(0f, 0.5f));
 
-            row.label = MakeText(parent, $"Flavor_Label_{index}", "", 14, new Color(0.36f, 0.20f, 0.09f));
-            Anchor(row.label.rectTransform, 0f, 1f, new Vector2(30f, y), new Vector2(58f, 22f), new Vector2(0f, 1f));
+            row.label = MakeText(rowRt, "Label", "", 14, new Color(0.36f, 0.20f, 0.09f));
+            Anchor(row.label.rectTransform, 0f, 0.5f, new Vector2(20f, 0f), new Vector2(58f, 22f), new Vector2(0f, 0.5f));
 
-            var track = MakePanel(parent, $"Flavor_Track_{index}", new Color(0.85f, 0.76f, 0.60f));
-            Anchor(track, 0f, 1f, new Vector2(80f, y - 3f), new Vector2(160f, 14f), new Vector2(0f, 1f));
+            var track = MakePanel(rowRt, "Track", new Color(0.85f, 0.76f, 0.60f));
+            Anchor(track, 0f, 0.5f, new Vector2(70f, 0f), new Vector2(160f, 14f), new Vector2(0f, 0.5f));
             Skin9(track, skin.tasteTrack);
             row.fill = MakeFill((RectTransform)track.transform, new Color(0.55f, 0.75f, 0.35f));
             if (skin.tasteFill != null) row.fill.sprite = skin.tasteFill;
@@ -1068,8 +1105,8 @@ namespace KitchenUIv2
             mrt.sizeDelta = new Vector2(3f, 20f);
             row.marker = mrt;
 
-            row.value = MakeText(parent, $"Flavor_Value_{index}", "0/0", 13, new Color(0.55f, 0.38f, 0.22f));
-            Anchor(row.value.rectTransform, 0f, 1f, new Vector2(248f, y), new Vector2(52f, 22f), new Vector2(0f, 1f));
+            row.value = MakeText(rowRt, "Value", "0/0", 13, new Color(0.55f, 0.38f, 0.22f));
+            Anchor(row.value.rectTransform, 0f, 0.5f, new Vector2(238f, 0f), new Vector2(50f, 22f), new Vector2(0f, 0.5f));
 
             _flavorRows[index] = row;
         }
@@ -1649,11 +1686,11 @@ namespace KitchenUIv2
             if (_imgOvenFire != null) { _imgOvenFire.enabled = false; _imgOvenFire = null; }
         }
 
-        private void MakeNeedChip(Transform parent, IngredientData ing)
+        private void MakeNeedChip(Transform parent, IngredientData ing, float width = 66f, float height = 64f, float iconSize = 38f, int fontSize = 11)
         {
             var chip = new GameObject("Chip_" + ing.id, typeof(RectTransform), typeof(Image));
             chip.transform.SetParent(parent, false);
-            ((RectTransform)chip.transform).sizeDelta = new Vector2(72f, 68f);
+            ((RectTransform)chip.transform).sizeDelta = new Vector2(width, height);
             chip.GetComponent<Image>().color = new Color(1f, 0.99f, 0.94f);
             Skin9(chip, skin.cardIngredient);
 
@@ -1662,11 +1699,11 @@ namespace KitchenUIv2
             var im = ico.GetComponent<Image>();
             im.sprite = ing.icon; im.enabled = ing.icon != null;
             im.preserveAspect = true; im.raycastTarget = false;
-            Anchor((RectTransform)ico.transform, 0.5f, 1f, new Vector2(0f, -4f), new Vector2(38f, 38f), new Vector2(0.5f, 1f));
+            Anchor((RectTransform)ico.transform, 0.5f, 1f, new Vector2(0f, -3f), new Vector2(iconSize, iconSize), new Vector2(0.5f, 1f));
 
-            var t = MakeText(chip.transform, "Txt", ing.displayName, 11, new Color(0.36f, 0.20f, 0.09f));
-            t.enableAutoSizing = true; t.fontSizeMin = 8f; t.fontSizeMax = 11f;
-            Anchor(t.rectTransform, 0.5f, 0f, new Vector2(0f, 2f), new Vector2(68f, 16f), new Vector2(0.5f, 0f));
+            var t = MakeText(chip.transform, "Txt", ing.displayName, fontSize, new Color(0.36f, 0.20f, 0.09f));
+            t.enableAutoSizing = true; t.fontSizeMin = 7f; t.fontSizeMax = fontSize;
+            Anchor(t.rectTransform, 0.5f, 0f, new Vector2(0f, 2f), new Vector2(width - 4f, 16f), new Vector2(0.5f, 0f));
             t.alignment = TextAlignmentOptions.Center;
         }
 
@@ -1962,117 +1999,5 @@ namespace KitchenUIv2
         }
     }
 
-    /// <summary>Chữ zZz bay lên lơ lửng + mèo ngủ thở phập phồng và quẫy đuôi nhấp nhô nhẹ.</summary>
-    public class KitchenZzzFloat : MonoBehaviour
-    {
-        public TMP_Text txt;
-        public float cycle = 2.4f;
-        private float _t;
-        private RectTransform _catRt;
 
-        private void Awake()
-        {
-            _catRt = (RectTransform)transform;
-        }
-
-        private void Update()
-        {
-            _t += Time.unscaledDeltaTime;
-
-            // Thân mèo thở phập phồng + quẫy đuôi nhấp nhô theo nhịp ngủ
-            if (_catRt != null)
-            {
-                float breath = Mathf.Sin(_t * (6.283f / cycle));
-                float scaleY = 1f + 0.045f * breath;
-                float rotZ = 1.2f * Mathf.Sin(_t * 3.5f);
-                _catRt.localScale = new Vector3(1f, scaleY, 1f);
-                _catRt.localEulerAngles = new Vector3(0f, 0f, rotZ);
-            }
-
-            if (txt == null) return;
-            float p = (_t % cycle) / cycle;
-            var rt = txt.rectTransform;
-            rt.anchoredPosition = new Vector2(12f + 7f * Mathf.Sin(p * 6.283f), 6f + 36f * p);
-            var c = txt.color;
-            c.a = p < 0.15f ? p / 0.15f : 1f - (p - 0.15f) / 0.85f;
-            txt.color = c;
-            float sc = 0.7f + 0.45f * p;
-            rt.localScale = new Vector3(sc, sc, 1f);
-        }
-    }
-
-    /// <summary>Mèo đầu bếp đi qua đi lại trên sàn bếp: đi → dừng nghỉ → quay đầu đi tiếp. Frame do agent-sprite-forge vẽ.</summary>
-    public class KitchenCatWalker : MonoBehaviour
-    {
-        public Sprite[] frames;
-        public float speed = 85f;
-        public float minX = -280f, maxX = 260f;
-        public float frameTime = 0.14f;
-        public Vector2 pauseRange = new Vector2(1.2f, 3.2f);
-
-        private Image _img;
-        private RectTransform _rt;
-        private float _dir = 1f;
-        private float _pauseT;
-        private float _frameT;
-        private int _frame;
-
-        private void Awake()
-        {
-            _img = GetComponent<Image>();
-            _rt = (RectTransform)transform;
-        }
-
-        private void Start()
-        {
-            if (_rt != null)
-            {
-                var pos = _rt.anchoredPosition;
-                if (pos.x < minX) pos.x = minX;
-                if (pos.x > maxX) pos.x = maxX;
-                _rt.anchoredPosition = pos;
-            }
-        }
-
-        private void Update()
-        {
-            if (_img == null || _rt == null || frames == null || frames.Length == 0) return;
-
-            if (_pauseT > 0f)
-            {
-                _pauseT -= Time.unscaledDeltaTime;
-                if (frames[0] != null) _img.sprite = frames[0]; // đứng yên = frame đầu
-                return;
-            }
-
-            var pos = _rt.anchoredPosition;
-            pos.x += _dir * speed * Time.unscaledDeltaTime;
-            if (pos.x >= maxX)
-            {
-                pos.x = maxX;
-                _dir = -1f;
-                _pauseT = Random.Range(pauseRange.x, pauseRange.y);
-            }
-            else if (pos.x <= minX)
-            {
-                pos.x = minX;
-                _dir = 1f;
-                _pauseT = Random.Range(pauseRange.x, pauseRange.y);
-            }
-            _rt.anchoredPosition = pos;
-
-            // Lật mặt theo hướng đi (frame gốc vẽ hướng PHẢI)
-            var sc = _rt.localScale;
-            sc.x = Mathf.Abs(sc.x) * (_dir >= 0f ? 1f : -1f);
-            _rt.localScale = sc;
-
-            _frameT += Time.unscaledDeltaTime;
-            if (_frameT >= frameTime)
-            {
-                _frameT = 0f;
-                _frame = (_frame + 1) % frames.Length;
-                if (frames[_frame] != null) _img.sprite = frames[_frame];
-            }
-        }
-    }
 }

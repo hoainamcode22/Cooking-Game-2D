@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: com_chien_trung
   dishName: "C\u01A1m chi\xEAn tr\u1EE9ng"
   dishSubTitle: "L\xFAa \xB7 Tr\u1EE9ng g\xE0"
-  dishSprite: {fileID: -4455380416464841545, guid: 627c44244ff1a36449a7de95b38c0aef, type: 3}
+  dishSprite: {fileID: 21300000, guid: 627c44244ff1a36449a7de95b38c0aef, type: 3}
   difficulty: 0
   unlockLevel: 5
   targetFlavor:

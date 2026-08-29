@@ -7,20 +7,18 @@ using UnityEngine.UI;
 /// <summary>
 /// Hiệu ứng "coin bay về ví" kiểu casual: khi nhận vàng (FarmEconomyManager.OnGoldAddedFx),
 /// spawn vài đồng xu UI tại vị trí con trỏ (hoặc giữa màn hình), bung nhẹ ra rồi bay về
-/// icon vàng trên HUD, thu nhỏ dần và tự huỷ. Không cần prefab — UI Image thuần runtime.
-/// Null-safety: thiếu canvas → bỏ qua (log 1 lần); thiếu targetGoldIcon → bay về góc
-/// phải-trên màn hình; thiếu coinSprite → tự vẽ đồng xu vàng tròn 16x16.
+/// icon vàng/Gold_Container trên HUD, thu nhỏ dần, nảy mẩy mẩy và tự huỷ.
 /// </summary>
 public class CoinFlyFX : MonoBehaviour
 {
     [Header("Wiring")]
     [SerializeField] private Canvas canvas;                // HUD canvas (chứa icon vàng)
-    [SerializeField] private RectTransform targetGoldIcon; // đích bay — icon vàng trên HUD
+    [SerializeField] private RectTransform targetGoldIcon; // đích bay — icon vàng/Gold_Container trên HUD
     [SerializeField] private Sprite coinSprite;            // sprite đồng xu (mặc định: lấy từ icon vàng)
 
     [Header("Tuning")]
     [SerializeField] private int maxCoins = 6;
-    [SerializeField] private float flyDuration = 0.7f;
+    [SerializeField] private float flyDuration = 0.65f;
     [SerializeField] private AnimationCurve ease = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
     private const float CoinSize     = 36f;   // px trên canvas
@@ -33,6 +31,7 @@ public class CoinFlyFX : MonoBehaviour
     private readonly List<GameObject> liveCoins = new List<GameObject>(8);
     private WaitForSeconds staggerWait;
     private bool warnedMissingCanvas;
+    private bool triedAutoFind;
 
     private void OnEnable() => FarmEconomyManager.OnGoldAddedFx += HandleGoldAdded;
 
@@ -40,13 +39,32 @@ public class CoinFlyFX : MonoBehaviour
     {
         FarmEconomyManager.OnGoldAddedFx -= HandleGoldAdded;
 
-        // Coroutine chết khi disable → dọn xu đang bay dở để không kẹt trên HUD
         for (int i = 0; i < liveCoins.Count; i++)
         {
             if (liveCoins[i] != null)
                 Destroy(liveCoins[i]);
         }
         liveCoins.Clear();
+    }
+
+    private void AutoFindTargetIfNeeded()
+    {
+        if (targetGoldIcon != null || triedAutoFind) return;
+        triedAutoFind = true;
+
+        var goldContainer = GameObject.Find("Gold_Container");
+        if (goldContainer != null)
+        {
+            targetGoldIcon = goldContainer.GetComponent<RectTransform>();
+            return;
+        }
+
+        var iconGold = GameObject.Find("Icon_Gold");
+        if (iconGold != null)
+        {
+            targetGoldIcon = iconGold.GetComponent<RectTransform>();
+            return;
+        }
     }
 
     private void HandleGoldAdded(int amount)
@@ -56,6 +74,8 @@ public class CoinFlyFX : MonoBehaviour
 
         if (canvas == null)
             canvas = GetComponentInParent<Canvas>();
+        if (canvas == null)
+            canvas = FindFirstObjectByType<Canvas>();
 
         if (canvas == null)
         {
@@ -67,7 +87,9 @@ public class CoinFlyFX : MonoBehaviour
             return;
         }
 
-        // Điểm xuất phát: vị trí con trỏ (Input System); fallback giữa màn hình, 1/3 dưới.
+        AutoFindTargetIfNeeded();
+
+        // Điểm xuất phát: vị trí con trỏ (Input System); fallback giữa màn hình
         Vector2 startScreen;
         var pointer = Pointer.current;
         if (pointer != null)
@@ -75,11 +97,10 @@ public class CoinFlyFX : MonoBehaviour
         else
             startScreen = new Vector2(Screen.width * 0.5f, Screen.height / 3f);
 
-        // Điểm đích: icon vàng HUD; fallback góc phải-trên màn hình (hoạt động cả khi chưa gắn).
         Camera uiCam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
         Vector2 endScreen = targetGoldIcon != null
             ? RectTransformUtility.WorldToScreenPoint(uiCam, targetGoldIcon.position)
-            : new Vector2(Screen.width * 0.85f, Screen.height * 0.92f);
+            : new Vector2(Screen.width * 0.72f, Screen.height * 0.94f);
 
         var canvasRect = canvas.transform as RectTransform;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, startScreen, uiCam, out Vector2 startLocal);
@@ -126,7 +147,7 @@ public class CoinFlyFX : MonoBehaviour
     private IEnumerator FlyCoin(RectTransform coin, Vector2 from, Vector2 burstPos, Vector2 to)
     {
         coin.anchoredPosition = from;
-        float spin = Random.Range(-200f, 200f); // xoay nhẹ cho sinh động
+        float spin = Random.Range(-200f, 200f);
 
         // Pha 1: bung nhẹ ra khỏi điểm xuất phát
         float t = 0f;
@@ -134,13 +155,13 @@ public class CoinFlyFX : MonoBehaviour
         {
             t += Time.deltaTime;
             float k = Mathf.Clamp01(t / BurstTime);
-            k = k * (2f - k); // ease-out
+            k = k * (2f - k);
             coin.anchoredPosition = Vector2.Lerp(from, burstPos, k);
             coin.Rotate(0f, 0f, spin * Time.deltaTime);
             yield return null;
         }
 
-        // Pha 2: bay về ví, thu nhỏ dần
+        // Pha 2: bay về Gold_Container, thu nhỏ dần
         float dur = Mathf.Max(0.05f, flyDuration);
         t = 0f;
         while (t < dur)
@@ -155,11 +176,16 @@ public class CoinFlyFX : MonoBehaviour
             yield return null;
         }
 
+        // Chạm đích: hiệu ứng mẩy mẩy trên Gold_Container
+        if (targetGoldIcon != null)
+        {
+            JuicyPulseFX.Play(targetGoldIcon, 1.20f, 0.22f);
+        }
+
         liveCoins.Remove(coin.gameObject);
         Destroy(coin.gameObject);
     }
 
-    // Đồng xu dự phòng: texture 16x16 vàng, viền sậm, alpha tròn — tạo 1 lần rồi cache.
     private static Sprite GetFallbackSprite()
     {
         if (fallbackSprite != null)

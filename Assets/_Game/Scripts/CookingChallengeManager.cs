@@ -203,13 +203,13 @@ public class CookingChallengeManager : MonoBehaviour
     {
         if (cookedDishOnPlate == null)
         {
-            Debug.LogWarning("[Cooking] KhÃ´ng cÃ³ mÃ³n Äƒn trÃªn dÄ©a Ä‘á»ƒ Ä‘Æ°a vÃ o kho.");
+            Debug.LogWarning("[Cooking] Không có món ăn trên dĩa để đưa vào kho.");
             return;
         }
 
         if (string.IsNullOrEmpty(cookedDishOnPlate.dishId))
         {
-            Debug.LogError("[Cooking] dishId cá»§a mÃ³n Äƒn Ä‘ang bá»‹ trá»‘ng.");
+            Debug.LogError("[Cooking] dishId của món ăn đang bị trống.");
             return;
         }
         if (deliveryCharacterMover != null)
@@ -263,7 +263,7 @@ public class CookingChallengeManager : MonoBehaviour
     {
         if (dish == null)
         {
-            Debug.LogWarning("[CookingChallengeManager] Dish truyá»n vÃ o bá»‹ null.");
+            Debug.LogWarning("[CookingChallengeManager] Dish truyền vào bị null.");
             return;
         }
  
@@ -333,7 +333,7 @@ public class CookingChallengeManager : MonoBehaviour
 
         if (currentDishData == null)
         {
-            Debug.LogWarning("ChÆ°a chá»n mÃ³n Äƒn.");
+            Debug.LogWarning("Chưa chọn món ăn.");
             return false;
         }
 

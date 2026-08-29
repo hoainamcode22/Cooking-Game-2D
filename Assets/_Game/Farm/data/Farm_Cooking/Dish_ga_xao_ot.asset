@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: ga_xao_ot
   dishName: "G\xE0 x\xE0o \u1EDBt"
   dishSubTitle: "Th\u1ECBt g\xE0 \xB7 \u1EDAt"
-  dishSprite: {fileID: 9033049820550534569, guid: 62b195d16a872fa44be2c338cf58561b, type: 3}
+  dishSprite: {fileID: 21300000, guid: 62b195d16a872fa44be2c338cf58561b, type: 3}
   difficulty: 1
   unlockLevel: 9
   targetFlavor:

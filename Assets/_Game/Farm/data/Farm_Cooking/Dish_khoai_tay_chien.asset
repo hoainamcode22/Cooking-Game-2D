@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: khoai_tay_chien
   dishName: "Khoai t\xE2y chi\xEAn"
   dishSubTitle: "Khoai t\xE2y"
-  dishSprite: {fileID: 559135169309301806, guid: 506edd55eb19ec34b9dcdd1aa28fb2e5, type: 3}
+  dishSprite: {fileID: 21300000, guid: 506edd55eb19ec34b9dcdd1aa28fb2e5, type: 3}
   difficulty: 0
   unlockLevel: 5
   targetFlavor:

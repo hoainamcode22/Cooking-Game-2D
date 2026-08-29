@@ -16,7 +16,7 @@ using UnityEngine.TextCore.LowLevel;
 public static class FontSyncTool
 {
     private const string FontTtfPath   = "Assets/_Game/Fonts/Baloo2.ttf";
-    private const string FontAssetPath = "Assets/_Game/Fonts/Baloo2 SDF.asset";
+    private const string FontAssetPath = "Assets/_Game/Resources/Fonts/Baloo2 SDF.asset"; // 29-08: đã dọn về Resources khi đồng nhất font
 
     // ── Chỉnh 2 số này nếu Sếp muốn to/đậm hơn nữa ──
     private const float SizeMultiplier = 1.12f; // chữ to hơn 12%

@@ -505,8 +505,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: "CHU\u1ED2NG NU\xD4I"
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
-  m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: f1e64e564161a2d41bb9d1030d3f46c8, type: 2}
+  m_sharedMaterial: {fileID: 4623602370775223751, guid: f1e64e564161a2d41bb9d1030d3f46c8, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

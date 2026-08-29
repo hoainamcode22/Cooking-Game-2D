@@ -4,30 +4,30 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "MissionDatabase", menuName = "Game/Mission Database")]
 public class MissionDatabase : ScriptableObject
 {
-    [Header("Danh sÃ¡ch nhiá»‡m vá»¥ (kÃ©o vÃ o hoáº·c dÃ¹ng dá»¯ liá»‡u máº«u bÃªn dÆ°á»›i)")]
+    [Header("Danh sách nhiệm vụ (kéo vào hoặc dùng dữ liệu mẫu bên dưới)")]
     public List<MissionData> missions = new List<MissionData>();
 
 #if UNITY_EDITOR
-    [ContextMenu("Táº¡o 15 nhiá»‡m vá»¥ máº«u (chá»‰ dÃ¹ng khi test)")]
+    [ContextMenu("Tạo 15 nhiệm vụ mẫu (chỉ dùng khi test)")]
     public void GenerateSampleMissions()
     {
         var samples = new List<(string name, int target, int reward, RewardType type)>
         {
-            ("Thu hoáº¡ch 10 lÃºa",         10,  50,  RewardType.Coin),
-            ("Thu hoáº¡ch 5 ngÃ´",           5,  40,  RewardType.Coin),
-            ("Thu hoáº¡ch 8 cÃ  rá»‘t",        8,  60,  RewardType.Coin),
-            ("Thu hoáº¡ch 3 dÆ°a háº¥u",       3,  80,  RewardType.Coin),
-            ("Thu hoáº¡ch 6 cÃ  chua",       6,  55,  RewardType.Coin),
-            ("ChÄƒn nuÃ´i 5 con gÃ ",        5,  70,  RewardType.Coin),
-            ("ChÄƒn nuÃ´i 3 con heo",       3, 100,  RewardType.Coin),
-            ("ChÄƒn nuÃ´i 2 con bÃ²",        2, 120,  RewardType.Coin),
-            ("Thu tháº­p 20 trá»©ng gÃ ",     20,  90,  RewardType.Coin),
-            ("Thu tháº­p 10 lÃ­t sá»¯a",      10, 110,  RewardType.Coin),
-            ("Mua 1 cÃ¡i cuá»‘c má»›i",        1,   5,  RewardType.Diamond),
-            ("NÃ¢ng cáº¥p kho lÃªn cáº¥p 2",    1,  10,  RewardType.Diamond),
-            ("Trá»“ng cÃ¢y 15 láº§n",         15,  75,  RewardType.Coin),
-            ("TÆ°á»›i nÆ°á»›c 20 Ã´ Ä‘áº¥t",       20,  65,  RewardType.Coin),
-            ("BÃ¡n hÃ ng 5 láº§n á»Ÿ chá»£",      5,   8,  RewardType.Diamond),
+            ("Thu hoạch 10 lúa",         10,  50,  RewardType.Coin),
+            ("Thu hoạch 5 ngô",           5,  40,  RewardType.Coin),
+            ("Thu hoạch 8 cà rốt",        8,  60,  RewardType.Coin),
+            ("Thu hoạch 3 dưa hấu",       3,  80,  RewardType.Coin),
+            ("Thu hoạch 6 cà chua",       6,  55,  RewardType.Coin),
+            ("Chăn nuôi 5 con gà",        5,  70,  RewardType.Coin),
+            ("Chăn nuôi 3 con heo",       3, 100,  RewardType.Coin),
+            ("Chăn nuôi 2 con bò",        2, 120,  RewardType.Coin),
+            ("Thu thập 20 trứng gà",     20,  90,  RewardType.Coin),
+            ("Thu thập 10 lít sữa",      10, 110,  RewardType.Coin),
+            ("Mua 1 cái cuốc mới",        1,   5,  RewardType.Diamond),
+            ("Nâng cấp kho lên cấp 2",    1,  10,  RewardType.Diamond),
+            ("Trồng cây 15 lần",         15,  75,  RewardType.Coin),
+            ("Tưới nước 20 ô đất",       20,  65,  RewardType.Coin),
+            ("Bán hàng 5 lần ở chợ",      5,   8,  RewardType.Diamond),
         };
 
         missions.Clear();

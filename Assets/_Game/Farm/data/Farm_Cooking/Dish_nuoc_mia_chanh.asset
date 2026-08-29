@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: nuoc_mia_chanh
   dishName: "N\u01B0\u1EDBc m\xEDa chanh"
   dishSubTitle: "M\xEDa \xB7 Chanh"
-  dishSprite: {fileID: 6062651183374977786, guid: fcbf07e621aaf0f4d86841f67367c8be, type: 3}
+  dishSprite: {fileID: 21300000, guid: fcbf07e621aaf0f4d86841f67367c8be, type: 3}
   difficulty: 0
   unlockLevel: 8
   targetFlavor:

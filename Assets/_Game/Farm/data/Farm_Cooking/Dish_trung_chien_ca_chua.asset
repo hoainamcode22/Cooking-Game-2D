@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: trung_chien_ca_chua
   dishName: "Tr\u1EE9ng chi\xEAn c\xE0 chua"
   dishSubTitle: "Tr\u1EE9ng g\xE0 \xB7 C\xE0 chua"
-  dishSprite: {fileID: -6395051548324959615, guid: d42002313065a1147885748fd5b6db66, type: 3}
+  dishSprite: {fileID: 21300000, guid: d42002313065a1147885748fd5b6db66, type: 3}
   difficulty: 1
   unlockLevel: 5
   targetFlavor:

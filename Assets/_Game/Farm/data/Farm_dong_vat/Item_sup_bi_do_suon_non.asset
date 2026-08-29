@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: sup_bi_do_suon_non
   displayName: "Canh b\xED \u0111\u1ECF s\u01B0\u1EDDn non"
-  icon: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
+  icon: {fileID: 21300000, guid: 8f6b1742f8f68bdf4ebaac96b9a42281, type: 3}
   cookingData: {fileID: 0}

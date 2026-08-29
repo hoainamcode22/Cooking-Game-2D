@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: sup_bi_do_suon_non
   dishName: "Canh b\xED \u0111\u1ECF s\u01B0\u1EDDn non"
   dishSubTitle: "B\xED \u0110\u1ECF \xB7 Th\u1ECBt Heo"
-  dishSprite: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
+  dishSprite: {fileID: 21300000, guid: 8f6b1742f8f68bdf4ebaac96b9a42281, type: 3}
   difficulty: 1
   unlockLevel: 17
   targetFlavor:

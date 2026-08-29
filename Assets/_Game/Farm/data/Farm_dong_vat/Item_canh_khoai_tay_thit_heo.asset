@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: canh_khoai_tay_thit_heo
   displayName: Canh khoai tay thit heo
-  icon: {fileID: 1279224124731815791, guid: 3a66e1bf706ec9145a4296552e0d9ab4, type: 3}
+  icon: {fileID: 21300000, guid: 3a66e1bf706ec9145a4296552e0d9ab4, type: 3}
   cookingData: {fileID: 0}

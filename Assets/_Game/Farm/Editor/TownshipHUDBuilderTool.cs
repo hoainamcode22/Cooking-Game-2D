@@ -178,9 +178,9 @@ public static class TownshipHUDBuilderTool
         CleanupLegacyHUDObjects(canvasGO);
 
         // 4. Load Resources & Fonts
-        TMP_FontAsset fontVo = Resources.Load<TMP_FontAsset>("Fonts/FontVo");
+        TMP_FontAsset fontVo = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
         if (fontVo == null)
-            fontVo = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/FontVo.asset");
+            fontVo = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/Baloo2 SDF.asset");
 
         Sprite avatarBaseSpr = LoadSprite(SpritesFolder, "hud_avatar_base.png");
         Sprite currencyBaseSpr = LoadSprite(SpritesFolder, "hud_currency_base.png");

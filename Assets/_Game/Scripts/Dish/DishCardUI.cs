@@ -47,7 +47,7 @@ public class DishCardUI : MonoBehaviour
 
         if (dishData == null)
         {
-            Debug.LogWarning("DishCardUI chÆ°a cÃ³ DishData.");
+            Debug.LogWarning("DishCardUI chưa có DishData.");
             return;
         }
 

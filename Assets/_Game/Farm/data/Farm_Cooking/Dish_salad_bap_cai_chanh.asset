@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: salad_bap_cai_chanh
   dishName: "Salad b\u1EAFp c\u1EA3i chanh"
   dishSubTitle: "B\u1EAFp c\u1EA3i \xB7 Chanh"
-  dishSprite: {fileID: 9089190258953072601, guid: 63b4fa4fa54b6b443b2ca9c2ed795f57, type: 3}
+  dishSprite: {fileID: 21300000, guid: 63b4fa4fa54b6b443b2ca9c2ed795f57, type: 3}
   difficulty: 0
   unlockLevel: 8
   targetFlavor:

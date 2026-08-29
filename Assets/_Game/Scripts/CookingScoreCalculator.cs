@@ -4,6 +4,19 @@ using System.Linq;
 
 public static class CookingScoreCalculator
 {
+    // ── HIỆU NĂNG 2026-08-29 ─────────────────────────────────────────────────
+    // Hàm chấm điểm này in ra Console: 1 dòng tổng kết + 1 dòng cho TỪNG nguyên
+    // liệu bắt buộc + TỪNG nguyên liệu người chơi chọn + từng thứ thừa/thiếu.
+    // Mỗi Debug.Log trong Editor còn kèm stack trace, đắt hơn cả phép tính điểm.
+    // Giữ lại nguyên văn để còn soi lỗi, nhưng TẮT mặc định. Bật lại khi cần:
+    // đổi VERBOSE = true, hoặc thêm symbol COOKING_VERBOSE trong Player Settings.
+    // [Conditional] mạnh hơn 'if (VERBOSE)': trình biên dịch xoá luôn CẢ LỜI GỌI
+    // lẫn phần dựng chuỗi $"..." bên trong ngoặc. Nếu chỉ dùng if thì chuỗi vẫn bị
+    // ghép mỗi lần chấm điểm rồi mới bị vứt — vẫn tốn, vẫn sinh rác.
+    // BẬT LẠI: Project Settings ▸ Player ▸ Scripting Define Symbols, thêm COOKING_VERBOSE.
+    [System.Diagnostics.Conditional("COOKING_VERBOSE")]
+    private static void Trace(string msg) { Debug.Log(msg); }
+
     public static FlavorVector SumVectorsFromCards(List<SelectableIngredientCard> cards)
     {
         FlavorVector total = FlavorVector.Zero;
@@ -57,7 +70,7 @@ public static class CookingScoreCalculator
 
         result.finalScore = Mathf.Clamp(result.baseScore, 0, 100);
 
-        Debug.Log(
+        Trace(
             $"[CookingScore] IngredientScore = {result.ingredientScore}, " +
             $"FlavorScore = {result.seasoningScore}, " +
             $"BaseScore = {result.baseScore}, " +
@@ -107,13 +120,13 @@ public static int ScoreRequiredIngredients(
         selectedIds.Add(selected.id);
     }
 
-    Debug.Log("=== Required Ingredients Only ===");
+    Trace("=== Required Ingredients Only ===");
     foreach (string id in requiredIds)
-        Debug.Log(id);
+        Trace(id);
 
-    Debug.Log("=== Selected Ingredients Only ===");
+    Trace("=== Selected Ingredients Only ===");
     foreach (string id in selectedIds)
-        Debug.Log(id);
+        Trace(id);
 
     if (requiredIds.Count == 0)
         return 0;
@@ -131,7 +144,7 @@ public static int ScoreRequiredIngredients(
         else
         {
             hasMistake = true;
-            Debug.Log("Nguyên liệu thừa: " + selectedId);
+            Trace("Nguyên liệu thừa: " + selectedId);
         }
     }
 
@@ -141,7 +154,7 @@ public static int ScoreRequiredIngredients(
         if (!selectedIds.Contains(requiredId))
         {
             hasMistake = true;
-            Debug.Log("Nguyên liệu thiếu: " + requiredId);
+            Trace("Nguyên liệu thiếu: " + requiredId);
         }
     }
 

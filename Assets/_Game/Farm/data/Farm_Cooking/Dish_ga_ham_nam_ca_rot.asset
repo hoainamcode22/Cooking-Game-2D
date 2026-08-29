@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: ga_ham_nam_ca_rot
   dishName: "G\xE0 h\u1EA7m n\u1EA5m c\xE0 r\u1ED1t"
   dishSubTitle: "Th\u1ECBt G\xE0 \xB7 N\u1EA5m \xB7 C\xE0 R\u1ED1t"
-  dishSprite: {fileID: -2283333445584976228, guid: 888289491956e5347952a87ca3ec06d1, type: 3}
+  dishSprite: {fileID: 21300000, guid: 5c9440435f0e102ead6c25bd396ff195, type: 3}
   difficulty: 1
   unlockLevel: 20
   targetFlavor:

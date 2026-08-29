@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: com_chien_bap_cai
   dishName: "C\u01A1m chi\xEAn b\u1EAFp c\u1EA3i"
   dishSubTitle: "L\xFAa \xB7 B\u1EAFp C\u1EA3i"
-  dishSprite: {fileID: 9135130128162984572, guid: ae3730e6740dc42438b21a76abafb62a, type: 3}
+  dishSprite: {fileID: 21300000, guid: 9c28e4c67ea24d84b9822197e17e54dc, type: 3}
   difficulty: 0
   unlockLevel: 1
   targetFlavor:

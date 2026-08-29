@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: sup_ngo_nam
   displayName: "S\xFAp ngo n\u1EA5m"
-  icon: {fileID: 5016252123938005860, guid: 7882b075d127ef14593abbb381d7b90a, type: 3}
+  icon: {fileID: 21300000, guid: 7882b075d127ef14593abbb381d7b90a, type: 3}
   cookingData: {fileID: 0}

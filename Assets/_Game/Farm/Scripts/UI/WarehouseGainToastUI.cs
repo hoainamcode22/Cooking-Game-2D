@@ -16,6 +16,15 @@ public class WarehouseGainToastUI : MonoBehaviour
 {
     public static WarehouseGainToastUI Instance { get; private set; }
 
+    public RectTransform PanelRect
+    {
+        get
+        {
+            EnsureBuilt();
+            return _panel;
+        }
+    }
+
     [Header("Wiring (Setup tool gán — thiếu thì tự tìm/tự vẽ)")]
     [SerializeField] private Canvas canvas;
     [SerializeField] private Sprite panelSprite;    // pill nền (popup_panel_paper)
@@ -39,6 +48,7 @@ public class WarehouseGainToastUI : MonoBehaviour
     private CanvasGroup _cg;
     private float _hideAt;
     private float _shownFill;
+    private int _currentDisplayUsed = -1;
     private Coroutine _showRoutine, _pulseRoutine;
     private bool _visible;
 
@@ -84,7 +94,28 @@ public class WarehouseGainToastUI : MonoBehaviour
             HideToast();
     }
 
-    // ─── Event handlers ───────────────────────────────────────────
+    // ─── Event handlers & Progressive Harvest Increments ─────────
+
+    public void OnHarvestItemArrived(Sprite icon = null)
+    {
+        if (!EnsureBuilt()) return;
+        ShowToast();
+
+        var inv = FarmInventoryManager.Instance;
+        int cap = inv != null ? Mathf.Max(1, inv.SlotCapacity) : 50;
+        int actualUsed = inv != null ? inv.UsedSlots : 0;
+
+        if (_currentDisplayUsed < 0)
+            _currentDisplayUsed = Mathf.Max(0, actualUsed - 1);
+
+        _currentDisplayUsed++;
+        if (_currentDisplayUsed > actualUsed)
+            _currentDisplayUsed = actualUsed;
+
+        UpdateDisplayValues(_currentDisplayUsed, cap, animate: true);
+        SpawnPlusText("+1", new Color(0.30f, 0.62f, 0.12f));
+        JuicyPulseFX.Play(_panel, 1.18f, 0.22f);
+    }
 
     private void HandleItemAdded(string itemId, int amount)
     {
@@ -92,7 +123,7 @@ public class WarehouseGainToastUI : MonoBehaviour
         ShowToast();
         RefreshNumbers(animate: true);
         SpawnPlusText($"+{amount}", new Color(0.30f, 0.62f, 0.12f));
-        Pulse();
+        JuicyPulseFX.Play(_panel, 1.18f, 0.22f);
     }
 
     private void HandleRejected(string itemId)
@@ -157,20 +188,16 @@ public class WarehouseGainToastUI : MonoBehaviour
 
     // ─── Numbers / fill ───────────────────────────────────────────
 
-    private void RefreshNumbers(bool animate)
+    public void UpdateDisplayValues(int used, int cap, bool animate)
     {
-        var inv = FarmInventoryManager.Instance;
-        if (inv == null) return;
-
-        int used = inv.UsedSlots;
-        int cap  = Mathf.Max(1, inv.SlotCapacity);
+        _currentDisplayUsed = used;
         if (_txtCount != null)
         {
             _txtCount.text  = $"Kho: {used}/{cap}";
             _txtCount.color = used >= cap ? new Color(0.96f, 0.13f, 0.18f) : Color.white;
         }
 
-        float target = Mathf.Clamp01((float)used / cap);
+        float target = Mathf.Clamp01((float)used / Mathf.Max(1, cap));
         if (_imgFill != null)
         {
             if (target >= 1f) _imgFill.color = new Color(0.96f, 0.13f, 0.18f); // Đỏ khi đầy
@@ -187,6 +214,16 @@ public class WarehouseGainToastUI : MonoBehaviour
         {
             StartCoroutine(RoutineFillTo(target));
         }
+    }
+
+    private void RefreshNumbers(bool animate)
+    {
+        var inv = FarmInventoryManager.Instance;
+        if (inv == null) return;
+
+        int used = inv.UsedSlots;
+        int cap  = Mathf.Max(1, inv.SlotCapacity);
+        UpdateDisplayValues(used, cap, animate);
     }
 
     private IEnumerator RoutineFillTo(float target)

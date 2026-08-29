@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: banh_ngo_nuong_mia
   displayName: "B\xE1nh ng\xF4 n\u01B0\u1EDBng m\u1EADt m\xEDa"
-  icon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+  icon: {fileID: 21300000, guid: 06f2690d8e060c63b06db8205a60b747, type: 3}
   cookingData: {fileID: 0}

@@ -50,7 +50,7 @@ public class ScoreResultBoxUI : MonoBehaviour
 
         if (root == null)
         {
-            Debug.LogWarning("Root chÆ°a Ä‘Æ°á»£c gÃ¡n trong ScoreResultBoxUI.");
+            Debug.LogWarning("Root chưa được gán trong ScoreResultBoxUI.");
             return;
         }
 
@@ -105,11 +105,11 @@ public class ScoreResultBoxUI : MonoBehaviour
     private string GetComment(int score, bool isSuccess)
     {
         if (!isSuccess)
-            return "ChÆ°a Ä‘á»§ Ä‘iá»ƒm! HÃ£y thá»­ láº¡i nhÃ©!";
+            return "Chưa đủ điểm! Hãy thử lại nhé!";
 
-        if (score >= 90) return "Tuyá»‡t vá»i! Gáº§n nhÆ° hoÃ n háº£o!";
-        if (score >= 80) return "Ráº¥t tá»‘t! Gáº§n hoÃ n háº£o!";
-        if (score >= 70) return "KhÃ¡ tá»‘t! Cá»‘ gáº¯ng thÃªm nhÃ©!";
-        return "ChÆ°a á»•n láº¯m! Thá»­ láº¡i nÃ o!";
+        if (score >= 90) return "Tuyệt vời! Gần như hoàn hảo!";
+        if (score >= 80) return "Rất tốt! Gần hoàn hảo!";
+        if (score >= 70) return "Khá tốt! Cố gắng thêm nhé!";
+        return "Chưa ổn lắm! Thử lại nào!";
     }
 }

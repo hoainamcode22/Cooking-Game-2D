@@ -133,7 +133,7 @@ public class PenProcessPopupUI : MonoBehaviour
     private void LoadDesignAssets()
     {
         // 1. FontVo
-        _fontVo = Resources.Load<TMP_FontAsset>("Fonts/FontVo");
+        _fontVo = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
 
         // 2. Sprites từ Editor AssetDatabase
 #if UNITY_EDITOR

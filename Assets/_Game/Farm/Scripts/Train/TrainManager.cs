@@ -29,56 +29,56 @@ public class TrainManager : MonoBehaviour
     [SerializeField] private TrainCargoData  cargoData;
     [SerializeField] private TrainRewardData rewardData;
 
-    [Header("Shipping Train â€” tÃ u Má»šI (TrainVisualRoot2) nháº­n hÃ ng Ä‘i")]
-    [Tooltip("TrainPathFollower gáº¯n trÃªn ShippingTrain GO (quáº£n lÃ½ TrainVisualRoot2)")]
+    [Header("Shipping Train — tàu MỚI (TrainVisualRoot2) nhận hàng đi")]
+    [Tooltip("TrainPathFollower gắn trên ShippingTrain GO (quản lý TrainVisualRoot2)")]
     [SerializeField] private TrainPathFollower shippingPathFollower;
 
-    [Header("Reward Train â€” tÃ u CÅ¨ (TrainVisualRoot) mang reward vá»")]
-    [Tooltip("TrainPathFollower gáº¯n trÃªn RewardTrain GO (quáº£n lÃ½ TrainVisualRoot)")]
+    [Header("Reward Train — tàu CŨ (TrainVisualRoot) mang reward về")]
+    [Tooltip("TrainPathFollower gắn trên RewardTrain GO (quản lý TrainVisualRoot)")]
     [SerializeField] private TrainPathFollower rewardPathFollower;
 
-    [Header("Waypoints â€” Shipping Train (tÃ u Má»šI)")]
-    [Tooltip("Off-screen trÃ¡i â€” nÆ¡i tÃ u Má»šI spawn vÃ o Ä‘áº§u chuyáº¿n (trá»« chuyáº¿n 1)")]
+    [Header("Waypoints — Shipping Train (tàu MỚI)")]
+    [Tooltip("Off-screen trái — nơi tàu MỚI spawn vào đầu chuyến (trừ chuyến 1)")]
     [SerializeField] private Transform pointHiddenShip;
-    [Tooltip("TrÃªn ga â€” nÆ¡i tÃ u Má»šI Ä‘á»©ng chá» user náº¡p hÃ ng")]
+    [Tooltip("Trên ga — nơi tàu MỚI đứng chờ user nạp hàng")]
     [SerializeField] private Transform pointStationShip;
-    [Tooltip("Cá»­a háº§m â€” nÆ¡i tÃ u Má»šI cháº¡y tá»›i rá»“i áº©n")]
+    [Tooltip("Cửa hầm — nơi tàu MỚI chạy tới rồi ẩn")]
     [SerializeField] private Transform pointTunnelShip;
 
-    [Header("Waypoints â€” Reward Train (tÃ u CÅ¨)")]
-    [Tooltip("Cá»­a háº§m â€” nÆ¡i tÃ u CÅ¨ xuáº¥t hiá»‡n sau khi timer xong")]
+    [Header("Waypoints — Reward Train (tàu CŨ)")]
+    [Tooltip("Cửa hầm — nơi tàu CŨ xuất hiện sau khi timer xong")]
     [SerializeField] private Transform pointTunnelReward;
-    [Tooltip("TrÃªn ga â€” nÆ¡i tÃ u CÅ¨ dá»«ng Ä‘á»ƒ user thu reward")]
+    [Tooltip("Trên ga — nơi tàu CŨ dừng để user thu reward")]
     [SerializeField] private Transform pointStationReward;
-    [Tooltip("Off-screen pháº£i â€” nÆ¡i tÃ u CÅ¨ cháº¡y ra rá»“i áº©n sau khi user thu xong")]
+    [Tooltip("Off-screen phải — nơi tàu CŨ chạy ra rồi ẩn sau khi user thu xong")]
     [SerializeField] private Transform pointHiddenReward;
 
-    [Header("Wagon Slots â€” Shipping Train (4 toa tÃ u Má»šI)")]
-    [Tooltip("4 TrainWagonSlot gáº¯n trÃªn wagon cá»§a TrainVisualRoot2, theo thá»© tá»± 0..3")]
+    [Header("Wagon Slots — Shipping Train (4 toa tàu MỚI)")]
+    [Tooltip("4 TrainWagonSlot gắn trên wagon của TrainVisualRoot2, theo thứ tự 0..3")]
     [SerializeField] private TrainWagonSlot[] shippingWagonSlots;
 
-    [Header("Wagon Slots â€” Reward Train (4 toa tÃ u CÅ¨)")]
-    [Tooltip("4 TrainWagonSlot gáº¯n trÃªn wagon cá»§a TrainVisualRoot, theo thá»© tá»± 0..3")]
+    [Header("Wagon Slots — Reward Train (4 toa tàu CŨ)")]
+    [Tooltip("4 TrainWagonSlot gắn trên wagon của TrainVisualRoot, theo thứ tự 0..3")]
     [SerializeField] private TrainWagonSlot[] rewardWagonSlots;
 
     [Header("Popups")]
-    [Tooltip("Popup náº¡p hÃ ng â€” Popup_item_Train")]
+    [Tooltip("Popup nạp hàng — Popup_item_Train")]
     [SerializeField] private TrainLoadPopupUI    loadPopup;
-    [Tooltip("Popup tráº¡ng thÃ¡i / timer â€” Popup_train")]
+    [Tooltip("Popup trạng thái / timer — Popup_train")]
     [SerializeField] private TrainProcessPopupUI processPopup;
 
-    [Header("FX â€” Reward Collection")]
-    [Tooltip("Prefab HarvestFlyItemFX â€” bay tá»« toa tÃ u CÅ¨ vá» kho")]
+    [Header("FX — Reward Collection")]
+    [Tooltip("Prefab HarvestFlyItemFX — bay từ toa tàu CŨ về kho")]
     [SerializeField] private GameObject itemFlyFXPrefab;
-    [Tooltip("Prefab ExpFlyToAvatarFX â€” bay tá»« toa tÃ u CÅ¨ vá» avatar")]
+    [Tooltip("Prefab ExpFlyToAvatarFX — bay từ toa tàu CŨ về avatar")]
     [SerializeField] private GameObject expFlyFXPrefab;
-    [Tooltip("Vá»‹ trÃ­ icon kho trÃªn HUD (Ä‘Ã­ch cá»§a item FX)")]
+    [Tooltip("Vị trí icon kho trên HUD (đích của item FX)")]
     [SerializeField] private Transform  warehouseTargetTransform;
-    [Tooltip("Vá»‹ trÃ­ icon avatar/EXP trÃªn HUD (Ä‘Ã­ch cá»§a exp FX)")]
+    [Tooltip("Vị trí icon avatar/EXP trên HUD (đích của exp FX)")]
     [SerializeField] private Transform  expTargetTransform;
 
     [Header("Config")]
-    [Tooltip("EXP thÆ°á»Ÿng má»—i láº§n thu 1 slot reward")]
+    [Tooltip("EXP thưởng mỗi lần thu 1 slot reward")]
     [SerializeField] private int   expPerReward        = 10;
 
     [Tooltip("Thời gian 1 chuyến vận chuyển (giây). Đã duyệt 2026-08-26: 10-15 phút (600-900).")]
@@ -149,30 +149,30 @@ public class TrainManager : MonoBehaviour
             processPopup = FindFirstObjectByType<TrainProcessPopupUI>(FindObjectsInactive.Include);
 
         if (loadPopup == null)
-            Debug.LogError("[Train] KhÃ´ng tÃ¬m tháº¥y TrainLoadPopupUI! KÃ©o Popup_Item_Train vÃ o Inspector.");
+            Debug.LogError("[Train] Không tìm thấy TrainLoadPopupUI! Kéo Popup_Item_Train vào Inspector.");
 
         bool hasError = false;
-        if (shippingPathFollower == null) { Debug.LogError("[Train] shippingPathFollower chÆ°a gÃ¡n!"); hasError = true; }
-        if (rewardPathFollower   == null) { Debug.LogError("[Train] rewardPathFollower chÆ°a gÃ¡n!");   hasError = true; }
+        if (shippingPathFollower == null) { Debug.LogError("[Train] shippingPathFollower chưa gán!"); hasError = true; }
+        if (rewardPathFollower   == null) { Debug.LogError("[Train] rewardPathFollower chưa gán!");   hasError = true; }
         if (shippingPathFollower != null && shippingPathFollower == rewardPathFollower)
-        { Debug.LogError("[Train] BUG: shippingPathFollower vÃ  rewardPathFollower trá» cÃ¹ng 1 object!"); hasError = true; }
-        if (pointHiddenShip    == null) { Debug.LogError("[Train] pointHiddenShip chÆ°a gÃ¡n!");    hasError = true; }
-        if (pointStationShip   == null) { Debug.LogError("[Train] pointStationShip chÆ°a gÃ¡n!");   hasError = true; }
-        if (pointTunnelShip    == null) { Debug.LogError("[Train] pointTunnelShip chÆ°a gÃ¡n!");    hasError = true; }
-        if (pointTunnelReward  == null) { Debug.LogError("[Train] pointTunnelReward chÆ°a gÃ¡n!");  hasError = true; }
-        if (pointStationReward == null) { Debug.LogError("[Train] pointStationReward chÆ°a gÃ¡n!"); hasError = true; }
-        if (pointHiddenReward  == null) { Debug.LogError("[Train] pointHiddenReward chÆ°a gÃ¡n!");  hasError = true; }
+        { Debug.LogError("[Train] BUG: shippingPathFollower và rewardPathFollower trỏ cùng 1 object!"); hasError = true; }
+        if (pointHiddenShip    == null) { Debug.LogError("[Train] pointHiddenShip chưa gán!");    hasError = true; }
+        if (pointStationShip   == null) { Debug.LogError("[Train] pointStationShip chưa gán!");   hasError = true; }
+        if (pointTunnelShip    == null) { Debug.LogError("[Train] pointTunnelShip chưa gán!");    hasError = true; }
+        if (pointTunnelReward  == null) { Debug.LogError("[Train] pointTunnelReward chưa gán!");  hasError = true; }
+        if (pointStationReward == null) { Debug.LogError("[Train] pointStationReward chưa gán!"); hasError = true; }
+        if (pointHiddenReward  == null) { Debug.LogError("[Train] pointHiddenReward chưa gán!");  hasError = true; }
 
         if (hasError)
         {
-            Debug.LogError("[Train] Khá»Ÿi táº¡o bá»‹ huá»· vÃ¬ thiáº¿u references. Kiá»ƒm tra Inspector rá»“i nháº¥n 'Reset Train' (chuá»™t pháº£i TrainManager).");
+            Debug.LogError("[Train] Khởi tạo bị huỷ vì thiếu references. Kiểm tra Inspector rồi nhấn 'Reset Train' (chuột phải TrainManager).");
             return;
         }
 
         StartCoroutine(InitAfterFrame());
     }
 
-    [ContextMenu("Reset Train / Hiá»‡n láº¡i tÃ u")]
+    [ContextMenu("Reset Train / Hiện lại tàu")]
     public void ResetTrain()
     {
         StopAllCoroutines();
@@ -271,7 +271,7 @@ public class TrainManager : MonoBehaviour
         loadPopup.OpenForCargoSlot(slotIndex, slot);
     }
 
-    /// NÃºt "ThÃªm" trong popup náº¡p hÃ ng â€” trá»« 1 item kho, tÄƒng currentAmount.
+    /// NÃºt "Thêm" trong popup náº¡p hÃ ng â€” trá»« 1 item kho, tÄƒng currentAmount.
     public void TryAddOneItemToSlot(int slotIndex)
     {
         if (State != TrainState.WaitingForLoad) return;
@@ -803,15 +803,15 @@ public class TrainManager : MonoBehaviour
         if (cargoData?.presets?.Count > 0)
             return cargoData.presets[index % cargoData.presets.Count];
 
-        Debug.LogWarning("[Train] ChÆ°a gÃ¡n TrainCargoData â€” dÃ¹ng fallback preset.");
+        Debug.LogWarning("[Train] Chưa gán TrainCargoData — dùng fallback preset.");
         return new TrainCargoPreset
         {
             slots = new TrainCargoRequirement[]
             {
-                new TrainCargoRequirement { itemId = "lua",   displayName = "LÃºa",   requiredAmount = 4 },
-                new TrainCargoRequirement { itemId = "bap",   displayName = "Báº¯p",   requiredAmount = 3 },
-                new TrainCargoRequirement { itemId = "trung", displayName = "Trá»©ng", requiredAmount = 2 },
-                new TrainCargoRequirement { itemId = "nam",   displayName = "Náº¥m",   requiredAmount = 2 },
+                new TrainCargoRequirement { itemId = "lua",   displayName = "Lúa",   requiredAmount = 4 },
+                new TrainCargoRequirement { itemId = "bap",   displayName = "Bắp",   requiredAmount = 3 },
+                new TrainCargoRequirement { itemId = "trung", displayName = "Trứng", requiredAmount = 2 },
+                new TrainCargoRequirement { itemId = "nam",   displayName = "Nấm",   requiredAmount = 2 },
             }
         };
     }
@@ -821,14 +821,14 @@ public class TrainManager : MonoBehaviour
         if (rewardData?.presets?.Count > 0)
             return rewardData.presets[index % rewardData.presets.Count];
 
-        Debug.LogWarning("[Train] ChÆ°a gÃ¡n TrainRewardData â€” dÃ¹ng fallback preset.");
+        Debug.LogWarning("[Train] Chưa gán TrainRewardData — dùng fallback preset.");
         return new TrainRewardPreset
         {
             slots = new TrainRewardItem[]
             {
-                new TrainRewardItem { itemId = "da",   displayName = "ÄÃ¡",   rewardAmount = 2 },
-                new TrainRewardItem { itemId = "gach", displayName = "Gáº¡ch", rewardAmount = 1 },
-                new TrainRewardItem { itemId = "dinh", displayName = "Äinh", rewardAmount = 3 },
+                new TrainRewardItem { itemId = "da",   displayName = "Đá",   rewardAmount = 2 },
+                new TrainRewardItem { itemId = "gach", displayName = "Gạch", rewardAmount = 1 },
+                new TrainRewardItem { itemId = "dinh", displayName = "Đinh", rewardAmount = 3 },
                 new TrainRewardItem { itemId = "kim",  displayName = "Kim",  rewardAmount = 1 },
             }
         };

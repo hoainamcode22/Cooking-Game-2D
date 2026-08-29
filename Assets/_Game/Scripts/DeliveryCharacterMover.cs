@@ -43,7 +43,7 @@ public class DeliveryCharacterMover : MonoBehaviour
 
         if (character == null || cookingPoint == null || warehousePoint == null)
         {
-            Debug.LogWarning("[DeliveryCharacterMover] ChÆ°a kÃ©o Ä‘á»§ character / cookingPoint / warehousePoint.");
+            Debug.LogWarning("[DeliveryCharacterMover] Chưa kéo đủ character / cookingPoint / warehousePoint.");
             return;
         }
 

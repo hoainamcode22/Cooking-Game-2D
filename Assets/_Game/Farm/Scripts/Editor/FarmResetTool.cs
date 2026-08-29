@@ -10,8 +10,8 @@ public static class FarmResetTool
     {
         if (!EditorUtility.DisplayDialog(
                 "Hard Reset Everything",
-                "XÃ³a toÃ n bá»™ PlayerPrefs (Ã´ Ä‘áº¥t, nhÃ , tiá»n, kho)?\nHÃ nh Ä‘á»™ng nÃ y KHÃ”NG thá»ƒ hoÃ n tÃ¡c.",
-                "XÃ³a háº¿t", "Há»§y"))
+                "Xóa toàn bộ PlayerPrefs (ô đất, nhà, tiền, kho)?\nHành động này KHÔNG thể hoàn tác.",
+                "Xóa hết", "Hủy"))
             return;
 
         PlayerPrefs.DeleteAll();

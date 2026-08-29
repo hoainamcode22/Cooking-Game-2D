@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: bo_ham_bi_do_kem
   dishName: "B\xF2 h\u1EA7m b\xED \u0111\u1ECF s\u1ED1t kem"
   dishSubTitle: "Th\u1ECBt B\xF2 \xB7 B\xED \u0110\u1ECF \xB7 Khoai T\xE2y"
-  dishSprite: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
+  dishSprite: {fileID: 21300000, guid: 21b213af320c044c0f1706fb7cc28e54, type: 3}
   difficulty: 2
   unlockLevel: 26
   targetFlavor:

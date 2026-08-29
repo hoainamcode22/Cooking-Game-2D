@@ -25,7 +25,9 @@ public static class TaoFontVoTool
     private const string ThuMucTtf = "Assets/_Game/Fonts";
     private const string ThuMucRa  = "Assets/_Game/Resources/Fonts";
 
-    [MenuItem("Tools/Farm/Thay Áo Popup/0 · Tạo font chữ vỏ (đọc Assets/_Game/Fonts)", false, 0)]
+    // ĐÃ KHOÁ 29-08-2026: font đã đồng nhất về Resources/Fonts/Baloo2 SDF.asset —
+    // chạy lại tool này sẽ TẠO LẠI FontVo.asset trùng lặp. Muốn dùng lại thì bỏ dòng //.
+    // [MenuItem("Tools/Farm/Thay Áo Popup/0 · Tạo font chữ vỏ (đọc Assets/_Game/Fonts)", false, 0)]
     public static void Tao()
     {
         if (!Directory.Exists(ThuMucTtf) || Directory.GetFiles(ThuMucTtf, "*.ttf").Length == 0)

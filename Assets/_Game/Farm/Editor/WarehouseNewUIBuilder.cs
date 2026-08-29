@@ -504,9 +504,9 @@ public static class WarehouseNewUIBuilder
 
     private static TMP_FontAsset LoadFontVo()
     {
-        TMP_FontAsset font = Resources.Load<TMP_FontAsset>("Fonts/FontVo");
+        TMP_FontAsset font = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
         if (font == null)
-            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/FontVo.asset");
+            font = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/Baloo2 SDF.asset");
         return font;
     }
 

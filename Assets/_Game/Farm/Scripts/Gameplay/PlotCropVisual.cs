@@ -15,7 +15,7 @@ using UnityEngine;
 /// </summary>
 public class PlotCropVisual : MonoBehaviour
 {
-    [Header("Points â€” tá»± tÃ¬m, hoáº·c gÃ¡n tay")]
+    [Header("Points — tự tìm, hoặc gán tay")]
     [SerializeField] private Transform[] cropPoints = new Transform[0];
 
     [Header("Render")]
@@ -49,6 +49,19 @@ public class PlotCropVisual : MonoBehaviour
     private bool  isReadySwayActive;
     private bool  isSetupDone;
     private int   lastLatticeCount = -1;
+
+    // ── HIỆU NĂNG 2026-08-29 ─────────────────────────────────────────────────
+    // ShowCrop()/ClearAll() bị PlotController.RefreshVisual() gọi MỖI FRAME cho từng
+    // ô ruộng. Mỗi lượt gọi trước đây ghi lại: 12 sprite + 12 localScale + 12
+    // localPosition + 12 SetActive — dù cây vẫn đứng nguyên stage đó. 38 ô × 60 fps
+    // ⇒ khoảng 2.000 lượt ghi thừa mỗi giây, làm bẩn transform và ép dựng lại batch.
+    // Bốn biến dưới đây nhớ "lần vẽ gần nhất đã vẽ gì"; trùng thì bỏ qua.
+    // KHÔNG đổi hình ảnh — chỉ bỏ lượt ghi lặp lại y hệt.
+    private CropData _lastShownCrop;
+    private int      _lastShownStage = -1;
+    private int      _lastShownCount = -1;
+    private bool     _lastShownReady;
+    private bool     _isCleared;
 
     // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -139,9 +152,23 @@ public class PlotCropVisual : MonoBehaviour
         int  stage   = crop.StageFromProgress(progress01);
         bool isReady = stage >= crop.StageCount - 1;
 
-        ApplyLattice(crop.displayCount);
+        ApplyLattice(crop.displayCount);      // tự bỏ qua khi số cây không đổi
+        SetReadySwayActive(isReady);          // tự bỏ qua khi trạng thái không đổi
 
-        SetReadySwayActive(isReady);
+        // Không có gì đổi so với lần vẽ trước ⇒ khỏi ghi lại 12 slot.
+        bool sameAsLast = !_isCleared
+                       && ReferenceEquals(crop, _lastShownCrop)
+                       && stage      == _lastShownStage
+                       && isReady    == _lastShownReady
+                       && crop.displayCount == _lastShownCount;
+        if (sameAsLast) return;
+
+        _isCleared      = false;
+        _lastShownCrop  = crop;
+        _lastShownStage = stage;
+        _lastShownReady = isReady;
+        _lastShownCount = crop.displayCount;
+
         UpdateVisual(stage);
 
         if (!isReady)
@@ -294,6 +321,14 @@ public class PlotCropVisual : MonoBehaviour
     {
         EnsureSetup();
         SetReadySwayActive(false);
+
+        // Ô trống bị RefreshVisual() gọi ClearAll() mỗi frame. Đã dọn rồi thì thôi.
+        if (_isCleared) return;
+        _isCleared      = true;
+        _lastShownCrop  = null;
+        _lastShownStage = -1;
+        _lastShownCount = -1;
+        _lastShownReady = false;
 
         for (int i = 0; i < slotRenderers.Length; i++)
         {

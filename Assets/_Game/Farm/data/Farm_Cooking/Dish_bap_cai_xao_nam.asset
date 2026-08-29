@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: bap_cai_xao_nam
   dishName: "B\u1EAFp c\u1EA3i x\xE0o n\u1EA5m"
   dishSubTitle: "B\u1EAFp c\u1EA3i \xB7 N\u1EA5m"
-  dishSprite: {fileID: -2206189127974015184, guid: 80983d354252dbe42a2ec238d577a885, type: 3}
+  dishSprite: {fileID: 21300000, guid: 80983d354252dbe42a2ec238d577a885, type: 3}
   difficulty: 1
   unlockLevel: 6
   targetFlavor:

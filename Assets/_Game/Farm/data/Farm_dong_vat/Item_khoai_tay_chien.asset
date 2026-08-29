@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: khoai_tay_chien
   displayName: "Khoai t\xE2y chi\xEAn"
-  icon: {fileID: 559135169309301806, guid: 506edd55eb19ec34b9dcdd1aa28fb2e5, type: 3}
+  icon: {fileID: 21300000, guid: 506edd55eb19ec34b9dcdd1aa28fb2e5, type: 3}
   cookingData: {fileID: 0}

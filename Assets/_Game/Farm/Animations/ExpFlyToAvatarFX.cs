@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -8,13 +8,14 @@ public class ExpFlyToAvatarFX : MonoBehaviour
     [SerializeField] private Transform visualRoot;
 
     [Header("Timing")]
-    [SerializeField] private float dropDuration = 0.12f;
-    [SerializeField] private float groundStayDuration = 2.0f;
-    [SerializeField] private float flyDuration = 0.65f;
+    [SerializeField] private float dropDuration = 0.15f;
+    [SerializeField] private float groundStayDuration = 0.06f; // Không để trễ lâu để EXP bay ngay lập tức
+    [SerializeField] private float flyDuration = 0.55f;
 
     [Header("World Motion")]
-    [SerializeField] private float scatterRadius = 80f;
-    [SerializeField] private float dropDownOffset = 25f;
+    [SerializeField] private float scatterRadius = 60f;
+    [SerializeField] private float dropDownOffset = 20f;
+    [SerializeField] private float arcHeight = 40f;
 
     [Header("Scale")]
     [SerializeField] private Vector3 startScale = new Vector3(0.55f, 0.55f, 0.55f);
@@ -71,6 +72,7 @@ public class ExpFlyToAvatarFX : MonoBehaviour
         Vector2 scatter = UnityEngine.Random.insideUnitCircle * scatterRadius;
         Vector3 groundPos = worldSpawnPos + new Vector3(scatter.x, scatter.y - dropDownOffset, 0f);
 
+        // Pha 1: Bung nhẹ ra xung quanh luống đất
         float timer = 0f;
         while (timer < dropDuration)
         {
@@ -93,6 +95,7 @@ public class ExpFlyToAvatarFX : MonoBehaviour
         if (groundStayDuration > 0f)
             yield return new WaitForSeconds(groundStayDuration);
 
+        // Pha 2: Bay vút lên thanh EXP trên Top Bar
         timer = 0f;
         Vector3 flyStart = transform.position;
 
@@ -100,9 +103,13 @@ public class ExpFlyToAvatarFX : MonoBehaviour
         {
             timer += Time.deltaTime;
             float t = flyDuration <= 0f ? 1f : Mathf.Clamp01(timer / flyDuration);
-            float ease = Mathf.SmoothStep(0f, 1f, t);
+            float ease = t * t * (3f - 2f * t); // SmoothStep
 
-            transform.position = Vector3.LerpUnclamped(flyStart, worldTargetPos, ease);
+            Vector3 basePos = Vector3.LerpUnclamped(flyStart, worldTargetPos, ease);
+            // Thêm độ cong vòng cung nhẹ
+            float arc = Mathf.Sin(t * Mathf.PI) * arcHeight;
+            transform.position = basePos + new Vector3(0f, arc, 0f);
+
             yield return null;
         }
 

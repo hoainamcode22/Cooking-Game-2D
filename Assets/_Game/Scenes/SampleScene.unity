@@ -2033,7 +2033,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 126712823}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 380068508}
+  m_Script: {fileID: 11500000, guid: 18d451cab7193f36132fd009d156f41b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KitchenUIv2.KitchenCatWalker
   frames:
@@ -3377,21 +3377,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 196923190}
   m_CullTransparentMesh: 1
---- !u!115 &198024282
-MonoScript:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 7
-  m_DefaultReferences: {}
-  m_Icon: {fileID: 0}
-  m_Type: 0
-  m_ExecutionOrder: 0
-  m_ClassName: KitchenZzzFloat
-  m_Namespace: KitchenUIv2
-  m_AssemblyName: Assembly-CSharp
 --- !u!1 &201338231
 GameObject:
   m_ObjectHideFlags: 0
@@ -6195,7 +6180,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Ch\xE1\xBB\x8Dn 0/3"
+  m_text: "Ch\u1ECDn 0/3"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f1e64e564161a2d41bb9d1030d3f46c8, type: 2}
   m_sharedMaterial: {fileID: 6320730684448783424, guid: f1e64e564161a2d41bb9d1030d3f46c8, type: 2}
@@ -7308,21 +7293,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 368767205}
   m_CullTransparentMesh: 1
---- !u!115 &380068508
-MonoScript:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_Name: 
-  serializedVersion: 7
-  m_DefaultReferences: {}
-  m_Icon: {fileID: 0}
-  m_Type: 0
-  m_ExecutionOrder: 0
-  m_ClassName: KitchenCatWalker
-  m_Namespace: KitchenUIv2
-  m_AssemblyName: Assembly-CSharp
 --- !u!1 &381775200
 GameObject:
   m_ObjectHideFlags: 0
@@ -21256,7 +21226,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Ch\xE1\xBB\x8Dn 0/4"
+  m_text: "Ch\u1ECDn 0/4"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f1e64e564161a2d41bb9d1030d3f46c8, type: 2}
   m_sharedMaterial: {fileID: 6320730684448783424, guid: f1e64e564161a2d41bb9d1030d3f46c8, type: 2}
@@ -27932,7 +27902,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1381904964}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 198024282}
+  m_Script: {fileID: 11500000, guid: 4e6cf35a7bcd8131787246dd7ff31c63, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::KitchenUIv2.KitchenZzzFloat
   txt: {fileID: 1208458710}

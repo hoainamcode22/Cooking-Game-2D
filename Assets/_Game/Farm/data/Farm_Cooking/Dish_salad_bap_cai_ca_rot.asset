@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: salad_bap_cai_ca_rot
   dishName: "Salad b\u1EAFp c\u1EA3i c\xE0 r\u1ED1t"
   dishSubTitle: "B\u1EAFp C\u1EA3i \xB7 C\xE0 R\u1ED1t"
-  dishSprite: {fileID: -842988855527424611, guid: b0b144ddc7537a348b0c7d8ec7c4b7e4, type: 3}
+  dishSprite: {fileID: 21300000, guid: e79376a733757cbfc80f00e60e0b33b8, type: 3}
   difficulty: 0
   unlockLevel: 3
   targetFlavor:

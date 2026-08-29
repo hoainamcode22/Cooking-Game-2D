@@ -11,7 +11,7 @@ public class FarmCropVFXSpawner : MonoBehaviour
 {
     public static FarmCropVFXSpawner Instance { get; private set; }
 
-    [Header("VFX Prefabs â€” kÃ©o prefab vÃ o sau khi táº¡o xong")]
+    [Header("VFX Prefabs — kéo prefab vào sau khi tạo xong")]
     public SeedRainVFX           seedRainPrefab;
     public SeedCostTextVFX       seedCostTextPrefab;
     public HarvestAmountTextVFX  harvestAmountTextPrefab;
@@ -20,7 +20,7 @@ public class FarmCropVFXSpawner : MonoBehaviour
     {
         if (Instance != null && Instance != this)
         {
-            Debug.LogWarning("[VFX] FarmCropVFXSpawner: duplicate Instance destroyed â€” chá»‰ giá»¯ 1 instance trong scene.");
+            Debug.LogWarning("[VFX] FarmCropVFXSpawner: duplicate Instance destroyed — chỉ giữ 1 instance trong scene.");
             Destroy(gameObject);
             return;
         }
@@ -41,7 +41,7 @@ public class FarmCropVFXSpawner : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("[VFX] PlaySeedPlantVFX: seedRainPrefab lÃ  NULL â€” kÃ©o PF_SeedRain_World vÃ o slot seedRainPrefab cá»§a FarmCropVFXSpawner trong Inspector.");
+            Debug.LogWarning("[VFX] PlaySeedPlantVFX: seedRainPrefab là NULL — kéo PF_SeedRain_World vào slot seedRainPrefab của FarmCropVFXSpawner trong Inspector.");
         }
 
         if (seedCostTextPrefab != null && seedCost > 0)
@@ -52,7 +52,7 @@ public class FarmCropVFXSpawner : MonoBehaviour
         }
         else if (seedCostTextPrefab == null)
         {
-            Debug.LogWarning("[VFX] PlaySeedPlantVFX: seedCostTextPrefab lÃ  NULL â€” kÃ©o PF_SeedCostText_World vÃ o slot seedCostTextPrefab cá»§a FarmCropVFXSpawner trong Inspector.");
+            Debug.LogWarning("[VFX] PlaySeedPlantVFX: seedCostTextPrefab là NULL — kéo PF_SeedCostText_World vào slot seedCostTextPrefab của FarmCropVFXSpawner trong Inspector.");
         }
     }
 
@@ -89,7 +89,7 @@ public class FarmCropVFXSpawner : MonoBehaviour
 
         if (harvestAmountTextPrefab == null)
         {
-            Debug.LogWarning("[VFX] PlayHarvestAmountVFX: harvestAmountTextPrefab lÃ  NULL â€” kÃ©o PF_HarvestAmountText_World vÃ o slot harvestAmountTextPrefab cá»§a FarmCropVFXSpawner trong Inspector.");
+            Debug.LogWarning("[VFX] PlayHarvestAmountVFX: harvestAmountTextPrefab là NULL — kéo PF_HarvestAmountText_World vào slot harvestAmountTextPrefab của FarmCropVFXSpawner trong Inspector.");
             return;
         }
 

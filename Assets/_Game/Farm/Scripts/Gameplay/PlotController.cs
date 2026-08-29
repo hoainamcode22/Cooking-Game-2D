@@ -797,16 +797,34 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
 
+    // ── HIỆU NĂNG 2026-08-29 ─────────────────────────────────────────────────
+    // RefreshVisual() chạy MỖI FRAME cho từng ô ruộng đang lớn (SCN_Farm có 38 ô).
+    // Trước đây mỗi frame nó đều: dựng một chuỗi "mm:ss" MỚI (rác cho GC), gán vào
+    // TextMeshPro, gọi SetActive cho 2–3 object, và ghi lại scale + vị trí thanh tiến
+    // độ — trong khi 59/60 frame KHÔNG có gì thay đổi. 38 ô × 60 fps = hơn 2.000 lượt
+    // ghi thừa mỗi giây, và rác chuỗi dồn lại thành những cú GC giật hình.
+    //
+    // Hai biến nhớ dưới đây CHỈ để trả lời "có gì đổi không". Mọi phép so khác đều đọc
+    // trạng thái THẬT của object (activeSelf, enabled, localScale) chứ không tin bộ nhớ
+    // đệm — nên nếu script khác có sửa tay thì lần sau vẫn tự chỉnh lại đúng.
+    // KHÔNG đổi hành vi, không đổi hình ảnh: chỉ bỏ những lượt ghi lại y hệt giá trị cũ.
+    private long  _lastRemainSecShown = long.MinValue;   // giây còn lại đã hiển thị
+    private float _lastProgressShown  = -1f;             // tiến độ đã vẽ (0..1)
+
     public void RefreshVisual()
     {
         TryResolvePlantedCrop();
 
 
-        if (groundSprite != null)
+        if (groundSprite != null && !groundSprite.enabled)
             groundSprite.enabled = true;
 
         if (readyIcon != null)
-            readyIcon.enabled = state == PlotState.Ready;
+        {
+            bool wantReadyIcon = state == PlotState.Ready;
+            if (readyIcon.enabled != wantReadyIcon)
+                readyIcon.enabled = wantReadyIcon;
+        }
 
         if ((state == PlotState.Growing || state == PlotState.Ready) && plantedCrop != null)
         {
@@ -815,28 +833,51 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             if (cropVisual != null)
                 cropVisual.ShowCrop(plantedCrop, progress);
 
-            if (timerRoot != null)
+            if (timerRoot != null && !timerRoot.activeSelf)
                 timerRoot.SetActive(true);
 
             if (timerText != null)
-                timerText.text = state == PlotState.Ready ? "Chín" : GetRemainingTimeText();
+            {
+                // -1 = trạng thái "Chín". Chỉ dựng chuỗi khi con số GIÂY thật sự đổi
+                // ⇒ mỗi ô cấp phát 1 chuỗi/giây thay vì 60 chuỗi/giây.
+                long remainNow = state == PlotState.Ready ? -1L : GetRemainingSeconds();
+                if (remainNow != _lastRemainSecShown)
+                {
+                    _lastRemainSecShown = remainNow;
+                    timerText.text = state == PlotState.Ready ? "Chín" : GetRemainingTimeText();
+                }
+            }
 
             if (progressRoot != null)
-                progressRoot.SetActive(state == PlotState.Growing);
+            {
+                bool wantProgress = state == PlotState.Growing;
+                if (progressRoot.activeSelf != wantProgress)
+                    progressRoot.SetActive(wantProgress);
+            }
 
             if (progressFill != null)
             {
                 float p = Mathf.Clamp01(progress);
 
-                Vector3 scale = progressFill.localScale;
-                scale.x = p;
-                progressFill.localScale = scale;
+                // Ghi khi tiến độ đổi đủ để mắt thấy, HOẶC khi scale thật đã lệch khỏi p
+                // (tự chỉnh lại nếu nơi khác đụng vào) — 0,0005 ≈ nửa phần nghìn thanh bar.
+                bool changed = Mathf.Abs(p - _lastProgressShown) > 0.0005f
+                            || Mathf.Abs(progressFill.localScale.x - p) > 0.001f;
 
-                if (progressLeftToRight)
+                if (changed)
                 {
-                    Vector3 pos = progressFill.localPosition;
-                    pos.x = -(progressFullWidth * (1f - p)) * 0.5f;
-                    progressFill.localPosition = pos;
+                    _lastProgressShown = p;
+
+                    Vector3 scale = progressFill.localScale;
+                    scale.x = p;
+                    progressFill.localScale = scale;
+
+                    if (progressLeftToRight)
+                    {
+                        Vector3 pos = progressFill.localPosition;
+                        pos.x = -(progressFullWidth * (1f - p)) * 0.5f;
+                        progressFill.localPosition = pos;
+                    }
                 }
             }
         }
@@ -845,11 +886,15 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             if (cropVisual != null)
                 cropVisual.ClearAll();
 
-            if (timerRoot != null)
+            if (timerRoot != null && timerRoot.activeSelf)
                 timerRoot.SetActive(false);
 
-            if (progressRoot != null)
+            if (progressRoot != null && progressRoot.activeSelf)
                 progressRoot.SetActive(false);
+
+            // Ô trống/khoá: quên số cũ đi để lần trồng sau chắc chắn vẽ lại từ đầu.
+            _lastRemainSecShown = long.MinValue;
+            _lastProgressShown  = -1f;
         }
     }
 

@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: nuoc_che_ngo_kem
   displayName: "Ch\xE8 ng\xF4 s\u1EEFa kem"
-  icon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
+  icon: {fileID: 21300000, guid: 963fe2c67ae411616da54dbaf6b17fc1, type: 3}
   cookingData: {fileID: 0}

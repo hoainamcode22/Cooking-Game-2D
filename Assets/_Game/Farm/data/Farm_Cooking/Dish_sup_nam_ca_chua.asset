@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: sup_nam_ca_chua
   dishName: "Canh n\u1EA5m c\xE0 chua"
   dishSubTitle: "N\u1EA5m \xB7 C\xE0 Chua \xB7 Rau Th\u01A1m"
-  dishSprite: {fileID: -2678707876498202817, guid: 4d849149e4c04714a9c1b16b0cae29ed, type: 3}
+  dishSprite: {fileID: 21300000, guid: 1929eefe71d2d5fe3636c60b2935905a, type: 3}
   difficulty: 0
   unlockLevel: 8
   targetFlavor:

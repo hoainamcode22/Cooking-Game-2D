@@ -5,8 +5,8 @@ public class HarvestFeedbackSpawner : MonoBehaviour
 {
     public static HarvestFeedbackSpawner Instance { get; private set; }
 
-    /// <summary>Icon kho trên HUD — cho UI khác (vd popup tàu) bay vật phẩm về đúng chỗ.</summary>
-    public Transform WarehouseTarget => warehouseTarget;
+    /// <summary>Icon/thanh kho trên HUD — cho UI khác (vd popup tàu) bay vật phẩm về đúng chỗ.</summary>
+    public Transform WarehouseTarget => ResolveWarehouseTarget();
 
     [Header("Fly FX")]
     [SerializeField] private HarvestFlyItemFX harvestFlyPrefab;
@@ -30,11 +30,6 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     [SerializeField] private int maxVisualExpOrbs = 3;
     [SerializeField] private float expSpawnGap = 0.05f;
     [SerializeField] private float expSpawnScatterRadius = 55f;
-    [SerializeField] private float expPulseDuration = 0.28f;
-    [SerializeField] private float expPulseScale = 1.14f;
-    [SerializeField] private float expShakePixels = 4f;
-
-    private Coroutine expPulseRoutine;
 
     private void Awake()
     {
@@ -53,45 +48,20 @@ public class HarvestFeedbackSpawner : MonoBehaviour
             topBarExpUI = FindFirstObjectByType<TopBarExpUI>();
 
         ResolveExpTarget();
+        ResolveWarehouseTarget();
     }
 
     public void SpawnHarvestFly(Sprite icon, Vector3 worldPosition, int amount)
     {
-        bool warehouseIsRectTransform = warehouseTarget != null && warehouseTarget is RectTransform;
-
-
-        if (warehouseIsRectTransform)
-
-        if (harvestFlyPrefab == null)
-        {
+        if (harvestFlyPrefab == null || icon == null)
             return;
-        }
-
-        if (warehouseTarget == null)
-        {
-            return;
-        }
-
-        if (icon == null)
-        {
-            return;
-        }
 
         StartCoroutine(CoSpawnFly(icon, worldPosition, amount));
     }
 
     public void SpawnExpFly(Vector3 worldPosition, int expAmount)
     {
-        if (expAmount <= 0)
-            return;
-
-        if (expFlyPrefab == null)
-            return;
-
-        if (topBarExpUI == null)
-            topBarExpUI = FindFirstObjectByType<TopBarExpUI>();
-
-        if (ResolveExpTarget() == null)
+        if (expAmount <= 0 || expFlyPrefab == null)
             return;
 
         StartCoroutine(CoSpawnExp(worldPosition, expAmount));
@@ -100,8 +70,6 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     private IEnumerator CoSpawnFly(Sprite icon, Vector3 worldPosition, int amount)
     {
         int visualCount = Mathf.Clamp(amount, minVisualIcons, maxVisualIcons);
-        int arrivedCount = 0;
-
 
         for (int i = 0; i < visualCount; i++)
         {
@@ -109,28 +77,21 @@ public class HarvestFeedbackSpawner : MonoBehaviour
             Vector3 spawnPos = worldPosition + new Vector3(scatter.x, scatter.y, 0f);
 
             HarvestFlyItemFX fx = Instantiate(harvestFlyPrefab, spawnPos, Quaternion.identity);
+            if (fx == null) continue;
 
-            if (fx == null)
-            {
-                continue;
-            }
-
-            // Defensive: clear any prefab default sprite to prevent flashing/incorrect default icon
             fx.ClearIconImmediate();
 
+            Vector3 worldTarget = GetWarehouseTargetWorldPosition(spawnPos);
 
-            if (warehouseTarget == null) continue;
-            fx.Play(icon, spawnPos, warehouseTarget.position, () =>
+            fx.Play(icon, spawnPos, worldTarget, () =>
             {
-                arrivedCount++;
-
-                if (arrivedCount >= visualCount)
+                // Khi từng icon chạm đích: gọi kho tăng dần + hiệu ứng mẩy mẩy
+                if (WarehouseGainToastUI.Instance != null)
                 {
-                    if (warehousePulseFX == null)
-                    {
-                        return;
-                    }
-
+                    WarehouseGainToastUI.Instance.OnHarvestItemArrived(icon);
+                }
+                else if (warehousePulseFX != null)
+                {
                     warehousePulseFX.PlayPulse();
                 }
             });
@@ -142,14 +103,9 @@ public class HarvestFeedbackSpawner : MonoBehaviour
 
     private IEnumerator CoSpawnExp(Vector3 worldPosition, int expAmount)
     {
-        Camera cam = Camera.main;
-        if (cam == null)
-            yield break;
-
-        Vector3 expWorldTarget = GetExpTargetWorldPosition(worldPosition);
-
         int visualCount = Mathf.Clamp(expAmount, minVisualExpOrbs, maxVisualExpOrbs);
-        int arrivedCount = 0;
+        int perOrbExp = Mathf.Max(1, expAmount / visualCount);
+        int remainingExp = expAmount;
 
         for (int i = 0; i < visualCount; i++)
         {
@@ -157,19 +113,19 @@ public class HarvestFeedbackSpawner : MonoBehaviour
             Vector3 spawnPos = worldPosition + new Vector3(scatter.x, scatter.y, 0f);
 
             ExpFlyToAvatarFX fx = Instantiate(expFlyPrefab, spawnPos, Quaternion.identity);
-            if (fx == null)
-                continue;
+            if (fx == null) continue;
+
+            Vector3 expWorldTarget = GetExpTargetWorldPosition(spawnPos);
+            int thisOrbExp = (i == visualCount - 1) ? remainingExp : perOrbExp;
+            remainingExp -= thisOrbExp;
 
             fx.Play(spawnPos, expWorldTarget, () =>
             {
-                arrivedCount++;
-                if (arrivedCount >= visualCount)
-                {
-                    PlayExpTargetPulse();
+                // Khi viên EXP chạm vào thanh EXP_Bar_Container: nảy mẩy mẩy + cộng EXP
+                PlayExpTargetPulse();
 
-                    if (PlayerProgressManager.Instance != null)
-                        PlayerProgressManager.Instance.AddExp(expAmount);
-                }
+                if (PlayerProgressManager.Instance != null)
+                    PlayerProgressManager.Instance.AddExp(thisOrbExp);
             });
 
             if (expSpawnGap > 0f)
@@ -177,34 +133,95 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         }
     }
 
+    private Transform ResolveWarehouseTarget()
+    {
+        if (WarehouseGainToastUI.Instance != null && WarehouseGainToastUI.Instance.PanelRect != null)
+        {
+            warehouseTarget = WarehouseGainToastUI.Instance.PanelRect;
+            return warehouseTarget;
+        }
+
+        if (warehouseTarget != null)
+            return warehouseTarget;
+
+        var toastGO = GameObject.Find("WarehouseGainToast");
+        if (toastGO != null)
+        {
+            warehouseTarget = toastGO.transform;
+            return warehouseTarget;
+        }
+
+        return transform;
+    }
+
+    private Vector3 GetWarehouseTargetWorldPosition(Vector3 spawnWorldPosition)
+    {
+        Transform target = ResolveWarehouseTarget();
+        if (target == null)
+            return spawnWorldPosition;
+
+        if (target is RectTransform rt)
+        {
+            Camera worldCamera = Camera.main;
+            if (worldCamera == null) return target.position;
+
+            Canvas canvas = rt.GetComponentInParent<Canvas>();
+            Camera uiCamera = null;
+            if (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                uiCamera = canvas.worldCamera;
+
+            Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(uiCamera, rt.position);
+            float depth = Mathf.Abs(worldCamera.transform.position.z - spawnWorldPosition.z);
+            Vector3 worldTarget = worldCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, depth));
+            worldTarget.z = spawnWorldPosition.z;
+            return worldTarget;
+        }
+
+        return target.position;
+    }
+
     private RectTransform ResolveExpTarget()
     {
         if (expTarget != null)
             return expTarget;
 
-        GameObject judgeAvatar = GameObject.Find("JudgeAvatar");
-        if (judgeAvatar != null)
+        // 1. Tìm container thanh EXP mới trên HUD: EXP_Bar_Container
+        GameObject expBar = GameObject.Find("EXP_Bar_Container");
+        if (expBar != null)
         {
-            Transform icon = FindDeepChild(judgeAvatar.transform, "icon_exp");
-            if (icon != null)
-                expTarget = icon as RectTransform;
-
-            if (expPulseTarget == null)
-                expPulseTarget = expTarget;
-        }
-
-        if (expTarget == null)
-        {
-            GameObject iconExp = GameObject.Find("icon_exp");
-            if (iconExp != null)
-                expTarget = iconExp.transform as RectTransform;
-        }
-
-        if (expTarget == null && topBarExpUI != null)
-            expTarget = topBarExpUI.IconExp;
-
-        if (expPulseTarget == null)
+            expTarget = expBar.GetComponent<RectTransform>();
             expPulseTarget = expTarget;
+            return expTarget;
+        }
+
+        // 2. Tìm qua TopBarExpUI
+        if (topBarExpUI == null)
+            topBarExpUI = FindFirstObjectByType<TopBarExpUI>();
+
+        if (topBarExpUI != null && topBarExpUI.IconExp != null)
+        {
+            expTarget = topBarExpUI.IconExp;
+            expPulseTarget = expTarget;
+            return expTarget;
+        }
+
+        // 3. Tìm icon_exp
+        GameObject iconExp = GameObject.Find("icon_exp");
+        if (iconExp != null)
+        {
+            expTarget = iconExp.GetComponent<RectTransform>();
+            expPulseTarget = expTarget;
+            return expTarget;
+        }
+
+        // 4. Tìm TopLeft_Township_HUD
+        GameObject topLeft = GameObject.Find("TopLeft_Township_HUD");
+        if (topLeft != null)
+        {
+            expTarget = topLeft.GetComponent<RectTransform>();
+            expPulseTarget = expTarget;
+            return expTarget;
+        }
 
         return expTarget;
     }
@@ -212,10 +229,21 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     private Vector3 GetExpTargetWorldPosition(Vector3 spawnWorldPosition)
     {
         RectTransform target = ResolveExpTarget();
-        if (target == null)
-            return spawnWorldPosition;
-
         Camera worldCamera = Camera.main;
+
+        if (target == null)
+        {
+            // Fallback: góc trên-trái màn hình (nơi đặt avatar & exp)
+            if (worldCamera != null)
+            {
+                float depth = Mathf.Abs(worldCamera.transform.position.z - spawnWorldPosition.z);
+                Vector3 fallbackWorld = worldCamera.ScreenToWorldPoint(new Vector3(Screen.width * 0.15f, Screen.height * 0.92f, depth));
+                fallbackWorld.z = spawnWorldPosition.z;
+                return fallbackWorld;
+            }
+            return spawnWorldPosition + new Vector3(-100f, 200f, 0f);
+        }
+
         if (worldCamera == null)
             return target.position;
 
@@ -225,8 +253,8 @@ public class HarvestFeedbackSpawner : MonoBehaviour
             uiCamera = canvas.worldCamera;
 
         Vector2 screenPos = RectTransformUtility.WorldToScreenPoint(uiCamera, target.position);
-        float depth = Mathf.Abs(worldCamera.transform.position.z - spawnWorldPosition.z);
-        Vector3 worldTarget = worldCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, depth));
+        float d = Mathf.Abs(worldCamera.transform.position.z - spawnWorldPosition.z);
+        Vector3 worldTarget = worldCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, d));
         worldTarget.z = spawnWorldPosition.z;
         return worldTarget;
     }
@@ -237,62 +265,6 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         if (target == null)
             return;
 
-        if (expPulseRoutine != null)
-            StopCoroutine(expPulseRoutine);
-
-        expPulseRoutine = StartCoroutine(CoPulseExpTarget(target));
-    }
-
-    private Vector3 initialExpScale = Vector3.zero;
-    private Vector2 initialExpPos = Vector2.zero;
-
-    private IEnumerator CoPulseExpTarget(RectTransform target)
-    {
-        if (initialExpScale == Vector3.zero)
-        {
-            initialExpScale = target.localScale;
-            initialExpPos = target.anchoredPosition;
-        }
-
-        float duration = Mathf.Max(0.05f, expPulseDuration);
-        float elapsed = 0f;
-
-        while (elapsed < duration)
-        {
-            elapsed += Time.unscaledDeltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float wave = Mathf.Sin(t * Mathf.PI);
-            float shake = expShakePixels * wave;
-
-            target.localScale = Vector3.LerpUnclamped(initialExpScale, initialExpScale * expPulseScale, wave);
-            target.anchoredPosition = initialExpPos + new Vector2(
-                Mathf.Sin(t * Mathf.PI * 10f) * shake,
-                Mathf.Cos(t * Mathf.PI * 12f) * shake * 0.6f);
-
-            yield return null;
-        }
-
-        target.localScale = initialExpScale;
-        target.anchoredPosition = initialExpPos;
-        expPulseRoutine = null;
-    }
-
-    private static Transform FindDeepChild(Transform parent, string childName)
-    {
-        if (parent == null)
-            return null;
-
-        if (parent.name == childName)
-            return parent;
-
-        for (int i = 0; i < parent.childCount; i++)
-        {
-            Transform result = FindDeepChild(parent.GetChild(i), childName);
-            if (result != null)
-                return result;
-        }
-
-        return null;
+        JuicyPulseFX.Play(target, 1.22f, 0.25f);
     }
 }
-

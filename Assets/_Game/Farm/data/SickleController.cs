@@ -15,7 +15,7 @@ public class SickleController : MonoBehaviour
     [SerializeField] private LayerMask plotLayerMask = ~0;
 
     [Header("Feel")]
-    [Tooltip("Tá»‘c Ä‘á»™ follow cursor. Cao = snappy, tháº¥p = lag nháº¹ nhÆ° Hay Day.")]
+    [Tooltip("Tốc độ follow cursor. Cao = snappy, thấp = lag nhẹ như Hay Day.")]
     [SerializeField] private float followSpeed = 28f;
 
     private Camera mainCam;
@@ -155,7 +155,7 @@ public class SickleController : MonoBehaviour
             return;
         }
 
-        string cropName = plot.CurrentCrop?.displayName ?? "NÃ´ng sáº£n";
+        string cropName = plot.CurrentCrop?.displayName ?? "Nông sản";
 
         if (plot.Harvest())
         {

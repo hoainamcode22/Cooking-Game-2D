@@ -80,7 +80,7 @@ public class LetterMiniGame : MonoBehaviour
         }
         isPlaying = true;
 
-        guideText.text = "Nháº¥n Ä‘Ãºng cÃ¡c chá»¯ cÃ¡i theo thá»© tá»±";
+        guideText.text = "Nhấn đúng các chữ cái theo thứ tự";
         UpdateUI();
     }
 
@@ -180,7 +180,7 @@ public class LetterMiniGame : MonoBehaviour
 
         sequenceText.text = builder.ToString();
 
-        resultText.text = $"ÄÃºng: {correctCount}/{sequenceLength} | Sai: {wrongCount}/{maxWrong + 1}";
+        resultText.text = $"Đúng: {correctCount}/{sequenceLength} | Sai: {wrongCount}/{maxWrong + 1}";
     }
 
     private void FinishMiniGame(bool isSuccess)

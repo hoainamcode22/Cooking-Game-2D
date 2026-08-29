@@ -7,20 +7,18 @@ using UnityEngine.UI;
 /// <summary>
 /// Hiệu ứng "kim cương bay về HUD" — anh em sinh đôi của CoinFlyFX:
 /// nghe FarmEconomyManager.OnGemAddedFx, spawn vài viên gem UI tại con trỏ,
-/// bung nhẹ rồi bay về icon kim cương trên HUD, thu nhỏ và tự huỷ.
-/// Null-safety: thiếu canvas → bỏ qua; thiếu targetGemIcon → tự tìm theo tên
-/// (kimcuong/gem) trong canvas; vẫn thiếu → bay về góc phải-trên; thiếu sprite → vẽ gem xanh runtime.
+/// bung nhẹ rồi bay về icon kim cương/Diamond_Container trên HUD, thu nhỏ, nảy mẩy mẩy và tự huỷ.
 /// </summary>
 public class GemFlyFX : MonoBehaviour
 {
     [Header("Wiring")]
     [SerializeField] private Canvas canvas;               // HUD canvas (chứa icon kim cương)
-    [SerializeField] private RectTransform targetGemIcon; // đích bay — icon kim cương trên HUD
+    [SerializeField] private RectTransform targetGemIcon; // đích bay — icon kim cương/Diamond_Container trên HUD
     [SerializeField] private Sprite gemSprite;            // sprite gem (mặc định: lấy từ icon đích)
 
     [Header("Tuning")]
     [SerializeField] private int maxGems = 5;
-    [SerializeField] private float flyDuration = 0.7f;
+    [SerializeField] private float flyDuration = 0.65f;
 
     private const float GemSize      = 34f;
     private const float BurstRadius  = 55f;
@@ -57,6 +55,7 @@ public class GemFlyFX : MonoBehaviour
         if (!isActiveAndEnabled || amount <= 0) return;
 
         if (canvas == null) canvas = GetComponentInParent<Canvas>();
+        if (canvas == null) canvas = FindFirstObjectByType<Canvas>();
         if (canvas == null) return;
 
         AutoFindTargetIfNeeded();
@@ -70,7 +69,7 @@ public class GemFlyFX : MonoBehaviour
         Camera uiCam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
         Vector2 endScreen = targetGemIcon != null
             ? RectTransformUtility.WorldToScreenPoint(uiCam, targetGemIcon.position)
-            : new Vector2(Screen.width * 0.92f, Screen.height * 0.92f);
+            : new Vector2(Screen.width * 0.88f, Screen.height * 0.94f);
 
         var canvasRect = canvas.transform as RectTransform;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, startScreen, uiCam, out Vector2 startLocal);
@@ -93,18 +92,35 @@ public class GemFlyFX : MonoBehaviour
     /// <summary>Tự tìm icon kim cương trên HUD theo tên (chạy 1 lần) — Setup tool có thể gán đè.</summary>
     private void AutoFindTargetIfNeeded()
     {
-        if (targetGemIcon != null || triedAutoFind || canvas == null) return;
+        if (targetGemIcon != null || triedAutoFind) return;
         triedAutoFind = true;
 
-        var rects = canvas.GetComponentsInChildren<RectTransform>(true);
-        foreach (var rt in rects)
+        var diamondContainer = GameObject.Find("Diamond_Container");
+        if (diamondContainer != null)
         {
-            string n = rt.gameObject.name.ToLowerInvariant();
-            if ((n.Contains("kimcuong") || n.Contains("gem") || n.Contains("diamond"))
-                && rt.GetComponent<Image>() != null)
+            targetGemIcon = diamondContainer.GetComponent<RectTransform>();
+            return;
+        }
+
+        var iconDiamond = GameObject.Find("Icon_Diamond");
+        if (iconDiamond != null)
+        {
+            targetGemIcon = iconDiamond.GetComponent<RectTransform>();
+            return;
+        }
+
+        if (canvas != null)
+        {
+            var rects = canvas.GetComponentsInChildren<RectTransform>(true);
+            foreach (var rt in rects)
             {
-                targetGemIcon = rt;
-                return;
+                string n = rt.gameObject.name.ToLowerInvariant();
+                if ((n.Contains("kimcuong") || n.Contains("gem") || n.Contains("diamond"))
+                    && rt.GetComponent<Image>() != null)
+                {
+                    targetGemIcon = rt;
+                    return;
+                }
             }
         }
     }
@@ -170,11 +186,16 @@ public class GemFlyFX : MonoBehaviour
             yield return null;
         }
 
+        // Chạm đích: hiệu ứng mẩy mẩy trên Diamond_Container
+        if (targetGemIcon != null)
+        {
+            JuicyPulseFX.Play(targetGemIcon, 1.20f, 0.22f);
+        }
+
         liveGems.Remove(gem.gameObject);
         Destroy(gem.gameObject);
     }
 
-    // Gem dự phòng: hình thoi xanh ngọc 16x16 vẽ runtime, cache dùng chung.
     private static Sprite GetFallbackSprite()
     {
         if (fallbackSprite != null) return fallbackSprite;
@@ -194,7 +215,6 @@ public class GemFlyFX : MonoBehaviour
         for (int y = 0; y < size; y++)
             for (int x = 0; x < size; x++)
             {
-                // |x| + |y| <= r → hình thoi
                 float d = Mathf.Abs(x - c) + Mathf.Abs(y - c);
                 float r = size * 0.5f;
                 tex.SetPixel(x, y, d <= r - 2f ? bright : d <= r ? deep : clear);

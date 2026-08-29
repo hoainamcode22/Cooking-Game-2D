@@ -4,9 +4,11 @@ using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Setup 1-click cho cụm FX "nhận tài nguyên" (yêu cầu Sếp 2026-08-26, tham khảo video Township):
-///  - GemFlyFX: kim cương bay về icon gem trên HUD (gắn cạnh CoinFlyFX có sẵn).
-///  - WarehouseGainToastUI: thanh kho [icon | fill bar | 25/30] hiện khi nhận vật phẩm.
+/// Setup 1-click cho toàn bộ cụm FX "nhận tài nguyên & bay vật phẩm":
+///  - HarvestFeedbackSpawner: bay nông sản về WarehouseGainToast trên HUD, bay EXP về EXP_Bar_Container.
+///  - CoinFlyFX: vàng bay về Gold_Container + nảy mẩy mẩy.
+///  - GemFlyFX: kim cương bay về Diamond_Container + nảy mẩy mẩy.
+///  - WarehouseGainToastUI: thanh kho [icon | fill bar | 25/30] nhảy số tăng dần từng nấc.
 /// Chạy: Tools → Farm Game → FX → Setup HUD Gain FX. Sau khi chạy NHỚ SAVE SCENE.
 /// </summary>
 public static class FarmFxSetupTool
@@ -16,37 +18,46 @@ public static class FarmFxSetupTool
     [MenuItem("Tools/Farm Game/FX/Setup HUD Gain FX (gem bay + thanh kho)")]
     public static void SetupHudGainFx()
     {
-        // ── 1. Điểm neo: CoinFlyFX đã được Setup All wire sẵn trên HUD canvas ──
+        // ── 1. Tìm Canvas HUD ──
+        var canvas = Object.FindFirstObjectByType<Canvas>(FindObjectsInactive.Include);
+        if (canvas == null)
+        {
+            Debug.LogError("[FarmFX] Không tìm thấy Canvas trong scene!");
+            return;
+        }
+
+        // ── 2. CoinFlyFX & GemFlyFX ──
         var coinFx = Object.FindFirstObjectByType<CoinFlyFX>(FindObjectsInactive.Include);
         if (coinFx == null)
         {
-            Debug.LogError("[FarmFX] Không thấy CoinFlyFX trong scene — chạy 'Setup All' trước rồi chạy lại tool này.");
-            return;
+            var go = new GameObject("CoinFlyFX", typeof(CoinFlyFX));
+            Undo.RegisterCreatedObjectUndo(go, "Create CoinFlyFX");
+            go.transform.SetParent(canvas.transform, false);
+            coinFx = go.GetComponent<CoinFlyFX>();
         }
 
-        var canvas = coinFx.GetComponentInParent<Canvas>();
-        if (canvas == null)
-        {
-            Debug.LogError("[FarmFX] CoinFlyFX không nằm trong Canvas nào — kiểm tra hierarchy HUD.");
-            return;
-        }
-
-        // ── 2. GemFlyFX cạnh CoinFlyFX ──
         var gemFx = coinFx.GetComponent<GemFlyFX>();
         if (gemFx == null) gemFx = Undo.AddComponent<GemFlyFX>(coinFx.gameObject);
 
-        RectTransform gemIcon = FindGemIcon(canvas);
-        var soGem = new SerializedObject(gemFx);
-        soGem.FindProperty("canvas").objectReferenceValue = canvas;
-        if (gemIcon != null)
+        RectTransform goldContainer = FindContainer(canvas, "gold_container", "icon_gold");
+        if (goldContainer != null)
         {
-            soGem.FindProperty("targetGemIcon").objectReferenceValue = gemIcon;
-            var img = gemIcon.GetComponent<Image>();
-            if (img != null && img.sprite != null)
-                soGem.FindProperty("gemSprite").objectReferenceValue = img.sprite;
+            var soCoin = new SerializedObject(coinFx);
+            soCoin.FindProperty("canvas").objectReferenceValue = canvas;
+            soCoin.FindProperty("targetGoldIcon").objectReferenceValue = goldContainer;
+            soCoin.ApplyModifiedProperties();
+            EditorUtility.SetDirty(coinFx);
         }
-        soGem.ApplyModifiedProperties();
-        EditorUtility.SetDirty(gemFx);
+
+        RectTransform gemContainer = FindContainer(canvas, "diamond_container", "icon_diamond", "gem", "kimcuong");
+        if (gemContainer != null)
+        {
+            var soGem = new SerializedObject(gemFx);
+            soGem.FindProperty("canvas").objectReferenceValue = canvas;
+            soGem.FindProperty("targetGemIcon").objectReferenceValue = gemContainer;
+            soGem.ApplyModifiedProperties();
+            EditorUtility.SetDirty(gemFx);
+        }
 
         // ── 3. WarehouseGainToastUI ──
         var toast = Object.FindFirstObjectByType<WarehouseGainToastUI>(FindObjectsInactive.Include);
@@ -61,25 +72,7 @@ public static class FarmFxSetupTool
             toast = go.AddComponent<WarehouseGainToastUI>();
         }
 
-        // Icon nhà kho: đọc từ HarvestFeedbackSpawner.warehouseTarget (field private → SerializedObject)
-        Sprite warehouseSprite = null;
-        var spawner = Object.FindFirstObjectByType<HarvestFeedbackSpawner>(FindObjectsInactive.Include);
-        if (spawner != null)
-        {
-            var soSpawner = new SerializedObject(spawner);
-            var targetProp = soSpawner.FindProperty("warehouseTarget");
-            var target = targetProp != null ? targetProp.objectReferenceValue as Transform : null;
-            if (target != null)
-            {
-                var img = target.GetComponent<Image>();
-                if (img != null) warehouseSprite = img.sprite;
-            }
-        }
-
-        if (warehouseSprite == null)
-        {
-            warehouseSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/bocaycoitrangtri/ICON_HUB/icon_warehouse_v2_1786984374562-removebg-preview.png");
-        }
+        Sprite warehouseSprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/bocaycoitrangtri/ICON_HUB/icon_warehouse_v2_1786984374562-removebg-preview.png");
 
         var soToast = new SerializedObject(toast);
         soToast.FindProperty("canvas").objectReferenceValue = canvas;
@@ -90,29 +83,45 @@ public static class FarmFxSetupTool
         AssignSprite(soToast, "barFillSprite",  TrainSprites + "/progress_fill_green.png");
         soToast.ApplyModifiedProperties();
 
-        // Bake hierarchy ngay trong Editor để sprite serialize vào scene (an toàn khi build)
         toast.EnsureBuilt();
         EditorUtility.SetDirty(toast);
-        EditorSceneManager.MarkSceneDirty(toast.gameObject.scene);
 
-        EditorGUIUtility.PingObject(toast);
-        Debug.Log($"[FarmFX] XONG ✔ GemFlyFX (icon gem: {(gemIcon != null ? gemIcon.name : "TỰ TÌM lúc chạy")}) + " +
-                  $"WarehouseGainToast (icon kho: {(warehouseSprite != null ? "OK" : "tự lấy lúc chạy")}). NHỚ SAVE SCENE (Ctrl+S).");
+        // ── 4. HarvestFeedbackSpawner (Nông sản bay về Toast, EXP bay về EXP_Bar_Container) ──
+        var spawners = Object.FindObjectsByType<HarvestFeedbackSpawner>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        RectTransform expContainer = FindContainer(canvas, "exp_bar_container", "icon_exp", "topbar_exp");
+
+        foreach (var spawner in spawners)
+        {
+            var soSpawner = new SerializedObject(spawner);
+            soSpawner.FindProperty("warehouseTarget").objectReferenceValue = toast.PanelRect != null ? (Transform)toast.PanelRect : toast.transform;
+            if (expContainer != null)
+            {
+                soSpawner.FindProperty("expTarget").objectReferenceValue = expContainer;
+                soSpawner.FindProperty("expPulseTarget").objectReferenceValue = expContainer;
+            }
+            soSpawner.ApplyModifiedProperties();
+            EditorUtility.SetDirty(spawner);
+        }
+
+        EditorSceneManager.MarkSceneDirty(canvas.gameObject.scene);
+
+        Debug.Log($"[FarmFX] XONG ✔ Setup toàn bộ HUD Gain FX: Nông sản bay về WarehouseGainToast, EXP bay về EXP_Bar_Container, Vàng/Kim Cương bay về Container chuẩn. NHỚ SAVE SCENE (Ctrl+S).");
     }
 
-    private static RectTransform FindGemIcon(Canvas canvas)
+    private static RectTransform FindContainer(Canvas canvas, params string[] searchNames)
     {
-        RectTransform best = null;
-        foreach (var rt in canvas.GetComponentsInChildren<RectTransform>(true))
+        var rects = canvas.GetComponentsInChildren<RectTransform>(true);
+        foreach (var name in searchNames)
         {
-            string n = rt.gameObject.name.ToLowerInvariant();
-            if ((n.Contains("kimcuong") || n.Contains("gem") || n.Contains("diamond")) && rt.GetComponent<Image>() != null)
+            foreach (var rt in rects)
             {
-                best = rt;
-                break;
+                if (rt.gameObject.name.ToLowerInvariant().Contains(name.ToLowerInvariant()))
+                {
+                    return rt;
+                }
             }
         }
-        return best;
+        return null;
     }
 
     private static void AssignSprite(SerializedObject so, string field, string path)

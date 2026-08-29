@@ -241,10 +241,10 @@ public class CookingSelectionManager : MonoBehaviour
         int seasoningCount = selectedSeasonings.Count;
 
         if (ingredientsCountText != null)
-            ingredientsCountText.text = $"Chá»n {ingredientCount}/{maxIngredients}";
+            ingredientsCountText.text = $"Chọn {ingredientCount}/{maxIngredients}";
 
         if (seasoningsCountText != null)
-            seasoningsCountText.text = $"Chá»n {seasoningCount}/{maxSeasonings}";
+            seasoningsCountText.text = $"Chọn {seasoningCount}/{maxSeasonings}";
     }
 
     private void RebuildPot()

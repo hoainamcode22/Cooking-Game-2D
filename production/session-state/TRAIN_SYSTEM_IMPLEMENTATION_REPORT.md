@@ -1482,3 +1482,542 @@ không lên chợ được. Đã lập **hồ sơ bàn giao đội vẽ tự đ�
   `trung`/`sua` để không bị xếp sai tab; **tên hiển thị** vẫn là "Súp ngô trứng", "Chè ngô sữa
   kem", "Dưa hấu dầm sữa đá" nên người chơi không thấy gì lạ. Nếu Sếp muốn id đọc "đúng tên"
   thì phải sửa `WarehousePopupUI.ClassifyItem` trước — việc đó rủi ro hơn, em không tự làm.
+
+---
+
+## 2026-08-29 · TỐI ƯU HIỆU NĂNG — ĐỢT 1 (Sếp duyệt mục 1,2,4,5,6,7,8; loại mục 3)
+
+**Yêu cầu Sếp:** game đang lag, quay video không mượt. "Logic đang rất ok, đúng ý mình —
+tối ưu cẩn thận tránh đụng chạm gì với hiện tại. Backup trước, nhỡ hỏng kêu quay lại là
+quay lại được ngay."
+
+### SCAN — đo trước, không đoán
+
+Đếm instance của mọi script có `Update()` trong SCN_Farm bằng cách map GUID script →
+số lần xuất hiện trong file scene (không tin Inspector, đọc thẳng YAML):
+
+| Script | Số instance |
+|---|---|
+| `PlotController` | **38** |
+| `EnvironmentSway` | 34 |
+| `PlotCropVisual` | **26** |
+| `TrainWorldVisual` | 10 |
+| còn lại | 1–6 mỗi loại |
+| **Tổng có `Update()`** | **154** |
+
+Rồi đọc THÂN từng hàm `Update()` để tìm dấu hiệu tốn kém (gán `.text`, dựng chuỗi,
+`GetComponent`, `Find`, `SetActive`, cấp phát, LINQ).
+
+### PHÁT HIỆN — thủ phạm chính không phải thứ em nghi ban đầu
+
+`PlotController.Update()` → `RefreshVisual()` chạy **mỗi frame cho mỗi ô ruộng**, và mỗi
+lượt đều làm lại toàn bộ công việc dù không có gì đổi:
+
+- dựng chuỗi `$"{minutes:00}:{seconds:00}"` **mới mỗi frame** rồi gán vào TextMeshPro
+  ⇒ 38 ô × 60 fps = **2.280 chuỗi rác/giây** → dồn lại thành những cú GC giật hình,
+  đúng kiểu giật đều đặn làm hỏng video;
+- `SetActive()` cho `timerRoot` / `progressRoot` mỗi frame dù đã đúng trạng thái;
+- ghi lại `localScale` + `localPosition` của thanh tiến độ mỗi frame;
+- gọi `cropVisual.ShowCrop()` mỗi frame → `UpdateVisual()` ghi lại **12 sprite + 12
+  localScale + 12 localPosition**, rồi thêm vòng **12 `SetActive`** nữa.
+
+Cộng lại: **38 ô × ~36 lệnh ghi + 26 ô × 12 SetActive ≈ hơn 2.000 lệnh gốc mỗi frame**
+chỉ để ghi lại y hệt giá trị cũ. Ô TRỐNG cũng không thoát: `ClearAll()` bị gọi mỗi frame
+và dọn lại 12 slot đã dọn từ lâu.
+
+Ngoài ra, quét 570 file PNG:
+- **569/570** để `maxTextureSize = 2048`;
+- **324** file có platform setting **không nén**;
+- nếu nạp hết ở dạng RGBA32 thì card đồ hoạ phải giữ **≈ 433 MB**; nén chuẩn còn **≈ 108 MB**;
+- 20 ảnh có cạnh > 1024 px, nặng nhất là `lichicon.png` **2500×2500 = 23,8 MB** cho một
+  cái icon lịch.
+
+### IMPLEMENT — 4 file sửa, đều là THÊM CHỐT CHẶN, không đổi logic
+
+| File | Sửa gì |
+|---|---|
+| `Farm/Scripts/Gameplay/PlotController.cs` | `RefreshVisual()`: nhớ `_lastRemainSecShown` + `_lastProgressShown`. Chuỗi "mm:ss" chỉ dựng khi con số GIÂY đổi (60 chuỗi/giây → **1**). `SetActive`/`enabled` chỉ gọi khi trạng thái thật khác. Thanh tiến độ chỉ ghi khi đổi > 0,05 %. |
+| `Farm/Scripts/Gameplay/PlotCropVisual.cs` | `ShowCrop()`: nhớ (cây, stage, số cây, đã chín) — trùng thì **return ngay**, khỏi ghi 12 slot. `ClearAll()`: đã dọn rồi thì thôi. |
+| `Scripts/UIJuiceAutoAttach.cs` | Nhớ instanceID nút đã xử lý ⇒ không `GetComponent` lại mãi. Nhịp quét **không bao giờ chậm hơn 2 giây như cũ**, nhưng được chạy nhanh hơn (0,35 s) ngay sau khi nạp scene / vừa thấy nút mới ⇒ nút sinh lúc chạy được gắn SỚM HƠN bản cũ. |
+| `Scripts/CookingScoreCalculator.cs` | 7 `Debug.Log` (log từng nguyên liệu, mỗi lần chấm điểm) → `Trace()` gắn `[Conditional("COOKING_VERBOSE")]`. Mạnh hơn `if(VERBOSE)`: trình biên dịch xoá **cả phần dựng chuỗi** trong ngoặc. Bật lại: thêm symbol `COOKING_VERBOSE`. |
+
+**Nguyên tắc giữ an toàn:** mọi phép so đều đọc **trạng thái THẬT** của object
+(`activeSelf`, `enabled`, `localScale.x`) chứ không tin bộ nhớ đệm — nên nếu script khác
+có sửa tay thì frame sau vẫn tự chỉnh lại đúng. Chỉ hai giá trị được nhớ là số giây và
+tiến độ, và cả hai đều được xoá khi ô về trạng thái trống.
+
+### CÔNG CỤ MỚI (chưa chạy — Sếp bấm khi nào muốn)
+
+`Assets/_Game/Editor/ToiUuTexture_2026_08_29.cs` → menu **`Tools ▸ Tối ưu`**:
+
+1. **`1. Báo cáo texture (CHỈ ĐỌC)`** — chạy trước, không sửa gì, in ra đang mất bao nhiêu MB.
+2. **`2. Bật nén texture`** — tách làm **3 nhóm theo thứ tự an toàn**: A art thế giới →
+   B nhân vật/vật phẩm → **C UI/popup làm cuối** (UI dễ lộ vệt nén nhất). Mỗi nhóm hỏi
+   xác nhận, bỏ qua file đã có override tay, và in danh sách đã đổi.
+3. **`3. Hạ maxTextureSize cho ảnh quá khổ`** — in danh sách 20 ảnh > 1024 px ra Console
+   **trước** khi hỏi, để Sếp xem rồi mới quyết.
+
+Cố ý KHÔNG tự chạy: nén là thứ duy nhất trong đợt này có thể đổi HÌNH ẢNH. Sếp bấm từng
+nhóm, nhìn game, ưng mới đi tiếp.
+
+### CHECK
+- 5 file cân ngoặc `()` `{}` `[]` = 0/0/0 sau khi lọc bỏ chuỗi và comment.
+- Số dòng khác so với bản backup: PlotController 73 · PlotCropVisual 39 ·
+  UIJuiceAutoAttach 61 · CookingScoreCalculator 27 — không đụng file nào khác.
+- Không sửa scene, không sửa prefab, không sửa asset dữ liệu ⇒ **không có rủi ro mất data**.
+
+### SAO LƯU — quay lại là quay lại được ngay
+`production/backup_train_2026-08-29/`
+- `perf/` — 7 file `.cs` nguyên bản (PlotController, PlotCropVisual, UIJuiceAutoAttach,
+  UIJuiceFeedback, CookingScoreCalculator, KitchenSceneV2UI, EnvironmentSway).
+- `META_png_truoc_toi_uu.tar.gz` — **toàn bộ 570 file `.png.meta`** trước khi nén.
+  Muốn trả texture về như cũ: giải nén đè lên `Assets/`, xong.
+
+### CHƯA LÀM — có lý do
+
+| Mục Sếp duyệt | Vì sao chưa làm |
+|---|---|
+| **5. Xoá UI cooking cũ + minigame** | Đây là mục DUY NHẤT không thể hoàn tác bằng chép file. Lợi ích hiệu năng của nó lại NHỎ NHẤT (object tắt thì không render, chỉ tốn RAM). Đề nghị: chạy thử đợt 1 này trước, chơi thấy ổn, rồi mới xoá — lúc đó nếu có vỡ thì biết chắc là do xoá chứ không lẫn với thứ khác. |
+| **6. Tách Canvas** | Tách Canvas làm ĐỔI THỨ TỰ VẼ. Rủi ro lộ hình cao, mà em chưa có bằng chứng canvas rebuild là nút thắt. Cần ảnh Profiler trước. |
+| **7. Cache UI bếp v2** | Cùng lý do — cần đo lúc mở bếp mới biết có đáng không. |
+| **3. Tách scene** | Sếp đã loại. |
+
+### CẦN SẾP LÀM
+1. Để Unity biên dịch lại 5 file (tự động khi focus Editor). **Xem Console có lỗi đỏ không** —
+   nếu có, báo em ngay, chép 4 file từ `perf/` đè lại là về như cũ.
+2. Chơi thử ruộng: đồng hồ đếm ngược, thanh tiến độ, cây lớn theo stage, ô trống — nhìn
+   có gì khác trước không. **Đây là 4 thứ duy nhất em đụng vào.**
+3. Chạy `Tools ▸ Tối ưu ▸ 1. Báo cáo texture` rồi gửi em ảnh Console.
+4. Gửi em ảnh **Profiler** + ảnh nút **Stats** để em chỉ đúng chỗ cho đợt 2.
+
+---
+
+## 2026-08-29 · NHẬN 37 ICON MÓN ĂN — TÁCH NỀN + GẮN VÀO GAME
+
+**Sếp giao:** đội vẽ vừa nộp bộ icon món ăn vào `Assets/Assetsgame/Món ăn/Món ăn/mon an`,
+nhờ tách nền/xoá phông rồi bổ sung vào tất cả các món.
+
+### SCAN
+37 file PNG, **2816×1536** (một file 2048×2048), RGBA nhưng **nền TRẮNG ĐẶC** (250–255), mỗi file
+một món đặt giữa. Tổng 222 MB.
+
+Đo trước khi động vào (bài học đợt tách nền hạt giống):
+- Nền chiếm 68–81% ảnh và **nối liền với viền** ⇒ tách bằng **liên thông**, không tách bằng màu.
+- Vùng trắng **kẹt trong lòng** món (kem, sữa, đá, đĩa trắng) chiếm tới 7% ở món
+  "Dưa hấu dầm sữa đá" ⇒ tách theo màu là **ăn mất kem và sữa**.
+- Ngưỡng T=6 → T=30 mà tỉ lệ vùng-nối-viền gần như không đổi ⇒ nền là mặt phẳng, mép món là vách
+  đứng ⇒ chọn T=14 rất an toàn.
+
+### IMPLEMENT — `~/dish_art/key.py`
+1. `bg` = vùng gần trắng **nối với viền ảnh** (scipy label + border seed). Trắng trong lòng: **không đụng**.
+2. Alpha theo màu **chỉ trong dải biên 2 px**; ngoài vùng nền alpha = 1 trọn vẹn.
+3. **Alpha-bleed**: pixel mờ lấy RGB của pixel đặc gần nhất ⇒ resize không sinh viền sáng.
+4. RGB và alpha **resize riêng** (không premultiply) ⇒ không quầng trắng.
+5. Cắt sát món → đặt giữa khung **vuông** (lề 6%) → xuất **512×512**.
+
+### CHECK — nhìn tận mắt, 3 lượt
+- Ghép 37 icon lên **nền nâu đậm** (nền dễ lộ viền trắng nhất): sạch, không quầng.
+- Soi to 4 món khó nhất (xoáy kem súp bí đỏ · sữa + đá trong ly · vành đĩa trắng ngà · sợi khói):
+  **giữ nguyên hết**, không bị ăn.
+- Render ở **đúng cỡ hiển thị thật** trong game (52 px và 38 px): đọc được, phân biệt được.
+- Ảnh QA: `qa-reports/qa_brown.jpg` · `qa_zoom.jpg` · `qa_size.png` · `QA_monan_38_nhan.jpg`.
+
+### GẮN VÀO GAME
+| Việc | Chi tiết |
+|---|---|
+| 18 icon CŨ | **Ghi đè đúng tên file cũ** ⇒ GUID giữ nguyên |
+| 19 icon MỚI | Thêm file + `.meta` mới (GUID sinh từ md5 tên) |
+| Toàn bộ 37 `.meta` | Viết lại: **spriteMode 1 (Single)**, pivot Center, PPU 100, maxTextureSize **512**, nén Normal, alphaIsTransparency |
+| `Dish_*.asset` | `dishSprite` → `{fileID: 21300000, guid: …}` — **37 món** |
+| `Item_*.asset` | `icon` → cùng sprite — **37 món** |
+| Ảnh gốc 2816×1536 | **Chuyển RA KHỎI `Assets/`** → `production/art-briefs/2026-08-28_Icon-Mon-An/GOC_DOI_VE_2816x1536/` |
+
+**Cái bẫy đã gỡ:** 18 `.meta` cũ để **spriteMode 2 (Multiple)** với ô cắt con theo kích thước ảnh CŨ
+(ví dụ rect 14,133,380,295) và sprite con mang fileID riêng (`-2206189127974015184`…). Ghi đè ảnh
+512×512 mà giữ nguyên meta thì ô cắt đó trỏ vào chỗ trống ⇒ icon thành mảnh vụn. Vì vậy phải đổi cả
+37 sang Single **và** sửa mọi tham chiếu từ fileID sprite-con sang **21300000**. Đã quét: chỉ
+`Dish_*` và `Item_*` tham chiếu (36 file), **không** scene nào, **không** prefab nào.
+
+**Vì sao phải chuyển ảnh gốc ra khỏi `Assets/`:** 37 ảnh 2816×1536 nằm trong `Assets/` thì Unity import
+hết thành texture — riêng chúng đã là **~640 MB VRAM**, trong khi đang gỡ đúng bài toán lag.
+Thư mục icon giờ chỉ còn **8,2 MB / 39 file**.
+
+### KIỂM TRA CUỐI
+- **74/74** trường (`dishSprite` + `icon` của 37 món) trỏ đúng `fileID 21300000` + đúng GUID.
+- 37 GUID không trùng nhau; 18 GUID cũ giữ nguyên ⇒ không phải nối lại gì.
+- Không sửa scene, không sửa prefab, không sửa code.
+
+### SAO LƯU
+`production/backup_train_2026-08-29/monan_icon/` — 20 PNG + 21 `.meta` **bản gốc trước khi ghi đè**.
+`GOC_DOI_VE_2816x1536/` — 37 ảnh gốc đội vẽ giao, còn nguyên để cắt lại nếu cần.
+
+### CÒN THIẾU
+- **`Cơm chiên bắp cải`** (`com_chien_bap_cai`, Dễ, **cấp 1**) — đội vẽ chưa giao. Món này vẫn
+  đang mượn icon hạt lúa. Đã viết phiếu `06_CON_THIEU_1_MON.md` trong thư mục hồ sơ đội vẽ.
+- Hai thư mục rỗng `Assets/Assetsgame/Món ăn/Món ăn/mon an` — `device_bash` không có quyền xoá;
+  Sếp xoá trong Project window của Unity (chuột phải ▸ Delete).
+
+### VIỆC SẾP LÀM
+1. Focus Unity cho nó import 37 texture (khoảng 1–2 phút).
+2. Mở **Bếp ▸ sổ công thức**: 38 món phải hiện icon thật, không còn mượn icon nguyên liệu.
+3. Mở **Kho ▸ tab Món ăn** và **Chợ**: icon phải sắc, không viền trắng quanh mép.
+4. Xoá 2 thư mục rỗng nói trên.
+
+---
+
+## 2026-08-29 · CHẨN ĐOÁN 20 LỖI `TMP IndexOutOfRangeException` SAU KHI BUILD
+
+**Hiện tượng:** build **Succeeded** (3m51s) nhưng Console đổ ~20 lỗi giống hệt nhau:
+`TMP_MaterialManager.GetFallbackMaterial(...)` → `IndexOutOfRangeException`, bắn ra từ
+`ScrollRect.LateUpdate` và `Canvas.SendWillRenderCanvases`.
+
+### KHÔNG PHẢI do việc hôm nay
+Không liên quan icon món ăn, không liên quan 4 file `.cs` đã tối ưu. Đây là **font**.
+
+### GỐC — đã đo bằng số, không đoán
+`GetFallbackMaterial(fontAsset, material, atlasIndex)` chạy `fontAsset.atlasTextures[atlasIndex]`.
+Nó chỉ được gọi khi một glyph nằm ở **atlas thứ 2 trở đi**. Vỡ mảng = TMP đã tạo atlas #1 nhưng
+mảng `atlasTextures` vẫn chỉ có 1 phần tử.
+
+Vì sao TMP phải tạo atlas #1: **atlas 1024×1024 đã đầy.**
+
+| Đo được | Số |
+|---|---|
+| Ký tự khác nhau trong tên món/vật phẩm/hạt giống/bảng giá | 81 |
+| + text bake sẵn trong 2 scene | **172** |
+| + mọi chuỗi tiếng Việt trong 246 file `.cs` (tên khách, tiêu đề đơn…) | **~298** |
+| Sức chứa atlas **1024×1024**, sampling 64 px, padding 6 → ô 76 px | **~169 glyph** |
+| Sức chứa nếu nới **2048×2048** | **~676 glyph** |
+
+**298 cần vẽ / 169 chỗ.** Font để `m_AtlasPopulationMode: 1` (Dynamic) nên vẽ glyph lúc chạy;
+đầy atlas 0 → nhảy sang atlas 1 → vỡ mảng. Trước đây chưa vỡ vì text đang dùng còn lọt dưới 169;
+**20 tên món mới đẩy qua ngưỡng** — đó là lý do lỗi xuất hiện đúng lúc này.
+
+### PHÁT HIỆN THÊM — dự án có HAI bản cùng một font
+| File | GUID | Vai trò | Atlas | Glyph đã nướng |
+|---|---|---|---|---|
+| `_Game/Resources/Fonts/FontVo.asset` | `ce482f79…` | **UI game dùng — 234 tham chiếu trong SCN_Farm** | 1024×1024 | 98 |
+| `_Game/Fonts/Baloo2 SDF.asset` | `f1e64e56…` | **font mặc định của TMP Settings** | 1024×1024 | 0 |
+
+Cả hai đều Dynamic, đều 1024×1024, đều bật Multi Atlas Textures ⇒ **cả hai đều sẽ vỡ**.
+`FontVo.asset` thực chất là bản sao của `Baloo2 SDF` bị đổi tên file mà không đổi tên object bên
+trong — đó chính là cảnh báo `Main Object Name 'Baloo2 SDF' does not match filename 'FontVo'`
+(vô hại, chỉ gây rối mắt).
+
+### CÁCH SỬA (phải làm trong Inspector — không sửa được bằng file)
+Nới `m_AtlasWidth/Height` trong file `.asset` sẽ lệch với Texture2D 1024×1024 nằm bên trong ⇒
+phải để Unity dựng lại atlas. Với **cả hai** font:
+1. Chọn font asset trong Project.
+2. **Atlas Resolution**: `1024 × 1024` → **`2048 × 2048`**.
+3. Bỏ tick **Multi Atlas Textures** (hết atlas thì thiếu chữ, chứ không văng lỗi — hỏng nhẹ hơn).
+4. Bấm **Clear Dynamic Data** (hoặc *Update Atlas Texture*) → Ctrl+S.
+
+Tốn thêm ~4 MB texture mỗi font (Alpha8), đổi lại 676 chỗ cho ~300 glyph — dư gấp đôi.
+
+### CÁC CẢNH BÁO CÒN LẠI TRONG LOG — không phải lỗi
+- **5 script mất** (`Wagon_1..4` trong SCN_Farm; `Cat_Chef`, `Panel_YourDishBG`, `ChiTietMonAn`,
+  `Item_NguyenLieu` trong SampleScene). Đã kiểm: **không có** `m_Script: {fileID: 0}` trong hai
+  scene ⇒ chúng nằm trong **prefab**, trỏ tới GUID script đã bị xoá/đổi tên từ trước. Cảnh báo cũ,
+  không phải do đợt này. Chỉ là rác, không gây lỗi chạy.
+- **Shader warning `pow(f,e)` ở ShaderGraph_Water** — cảnh báo mỹ phẩm của Shader Graph, vô hại.
+- **`1 URP assets included in build`** — dòng thông tin bình thường.
+
+### SAO LƯU
+`production/backup_train_2026-08-29/font/` — `FontVo.asset` + `.meta` nguyên bản trước khi sửa.
+
+---
+
+## 2026-08-29 · RÀ SOÁT "CHUYỂN SCENE LÂU + VÀO BẾP VĂNG GAME"
+
+**Sếp báo:** build .exe chuyển scene lâu; Home→Farm chậm; Farm→Cooking chậm **và crash thoát game**.
+
+### 1) CRASH Farm→Cooking = chính là lỗi font đã chẩn hôm nay
+Bằng chứng khớp 3 điểm: (a) stack trace bắn từ `ScrollRect.LateUpdate` — đúng cái **danh sách 38 món
+trong sổ công thức bếp**; (b) lỗi xuất hiện ngay sau đợt thêm 20 món (atlas 1024 chứa ~169 glyph,
+game cần ~298); (c) trong Editor lỗi chỉ đổ Console, còn trong **bản build nó lặp mỗi frame ngay khi
+SampleScene mở → UI bếp không vẽ nổi → treo/văng**. Sửa font xong là hết crash.
+
+**Đã gói cách sửa vào 1 nút** (vì Sếp không tìm thấy font trong Project):
+`Assets/_Game/Editor/SuaFontTMP_2026_08_29.cs` → menu **Tools ▸ Tối ưu ▸ Font**:
+- `1. Liệt kê mọi font TMP (CHỈ ĐỌC)` — in đường dẫn + thông số từng font ra Console.
+- `2. SỬA LỖI VĂNG BẾP` — cho cả FontVo + Baloo2 SDF: atlas 1024→**2048**, **tắt Multi Atlas**,
+  `ClearFontAssetData(true)` (= nút Clear Dynamic Data). Backup nguyên bản đã nằm ở
+  `backup_train_2026-08-29/font/` (FontVo 5,7 MB + Baloo2 11,6 MB).
+
+### 2) VÌ SAO CHẬM — đo từng scene
+Map toàn bộ guid→PNG (590 ảnh) rồi đối chiếu texture từng scene tham chiếu:
+
+| Scene | Texture | RGBA32 chưa nén |
+|---|---|---|
+| SCN_Farm | 125 | **98 MB** |
+| SampleScene (bếp) | 25 | 24 MB |
+| Đang nấu (cả 2 trong RAM, trùng 4 MB) | — | **118 MB** |
+
+324/570 PNG **không nén** ⇒ mỗi lần load scene là đọc + giải nén + đẩy VRAM nguyên khối. Bật nén
+(tool `Tools ▸ Tối ưu ▸ 2`, đã giao hôm nay, Sếp chưa chạy) đưa 118 MB về **~29 MB** — đây là đòn bẩy
+lớn nhất cho thời gian load, cộng thêm SCN_Farm 6.907 object vốn nặng phần instantiate.
+
+Riêng bếp còn cộng thêm: `KitchenSceneV2UI.Start` dựng hàng trăm GameObject bằng code
+(38 dòng món + thẻ nguyên liệu + chip vị) — một nhịp khựng lúc mở, nằm trong danh sách hoãn (mục 7)
+chờ số đo Profiler.
+
+### 3) Kiến trúc chuyển scene — KHÔNG phải bug, giữ nguyên
+Farm→Cooking nạp **Additive** (farm nằm nguyên trong RAM) là **có chủ ý**: bấm "VỀ NÔNG TRẠI" chỉ
+unload SampleScene nên về farm gần như tức thì, không phải load lại 6.907 object. Đường về đã có
+`UnloadSceneAsync` đàng hoàng (`CookingSceneUI.BackToFarm`). Đổi sang Single sẽ làm chiều về chậm
+NẶNG hơn — không đổi.
+
+### VIỆC SẾP LÀM (theo thứ tự)
+1. `Tools ▸ Tối ưu ▸ Font: 2. SỬA LỖI VĂNG BẾP` → Play thử vào bếp: 20 lỗi phải sạch.
+2. `Tools ▸ Tối ưu ▸ 2. Bật nén texture` nhóm A → nhìn game → B → C.
+3. Build lại → đo lại thời gian chuyển scene + xác nhận hết văng.
+
+---
+
+## 2026-08-29 · ĐỒNG NHẤT MỘT FONT — Baloo2 SDF (Sếp duyệt)
+
+**Phát hiện nền tảng:** `FontVo.asset` là **bản sao byte-level** của `Baloo2 SDF.asset` — cùng 3
+document id nội bộ (Texture2D `-436327…`, FontAsset `11400000`, Material `632073…`), cùng nguồn
+`Baloo2.ttf` (guid `b19f09d4…`). Game vốn đã một kiểu chữ, chỉ bị tách hai file: SCN_Farm trỏ
+FontVo (234 ref), SampleScene + TMP Settings trỏ Baloo2 (333 ref). Vì id nội bộ trùng nhau nên
+**thay guid là đủ, không phải map material**.
+
+### Đã làm
+1. **Dời** `_Game/Fonts/Baloo2 SDF.asset` → `_Game/Resources/Fonts/` (guid `f1e64e56…` giữ nguyên
+   ⇒ 332 ref của SampleScene + TMP Settings không suy suyển; nằm trong Resources để
+   `Resources.Load` với tới).
+2. **SCN_Farm**: 234 ref guid `ce482f79…` → `f1e64e56…`. **PF_PenMiniPanel.prefab**: 2 ref.
+   Docs 6.907 giữ nguyên.
+3. **Code runtime** (3 file): `SkinKit` · `PenProcessPopupUI` · `BuildingProcessPopupUI` —
+   `Resources.Load("Fonts/FontVo")` → `"Fonts/Baloo2 SDF"`.
+4. **Editor tools** (5 file): BuildingProcessUIBuilderTool · ShopNewUIBuilder ·
+   TownshipHUDBuilderTool · WarehouseNewUIBuilder (mỗi cái 2 đường dẫn) · FontSyncTool
+   (const trỏ vị trí mới). `SuaFontTMP_2026_08_29` giờ chỉ nhắm 1 font.
+5. **FontVo.asset nghỉ hưu**: dời ra `backup_train_2026-08-29/font_unify/DA_NGHI_HUU/`
+   (không xoá — muốn hồi thì chép ngược lại). Bớt luôn 5,7 MB khỏi Resources (thứ luôn bị nhét
+   vào build).
+6. **Khoá `TaoFontVoTool`** (comment MenuItem): tool này là thứ đã ĐẺ RA FontVo — không khoá thì
+   ngày nào đó ai bấm lại là trùng font lần nữa. Cảnh báo "Main Object Name 'Baloo2 SDF' does not
+   match filename 'FontVo'" cũng tự hết vì file mang tên FontVo không còn.
+
+### Kiểm cuối (0 lỗi)
+- 0 ref `ce482f79…` còn sót trong mọi scene / prefab / TMP Settings.
+- 0 chỗ code còn load `"Fonts/FontVo"`.
+- 10 file .cs sửa hôm nay cân ngoặc 0/0 (đã lọc chuỗi + comment).
+- SCN_Farm 6.907 docs nguyên vẹn · SCN_Farm 234 + SampleScene 332 ref đều về **một** guid.
+
+### Ghi chú cho việc SỬA LỖI VĂNG BẾP
+Giờ chỉ còn MỘT font phải sửa: `Tools ▸ Tối ưu ▸ Font: 2. SỬA LỖI VĂNG BẾP` (atlas 2048 + tắt
+Multi Atlas + Clear) chạy trên đúng `Resources/Fonts/Baloo2 SDF.asset`. Nhu cầu ~298 glyph gom về
+một atlas 2048 (~676 chỗ) — vẫn dư rộng.
+
+### Backup
+`backup_train_2026-08-29/font_unify/`: SCN_Farm trước khi đổi, PF_PenMiniPanel.prefab,
+TMP Settings.asset, 3 file .cs runtime, và `DA_NGHI_HUU/FontVo.asset(+meta)`.
+
+---
+
+## 2026-08-29 · MÀN CHUYỂN SCENE MỚI — cửa gỗ + đĩa lắc lư + thanh tiến độ
+
+**Sếp hỏi:** có thiết kế hiệu ứng animation cho mỗi lần chuyển scene không.
+
+**Hiện trạng:** `SceneTransitionManager` đã có khung (CloudWipe/BoardDrop) nhưng hình ảnh là
+2 panel TRẮNG TRƠN + chữ "Loading..." tiếng Anh. Nâng cấp NGAY TRÊN khung đó —
+`LoadScene`/`UnloadScene` giữ nguyên chữ ký, **0 nơi gọi phải sửa** ("view mới, não cũ").
+
+### Thiết kế mới (theo style gỗ ấm + đồng vàng #D9A441)
+- **CloudWipe** = 2 cánh CỬA GỖ (WoodBoard_Frame 9-slice nhuộm nâu ấm) khép vào giữa, chớm đè
+  nhau 24px để không hở khe sáng, ease OutBack dịu (nhún ~4% lúc chạm).
+- **BoardDrop** = tấm bảng gỗ rơi xuống nảy (giữ EaseOutBounce cũ).
+- Giữa màn: **đĩa Phở bò tái lắc lư** (xoay ±9°, phập phồng 4%) như đang được bưng đi ·
+  "Đang tải" + dấu chấm chạy · **thanh tiến độ** khung gỗ tối/ruột đồng vàng đọc từ
+  `AsyncOperation.progress` (chia 0,9 — mốc Unity dừng) và **đuổi mượt** theo tiến độ thật ·
+  **8 dòng Mẹo** ngẫu nhiên về gameplay thật (chuyển kho→bếp, 100 điểm, bí đỏ/dưa hấu…).
+- Cụm giữa fade-in sau khi cửa khép, fade-out trước khi mở — không lộ chữ trên nền game.
+- Font: `Resources/Fonts/Baloo2 SDF` (font thống nhất hôm nay) — tiếng Việt đủ dấu.
+- Toàn bộ animation dùng `unscaledTime` — Time.timeScale có về 0 vẫn chạy mượt.
+
+### An toàn
+- Asset nạp từ `Resources/UI_ChuyenCanh/` — **bản sao guid MỚI** (WoodBoard_Frame 12 KB +
+  MonAn_ChuyenCanh 217 KB ≈ 230 KB), không đụng file gốc của art, không đụng guid cũ.
+- Thiếu sprite/font → **tự rơi về panel màu trơn như bản cũ**, không bao giờ văng.
+- Backup: `backup_train_2026-08-29/perf/SceneTransitionManager.cs` (bản trắng trơn).
+
+### Sếp kiểm
+Vào farm → bấm sang bếp (CloudWipe) và bấm VỀ NÔNG TRẠI (BoardDrop): thấy cửa gỗ + đĩa lắc +
+thanh vàng chạy. Muốn đổi đĩa Phở sang icon khác: thay file `Resources/UI_ChuyenCanh/MonAn_ChuyenCanh.png`.
+
+---
+
+## 2026-08-29 · CHỮ RỤNG TRONG BẾP — 2 bệnh khác nhau, đã chữa cả hai
+
+### BỆNH 1 — FONT RỖNG (lỗi do chính tôi gây ra hôm nay)
+Công cụ `SuaFontTMP` sáng nay gọi `ClearFontAssetData(**true**)`. Tham số `true` là
+`setAtlasSizeToZero` — nó không chỉ xoá glyph mà **thu ảnh atlas về 0×0**.
+Bằng chứng: `Baloo2 SDF.asset` **11,6 MB → 6,5 KB**, bảng glyph 0, bảng ký tự 0, file không
+còn document Texture2D. Lúc chạy TMP không nhét nổi chữ nào vào tấm ảnh 0×0 ⇒ báo
+"character not found" với **cả chữ ASCII thường** (`\u007A` = 'z') ⇒ chữ rụng lung tung:
+"NÔNG T I", "Cơm chiên tr ng", "L  chưa nhóm", "M o Thần Tài".
+
+**Chữa — `Assets/_Game/Editor/PhucHoiFontTMP_2026_08_29.cs`**, menu
+`Tools ▸ Tối ưu ▸ Font: 3. PHỤC HỒI + NƯỚNG SẴN TIẾNG VIỆT`:
+1. `ClearFontAssetData(**false**)` → dựng lại ảnh atlas ĐÚNG 2048×2048 (false = giữ kích thước).
+2. `TryAddCharacters(...)` **nướng sẵn ~300 ký tự ngay tại Editor**: ASCII 0x20–0x7E ·
+   Latin-1 0xA0–0xFF · Ă ă Đ đ Ĩ ĩ Ũ ũ Ơ ơ Ư ư · **toàn dải tiếng Việt U+1EA0–U+1EF9 (90 ký tự)**
+   · dấu câu – — ' ' " " … ‹ › • · ₫ ✓ ✔ ⚠. Sức chứa 2048² ở cỡ 64px ≈ 676 ô ⇒ dư gấp đôi.
+3. **Tắt `m_ClearDynamicDataOnBuild`** — cái bẫy chí mạng: để bật thì Unity XOÁ SẠCH đống vừa
+   nướng lúc build, bản .exe lại thiếu chữ y như cũ.
+4. Giữ Dynamic + Multi Atlas TẮT ⇒ chữ lạ ngoài dự kiến vẫn nướng thêm được, hết chỗ thì chỉ
+   thiếu chữ chứ không văng lỗi.
+
+Nút cũ `Font: 2` **đã khoá lại** (comment MenuItem) kèm ghi chú vì sao, để không ai bấm nhầm nữa.
+
+### BỆNH 2 — CHUỖI MOJIBAKE TRONG SOURCE (có sẵn từ lâu, font tốt cũng vẫn sai)
+Quét **346 file `.cs`**: 154 chuỗi dính dấu hiệu tiếng Việt UTF-8 bị đọc nhầm thành Latin-1.
+
+| Loại | Số | Cách xử lý |
+|---|---|---|
+| Giải mã sạch được (`cp1252 → utf-8`) | **108** | Sửa tự động, có kiểm tra round-trip |
+| **Dương tính giả** — "ĐÃ BÁN", "TÀU ĐÃ VỀ!", "ĐÃ NHẬN"… | **34** | **KHÔNG đụng** — đây là chữ ĐÚNG ("đã" viết hoa) |
+| Hỏng thật, mất hẳn byte (0x9D không có trong cp1252) | **12** | Giải mã từng phần để đọc ra ý → **sửa tay theo số dòng** |
+
+Đáng chú ý, 2 chuỗi **người chơi nhìn thấy** đã hỏng từ lâu:
+- `ScoreResultBoxUI.cs:110` — `Tuyá»‡t vá»i! Gáº§n nhÆ° hoÃ n háº£o!` → **"Tuyệt vời! Gần như hoàn hảo!"**
+  (dòng khen khi nấu ≥ 90 điểm — 3 mức điểm kia vẫn đúng, mỗi mức 90 bị hỏng)
+- `CookingChallengeManager.cs:336` — → **"Chưa chọn món ăn."**
+
+Còn lại là Tooltip/Debug.Log trong TrainManager (45), MissionDatabase (17), FarmUIManager (12),
+TutorialManager (9)… — không lộ ra game nhưng đọc code thì rối mắt.
+
+**Scene/prefab**: quét `m_text` bake sẵn → thấy **2 chuỗi hỏng** trong SampleScene
+(`Chá»n 0/3`, `Chá»n 0/4`) → sửa thành **"Chọn 0/3" / "Chọn 0/4"**. Docs 1.789 và số dòng
+45.295 **giữ nguyên** sau khi sửa.
+
+### KIỂM CUỐI
+- Quét lại 346 file `.cs`: **0 chuỗi hiển thị còn hỏng**.
+- Quét lại mọi scene + prefab: **0 chuỗi `m_text` còn hỏng**.
+- 10 file sửa nhiều nhất: cân ngoặc `()` `{}` = 0/0 (đã lọc chuỗi + comment).
+
+### SAO LƯU
+`backup_train_2026-08-29/mojibake/` — 31 file `.cs` nguyên bản + `SampleScene_before.unity`.
+`backup_train_2026-08-29/font/` — `Baloo2 SDF.asset` bản 11,6 MB trước mọi can thiệp.
+
+### SẾP LÀM
+1. Đợi Unity biên dịch → `Tools ▸ Tối ưu ▸ **Font: 3. PHỤC HỒI + NƯỚNG SẴN TIẾNG VIỆT**`.
+2. Play vào bếp: chữ phải đủ dấu, Console hết "character not found".
+3. Build lại → kiểm chữ trong .exe (bước 3 của tool đã lo phần này).
+
+---
+
+## 2026-08-29 · VÌ SAO BẤM TOOL RỒI CHỮ VẪN RỤNG — atlas chật, KHÔNG phải Sếp bấm sai
+
+**Hiện tượng:** Sếp đã bấm `Font: 3`, build lại, sang bếp vẫn rụng chữ ("ang t I" thay vì
+"Đang tải") **và Unity văng** (hộp thoại crash handler).
+
+### ĐO ĐƯỢC — tool của tôi tính thiếu, không phải thao tác sai
+Font sau khi chạy tool: 8,4 MB · atlas 2048 · clearOnBuild OFF · multiAtlas OFF — **tool đã chạy
+đúng**. Nhưng chỉ **101/338 ký tự** vào được, và **91 trong 101 là ASCII**; chữ có dấu vào đúng
+10 cái vô nghĩa (`¨ ­ ¯ ° ² ´ · ¸ ‘`).
+
+Đọc `m_CreationSettings` mới thấy gốc:
+
+| Thông số | Giá trị | Hệ quả |
+|---|---|---|
+| `pointSize` | **289** | glyph vẽ ở cỡ khổng lồ |
+| `padding` | **28** | mỗi chữ chiếm ô ~**142 × 181 px** |
+| `pointSizeSamplingMode` | 0 (Auto) | Font Asset Creator ngày xưa tự chọn 289 để lấp đầy atlas với bộ ký tự nhỏ lúc đó |
+
+Đo diện tích glyph thật: **3,78 / 4,19 triệu px = atlas 2048² đã đầy 90 %** với vỏn vẹn 101 chữ.
+Tôi tính sức chứa theo cỡ 64 px (676 ô) trong khi thực tế là 289 px (~101 ô) — **sai gấp 6 lần**.
+
+### Vì sao VĂNG chứ không chỉ thiếu chữ
+Atlas đầy + `AtlasPopulationMode: Dynamic` ⇒ mỗi lần dựng text TMP lại **thử nhồi glyph rồi
+thất bại**, lặp liên tục mỗi khung hình. Màn chuyển cảnh mới còn có dòng "Mẹo" ~70 ký tự tiếng
+Việt hiện đúng lúc nạp scene ⇒ dồn cực đại đúng khoảnh khắc sang bếp. Đó là lý do văng **ngay ở
+màn chuyển cảnh**, và ảnh Sếp gửi cho thấy thanh tiến độ đứng ~60 %.
+
+### SỬA — `PhucHoiFontTMP_2026_08_29.cs`
+- **Atlas 2048 → 4096** (hằng số `ATLAS`, có ghi chú vì sao). Sức chứa ~**616 ô** cho ~338 chữ,
+  còn dư ~45 % chỗ cho chữ phát sinh.
+- **Ghi cả vào `m_CreationSettings.atlasWidth/Height`** — thiếu bước này TMP vẫn nướng theo số cũ.
+- **Tự kiểm ngay sau khi nướng**: duyệt 67 chữ Việt tiêu biểu bằng `font.HasCharacter()`;
+  còn thiếu thì `Debug.LogError` + hộp thoại báo **"CHƯA ĐỦ CHỮ"** kèm danh sách. Không để lọt
+  xuống build rồi mới phát hiện như lần này nữa.
+
+**Giá phải trả:** atlas Alpha8 4096² = **16 MB VRAM**. Chấp nhận được trên PC (nhóm A nén texture
+đã tiết kiệm 129 MB). Muốn nhẹ hơn phải dựng lại font ở pointSize ~64 — đổi cả face metrics
+(lineHeight, ascender…), rủi ro sai cỡ chữ toàn game, để làm riêng khi rảnh.
+
+### SẾP LÀM
+1. `Tools ▸ Tối ưu ▸ Font: 3` **bấm lại** (tool đã sửa) → hộp thoại phải hiện **"Xong — ĐỦ CHỮ"**.
+   Nếu hiện "CHƯA ĐỦ CHỮ" thì báo ngay, đừng build.
+2. Play thử trong Editor trước — chữ đủ dấu thì mới build.
+3. **Build lại** (bản .exe cũ vẫn mang font 101 chữ).
+
+---
+
+## 2026-08-29 · TÌM RA THẬT SỰ VÌ SAO VÀO BẾP LÀ VĂNG — MonoScript mồ côi
+
+**Cách tìm:** xin quyền đọc `Player.log` + thư mục build `E:\APK` trên máy Sếp, đọc log thay vì đoán.
+
+### Log nói thẳng
+```
+[TownshipHUD] Chuyển sang Nấu Ăn (Cooking Scene)...
+The file 'E:/APK/My project_Data/level2' is corrupted! Remove it and launch unity again!
+[Position out of bounds!]
+Crash!!!
+```
+`level2` = **SampleScene** (Build Settings: 0 SCN_Home · 1 SCN_Farm · 2 SampleScene).
+
+### Loại trừ bằng đo, không bằng cảm tính
+| Nghi ngờ | Kết quả đo |
+|---|---|
+| Build cũ/cache | Mọi file trong `E:\APK` cùng dấu thời gian 11:16 ⇒ **build hoàn toàn mới**, vẫn hỏng |
+| File bị cắt cụt | Tự viết bộ đọc SerializedFile v22: header khai **287.332 byte = đúng dung lượng thật**, dataOffset hợp lệ |
+| Cấu trúc hỏng | Phân tích bảng object: **1.870 object, 0 chồng lấn, 0 object size 0**, object cuối kết thúc **đúng byte cuối file**. Object to nhất chỉ 1 KB |
+| Thiếu RAM/VRAM | GTX 1650 · **VRAM 3.935 MB**, budget 3.344 MB · texture cả 2 scene chỉ ~118 MB |
+| Managed stripping | `managedStrippingLevel: {}` — không bật |
+
+⇒ **File hoàn toàn lành.** Thông báo "corrupted" của Unity đánh lạc hướng: hỏng nằm ở **một object không tra được kiểu**.
+
+### GỐC RỄ
+Scene chứa **2 "MonoScript mồ côi"** — document `!u!115` nhúng thẳng trong scene, `m_Name` rỗng,
+không trỏ tới file `.cs` nào:
+
+| fileID | Class | Gắn trên |
+|---|---|---|
+| `&380068508` | `KitchenUIv2.KitchenCatWalker` | `Cat_Chef` |
+| `&198024282` | `KitchenUIv2.KitchenZzzFloat` | (mèo ngủ) |
+
+Và 2 component trỏ vào chúng bằng **tham chiếu nội bộ, KHÔNG guid**:
+`m_Script: {fileID: 380068508}` — dạng này luôn sai, `m_Script` bắt buộc phải là
+`{fileID: 11500000, guid: …, type: 3}`.
+
+**Vì sao sinh ra:** cả hai class được khai **bên trong `KitchenSceneV2UI.cs`**. Unity chỉ tạo được
+MonoScript asset cho MonoBehaviour **nằm trong file .cs TRÙNG TÊN class**. Khi `RebuildNow()` gọi
+`AddComponent<KitchenCatWalker>()` lúc chạy rồi Sếp Ctrl+S, Unity không tìm ra asset script nên
+**bịa ra một MonoScript rỗng nhúng vào scene**. Trong Editor vẫn chạy (assembly đang nạp sẵn);
+ra bản build thì player không tra được kiểu ⇒ đọc lệch ⇒ `Position out of bounds` ⇒ chết.
+
+Khớp mọi triệu chứng: chỉ chết ở SampleScene · chỉ chết trong .exe · build lại bao nhiêu lần cũng y hệt.
+
+### ĐÃ SỬA
+1. Tách `KitchenCatWalker` (74 dòng) và `KitchenZzzFloat` (38 dòng) khỏi `KitchenSceneV2UI.cs`
+   thành **file .cs riêng trùng tên class**, cùng namespace `KitchenUIv2`, kèm `.meta` guid cố định.
+2. Nối 2 component trong scene về đúng script: `{fileID: 11500000, guid: 18d451ca… / 4e6cf35a…, type: 3}`.
+3. Gỡ 2 document MonoScript mồ côi khỏi scene.
+
+**Toàn vẹn:** SampleScene 1.789 → **1.787 doc (giảm đúng 2)**, 45.295 → 45.265 dòng.
+Quét lại toàn bộ scene + prefab: **0 `m_Script` hỏng · 0 MonoScript nhúng**.
+Ba file .cs đều cân ngoặc 0/0.
+
+### CÒN 7 QUẢ BOM CHƯA NỔ (chưa sửa — chờ Sếp duyệt)
+7 class MonoBehaviour khác cũng đang khai nhờ trong file khác tên. **Hiện chưa cái nào hỏng**
+(đã quét, 0 tham chiếu sai), nhưng nếu đặt vào scene rồi Ctrl+S là dính đúng lỗi này:
+
+`ConstructionSlotLabelBillboard` · `BoChayNen` · `OrderBoardManagerBase` · `TrainArrivedBubbleBob`
+· `TrainWorldSmokePuff` · `SimpleSpriteAnimator` · `IngredientItemUI`
+
+### SAO LƯU
+`backup_train_2026-08-29/monoscript_orphan/` — `KitchenSceneV2UI.cs` nguyên bản +
+`SampleScene_before_orphanfix.unity`.

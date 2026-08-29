@@ -28,7 +28,7 @@ public static class SkinKit
     //  FONT CHỮ CỦA VỎ — mấu chốt "giống mock": mock dùng Baloo 2 (chữ tròn mập),
     //  Unity mặc định LiberationSans (mảnh, lạnh) nên cùng màu cùng khung vẫn
     //  "một trời một vực". Menu `0 · Tạo font chữ vỏ` build TMP asset vào
-    //  Resources/Fonts/FontVo — có thì mọi vỏ tự dùng, chưa có thì giữ mặc định.
+    //  Resources/Fonts/Baloo2 SDF — có thì mọi vỏ tự dùng, chưa có thì giữ mặc định.
     // ═════════════════════════════════════════════════════════════════════════
 
     private static TMP_FontAsset _fontVo;
@@ -45,12 +45,12 @@ public static class SkinKit
                     _fontVo = TMP_Settings.defaultFontAsset;
 
                 if (_fontVo == null)
-                    _fontVo = Resources.Load<TMP_FontAsset>("Fonts/FontVo");
+                    _fontVo = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
 #if UNITY_EDITOR
                 if (_fontVo == null)
                     _fontVo = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Fonts/Baloo2 SDF.asset");
                 if (_fontVo == null)
-                    _fontVo = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/FontVo.asset");
+                    _fontVo = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/Baloo2 SDF.asset");
 #endif
             }
             return _fontVo;

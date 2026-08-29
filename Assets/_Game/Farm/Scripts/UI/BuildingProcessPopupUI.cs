@@ -167,7 +167,7 @@ public class BuildingProcessPopupUI : MonoBehaviour
         }
 
         if (_fontVo == null)
-            _fontVo = Resources.Load<TMP_FontAsset>("Fonts/FontVo");
+            _fontVo = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
     }
 
     private void BuildUI()

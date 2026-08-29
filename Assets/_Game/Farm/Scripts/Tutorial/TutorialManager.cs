@@ -70,7 +70,7 @@ public class TutorialManager : MonoBehaviour
     // =========================================================================
     // Inspector â€” Steps
     // =========================================================================
-    [Header("Steps (tá»± Ä‘á»™ng gÃ¡n bá»Ÿi TutorialSystemGenerator)")]
+    [Header("Steps (tự động gán bởi TutorialSystemGenerator)")]
     [SerializeField] private List<TutorialStepData> _steps = new();
 
     // =========================================================================
@@ -98,20 +98,20 @@ public class TutorialManager : MonoBehaviour
     // =========================================================================
     // Inspectorâ€” Intro Animation
     // =========================================================================
-    [Header("Intro â€” ÄÃ¡m MÃ¢y")]
+    [Header("Intro — Đám Mây")]
     [SerializeField] private GameObject    _cloudPanel;
     [SerializeField] private RectTransform _cloudLeft;
     [SerializeField] private RectTransform _cloudRight;
 
-    [Tooltip("Sá»‘ Ä‘Æ¡n vá»‹ canvas mÃ¢y bay ra ngoÃ i mÃ n hÃ¬nh (>= ná»­a chiá»u rá»™ng canvas)")]
+    [Tooltip("Số đơn vị canvas mây bay ra ngoài màn hình (>= nửa chiều rộng canvas)")]
     [SerializeField] private float _cloudSlideDistance = 620f;
 
-    [Tooltip("Thá»i gian animation mÃ¢y bay (giÃ¢y)")]
+    [Tooltip("Thời gian animation mây bay (giây)")]
     [SerializeField] private float _introDuration = 1.5f;
 
     [SerializeField] private AnimationCurve _introEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    [Header("Intro â€” Camera Zoom")]
+    [Header("Intro — Camera Zoom")]
     [SerializeField] private TutorialCameraZoom _cameraZoom;
 
     // =========================================================================
@@ -120,7 +120,7 @@ public class TutorialManager : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private bool _clickToSkipTyping = true;
 
-    [Tooltip("Bá» qua intro animation khi debug trong Editor")]
+    [Tooltip("Bỏ qua intro animation khi debug trong Editor")]
     [SerializeField] private bool _skipIntroInEditor = false;
 
     // =========================================================================
@@ -246,7 +246,7 @@ public class TutorialManager : MonoBehaviour
 
         if (_steps.Count == 0)
         {
-            Debug.LogWarning("[TutorialManager] KhÃ´ng cÃ³ step nÃ o. HÃ£y gÃ¡n TutorialStepData vÃ o _steps.");
+            Debug.LogWarning("[TutorialManager] Không có step nào. Hãy gán TutorialStepData vào _steps.");
             return;
         }
 
@@ -381,7 +381,7 @@ public class TutorialManager : MonoBehaviour
     /// Chuyá»ƒn bÆ°á»›c tiáº¿p theo.
     /// â€¢ Äang typewriter â†’ skip text.
     /// â€¢ Äang WaitForClick â†’ advance.
-    /// Gá»i tá»« Button "Tiáº¿p Theo" trÃªn NPC_Dialog_Popup (auto-wired bá»Ÿi Generator).
+    /// Gá»i tá»« Button "Tiếp Theo" trÃªn NPC_Dialog_Popup (auto-wired bá»Ÿi Generator).
     /// </summary>
     public void NextStep()
     {

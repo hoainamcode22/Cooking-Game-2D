@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: sup_bi_do_kem
   dishName: "S\xFAp b\xED \u0111\u1ECF kem s\u1EEFa"
   dishSubTitle: "B\xED \u0110\u1ECF"
-  dishSprite: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
+  dishSprite: {fileID: 21300000, guid: e64bc131392784929293dc5e4163841d, type: 3}
   difficulty: 0
   unlockLevel: 14
   targetFlavor:

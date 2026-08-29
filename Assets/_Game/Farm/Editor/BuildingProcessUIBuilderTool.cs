@@ -19,9 +19,9 @@ public static class BuildingProcessUIBuilderTool
         BuildingProcessSpriteGenerator.GenerateAllSprites();
 
         // 2. Load Resources / Sprites / Fonts
-        TMP_FontAsset fontVo = Resources.Load<TMP_FontAsset>("Fonts/FontVo");
+        TMP_FontAsset fontVo = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
         if (fontVo == null)
-            fontVo = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/FontVo.asset");
+            fontVo = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/Baloo2 SDF.asset");
 
         Sprite frameBgSpr = LoadSprite(SpritesFolder, "proc_frame_bg.png");
         Sprite trackBgSpr = LoadSprite(SpritesFolder, "proc_track_bg.png");

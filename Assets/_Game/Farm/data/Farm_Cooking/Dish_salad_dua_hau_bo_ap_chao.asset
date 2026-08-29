@@ -15,7 +15,7 @@ MonoBehaviour:
   dishId: salad_dua_hau_bo_ap_chao
   dishName: "Salad d\u01B0a h\u1EA5u b\xF2 \xE1p ch\u1EA3o"
   dishSubTitle: "D\u01B0a H\u1EA5u \xB7 Th\u1ECBt B\xF2 \xB7 Rau Th\u01A1m"
-  dishSprite: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
+  dishSprite: {fileID: 21300000, guid: 0b873f44a044c47b0b576c6536892256, type: 3}
   difficulty: 2
   unlockLevel: 30
   targetFlavor:
