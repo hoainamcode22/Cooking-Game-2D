@@ -1,6 +1,14 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
+/// <summary>
+/// Quản lý toàn bộ âm thanh và nhạc nền trong game.
+/// Tự động nạp các file âm thanh chuẩn từ Assets/Audio Game và Assets/Resources/Audio.
+/// Thiết lập âm lượng nhẹ nhàng, chống nhiễu / chống spam âm thanh liên tục.
+/// </summary>
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
@@ -11,37 +19,35 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioSource fxSource;
     [SerializeField] private AudioSource waterAmbienceSource;
 
-    [Header("Core Clips")]
-    [SerializeField] private AudioClip bgmMain;
-    [SerializeField] private AudioClip uiClick;
+    [Header("Core Clips (Assets/Audio Game)")]
+    [SerializeField] private AudioClip bgmMain;        // Morning_Garden_Waltz.mp3
+    [SerializeField] private AudioClip uiClick;        // button.wav (tất cả nút)
+    [SerializeField] private AudioClip expClip;        // exp.mp3 (kinh nghiệm)
+    [SerializeField] private AudioClip plantingClip;   // gieohat.mp3 (gieo hạt & hoa)
+    [SerializeField] private AudioClip harvestClip;    // thuhoach.mp3 (thu hoạch nông sản & hoa)
+    [SerializeField] private AudioClip coinReward;     // vàng.wav (tiền vàng)
     [SerializeField] private AudioClip ingredientPop;
     [SerializeField] private AudioClip cookStart;
     [SerializeField] private AudioClip successJingle;
-    [SerializeField] private AudioClip coinReward;
-
-    [Header("Farm & Economy Clips")]
-    [SerializeField] private AudioClip plantingClip;
-    [SerializeField] private AudioClip harvestClip;
-    [SerializeField] private AudioClip buySellClip;
     [SerializeField] private AudioClip waterFlowClip;
 
-    [Header("Volume")]
-    [Range(0f, 1f)][SerializeField] private float bgmVolume = 0.12f;
-    [Range(0f, 1f)][SerializeField] private float uiVolume = 0.22f;
-    [Range(0f, 1f)][SerializeField] private float fxVolume = 0.45f;
-    [Range(0f, 1f)][SerializeField] private float waterVolume = 0.25f;
+    [Header("Volume (Êm dịu, nhẹ nhàng, không chói tai)")]
+    [Range(0f, 1f)][SerializeField] private float bgmVolume = 0.16f;     // Nhạc nền êm dịu
+    [Range(0f, 1f)][SerializeField] private float uiVolume = 0.22f;      // Tiếng nút bấm vừa vặn
+    [Range(0f, 1f)][SerializeField] private float fxVolume = 0.35f;      // Tiếng gieo hạt, thu hoạch, vàng, exp
+    [Range(0f, 1f)][SerializeField] private float waterVolume = 0.18f;
 
-    [Header("Fast UI Click")]
+    [Header("Anti-Spam Cooldowns (Tránh mở liên tục gây ồn)")]
     [SerializeField] private float uiClickCooldown = 0.05f;
-    [SerializeField] private float ingredientCooldown = 0.04f;
-    [SerializeField] private float farmCooldown = 0.06f;
-    [SerializeField] private float uiCutoffTime = 0.08f;
+    [SerializeField] private float expCooldown = 0.08f;
+    [SerializeField] private float farmCooldown = 0.07f;
+    [SerializeField] private float coinCooldown = 0.06f;
 
     private float lastUIClickTime = -999f;
-    private float lastIngredientTime = -999f;
+    private float lastExpTime = -999f;
     private float lastFarmActionTime = -999f;
+    private float lastCoinTime = -999f;
     private Coroutine duckRoutine;
-    private Coroutine uiStopRoutine;
 
     private void Awake()
     {
@@ -73,20 +79,67 @@ public class AudioManager : MonoBehaviour
         StartWaterAmbience();
     }
 
+    private void Update()
+    {
+        // Tự động bắt sự kiện bấm cho TẤT CẢ nút bấm (UI Button / Toggle) trong game
+        if (Input.GetMouseButtonDown(0) && EventSystem.current != null)
+        {
+            var eventData = new PointerEventData(EventSystem.current)
+            {
+                position = Input.mousePosition
+            };
+            var results = new List<RaycastResult>();
+            EventSystem.current.RaycastAll(eventData, results);
+            for (int i = 0; i < results.Count; i++)
+            {
+                var go = results[i].gameObject;
+                if (go == null) continue;
+
+                var btn = go.GetComponentInParent<Button>();
+                if (btn != null && btn.interactable && btn.isActiveAndEnabled)
+                {
+                    PlayUIClick();
+                    break;
+                }
+
+                var toggle = go.GetComponentInParent<Toggle>();
+                if (toggle != null && toggle.interactable && toggle.isActiveAndEnabled)
+                {
+                    PlayUIClick();
+                    break;
+                }
+            }
+        }
+    }
+
     private void LoadDefaultClipsIfMissing()
     {
+        // 1. Nạp từ Resources/Audio (ưu tiên cao, chạy được trên cả Build và Editor)
+        if (bgmMain == null) bgmMain = Resources.Load<AudioClip>("Audio/Morning_Garden_Waltz");
+        if (uiClick == null) uiClick = Resources.Load<AudioClip>("Audio/button");
+        if (expClip == null) expClip = Resources.Load<AudioClip>("Audio/exp");
+        if (plantingClip == null) plantingClip = Resources.Load<AudioClip>("Audio/gieohat");
+        if (harvestClip == null) harvestClip = Resources.Load<AudioClip>("Audio/thuhoach");
+        if (coinReward == null) coinReward = Resources.Load<AudioClip>("Audio/gold")
+            ?? Resources.Load<AudioClip>("Audio/vang")
+            ?? Resources.Load<AudioClip>("Audio/vàng");
+
 #if UNITY_EDITOR
+        // 2. Fallback trực tiếp từ Assets/Audio Game
+        if (bgmMain == null)
+            bgmMain = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/Morning_Garden_Waltz.mp3");
+        if (uiClick == null)
+            uiClick = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/button.wav");
+        if (expClip == null)
+            expClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/exp.mp3");
         if (plantingClip == null)
-            plantingClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/maptitle/Design_Map/HappyHarvest_NatureDecor/Audio/Planting/Planting crop.wav");
-
+            plantingClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/gieohat.mp3");
         if (harvestClip == null)
-            harvestClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/maptitle/Design_Map/HappyHarvest_NatureDecor/Audio/Planting/Picking up crop.wav");
-
-        if (buySellClip == null)
-            buySellClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Day_Night/Audio/UI/Buy _ Sell.wav");
-
-        if (waterFlowClip == null)
-            waterFlowClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Assetsgame/Bò/HappyHarvest_Copy/Audio/Ambience/Water flowing.wav");
+            harvestClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/thuhoach.mp3");
+        if (coinReward == null)
+            coinReward = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/gold.wav")
+                ?? UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/vang.wav")
+                ?? UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/vàng.wav");
 #endif
     }
 
@@ -104,6 +157,7 @@ public class AudioManager : MonoBehaviour
         source.volume = volume;
     }
 
+    /// <summary>🎵 Nhạc nền êm dịu, nhẹ nhàng (Morning_Garden_Waltz.mp3)</summary>
     public void PlayMainBGM()
     {
         if (bgmMain == null || bgmSource == null) return;
@@ -126,30 +180,7 @@ public class AudioManager : MonoBehaviour
         waterAmbienceSource.Play();
     }
 
-    private void PlayUIInterrupt(AudioClip clip, float volumeScale = 1f, float pitchMin = 1f, float pitchMax = 1f)
-    {
-        if (clip == null || uiSource == null) return;
-
-        uiSource.Stop();
-        uiSource.clip = clip;
-        uiSource.volume = uiVolume * volumeScale;
-        uiSource.pitch = Random.Range(pitchMin, pitchMax);
-        uiSource.Play();
-
-        if (uiStopRoutine != null)
-            StopCoroutine(uiStopRoutine);
-
-        uiStopRoutine = StartCoroutine(StopUIAfter(uiCutoffTime));
-    }
-
-    private IEnumerator StopUIAfter(float time)
-    {
-        yield return new WaitForSecondsRealtime(time);
-        if (uiSource != null && uiSource.isPlaying)
-            uiSource.Stop();
-    }
-
-    private void PlayFX(AudioClip clip, float volumeScale = 1f, float pitchMin = 1f, float pitchMax = 1f)
+    private void PlayFX(AudioClip clip, float volumeScale = 1f, float pitchMin = 0.98f, float pitchMax = 1.02f)
     {
         if (clip == null || fxSource == null) return;
 
@@ -157,67 +188,80 @@ public class AudioManager : MonoBehaviour
         fxSource.PlayOneShot(clip, fxVolume * volumeScale);
     }
 
+    /// <summary>🔘 Tiếng bấm nút button (button.wav) — tự động áp dụng cho tất cả Button trong game</summary>
     public void PlayUIClick()
     {
         if (Time.unscaledTime - lastUIClickTime < uiClickCooldown)
             return;
 
         lastUIClickTime = Time.unscaledTime;
-        PlayUIInterrupt(uiClick, 0.75f, 1.05f, 1.12f);
+        if (uiClick != null && uiSource != null)
+        {
+            uiSource.pitch = Random.Range(0.99f, 1.01f);
+            uiSource.PlayOneShot(uiClick, uiVolume);
+        }
     }
 
     public void PlayIngredientPop()
     {
-        if (Time.unscaledTime - lastIngredientTime < ingredientCooldown)
-            return;
-
-        lastIngredientTime = Time.unscaledTime;
-        AudioClip clipToPlay = ingredientPop != null ? ingredientPop : uiClick;
-        PlayUIInterrupt(clipToPlay, 0.7f, 1.08f, 1.16f);
+        PlayUIClick();
     }
 
-    /// <summary>🌱 Tiếng gieo hạt giống / cho vật nuôi ăn</summary>
+    /// <summary>🌱 Tiếng gieo hạt giống và hoa (gieohat.mp3)</summary>
     public void PlayPlanting()
     {
         if (Time.unscaledTime - lastFarmActionTime < farmCooldown) return;
         lastFarmActionTime = Time.unscaledTime;
 
-        AudioClip clip = plantingClip != null ? plantingClip : ingredientPop;
-        PlayFX(clip, 0.85f, 0.95f, 1.08f);
+        AudioClip clip = plantingClip != null ? plantingClip : uiClick;
+        PlayFX(clip, 1f, 0.96f, 1.04f);
     }
 
-    /// <summary>🧺 Tiếng nhổ / thu hoạch nông sản & sản phẩm chuồng trại</summary>
+    /// <summary>🌾 Tiếng kéo liềm thu hoạch nông sản & hoa (thuhoach.mp3)</summary>
     public void PlayHarvest()
     {
         if (Time.unscaledTime - lastFarmActionTime < farmCooldown) return;
         lastFarmActionTime = Time.unscaledTime;
 
-        AudioClip clip = harvestClip != null ? harvestClip : successJingle;
-        PlayFX(clip, 0.9f, 0.95f, 1.05f);
+        AudioClip clip = harvestClip != null ? harvestClip : uiClick;
+        PlayFX(clip, 1f, 0.97f, 1.03f);
     }
 
-    /// <summary>💰 Tiếng tiền vàng / mua bán trong Market & Shop</summary>
+    /// <summary>⭐ Tiếng nhận EXP kinh nghiệm (exp.mp3)</summary>
+    public void PlayExp()
+    {
+        if (Time.unscaledTime - lastExpTime < expCooldown) return;
+        lastExpTime = Time.unscaledTime;
+
+        AudioClip clip = expClip != null ? expClip : uiClick;
+        PlayFX(clip, 0.95f, 0.98f, 1.02f);
+    }
+
+    /// <summary>💰 Tiếng tiền vàng / coin (vàng.wav)</summary>
+    public void PlayCoinReward()
+    {
+        if (Time.unscaledTime - lastCoinTime < coinCooldown) return;
+        lastCoinTime = Time.unscaledTime;
+
+        AudioClip clip = coinReward != null ? coinReward : uiClick;
+        PlayFX(clip, 0.9f, 0.98f, 1.02f);
+    }
+
     public void PlayBuySell()
     {
-        AudioClip clip = buySellClip != null ? buySellClip : coinReward;
-        PlayFX(clip, 0.85f, 0.98f, 1.06f);
+        PlayCoinReward();
     }
 
     public void PlayCookStart()
     {
-        DuckBGM(0.55f, 0.25f);
-        PlayFX(cookStart, 0.75f, 1f, 1.03f);
+        DuckBGM(0.6f, 0.25f);
+        PlayFX(cookStart != null ? cookStart : uiClick, 0.75f, 1f, 1.03f);
     }
 
     public void PlaySuccess()
     {
-        DuckBGM(0.45f, 0.5f);
-        PlayFX(successJingle, 0.8f, 1f, 1.02f);
-    }
-
-    public void PlayCoinReward()
-    {
-        PlayBuySell();
+        DuckBGM(0.5f, 0.5f);
+        PlayFX(successJingle != null ? successJingle : expClip, 0.8f, 1f, 1.02f);
     }
 
     private void DuckBGM(float multiplier, float duration)

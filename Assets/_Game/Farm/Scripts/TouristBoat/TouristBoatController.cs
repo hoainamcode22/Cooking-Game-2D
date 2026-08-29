@@ -2,18 +2,23 @@ using TMPro;
 using UnityEngine;
 
 /// <summary>
-/// Visual controller của MỘT tàu du lịch (mỗi bến 1 tàu — GDD §3.2).
+/// Visual controller của MỘT tàu du lịch (mỗi bến 1 tàu — GDD §3.1).
 ///
 /// KHÔNG giữ logic thời gian nào: mỗi frame đọc pha từ BoatDockManager
 /// (state + tiến độ 0-1) rồi ĐẶT vị trí tương ứng trên polyline
 /// [BlindPoint → WP_01..WP_n → Berth]. Vì vị trí là hàm thuần của tiến độ,
 /// vào game giữa chừng tàu tự snap đúng chỗ trên path — không cần code
-/// "tua lại" riêng (GDD §5 edge 2).
+/// "tua lại" riêng (GDD V2 §5 edge 1).
 ///
-///   Hidden    → SetActive(false) phần Visual, đứng chờ tại điểm mù (kỹ thuật ẩn của TrainState)
-///   Arriving  → tiến theo path về berth, mũi hướng bến, flip theo hướng chạy
-///   Docked    → đậu tại berth, hiện countdown world-space (TMPro)
-///   Departing → đi NGƯỢC path: tàu LÙI, KHÔNG quay đầu, KHÔNG flip khi lùi
+///   WaitingNext → SetActive(false) phần Visual, đứng chờ tại điểm mù
+///   Arriving    → tiến theo path về berth, mũi hướng bến, flip theo hướng chạy
+///   Docked      → đậu tại berth; V2 KHÔNG còn countdown (đậu tới khi khách xong)
+///   Departing   → đi NGƯỢC path: tàu LÙI, KHÔNG quay đầu, KHÔNG flip khi lùi
+///
+/// ── Đổi ở V2 (BOAT-002) ──────────────────────────────────────────────────
+/// Pha Docked giờ VÔ HẠN (chờ Dev B báo khách lên tàu hết) nên mốc thời gian cố
+/// định không còn nghĩa: chữ world-space khi đậu chuyển thành nhãn tĩnh
+/// "Đang đón khách..." (hoặc ẨN hẳn nếu bật showDockedLabel = false).
 ///
 /// Bob dập dềnh + flip tái dùng cách làm của FerryController (bob trên child
 /// "Visual" — root vẫn đi đúng path, chỉ sprite nhấp nhô).
@@ -31,14 +36,22 @@ public class TouristBoatController : MonoBehaviour
     [Tooltip("Sprite gốc quay mặt sang TRÁI? (như FerryController.spriteFacesLeft)")]
     [SerializeField] private bool spriteFacesLeft = false;
 
-    [Header("Countdown khi đậu bến (world-space TMPro)")]
-    [Tooltip("Bỏ trống sẽ tìm child 'Countdown', không có thì tự tạo TextMeshPro placeholder.")]
+    [Header("Nhãn khi đậu bến (world-space TMPro)")]
+    [Tooltip("Bỏ trống sẽ tìm child 'Countdown', không có thì tự tạo TextMeshPro placeholder. " +
+             "V2: không còn countdown — chỉ hiện nhãn tĩnh khi tàu đang đón khách.")]
     [SerializeField] private TMP_Text countdownText;
 
-    [Tooltip("Vị trí chữ countdown so với tàu (unit world)")]
+    [Tooltip("V2: BẬT để hiện nhãn 'Đang đón khách...' khi tàu đậu; TẮT để ẩn hẳn chữ trên tàu " +
+             "(dùng khi Dev C đã có UI riêng cho trạng thái chuyến).")]
+    [SerializeField] private bool showDockedLabel = true;
+
+    [Tooltip("Nội dung nhãn khi tàu đang đậu đón khách (V2 — không còn mốc thời gian cố định).")]
+    [SerializeField] private string dockedLabel = "Đang đón khách...";
+
+    [Tooltip("Vị trí chữ so với tàu (unit world)")]
     [SerializeField] private Vector3 countdownOffset = new Vector3(0f, 60f, 0f);
 
-    [Tooltip("Cỡ chữ countdown placeholder tự tạo")]
+    [Tooltip("Cỡ chữ placeholder tự tạo")]
     [SerializeField] private float countdownFontSize = 72f;
 
     [Header("Canh vị trí (khi tàu đậu bị lệch khỏi ô)")]
@@ -62,10 +75,10 @@ public class TouristBoatController : MonoBehaviour
 
     private Vector3 _visualBaseLocalPos;   // localPosition gốc của Visual — bob cộng lên từ đây
     private float   _bobTime;
-    private bool    _visualShown  = true;
+    private bool    _visualShown    = true;
     private bool    _countdownShown = true;
     private bool    _facingLeft;
-    private int     _lastShownSeconds = -1;
+    private bool    _dockedLabelSet;       // đã ghi chữ cho lần đậu này chưa (không alloc mỗi frame)
 
     // ─── Unity lifecycle ────────────────────────────────────────────────
 
@@ -97,9 +110,9 @@ public class TouristBoatController : MonoBehaviour
         BoatDockManager mgr = BoatDockManager.Instance;
         if (mgr == null || mgr.Config == null || _dockIndex < 0)
         {
-            // Trước đây nhánh này im lặng tuyệt đối: dockIndex = -1 (tool không wire
-            // được, hoặc object cha bị đổi tên khác "Dock_XX") làm tàu tắt VĨNH VIỄN
-            // mà không ai biết vì sao. Cảnh báo MỘT LẦN duy nhất — không spam mỗi frame.
+            // dockIndex = -1 (tool không wire được, hoặc object cha bị đổi tên khác
+            // "Dock_XX") làm tàu tắt VĨNH VIỄN mà không ai biết vì sao.
+            // Cảnh báo MỘT LẦN duy nhất — không spam mỗi frame.
             if (!_warnedNoSetup && mgr != null && mgr.Config != null && _dockIndex < 0)
             {
                 _warnedNoSetup = true;
@@ -134,9 +147,8 @@ public class TouristBoatController : MonoBehaviour
 
         switch (info.State)
         {
-            case BoatState.Hidden:
-                // Kỹ thuật ẩn của TrainState: tắt Visual, root đứng chờ ở điểm mù
-                // sẵn tư thế cho pha Arriving kế tiếp.
+            // WaitingNext == Hidden (V1): tàu núp ở điểm mù chờ giờ cập bến kế tiếp.
+            case BoatState.WaitingNext:
                 SetVisualShown(false);
                 ShowCountdown(false);
                 if (_pathReady)
@@ -155,15 +167,17 @@ public class TouristBoatController : MonoBehaviour
                 SetVisualShown(true);
                 if (_pathReady)
                     transform.position = _points[_points.Length - 1] + berthOffset; // đậu chính xác tại berth
-                ShowCountdown(true);
-                UpdateCountdownText(info.DockedRemainingSeconds);
+                // V2: pha Docked vô hạn → KHÔNG countdown. Hiện nhãn tĩnh hoặc ẩn hẳn.
+                ShowCountdown(showDockedLabel);
+                if (showDockedLabel)
+                    ApplyDockedLabel();
                 break;
 
             case BoatState.Departing:
                 SetVisualShown(true);
                 ShowCountdown(false);
                 // Đi NGƯỢC path: tiến độ pha 0→1 ứng với quãng đường 1→0.
-                // KHÔNG cập nhật flip — tàu LÙI thẳng ra, không quay đầu (GDD §3.2).
+                // KHÔNG cập nhật flip — tàu LÙI thẳng ra, không quay đầu (GDD §3.1).
                 if (_pathReady)
                     PlaceAlongPath(1f - (float)info.Progress, false);
                 break;
@@ -236,13 +250,11 @@ public class TouristBoatController : MonoBehaviour
 
     /// <summary>
     /// Dựng cache polyline từ manager. Path thiếu → fallback 2 điểm
-    /// (điểm mù + berth); thiếu nốt thì tàu đứng yên, chỉ warning 1 lần — không NRE
-    /// (GDD §5 edge 8).
+    /// (điểm mù + berth); thiếu nốt thì tàu đứng yên, chỉ warning 1 lần — không NRE.
     ///
     /// [QA m-2] Hàm này được GỌI LẠI mỗi frame tới khi path hợp lệ. Buffer
     /// _points/_cumLengths được TÁI DÙNG qua EnsurePathBuffers — chỉ alloc khi
-    /// kích thước đổi (thực tế: đúng 1 lần). Bản cũ null-out buffer khi path suy
-    /// biến → new 2 mảng mỗi frame vĩnh viễn nếu waypoint trùng nhau.
+    /// kích thước đổi (thực tế: đúng 1 lần).
     /// </summary>
     private void TryBuildPath(BoatDockManager mgr)
     {
@@ -341,12 +353,12 @@ public class TouristBoatController : MonoBehaviour
             visual.gameObject.SetActive(shown);
     }
 
-    // ─── Countdown world-space ──────────────────────────────────────────
+    // ─── Nhãn world-space khi đậu bến ───────────────────────────────────
 
     /// <summary>
-    /// Chuẩn bị TMP countdown: ưu tiên ref Inspector → child "Countdown" →
-    /// tự tạo TextMeshPro placeholder (game vẫn chạy khi tool chưa sinh đủ).
-    /// Project dùng TMPro (xem FarmUIManager) nên placeholder cũng là TMPro.
+    /// Chuẩn bị TMP: ưu tiên ref Inspector → child "Countdown" → tự tạo
+    /// TextMeshPro placeholder (game vẫn chạy khi tool chưa sinh đủ).
+    /// Tên child giữ "Countdown" như V1 để scene/prefab cũ không phải sửa.
     /// </summary>
     private void SetupCountdown()
     {
@@ -378,7 +390,7 @@ public class TouristBoatController : MonoBehaviour
         countdownText.transform.localPosition = countdownOffset;
     }
 
-    /// <summary>Bật/tắt countdown — có guard tránh SetActive lặp.</summary>
+    /// <summary>Bật/tắt nhãn — có guard tránh SetActive lặp mỗi frame.</summary>
     private void ShowCountdown(bool shown)
     {
         if (_countdownShown == shown || countdownText == null)
@@ -389,31 +401,25 @@ public class TouristBoatController : MonoBehaviour
         _countdownShown = shown;
         countdownText.gameObject.SetActive(shown);
         if (!shown)
-            _lastShownSeconds = -1; // lần đậu sau set text lại từ đầu
+            _dockedLabelSet = false; // lần đậu sau set text lại từ đầu
     }
 
     /// <summary>
-    /// Cập nhật chữ "m:ss". Chỉ dựng string khi CON SỐ GIÂY đổi (1 lần/giây) —
-    /// giữ luật "không alloc trong vòng frame": 59 frame còn lại không cấp phát gì.
+    /// V2: ghi nhãn tĩnh "Đang đón khách..." đúng MỘT LẦN cho mỗi lần đậu —
+    /// giữ luật "không alloc trong vòng frame" (V1 dựng string countdown mỗi giây).
     /// </summary>
-    private void UpdateCountdownText(double remainingSeconds)
+    private void ApplyDockedLabel()
     {
-        if (countdownText == null) return;
-
-        int totalSeconds = Mathf.Max(0, Mathf.CeilToInt((float)remainingSeconds));
-        if (totalSeconds == _lastShownSeconds) return;
-        _lastShownSeconds = totalSeconds;
-
-        int m = totalSeconds / 60;
-        int s = totalSeconds % 60;
-        countdownText.text = m.ToString() + ":" + s.ToString("00");
+        if (countdownText == null || _dockedLabelSet) return;
+        _dockedLabelSet    = true;
+        countdownText.text = dockedLabel;
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────
 
     /// <summary>
     /// Suy dockIndex: ưu tiên giá trị Inspector (>= 0), không thì dò ngược cây cha
-    /// tìm node tên "Dock_XX" (hierarchy tool của Dev B sinh) và parse XX - 1.
+    /// tìm node tên "Dock_XX" (hierarchy tool sinh) và parse XX - 1.
     /// </summary>
     private int ResolveDockIndex()
     {
@@ -437,8 +443,8 @@ public class TouristBoatController : MonoBehaviour
 #if UNITY_EDITOR
     /// <summary>
     /// (Editor) Toạ độ tàu SẼ đậu khi vào Play Mode = Berth + berthOffset.
-    /// Tool menu 10 dùng hàm này để snap tàu trong Edit Mode, cho thấy trước
-    /// đúng vị trí Play Mode — vì trong Play Mode kéo tay bị code ghi đè mỗi frame.
+    /// Tool menu 10 và BoatShoreAdjustTool dùng hàm này để snap/xem trước vị trí
+    /// đậu trong Edit Mode — vì trong Play Mode kéo tay bị code ghi đè mỗi frame.
     /// </summary>
     public Vector3 EditorGetDockedPosition(Transform berth)
         => (berth != null ? berth.position : transform.position) + berthOffset;

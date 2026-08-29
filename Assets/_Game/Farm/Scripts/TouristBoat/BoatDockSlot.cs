@@ -9,9 +9,14 @@ using UnityEngine;
 /// Nhiệm vụ:
 ///  - Hiển thị/ẩn UI khóa (sprite mờ placeholder + teaser giá) theo BoatDockManager.
 ///  - Teaser đọc số từ BoatDockManager.Config (KHÔNG hardcode giá/level).
-///  - Tap vào khóa (Collider2D + OnMouseDown — cùng pattern TrainWagonSlot):
-///      đủ điều kiện → TryUnlockDock + hiệu ứng scale punch;
-///      thiếu điều kiện → floating text hiện lý do từ CanUnlockDock.
+///  - Tap vào khóa (Collider2D, cùng pattern TrainWagonSlot):
+///      • V2 (BOAT-002 §3.6): mở DockPurchasePopupUI — popup có giá, icon tiền,
+///        nút MUA disable kèm lý do. Việc trừ tiền vẫn do BoatDockManager lo.
+///      • Không có popup trong scene (chưa chạy tool UI) → GIỮ NGUYÊN hành vi V1:
+///        đủ điều kiện → TryUnlockDock; thiếu → floating text hiện lý do.
+///      • [QA M-6] Bắt ở NHẢ chuột (OnMouseUpAsButton) + ngưỡng di chuyển, và bỏ qua
+///        khi đang kéo bản đồ / kéo hạt / kéo liềm / có popup khác — trước đây bắt ở
+///        NHẤN XUỐNG nên chỉ cần chạm tay vào bảng rồi kéo map là mua/mở popup nhầm.
 ///  - OnDrawGizmos vẽ đường waypoint (line xanh) + Berth + BlindPoint để Sếp
 ///    chỉnh path bằng mắt trong Scene view (giống gizmo của FerryController).
 ///
@@ -44,7 +49,13 @@ public class BoatDockSlot : MonoBehaviour
     [SerializeField] private float floatingTextRise    = 80f;   // đơn vị world (map hệ tọa độ lớn)
     [SerializeField] private float floatingTextSeconds = 1.6f;
 
+    // [QA M-6] Ngưỡng coi là "chạm" chứ không phải "kéo" (pixel màn hình).
+    private const float NguongKeoPixel = 24f;
+
     private BoatDockManager _manager;      // giữ ref để unsubscribe an toàn lúc teardown
+    private Vector2         _viTriNhan;    // vị trí màn hình lúc nhấn xuống
+    private bool            _dangNhan;     // có nhịp nhấn hợp lệ đang chờ nhả không
+    private DockPurchasePopupUI _popupMua; // cache popup mua (V2) — tìm 1 lần
     private TextMeshPro     _floatingText; // tái dùng 1 instance, không spam GameObject
     private Coroutine       _floatingRoutine;
     private Coroutine       _unlockFxRoutine;
@@ -97,17 +108,66 @@ public class BoatDockSlot : MonoBehaviour
     //  Input — tap vào nút khóa (Collider2D + OnMouseDown như TrainWagonSlot)
     // =========================================================================
 
+    /// <summary>
+    /// Chỉ GHI NHẬN nhịp nhấn (không hành động) — hành động dời sang lúc nhả để phân
+    /// biệt "chạm để mở bảng" với "đặt tay lên bảng rồi kéo bản đồ" (QA M-6).
+    /// </summary>
     private void OnMouseDown()
     {
+        _dangNhan  = false;
+        _viTriNhan = Vector2.zero;
+
         var mgr = _manager != null ? _manager : BoatDockManager.Instance;
         if (mgr == null) return;
         if (mgr.IsDockUnlocked(dockIndex)) return; // đã mở — collider lẽ ra đã tắt, guard cho chắc
 
-        // m-1 (QA): bến 1 mở MIỄN PHÍ qua hội thoại intro — chặn tap trước/trong intro
-        // để không ai "mua trộm" bến 1 (CanUnlockDock(0) trả true từ L10), giữ trọn
-        // khoảnh khắc chuyến tàu đầu tiên do TouristBoatUnlockFlow đạo diễn.
+        // m-1 (QA V1 — GIỮ NGUYÊN): bến 1 mở MIỄN PHÍ qua hội thoại intro — chặn tap
+        // trước/trong intro để không ai "mua trộm" bến 1 (CanUnlockDock(0) trả true từ
+        // L10), giữ trọn khoảnh khắc chuyến tàu đầu tiên do TouristBoatUnlockFlow đạo diễn.
         if (dockIndex == 0 && !mgr.IsIntroDone) return;
 
+        // [QA M-6] Đang kéo bản đồ / kéo hạt giống / kéo liềm / có popup khác đang mở
+        // → nhịp chạm này không phải ý định mở bảng khóa.
+        if (FarmInputLock.BlockMapPan || FarmInputLock.IsDraggingSeed ||
+            FarmInputLock.IsDraggingSickle || FarmInputLock.IsPopupOpen) return;
+
+        _viTriNhan = ViTriConTro();
+        _dangNhan  = true;
+    }
+
+    /// <summary>
+    /// Nhả chuột/ngón tay TRÊN CHÍNH collider này (Unity chỉ gọi khi nhấn và nhả cùng
+    /// một collider) và không kéo quá ngưỡng → coi là một cú chạm thật.
+    /// </summary>
+    private void OnMouseUpAsButton()
+    {
+        if (!_dangNhan) return;
+        _dangNhan = false;
+
+        // Kéo quá ngưỡng = pan bản đồ, không phải chạm
+        if ((ViTriConTro() - _viTriNhan).sqrMagnitude > NguongKeoPixel * NguongKeoPixel) return;
+
+        // Trong lúc giữ tay, tình hình có thể đã đổi (popup khác vừa mở, bắt đầu kéo hạt…)
+        if (FarmInputLock.BlockMapPan || FarmInputLock.IsDraggingSeed ||
+            FarmInputLock.IsDraggingSickle || FarmInputLock.IsPopupOpen) return;
+
+        var mgr = _manager != null ? _manager : BoatDockManager.Instance;
+        if (mgr == null) return;
+        if (mgr.IsDockUnlocked(dockIndex)) return;
+        if (dockIndex == 0 && !mgr.IsIntroDone) return; // guard m-1, kiểm lại lúc nhả
+
+        // ── V2 (BOAT-002 §3.6): tap bảng khóa → MỞ POPUP MUA, không mua thẳng ──
+        if (_popupMua == null)
+            _popupMua = FindFirstObjectByType<DockPurchasePopupUI>(FindObjectsInactive.Include);
+
+        if (_popupMua != null)
+        {
+            _popupMua.MoChoBen(dockIndex);
+            return;
+        }
+
+        // ── Không có popup trong scene (chưa chạy tool UI) → GIỮ NGUYÊN đường V1 ──
+        // Không ai bị mất đường mua bến chỉ vì quên chạy tool.
         if (mgr.CanUnlockDock(dockIndex, out string reason))
         {
             // Đủ điều kiện → nhờ manager mở (manager tự trừ tiền qua FarmEconomyManager).
@@ -126,6 +186,16 @@ public class BoatDockSlot : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Vị trí con trỏ/ngón tay trên MÀN HÌNH (pixel). Dùng Input cũ cho gọn — đường
+    /// vào đây vốn đã là OnMouseDown/OnMouseUpAsButton (API input cũ của Unity) nên
+    /// không thêm phụ thuộc mới.
+    /// </summary>
+    private static Vector2 ViTriConTro()
+    {
+        return Input.mousePosition;
+    }
+
     // =========================================================================
     //  Trạng thái khóa
     // =========================================================================
@@ -133,6 +203,8 @@ public class BoatDockSlot : MonoBehaviour
     private void HandleDockUnlocked(int unlockedIndex)
     {
         if (unlockedIndex != dockIndex) return;
+
+        _dangNhan = false; // bến vừa mở — huỷ nhịp nhấn đang chờ (nếu có)
 
         if (_unlockFxRoutine != null) StopCoroutine(_unlockFxRoutine);
         _unlockFxRoutine = StartCoroutine(UnlockFxRoutine());
@@ -174,9 +246,18 @@ public class BoatDockSlot : MonoBehaviour
         }
     }
 
+    // [QA m-6] KHÔNG dùng CultureInfo.GetCultureInfo("vi-VN"): build bật Invariant
+    // Globalization (hay gặp với IL2CPP mobile) sẽ ném CultureNotFoundException.
+    private static readonly NumberFormatInfo DinhDangSoVN = new NumberFormatInfo
+    {
+        NumberGroupSeparator   = ".",
+        NumberDecimalSeparator = ",",
+        NumberGroupSizes       = new[] { 3 },
+    };
+
     /// <summary>Định dạng số kiểu Việt Nam: 2000 → "2.000".</summary>
     private static string FormatVN(int amount)
-        => amount.ToString("N0", CultureInfo.GetCultureInfo("vi-VN"));
+        => amount.ToString("N0", DinhDangSoVN);
 
     /// <summary>Punch scale nhỏ rồi thu về 0 và ẩn UI khóa — dopamine lúc mở bến.</summary>
     private IEnumerator UnlockFxRoutine()

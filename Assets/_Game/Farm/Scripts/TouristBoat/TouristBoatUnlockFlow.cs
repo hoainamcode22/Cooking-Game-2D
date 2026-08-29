@@ -5,8 +5,10 @@ using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 /// <summary>
-/// Intro mở khóa bến tàu du lịch khi đạt level (BOAT-001 §3.1) — gắn trên BoatSystem.
+/// Intro mở khóa bến tàu du lịch khi đạt level (BOAT-001 §3.1) + BẢNG KHÓA bến
+/// trả phí (BOAT-002 §3.6 — rework V2) — gắn trên BoatSystem.
 ///
+/// ── PHẦN GIỮ NGUYÊN TỪ V1 (hội thoại intro L10) ─────────────────────────────
 /// Luồng: đạt config.unlockLevel (nghe FarmLevelManager.OnLevelChanged + check lúc Start
 /// để bắt save đã qua level) && !BoatDockManager.IsIntroDone →
 ///   1. Dựng overlay chặn UI + hiện 4 câu hội thoại từ config.introDialogue
@@ -22,11 +24,21 @@ using UnityEngine.UI;
 /// trang phải wire sẵn trong Inspector — không có API truyền hội thoại động. Bảng
 /// hội thoại ở đây tự dựng runtime, cùng style (bounce-in + typewriter).
 ///
+/// ── PHẦN MỚI V2 (§3.6) ──────────────────────────────────────────────────────
+///  • Bảng khóa bến 2/3 hiển thị bằng SPRITE ASSET (field lockBoardSprite —
+///    placeholder khung gỗ, art thật đang vẽ) thay cho ô màu phẳng V1: script tự
+///    áp sprite + cỡ (config.lockPanelWidth/Height) lên SpriteRenderer của
+///    Dock_XX/LockUI lúc boot, chạy lại nhiều lần cũng không dồn hệ số.
+///  • Tap bảng khóa KHÔNG mua trực tiếp nữa → MỞ DockPurchasePopupUI. Việc bắt tap
+///    do CHÍNH BoatDockSlot lo (OnMouseUpAsButton + ngưỡng kéo — lead duyệt sửa file
+///    đó sau QA M-6); file này KHÔNG còn tự bắn tia và KHÔNG còn tắt collider.
+///    Việc mua/trừ tiền vẫn do BoatDockManager.TryUnlockDock lo (API V1 nguyên vẹn).
+///  • Mở bến thành công → DockUnlockCelebrationFX.Phat tại bảng khóa (sao vàng + SFX).
+///
 /// GHI CHÚ KHÓA INPUT: pan/zoom người chơi bị khóa qua CinematicFocus(lockInput:true);
-/// UI bị chặn bởi Image blocker (raycastTarget). FarmInputLock chỉ thấy chỗ ĐỌC
-/// BlockMapPan/BlockMapZoom trong codebase, không chắc có setter public → KHÔNG gọi,
-/// nghĩa là object world nhận OnMouseDown vẫn tap được trong vài giây intro (vô hại,
-/// đã ghi vào mục cần lead review).
+/// UI bị chặn bởi Image blocker (raycastTarget). Popup mua slot dùng FarmInputLock
+/// (RegisterPopupOpen/Close) đúng chuẩn; BoatDockSlot tự bỏ qua tap khi
+/// BlockMapPan / IsDraggingSeed / IsDraggingSickle / IsPopupOpen.
 /// </summary>
 [DisallowMultipleComponent]
 public class TouristBoatUnlockFlow : MonoBehaviour
@@ -45,6 +57,22 @@ public class TouristBoatUnlockFlow : MonoBehaviour
     [Tooltip("Câu cuối tự đóng sau bấy nhiêu giây (vẫn tap được để đóng sớm).")]
     [SerializeField] private float lastLineAutoCloseSeconds = 2.2f;
 
+    // ─── V2 §3.6: bảng khóa + popup mua ─────────────────────────────────────
+
+    [Header("Bảng khóa bến (V2 — sprite asset)")]
+    [Tooltip("Sprite KHUNG GỖ của bảng khóa bến. Tool Setup Popups (UI) gán tạm khung gỗ tìm được trong project; art thật đang vẽ — thay ở đây là xong, không cần sửa code.")]
+    [SerializeField] private Sprite lockBoardSprite;
+
+    [Tooltip("Sprite icon ổ khóa trên bảng (tuỳ chọn — để trống thì giữ nguyên icon placeholder tool sinh).")]
+    [SerializeField] private Sprite lockIconSprite;
+
+    [Tooltip("Áp sprite + cỡ bảng khóa lúc boot. Tắt nếu Sếp đã tự dựng bảng khóa bằng tay và không muốn script đụng vào.")]
+    [SerializeField] private bool apDungSpriteBangKhoa = true;
+
+    [Header("Popup mua slot bến (V2)")]
+    [Tooltip("DockPurchasePopupUI trong scene. Để trống thì tự tìm lúc chạy (kể cả object đang tắt).")]
+    [SerializeField] private DockPurchasePopupUI purchasePopup;
+
     private bool _running; // intro đang chạy
     private bool _done;    // intro đã xong trong session này (hoặc IsIntroDone từ save)
     private bool _subscribed;
@@ -60,6 +88,11 @@ public class TouristBoatUnlockFlow : MonoBehaviour
     private CameraController _cc;
     private Vector3          _savedCamPos;
     private float            _savedCamSize;
+
+    // V2: cache bảng khóa từng bến (tìm 1 lần lúc boot, dùng cho tap + FX)
+    private readonly Transform[]      _lockBoards  = new Transform[BoatDockManager.DockCount];
+    private readonly SpriteRenderer[] _lockBoardSr = new SpriteRenderer[BoatDockManager.DockCount];
+    private BoatDockManager           _manager;
 
     // =========================================================================
     //  Vòng đời + trigger
@@ -99,6 +132,12 @@ public class TouristBoatUnlockFlow : MonoBehaviour
         FarmLevelManager.Instance.OnLevelChanged += HandleLevelChanged;
         _subscribed = true;
 
+        // ── V2 §3.6: chuẩn bị bảng khóa + nghe sự kiện mở bến để bắn FX ──────
+        _manager = BoatDockManager.Instance;
+        _manager.OnDockUnlocked += HandleDockUnlocked;
+
+        ChuanBiBangKhoa();
+
         TryStartIntro();
     }
 
@@ -106,6 +145,8 @@ public class TouristBoatUnlockFlow : MonoBehaviour
     {
         if (_subscribed && FarmLevelManager.Instance != null)
             FarmLevelManager.Instance.OnLevelChanged -= HandleLevelChanged;
+        if (_manager != null)
+            _manager.OnDockUnlocked -= HandleDockUnlocked;
         if (_overlayRoot != null)
             Destroy(_overlayRoot);
     }
@@ -137,7 +178,7 @@ public class TouristBoatUnlockFlow : MonoBehaviour
     }
 
     // =========================================================================
-    //  Intro chính
+    //  Intro chính — GIỮ NGUYÊN V1
     // =========================================================================
 
     private IEnumerator IntroRoutine()
@@ -200,6 +241,136 @@ public class TouristBoatUnlockFlow : MonoBehaviour
         _done    = true;
         _running = false;
         Debug.Log("[TouristBoat] Intro mở khóa bến tàu hoàn tất — MarkIntroDone().");
+    }
+
+    // =========================================================================
+    //  V2 §3.6 — Bảng khóa: sprite asset + tap mở popup mua
+    // =========================================================================
+
+    /// <summary>
+    /// Tìm bảng khóa (Dock_XX/LockUI) của 3 bến và áp sprite khung gỗ + cỡ theo
+    /// config. Mảnh nào thiếu chỉ log warning, không NRE.
+    /// Việc bắt tap thuộc về BoatDockSlot (QA M-6) — ở đây chỉ lo hình ảnh + FX.
+    /// </summary>
+    private void ChuanBiBangKhoa()
+    {
+        var cfg = _manager != null ? _manager.Config : null;
+
+        for (int i = 0; i < BoatDockManager.DockCount; i++)
+        {
+            Transform dock = transform.Find($"Dock_{i + 1:00}");
+            if (dock == null) continue;
+
+            Transform board = dock.Find("LockUI");
+            if (board == null)
+            {
+                Debug.LogWarning($"[TouristBoat] Dock_{i + 1:00} thiếu con 'LockUI' — bến này không có bảng khóa (logic mở bến vẫn chạy).");
+                continue;
+            }
+
+            _lockBoards[i]  = board;
+            _lockBoardSr[i] = board.GetComponent<SpriteRenderer>();
+
+            if (apDungSpriteBangKhoa)
+                ApSpriteBangKhoa(i, board, cfg);
+        }
+    }
+
+    /// <summary>
+    /// Áp sprite khung gỗ + cỡ (unit world, từ config) cho bảng khóa 1 bến.
+    /// Sprite CÓ border → drawMode Sliced + sr.size; sprite KHÔNG border → giữ
+    /// Simple và phóng bằng localScale (cùng luật ApplySpriteSize của
+    /// TouristBoatSetupTool — nhầm 2 đường này thì 2 hệ số NHÂN nhau, icon từng
+    /// phình 27.000 unit che kín map).
+    /// </summary>
+    private void ApSpriteBangKhoa(int dockIndex, Transform board, TouristBoatConfig cfg)
+    {
+        if (lockBoardSprite == null) return; // chưa gán art — giữ nguyên placeholder của tool
+
+        var sr = _lockBoardSr[dockIndex];
+        if (sr == null)
+        {
+            Debug.LogWarning($"[TouristBoat] Dock_{dockIndex + 1:00}/LockUI thiếu SpriteRenderer — không áp được sprite khung gỗ.");
+            return;
+        }
+
+        sr.sprite = lockBoardSprite;
+        sr.color  = Color.white; // art tự mang màu — bỏ lớp tint xám placeholder V1
+
+        Vector2 size = cfg != null
+            ? new Vector2(cfg.lockPanelWidth, cfg.lockPanelHeight)
+            : new Vector2(520f, 250f);
+
+        board.localScale = Vector3.one; // chống dồn hệ số giữa các lần chạy
+        if (lockBoardSprite.border != Vector4.zero)
+        {
+            sr.drawMode = SpriteDrawMode.Sliced;
+            sr.size     = size;
+        }
+        else
+        {
+            sr.drawMode = SpriteDrawMode.Simple;
+            Vector2 native = lockBoardSprite.rect.size / Mathf.Max(0.0001f, lockBoardSprite.pixelsPerUnit);
+            if (native.x > 0.0001f && native.y > 0.0001f)
+                board.localScale = new Vector3(size.x / native.x, size.y / native.y, 1f);
+        }
+
+        // Icon ổ khóa (nếu Sếp gán art riêng)
+        if (lockIconSprite != null)
+        {
+            Transform icon = board.Find("LockIcon");
+            var isr = icon != null ? icon.GetComponent<SpriteRenderer>() : null;
+            if (isr != null)
+            {
+                isr.sprite = lockIconSprite;
+                isr.color  = Color.white;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Mở popup mua slot cho bến dockIndex (API public — Dev khác/tool test gọi được).
+    /// Không tìm thấy popup trong scene → log hướng dẫn chạy tool, KHÔNG mua chui.
+    /// </summary>
+    public void MoPopupMuaBen(int dockIndex)
+    {
+        if (purchasePopup == null)
+            purchasePopup = FindFirstObjectByType<DockPurchasePopupUI>(FindObjectsInactive.Include);
+
+        if (purchasePopup == null)
+        {
+            Debug.LogWarning("[TouristBoat] Chưa có DockPurchasePopupUI trong scene — chạy menu " +
+                             "Tools/Farm Game/Tourist Boat/Setup Popups (UI) rồi lưu scene.");
+            return;
+        }
+
+        purchasePopup.MoChoBen(dockIndex);
+    }
+
+    /// <summary>
+    /// Bến vừa mở (qua popup MUA hoặc UnlockDockFree của intro) → hiệu ứng ăn
+    /// mừng tại bảng khóa: sao vàng bay + SFX mua (GDD §3.6).
+    ///
+    /// Bảng khóa do AI thu: nếu bến có BoatDockSlot (Dev B) thì CHÍNH NÓ đã chạy
+    /// punch + thu bảng trong UnlockFxRoutine — mình truyền null để 2 coroutine
+    /// không giành cùng một transform; chỉ khi bến KHÔNG có slot thì FX mới tự
+    /// thu bảng (lưới an toàn cho scene dựng tay).
+    /// </summary>
+    private void HandleDockUnlocked(int dockIndex)
+    {
+        if (dockIndex < 0 || dockIndex >= BoatDockManager.DockCount) return;
+
+        Transform board = _lockBoards[dockIndex];
+        Vector3 viTri = board != null
+            ? board.position
+            : (_manager != null && _manager.GetDockBerth(dockIndex) != null
+                ? _manager.GetDockBerth(dockIndex).position
+                : transform.position);
+
+        bool slotTuThuBang = board != null &&
+                             board.GetComponentInParent<BoatDockSlot>() != null;
+
+        DockUnlockCelebrationFX.Phat(viTri, slotTuThuBang ? null : board);
     }
 
     // =========================================================================

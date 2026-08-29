@@ -427,15 +427,13 @@ public class OrderBoardPopupUI : MonoBehaviour
             Sprite anh = OrderBoardIconResolver.GetAvatar(order.customerAvatarId);
             if (anh != null)
             {
-                // Có art thật: đặt màu TRẮNG, nếu không ảnh sẽ bị nhuộm màu ngẫu nhiên
-                // của khách và trông như hỏng.
                 imageArtCustomerAvatar.sprite = anh;
                 imageArtCustomerAvatar.color  = Color.white;
+                imageArtCustomerAvatar.preserveAspect = true;
             }
             else
             {
-                // Chưa có art khách hàng: tô màu suy ra từ mã khách để mỗi khách một sắc,
-                // người chơi vẫn thấy "đơn này của người khác đơn kia".
+                imageArtCustomerAvatar.sprite = null;
                 imageArtCustomerAvatar.color =
                     OrderBoardIconResolver.TintFromId(order.customerAvatarId, 0.40f, 0.88f);
             }

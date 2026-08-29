@@ -3,7 +3,7 @@
 > **Mục đích:** File tổng hợp duy nhất chứa **toàn bộ luật vẽ và prompt mẫu** cho:
 > 1. **Món Ăn (38 món)**
 > 2. **Bao Bì / Gói Hạt Giống Shop (23 loại: 13 Nông sản + 10 Hoa)**
-> 3. **Cây Trồng Nông Trại (11 loại - 5 Stages)**
+> 3. **Cây Trồng Nông Trại (13 loại - 5 Stages)**
 > 4. **Hoa Trồng Chậu (10 loài - 5 Stages)**
 
 ---
@@ -16,7 +16,7 @@
 3. [PHẦN II: 38 ICON MÓN ĂN (Dishes)](#phần-ii-38-icon-món-ăn)
    - [20 Món Ăn Mới](#nhóm-1-20-món-ăn-mới)
    - [18 Món Ăn Hiện Có (Chuẩn Hóa)](#nhóm-2-18-món-ăn-hiện-có)
-4. [PHẦN III: 11 CÂY TRỒNG NÔNG TRẠI (Crops - 5 Stages)](#phần-iii-11-cây-trồng-nông-trại)
+4. [PHẦN III: 13 CÂY TRỒNG NÔNG TRẠI (Crops - 5 Stages)](#phần-iii-13-cây-trồng-nông-trại)
 5. [PHẦN IV: 10 LOÀI HOA CHẬU (Flowers - 5 Stages)](#phần-iv-10-loài-hoa-chậu)
 
 ---
@@ -428,6 +428,16 @@
 ### 11. Cây Tiêu / Hồ Tiêu (`tieu`)
 ```text
 2D game asset sprite sheet of Black Pepper Vine growth in 5 stages: Stage 1 vine shoot at base of stake, Stage 2 climbing vine with heart-shaped leaves, Stage 3 dense vine on wooden trellis with flower spikes, Stage 4 hanging clusters of green peppercorns, Stage 5 lush pepper vine loaded with heavy hanging clusters of ripe reddish-black peppercorns. Generous wide horizontal spacing between stages, isolated on solid white background #FFFFFF.
+```
+
+### 12. Cây Bí Ngô / Bí Đỏ (`pumpkin`)
+```text
+2D game asset sprite sheet of Pumpkin Vine growth in 5 distinct progressive stages from left to right: Stage 1 tiny green seed sprout with cotyledons, Stage 2 spreading vine seedling with broad lobed leaves, Stage 3 lush trailing vine with vibrant yellow pumpkin blossoms, Stage 4 dense leafy vine with growing round green ribbed pumpkin, Stage 5 lush sprawling vine with a massive plump glossy ripe golden-orange ribbed pumpkin ready for harvest. Isometric 45-degree angle, cozy anime farm game art, dark brown outlines, generous wide horizontal spacing between each stage (no overlapping vines), completely isolated on pure clean solid white background #FFFFFF.
+```
+
+### 13. Cây Dưa Hấu (`watermelon`)
+```text
+2D game asset sprite sheet of Watermelon Vine growth in 5 distinct progressive stages from left to right: Stage 1 small green seed sprout, Stage 2 spreading leafy vine tendril clump, Stage 3 lush trailing vine with small yellow flowers, Stage 4 leafy vine with a growing striped oval green watermelon, Stage 5 lush dense vine bearing a huge heavy ripe shiny green striped watermelon resting on soil ready for harvest. Isometric 45-degree angle, charming casual farm game art, dark brown outlines, generous wide horizontal spacing between each stage (no touching leaves), completely isolated on pure clean solid white background #FFFFFF.
 ```
 
 ---

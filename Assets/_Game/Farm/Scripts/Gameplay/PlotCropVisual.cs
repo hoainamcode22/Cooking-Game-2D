@@ -140,11 +140,13 @@ public class PlotCropVisual : MonoBehaviour
         isReadySwayActive = wasSwayActive;
     }
 
-    /// <summary>Hiá»ƒn thá»‹ crop theo progress (0..1).</summary>
+    /// <summary>Hiển thị crop theo progress (0..1).</summary>
     public void ShowCrop(CropData crop, float progress01)
     {
         EnsureSetup();
         if (crop == null) { ClearAll(); return; }
+
+        EnsurePointsCount(crop.displayCount);
 
         currentCrop = crop;
         progress01  = Mathf.Clamp01(progress01);
@@ -180,16 +182,29 @@ public class PlotCropVisual : MonoBehaviour
                 cropPoints[i].gameObject.SetActive(i < crop.displayCount);
     }
 
+    private void EnsurePointsCount(int requiredCount)
+    {
+        if (cropPoints != null && cropPoints.Length >= requiredCount) return;
+        var list = new System.Collections.Generic.List<Transform>();
+        if (cropPoints != null) list.AddRange(cropPoints);
+
+        while (list.Count < requiredCount)
+        {
+            int idx = list.Count + 1;
+            GameObject go = new GameObject($"CropPoint_{idx}");
+            go.transform.SetParent(transform, false);
+            go.transform.localPosition = Vector3.zero;
+            go.transform.localScale = Vector3.one;
+            list.Add(go.transform);
+        }
+        cropPoints = list.ToArray();
+        isSetupDone = false;
+        EnsureSetup();
+    }
+
     // ── Lưới iso ──────────────────────────────────────────────────────────────
     /// <summary>
-    /// Rải n CropPoint thành lưới đều bên trong hình thoi của ô đất, rồi đánh
-    /// sortingOrder theo độ sâu (cây xa vẽ trước, cây gần vẽ sau).
-    ///
-    /// Toán: hình thoi = ảnh của hình vuông (s,t) ∈ [-0.5,0.5]² qua
-    ///   P(s,t) = tâm + (s+t)·E_phải + (s−t)·E_trên
-    /// với E_phải/E_trên là vector từ tâm ra đỉnh phải/đỉnh trên. Lưới đều trong
-    /// hình vuông (s,t) ⇒ lưới đều theo 2 trục iso của ô đất. Lấy 4 đỉnh từ AABB
-    /// của sprite nền nên tự đúng với mọi kích cỡ/độ nghiêng của plot.
+    /// Rải n CropPoint thành lưới đều bên trong hình thoi của ô đất hoặc lòng chậu hoa.
     /// </summary>
     public void ApplyLattice(int n)
     {
@@ -205,6 +220,67 @@ public class PlotCropVisual : MonoBehaviour
         Vector3 eR = transform.InverseTransformPoint(new Vector3(b.max.x, b.center.y, 0f)) - c;
         Vector3 eT = transform.InverseTransformPoint(new Vector3(b.center.x, b.max.y, 0f)) - c;
 
+        // KIỂM TRA XEM ĐÂY CÓ PHẢI LÀ CHẬU HOA (FLOWER POT) KHÔNG
+        bool isFlowerPot = false;
+        var plot = GetComponentInParent<PlotController>();
+        if (plot != null && plot.Category == PlotCategory.Flower)
+            isFlowerPot = true;
+        else if (transform.parent != null && (transform.parent.name.ToLower().Contains("chau") || transform.parent.name.ToLower().Contains("pot") || transform.parent.name.ToLower().Contains("hoa")))
+            isFlowerPot = true;
+        else if (ground.sprite != null && (ground.sprite.name.ToLower().Contains("chau") || ground.sprite.name.ToLower().Contains("pot") || ground.sprite.name.ToLower().Contains("khungtrongchauhoa")))
+            isFlowerPot = true;
+
+        if (isFlowerPot)
+        {
+            // TÍNH TOÁN RIÊNG CHO CHẬU HOA:
+            // Miệng chậu chứa đất đen nằm ở nửa trên sprite chậu: Y_soil = c + 0.42 * eT
+            Vector3 potCenter = c + 0.42f * eT + (Vector3)latticeOffset;
+            float rx = eR.x * 0.28f; // Bán kính ngang của lòng chậu
+            float ry = eT.y * 0.12f; // Bán kính dọc của lòng chậu
+
+            if (n == 1)
+            {
+                if (cropPoints[0] != null) cropPoints[0].localPosition = potCenter;
+            }
+            else if (n == 2)
+            {
+                // 2 hạt giống / bông hoa nằm ngay ngắn, đối xứng chính giữa lòng chậu
+                if (cropPoints[0] != null) cropPoints[0].localPosition = potCenter + new Vector3(-rx * 0.55f, 0f, 0f);
+                if (cropPoints[1] != null) cropPoints[1].localPosition = potCenter + new Vector3( rx * 0.55f, 0f, 0f);
+            }
+            else if (n == 3)
+            {
+                if (cropPoints[0] != null) cropPoints[0].localPosition = potCenter + new Vector3(0f, ry * 0.45f, 0f);
+                if (cropPoints[1] != null) cropPoints[1].localPosition = potCenter + new Vector3(-rx * 0.55f, -ry * 0.35f, 0f);
+                if (cropPoints[2] != null) cropPoints[2].localPosition = potCenter + new Vector3( rx * 0.55f, -ry * 0.35f, 0f);
+            }
+            else
+            {
+                for (int i = 0; i < n; i++)
+                {
+                    if (cropPoints[i] == null) continue;
+                    float angle = (i / (float)n) * Mathf.PI * 2f;
+                    float px = Mathf.Cos(angle) * rx * 0.55f;
+                    float py = Mathf.Sin(angle) * ry * 0.55f;
+                    cropPoints[i].localPosition = potCenter + new Vector3(px, py, 0f);
+                }
+            }
+
+            var orderPot = new System.Collections.Generic.List<int>();
+            for (int i = 0; i < n; i++) if (cropPoints[i] != null) orderPot.Add(i);
+            orderPot.Sort((a, bb) => cropPoints[bb].position.y.CompareTo(cropPoints[a].position.y));
+            for (int rank = 0; rank < orderPot.Count; rank++)
+            {
+                int idx = orderPot[rank];
+                if (slotRenderers != null && idx < slotRenderers.Length && slotRenderers[idx] != null)
+                    slotRenderers[idx].sortingOrder = sortingOrder + rank;
+            }
+
+            lastLatticeCount = n;
+            return;
+        }
+
+        // Ô RUỘNG NÔNG SẢN BÌNH THƯỜNG (Lưới hình thoi)
         int nc, nr; GetGrid(n, out nc, out nr);
 
         for (int i = 0; i < n; i++)

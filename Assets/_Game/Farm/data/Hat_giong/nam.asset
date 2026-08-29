@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   itemID: seed_nam
   itemName: "N\u1EA5m"
-  itemIcon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
+  itemIcon: {fileID: 21300000, guid: 9f94860c349b4a1b95a8e6de07bc19df, type: 3}
   goldPrice: 76
   diamondPrice: 0
   cropCategory: 0

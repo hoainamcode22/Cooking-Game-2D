@@ -265,10 +265,20 @@ public static class OrderBoardIconResolver
     }
 
     /// <summary>Ảnh khách theo mã, chưa gắn art thì null.</summary>
+    /// <summary>Ảnh khách theo mã, tự động nạp từ Resources/Avatars nếu chưa gán tay.</summary>
     public static Sprite GetAvatar(string customerId)
     {
-        if (_avatarTheoMa == null || string.IsNullOrEmpty(customerId)) return null;
-        return _avatarTheoMa.TryGetValue(customerId, out Sprite s) ? s : null;
+        if (!string.IsNullOrEmpty(customerId) && _avatarTheoMa != null && _avatarTheoMa.TryGetValue(customerId, out Sprite s) && s != null)
+            return s;
+
+        if (string.IsNullOrEmpty(customerId)) return null;
+
+        // Fallback tự động nạp từ bộ 9 avatar trong Resources/Avatars
+        int idx = System.Array.IndexOf(OrderNameBank.CustomerIds, customerId);
+        if (idx < 0) idx = Mathf.Abs(customerId.GetHashCode()) % 9;
+        else idx = idx % 9;
+
+        return Resources.Load<Sprite>($"Avatars/avatar_npc_{idx}");
     }
 
     /// <summary>

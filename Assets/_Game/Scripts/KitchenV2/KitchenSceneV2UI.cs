@@ -118,7 +118,9 @@ namespace KitchenUIv2
         private struct FlavorRow
         {
             public RectTransform rowRoot;
+            public RectTransform dot;
             public TMP_Text label;
+            public RectTransform track;
             public Image fill;
             public RectTransform marker;
             public TMP_Text value;
@@ -126,7 +128,16 @@ namespace KitchenUIv2
             public void SetY(float y)
             {
                 if (rowRoot != null)
+                {
                     rowRoot.anchoredPosition = new Vector2(10f, y);
+                }
+                else
+                {
+                    if (dot != null) dot.anchoredPosition = new Vector2(14f, y - 5f);
+                    if (label != null) label.rectTransform.anchoredPosition = new Vector2(30f, y);
+                    if (track != null) track.anchoredPosition = new Vector2(80f, y - 3f);
+                    if (value != null) value.rectTransform.anchoredPosition = new Vector2(248f, y);
+                }
             }
         }
 
@@ -345,6 +356,17 @@ namespace KitchenUIv2
             // Chip nguyên liệu cần (Xếp vào Grid: tối đa 4 thẻ/hàng, từ 5 thẻ tự động xuống hàng 2)
             if (_needChipsRoot != null && dish != null)
             {
+                var oldHl = _needChipsRoot.GetComponent<HorizontalLayoutGroup>();
+                if (oldHl != null) Destroy(oldHl);
+
+                var gl = _needChipsRoot.GetComponent<GridLayoutGroup>();
+                if (gl == null) gl = _needChipsRoot.gameObject.AddComponent<GridLayoutGroup>();
+                gl.cellSize = new Vector2(66f, 64f);
+                gl.spacing = new Vector2(6f, 6f);
+                gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                gl.constraintCount = 4;
+                gl.childAlignment = TextAnchor.UpperLeft;
+
                 for (int i = _needChipsRoot.childCount - 1; i >= 0; i--)
                     Destroy(_needChipsRoot.GetChild(i).gameObject);
 
@@ -728,28 +750,65 @@ namespace KitchenUIv2
             _txtDishName   = FT("Recipe_Board/Board_Detail/Txt_DishName");
             _txtDishMeta   = FT("Recipe_Board/Board_Detail/Txt_DishMeta");
             _txtNeedTitle  = FT("Recipe_Board/Board_Detail/Txt_NeedTitle");
+            _txtTasteTitle = FT("Recipe_Board/Board_Detail/Txt_TasteTitle");
             _needChipsRoot = F("Recipe_Board/Board_Detail/Need_Chips");
+
+            if (_needChipsRoot != null)
+            {
+                var oldHl = _needChipsRoot.GetComponent<HorizontalLayoutGroup>();
+                if (oldHl != null) Destroy(oldHl);
+
+                var gl = _needChipsRoot.GetComponent<GridLayoutGroup>();
+                if (gl == null) gl = _needChipsRoot.gameObject.AddComponent<GridLayoutGroup>();
+                gl.cellSize = new Vector2(66f, 64f);
+                gl.spacing = new Vector2(6f, 6f);
+                gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+                gl.constraintCount = 4;
+                gl.childAlignment = TextAnchor.UpperLeft;
+            }
+
             _txtRewards    = FT("Recipe_Board/Board_Detail/Txt_Rewards");
             _txtProjection = FT("Recipe_Board/Board_Detail/Txt_Projection");
             for (int i = 0; i < 5; i++)
             {
                 var row = new FlavorRow();
-                row.label = FT($"Recipe_Board/Board_Detail/Flavor_Label_{i}");
-                var track = F($"Recipe_Board/Board_Detail/Flavor_Track_{i}");
-                if (track != null)
+                var rGo = F($"Recipe_Board/Board_Detail/Flavor_Row_{i}");
+                if (rGo != null)
                 {
-                    var fill = track.Find("Fill");
-                    if (fill != null) row.fill = fill.GetComponent<Image>();
-                    row.marker = track.Find("Marker") as RectTransform;
+                    row.rowRoot = rGo as RectTransform;
+                    row.label = FT($"Recipe_Board/Board_Detail/Flavor_Row_{i}/Label");
+                    var track = F($"Recipe_Board/Board_Detail/Flavor_Row_{i}/Track");
+                    if (track != null)
+                    {
+                        row.track = track as RectTransform;
+                        var fill = track.Find("Fill");
+                        if (fill != null) row.fill = fill.GetComponent<Image>();
+                        row.marker = track.Find("Marker") as RectTransform;
+                    }
+                    row.value = FT($"Recipe_Board/Board_Detail/Flavor_Row_{i}/Value");
                 }
-                row.value = FT($"Recipe_Board/Board_Detail/Flavor_Value_{i}");
+                else
+                {
+                    var dot = F($"Recipe_Board/Board_Detail/Flavor_Dot_{i}");
+                    if (dot != null) row.dot = dot as RectTransform;
+                    row.label = FT($"Recipe_Board/Board_Detail/Flavor_Label_{i}");
+                    var track = F($"Recipe_Board/Board_Detail/Flavor_Track_{i}");
+                    if (track != null)
+                    {
+                        row.track = track as RectTransform;
+                        var fill = track.Find("Fill");
+                        if (fill != null) row.fill = fill.GetComponent<Image>();
+                        row.marker = track.Find("Marker") as RectTransform;
+                    }
+                    row.value = FT($"Recipe_Board/Board_Detail/Flavor_Value_{i}");
+                }
                 _flavorRows[i] = row;
 
                 // Chấm màu vị: sprite tròn tạo bằng code không lưu được vào scene → gán lại mỗi lần chạy
-                var dot = transform.Find($"Recipe_Board/Board_Detail/Flavor_Dot_{i}");
-                if (dot != null)
+                var dotT = transform.Find($"Recipe_Board/Board_Detail/Flavor_Dot_{i}") ?? transform.Find($"Recipe_Board/Board_Detail/Flavor_Row_{i}/Dot");
+                if (dotT != null)
                 {
-                    var im = dot.GetComponent<Image>();
+                    var im = dotT.GetComponent<Image>();
                     if (im != null && im.sprite == null) im.sprite = GetDotSprite();
                 }
             }

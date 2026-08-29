@@ -702,12 +702,16 @@ public class WarehousePopupUI : MonoBehaviour
             if (catIcon != null) return catIcon;
         }
 
-        // 2. Crop Lookup (harvestIcon > itemIcon > readySprite)
+        // 2. Crop Lookup (seed -> itemIcon; harvest -> harvestIcon > readySprite > itemIcon)
         if (cropLookup.TryGetValue(key, out CropData crop) && crop != null)
         {
+            if (key.StartsWith("seed_") || key.StartsWith("seed"))
+            {
+                if (crop.itemIcon != null) return crop.itemIcon;
+            }
             if (crop.harvestIcon != null) return crop.harvestIcon;
-            if (crop.itemIcon != null) return crop.itemIcon;
             if (crop.readySprite != null) return crop.readySprite;
+            if (crop.itemIcon != null) return crop.itemIcon;
         }
 
         // 3. Extra Item Lookup

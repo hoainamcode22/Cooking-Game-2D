@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::CropData
   itemID: seed_hoa_lan
   itemName: Hoa Lan
-  itemIcon: {fileID: -5282305146031929904, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
+  itemIcon: {fileID: 21300000, guid: 31518b4c053f4176b2ace65611ae44c0, type: 3}
   goldPrice: 80
   diamondPrice: 0
   cropCategory: 1
   cropId: hoa_lan
   plantSeedFxIcon: {fileID: 0}
-  harvestIcon: {fileID: 0}
+  harvestIcon: {fileID: -5282305146031929904, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
   sproutSprite: {fileID: 4276873430628212148, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
   growingSprite: {fileID: -4761241310524006394, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
   readySprite: {fileID: -5282305146031929904, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}

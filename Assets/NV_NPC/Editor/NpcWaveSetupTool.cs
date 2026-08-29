@@ -58,15 +58,7 @@ namespace NVNpc.EditorTools
         private const string SortLayer    = "Objects";
         private const int   BaseOrder     = 500;    // khớp m_SortingOrder: 500 của công trình
         private const float OrderPerUnitY = 1f;
-        // ── SCALE PREFAB ─────────────────────────────────────────────────────────
-        // 115, KHÔNG phải 200. Yêu cầu chủ dự án là "làm giống nhân vật chef" — nghĩa là CAO NGANG
-        // CHEF TRÊN MÀN HÌNH, không phải cùng con số scale.
-        // Chef_NPC: sprite cao 74px, scale 200 → 74/100 x 200 = 148 world unit (~1.48 ô).
-        // 3 NPC này: sprite cao 122–131px (art vẽ to hơn hẳn chef). Nếu để scale 200 thì ra
-        // 244–262 unit = cao gần GẤP ĐÔI chef.
-        //   115 → bà lão 144.9 · hải quân 150.7 · nv tàu lửa 140.3 world unit  ⇒ khớp chef 148.
-        // Tool IN RA chiều cao world thực tế của từng nhân vật trong report để tinh chỉnh tiếp
-        // (mỗi 1 đơn vị scale ≈ 1.25 world unit chiều cao).
+ 
         private const float PrefabScale   = 115f;
 
         // ── Thuật toán cắt (lead đã phân tích pixel và chốt các số này) ──────────

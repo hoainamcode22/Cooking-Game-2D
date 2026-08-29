@@ -7,16 +7,24 @@ using UnityEngine;
 /// <see cref="BoatScheduleCore"/> (mọi logic thời gian nằm bên đó, lớp này
 /// chỉ lo phần dính Unity):
 ///
-///   • Persist PlayerPrefs (keys theo GDD §3.4) + chống đồng hồ lùi.
+///   • Persist PlayerPrefs (key V1 giữ nguyên + key V2 mới, migrate nhẹ).
 ///   • Trừ tiền qua FarmEconomyManager.SpendGold/SpendGems (API tự từ chối nếu thiếu).
 ///   • Đọc level qua FarmLevelManager.Instance.CurrentLevel / HasReached.
-///   • Quản lý 3 dock (berth, path, boat controller) + bắn event cho UI (Dev B).
+///   • Quản lý 3 dock (berth, path, boat controller) + bắn event cho Dev B / Dev C.
 ///
-/// Trạng thái tàu KHÔNG lưu biến riêng — mỗi lần hỏi đều suy từ anchor + UTC now
-/// (xem BoatScheduleCore.ComputePhase) nên reload scene / tắt mở game đều
-/// idempotent, tàu luôn đúng pha (GDD §5 edge 2, 7).
+/// ── V2 (BOAT-002, event-driven) ──────────────────────────────────────────
+/// KHÔNG còn chu kỳ thời gian cố định. Mỗi bến là 1 máy trạng thái persist:
+///   WaitingNext(arrivalUtc) → Arriving(travel) → Docked (VÔ HẠN, chờ lệnh)
+///   → [Dev B gọi ReportVisitorsAllAboard] → Departing(travel) → WaitingNext(...)
 ///
-/// Hierarchy mong đợi (tool của Dev B sinh — mọi chỗ tìm đều phòng thủ null):
+/// Lịch chuyến kế (GDD V2 §3.2): gap = gapOneDockMinutes (5) nếu chỉ 1 bến mở,
+/// gapMultiDockMinutes (10) nếu ≥2 bến; mọi cặp arrival bị ép cách nhau
+/// ≥ minStaggerMinutes (3) bằng cách DỜI MUỘN.
+///
+/// Trạng thái tàu vẫn là hàm thuần của (state persist, mốc UTC, now) nên
+/// reload scene / tắt mở game đều idempotent (GDD V2 §5 edge 1).
+///
+/// Hierarchy mong đợi (tool sinh — mọi chỗ tìm đều phòng thủ null):
 ///   BoatSystem (BoatDockManager)
 ///   ├─ BlindPoint
 ///   ├─ Dock_01..Dock_03 ── Berth · Path (WP_01..WP_n) · Boat (TouristBoatController)
@@ -34,47 +42,78 @@ public class BoatDockManager : MonoBehaviour
     [Tooltip("Asset TouristBoatConfig — mọi tuning knob của hệ boat")]
     [SerializeField] private TouristBoatConfig config;
 
-    // ─── PlayerPrefs keys (GDD §3.4) ────────────────────────────────────
+    // ─── PlayerPrefs keys ───────────────────────────────────────────────
+    // V1 (giữ nguyên pattern — KHÔNG đổi tên, save cũ vẫn đọc được):
+    private const string KeyUnlockedFormat   = "TouristBoat_Unlocked_{0}";
+    private const string KeyAnchorFormat     = "TouristBoat_AnchorUtc_{0}";   // anchor chu kỳ V1 (chỉ đọc để migrate)
+    private const string KeyIntroDone        = "TouristBoat_IntroDone";
+    // V2 (mới — version-safe, không đụng key V1):
+    private const string KeyStateFormat      = "TouristBoat_V2_State_{0}";
+    private const string KeyStateAnchorFormat= "TouristBoat_V2_Anchor_{0}";
+    private const string KeyNextArrivalFormat= "TouristBoat_V2_NextArrival_{0}";
+    private const string KeySchemaVersion    = "TouristBoat_ScheduleVersion";
 
-    private const string KeyUnlockedFormat = "TouristBoat_Unlocked_{0}";
-    private const string KeyAnchorFormat   = "TouristBoat_AnchorUtc_{0}";
-    private const string KeyIntroDone      = "TouristBoat_IntroDone";
+    /// <summary>Phiên bản schema lịch tàu hiện tại (V1 = 1 / không có key, V2 = 2).</summary>
+    private const int SchemaVersionV2 = 2;
 
     // ─── Runtime ────────────────────────────────────────────────────────
 
-    private readonly bool[]  _unlocked      = new bool[DockCount];
-    private readonly long[]  _anchorTicks   = new long[DockCount];
-    private readonly float[] _travelSeconds = new float[DockCount];
+    private readonly bool[]              _unlocked      = new bool[DockCount];
+    private readonly DockScheduleState[] _states        = new DockScheduleState[DockCount];
+    private readonly float[]             _travelSeconds = new float[DockCount];
 
-    // m-3 (quyết định lead): travel dùng cho LỊCH = max travel của cả 3 bến.
-    // Cả 3 bến chung một cycleDuration → hai chu kỳ bất kỳ không bao giờ lệch pha
-    // dần theo thời gian → luật so le đúng VĨNH VIỄN (AC §8.4), không chỉ tại lúc
-    // mở bến. Controller vẫn di chuyển theo path RIÊNG của bến, map theo progress
-    // 0-1 — tàu có path ngắn trôi chậm hơn một chút (chấp nhận: tàu du lịch thong thả).
+    // m-3 (quyết định lead giữ từ V1): travel dùng cho LỊCH = max travel của cả 3 bến.
+    // Controller vẫn di chuyển theo path RIÊNG của bến, map theo progress 0-1 —
+    // tàu có path ngắn trôi chậm hơn một chút (chấp nhận: tàu du lịch thong thả).
     private float _scheduleTravelSeconds;
 
-    // Cache trạng thái frame trước — chỉ để phát hiện đổi state mà bắn event,
-    // KHÔNG phải nguồn sự thật (nguồn sự thật là anchor + now).
+    // Cache trạng thái frame trước — chỉ để phát hiện đổi state mà bắn
+    // OnBoatStateChanged, KHÔNG phải nguồn sự thật (nguồn sự thật là _states).
     private readonly BoatState[] _lastStates = new BoatState[DockCount];
+
+    // Arrival đã BÁO cho Dev C (OnNextTripScheduled) — chống bắn trùng cùng 1 chuyến.
+    private readonly long[] _announcedArrival = new long[DockCount];
+
+    // Docked resolve lúc load: hoãn bắn event tới khi Dev B kịp subscribe (xem FlushPendingDockedEvents).
+    private readonly bool[] _pendingDockedEvent = new bool[DockCount];
+    private int _readyFrame = -1;
+
+    // Lưới an toàn chống kẹt tàu (QA B-1): đã báo OnDockTimeoutForced cho chuyến này chưa,
+    // báo lúc mấy giờ (giây thực từ lúc chạy app), và chuyến này có bị ép rời không.
+    private readonly bool[]  _timeoutNoticed        = new bool[DockCount];
+    private readonly float[] _timeoutNoticeRealtime = new float[DockCount];
+    private readonly bool[]  _departForcedByTimeout = new bool[DockCount];
+
+    /// <summary>
+    /// Cửa sổ ân hạn (GIÂY THỰC — cố ý KHÔNG chia debugTimeScale) giữa lúc bắn
+    /// OnDockTimeoutForced và lúc manager tự ép tàu rời bến: đủ cho Dev B cho khách
+    /// còn lại quay về tàu. Đây là hằng KỸ THUẬT, không phải tuning knob gameplay.
+    /// </summary>
+    private const float ForcedDepartGraceSeconds = 3f;
 
     private readonly Transform[]             _berths     = new Transform[DockCount];
     private readonly Transform[][]           _pathPoints = new Transform[DockCount][];
     private readonly TouristBoatController[] _boats      = new TouristBoatController[DockCount];
 
-    // Buffer dựng sẵn cho phép giải so le — tránh alloc lúc mở bến.
-    private readonly BoatCycleSpec[] _staggerScratch = new BoatCycleSpec[DockCount];
+    // Buffer dựng sẵn cho phép so le — tránh alloc mỗi lần lên lịch.
+    private readonly long[] _otherArrivalScratch = new long[DockCount];
 
     // Keys dựng sẵn 1 lần — tránh string.Format lặp lại mỗi lần save.
-    private readonly string[] _keyUnlocked = new string[DockCount];
-    private readonly string[] _keyAnchor   = new string[DockCount];
+    private readonly string[] _keyUnlocked    = new string[DockCount];
+    private readonly string[] _keyAnchorV1    = new string[DockCount];
+    private readonly string[] _keyState       = new string[DockCount];
+    private readonly string[] _keyStateAnchor = new string[DockCount];
+    private readonly string[] _keyNextArrival = new string[DockCount];
 
     private Transform _blindPoint;
     private bool      _introDone;
     private bool      _allowDebugTime; // debugTimeScale chỉ ăn trong Editor/Dev build
 
-    // ─── API contract (Dev B code song song dựa trên đúng chữ ký này) ───
+    // ═════════════════════════════════════════════════════════════════════
+    //  API CONTRACT (Dev B/C code song song dựa trên đúng chữ ký này)
+    // ═════════════════════════════════════════════════════════════════════
 
-    /// <summary>Config đang dùng — UI đọc giá/level/hội thoại từ đây.</summary>
+    /// <summary>Config đang dùng — Dev B đọc visitors*/patience/queueSpacing..., UI đọc giá/level từ đây.</summary>
     public TouristBoatConfig Config => config;
 
     /// <summary>Bắn khi 1 bến vừa được mở khóa thành công (tham số: dockIndex 0-2).</summary>
@@ -83,13 +122,186 @@ public class BoatDockManager : MonoBehaviour
     /// <summary>Bắn khi tàu của 1 bến đổi trạng thái (dockIndex, state mới).</summary>
     public event System.Action<int, BoatState> OnBoatStateChanged;
 
-    /// <summary>Hội thoại intro (4 câu, GDD §3.1) đã chạy xong chưa — persist, chỉ chạy 1 lần.</summary>
+    /// <summary>
+    /// V2 — bắn ĐÚNG 1 LẦN khi tàu CHẠM BẾN (dockIndex), kể cả khi cú chạm bến đó
+    /// được resolve lúc load (tắt game trong lúc tàu đang chạy vào / đang chờ).
+    /// Dev B nghe event này để spawn chuyến khách mới.
+    ///
+    /// KHÔNG bắn lại cho chuyến đã chạm bến ở phiên chơi TRƯỚC (state save = Docked):
+    /// chuyến đó Dev B tự khôi phục từ persistence riêng (TouristTrip_{dock}) — nếu
+    /// bắn lại sẽ nhân đôi khách (GDD V2 §8.6). Boot xong cứ hỏi <see cref="IsDocked"/>.
+    /// </summary>
+    public event System.Action<int> OnBoatDocked;
+
+    /// <summary>V2 — bắn khi tàu BẮT ĐẦU rời bến (dockIndex): gangplank rút, khách đã lên hết.</summary>
+    public event System.Action<int> OnBoatDeparting;
+
+    /// <summary>
+    /// V2 — LƯỚI AN TOÀN (QA B-1): bến bị ép rời do đậu quá <c>maxDockMinutes</c>
+    /// (mặc định 35 phút — LỚN HƠN mốc kiên nhẫn khách 30 phút để nhánh "khách giận
+    /// tự về tàu" của Dev B vẫn chạy được, xem [QA M-7]). Bắn TRƯỚC khi tàu chuyển
+    /// Departing, kèm CỬA SỔ ÂN HẠN vài giây để Dev B đuổi nốt khách còn lại về tàu.
+    ///
+    /// Dev B nên: nghe event này → cho mọi khách chưa xong đi thẳng về tàu (icon buồn,
+    /// không thưởng) → gọi ReportVisitorsAllAboard như bình thường nếu kịp. Không gọi
+    /// kịp cũng KHÔNG sao: hết ân hạn manager tự chuyển pha, hệ không bao giờ kẹt.
+    /// </summary>
+    public event System.Action<int> OnDockTimeoutForced;
+
+    /// <summary>
+    /// V2 — bắn khi chuyến KẾ của 1 bến được lên lịch:
+    /// (dockIndex, arrivalUtc — DateTimeKind.Utc, số phút chờ đã làm tròn).
+    /// Thời điểm bắn: tàu vừa rời bến · vừa mở bến · vào game thấy chuyến kế ở tương lai.
+    /// Mỗi chuyến (mỗi mốc arrival) chỉ bắn 1 lần; Dev C tự persist key theo arrivalUtc
+    /// để popup không hiện lại sau khi reload, và tự bỏ qua khi số phút &lt; 1.
+    /// </summary>
+    public event System.Action<int, DateTime, int> OnNextTripScheduled;
+
+    /// <summary>V2 — tàu của bến này ĐANG ĐẬU (pha Docked) không? Index sai/bến chưa mở → false.</summary>
+    public bool IsDocked(int dockIndex)
+    {
+        return IsValidDock(dockIndex) && _unlocked[dockIndex] && GetBoatState(dockIndex) == BoatState.Docked;
+    }
+
+    /// <summary>V2 — số bến ĐÃ MỞ (0-3). Quyết định gap 5 phút (1 bến) hay 10 phút (≥2 bến).</summary>
+    public int UnlockedDockCount
+    {
+        get
+        {
+            int n = 0;
+            for (int i = 0; i < DockCount; i++)
+                if (_unlocked[i]) n++;
+            return n;
+        }
+    }
+
+    /// <summary>
+    /// V2 — TouristVisitorManager (Dev B) gọi khi khách CUỐI đã lên tàu:
+    /// Docked → Departing + lên lịch chuyến kế (gap theo số bến mở, ép so le ≥3 phút),
+    /// persist, bắn OnBoatDeparting và OnNextTripScheduled.
+    ///
+    /// An toàn khi gọi sai/gọi trùng: bến chưa mở, index sai, hoặc tàu KHÔNG ở pha
+    /// Docked → bỏ qua êm (log Debug), không đổi state, không bắn event lần hai.
+    /// Gọi được ngay frame đầu sau load (khi Dev B resolve xong khách offline).
+    /// </summary>
+    public void ReportVisitorsAllAboard(int dockIndex)
+    {
+        if (!IsReady || config == null || !IsValidDock(dockIndex) || !_unlocked[dockIndex])
+        {
+            Debug.Log($"[TouristBoat] ReportVisitorsAllAboard({dockIndex}) bị bỏ qua: hệ chưa sẵn sàng hoặc bến chưa mở.");
+            return;
+        }
+
+        long now = DateTime.UtcNow.Ticks;
+
+        // Tua tới hiện tại trước đã (có thể vừa mới chạm bến trong frame này).
+        ResolveDock(dockIndex, now, allowImmediateDockedEvent: true);
+
+        if (_states[dockIndex].State != BoatState.Docked)
+        {
+            // Đã bị lưới an toàn ép rời bến trước đó → Dev B gọi sau cũng ĐÚNG luồng,
+            // bỏ qua HOÀN TOÀN ÊM (không log, không phải lỗi của ai).
+            if (_departForcedByTimeout[dockIndex]) return;
+
+            // Guard chống double-fire: Dev B lỡ gọi 2 lần cho cùng 1 chuyến.
+            Debug.Log($"[TouristBoat] ReportVisitorsAllAboard(bến {BoatNumber(dockIndex)}) bỏ qua — " +
+                      $"tàu đang ở pha {_states[dockIndex].State}, không phải Docked.");
+            return;
+        }
+
+        BeginDeparture(dockIndex, now, forcedByTimeout: false);
+    }
+
+    /// <summary>
+    /// Lõi chuyển Docked → Departing + lên lịch chuyến kế + persist + bắn event.
+    /// Dùng chung cho 2 đường vào: Dev B báo khách lên tàu hết (forcedByTimeout = false)
+    /// và lưới an toàn ép rời do quá giờ (forcedByTimeout = true).
+    /// Trả false nếu lõi từ chối (không ở pha Docked).
+    /// </summary>
+    private bool BeginDeparture(int dockIndex, long nowUtcTicks, bool forcedByTimeout)
+    {
+        DockScheduleState next;
+        bool ok = BoatScheduleCore.TryBeginDeparture(
+            _states[dockIndex], nowUtcTicks,
+            EffectiveGapSeconds(), EffectiveTravelSeconds(), EffectiveStaggerSeconds(),
+            BuildOtherArrivals(dockIndex, out int otherCount), otherCount,
+            out next);
+
+        if (!ok) return false;
+
+        _states[dockIndex]              = next;
+        _departForcedByTimeout[dockIndex] = forcedByTimeout;
+        SaveDock(dockIndex);
+        LuuGopPrefs.LuuNgay(); // mốc quan trọng (kết thúc 1 chuyến) — flush đĩa ngay
+
+        Debug.Log($"[TouristBoat] Tàu số {BoatNumber(dockIndex):00} rời bến" +
+                  (forcedByTimeout ? " (LƯỚI AN TOÀN ép rời do quá giờ đậu)" : "") + " — " +
+                  $"chuyến kế cập bến lúc {new DateTime(next.NextArrivalUtcTicks, DateTimeKind.Utc):HH:mm:ss} UTC " +
+                  $"(gap {EffectiveGapSeconds() / 60.0:0.#} phút thực).");
+
+        RaiseStateChanged(dockIndex, BoatState.Departing);
+        OnBoatDeparting?.Invoke(dockIndex);
+        AnnounceNextTrip(dockIndex, nowUtcTicks);
+        return true;
+    }
+
+    /// <summary>
+    /// LƯỚI AN TOÀN CHỐNG KẸT TÀU (QA B-1 — Sếp duyệt 2026-08-29).
+    /// Tàu đậu quá <c>maxDockMinutes</c> (UTC tuyệt đối, có chia debugTimeScale như
+    /// mọi duration khác) thì:
+    ///   • Lần đầu phát hiện: LogWarning + bắn <see cref="OnDockTimeoutForced"/> rồi
+    ///     CHỜ cửa sổ ân hạn <see cref="ForcedDepartGraceSeconds"/> giây THỰC cho Dev B
+    ///     đuổi khách còn lại về tàu (khách đi bộ cần thời gian thật, nên cửa sổ này
+    ///     KHÔNG chia timeScale).
+    ///   • Hết ân hạn mà vẫn còn Docked: manager TỰ chuyển Departing — chắc chắn không kẹt,
+    ///     không phụ thuộc Dev B có gọi lại hay không.
+    /// Dev B kịp gọi ReportVisitorsAllAboard trong lúc ân hạn → đi đường bình thường,
+    /// cờ tự dọn vì state đã rời khỏi Docked.
+    /// </summary>
+    private void UpdateDockTimeout(int dockIndex, long nowUtcTicks)
+    {
+        // Chờ Dev B/C subscribe xong (giống FlushPendingDockedEvents) — bắn sớm hơn là rơi vào hư không.
+        if (_readyFrame < 0 || Time.frameCount <= _readyFrame + 1) return;
+
+        if (_states[dockIndex].State != BoatState.Docked)
+        {
+            _timeoutNoticed[dockIndex] = false; // sang pha khác → dọn cờ cho chuyến sau
+            return;
+        }
+
+        double maxDock = EffectiveMaxDockSeconds();
+        if (maxDock <= 0.0) return; // config đặt 0 = TẮT lưới an toàn (chỉ dùng khi debug)
+
+        if (!BoatScheduleCore.IsDockTimedOut(_states[dockIndex], nowUtcTicks, maxDock))
+            return;
+
+        if (!_timeoutNoticed[dockIndex])
+        {
+            _timeoutNoticed[dockIndex]        = true;
+            _timeoutNoticeRealtime[dockIndex] = Time.realtimeSinceStartup;
+            Debug.LogWarning($"[TouristBoat] Tàu số {BoatNumber(dockIndex):00} đậu quá " +
+                             $"{maxDock / 60.0:0.#} phút mà chưa có báo khách lên tàu — " +
+                             $"báo Dev B dọn khách, {ForcedDepartGraceSeconds:0}s nữa sẽ ép rời bến.");
+            OnDockTimeoutForced?.Invoke(dockIndex);
+            return; // ân hạn
+        }
+
+        if (Time.realtimeSinceStartup - _timeoutNoticeRealtime[dockIndex] < ForcedDepartGraceSeconds)
+            return; // vẫn trong cửa sổ ân hạn
+
+        BeginDeparture(dockIndex, nowUtcTicks, forcedByTimeout: true);
+    }
+
+    /// <summary>Số hiệu tàu hiển thị cho người chơi: bến 0 → "Tàu số 01" (GDD V2 §3.1).</summary>
+    public int BoatNumber(int dockIndex) => dockIndex + 1;
+
+    /// <summary>Hội thoại intro (4 câu) đã chạy xong chưa — persist, chỉ chạy 1 lần.</summary>
     public bool IsIntroDone => _introDone;
 
     /// <summary>
-    /// M-1: true SAU khi LoadFromPrefs xong trong Start — Dev B đợi cờ này trong
-    /// BootRoutine trước khi đọc IsIntroDone/IsDockUnlocked (thứ tự Start giữa các
-    /// MonoBehaviour không bảo đảm; đọc sớm sẽ thấy toàn giá trị mặc định → replay intro).
+    /// M-1: true SAU khi LoadFromPrefs xong trong Start — Dev B/C đợi cờ này trong
+    /// BootRoutine trước khi đọc IsIntroDone/IsDockUnlocked/IsDocked và subscribe event
+    /// (thứ tự Start giữa các MonoBehaviour không bảo đảm).
     /// </summary>
     public bool IsReady { get; private set; }
 
@@ -106,9 +318,14 @@ public class BoatDockManager : MonoBehaviour
 
         for (int i = 0; i < DockCount; i++)
         {
-            _keyUnlocked[i] = string.Format(KeyUnlockedFormat, i);
-            _keyAnchor[i]   = string.Format(KeyAnchorFormat, i);
-            _lastStates[i]  = BoatState.Locked;
+            _keyUnlocked[i]    = string.Format(KeyUnlockedFormat, i);
+            _keyAnchorV1[i]    = string.Format(KeyAnchorFormat, i);
+            _keyState[i]       = string.Format(KeyStateFormat, i);
+            _keyStateAnchor[i] = string.Format(KeyStateAnchorFormat, i);
+            _keyNextArrival[i] = string.Format(KeyNextArrivalFormat, i);
+
+            _lastStates[i]     = BoatState.Locked;
+            _states[i].State   = BoatState.Locked;
         }
     }
 
@@ -124,10 +341,12 @@ public class BoatDockManager : MonoBehaviour
         FindSceneReferences();
         LoadFromPrefs();
 
-        IsReady = true; // M-1: chỉ bật SAU khi LoadFromPrefs xong — Dev B đợi cờ này
-        Debug.Log($"[TouristBoat] Khởi tạo xong: introDone={_introDone}, " +
+        IsReady     = true; // M-1: chỉ bật SAU khi LoadFromPrefs xong
+        _readyFrame = Time.frameCount;
+
+        Debug.Log($"[TouristBoat] Khởi tạo xong (V2 event-driven): introDone={_introDone}, " +
                   $"bến mở=[{(_unlocked[0] ? 1 : 0)},{(_unlocked[1] ? 1 : 0)},{(_unlocked[2] ? 1 : 0)}], " +
-                  $"timeScale={EffectiveTimeScale():0.##}");
+                  $"gap hiệu lực={EffectiveGapSeconds() / 60.0:0.#} phút, timeScale={EffectiveTimeScale():0.##}");
     }
 
     private void OnDestroy()
@@ -137,34 +356,32 @@ public class BoatDockManager : MonoBehaviour
 
     private void Update()
     {
-        if (!IsReady) return;
+        if (!IsReady || config == null) return;
 
-        long   now   = DateTime.UtcNow.Ticks;
-        double cycle = BoatScheduleCore.ComputeCycleSeconds(
-            config.DockSeconds, config.HideSeconds, _scheduleTravelSeconds);
+        long now = DateTime.UtcNow.Ticks;
 
         for (int i = 0; i < DockCount; i++)
         {
             if (!_unlocked[i]) continue;
 
-            // [QA B-1] Đồng hồ máy bị chỉnh lùi giữa phiên chơi: reset anchor = now
-            // (GDD §5 edge 4). Guard có DUNG SAI 1 chu kỳ: anchor nằm ở tương lai
-            // TRONG phạm vi 1 cycle là HỢP LỆ — luật so le vừa đẩy anchor vượt
-            // hideMinutes khi mở bến lúc bến khác đang hoạt động; reset ở đây sẽ
-            // phá so le (QA đo gap 8' < stagger 12'). ComputePhase tự xử lý anchor
-            // tương lai đúng nghĩa (kẹp về Hidden chờ tới lượt).
-            if (BoatScheduleCore.IsClockRolledBack(now, _anchorTicks[i], cycle))
+            // Đồng hồ máy bị chỉnh lùi giữa phiên chơi (GDD V2 §5 edge 2): mọi mốc UTC
+            // của bến vọt lên tương lai quá horizon (≈ 1 gap + dự phòng so le) →
+            // reset về WaitingNext(now + 30s) thay vì kẹt tàu hàng giờ.
+            if (BoatScheduleCore.IsScheduleImplausiblyFuture(_states[i], now, RollbackHorizonSeconds()))
             {
-                _anchorTicks[i] = now;
-                SaveDock(i);
-                Debug.LogWarning($"[TouristBoat] Phát hiện đồng hồ máy chỉnh lùi — reset anchor bến {i + 1}.");
+                ResetDockSchedule(i, now, "đồng hồ máy chỉnh lùi");
+                continue;
             }
 
-            RefreshDockState(i, now);
+            ResolveDock(i, now, allowImmediateDockedEvent: true);
+            UpdateDockTimeout(i, now); // lưới an toàn chống kẹt tàu (QA B-1)
+            AnnounceNextTripIfPending(i, now);
         }
+
+        FlushPendingDockedEvents();
     }
 
-    // ─── API contract — mở khóa ─────────────────────────────────────────
+    // ─── API contract — mở khóa (giữ nguyên V1) ─────────────────────────
 
     /// <summary>Bến dockIndex (0-2) đã mở khóa chưa. Index sai → false.</summary>
     public bool IsDockUnlocked(int dockIndex)
@@ -174,7 +391,7 @@ public class BoatDockManager : MonoBehaviour
 
     /// <summary>
     /// Đánh dấu hội thoại intro đã chạy xong (persist) — UI gọi sau câu thứ 4.
-    /// Đảm bảo hội thoại chỉ chạy đúng 1 lần kể cả nhảy cóc nhiều level (GDD §5 edge 1).
+    /// Đảm bảo hội thoại chỉ chạy đúng 1 lần kể cả nhảy cóc nhiều level.
     /// </summary>
     public void MarkIntroDone()
     {
@@ -187,7 +404,7 @@ public class BoatDockManager : MonoBehaviour
 
     /// <summary>
     /// Kiểm tra đủ điều kiện mở bến chưa — KHÔNG trừ tiền, chỉ trả lý do để UI
-    /// disable nút + hiện tooltip (GDD §5 edge 5). reason rỗng khi trả true.
+    /// disable nút + hiện tooltip. reason rỗng khi trả true.
     /// </summary>
     public bool CanUnlockDock(int dockIndex, out string reason)
     {
@@ -213,18 +430,18 @@ public class BoatDockManager : MonoBehaviour
         UnlockDenyReason deny = BoatScheduleCore.EvaluateUnlock(req, _unlocked[dockIndex], level, gold, gems);
         switch (deny)
         {
-            case UnlockDenyReason.None:            reason = string.Empty;                 return true;
-            case UnlockDenyReason.AlreadyUnlocked: reason = "Bến đã mở khóa";             return false;
+            case UnlockDenyReason.None:            reason = string.Empty;                     return true;
+            case UnlockDenyReason.AlreadyUnlocked: reason = "Bến đã mở khóa";                 return false;
             case UnlockDenyReason.LevelTooLow:     reason = $"Cần đạt Lv{req.RequiredLevel}"; return false;
-            case UnlockDenyReason.NotEnoughGold:   reason = "Không đủ vàng";              return false;
-            case UnlockDenyReason.NotEnoughGems:   reason = "Không đủ gem";               return false;
-            default:                               reason = "Bến không hợp lệ";           return false;
+            case UnlockDenyReason.NotEnoughGold:   reason = "Không đủ vàng";                  return false;
+            case UnlockDenyReason.NotEnoughGems:   reason = "Không đủ gem";                   return false;
+            default:                               reason = "Bến không hợp lệ";               return false;
         }
     }
 
     /// <summary>
     /// Mở bến trả phí (bến 2 vàng / bến 3 gem): kiểm điều kiện → trừ tiền →
-    /// persist → dispatch tàu ngay (tôn trọng luật so le §3.3).
+    /// persist → tàu xuất phát ngay (tôn trọng luật so le §3.2).
     /// Trả false + log lý do nếu bị từ chối; KHÔNG trừ tiền khi thất bại.
     /// </summary>
     public bool TryUnlockDock(int dockIndex)
@@ -237,8 +454,8 @@ public class BoatDockManager : MonoBehaviour
 
         var req = config.GetDockRequirement(dockIndex);
 
-        // SpendGold/SpendGems tự từ chối nếu không đủ (GDD §3.1) — vẫn re-check
-        // kết quả vì số dư có thể đổi giữa CanUnlock và Spend (race với reward khác).
+        // SpendGold/SpendGems tự từ chối nếu không đủ — vẫn re-check kết quả vì
+        // số dư có thể đổi giữa CanUnlock và Spend (race với reward khác).
         if (req.GoldCost > 0)
         {
             if (FarmEconomyManager.Instance == null || !FarmEconomyManager.Instance.SpendGold(req.GoldCost))
@@ -264,14 +481,14 @@ public class BoatDockManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Mở bến MIỄN PHÍ — dành cho bến 1 qua hội thoại intro (GDD §3.1 bước 3).
+    /// Mở bến MIỄN PHÍ — dành cho bến 1 qua hội thoại intro.
     /// Không kiểm level/giá (flow intro đã tự kiểm HasReached trước khi chạy);
     /// idempotent: gọi trên bến đã mở thì bỏ qua êm.
     /// </summary>
     public void UnlockDockFree(int dockIndex)
     {
         if (!IsValidDock(dockIndex) || !IsReady) return;
-        if (_unlocked[dockIndex]) return; // đã mở — bỏ qua, không reset anchor
+        if (_unlocked[dockIndex]) return; // đã mở — bỏ qua, không reset lịch
 
         UnlockInternal(dockIndex);
     }
@@ -280,7 +497,7 @@ public class BoatDockManager : MonoBehaviour
 
     /// <summary>
     /// Trạng thái tàu của bến dockIndex tại thời điểm gọi — suy trực tiếp từ
-    /// anchor + UTC now, không cache. Bến chưa mở / index sai → Locked.
+    /// state persist + UTC now, không cache. Bến chưa mở / index sai → Locked.
     /// </summary>
     public BoatState GetBoatState(int dockIndex)
     {
@@ -289,9 +506,9 @@ public class BoatDockManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Giây còn lại của pha Docked (cho countdown UI). Trả -1 nếu tàu không
-    /// đang Docked (thoả contract "&lt;=0 nếu không Docked").
-    /// Lưu ý: khi debugTimeScale &gt; 1 thì đây là "giây game" (đếm nhanh hơn thực).
+    /// [V1 API — GIỮ CHỮ KÝ] Giây còn lại của pha Docked.
+    /// V2: pha Docked VÔ HẠN (tàu chờ khách xong) nên hàm này LUÔN trả -1;
+    /// UI không được hiện countdown khi đậu nữa — hiện "Đang đón khách..." (GDD V2 §3.1).
     /// </summary>
     public float GetDockedRemainingSeconds(int dockIndex)
     {
@@ -300,17 +517,17 @@ public class BoatDockManager : MonoBehaviour
         return info.State == BoatState.Docked ? (float)info.DockedRemainingSeconds : -1f;
     }
 
-    /// <summary>Transform điểm đậu (Berth) của bến — cho camera zoom intro. Null nếu thiếu.</summary>
+    /// <summary>Transform điểm đậu (Berth) của bến — cho camera zoom intro / Dev B đặt gangplank. Null nếu thiếu.</summary>
     public UnityEngine.Transform GetDockBerth(int dockIndex)
     {
         return IsValidDock(dockIndex) ? _berths[dockIndex] : null;
     }
 
-    // ─── API nội bộ cho TouristBoatController (ngoài contract, chỉ thêm không sửa) ───
+    // ─── API nội bộ cho Controller / Dev B / Dev C (chỉ THÊM, không sửa V1) ───
 
     /// <summary>
-    /// Pha đầy đủ của tàu (state + tiến độ 0-1 + countdown) — controller gọi mỗi
-    /// frame để đặt vị trí. Trả false (state Locked) nếu bến chưa mở / chưa sẵn sàng.
+    /// Pha đầy đủ của tàu (state + tiến độ 0-1) — controller gọi mỗi frame để đặt
+    /// vị trí. Trả false (state Locked) nếu bến chưa mở / chưa sẵn sàng.
     /// Struct thuần, không alloc — an toàn trong Update.
     /// </summary>
     public bool TryGetPhaseInfo(int dockIndex, out BoatPhaseInfo info)
@@ -322,17 +539,35 @@ public class BoatDockManager : MonoBehaviour
             return false;
         }
 
-        // [QA B-1] Truyền anchor NGUYÊN VẸN, không SanitizeAnchor ở đây: anchor
-        // tương lai (≤ 1 cycle) là hợp lệ do so le đẩy — ComputePhase tự kẹp
-        // elapsed âm về 0 (Hidden chờ tới lượt). Đồng hồ lùi thật do Update() xử lý
-        // qua IsClockRolledBack (dung sai 1 cycle).
-        // m-3: dùng _scheduleTravelSeconds đồng nhất — cả 3 bến chung chu kỳ.
-        info = BoatScheduleCore.ComputePhase(
-            DateTime.UtcNow.Ticks,
-            _anchorTicks[dockIndex],
-            config.DockSeconds, config.HideSeconds, _scheduleTravelSeconds,
-            EffectiveTimeScale());
+        // QueryPhase tự tua nội bộ nên hiển thị đúng ngay cả khi Update của manager
+        // chưa chạy trong frame này (thứ tự script không bảo đảm).
+        info = BoatScheduleCore.QueryPhase(_states[dockIndex], DateTime.UtcNow.Ticks, EffectiveTravelSeconds());
         return true;
+    }
+
+    /// <summary>
+    /// V2 — giờ cập bến của chuyến SẮP TỚI của 1 bến (UTC). Trả false khi bến chưa
+    /// mở hoặc tàu đang đậu (không có chuyến kế nào được lên lịch — đang chờ khách).
+    /// Dev C dùng để dựng lại popup "Tàu số 0X sẽ cập bến sau X phút" sau reload.
+    /// </summary>
+    public bool TryGetNextArrivalUtc(int dockIndex, out DateTime arrivalUtc)
+    {
+        arrivalUtc = default(DateTime);
+        if (!IsReady || !IsValidDock(dockIndex) || !_unlocked[dockIndex]) return false;
+
+        long ticks = BoatScheduleCore.UpcomingArrivalUtcTicks(_states[dockIndex]);
+        if (ticks <= 0L) return false;
+
+        arrivalUtc = new DateTime(ticks, DateTimeKind.Utc);
+        return true;
+    }
+
+    /// <summary>V2 — số phút chờ (đã làm tròn, theo thang thời gian game) tới chuyến kế; -1 nếu không có.</summary>
+    public int GetMinutesToNextArrival(int dockIndex)
+    {
+        DateTime arrival;
+        if (!TryGetNextArrivalUtc(dockIndex, out arrival)) return -1;
+        return ScaledWaitMinutes(DateTime.UtcNow.Ticks, arrival.Ticks);
     }
 
     /// <summary>Điểm mù chung ngoài khơi (nơi tàu núp). Null nếu hierarchy thiếu.</summary>
@@ -361,78 +596,175 @@ public class BoatDockManager : MonoBehaviour
         return IsValidDock(dockIndex) ? _travelSeconds[dockIndex] : 0f;
     }
 
-    /// <summary>Giây chạy 1 chiều ĐỒNG NHẤT dùng cho lịch/chu kỳ của cả 3 bến (m-3).</summary>
+    /// <summary>Giây chạy 1 chiều ĐỒNG NHẤT dùng cho lịch của cả 3 bến (m-3).</summary>
     public float GetScheduleTravelSeconds()
     {
         return _scheduleTravelSeconds;
     }
 
-    // ─── Nội bộ: mở khóa & dispatch ─────────────────────────────────────
+    // ─── Nội bộ: mở khóa & lên lịch ─────────────────────────────────────
 
     /// <summary>
-    /// Lõi mở bến (đã qua kiểm điều kiện/trừ tiền): đặt anchor sao cho tàu
-    /// Arriving NGAY (dopamine §3.1) — anchor = now - hide, tức phase vừa chạm
-    /// mốc Arriving — rồi giải luật so le với các bến đã mở (§3.3), persist,
-    /// bắn event. Nếu bị so le đẩy lùi, tàu sẽ Hidden thêm đúng phần thiếu.
+    /// Lõi mở bến (đã qua kiểm điều kiện/trừ tiền): đặt lịch sao cho tàu chạy vào
+    /// NGAY (dopamine §3.6) — arrival = now + travel — rồi ép luật so le với arrival
+    /// của các bến đã mở, persist, bắn event OnDockUnlocked + OnNextTripScheduled.
     /// </summary>
     private void UnlockInternal(int dockIndex)
     {
-        long   now   = DateTime.UtcNow.Ticks;
-        double scale = EffectiveTimeScale();
+        long   now    = DateTime.UtcNow.Ticks;
+        double travel = EffectiveTravelSeconds();
 
-        // Chia scale để "tàu vào ngay" vẫn đúng khi đang tua nhanh thời gian debug
-        // (phase = elapsed * scale — muốn phase = hide thì elapsed = hide/scale).
-        long desiredAnchor = now - BoatScheduleCore.SecondsToTicks(config.HideSeconds / scale);
+        long desiredArrival = now + BoatScheduleCore.SecondsToTicks(travel);
 
-        int otherCount = 0;
+        _unlocked[dockIndex] = true; // bật TRƯỚC khi tính gap: bến này tính vào UnlockedDockCount
+
+        long arrival = BoatScheduleCore.ResolveStaggeredArrival(
+            desiredArrival, EffectiveStaggerSeconds(),
+            BuildOtherArrivals(dockIndex, out int otherCount), otherCount);
+
+        _states[dockIndex].State               = BoatState.WaitingNext;
+        _states[dockIndex].AnchorUtcTicks      = arrival;
+        _states[dockIndex].NextArrivalUtcTicks = 0L;
+        _announcedArrival[dockIndex]           = 0L;
+
+        SaveDock(dockIndex);
+        PlayerPrefs.SetInt(KeySchemaVersion, SchemaVersionV2);
+        LuuGopPrefs.LuuNgay(); // giao dịch quan trọng (có thể vừa trừ tiền) — flush đĩa ngay
+
+        double delaySeconds = BoatScheduleCore.TicksToSeconds(arrival - desiredArrival);
+        Debug.Log($"[TouristBoat] Mở bến {BoatNumber(dockIndex):00} thành công" +
+                  (delaySeconds > 0.5 ? $" (so le: tàu vào bến trễ {delaySeconds:0}s)." : " — tàu xuất phát ngay."));
+
+        OnDockUnlocked?.Invoke(dockIndex);
+
+        // Tua ngay trong frame này để state/visual khớp (thường vào pha Arriving luôn).
+        ResolveDock(dockIndex, DateTime.UtcNow.Ticks, allowImmediateDockedEvent: true);
+        AnnounceNextTrip(dockIndex, now);
+    }
+
+    /// <summary>
+    /// Tua máy trạng thái của 1 bến tới nowUtc, persist khi đổi, bắn
+    /// OnBoatStateChanged, và xử lý cờ JustDocked (bắn ngay hay hoãn tới khi
+    /// Dev B kịp subscribe — xem FlushPendingDockedEvents).
+    /// </summary>
+    private void ResolveDock(int dockIndex, long nowUtcTicks, bool allowImmediateDockedEvent)
+    {
+        DockResolveResult r = BoatScheduleCore.ResolveDock(
+            _states[dockIndex], nowUtcTicks, EffectiveTravelSeconds());
+
+        if (r.Changed)
+        {
+            _states[dockIndex] = r.State;
+            SaveDock(dockIndex); // persist TRƯỚC khi bắn event → reload không bắn lại
+        }
+
+        if (r.State.State != _lastStates[dockIndex])
+            RaiseStateChanged(dockIndex, r.State.State);
+
+        if (!r.JustDocked) return;
+
+        // Chuyến MỚI bắt đầu → dọn cờ lưới an toàn của chuyến trước.
+        _timeoutNoticed[dockIndex]        = false;
+        _departForcedByTimeout[dockIndex] = false;
+
+        Debug.Log($"[TouristBoat] Tàu số {BoatNumber(dockIndex):00} đã cập bến — chờ khách được phục vụ xong.");
+
+        // Chống double-fire: Docked là trạng thái hấp thụ và đã persist, nên
+        // ResolveDock lần sau không thể ra JustDocked lần hai cho cùng chuyến.
+        if (allowImmediateDockedEvent && Time.frameCount > _readyFrame + 1)
+            OnBoatDocked?.Invoke(dockIndex);
+        else
+            _pendingDockedEvent[dockIndex] = true; // hoãn: Dev B chưa kịp subscribe
+    }
+
+    /// <summary>
+    /// Bắn các OnBoatDocked bị hoãn trong 1-2 frame đầu sau IsReady.
+    /// Lý do hoãn: Dev B/C subscribe trong coroutine "đợi IsReady", coroutine chạy
+    /// SAU Update của frame đó — bắn ngay lúc load sẽ rơi vào hư không.
+    /// </summary>
+    private void FlushPendingDockedEvents()
+    {
+        if (_readyFrame < 0 || Time.frameCount <= _readyFrame + 1) return;
+
+        for (int i = 0; i < DockCount; i++)
+        {
+            if (!_pendingDockedEvent[i]) continue;
+            _pendingDockedEvent[i] = false;
+            OnBoatDocked?.Invoke(i);
+        }
+    }
+
+    /// <summary>Bắn OnBoatStateChanged + cập nhật cache state frame trước.</summary>
+    private void RaiseStateChanged(int dockIndex, BoatState newState)
+    {
+        _lastStates[dockIndex] = newState;
+        OnBoatStateChanged?.Invoke(dockIndex, newState);
+    }
+
+    /// <summary>
+    /// Bắn OnNextTripScheduled cho arrival sắp tới của bến (nếu chưa báo chuyến này).
+    /// Mỗi mốc arrival chỉ báo 1 lần trong 1 phiên chơi; Dev C persist thêm theo
+    /// arrivalUtc để không báo lại sau reload.
+    /// </summary>
+    private void AnnounceNextTrip(int dockIndex, long nowUtcTicks)
+    {
+        long arrival = BoatScheduleCore.UpcomingArrivalUtcTicks(_states[dockIndex]);
+        if (arrival <= 0L) return;
+        if (_announcedArrival[dockIndex] == arrival) return; // đã báo chuyến này
+
+        _announcedArrival[dockIndex] = arrival;
+        OnNextTripScheduled?.Invoke(
+            dockIndex,
+            new DateTime(arrival, DateTimeKind.Utc),
+            ScaledWaitMinutes(nowUtcTicks, arrival));
+    }
+
+    /// <summary>
+    /// Trong Update: bến nào có arrival sắp tới mà chưa báo (vd vừa load game, hoặc
+    /// vừa chuyển Departing → WaitingNext) thì báo — nhưng chỉ khi tàu CHƯA chạy vào
+    /// (Arriving thì popup vô nghĩa, Dev C cũng lọc &lt;1 phút).
+    /// </summary>
+    private void AnnounceNextTripIfPending(int dockIndex, long nowUtcTicks)
+    {
+        if (_states[dockIndex].State == BoatState.Docked) return;
+        AnnounceNextTrip(dockIndex, nowUtcTicks);
+    }
+
+    /// <summary>
+    /// Gom arrival sắp tới của các bến KHÁC vào buffer dựng sẵn (không alloc)
+    /// để lõi ép luật so le. Phần tử 0 = bến đó không có arrival sắp tới.
+    /// </summary>
+    private long[] BuildOtherArrivals(int dockIndex, out int count)
+    {
+        count = 0;
         for (int j = 0; j < DockCount; j++)
         {
             if (j == dockIndex || !_unlocked[j]) continue;
-            _staggerScratch[otherCount].AnchorUtcTicks = _anchorTicks[j];
-            _staggerScratch[otherCount].HideSeconds    = config.HideSeconds;
-            _staggerScratch[otherCount].DockSeconds    = config.DockSeconds;
-            _staggerScratch[otherCount].TravelSeconds  = _scheduleTravelSeconds; // m-3: chu kỳ đồng nhất
-            otherCount++;
+            _otherArrivalScratch[count++] = BoatScheduleCore.UpcomingArrivalUtcTicks(_states[j]);
         }
+        return _otherArrivalScratch;
+    }
 
-        // Lưu ý debug: phép so le tính trong thang thời gian THỰC (scale = 1).
-        // Khi debugTimeScale > 1 khoảng so le quan sát được sẽ ngắn lại tương ứng —
-        // chấp nhận được vì knob này chỉ để tua nhanh lúc test, release luôn scale 1.
-        // m-3: mọi bến dùng chung _scheduleTravelSeconds → mọi chu kỳ bằng nhau →
-        // khoảng so le giải ở đây giữ nguyên VĨNH VIỄN, không trôi dần theo thời gian.
-        long anchor = BoatScheduleCore.ResolveStaggeredAnchor(
-            desiredAnchor,
-            config.DockSeconds, config.HideSeconds, _scheduleTravelSeconds,
-            config.StaggerSeconds,
-            _staggerScratch, otherCount);
-
-        _unlocked[dockIndex]    = true;
-        _anchorTicks[dockIndex] = anchor;
+    /// <summary>
+    /// Reset lịch 1 bến về WaitingNext(now + 30s) — dùng khi phát hiện đồng hồ lùi
+    /// hoặc dữ liệu prefs hỏng. Persist + báo chuyến mới cho Dev C.
+    /// </summary>
+    private void ResetDockSchedule(int dockIndex, long nowUtcTicks, string lyDo)
+    {
+        double scale = EffectiveTimeScale();
+        _states[dockIndex] = BoatScheduleCore.MakeFreshWaiting(
+            nowUtcTicks, BoatScheduleCore.FreshArrivalDelaySeconds / scale);
+        _announcedArrival[dockIndex] = 0L;
 
         SaveDock(dockIndex);
-        LuuGopPrefs.LuuNgay(); // giao dịch quan trọng (có thể vừa trừ tiền) — flush đĩa ngay
+        Debug.LogWarning($"[TouristBoat] Reset lịch bến {BoatNumber(dockIndex):00} ({lyDo}) — " +
+                         $"tàu sẽ cập bến sau {BoatScheduleCore.FreshArrivalDelaySeconds / scale:0}s.");
 
-        double delaySeconds = BoatScheduleCore.TicksToSeconds(anchor - desiredAnchor);
-        Debug.Log($"[TouristBoat] Mở bến {dockIndex + 1} thành công" +
-                  (delaySeconds > 0.5 ? $" (so le: tàu xuất phát trễ {delaySeconds:0}s)." : " — tàu xuất phát ngay."));
-
-        OnDockUnlocked?.Invoke(dockIndex);
-        RefreshDockState(dockIndex, DateTime.UtcNow.Ticks); // bắn state mới ngay trong frame này
+        RaiseStateChanged(dockIndex, _states[dockIndex].State);
+        AnnounceNextTrip(dockIndex, nowUtcTicks);
     }
 
-    /// <summary>So sánh state hiện tại với frame trước, đổi thì bắn OnBoatStateChanged.</summary>
-    private void RefreshDockState(int dockIndex, long nowUtcTicks)
-    {
-        BoatPhaseInfo info = BoatScheduleCore.ComputePhase(
-            nowUtcTicks, _anchorTicks[dockIndex],
-            config.DockSeconds, config.HideSeconds, _scheduleTravelSeconds, // m-3: chu kỳ đồng nhất
-            EffectiveTimeScale());
-
-        if (info.State == _lastStates[dockIndex]) return;
-
-        _lastStates[dockIndex] = info.State;
-        OnBoatStateChanged?.Invoke(dockIndex, info.State);
-    }
+    // ─── Nội bộ: các giá trị thời gian hiệu lực ─────────────────────────
 
     /// <summary>Hệ số tua thời gian hiệu lực: debugTimeScale chỉ ăn trong Editor/Dev build.</summary>
     private float EffectiveTimeScale()
@@ -441,70 +773,286 @@ public class BoatDockManager : MonoBehaviour
         return Mathf.Max(0.01f, config.debugTimeScale);
     }
 
+    /// <summary>
+    /// Giây chạy 1 chiều dùng cho LỊCH, đã chia debugTimeScale (scale 60 →
+    /// travel 20s thực rút còn 0.33s). Lõi V2 chỉ biết giây "đồng hồ thật".
+    /// </summary>
+    private double EffectiveTravelSeconds()
+    {
+        return Mathf.Max(0.01f, _scheduleTravelSeconds) / EffectiveTimeScale();
+    }
+
+    /// <summary>Gap hiệu lực (giây thực): 5 phút nếu 1 bến mở, 10 phút nếu ≥2 — đã chia timeScale.</summary>
+    private double EffectiveGapSeconds()
+    {
+        if (config == null) return 300.0;
+        double gap = BoatScheduleCore.SelectGapSeconds(
+            UnlockedDockCount, config.GapOneDockSeconds, config.GapMultiDockSeconds);
+        return gap / EffectiveTimeScale();
+    }
+
+    /// <summary>Khoảng so le tối thiểu hiệu lực (giây thực) — đã chia timeScale.</summary>
+    private double EffectiveStaggerSeconds()
+    {
+        if (config == null) return 180.0;
+        return config.MinStaggerSeconds / EffectiveTimeScale();
+    }
+
+    /// <summary>
+    /// Giới hạn đậu bến hiệu lực (giây thực) của lưới an toàn — đã chia timeScale.
+    /// 0 = tắt lưới (config maxDockMinutes = 0).
+    /// </summary>
+    private double EffectiveMaxDockSeconds()
+    {
+        if (config == null) return 1800.0;
+        double max = config.MaxDockSeconds;
+        return max <= 0.0 ? 0.0 : max / EffectiveTimeScale();
+    }
+
+    /// <summary>
+    /// Horizon chống đồng hồ lùi: mốc UTC hợp lệ không bao giờ xa hơn
+    /// 1 gap + (số bến × so le) + 2 travel + 60s dự phòng. Vượt qua = đồng hồ
+    /// bị chỉnh lùi hoặc save hỏng (giữ tinh thần luật V1: "lùi quá 1 gap thì reset").
+    /// </summary>
+    private double RollbackHorizonSeconds()
+    {
+        return EffectiveGapSeconds()
+             + EffectiveStaggerSeconds() * DockCount
+             + EffectiveTravelSeconds() * 2.0
+             + 60.0;
+    }
+
+    /// <summary>
+    /// Số phút chờ hiển thị cho người chơi — quy đổi theo thang thời gian GAME
+    /// (debugTimeScale 60: chờ 5 giây thực vẫn hiện "5 phút", đúng ngôn ngữ GDD).
+    /// </summary>
+    private int ScaledWaitMinutes(long nowUtcTicks, long arrivalUtcTicks)
+    {
+        double gameSeconds = BoatScheduleCore.TicksToSeconds(arrivalUtcTicks - nowUtcTicks) * EffectiveTimeScale();
+        long scaledArrival = nowUtcTicks + BoatScheduleCore.SecondsToTicks(gameSeconds);
+        return BoatScheduleCore.RoundedWaitMinutes(nowUtcTicks, scaledArrival);
+    }
+
     private static bool IsValidDock(int dockIndex)
     {
         return dockIndex >= 0 && dockIndex < DockCount;
     }
 
-    // ─── Nội bộ: persist (GDD §3.4) ─────────────────────────────────────
+#if UNITY_EDITOR
+    // ─── API test (chỉ Editor) ──────────────────────────────────────────
+    // V1 để tool chẩn đoán thọc reflection vào field private _anchorTicks — V2 KHÔNG
+    // còn field đó (state là struct máy trạng thái), nên mở 2 cửa CHÍNH THỨC dưới đây
+    // cho QA/tool. Không tồn tại trong bản build player.
 
+    /// <summary>
+    /// (Editor/QA) Ép tàu của bến CẬP BẾN NGAY lập tức — bỏ qua thời gian chờ.
+    /// Bắn OnBoatDocked đúng 1 lần như cú cập bến thật (Dev B spawn khách luôn).
+    /// </summary>
+    public void EditorForceDockNow(int dockIndex)
+    {
+        if (!IsReady || !IsValidDock(dockIndex) || !_unlocked[dockIndex]) return;
+
+        long now = DateTime.UtcNow.Ticks;
+        _states[dockIndex] = BoatScheduleCore.MakeFreshWaiting(now, 0.0); // arrival = ngay bây giờ
+        SaveDock(dockIndex);
+        ResolveDock(dockIndex, now, allowImmediateDockedEvent: true);
+        Debug.Log($"[TouristBoat] (Editor) Ép tàu số {BoatNumber(dockIndex):00} cập bến ngay.");
+    }
+
+    /// <summary>
+    /// (Editor/QA) Ép tàu của bến RỜI BẾN ngay — tương đương Dev B báo khách lên tàu hết.
+    /// Chỉ có tác dụng khi tàu đang đậu.
+    /// </summary>
+    public void EditorForceDepartNow(int dockIndex)
+    {
+        ReportVisitorsAllAboard(dockIndex);
+    }
+
+    /// <summary>
+    /// (Editor/QA) Chuỗi mô tả ĐẦY ĐỦ state V2 của 1 bến cho tool chẩn đoán:
+    /// pha hiện tại · mốc UTC · giờ đậu đã trôi so với lưới an toàn · chuyến kế lúc nào ·
+    /// chuyến vừa rồi có bị ép rời do quá giờ không.
+    /// </summary>
+    public string EditorDescribeState(int dockIndex)
+    {
+        if (!IsValidDock(dockIndex)) return "(bến không hợp lệ)";
+        if (!_unlocked[dockIndex])   return "Locked (bến chưa mở)";
+
+        DockScheduleState s   = _states[dockIndex];
+        long              now = DateTime.UtcNow.Ticks;
+        var sb = new System.Text.StringBuilder();
+
+        sb.Append(s.State == BoatState.WaitingNext ? "WaitingNext" : s.State.ToString());
+        sb.Append(" · mốc=").Append(new DateTime(Math.Max(s.AnchorUtcTicks, 0L), DateTimeKind.Utc).ToString("HH:mm:ss")).Append(" UTC");
+
+        if (s.State == BoatState.Docked)
+        {
+            double elapsed = BoatScheduleCore.DockedElapsedSeconds(s, now);
+            double maxDock = EffectiveMaxDockSeconds();
+            sb.Append(" · đã đậu ").Append(elapsed.ToString("0")).Append('s');
+            sb.Append(maxDock > 0.0
+                ? "/" + maxDock.ToString("0") + "s (lưới an toàn)"
+                : " (lưới an toàn TẮT — maxDockMinutes = 0)");
+            if (_timeoutNoticed[dockIndex])
+                sb.Append(" · ĐÃ BÁO TIMEOUT, sắp bị ép rời");
+        }
+
+        long upcoming = BoatScheduleCore.UpcomingArrivalUtcTicks(s);
+        sb.Append(" · chuyến kế=");
+        if (upcoming > 0L)
+        {
+            double conLai = BoatScheduleCore.TicksToSeconds(upcoming - now);
+            sb.Append(new DateTime(upcoming, DateTimeKind.Utc).ToString("HH:mm:ss")).Append(" UTC (còn ")
+              .Append(Math.Max(0.0, conLai).ToString("0")).Append("s)");
+        }
+        else
+        {
+            sb.Append("chưa lên lịch (đang đón khách)");
+        }
+
+        if (_departForcedByTimeout[dockIndex])
+            sb.Append(" · chuyến vừa rồi BỊ ÉP RỜI do quá giờ đậu");
+
+        return sb.ToString();
+    }
+
+    /// <summary>(Editor/QA) Chuyến đang chạy của bến này có bị lưới an toàn ép rời không.</summary>
+    public bool EditorIsDepartForcedByTimeout(int dockIndex)
+        => IsValidDock(dockIndex) && _departForcedByTimeout[dockIndex];
+
+    /// <summary>(Editor/QA) Số giây tàu đã đậu ở bến (0 nếu không ở pha Docked).</summary>
+    public double EditorDockedElapsedSeconds(int dockIndex)
+        => IsValidDock(dockIndex)
+            ? BoatScheduleCore.DockedElapsedSeconds(_states[dockIndex], DateTime.UtcNow.Ticks)
+            : 0.0;
+
+    /// <summary>(Editor/QA) Giới hạn đậu bến hiệu lực (giây thực, đã chia debugTimeScale); 0 = tắt lưới.</summary>
+    public double EditorMaxDockSeconds() => EffectiveMaxDockSeconds();
+#endif
+
+    // ─── Nội bộ: persist ────────────────────────────────────────────────
+
+    /// <summary>
+    /// Load cờ unlock + máy trạng thái V2 từ PlayerPrefs.
+    /// Migrate nhẹ từ save V1: chưa có key V2 nào mà bến đã mở (hoặc còn anchor V1)
+    /// → coi như WaitingNext với arrival = now + 30s (tàu vào ngay lần đầu, GDD V2).
+    /// Load vào giữa pha Docked thì GIỮ Docked — Dev B tự resolve khách rồi gọi
+    /// ReportVisitorsAllAboard (có thể ngay frame đầu).
+    /// </summary>
     private void LoadFromPrefs()
     {
-        long now = DateTime.UtcNow.Ticks;
+        long   now   = DateTime.UtcNow.Ticks;
+        double scale = EffectiveTimeScale();
+
         _introDone = PlayerPrefs.GetInt(KeyIntroDone, 0) == 1;
+
+        int schema = PlayerPrefs.GetInt(KeySchemaVersion, 1);
+        int migrated = 0;
 
         for (int i = 0; i < DockCount; i++)
         {
             _unlocked[i] = PlayerPrefs.GetInt(_keyUnlocked[i], 0) == 1;
 
-            // PlayerPrefs không có SetLong — anchor ticks lưu dạng string invariant.
-            string raw = PlayerPrefs.GetString(_keyAnchor[i], string.Empty);
-            long anchor;
-            if (!long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out anchor))
+            if (!_unlocked[i])
             {
-                // Thiếu/hỏng dữ liệu anchor: nếu bến đã mở thì coi như chu kỳ bắt đầu
-                // lại từ bây giờ (tàu Hidden rồi vào bến bình thường) — vô hại.
-                anchor = now;
-                if (_unlocked[i]) SaveDockDeferred(i, anchor);
+                _states[i].State               = BoatState.Locked;
+                _states[i].AnchorUtcTicks      = 0L;
+                _states[i].NextArrivalUtcTicks = 0L;
+                _lastStates[i]                 = BoatState.Locked;
+                continue;
             }
 
-            // [QA B-1] Chống đồng hồ lùi lúc load (GDD §3.4) — với DUNG SAI 1 chu kỳ:
-            // anchor tương lai trong phạm vi 1 cycle là hợp lệ (so le vừa đẩy trước
-            // khi người chơi thoát game); chỉ reset khi vượt quá 1 cycle.
-            if (_unlocked[i] && BoatScheduleCore.IsClockRolledBack(now, anchor,
-                    BoatScheduleCore.ComputeCycleSeconds(config.DockSeconds, config.HideSeconds, _scheduleTravelSeconds)))
+            bool hasV2 = PlayerPrefs.HasKey(_keyState[i]);
+            if (!hasV2)
             {
-                anchor = now;
-                SaveDockDeferred(i, anchor);
-                Debug.LogWarning($"[TouristBoat] Anchor bến {i + 1} vượt tương lai quá 1 chu kỳ (đồng hồ máy chỉnh lùi?) — reset.");
+                // ── Migrate V1 → V2 ──────────────────────────────────────
+                // Save V1 chỉ có anchor chu kỳ; pha cũ không map 1-1 sang máy trạng
+                // thái mới nên chốt luật đơn giản & vui: tàu vào bến ngay lần đầu.
+                _states[i] = BoatScheduleCore.MakeFreshWaiting(
+                    now, BoatScheduleCore.FreshArrivalDelaySeconds / scale);
+                SaveDock(i);
+                migrated++;
+            }
+            else
+            {
+                int  rawState = PlayerPrefs.GetInt(_keyState[i], (int)BoatState.WaitingNext);
+                long anchor   = ReadLong(_keyStateAnchor[i], 0L);
+                long next     = ReadLong(_keyNextArrival[i], 0L);
+
+                _states[i].State               = ToKnownState(rawState);
+                _states[i].AnchorUtcTicks      = anchor;
+                _states[i].NextArrivalUtcTicks = next;
+
+                // Dữ liệu hỏng (anchor 0/âm) → coi như chuyến mới.
+                if (anchor <= 0L)
+                {
+                    _states[i] = BoatScheduleCore.MakeFreshWaiting(
+                        now, BoatScheduleCore.FreshArrivalDelaySeconds / scale);
+                    SaveDock(i);
+                    Debug.LogWarning($"[TouristBoat] Bến {BoatNumber(i):00}: dữ liệu lịch hỏng — đặt lại chuyến mới.");
+                }
+                // Đồng hồ lùi khi đang tắt game (GDD V2 §5 edge 2).
+                else if (BoatScheduleCore.IsScheduleImplausiblyFuture(_states[i], now, RollbackHorizonSeconds()))
+                {
+                    ResetDockSchedule(i, now, "đồng hồ máy chỉnh lùi (phát hiện lúc load)");
+                }
             }
 
-            _anchorTicks[i] = anchor;
+            // Tua offline: Departing/Arriving đã xong từ đời nào → về đúng pha hiện tại.
+            // JustDocked ở đây sẽ được HOÃN (frame đầu) rồi bắn 1 lần khi Dev B đã subscribe.
+            ResolveDock(i, now, allowImmediateDockedEvent: false);
+            _lastStates[i] = _states[i].State;
+        }
+
+        PlayerPrefs.SetInt(KeySchemaVersion, SchemaVersionV2);
+        if (migrated > 0)
+        {
+            Debug.Log($"[TouristBoat] Migrate lịch V1 → V2 cho {migrated} bến (schema cũ = {schema}) — " +
+                      "tàu sẽ cập bến sau ~30 giây.");
+        }
+        LuuGopPrefs.Hen();
+    }
+
+    /// <summary>Ép giá trị int đọc từ prefs về BoatState hợp lệ (dữ liệu lạ → WaitingNext).</summary>
+    private static BoatState ToKnownState(int raw)
+    {
+        switch (raw)
+        {
+            case (int)BoatState.Locked:      return BoatState.Locked;
+            case (int)BoatState.WaitingNext: return BoatState.WaitingNext; // == Hidden (V1)
+            case (int)BoatState.Arriving:    return BoatState.Arriving;
+            case (int)BoatState.Docked:      return BoatState.Docked;
+            case (int)BoatState.Departing:   return BoatState.Departing;
+            default:                         return BoatState.WaitingNext;
         }
     }
 
+    /// <summary>PlayerPrefs không có GetLong — ticks lưu dạng string invariant (pattern V1).</summary>
+    private static long ReadLong(string key, long fallback)
+    {
+        string raw = PlayerPrefs.GetString(key, string.Empty);
+        long value;
+        return long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out value) ? value : fallback;
+    }
+
+    /// <summary>Ghi cờ unlock + toàn bộ máy trạng thái V2 của 1 bến (lưu gộp có trễ).</summary>
     private void SaveDock(int dockIndex)
     {
         PlayerPrefs.SetInt(_keyUnlocked[dockIndex], _unlocked[dockIndex] ? 1 : 0);
-        PlayerPrefs.SetString(_keyAnchor[dockIndex],
-            _anchorTicks[dockIndex].ToString(CultureInfo.InvariantCulture));
+        PlayerPrefs.SetInt(_keyState[dockIndex], (int)_states[dockIndex].State);
+        PlayerPrefs.SetString(_keyStateAnchor[dockIndex],
+            _states[dockIndex].AnchorUtcTicks.ToString(CultureInfo.InvariantCulture));
+        PlayerPrefs.SetString(_keyNextArrival[dockIndex],
+            _states[dockIndex].NextArrivalUtcTicks.ToString(CultureInfo.InvariantCulture));
         LuuGopPrefs.Hen(); // lưu gộp có trễ — xem LuuGopPrefs
-    }
-
-    /// <summary>Ghi anchor trong lúc load (trước khi _anchorTicks được gán) — dùng giá trị truyền vào.</summary>
-    private void SaveDockDeferred(int dockIndex, long anchor)
-    {
-        PlayerPrefs.SetInt(_keyUnlocked[dockIndex], _unlocked[dockIndex] ? 1 : 0);
-        PlayerPrefs.SetString(_keyAnchor[dockIndex], anchor.ToString(CultureInfo.InvariantCulture));
-        LuuGopPrefs.Hen();
     }
 
     // ─── Nội bộ: tìm reference trong scene ──────────────────────────────
 
     /// <summary>
     /// Tìm BlindPoint / Dock_01..03 / Berth / Path / Boat theo cấu trúc hierarchy
-    /// tool của Dev B sinh ra. Mọi mảnh thiếu chỉ LogWarning + fallback, không NRE
-    /// (GDD §5 edge 8 — game vẫn chạy khi chưa gắn đủ art/waypoint).
+    /// tool sinh ra. Mọi mảnh thiếu chỉ LogWarning + fallback, không NRE
+    /// (game vẫn chạy khi chưa gắn đủ art/waypoint).
     /// </summary>
     private void FindSceneReferences()
     {
@@ -538,11 +1086,12 @@ public class BoatDockManager : MonoBehaviour
             _travelSeconds[i] = ComputeTravelSeconds(_pathPoints[i]);
         }
 
-        // m-3 (quyết định lead): travel cho LỊCH = max của 3 bến → 3 chu kỳ đồng
-        // nhất, luật so le đúng vĩnh viễn (AC §8.4). Tàu path ngắn hơn max sẽ trôi
-        // chậm hơn boatSpeed danh nghĩa (controller map progress 0-1 lên path riêng).
+        // m-3: travel cho LỊCH = max của 3 bến → 3 bến chung một travel, luật so le
+        // tính trên arrival tuyệt đối nên vẫn đúng vĩnh viễn.
         _scheduleTravelSeconds = Mathf.Max(_travelSeconds[0],
                                  Mathf.Max(_travelSeconds[1], _travelSeconds[2]));
+        if (_scheduleTravelSeconds <= 0.01f)
+            _scheduleTravelSeconds = config.fallbackTravelSeconds;
     }
 
     /// <summary>
@@ -575,7 +1124,7 @@ public class BoatDockManager : MonoBehaviour
         return points;
     }
 
-    /// <summary>travelTime = độ dài polyline thực / boatSpeed (GDD §4). Path hỏng → fallback.</summary>
+    /// <summary>travelTime = độ dài polyline thực / boatSpeed. Path hỏng → fallback.</summary>
     private float ComputeTravelSeconds(Transform[] points)
     {
         if (points == null || points.Length < 2)

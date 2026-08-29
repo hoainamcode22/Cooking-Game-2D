@@ -89,6 +89,8 @@ public class PlayerProgressManager : MonoBehaviour
         if (amount <= 0)
             return;
 
+        AudioManager.Instance?.PlayExp();
+
         if (Level >= maxLevel)
         {
             CurrentExp = 0;

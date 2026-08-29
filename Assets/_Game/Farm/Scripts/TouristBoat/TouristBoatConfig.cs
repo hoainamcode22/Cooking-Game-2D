@@ -1,20 +1,24 @@
 using UnityEngine;
 
 /// <summary>
-/// Toàn bộ tuning knob của hệ Bến Tàu Du Lịch (GDD §7) — KHÔNG hardcode
+/// Toàn bộ tuning knob của hệ Bến Tàu Du Lịch (GDD V2 §7) — KHÔNG hardcode
 /// gameplay value ở bất kỳ đâu khác, tất cả đọc từ asset này.
 ///
 /// Tạo asset: chuột phải trong Project → Create → Farm Game → Tourist Boat Config.
 /// Tool sinh scene của hệ boat sẽ tự tạo 1 asset mặc định nếu chưa có.
 ///
-/// Lưu ý đơn vị: các knob thời gian đặt theo PHÚT (đúng ngôn ngữ GDD:
-/// "đậu 40 phút, núp 15 phút, so le 12 phút"); code runtime dùng các property
-/// *Seconds bên dưới — đã đổi sẵn sang giây và kẹp không âm.
+/// V2 (BOAT-002): thêm nhóm "Lịch tàu V2" (gap 5p/10p + so le 3p) và nhóm
+/// "Khách du lịch" — Dev B đọc các field visitor* qua
+/// BoatDockManager.Instance.Config, KHÔNG tự tạo config riêng.
+///
+/// Lưu ý đơn vị: các knob thời gian lớn đặt theo PHÚT (đúng ngôn ngữ GDD);
+/// code runtime dùng các property *Seconds bên dưới — đã đổi sẵn sang giây
+/// và kẹp không âm. Knob hiệu ứng ngắn (disembark, bubble...) đặt theo GIÂY.
 /// </summary>
 [CreateAssetMenu(fileName = "TouristBoatConfig", menuName = "Farm Game/Tourist Boat Config")]
 public class TouristBoatConfig : ScriptableObject
 {
-    // ─── Mở khóa (GDD §3.1) ─────────────────────────────────────────────
+    // ─── Mở khóa (giữ nguyên luật V1) ───────────────────────────────────
 
     [Header("Mở khóa")]
     [Tooltip("Level mở hội thoại intro + bến 1 miễn phí")]
@@ -32,16 +36,78 @@ public class TouristBoatConfig : ScriptableObject
     [Tooltip("Giá gem mở bến 3")]
     public int dock3GemCost = 25;
 
-    // ─── Chu kỳ tàu (GDD §4) ────────────────────────────────────────────
+    // ─── Lịch tàu V2 — event-driven (GDD V2 §3.2) ───────────────────────
 
-    [Header("Chu kỳ tàu (phút)")]
-    [Tooltip("Số phút tàu đậu ở bến (du khách tham quan)")]
+    [Header("Lịch tàu V2 (phút) — tàu đậu tới khi khách xong, KHÔNG còn đậu cố định")]
+    [Tooltip("Chỉ 1 bến đang mở: tàu rời bến xong bao nhiêu phút thì cập bến lại")]
+    public float gapOneDockMinutes = 5f;
+
+    [Tooltip("Từ 2 bến mở trở lên: gap của MỖI bến (arrival kế = lúc rời bến + gap này)")]
+    public float gapMultiDockMinutes = 10f;
+
+    [Tooltip("Hai lần cập bến của 2 bến BẤT KỲ phải cách nhau ít nhất bấy nhiêu phút — vi phạm thì dời arrival muộn hơn")]
+    public float minStaggerMinutes = 3f;
+
+    // [QA M-7] PHẢI LỚN HƠN patienceMinutes, không được bằng: lưới an toàn đếm từ lúc
+    // tàu CHẠM BẾN, còn đồng hồ kiên nhẫn của khách chỉ bắt đầu khi BUBBLE MỞ — tức là
+    // sau khi khách xuống tàu (disembarkInterval) + đi bộ tới hàng + tới lượt đứng đầu.
+    // Để 2 số bằng nhau (30/30) thì tàu luôn bị ép rời TRƯỚC khi khách kịp hết kiên nhẫn
+    // ⇒ nhánh "khách giận rồi tự về tàu" của Dev B thành CODE CHẾT, không bao giờ chạy.
+    // 35 vs 30 chừa ~5 phút cho quãng xuống tàu + đi bộ + xếp hàng.
+    [Tooltip("Tàu đậu tối đa bao lâu rồi tự rời bến dù khách chưa xong — lưới an toàn chống kẹt.\n" +
+             "PHẢI LỚN HƠN patienceMinutes (30): lưới đếm từ lúc tàu CHẠM BẾN, còn kiên nhẫn khách " +
+             "chỉ bắt đầu khi bubble mở (sau khi khách xuống tàu và đi bộ tới hàng). Để 2 số bằng nhau " +
+             "thì khách không bao giờ kịp hết kiên nhẫn — đường 'khách giận tự về tàu' thành code chết.\n" +
+             "Đặt 0 = TẮT lưới (tàu đậu vô hạn, chỉ dùng khi debug).")]
+    public float maxDockMinutes = 35f;
+
+    // ─── Khách du lịch (GDD V2 §3.3/§3.4 — Dev B đọc qua BoatDockManager.Instance.Config) ──
+
+    [Header("Khách du lịch (Dev B đọc qua BoatDockManager.Instance.Config)")]
+    [Tooltip("Số khách ít nhất mỗi chuyến (random visitorsMin..visitorsMax)")]
+    public int visitorsMin = 3;
+
+    [Tooltip("Số khách nhiều nhất mỗi chuyến")]
+    public int visitorsMax = 6;
+
+    [Tooltip("Khách chờ tối đa bấy nhiêu phút (UTC tuyệt đối từ lúc bubble mở, offline vẫn chạy) — hết giờ buồn bã về tàu, không thưởng")]
+    public float patienceMinutes = 30f;
+
+    [Tooltip("Vàng thưởng = tổng giá nguyên liệu chính của món × hệ số này")]
+    public int rewardIngredientMultiplier = 2;
+
+    [Tooltip("Giây giãn cách giữa 2 khách lần lượt xuống tàu (gangplank)")]
+    public float disembarkInterval = 0.8f;
+
+    [Tooltip("Tốc độ đi bộ của khách (unit world/giây — map dùng toạ độ lớn, ~740 unit giữa 2 bến, chỉnh theo scale scene)")]
+    public float visitorWalkSpeed = 150f;
+
+    [Tooltip("Khoảng cách giữa 2 khách đứng xếp hàng trước nhà hàng (unit world)")]
+    public float queueSpacing = 120f;
+
+    [Tooltip("Giây scale-in của bubble món ăn khi khách đầu hàng mở bubble")]
+    public float bubbleScaleInTime = 0.25f;
+
+    [Tooltip("Giây mặt cười bay từ khách lên HUD (nhỏ → to dần, fade)")]
+    public float smileyFlyTime = 1.2f;
+
+    // ─── Chu kỳ tàu V1 — LEGACY (GDD V1 §4) ─────────────────────────────
+
+    [Header("Chu kỳ tàu V1 — LEGACY, V2 không dùng")]
+    // [V2 OBSOLETE] dockMinutes: V1 tàu đậu đúng bấy nhiêu phút rồi tự rời bến.
+    // V2 event-driven: tàu đậu TỚI KHI khách được phục vụ xong (Dev B gọi
+    // ReportVisitorsAllAboard) — field này KHÔNG còn được runtime đọc.
+    // GIỮ LẠI để asset serialize cũ không mất data + diagnostic tool cũ còn hiển thị.
+    [Tooltip("[V1 — KHÔNG dùng ở V2] Số phút tàu đậu ở bến theo mô hình chu kỳ cũ")]
     public float dockMinutes = 40f;
 
-    [Tooltip("Số phút tàu núp ở điểm mù giữa 2 chuyến")]
+    // [V2 OBSOLETE] hideMinutes: V1 núp ở điểm mù theo chu kỳ. V2 thời gian chờ
+    // suy từ gapOneDock/gapMultiDock — giữ field cho serialize + diagnostic tool cũ.
+    [Tooltip("[V1 — KHÔNG dùng ở V2] Số phút tàu núp ở điểm mù giữa 2 chuyến")]
     public float hideMinutes = 15f;
 
-    [Tooltip("Khoảng cách so le tối thiểu giữa 2 lần cập bến của 2 bến bất kỳ")]
+    // [V2 OBSOLETE] staggerMinutes (12p): thay bằng minStaggerMinutes (3p) ở trên.
+    [Tooltip("[V1 — KHÔNG dùng ở V2] Khoảng so le cũ — V2 dùng minStaggerMinutes")]
     public float staggerMinutes = 12f;
 
     // ─── Di chuyển & hiệu ứng ───────────────────────────────────────────
@@ -59,7 +125,7 @@ public class TouristBoatConfig : ScriptableObject
     [Tooltip("Tần số dập dềnh (chu kỳ/giây)")]
     public float bobFrequency = 0.8f;
 
-    // ─── Hội thoại intro (GDD §3.1 — 4 câu trên guide board) ────────────
+    // ─── Hội thoại intro (giữ nguyên V1 — 4 câu trên guide board) ───────
 
     [Header("Hội thoại intro (guide board, skip từng câu bằng tap)")]
     // NGUỒN DUY NHẤT của dialogue mặc định (chốt với lead + Dev B): tool sinh scene
@@ -107,13 +173,32 @@ public class TouristBoatConfig : ScriptableObject
 
     // ─── Property đổi đơn vị (dùng trong code runtime) ──────────────────
 
-    /// <summary>Giây tàu đậu bến (đã kẹp không âm).</summary>
+    /// <summary>V2: giây gap khi chỉ 1 bến mở (đã kẹp không âm).</summary>
+    public float GapOneDockSeconds => Mathf.Max(0f, gapOneDockMinutes) * 60f;
+
+    /// <summary>V2: giây gap khi ≥2 bến mở (đã kẹp không âm).</summary>
+    public float GapMultiDockSeconds => Mathf.Max(0f, gapMultiDockMinutes) * 60f;
+
+    /// <summary>V2: giây so le tối thiểu giữa 2 arrival bất kỳ (đã kẹp không âm).</summary>
+    public float MinStaggerSeconds => Mathf.Max(0f, minStaggerMinutes) * 60f;
+
+    /// <summary>
+    /// V2: giây đậu TỐI ĐA trước khi lưới an toàn ép tàu rời bến (0 = tắt lưới).
+    /// Đây KHÔNG phải mô hình đậu cố định của V1 — bình thường tàu rời bến sớm hơn,
+    /// ngay khi Dev B báo khách cuối đã lên tàu.
+    /// </summary>
+    public float MaxDockSeconds => Mathf.Max(0f, maxDockMinutes) * 60f;
+
+    /// <summary>V2: giây kiên nhẫn của khách (Dev B dùng, đã kẹp không âm).</summary>
+    public float PatienceSeconds => Mathf.Max(0f, patienceMinutes) * 60f;
+
+    /// <summary>[V1 LEGACY] Giây tàu đậu bến theo chu kỳ cũ — V2 không dùng, giữ cho diagnostic tool.</summary>
     public float DockSeconds => Mathf.Max(0f, dockMinutes) * 60f;
 
-    /// <summary>Giây tàu núp ở điểm mù (đã kẹp không âm).</summary>
+    /// <summary>[V1 LEGACY] Giây tàu núp ở điểm mù theo chu kỳ cũ — V2 không dùng, giữ cho diagnostic tool.</summary>
     public float HideSeconds => Mathf.Max(0f, hideMinutes) * 60f;
 
-    /// <summary>Giây so le tối thiểu giữa 2 lần cập bến (đã kẹp không âm).</summary>
+    /// <summary>[V1 LEGACY] Giây so le cũ — V2 dùng MinStaggerSeconds thay thế.</summary>
     public float StaggerSeconds => Mathf.Max(0f, staggerMinutes) * 60f;
 
     /// <summary>
@@ -165,5 +250,24 @@ public class TouristBoatConfig : ScriptableObject
         unlockLevel           = Mathf.Max(1, unlockLevel);
         dock2Level            = Mathf.Max(1, dock2Level);
         dock3Level            = Mathf.Max(1, dock3Level);
+
+        // V2 — lịch tàu: gap tối thiểu 0.5 phút để không spam tàu liên tục,
+        // stagger không âm (0 = tắt luật so le, chỉ nên dùng khi debug).
+        gapOneDockMinutes   = Mathf.Max(0.5f, gapOneDockMinutes);
+        gapMultiDockMinutes = Mathf.Max(0.5f, gapMultiDockMinutes);
+        minStaggerMinutes   = Mathf.Max(0f, minStaggerMinutes);
+        maxDockMinutes      = Mathf.Max(0f, maxDockMinutes); // 0 = tắt lưới an toàn
+
+        // V2 — khách du lịch: min ≥ 1, max ≥ min; các knob hiệu ứng có sàn nhỏ
+        // để tránh chia 0 / vòng lặp 0 giây trong tween của Dev B.
+        visitorsMin                = Mathf.Max(1, visitorsMin);
+        visitorsMax                = Mathf.Max(visitorsMin, visitorsMax);
+        patienceMinutes            = Mathf.Max(1f, patienceMinutes);
+        rewardIngredientMultiplier = Mathf.Max(0, rewardIngredientMultiplier);
+        disembarkInterval          = Mathf.Max(0.05f, disembarkInterval);
+        visitorWalkSpeed           = Mathf.Max(1f, visitorWalkSpeed);
+        queueSpacing               = Mathf.Max(1f, queueSpacing);
+        bubbleScaleInTime          = Mathf.Max(0.01f, bubbleScaleInTime);
+        smileyFlyTime              = Mathf.Max(0.01f, smileyFlyTime);
     }
 }

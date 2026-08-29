@@ -1,544 +1,616 @@
 using System;
-using System.Globalization;
 
 // ═══════════════════════════════════════════════════════════════════════════
-//  BoatScheduleCoreTests — QA harness cho BOAT-001 (chạy .NET thuần, không Unity)
+//  BoatScheduleCoreTests — bộ unit test CONSOLE cho lõi lịch tàu V2 (BOAT-002).
 //
-//  Biên dịch:  mcs BoatScheduleCore.cs BoatScheduleCoreTests.cs -out:tests.exe
-//  Chạy:       mono tests.exe
+//  Chạy KHÔNG cần Unity (lõi thuần C#, không using UnityEngine):
 //
-//  Cấu hình test khớp GDD §4 default: dockMinutes=40 (2400s), hideMinutes=15 (900s),
-//  staggerMinutes=12 (720s). travelSeconds GIẢ ĐỊNH = 60s (core nhận travel qua
-//  tham số — manager tính từ pathLength/speed, không ảnh hưởng logic thời gian).
+//      cd <repo>
+//      mcs -out:/tmp/boattests.exe \
+//          Assets/_Game/Farm/Scripts/TouristBoat/BoatScheduleCore.cs \
+//          tests/unit/touristboat/BoatScheduleCoreTests.cs
+//      mono /tmp/boattests.exe
 //
-//  Cycle = 900 + 60 + 2400 + 60 = 3420s. Các mốc pha:
-//    [0,900)      Hidden
-//    [900,960)    Arriving
-//    [960,3360)   Docked
-//    [3360,3420)  Departing
+//  Exit code 0 = tất cả PASS, 1 = có FAIL (dùng được trong CI/QA gate).
+//
+//  Phủ theo yêu cầu QA V2:
+//    A. Gap 5 phút (1 bến) / 10 phút (≥2 bến)
+//    B. Luật so le ≥3 phút (dời MUỘN, không kéo sớm)
+//    C. Resolve offline ở MỌI pha (WaitingNext / Arriving / Docked / Departing)
+//    D. Guard đồng hồ lùi
+//    E. ReportVisitorsAllAboard chuyển pha Docked → Departing + lên lịch chuyến kế
+//    F. Chống double-fire (JustDocked đúng 1 lần, TryBeginDeparture gọi 2 lần)
+//    H. Lưới an toàn chống kẹt tàu: đậu quá maxDockMinutes → ép rời bến (QA B-1)
+//    G. Linh tinh: tiến độ 0-1, phút làm tròn cho popup, migrate/reset chuyến mới
 // ═══════════════════════════════════════════════════════════════════════════
+
 public static class BoatScheduleCoreTests
 {
-    // ── Hằng số test (GDD default) ──────────────────────────────────────
-    const double Hide    = 15 * 60;   // 900s
-    const double Dock    = 40 * 60;   // 2400s
-    const double Travel  = 60;        // giả định (path 18.000 unit / 300 u/s)
-    const double Stagger = 12 * 60;   // 720s
-    const double Cycle   = Hide + Travel + Dock + Travel; // 3420s
-    const long   Tps     = BoatScheduleCore.TicksPerSecond;
+    // ─── Mini test framework ─────────────────────────────────────────────
 
-    // Anchor gốc cố định — 2026-01-01 00:00:00 UTC
-    static readonly long Anchor = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc).Ticks;
+    private static int _pass;
+    private static int _fail;
+    private static string _currentGroup = "";
 
-    // Requirement theo TouristBoatConfig.GetDockRequirement (giá GDD §4)
-    static DockUnlockRequirement Req(int dock)
+    private static void Group(string name)
     {
-        switch (dock)
+        _currentGroup = name;
+        Console.WriteLine();
+        Console.WriteLine("── " + name + " " + new string('─', Math.Max(0, 60 - name.Length)));
+    }
+
+    private static void Check(bool condition, string what)
+    {
+        if (condition)
         {
-            case 0:  return new DockUnlockRequirement { RequiredLevel = 10, GoldCost = 0,    GemCost = 0  };
-            case 1:  return new DockUnlockRequirement { RequiredLevel = 12, GoldCost = 2000, GemCost = 0  };
-            case 2:  return new DockUnlockRequirement { RequiredLevel = 14, GoldCost = 0,    GemCost = 25 };
-            default: return new DockUnlockRequirement { RequiredLevel = int.MaxValue, GoldCost = 0, GemCost = 0 };
+            _pass++;
+            Console.WriteLine("  [PASS] " + what);
+        }
+        else
+        {
+            _fail++;
+            Console.WriteLine("  [FAIL] " + _currentGroup + " → " + what);
         }
     }
 
-    static int _pass, _fail;
-
-    static void Check(string id, string what, object expected, object actual)
+    private static void CheckEqual(long actual, long expected, string what)
     {
-        bool ok = Equals(expected, actual);
-        if (ok) _pass++; else _fail++;
-        Console.WriteLine("{0} [{1}] {2}  | expected={3}  actual={4}",
-            ok ? "PASS" : "FAIL", id, what, expected, actual);
+        Check(actual == expected, what + $" (mong đợi {expected}, thực tế {actual})");
     }
 
-    static void Close(string id, string what, double expected, double actual, double tol)
+    private static void CheckNear(double actual, double expected, double tolerance, string what)
     {
-        bool ok = Math.Abs(expected - actual) <= tol;
-        if (ok) _pass++; else _fail++;
-        Console.WriteLine("{0} [{1}] {2}  | expected={3:0.######} (±{4})  actual={5:0.######}",
-            ok ? "PASS" : "FAIL", id, what, expected, tol, actual);
+        Check(Math.Abs(actual - expected) <= tolerance,
+              what + $" (mong đợi {expected:0.###} ±{tolerance:0.###}, thực tế {actual:0.###})");
     }
 
-    static BoatPhaseInfo Phase(double elapsedSeconds, double scale = 1.0)
+    private static void CheckState(BoatState actual, BoatState expected, string what)
     {
-        long now = Anchor + (long)Math.Round(elapsedSeconds * Tps);
-        return BoatScheduleCore.ComputePhase(now, Anchor, Dock, Hide, Travel, scale);
+        Check(actual == expected, what + $" (mong đợi {expected}, thực tế {actual})");
     }
+
+    // ─── Tiện ích dựng dữ liệu test ──────────────────────────────────────
+
+    /// <summary>Mốc giờ cố định cho test (2026-08-29 08:00:00 UTC) — deterministic, không dùng DateTime.UtcNow.</summary>
+    private static readonly long T0 = new DateTime(2026, 8, 29, 8, 0, 0, DateTimeKind.Utc).Ticks;
+
+    private const double Travel   = 20.0;   // giây chạy 1 chiều (fallbackTravelSeconds mặc định)
+    private const double GapOne   = 300.0;  // 5 phút — config gapOneDockMinutes
+    private const double GapMulti = 600.0;  // 10 phút — config gapMultiDockMinutes
+    private const double Stagger  = 180.0;  // 3 phút — config minStaggerMinutes
+    private const double MaxDock  = 1800.0; // 30 phút — giá trị TEST cho lưới an toàn (config thật
+                                            // maxDockMinutes = 35 phút; lõi nhận tham số nên số nào cũng chạy)
+
+    private static long Sec(double s) => BoatScheduleCore.SecondsToTicks(s);
+
+    private static DockScheduleState Waiting(long arrivalTicks)
+    {
+        DockScheduleState s;
+        s.State               = BoatState.WaitingNext;
+        s.AnchorUtcTicks      = arrivalTicks;
+        s.NextArrivalUtcTicks = 0L;
+        return s;
+    }
+
+    private static DockScheduleState Arriving(long arrivalTicks)
+    {
+        DockScheduleState s = Waiting(arrivalTicks);
+        s.State = BoatState.Arriving;
+        return s;
+    }
+
+    private static DockScheduleState Docked(long dockedAtTicks)
+    {
+        DockScheduleState s;
+        s.State               = BoatState.Docked;
+        s.AnchorUtcTicks      = dockedAtTicks;
+        s.NextArrivalUtcTicks = 0L;
+        return s;
+    }
+
+    private static DockScheduleState Departing(long departAtTicks, long nextArrivalTicks)
+    {
+        DockScheduleState s;
+        s.State               = BoatState.Departing;
+        s.AnchorUtcTicks      = departAtTicks;
+        s.NextArrivalUtcTicks = nextArrivalTicks;
+        return s;
+    }
+
+    // ─── Main ────────────────────────────────────────────────────────────
 
     public static int Main()
     {
-        Console.WriteLine("═══ BOAT-001 QA — BoatScheduleCore unit tests (GDD §8.8) ═══");
-        Console.WriteLine("Config: hide=900s dock=2400s travel=60s stagger=720s cycle=3420s");
-        Console.WriteLine();
+        Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
+        Console.WriteLine("║  BoatScheduleCore V2 — unit test (event-driven, BOAT-002)    ║");
+        Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
 
-        TestA_PlayerJourney_L1_L30();
-        TestB_Lifecycle_And_Offline();
-        TestC_Stagger();
-        TestD_EdgeCases();
-        TestE_Round2_Regression();
+        TestGapSelection();
+        TestScheduleNextArrival();
+        TestStagger();
+        TestResolveWaitingAndArriving();
+        TestResolveDockedIsAbsorbing();
+        TestResolveDepartingOffline();
+        TestOfflineLongChain();
+        TestClockRollback();
+        TestReportVisitorsAllAboard();
+        TestDoubleFireGuards();
+        TestDockTimeoutSafetyNet();
+        TestQueryPhaseProgress();
+        TestMiscHelpers();
 
         Console.WriteLine();
-        Console.WriteLine("═══ KẾT QUẢ: {0} PASS / {1} FAIL (tổng {2}) ═══", _pass, _fail, _pass + _fail);
+        Console.WriteLine("══════════════════════════════════════════════════════════════");
+        Console.WriteLine($"  TỔNG KẾT: {_pass} PASS · {_fail} FAIL");
+        Console.WriteLine("══════════════════════════════════════════════════════════════");
         return _fail == 0 ? 0 : 1;
     }
 
-    // =====================================================================
-    //  A. MÔ PHỎNG HÀNH TRÌNH NGƯỜI CHƠI L1 → L30
-    // =====================================================================
-    static void TestA_PlayerJourney_L1_L30()
+    // ─── A. Gap 5 phút / 10 phút ─────────────────────────────────────────
+
+    private static void TestGapSelection()
     {
-        Console.WriteLine("── A. Hành trình người chơi L1→L30 ──");
+        Group("A. Chọn gap theo số bến đang mở (GDD V2 §3.2)");
 
-        // A1: L1–L9 — mọi bến DENY vì level, kể cả 999.999 vàng + 999.999 gem
-        bool a1 = true; string a1detail = "";
-        for (int lvl = 1; lvl <= 9; lvl++)
-            for (int d = 0; d < 3; d++)
-            {
-                var r = BoatScheduleCore.EvaluateUnlock(Req(d), false, lvl, 999999, 999999);
-                if (r != UnlockDenyReason.LevelTooLow) { a1 = false; a1detail = $"L{lvl} dock{d} => {r}"; }
-            }
-        Check("A1", "L1–L9: 27 tổ hợp level×bến đều LevelTooLow (dù 999.999 vàng/gem)",
-              "all LevelTooLow", a1 ? "all LevelTooLow" : a1detail);
-
-        // A2: Lên L10 — bến 1 đủ điều kiện free; bến 2, 3 deny vì level
-        Check("A2a", "L10 bến 1 (free)", UnlockDenyReason.None,
-              BoatScheduleCore.EvaluateUnlock(Req(0), false, 10, 0, 0));
-        Check("A2b", "L10 bến 2 (cần L12)", UnlockDenyReason.LevelTooLow,
-              BoatScheduleCore.EvaluateUnlock(Req(1), false, 10, 999999, 0));
-        Check("A2c", "L10 bến 3 (cần L14)", UnlockDenyReason.LevelTooLow,
-              BoatScheduleCore.EvaluateUnlock(Req(2), false, 10, 0, 999999));
-
-        // A3: bến 2 — ranh giới tiền & level
-        Check("A3a", "L12 + 1.999 vàng → bến 2 DENY thiếu tiền", UnlockDenyReason.NotEnoughGold,
-              BoatScheduleCore.EvaluateUnlock(Req(1), false, 12, 1999, 0));
-        Check("A3b", "L12 + 2.000 vàng → bến 2 PASS", UnlockDenyReason.None,
-              BoatScheduleCore.EvaluateUnlock(Req(1), false, 12, 2000, 0));
-        Check("A3c", "L11 + 10.000 vàng → bến 2 DENY level (ưu tiên level trước tiền)", UnlockDenyReason.LevelTooLow,
-              BoatScheduleCore.EvaluateUnlock(Req(1), false, 11, 10000, 0));
-
-        // A4: bến 3 — ranh giới gem
-        Check("A4a", "L14 + 24 gem → bến 3 DENY", UnlockDenyReason.NotEnoughGems,
-              BoatScheduleCore.EvaluateUnlock(Req(2), false, 14, 0, 24));
-        Check("A4b", "L14 + 25 gem → bến 3 PASS", UnlockDenyReason.None,
-              BoatScheduleCore.EvaluateUnlock(Req(2), false, 14, 0, 25));
-
-        // A5: L15→L30 — cả 3 bến đã mở: mọi đường mở lại đều AlreadyUnlocked
-        //     (ổn định, không side effect — core static thuần, không giữ state)
-        bool a5 = true; string a5detail = "";
-        for (int lvl = 15; lvl <= 30; lvl++)
-            for (int d = 0; d < 3; d++)
-            {
-                var r = BoatScheduleCore.EvaluateUnlock(Req(d), true, lvl, 999999, 999999);
-                if (r != UnlockDenyReason.AlreadyUnlocked) { a5 = false; a5detail = $"L{lvl} dock{d} => {r}"; }
-            }
-        Check("A5", "L15→L30: 48 tổ hợp đều AlreadyUnlocked (không unlock/dialogue phát sinh)",
-              "all AlreadyUnlocked", a5 ? "all AlreadyUnlocked" : a5detail);
-        Console.WriteLine();
+        CheckNear(BoatScheduleCore.SelectGapSeconds(1, GapOne, GapMulti), GapOne, 0.001,
+                  "1 bến mở → gap 5 phút");
+        CheckNear(BoatScheduleCore.SelectGapSeconds(0, GapOne, GapMulti), GapOne, 0.001,
+                  "0 bến (biên) → vẫn dùng gap 1 bến");
+        CheckNear(BoatScheduleCore.SelectGapSeconds(2, GapOne, GapMulti), GapMulti, 0.001,
+                  "2 bến mở → gap 10 phút");
+        CheckNear(BoatScheduleCore.SelectGapSeconds(3, GapOne, GapMulti), GapMulti, 0.001,
+                  "3 bến mở → gap 10 phút");
+        CheckNear(BoatScheduleCore.SelectGapSeconds(1, -5.0, GapMulti), 0.0, 0.001,
+                  "gap âm trong config bị kẹp về 0");
     }
 
-    // =====================================================================
-    //  B. VÒNG ĐỜI TÀU & OFFLINE CATCH-UP
-    // =====================================================================
-    static void TestB_Lifecycle_And_Offline()
+    private static void TestScheduleNextArrival()
     {
-        Console.WriteLine("── B. Vòng đời tàu & offline catch-up ──");
+        Group("A2. arrival kế = lúc rời bến + gap");
 
-        // B6: chuỗi trạng thái + kiểm tra CHÍNH XÁC tại biên ±1 giây
-        Check("B6a",  "t=0        → Hidden (phase 0)",      BoatState.Hidden,    Phase(0).State);
-        Check("B6b",  "t=899      → Hidden (biên -1s)",     BoatState.Hidden,    Phase(899).State);
-        Check("B6c",  "t=900      → Arriving (đúng biên)",  BoatState.Arriving,  Phase(900).State);
-        Close("B6d",  "t=900 progress = 0",                 0.0,  Phase(900).Progress, 1e-9);
-        Check("B6e",  "t=901      → Arriving (biên +1s)",   BoatState.Arriving,  Phase(901).State);
-        Close("B6f",  "t=930 progress = 0.5 (tuyến tính giữa path)", 0.5, Phase(930).Progress, 1e-9);
-        Close("B6g",  "t=915 progress = 0.25 (tuyến tính)", 0.25, Phase(915).Progress, 1e-9);
-        Close("B6h",  "t=945 progress = 0.75 (tuyến tính)", 0.75, Phase(945).Progress, 1e-9);
-        Check("B6i",  "t=959      → Arriving (biên -1s)",   BoatState.Arriving,  Phase(959).State);
-        Check("B6j",  "t=960      → Docked (đúng biên)",    BoatState.Docked,    Phase(960).State);
-        Close("B6k",  "t=960 countdown = 2400s (40p đầy)",  2400.0, Phase(960).DockedRemainingSeconds, 1e-6);
-        Close("B6l",  "t=961 countdown = 2399s (đếm xuống)",2399.0, Phase(961).DockedRemainingSeconds, 1e-6);
-        Close("B6m",  "t=3359 countdown = 1s (biên -1s)",   1.0,    Phase(3359).DockedRemainingSeconds, 1e-6);
-        Check("B6n",  "t=3359     → Docked (biên -1s)",     BoatState.Docked,    Phase(3359).State);
-        Check("B6o",  "t=3360     → Departing (đúng biên)", BoatState.Departing, Phase(3360).State);
-        Close("B6p",  "t=3360 progress = 0 (bắt đầu lùi)",  0.0,    Phase(3360).Progress, 1e-9);
-        Check("B6q",  "t=3419     → Departing (biên -1s)",  BoatState.Departing, Phase(3419).State);
-        Close("B6r",  "t=3419 progress = 59/60",            59.0/60.0, Phase(3419).Progress, 1e-9);
-        Check("B6s",  "t=3420     → Hidden (khép chu kỳ)",  BoatState.Hidden,    Phase(3420).State);
-        Close("B6t",  "t=3420 phase quay về 0",             0.0,    Phase(3420).PhaseSeconds, 1e-6);
-        Check("B6u",  "t=3421     → Hidden (chu kỳ 2, +1s)",BoatState.Hidden,    Phase(3421).State);
-        Check("B6v",  "t=2×3420+960 → Docked (lặp vô hạn, chu kỳ 3)", BoatState.Docked, Phase(2 * Cycle + 960).State);
+        long arrival1 = BoatScheduleCore.ScheduleNextArrival(T0, GapOne, Travel, Stagger, null, 0);
+        CheckEqual(arrival1, T0 + Sec(GapOne), "1 bến: arrival = departure + 5 phút chính xác");
 
-        // B7: OFFLINE — tắt 3 ngày + 17 phút lẻ; và 5 mốc cố định (chọn trước, "seed cố định")
-        //     Expected tính TAY: elapsed mod 3420 → tra bảng mốc pha.
-        double off = 3 * 86400 + 17 * 60;              // 260220s ; 260220 mod 3420 = 300
-        Check("B7a", "offline 3d+17p: elapsed 260220 mod 3420 = 300 → Hidden", BoatState.Hidden, Phase(off).State);
-        Close("B7b", "offline 3d+17p: PhaseSeconds = 300", 300.0, Phase(off).PhaseSeconds, 1e-6);
-        Close("B7c", "offline 3d+17p: progress trong Hidden = 300/900", 300.0 / 900.0, Phase(off).Progress, 1e-9);
+        long arrival2 = BoatScheduleCore.ScheduleNextArrival(T0, GapMulti, Travel, Stagger, null, 0);
+        CheckEqual(arrival2, T0 + Sec(GapMulti), "nhiều bến: arrival = departure + 10 phút chính xác");
 
-        // 5 mốc định trước (tính tay, ghi cả phép chia lấy dư):
-        //  e=123456 → mod = 336   → Hidden    (prog 336/900)
-        //  e=999999 → mod = 1359  → Docked    (countdown 3360-1359 = 2001)
-        //  e=345678 → mod = 258   → Hidden
-        //  e=86401  → mod = 901   → Arriving  (prog 1/60)
-        //  e=27359  → mod = 3419  → Departing (prog 59/60)
-        Check("B7d", "e=123456 (mod 336) → Hidden",    BoatState.Hidden,    Phase(123456).State);
-        Check("B7e", "e=999999 (mod 1359) → Docked",   BoatState.Docked,    Phase(999999).State);
-        Close("B7f", "e=999999 countdown = 2001s",     2001.0, Phase(999999).DockedRemainingSeconds, 1e-6);
-        Check("B7g", "e=345678 (mod 258) → Hidden",    BoatState.Hidden,    Phase(345678).State);
-        Check("B7h", "e=86401 (mod 901) → Arriving",   BoatState.Arriving,  Phase(86401).State);
-        Close("B7i", "e=86401 progress = 1/60",        1.0 / 60.0, Phase(86401).Progress, 1e-9);
-        Check("B7j", "e=27359 (mod 3419) → Departing", BoatState.Departing, Phase(27359).State);
-        Close("B7k", "e=27359 progress = 59/60",       59.0 / 60.0, Phase(27359).Progress, 1e-9);
-
-        // B8: ĐỒNG HỒ LÙI — anchor nằm ở TƯƠNG LAI so với now
-        long past = Anchor - 12345L * Tps; // now TRƯỚC anchor 12345s
-        BoatPhaseInfo backInfo;
-        bool noThrow = true;
-        try { backInfo = BoatScheduleCore.ComputePhase(past, Anchor, Dock, Hide, Travel); }
-        catch (Exception ex) { noThrow = false; backInfo = default(BoatPhaseInfo); Console.WriteLine("      EXCEPTION: " + ex.Message); }
-        Check("B8a", "anchor>now: ComputePhase không exception", true, noThrow);
-        Check("B8b", "anchor>now: state = Hidden (coi như chu kỳ mới)", BoatState.Hidden, backInfo.State);
-        Check("B8c", "anchor>now: PhaseSeconds không âm", true, backInfo.PhaseSeconds >= 0.0);
-        Check("B8d", "anchor>now: Progress không âm", true, backInfo.Progress >= 0.0);
-        Check("B8e", "IsAnchorInFuture(now<anchor) = true", true, BoatScheduleCore.IsAnchorInFuture(past, Anchor));
-        Check("B8f", "SanitizeAnchor(now, anchorTươngLai) = now", past, BoatScheduleCore.SanitizeAnchor(past, Anchor));
-        Check("B8g", "SanitizeAnchor(now, anchorQuáKhứ) giữ nguyên anchor", Anchor,
-              BoatScheduleCore.SanitizeAnchor(Anchor + 100 * Tps, Anchor));
-
-        // B9: debugTimeScale — chu kỳ ngắn lại ĐÚNG TỈ LỆ.
-        //     ComputePhase(t thực, scale=60) phải y hệt ComputePhase(t×60, scale=1).
-        double[] realSecs = { 0, 5, 14.99, 15, 16, 55.99, 56, 56.5, 57, 100 };
-        bool b9 = true; string b9detail = "";
-        foreach (double r in realSecs)
-        {
-            var scaled  = Phase(r, 60.0);
-            var normal  = Phase(r * 60.0, 1.0);
-            if (scaled.State != normal.State || Math.Abs(scaled.Progress - normal.Progress) > 1e-6)
-            { b9 = false; b9detail = $"r={r}: {scaled.State}/{scaled.Progress:0.####} vs {normal.State}/{normal.Progress:0.####}"; }
-        }
-        Check("B9a", "scale=60: 10 mốc thời gian thực khớp hệt scale=1 ở t×60",
-              "identical", b9 ? "identical" : b9detail);
-        Check("B9b", "scale=60: 15s thực = 900s game → Arriving", BoatState.Arriving, Phase(15, 60.0).State);
-        Check("B9c", "scale=60: 57s thực = 3420s game → Hidden (hết 1 chu kỳ trong 57s thực)",
-              BoatState.Hidden, Phase(57, 60.0).State);
-        Check("B9d", "scale≤0 → coi như 1 (không chia 0)", Phase(1000, 1.0).State, Phase(1000, 0.0).State);
-        Console.WriteLine();
+        // Sàn kỹ thuật: gap phải ≥ 2×travel + 1s để tàu kịp lùi ra rồi chạy vào lại.
+        long arrivalTiny = BoatScheduleCore.ScheduleNextArrival(T0, 1.0, Travel, 0.0, null, 0);
+        Check(arrivalTiny >= T0 + Sec(2.0 * Travel),
+              "config gap dị (1 giây) bị kẹp lên sàn 2×travel — tàu không teleport");
     }
 
-    // =====================================================================
-    //  C. LỊCH SO LE (GDD §3.3)
-    // =====================================================================
-    static void TestC_Stagger()
+    // ─── B. Luật so le ───────────────────────────────────────────────────
+
+    private static void TestStagger()
     {
-        Console.WriteLine("── C. Lịch so le ──");
-        long staggerTicks = BoatScheduleCore.SecondsToTicks(Stagger);
+        Group("B. So le ≥3 phút giữa 2 arrival bất kỳ (dời MUỘN)");
 
-        // Bối cảnh: bến 1 đã mở. now = thời điểm bấm mở bến 2.
-        // Manager đặt desiredAnchor = now - hide → arrival dự kiến = now + travel (60s).
-        long now = Anchor + 50000L * Tps;
-        long desired = now - BoatScheduleCore.SecondsToTicks(Hide);
+        long other = T0 + Sec(600.0);            // bến khác cập bến ở phút thứ 10
+        long[] others = { other, 0L, 0L };
 
-        // C10-case1: tàu bến 1 cập bến trong 3 phút nữa (<12p, đẩy nhẹ)
-        {
-            long arr1 = now + 180L * Tps; // bến 1 cập bến sau 3p
-            var other = new[] { new BoatCycleSpec {
-                AnchorUtcTicks = arr1 - BoatScheduleCore.SecondsToTicks(Hide + Travel),
-                HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel } };
+        // Trường hợp xung đột: mong muốn cập bến chỉ sau bến kia 60 giây.
+        long desired  = other + Sec(60.0);
+        long resolved = BoatScheduleCore.ResolveStaggeredArrival(desired, Stagger, others, 1);
+        CheckEqual(resolved, other + Sec(Stagger), "xung đột phía sau → dời tới đúng mốc + 3 phút");
+        Check(resolved > desired, "chỉ dời MUỘN, không bao giờ kéo sớm hơn");
 
-            long resolved = BoatScheduleCore.ResolveStaggeredAnchor(desired, Dock, Hide, Travel, Stagger, other, 1);
-            long arr2 = BoatScheduleCore.FirstArrivalUtcTicks(new BoatCycleSpec {
-                AnchorUtcTicks = resolved, HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel });
+        // Xung đột phía trước (mong muốn tới TRƯỚC bến kia 60 giây) → cũng dời muộn.
+        long desiredBefore  = other - Sec(60.0);
+        long resolvedBefore = BoatScheduleCore.ResolveStaggeredArrival(desiredBefore, Stagger, others, 1);
+        CheckEqual(resolvedBefore, other + Sec(Stagger), "xung đột phía trước → vẫn dời ra SAU 3 phút");
 
-            Check("C10a", "bến1 cập sau 3p: anchor bến 2 BỊ ĐẨY (resolved != desired)", true, resolved != desired);
-            Close("C10b", "khoảng cách 2 lần cập bến = stagger (900s = 3p+12p sau now)",
-                  Stagger, BoatScheduleCore.TicksToSeconds(Math.Abs(arr2 - arr1)), 0.001);
-            Check("C10c", "anchor sau đẩy vẫn ≤ now (đẩy 12p−(12p−3p)=... ≤ hide 15p)", true, resolved <= now);
-        }
+        // Không xung đột → giữ nguyên.
+        long far = other + Sec(Stagger + 30.0);
+        CheckEqual(BoatScheduleCore.ResolveStaggeredArrival(far, Stagger, others, 1), far,
+                   "cách nhau đủ 3 phút → giữ nguyên arrival");
 
-        // C10-case2: tàu bến 1 cập bến trong 8 phút nữa (<12p, đẩy sâu)
-        //   Core giải ĐÚNG (gap = 12p) nhưng anchor rơi vào TƯƠNG LAI (now+4p) —
-        //   sau đó mô phỏng guard "đồng hồ lùi" của BoatDockManager.Update:
-        //   IsAnchorInFuture → SanitizeAnchor(anchor=now) → so le BỊ PHÁ.
-        {
-            long arr1 = now + 480L * Tps; // bến 1 cập bến sau 8p
-            var other = new[] { new BoatCycleSpec {
-                AnchorUtcTicks = arr1 - BoatScheduleCore.SecondsToTicks(Hide + Travel),
-                HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel } };
+        // Đúng 3 phút (biên) → hợp lệ, không dời.
+        long exact = other + Sec(Stagger);
+        CheckEqual(BoatScheduleCore.ResolveStaggeredArrival(exact, Stagger, others, 1), exact,
+                   "cách đúng 3 phút (biên) → hợp lệ, giữ nguyên");
 
-            long resolved = BoatScheduleCore.ResolveStaggeredAnchor(desired, Dock, Hide, Travel, Stagger, other, 1);
-            long arr2 = BoatScheduleCore.FirstArrivalUtcTicks(new BoatCycleSpec {
-                AnchorUtcTicks = resolved, HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel });
+        // Hai bến khác cùng chen: phải né CẢ HAI (lặp tới khi hội tụ).
+        long[] two = { other, other + Sec(Stagger), 0L };
+        long crowded = BoatScheduleCore.ResolveStaggeredArrival(other + Sec(30.0), Stagger, two, 2);
+        Check(Math.Abs(crowded - two[0]) >= Sec(Stagger) && Math.Abs(crowded - two[1]) >= Sec(Stagger),
+              "chen giữa 2 bến → arrival cuối cùng cách CẢ HAI ≥ 3 phút");
 
-            Close("C10d", "CORE: gap sau giải so le = đúng 12p (720s)",
-                  Stagger, BoatScheduleCore.TicksToSeconds(Math.Abs(arr2 - arr1)), 0.001);
-            Check("C10e", "CORE: anchor bị đẩy tới TƯƠNG LAI (now+240s) — về toán là hợp lệ",
-                  true, BoatScheduleCore.IsAnchorInFuture(now, resolved));
-            Close("C10f", "CORE: anchor tương lai đúng 240s (đẩy 19p > hide 15p)",
-                  240.0, BoatScheduleCore.TicksToSeconds(resolved - now), 0.001);
+        // Phần tử 0 = bến không có arrival sắp tới (đang Docked) → bỏ qua, không kéo lịch.
+        long[] withZero = { 0L, 0L, 0L };
+        CheckEqual(BoatScheduleCore.ResolveStaggeredArrival(desired, Stagger, withZero, 3), desired,
+                   "bến đang đậu (arrival = 0) không tham gia so le");
 
-            // ── MÔ PHỎNG BoatDockManager.Update frame kế — GUARD MỚI sau fix B-1
-            //    (BoatDockManager.cs dòng ~156): IsClockRolledBack(now, anchor, cycle)
-            //    có DUNG SAI 1 chu kỳ → anchor tương lai +240s KHÔNG bị coi là đồng hồ lùi.
-            long nowNextFrame = now + Tps / 50; // +1 frame (20ms)
-            long anchorAfterManagerGuard = BoatScheduleCore.IsClockRolledBack(nowNextFrame, resolved, Cycle)
-                ? nowNextFrame
-                : resolved;
-            long arr2AfterGuard = BoatScheduleCore.FirstArrivalUtcTicks(new BoatCycleSpec {
-                AnchorUtcTicks = anchorAfterManagerGuard, HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel });
-            double gapAfterGuard = BoatScheduleCore.TicksToSeconds(Math.Abs(arr2AfterGuard - arr1));
-
-            Check("C10g", "MANAGER-SIM (guard mới B-1): anchor tương lai ≤ 1 cycle được GIỮ NGUYÊN",
-                  true, anchorAfterManagerGuard == resolved);
-            Close("C10h", "MANAGER-SIM (guard mới B-1): gap thực ≥ stagger 720s (AC §8.4)",
-                  Stagger, gapAfterGuard, 0.001);
-            Console.WriteLine("      → gap thực tế sau guard mới = {0:0}s ({1:0.#}p) — so le được BẢO TOÀN (vòng 1 FAIL: 480s)",
-                              gapAfterGuard, gapAfterGuard / 60.0);
-        }
-
-        // C11: arrival bến 1 cách XA (20 phút > 12p) → anchor giữ nguyên, không đẩy oan
-        {
-            long arr1 = now + 1200L * Tps; // 20 phút
-            var other = new[] { new BoatCycleSpec {
-                AnchorUtcTicks = arr1 - BoatScheduleCore.SecondsToTicks(Hide + Travel),
-                HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel } };
-
-            long resolved = BoatScheduleCore.ResolveStaggeredAnchor(desired, Dock, Hide, Travel, Stagger, other, 1);
-            Check("C11", "bến1 cập sau 20p (>12p): anchor GIỮ NGUYÊN (không đẩy oan)", desired, resolved);
-        }
-
-        // C12: mở cả 3 bến sát nhau (cách 30s) — mô phỏng đúng thứ tự manager:
-        //      mỗi lần mở đưa các bến ĐÃ MỞ (anchor đã resolve) vào otherDocks.
-        {
-            long t0 = Anchor + 90000L * Tps;
-            var specs = new BoatCycleSpec[3];
-
-            long a0 = BoatScheduleCore.ResolveStaggeredAnchor(
-                t0 - BoatScheduleCore.SecondsToTicks(Hide), Dock, Hide, Travel, Stagger, specs, 0);
-            specs[0] = new BoatCycleSpec { AnchorUtcTicks = a0, HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel };
-
-            long t1 = t0 + 30L * Tps;
-            long a1 = BoatScheduleCore.ResolveStaggeredAnchor(
-                t1 - BoatScheduleCore.SecondsToTicks(Hide), Dock, Hide, Travel, Stagger, specs, 1);
-            specs[1] = new BoatCycleSpec { AnchorUtcTicks = a1, HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel };
-
-            long t2 = t1 + 30L * Tps;
-            long a2 = BoatScheduleCore.ResolveStaggeredAnchor(
-                t2 - BoatScheduleCore.SecondsToTicks(Hide), Dock, Hide, Travel, Stagger, specs, 2);
-            specs[2] = new BoatCycleSpec { AnchorUtcTicks = a2, HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel };
-
-            long f0 = BoatScheduleCore.FirstArrivalUtcTicks(specs[0]);
-            long f1 = BoatScheduleCore.FirstArrivalUtcTicks(specs[1]);
-            long f2 = BoatScheduleCore.FirstArrivalUtcTicks(specs[2]);
-
-            double g01 = BoatScheduleCore.TicksToSeconds(Math.Abs(f1 - f0));
-            double g02 = BoatScheduleCore.TicksToSeconds(Math.Abs(f2 - f0));
-            double g12 = BoatScheduleCore.TicksToSeconds(Math.Abs(f2 - f1));
-
-            Check("C12a", "3 bến mở cách nhau 30s: gap(1,2) ≥ 720s", true, g01 >= Stagger - 0.001);
-            Check("C12b", "3 bến mở cách nhau 30s: gap(1,3) ≥ 720s", true, g02 >= Stagger - 0.001);
-            Check("C12c", "3 bến mở cách nhau 30s: gap(2,3) ≥ 720s", true, g12 >= Stagger - 0.001);
-            Console.WriteLine("      → arrival lần đầu: bến1 +{0:0}s, bến2 +{1:0}s, bến3 +{2:0}s (so với lúc mở bến 1)",
-                BoatScheduleCore.TicksToSeconds(f0 - t0), BoatScheduleCore.TicksToSeconds(f1 - t0),
-                BoatScheduleCore.TicksToSeconds(f2 - t0));
-
-            // Hội tụ / không vòng lặp vô hạn: gọi lại với input "kẹt" (stagger cực lớn hơn nửa chu kỳ)
-            // → phải trả về trong thời gian hữu hạn (MaxStaggerIterations chặn), không treo.
-            long unsat = BoatScheduleCore.ResolveStaggeredAnchor(
-                t2 - BoatScheduleCore.SecondsToTicks(Hide), Dock, Hide, Travel,
-                Cycle * 0.6 /* stagger 2052s > cycle/2 → vô nghiệm */, specs, 2);
-            Check("C12d", "stagger > cycle/2 (vô nghiệm): hàm vẫn trả về (không treo/không loop vô hạn)",
-                  true, unsat >= 0 || unsat < 0);
-
-            // NOTE (không tính pass/fail): bến khác travelSeconds → chu kỳ lệch →
-            // arrival trôi dần, sau N chu kỳ gap < stagger dù lúc mở đã giải đúng.
-            double cyc60 = Hide + 60 + Dock + 60, cyc90 = Hide + 90 + Dock + 90; // lệch 60s/chu kỳ
-            double driftCycles = (Stagger) / Math.Abs(cyc90 - cyc60);
-            Console.WriteLine("      NOTE: nếu travel bến khác nhau (60s vs 90s) chu kỳ lệch {0}s → sau ~{1:0} chu kỳ "
-                              + "(~{2:0.#} giờ chơi liên tục) khoảng so le bị bào mòn < 12p. Luật §3.3 chỉ enforce lúc MỞ BẾN.",
-                              Math.Abs(cyc90 - cyc60), driftCycles, driftCycles * cyc90 / 3600.0);
-        }
-        Console.WriteLine();
+        // 3 bến thật: tất cả cách nhau ≥ 3 phút sau khi giải.
+        long a0 = T0 + Sec(GapMulti);
+        long a1 = BoatScheduleCore.ResolveStaggeredArrival(a0 + Sec(30.0), Stagger, new[] { a0, 0L, 0L }, 1);
+        long a2 = BoatScheduleCore.ResolveStaggeredArrival(a0 + Sec(45.0), Stagger, new[] { a0, a1, 0L }, 2);
+        Check(Math.Abs(a1 - a0) >= Sec(Stagger) &&
+              Math.Abs(a2 - a0) >= Sec(Stagger) &&
+              Math.Abs(a2 - a1) >= Sec(Stagger),
+              "3 bến mở cùng lúc → mọi cặp arrival cách nhau ≥ 3 phút (AC §8.4)");
     }
 
-    // =====================================================================
-    //  D. EDGE CASES GDD §5 còn lại
-    // =====================================================================
-    static void TestD_EdgeCases()
+    // ─── C. Resolve offline mọi pha ──────────────────────────────────────
+
+    private static void TestResolveWaitingAndArriving()
     {
-        Console.WriteLine("── D. Edge cases §5 ──");
+        Group("C1. Resolve pha WaitingNext / Arriving");
 
-        // D1: nhảy cóc level qua 10 (L9 → L11, không bao giờ đứng ở đúng L10)
-        Check("D1a", "L9 → bến 1 DENY", UnlockDenyReason.LevelTooLow,
-              BoatScheduleCore.EvaluateUnlock(Req(0), false, 9, 0, 0));
-        Check("D1b", "nhảy cóc L9→L11: bến 1 PASS (điều kiện là ≥, không phải ==)", UnlockDenyReason.None,
-              BoatScheduleCore.EvaluateUnlock(Req(0), false, 11, 0, 0));
-        Check("D1c", "L11 đã mở bến 1 → AlreadyUnlocked (intro không lặp về mặt điều kiện)",
-              UnlockDenyReason.AlreadyUnlocked,
-              BoatScheduleCore.EvaluateUnlock(Req(0), true, 11, 0, 0));
+        long arrival = T0 + Sec(GapOne);
+        DockScheduleState waiting = Waiting(arrival);
 
-        // D2: determinism sau reload — cùng anchor + now cho kết quả Y HỆT
-        //     (mô phỏng manager persist anchor dạng string invariant rồi parse lại)
-        long now = Anchor + 987654321L; // lệch lẻ ticks (không tròn giây)
-        var first = BoatScheduleCore.ComputePhase(now, Anchor, Dock, Hide, Travel);
-        string persisted = Anchor.ToString(CultureInfo.InvariantCulture);           // như SaveDock
-        long reloaded = long.Parse(persisted, NumberStyles.Integer, CultureInfo.InvariantCulture); // như LoadFromPrefs
-        var second = BoatScheduleCore.ComputePhase(now, reloaded, Dock, Hide, Travel);
-        bool identical = first.State == second.State
-                      && first.Progress == second.Progress
-                      && first.PhaseSeconds == second.PhaseSeconds
-                      && first.DockedRemainingSeconds == second.DockedRemainingSeconds
-                      && first.CycleSeconds == second.CycleSeconds;
-        Check("D2a", "reload (persist→parse anchor): BoatPhaseInfo y hệt bit-một-bit", true, identical);
+        // Còn xa arrival → vẫn WaitingNext, không đổi gì.
+        var r1 = BoatScheduleCore.ResolveDock(waiting, T0, Travel);
+        CheckState(r1.State.State, BoatState.WaitingNext, "trước giờ chạy vào → giữ WaitingNext");
+        Check(!r1.Changed, "không đổi state → Changed = false (không cần persist)");
+        Check(!r1.JustDocked, "chưa chạm bến → JustDocked = false");
 
-        bool deterministic = true;
-        for (int i = 0; i < 1000; i++)
-        {
-            long t = Anchor + (long)(i * 7919L) * 1000003L; // trải nhiều mốc lẻ
-            var p1 = BoatScheduleCore.ComputePhase(t, Anchor, Dock, Hide, Travel);
-            var p2 = BoatScheduleCore.ComputePhase(t, Anchor, Dock, Hide, Travel);
-            if (p1.State != p2.State || p1.Progress != p2.Progress || p1.PhaseSeconds != p2.PhaseSeconds)
-            { deterministic = false; break; }
-        }
-        Check("D2b", "1000 mốc ngẫu-nhiên-định-trước: gọi 2 lần cho kết quả y hệt (stateless)", true, deterministic);
+        // Chạm mốc arrival − travel → chuyển Arriving.
+        var r2 = BoatScheduleCore.ResolveDock(waiting, arrival - Sec(Travel), Travel);
+        CheckState(r2.State.State, BoatState.Arriving, "đúng mốc arrival − travel → Arriving");
+        Check(r2.Changed, "chuyển sang Arriving → Changed = true");
+        CheckEqual(r2.State.AnchorUtcTicks, arrival, "anchor giữ nguyên = arrivalUtc khi Arriving");
 
-        // D3: travel suy biến (path chưa gắn waypoint) — không chia 0, không exception
-        bool noThrow = true; BoatPhaseInfo degen = default(BoatPhaseInfo);
-        try { degen = BoatScheduleCore.ComputePhase(now, Anchor, Dock, Hide, 0.0); }
-        catch (Exception) { noThrow = false; }
-        Check("D3a", "travelSeconds=0 (path suy biến): không exception (kẹp sàn 0.001s)", true, noThrow);
-        Check("D3b", "travelSeconds=0: cycle vẫn > hide+dock", true, degen.CycleSeconds > Hide + Dock);
-        Check("D3c", "input âm toàn bộ: ComputeCycleSeconds không trả ≤ 0", true,
-              BoatScheduleCore.ComputeCycleSeconds(-5, -5, -5) > 0.0);
+        // Giữa đường vào bến.
+        var r3 = BoatScheduleCore.ResolveDock(waiting, arrival - Sec(Travel / 2.0), Travel);
+        CheckState(r3.State.State, BoatState.Arriving, "giữa đường vào bến → Arriving");
 
-        // D4: dockIndex ngoài [0..2] — requirement kiểu int.MaxValue phải luôn từ chối
-        Check("D4", "dock index sai (req level int.MaxValue): DENY LevelTooLow, không exception",
-              UnlockDenyReason.LevelTooLow,
-              BoatScheduleCore.EvaluateUnlock(Req(99), false, 30, 999999, 999999));
+        // Vượt arrival (offline lúc tàu đang chạy vào) → Docked + JustDocked.
+        var r4 = BoatScheduleCore.ResolveDock(waiting, arrival + Sec(3.0), Travel);
+        CheckState(r4.State.State, BoatState.Docked, "vượt arrival → Docked");
+        Check(r4.JustDocked, "chạm bến trong lần resolve này → JustDocked = true");
+        CheckEqual(r4.State.AnchorUtcTicks, arrival, "anchor Docked = đúng giờ chạm bến (arrival), không phải now");
 
-        // D5: NextArrival/NearestArrival — đứng ĐÚNG trên mốc arrival
-        var spec = new BoatCycleSpec { AnchorUtcTicks = Anchor, HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel };
-        long firstArr = BoatScheduleCore.FirstArrivalUtcTicks(spec);
-        Check("D5a", "FirstArrival = anchor + 960s", Anchor + BoatScheduleCore.SecondsToTicks(Hide + Travel), firstArr);
-        Check("D5b", "NextArrival(đúng-trên-mốc) = chính mốc đó", firstArr,
-              BoatScheduleCore.NextArrivalUtcTicks(firstArr, spec));
-        Check("D5c", "NextArrival(mốc+1s) = mốc + 1 chu kỳ", firstArr + BoatScheduleCore.SecondsToTicks(Cycle),
-              BoatScheduleCore.NextArrivalUtcTicks(firstArr + Tps, spec));
-        Check("D5d", "NearestArrival(trước firstArrival 10 ngày) = firstArrival (k không âm)", firstArr,
-              BoatScheduleCore.NearestArrivalUtcTicks(firstArr - 864000L * Tps, spec));
-        long mid = firstArr + BoatScheduleCore.SecondsToTicks(Cycle * 7.49);
-        long near = BoatScheduleCore.NearestArrivalUtcTicks(mid, spec);
-        Check("D5e", "NearestArrival(giữa 2 mốc, lệch 0.49 chu kỳ) chọn mốc gần hơn (k=7)",
-              firstArr + BoatScheduleCore.SecondsToTicks(Cycle * 7), near);
-        Console.WriteLine();
+        // Resolve từ pha Arriving đang lưu (tắt game giữa lúc tàu chạy vào).
+        var r5 = BoatScheduleCore.ResolveDock(Arriving(arrival), arrival + Sec(3600.0), Travel);
+        CheckState(r5.State.State, BoatState.Docked, "offline 1 tiếng khi đang Arriving → Docked");
+        Check(r5.JustDocked, "cú chạm bến bị lỡ lúc offline vẫn báo JustDocked đúng 1 lần");
+
+        // Đồng hồ lùi NHẸ khi đang Arriving → quay về WaitingNext, giữ nguyên lịch.
+        var r6 = BoatScheduleCore.ResolveDock(Arriving(arrival), arrival - Sec(Travel + 30.0), Travel);
+        CheckState(r6.State.State, BoatState.WaitingNext, "đồng hồ lùi nhẹ khi Arriving → lùi về WaitingNext");
+        CheckEqual(r6.State.AnchorUtcTicks, arrival, "lùi nhẹ KHÔNG đổi giờ cập bến đã hẹn");
     }
 
-    // =====================================================================
-    //  E. REGRESSION VÒNG 2 — verify fix B-1 / m-3 theo yêu cầu lead
-    // =====================================================================
-    static void TestE_Round2_Regression()
+    private static void TestResolveDockedIsAbsorbing()
     {
-        Console.WriteLine("── E. Regression vòng 2 (fix B-1, m-3) ──");
-        long now = Anchor + 500000L * Tps;
+        Group("C2. Docked là pha VÔ HẠN — chỉ thoát bằng lệnh");
 
-        // E1: biên IsClockRolledBack — dung sai ĐÚNG 1 chu kỳ
-        Check("E1a", "anchor = now + đúng 1 cycle (3420s): KHÔNG coi là đồng hồ lùi (dung sai chạm biên)",
-              false, BoatScheduleCore.IsClockRolledBack(now, now + BoatScheduleCore.SecondsToTicks(Cycle), Cycle));
-        Check("E1b", "anchor = now + 1 cycle + 1s: LÀ đồng hồ lùi",
-              true, BoatScheduleCore.IsClockRolledBack(now, now + BoatScheduleCore.SecondsToTicks(Cycle + 1), Cycle));
-        Check("E1c", "anchor = now + 1 cycle + 1 tick: LÀ đồng hồ lùi (biên chặt)",
-              true, BoatScheduleCore.IsClockRolledBack(now, now + BoatScheduleCore.SecondsToTicks(Cycle) + 1, Cycle));
-        Check("E1d", "anchor quá khứ: không phải đồng hồ lùi",
-              false, BoatScheduleCore.IsClockRolledBack(now, now - 12345L * Tps, Cycle));
-        Check("E1e", "anchor tương lai 240s (so le đẩy, kịch bản B-1): KHÔNG coi là đồng hồ lùi",
-              false, BoatScheduleCore.IsClockRolledBack(now, now + 240L * Tps, Cycle));
-        Check("E1f", "cycleSeconds âm (rác): kẹp về 0 — anchor tương lai 1 tick vẫn bị coi là lùi, không exception",
-              true, BoatScheduleCore.IsClockRolledBack(now, now + 1, -100.0));
+        DockScheduleState docked = Docked(T0);
 
-        // E2: kịch bản B-1 đầy đủ ở tầng schedule — mở bến 2 khi bến 1 sắp cập
-        //     bến ở NHIỀU mốc trong cửa sổ <12p; sau resolve + guard mới: gap ≥ stagger
-        //     và anchor không bao giờ bị guard đụng tới.
+        var r1 = BoatScheduleCore.ResolveDock(docked, T0 + Sec(60.0), Travel);
+        CheckState(r1.State.State, BoatState.Docked, "sau 1 phút vẫn Docked");
+        Check(!r1.Changed && !r1.JustDocked, "Docked resolve lại: không đổi, không bắn JustDocked lần hai");
+
+        var r2 = BoatScheduleCore.ResolveDock(docked, T0 + Sec(86400.0), Travel);
+        CheckState(r2.State.State, BoatState.Docked, "offline 24 tiếng ở pha Docked → VẪN Docked (chờ Dev B)");
+        Check(!r2.JustDocked, "load vào giữa pha Docked → KHÔNG bắn OnBoatDocked lần nữa (chống nhân đôi khách)");
+    }
+
+    private static void TestResolveDepartingOffline()
+    {
+        Group("C3. Resolve pha Departing");
+
+        long depart  = T0;
+        long nextArr = T0 + Sec(GapOne);
+        DockScheduleState departing = Departing(depart, nextArr);
+
+        // Đang lùi ra.
+        var r1 = BoatScheduleCore.ResolveDock(departing, depart + Sec(Travel / 2.0), Travel);
+        CheckState(r1.State.State, BoatState.Departing, "giữa lúc lùi ra → vẫn Departing");
+        Check(!r1.Changed, "chưa lùi xong → không đổi state");
+
+        // Lùi xong → WaitingNext với arrival đã hẹn.
+        var r2 = BoatScheduleCore.ResolveDock(departing, depart + Sec(Travel + 1.0), Travel);
+        CheckState(r2.State.State, BoatState.WaitingNext, "lùi xong → WaitingNext");
+        CheckEqual(r2.State.AnchorUtcTicks, nextArr, "WaitingNext mang đúng arrival đã lên lịch lúc rời bến");
+        CheckEqual(r2.State.NextArrivalUtcTicks, 0L, "NextArrival được dọn về 0 khi rời khỏi pha Departing");
+        Check(!r2.JustDocked, "mới lùi xong, chưa tới giờ → chưa JustDocked");
+
+        // NextArrival hỏng (0) → phòng thủ, không kẹt tàu vĩnh viễn.
+        var r3 = BoatScheduleCore.ResolveDock(Departing(depart, 0L), depart + Sec(Travel + 1.0), Travel);
+        CheckState(r3.State.State, BoatState.WaitingNext, "NextArrival hỏng → vẫn thoát Departing (phòng thủ)");
+        Check(r3.State.AnchorUtcTicks > 0L, "NextArrival hỏng → tự đặt arrival hợp lệ thay vì 0");
+    }
+
+    private static void TestOfflineLongChain()
+    {
+        Group("C4. Tắt game lâu — tua chuỗi nhiều pha trong 1 lần resolve");
+
+        long depart  = T0;
+        long nextArr = T0 + Sec(GapOne);
+
+        // Tắt game lúc tàu vừa rời bến, mở lại sau 2 tiếng: Departing → WaitingNext → Docked.
+        var r = BoatScheduleCore.ResolveDock(Departing(depart, nextArr), depart + Sec(7200.0), Travel);
+        CheckState(r.State.State, BoatState.Docked, "offline 2 tiếng từ pha Departing → tàu đã cập bến, đang đậu");
+        Check(r.JustDocked, "chuỗi offline vẫn báo JustDocked ĐÚNG 1 LẦN");
+        CheckEqual(r.State.AnchorUtcTicks, nextArr, "giờ chạm bến = arrival đã hẹn (không trôi theo lúc mở game)");
+
+        // Resolve lại lần nữa (frame kế) — không được bắn lần hai.
+        var again = BoatScheduleCore.ResolveDock(r.State, depart + Sec(7200.0), Travel);
+        Check(!again.JustDocked, "resolve lại ngay sau đó → KHÔNG bắn JustDocked lần hai");
+        Check(!again.Changed, "state đã ổn định → không cần persist lại");
+    }
+
+    // ─── D. Đồng hồ lùi ──────────────────────────────────────────────────
+
+    private static void TestClockRollback()
+    {
+        Group("D. Guard đồng hồ lùi (reset khi lùi quá 1 gap)");
+
+        // Horizon manager dùng: gap + stagger×3 + travel×2 + 60s
+        double horizon = GapOne + Stagger * 3.0 + Travel * 2.0 + 60.0;
+
+        DockScheduleState waiting = Waiting(T0 + Sec(GapOne));
+        Check(!BoatScheduleCore.IsScheduleImplausiblyFuture(waiting, T0, horizon),
+              "arrival trong tương lai 5 phút = HỢP LỆ (WaitingNext luôn hẹn tương lai)");
+
+        // Người chơi chỉnh đồng hồ lùi 2 tiếng → mọi mốc vọt lên tương lai xa.
+        long nowRolledBack = T0 - Sec(7200.0);
+        Check(BoatScheduleCore.IsScheduleImplausiblyFuture(waiting, nowRolledBack, horizon),
+              "đồng hồ lùi 2 tiếng → phát hiện là bất thường, manager reset lịch");
+
+        // Lùi ít hơn horizon → coi như hợp lệ, không reset (không phạt oan người chơi).
+        long nowSlight = T0 - Sec(60.0);
+        Check(!BoatScheduleCore.IsScheduleImplausiblyFuture(waiting, nowSlight, horizon),
+              "lệch nhẹ 1 phút → KHÔNG reset (dung sai trong horizon)");
+
+        // Docked có anchor ở quá khứ → luôn hợp lệ.
+        Check(!BoatScheduleCore.IsScheduleImplausiblyFuture(Docked(T0 - Sec(600.0)), T0, horizon),
+              "Docked với mốc quá khứ → hợp lệ");
+        Check(BoatScheduleCore.IsScheduleImplausiblyFuture(Docked(T0 + Sec(99999.0)), T0, horizon),
+              "Docked mà mốc chạm bến ở tương lai xa → dữ liệu hỏng, cần reset");
+
+        // Departing: cả anchor lẫn NextArrival đều bị soi.
+        Check(BoatScheduleCore.IsScheduleImplausiblyFuture(Departing(T0, T0 + Sec(99999.0)), T0, horizon),
+              "Departing có NextArrival tương lai xa → bất thường");
+
+        // Sau reset: WaitingNext, tàu vào sau 30 giây.
+        DockScheduleState fresh = BoatScheduleCore.MakeFreshWaiting(T0, BoatScheduleCore.FreshArrivalDelaySeconds);
+        CheckState(fresh.State, BoatState.WaitingNext, "MakeFreshWaiting → WaitingNext");
+        CheckEqual(fresh.AnchorUtcTicks, T0 + Sec(30.0), "chuyến mới cập bến sau đúng 30 giây (luật migrate V1→V2)");
+        Check(!BoatScheduleCore.IsScheduleImplausiblyFuture(fresh, T0, horizon),
+              "trạng thái sau reset là hợp lệ ngay (không reset lặp vô hạn)");
+    }
+
+    // ─── E. ReportVisitorsAllAboard → chuyển pha ─────────────────────────
+
+    private static void TestReportVisitorsAllAboard()
+    {
+        Group("E. Khách lên tàu hết → Docked chuyển Departing + lên lịch chuyến kế");
+
+        long dockedAt = T0;
+        long allAboard = T0 + Sec(420.0); // 7 phút sau khi cập bến (khách được phục vụ xong)
+
+        // 1 bến mở → gap 5 phút.
+        DockScheduleState after;
+        bool ok = BoatScheduleCore.TryBeginDeparture(
+            Docked(dockedAt), allAboard,
+            BoatScheduleCore.SelectGapSeconds(1, GapOne, GapMulti), Travel, Stagger,
+            null, 0, out after);
+
+        Check(ok, "đang Docked → nhận lệnh rời bến");
+        CheckState(after.State, BoatState.Departing, "state chuyển Departing");
+        CheckEqual(after.AnchorUtcTicks, allAboard, "mốc rời bến = đúng lúc khách cuối lên tàu");
+        CheckEqual(after.NextArrivalUtcTicks, allAboard + Sec(GapOne), "1 bến: chuyến kế = rời bến + 5 phút");
+
+        // ≥2 bến mở → gap 10 phút + né arrival bến khác.
+        long otherArrival = allAboard + Sec(GapMulti) + Sec(60.0); // bến khác cập bến gần đó
+        long[] others = { otherArrival, 0L, 0L };
+        DockScheduleState after2;
+        BoatScheduleCore.TryBeginDeparture(
+            Docked(dockedAt), allAboard,
+            BoatScheduleCore.SelectGapSeconds(2, GapOne, GapMulti), Travel, Stagger,
+            others, 1, out after2);
+
+        Check(Math.Abs(after2.NextArrivalUtcTicks - otherArrival) >= Sec(Stagger),
+              "2 bến: chuyến kế bị dời cho cách arrival bến khác ≥ 3 phút");
+        Check(after2.NextArrivalUtcTicks >= allAboard + Sec(GapMulti),
+              "2 bến: chuyến kế không bao giờ SỚM hơn rời bến + 10 phút");
+
+        // Vòng đời khép kín: Departing → WaitingNext → Arriving → Docked lại.
+        long t = allAboard + Sec(Travel + 1.0);
+        var back = BoatScheduleCore.ResolveDock(after, t, Travel);
+        CheckState(back.State.State, BoatState.WaitingNext, "vòng đời: lùi xong về WaitingNext");
+
+        var back2 = BoatScheduleCore.ResolveDock(back.State, after.NextArrivalUtcTicks - Sec(1.0), Travel);
+        CheckState(back2.State.State, BoatState.Arriving, "vòng đời: tới giờ thì chạy vào bến");
+
+        var back3 = BoatScheduleCore.ResolveDock(back2.State, after.NextArrivalUtcTicks, Travel);
+        CheckState(back3.State.State, BoatState.Docked, "vòng đời: cập bến chuyến kế");
+        Check(back3.JustDocked, "vòng đời: chuyến kế bắn JustDocked cho Dev B spawn khách mới");
+    }
+
+    // ─── F. Chống double-fire ────────────────────────────────────────────
+
+    private static void TestDoubleFireGuards()
+    {
+        Group("F. Guard chống double-fire / gọi sai pha");
+
+        DockScheduleState result;
+
+        // Gọi ReportVisitorsAllAboard khi tàu KHÔNG đậu → từ chối, state nguyên vẹn.
+        DockScheduleState waiting = Waiting(T0 + Sec(GapOne));
+        Check(!BoatScheduleCore.TryBeginDeparture(waiting, T0, GapOne, Travel, Stagger, null, 0, out result),
+              "gọi lúc WaitingNext → từ chối");
+        Check(result.State == BoatState.WaitingNext && result.AnchorUtcTicks == waiting.AnchorUtcTicks,
+              "bị từ chối thì state KHÔNG bị sửa");
+
+        Check(!BoatScheduleCore.TryBeginDeparture(Arriving(T0 + Sec(10.0)), T0, GapOne, Travel, Stagger, null, 0, out result),
+              "gọi lúc Arriving → từ chối");
+
+        // Gọi 2 lần cho cùng 1 chuyến (Dev B lỡ gọi trùng): lần 2 phải bị chặn.
+        DockScheduleState first;
+        bool ok1 = BoatScheduleCore.TryBeginDeparture(Docked(T0), T0 + Sec(60.0), GapOne, Travel, Stagger, null, 0, out first);
+        bool ok2 = BoatScheduleCore.TryBeginDeparture(first, T0 + Sec(61.0), GapOne, Travel, Stagger, null, 0, out result);
+        Check(ok1, "lần gọi ĐẦU khi đang Docked → chấp nhận");
+        Check(!ok2, "lần gọi THỨ HAI (đã Departing) → từ chối, không lên lịch chồng chuyến");
+        CheckEqual(result.NextArrivalUtcTicks, first.NextArrivalUtcTicks,
+                   "gọi trùng không làm đổi giờ chuyến kế");
+
+        // JustDocked chỉ bắn 1 lần cho 1 cú chạm bến, dù resolve nhiều lần liên tiếp.
+        long arrival = T0 + Sec(GapOne);
+        DockScheduleState s = Waiting(arrival);
+        int firedCount = 0;
+        for (int frame = 0; frame < 10; frame++)
         {
-            long desired = now - BoatScheduleCore.SecondsToTicks(Hide);
-            double[] arriveInMinutes = { 1, 3, 5, 8, 10, 11.9 }; // phủ cả nhánh đẩy nhẹ lẫn đẩy sâu
-            bool allOk = true; string detail = "";
-            foreach (double m in arriveInMinutes)
-            {
-                long arr1 = now + BoatScheduleCore.SecondsToTicks(m * 60.0);
-                var other = new[] { new BoatCycleSpec {
-                    AnchorUtcTicks = arr1 - BoatScheduleCore.SecondsToTicks(Hide + Travel),
-                    HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel } };
-
-                long resolved = BoatScheduleCore.ResolveStaggeredAnchor(desired, Dock, Hide, Travel, Stagger, other, 1);
-
-                // Guard mới của manager (Update + LoadFromPrefs đều dùng IsClockRolledBack)
-                if (BoatScheduleCore.IsClockRolledBack(now, resolved, Cycle))
-                { allOk = false; detail = $"arriveIn={m}p: anchor bị guard reset oan"; break; }
-
-                long arr2 = BoatScheduleCore.FirstArrivalUtcTicks(new BoatCycleSpec {
-                    AnchorUtcTicks = resolved, HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel });
-                double gap = BoatScheduleCore.TicksToSeconds(Math.Abs(arr2 - arr1));
-                if (gap < Stagger - 0.001)
-                { allOk = false; detail = $"arriveIn={m}p: gap={gap:0}s < 720s"; break; }
-            }
-            Check("E2a", "B-1 fix: 6 mốc 'bến 1 sắp cập trong <12p' — gap luôn ≥ 720s, guard không reset oan",
-                  "all >= stagger", allOk ? "all >= stagger" : detail);
+            var r = BoatScheduleCore.ResolveDock(s, arrival + Sec(frame), Travel);
+            s = r.State;
+            if (r.JustDocked) firedCount++;
         }
+        CheckEqual(firedCount, 1, "10 frame liên tiếp sau khi cập bến → JustDocked bắn đúng 1 lần");
+    }
 
-        // E2b: chặn trên độ đẩy so le — worst case 2 bến khác (chu kỳ đồng nhất m-3):
-        //      anchor sau resolve không bao giờ vượt now quá 1 cycle → guard mới
-        //      KHÔNG BAO GIỜ đụng anchor hợp lệ do so le tạo ra.
-        {
-            long desired = now - BoatScheduleCore.SecondsToTicks(Hide);
-            bool allOk = true; string detail = "";
-            // quét cặp arrival của 2 bến khác quanh cửa sổ xung đột, bước 90s
-            for (double m1 = 0.5; m1 <= 12 && allOk; m1 += 1.5)
-            for (double m2 = m1; m2 <= 36 && allOk; m2 += 1.5)
-            {
-                var others = new[] {
-                    new BoatCycleSpec { AnchorUtcTicks = now + BoatScheduleCore.SecondsToTicks(m1*60) - BoatScheduleCore.SecondsToTicks(Hide+Travel), HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel },
-                    new BoatCycleSpec { AnchorUtcTicks = now + BoatScheduleCore.SecondsToTicks(m2*60) - BoatScheduleCore.SecondsToTicks(Hide+Travel), HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel },
-                };
-                long resolved = BoatScheduleCore.ResolveStaggeredAnchor(desired, Dock, Hide, Travel, Stagger, others, 2);
-                if (BoatScheduleCore.IsClockRolledBack(now, resolved, Cycle))
-                { allOk = false; detail = $"m1={m1} m2={m2}: anchor vượt now quá 1 cycle"; }
-            }
-            Check("E2b", "worst-case so le với 2 bến khác (quét ~200 tổ hợp): anchor ≤ now + 1 cycle (guard an toàn)",
-                  "never flagged", allOk ? "never flagged" : detail);
-        }
+    // ─── H. Lưới an toàn chống kẹt tàu (QA B-1, Sếp duyệt) ───────────────
 
-        // E3: m-3 — chu kỳ ĐỒNG NHẤT (schedule travel = max 3 bến): so le giữ VĨNH VIỄN.
-        //     2 bến mở cách 30s, cùng travel → kiểm gap tại arrival thứ k = 0, 100, 1000:
-        //     phải y hệt gap ban đầu (không trôi 1 giây nào).
-        {
-            long t0 = now;
-            var specs = new BoatCycleSpec[2];
-            long a0 = t0 - BoatScheduleCore.SecondsToTicks(Hide);
-            specs[0] = new BoatCycleSpec { AnchorUtcTicks = a0, HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel };
-            long a1 = BoatScheduleCore.ResolveStaggeredAnchor(
-                t0 + 30L * Tps - BoatScheduleCore.SecondsToTicks(Hide), Dock, Hide, Travel, Stagger, specs, 1);
-            specs[1] = new BoatCycleSpec { AnchorUtcTicks = a1, HideSeconds = Hide, DockSeconds = Dock, TravelSeconds = Travel };
+    private static void TestDockTimeoutSafetyNet()
+    {
+        Group("H. Lưới an toàn: đậu quá maxDockMinutes → ép rời bến");
 
-            long f0 = BoatScheduleCore.FirstArrivalUtcTicks(specs[0]);
-            long f1 = BoatScheduleCore.FirstArrivalUtcTicks(specs[1]);
-            long cycleTicks = BoatScheduleCore.SecondsToTicks(Cycle);
-            double gap0    = BoatScheduleCore.TicksToSeconds(Math.Abs(f1 - f0));
-            double gap100  = BoatScheduleCore.TicksToSeconds(Math.Abs((f1 + 100 * cycleTicks) - (f0 + 100 * cycleTicks)));
-            double gap1000 = BoatScheduleCore.TicksToSeconds(Math.Abs((f1 + 1000 * cycleTicks) - (f0 + 1000 * cycleTicks)));
-            Check("E3a", "m-3: gap ban đầu ≥ 720s", true, gap0 >= Stagger - 0.001);
-            Close("E3b", "m-3: gap tại chu kỳ 100 = gap ban đầu (không trôi)", gap0, gap100, 1e-9);
-            Close("E3c", "m-3: gap tại chu kỳ 1000 = gap ban đầu (vĩnh viễn)", gap0, gap1000, 1e-9);
-        }
+        long dockedAt = T0;
+        DockScheduleState docked = Docked(dockedAt);
 
-        // E4: fix B-1 không phá hành vi đồng hồ lùi THẬT — anchor vượt now 2 chu kỳ
-        //     (đồng hồ máy lùi ~2 tiếng) vẫn bị phát hiện và ComputePhase vẫn an toàn.
-        {
-            long badAnchor = now + BoatScheduleCore.SecondsToTicks(Cycle * 2);
-            Check("E4a", "đồng hồ lùi thật (anchor now+2 cycle): IsClockRolledBack = true",
-                  true, BoatScheduleCore.IsClockRolledBack(now, badAnchor, Cycle));
-            var info = BoatScheduleCore.ComputePhase(now, badAnchor, Dock, Hide, Travel);
-            Check("E4b", "trước khi manager kịp reset: ComputePhase(anchor tương lai xa) vẫn Hidden an toàn",
-                  BoatState.Hidden, info.State);
-        }
-        Console.WriteLine();
+        // Đếm giờ đậu bằng UTC tuyệt đối (offline vẫn chạy).
+        CheckNear(BoatScheduleCore.DockedElapsedSeconds(docked, dockedAt + Sec(600.0)), 600.0, 0.001,
+                  "đậu 10 phút → DockedElapsedSeconds = 600 giây");
+        CheckNear(BoatScheduleCore.DockedElapsedSeconds(Waiting(T0), T0 + Sec(600.0)), 0.0, 0.001,
+                  "không ở pha Docked → elapsed = 0");
+
+        // Chưa quá hạn.
+        Check(!BoatScheduleCore.IsDockTimedOut(docked, dockedAt + Sec(MaxDock - 1.0), MaxDock),
+              "đậu 29:59 → CHƯA quá hạn, tàu vẫn chờ khách");
+        // Đúng mốc 30 phút → quá hạn (biên tính là quá hạn).
+        Check(BoatScheduleCore.IsDockTimedOut(docked, dockedAt + Sec(MaxDock), MaxDock),
+              "đậu đúng 30 phút (biên) → quá hạn, kích lưới an toàn");
+        Check(BoatScheduleCore.IsDockTimedOut(docked, dockedAt + Sec(86400.0), MaxDock),
+              "offline cả ngày ở pha Docked → quá hạn ngay lúc load");
+
+        // Pha khác không bao giờ bị lưới an toàn đụng tới.
+        Check(!BoatScheduleCore.IsDockTimedOut(Waiting(T0 + Sec(GapOne)), T0 + Sec(86400.0), MaxDock),
+              "WaitingNext → lưới an toàn không áp dụng");
+        Check(!BoatScheduleCore.IsDockTimedOut(Arriving(T0 + Sec(10.0)), T0 + Sec(86400.0), MaxDock),
+              "Arriving → lưới an toàn không áp dụng");
+        Check(!BoatScheduleCore.IsDockTimedOut(Departing(T0, T0 + Sec(GapOne)), T0 + Sec(86400.0), MaxDock),
+              "Departing → lưới an toàn không áp dụng");
+
+        // Config đặt 0 = tắt lưới (tàu đậu vô hạn, đúng tinh thần event-driven thuần).
+        Check(!BoatScheduleCore.IsDockTimedOut(docked, dockedAt + Sec(86400.0), 0.0),
+              "maxDockMinutes = 0 → TẮT lưới an toàn, đậu bao lâu cũng được");
+        Check(!BoatScheduleCore.IsDockTimedOut(docked, dockedAt + Sec(86400.0), -5.0),
+              "maxDock âm (config dị) → coi như tắt, không ép rời");
+
+        // Ép rời bến đi đúng đường TryBeginDeparture như khi khách lên tàu hết.
+        long forcedAt = dockedAt + Sec(MaxDock);
+        DockScheduleState forced;
+        bool ok = BoatScheduleCore.TryBeginDeparture(
+            docked, forcedAt, GapOne, Travel, Stagger, null, 0, out forced);
+        Check(ok, "quá hạn → ép rời bến thành công");
+        CheckState(forced.State, BoatState.Departing, "sau khi ép: state = Departing");
+        CheckEqual(forced.NextArrivalUtcTicks, forcedAt + Sec(GapOne),
+                   "chuyến kế sau khi ép rời vẫn = lúc rời bến + gap (không mất lịch)");
+
+        // IDEMPOTENT: Dev B gọi ReportVisitorsAllAboard SAU khi đã bị ép rời → bỏ qua êm.
+        DockScheduleState afterLate;
+        Check(!BoatScheduleCore.TryBeginDeparture(forced, forcedAt + Sec(2.0), GapOne, Travel, Stagger, null, 0, out afterLate),
+              "Dev B báo muộn sau khi bị ép rời → từ chối êm (idempotent)");
+        CheckEqual(afterLate.NextArrivalUtcTicks, forced.NextArrivalUtcTicks,
+                   "báo muộn KHÔNG dời giờ chuyến kế");
+        CheckState(afterLate.State, BoatState.Departing, "báo muộn KHÔNG đổi pha");
+
+        // Sau khi ép rời, không còn quá hạn nữa → manager không ép lần hai (không double-fire).
+        Check(!BoatScheduleCore.IsDockTimedOut(forced, forcedAt + Sec(86400.0), MaxDock),
+              "đã ép rời → không bao giờ kích lưới lần hai cho cùng chuyến");
+
+        // Vòng đời tiếp tục bình thường sau khi bị ép: về WaitingNext rồi cập bến lại.
+        var back = BoatScheduleCore.ResolveDock(forced, forcedAt + Sec(Travel + 1.0), Travel);
+        CheckState(back.State.State, BoatState.WaitingNext, "sau khi bị ép rời: vòng đời chạy tiếp bình thường");
+        var back2 = BoatScheduleCore.ResolveDock(back.State, forced.NextArrivalUtcTicks, Travel);
+        CheckState(back2.State.State, BoatState.Docked, "chuyến kế sau lần bị ép vẫn cập bến đúng giờ");
+        Check(back2.JustDocked, "chuyến kế bắn JustDocked đúng 1 lần → Dev B spawn khách mới");
+
+        // Chuyến mới đếm lại từ đầu (mốc đậu mới), không bị ép ngay lập tức.
+        Check(!BoatScheduleCore.IsDockTimedOut(back2.State, forced.NextArrivalUtcTicks + Sec(60.0), MaxDock),
+              "chuyến mới đếm giờ đậu lại từ 0, không kế thừa quá hạn của chuyến trước");
+    }
+
+    // ─── G. Tiến độ hiển thị + helper ────────────────────────────────────
+
+    private static void TestQueryPhaseProgress()
+    {
+        Group("G1. QueryPhase — tiến độ 0-1 cho controller");
+
+        long arrival = T0 + Sec(GapOne);
+        DockScheduleState waiting = Waiting(arrival);
+
+        BoatPhaseInfo p0 = BoatScheduleCore.QueryPhase(waiting, arrival - Sec(Travel), Travel);
+        CheckState(p0.State, BoatState.Arriving, "đúng lúc bắt đầu chạy vào → Arriving");
+        CheckNear(p0.Progress, 0.0, 0.001, "Arriving đầu path → progress 0 (ở điểm mù)");
+
+        BoatPhaseInfo pHalf = BoatScheduleCore.QueryPhase(waiting, arrival - Sec(Travel / 2.0), Travel);
+        CheckNear(pHalf.Progress, 0.5, 0.01, "Arriving giữa đường → progress 0.5");
+
+        BoatPhaseInfo pDock = BoatScheduleCore.QueryPhase(waiting, arrival, Travel);
+        CheckState(pDock.State, BoatState.Docked, "đúng giờ arrival → Docked");
+        CheckNear(pDock.DockedRemainingSeconds, -1.0, 0.001,
+                  "V2: Docked vô hạn → DockedRemainingSeconds = -1 (UI không hiện countdown)");
+
+        BoatPhaseInfo pWait = BoatScheduleCore.QueryPhase(waiting, T0, Travel);
+        CheckState(pWait.State, BoatState.WaitingNext, "còn xa → WaitingNext");
+        CheckNear(pWait.PhaseSeconds, GapOne, 0.01, "WaitingNext.PhaseSeconds = giây CÒN LẠI tới arrival");
+
+        // Departing: progress 0 = berth, 1 = điểm mù.
+        DockScheduleState dep = Departing(T0, T0 + Sec(GapOne));
+        CheckNear(BoatScheduleCore.QueryPhase(dep, T0, Travel).Progress, 0.0, 0.001,
+                  "Departing bắt đầu → progress 0 (còn ở berth)");
+        CheckNear(BoatScheduleCore.QueryPhase(dep, T0 + Sec(Travel / 2.0), Travel).Progress, 0.5, 0.01,
+                  "Departing giữa chừng → progress 0.5");
+
+        // Vào game giữa pha bất kỳ: QueryPhase idempotent (gọi 2 lần cùng now → cùng kết quả).
+        BoatPhaseInfo a = BoatScheduleCore.QueryPhase(waiting, arrival - Sec(5.0), Travel);
+        BoatPhaseInfo b = BoatScheduleCore.QueryPhase(waiting, arrival - Sec(5.0), Travel);
+        Check(a.State == b.State && Math.Abs(a.Progress - b.Progress) < 1e-9,
+              "QueryPhase thuần: cùng input → cùng output (idempotent khi reload)");
+    }
+
+    private static void TestMiscHelpers()
+    {
+        Group("G2. Helper: arrival sắp tới + phút làm tròn cho popup");
+
+        long arrival = T0 + Sec(GapOne);
+        CheckEqual(BoatScheduleCore.UpcomingArrivalUtcTicks(Waiting(arrival)), arrival,
+                   "WaitingNext → arrival sắp tới = anchor");
+        CheckEqual(BoatScheduleCore.UpcomingArrivalUtcTicks(Arriving(arrival)), arrival,
+                   "Arriving → arrival sắp tới = anchor");
+        CheckEqual(BoatScheduleCore.UpcomingArrivalUtcTicks(Docked(T0)), 0L,
+                   "Docked → chưa có chuyến kế (đang chờ khách) = 0");
+        CheckEqual(BoatScheduleCore.UpcomingArrivalUtcTicks(Departing(T0, arrival)), arrival,
+                   "Departing → arrival sắp tới = NextArrival đã hẹn");
+
+        CheckEqual(BoatScheduleCore.RoundedWaitMinutes(T0, T0 + Sec(300.0)), 5,
+                   "popup 1 bến: 'cập bến sau 5 phút'");
+        CheckEqual(BoatScheduleCore.RoundedWaitMinutes(T0, T0 + Sec(600.0)), 10,
+                   "popup nhiều bến: 'cập bến sau 10 phút'");
+        CheckEqual(BoatScheduleCore.RoundedWaitMinutes(T0, T0 + Sec(89.0)), 1,
+                   "89 giây → làm tròn 1 phút");
+        CheckEqual(BoatScheduleCore.RoundedWaitMinutes(T0, T0 + Sec(91.0)), 2,
+                   "91 giây → làm tròn 2 phút");
+        CheckEqual(BoatScheduleCore.RoundedWaitMinutes(T0, T0 - Sec(60.0)), 0,
+                   "arrival đã qua → 0 phút (không ra số âm)");
+
+        // Đổi đơn vị.
+        CheckEqual(BoatScheduleCore.SecondsToTicks(1.0), 10000000L, "1 giây = 10 triệu ticks");
+        CheckNear(BoatScheduleCore.TicksToSeconds(Sec(42.5)), 42.5, 0.0001, "đổi ticks → giây khớp");
+
+        // Điều kiện mở bến (giữ nguyên từ V1 — hồi quy).
+        var req = new DockUnlockRequirement { RequiredLevel = 12, GoldCost = 2000, GemCost = 0 };
+        Check(BoatScheduleCore.EvaluateUnlock(req, false, 12, 2000, 0) == UnlockDenyReason.None,
+              "đủ level + đủ vàng → cho mở bến 2");
+        Check(BoatScheduleCore.EvaluateUnlock(req, false, 11, 9999, 0) == UnlockDenyReason.LevelTooLow,
+              "thiếu level → từ chối đúng lý do");
+        Check(BoatScheduleCore.EvaluateUnlock(req, false, 12, 100, 0) == UnlockDenyReason.NotEnoughGold,
+              "thiếu vàng → từ chối đúng lý do");
+        Check(BoatScheduleCore.EvaluateUnlock(req, true, 99, 99999, 99) == UnlockDenyReason.AlreadyUnlocked,
+              "bến đã mở → AlreadyUnlocked");
     }
 }

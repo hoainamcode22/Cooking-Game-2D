@@ -41,16 +41,16 @@ public static class SkinKit
             if (!_daTimFontVo || _fontVo == null)
             {
                 _daTimFontVo = true;
-                if (TMP_Settings.defaultFontAsset != null)
-                    _fontVo = TMP_Settings.defaultFontAsset;
-
+                _fontVo = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
                 if (_fontVo == null)
-                    _fontVo = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
+                    _fontVo = Resources.Load<TMP_FontAsset>("Fonts/FontVo");
+                if (_fontVo == null && TMP_Settings.defaultFontAsset != null)
+                    _fontVo = TMP_Settings.defaultFontAsset;
 #if UNITY_EDITOR
                 if (_fontVo == null)
-                    _fontVo = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Fonts/Baloo2 SDF.asset");
-                if (_fontVo == null)
                     _fontVo = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/Baloo2 SDF.asset");
+                if (_fontVo == null)
+                    _fontVo = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/FontVo.asset");
 #endif
             }
             return _fontVo;

@@ -16,6 +16,7 @@
 | 5 | Dọn scene: 24 nhà trùng lặp, 13 missing script, tool rác (Phase 13) | ⬜ cần duyệt danh sách xoá | |
 | 6 | Content L11-L15: 3 máy chế biến (xay bột L11, ép mía L13, phô mai L15) | ✅ CODE XONG — chạy tool Setup Production Machines (còn: mở rộng plot, daily spin) | 2026-06-12 |
 | 7 | Content L16-L22: hồ cá (mở 2 món cá), pet/trang trí nâng cao, event đơn giản | ⬜ | |
+| 7b | **Tàu khách du lịch V2** (khách lên bờ, xếp hàng, đặt món, trả vàng+EXP, popup báo tàu, mua slot bến) | ✅ CODE XONG + QA SHIP — chờ Sếp chạy tool + kéo waypoint + playtest | 2026-08-29 |
 | 8 | Content L23-L30: tourist boat (Phase 14), nhà hàng ven biển, sự kiện mùa | ⬜ design doc trước | |
 | 9 | Full playtest L1-L30 + cân bằng + build EXE/APK | ⬜ | |
 
@@ -33,6 +34,36 @@
 Chơi liền mạch L1→L30 không kẹt tiền/kẹt đơn · tutorial L1 chuẩn Hay Day + animal tutorial L2-L4 · popup level-up đủ L2-L30 có pháo hoa · mission chính + daily chạy và nhận thưởng được · cooking 18 món mở dần (20 khi có hồ cá) · shop khoá/mở đúng từng level · 8 nhà mở dần + tourist boat hoạt động · VFX coin/EXP fly + audio đủ · Console 0 đỏ · build chạy ngoài Editor.
 
 ## Nhật ký sprint (agent tự ghi thêm mỗi phiên)
+
+### Hệ Tàu Khách Du Lịch V2 — 2026-08-29 (3 Dev song song + QA 2 vòng, verdict SHIP)
+- Chuyển hệ boat từ CHU KỲ CỐ ĐỊNH (đậu 40p) sang HƯỚNG SỰ KIỆN: tàu cập bến → bắc ván gỗ → 3-6 khách
+  du lịch (random 11 nhân vật NVGAME) xuống tàu → đi theo waypoint đường đất → xếp hàng trước cooking →
+  bubble món mở LẦN LƯỢT hết khách (stagger 0.4s) → tap giao món (bất kỳ khách nào, không cần đúng thứ tự) →
+  thưởng + mặt cười bay lên HUD → khách về tàu → khách cuối lên tàu thì tàu rời bến → chuyến kế 5p (1 bến) /
+  10p so le (nhiều bến).
+- Kinh tế (Sếp chốt): vàng = Σ giá nguyên liệu CHÍNH × 2 (loại gia vị), EXP = dish.rewardExp, món random trong
+  38 DishData lọc theo unlockLevel. Kiên nhẫn 30p/khách chạy SONG SONG (UTC, offline vẫn trôi); hết giờ =
+  MẶT TỨC GIẬN, bỏ về tàu, không trả tiền. Lưới an toàn maxDockMinutes=35 → tàu tự rời bến, hệ không bao giờ kẹt.
+- 21 file C# / 11.161 dòng: Dev A lịch tàu V2 (BoatScheduleCore/BoatDockManager/Config/Controller +
+  BoatShoreAdjustTool + vá TouristBoatDiagnosticTool) · Dev B khách du lịch (VisitorManager/Agent/Queue/Bubble/
+  SmileyFX/Gangplank + NPCAnimationSetupTool + TouristVisitorSetupTool) · Dev C UI (popup báo tàu, popup mua slot,
+  FX mở bến, rework UnlockFlow + BoatDockSlot, TouristBoatUIPopupSetupTool).
+- Pipeline art: 11 sheet NVGAME (lưới 4x3 nền trắng) → 132 frame đã xóa phông + chuẩn hoá canvas + pivot
+  bottom-center tại `Assets/NV_NPC/NVGAME/Processed/NV01..NV11/`.
+- QA: compile 3 pass 0 error/0 warning · test console 119 PASS/0 FAIL · vòng 1 tìm 4 BLOCKING + 6 MAJOR + 11 minor
+  (kẹt tàu vĩnh viễn, mất món trả 0 vàng, popup chết sau khi vào bếp, không tua nhanh test được) → vòng 2 đóng 21/21.
+- Backup 9 file gốc: `production/backup_boat_2026-08-29/`. Báo cáo: `production/session-state/BOAT_V2_IMPLEMENTATION_REPORT.md`
+  (mục 4 = ANH CẦN LÀM TRONG UNITY) · QA + checklist Play Mode 50 bước: `production/session-state/QA_REPORT_BOAT_V2.md` §7.8 ·
+  Prompt đội vẽ 15 asset: `production/session-state/PROMPT_SPRITE_FORGE_BOAT_V2.md`.
+- **BẢN CUỐI (cùng phiên): gộp thành MỘT NÚT** `Tools/Farm Game/Tourist Boat/★ SETUP TẤT CẢ (1 nút)` —
+  tự điền 13 field config (maxDockMinutes=35), import 132 sprite + 88 clip + 11 prefab khách, dựng scene,
+  GHI ĐÈ toạ độ waypoint + QueueAnchor đo thật từ scene (QueueAnchor (400,-2700); Dock1/2/3 mỗi bến 3 WP),
+  dựng 2 popup, dịch 3 bến sát bờ +200Y, tự kiểm tra 5 nhóm rồi in 1 bảng tổng kết. Idempotent.
+  Toạ độ nguồn (parse từ SCN_Farm.unity): Berth1(-531,-4285) Berth2(151,-4573) Berth3(948,-4839)
+  BlindPoint(-9818,-7819) CookingGate(494,-2367); Grid_Iso45 iso cellSize(1,0.5) scale tích luỹ 300;
+  đường đất = Tilemap_IsoDirt (332 ô).
+- CẦN SẾP: mở SCN_Farm → bấm nút ★ → Ctrl+S → Play test. Hướng dẫn: `production/HUONG_DAN_BAM_NUT_TAU_KHACH.md`.
+
 
 ### Hệ Tàu Hỏa — 2026-08-26 (hợp nhất logic + UI package, QA pass)
 - Hợp nhất 2 hệ (TrainManager cũ vs Export_Train_UI_Package của sprite-forge) về 1 nguồn sự thật:

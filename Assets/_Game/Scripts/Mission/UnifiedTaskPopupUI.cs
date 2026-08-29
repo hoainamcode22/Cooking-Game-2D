@@ -391,6 +391,15 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             MissionHudButtonUI hud = FindFirstObjectByType<MissionHudButtonUI>(FindObjectsInactive.Include);
             if (hud != null) _missionDatabase = hud.MissionDatabaseRef;
         }
+
+#if UNITY_EDITOR
+        if (_missionDatabase == null)
+            _missionDatabase = UnityEditor.AssetDatabase.LoadAssetAtPath<MissionDatabase>("Assets/_Game/Farm/data/Data_Ewa/MissionDatabase_Main.asset");
+        if (_dailyMissionDatabase == null)
+            _dailyMissionDatabase = UnityEditor.AssetDatabase.LoadAssetAtPath<MissionDatabase>("Assets/_Game/Farm/data/Data_Ewa/MissionDatabase_Daily.asset");
+        if (_achievementDatabase == null)
+            _achievementDatabase = UnityEditor.AssetDatabase.LoadAssetAtPath<MissionDatabase>("Assets/_Game/Farm/data/Data_Ewa/MissionDatabase_Achievement.asset");
+#endif
     }
 
     private void EnsureParentedToPopupCanvas()
@@ -1882,17 +1891,15 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (current < data.targetAmount)
             return;
 
+        // Đánh dấu đã nhận NGAY LẬP TỨC để chặn spam click
+        GhiCoDaNhan(MissionClaimedPrefsKey(data));
+        CapNhatMotHang(data, true, false);
+
         RewardBundle rewards = GetMissionRewards(data);
         Vector3 src = source != null ? source.position : _root.position;
         GrantRewards(rewards);
         PlayRewardFly(rewards, src);
-        GhiCoDaNhan(MissionClaimedPrefsKey(data));
         AvatarProfilePopupUI.AddAchievementCount();
-
-        // KHÔNG gọi `ShowTab(Tab.Mission)` nữa. Lệnh đó dựng lại CẢ danh sách — với
-        // 307 nhiệm vụ là huỷ 5.833 GameObject rồi tạo lại đúng ngần ấy, cho một thay
-        // đổi duy nhất là chữ trên một cái nút. Chính nó gây khựng ~0,3s mỗi lần bấm.
-        CapNhatMotHang(data, true, false);
     }
 
     private void ClaimAchievement(MissionData data, RectTransform source)
@@ -1904,13 +1911,15 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (current < data.targetAmount)
             return;
 
+        // Đánh dấu đã nhận NGAY LẬP TỨC để chặn spam click
+        GhiCoDaNhan(AchievementClaimedPrefsKey(data));
+        CapNhatMotHang(data, true, true);
+
         RewardBundle rewards = GetAchievementRewards(data);
         Vector3 src = source != null ? source.position : _root.position;
         GrantRewards(rewards);
         PlayRewardFly(rewards, src);
-        GhiCoDaNhan(AchievementClaimedPrefsKey(data));
         AvatarProfilePopupUI.AddAchievementCount();
-        CapNhatMotHang(data, true, true);
     }
 
     private void ClaimDailyReward(int day, DailyReward reward, RectTransform source)
@@ -1919,19 +1928,19 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (state.claimedToday || day != state.streakDay)
             return;
 
+        PlayerPrefs.SetString(DailyClaimedDateKey, TodayKey());
+        LuuGopPrefs.Hen();
+
         Vector3 src = source != null ? source.position : _root.position;
         GrantRewards(reward.grant);
         PlayRewardFly(reward.grant, src);
-        PlayerPrefs.SetString(DailyClaimedDateKey, TodayKey());
-        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
         ShowTab(Tab.Daily);
     }
 
     private static void GrantRewards(RewardBundle rewards)
     {
-        // Cộng vào ví CHÍNH (FarmEconomyManager = top-bar 740/677), KHÔNG dùng PlayerWallet (ví mồ côi).
         if (rewards.coin > 0)
-            FarmEconomyManager.Instance?.AddGold(rewards.coin);     // tự kích CoinFlyFX → vàng bay về ví
+            FarmEconomyManager.Instance?.AddGold(rewards.coin);
         if (rewards.diamond > 0)
             FarmEconomyManager.Instance?.AddGems(rewards.diamond);
         if (rewards.exp > 0)
@@ -1939,34 +1948,49 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     }
 
     // =========================================================================
-    // Reward Fly FX — "spam" icon bay từ nút Nhận về đúng ô HUD
+    // Reward Fly FX — Bay mượt về đúng Container HUD, tự hủy an toàn không đơ
     // =========================================================================
 
-    /// <summary>Bay phần thưởng về HUD. Vàng đã tự bay nhờ CoinFlyFX (OnGoldAddedFx) →
-    /// ở đây chỉ bay kim cương + EXP về ô tương ứng.</summary>
     private void PlayRewardFly(RewardBundle r, Vector3 sourceWorld)
     {
+        RectTransform gemTarget = ResolveGemHud();
+        RectTransform expTarget = ResolveExpHud();
+        RectTransform coinTarget = ResolveCoinHud();
+
         if (r.diamond > 0)
             StartCoroutine(CoFlyReward(DiamondSprite, new Color32(120, 205, 255, 255),
-                sourceWorld, FindHudRect("GemBox"), Mathf.Clamp(r.diamond, 3, 8)));
+                sourceWorld, gemTarget, Mathf.Clamp(r.diamond, 2, 4)));
         if (r.exp > 0)
             StartCoroutine(CoFlyReward(ExpSprite, new Color32(120, 220, 80, 255),
-                sourceWorld, ResolveExpHud(), Mathf.Clamp(r.exp / 4 + 3, 3, 8)));
+                sourceWorld, expTarget, 3));
 
-        // Vàng bay do `FarmEconomyManager.AddGold` tự lo (CoinFlyFX). Ở đây vẫn đập ô
-        // vàng trên HUD để cả ba loại thưởng đều có phản hồi thị giác.
-        if (r.coin > 0)
-            StartCoroutine(CoDapHud(FindHudRect("CoinBox"), 0.55f));
+        if (r.coin > 0 && coinTarget != null)
+            StartCoroutine(CoDapHud(coinTarget, 0.45f));
     }
 
-    private static RectTransform FindHudRect(string objName)
+    private static RectTransform ResolveGemHud()
     {
-        GameObject go = GameObject.Find(objName);
+        var go = GameObject.Find("Diamond_Container")
+            ?? GameObject.Find("TopRight_Township_HUD/Diamond_Container")
+            ?? GameObject.Find("GemBox");
+        return go != null ? go.transform as RectTransform : null;
+    }
+
+    private static RectTransform ResolveCoinHud()
+    {
+        var go = GameObject.Find("Gold_Container")
+            ?? GameObject.Find("TopRight_Township_HUD/Gold_Container")
+            ?? GameObject.Find("CoinBox");
         return go != null ? go.transform as RectTransform : null;
     }
 
     private static RectTransform ResolveExpHud()
     {
+        var go = GameObject.Find("EXP_Bar_Container")
+            ?? GameObject.Find("TopLeft_Township_HUD/EXP_Bar_Container")
+            ?? GameObject.Find("Avatar_Lv_Pill");
+        if (go != null) return go.transform as RectTransform;
+
         TopBarExpUI bar = FindFirstObjectByType<TopBarExpUI>(FindObjectsInactive.Include);
         return bar != null ? bar.IconExp : null;
     }
@@ -1982,7 +2006,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         Vector2 startScreen = RectTransformUtility.WorldToScreenPoint(uiCam, sourceWorld);
         Vector2 endScreen = target != null
             ? RectTransformUtility.WorldToScreenPoint(uiCam, target.position)
-            : new Vector2(Screen.width * 0.85f, Screen.height * 0.92f);
+            : new Vector2(Screen.width * 0.15f, Screen.height * 0.92f); // Mặc định góc trên bên trái nếu là EXP
 
         RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, startScreen, uiCam, out Vector2 startLocal);
         RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, endScreen, uiCam, out Vector2 endLocal);
@@ -1992,22 +2016,26 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            StartCoroutine(CoFlyOne(canvasRect, spr, color, startLocal, endLocal));
-            yield return new WaitForSecondsRealtime(0.05f);
+            StartCoroutine(CoFlyOne(canvasRect, spr, color, startLocal, endLocal, target));
+            yield return new WaitForSecondsRealtime(0.04f);
         }
 
-        // Đập ô HUD đúng lúc icon cuối cùng chạm tới.
-        StartCoroutine(CoDapHud(target, 0.75f));
+        StartCoroutine(CoDapHud(target, 0.45f));
     }
 
-    private IEnumerator CoFlyOne(RectTransform canvasRect, Sprite spr, Color color, Vector2 startLocal, Vector2 endLocal)
+    private IEnumerator CoFlyOne(RectTransform canvasRect, Sprite spr, Color color, Vector2 startLocal, Vector2 endLocal, RectTransform targetHud)
     {
+        if (canvasRect == null) yield break;
+
         GameObject go = new GameObject("RewardFly", typeof(RectTransform), typeof(Image));
         RectTransform rt = (RectTransform)go.transform;
         rt.SetParent(canvasRect, false);
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(96f, 96f); // X2 kích thước
+        rt.sizeDelta = new Vector2(44f, 44f);
         rt.SetAsLastSibling();
+
+        // Safety Auto-Destroy: Bảo hiểm 100% tự dọn dẹp, không bao giờ bị kẹt lại trên màn hình
+        Destroy(go, 1.0f);
 
         Image img = go.GetComponent<Image>();
         img.sprite = spr;
@@ -2015,65 +2043,48 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         img.raycastTarget = false;
         img.preserveAspect = true;
 
-        // Random góc xoay ban đầu và chiều xoay
         float startRot = UnityEngine.Random.Range(0f, 360f);
-        float rotSpeed = UnityEngine.Random.Range(-500f, 500f);
+        float rotSpeed = UnityEngine.Random.Range(-300f, 300f);
 
-        // Pha 1: bung mạnh ra khỏi nút (Nổ to)
-        Vector2 burst = startLocal + UnityEngine.Random.insideUnitCircle * 150f;
+        Vector2 burst = startLocal + UnityEngine.Random.insideUnitCircle * 55f;
         rt.anchoredPosition = startLocal;
         rt.localScale = Vector3.zero;
-        // Đỉnh scale nâng 1,4 → 2,4. Ở 1,4 trên icon 96px thì phần thưởng chỉ nhỉnh hơn
-        // cái nút một chút, mắt lướt qua là mất; 2,4 thì nó chiếm chỗ đủ lâu để người
-        // chơi kịp nhận ra mình vừa được cái gì.
+
         float t = 0f;
-        const float burstT = 0.30f;
+        const float burstT = 0.14f;
         while (t < burstT)
         {
+            if (go == null) yield break;
             t += Time.unscaledDeltaTime;
             float k = Mathf.Clamp01(t / burstT);
-            float easeOutBack = k * k * ((1.70158f + 1) * k - 1.70158f) + 1;
-            rt.anchoredPosition = Vector2.Lerp(startLocal, burst, Mathf.Clamp01(k * 1.5f));
-            rt.localScale = Vector3.one * Mathf.LerpUnclamped(0f, 2.4f, easeOutBack);
+            rt.anchoredPosition = Vector2.Lerp(startLocal, burst, k);
+            rt.localScale = Vector3.one * Mathf.Lerp(0f, 1.15f, k);
             rt.localRotation = Quaternion.Euler(0, 0, startRot + rotSpeed * t);
             yield return null;
         }
 
-        // Pha NỞ THÊM một nhịp rồi mới bay. Khoảng lặng này là thứ tạo cảm giác "to
-        // thêm": bản cũ vừa đạt đỉnh là lập tức co lại và lao đi, nên chưa bao giờ
-        // thật sự trông to.
-        const float noT = 0.16f;
+        const float dur = 0.38f;
         t = 0f;
-        while (t < noT)
-        {
-            t += Time.unscaledDeltaTime;
-            float k = Mathf.Clamp01(t / noT);
-            rt.localScale = Vector3.one * Mathf.Lerp(2.4f, 3.0f, k);
-            rt.localRotation = Quaternion.Euler(0, 0, startRot + rotSpeed * (burstT + t) * 0.35f);
-            yield return null;
-        }
-
-        // Pha 2: bay về HUD + xoay tiếp
-        const float dur = 0.65f;
-        t = 0f;
-        Vector2 curPos = rt.anchoredPosition;
+        Vector2 curPos = rt != null ? rt.anchoredPosition : burst;
         while (t < dur)
         {
+            if (go == null) yield break;
             t += Time.unscaledDeltaTime;
             float k = Mathf.Clamp01(t / dur);
-            float easeInBack = k * k * ((1.70158f + 1) * k - 1.70158f); // Gia tốc lõm
-            // Dùng easeIn cho cảm giác hút nhanh về cuối
-            rt.anchoredPosition = Vector2.LerpUnclamped(curPos, endLocal, k * k);
-            // Giữ TO gần hết quãng đường, chỉ co lại ở đoạn cuối khi sắp chạm ví.
-            float s = k < 0.62f
-                ? Mathf.Lerp(3.0f, 2.2f, k / 0.62f)
-                : Mathf.Lerp(2.2f, 0.5f, (k - 0.62f) / 0.38f);
+            float easeIn = k * k;
+            rt.anchoredPosition = Vector2.Lerp(curPos, endLocal, easeIn);
+            float s = Mathf.Lerp(1.15f, 0.5f, easeIn);
             rt.localScale = new Vector3(s, s, 1f);
             rt.localRotation = Quaternion.Euler(0, 0, startRot + rotSpeed * (burstT + t));
             yield return null;
         }
 
-        Destroy(go);
+        if (targetHud != null)
+        {
+            JuicyPulseFX.Play(targetHud);
+        }
+
+        if (go != null) Destroy(go);
     }
 
     private RewardBundle GetMissionRewards(MissionData data)
@@ -2344,15 +2355,14 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (f != null)
         {
             tmp.font = f;
-            if (f.material != null) tmp.fontSharedMaterial = f.material;
         }
         tmp.text = text;
         tmp.fontSize = size;
         tmp.color = color;
         tmp.alignment = alignment;
         tmp.fontStyle = style;
-        tmp.textWrappingMode = TextWrappingModes.Normal;
-        tmp.overflowMode = TextOverflowModes.Ellipsis;
+        tmp.enableWordWrapping = false;
+        tmp.overflowMode = TextOverflowModes.Overflow;
         tmp.raycastTarget = false;
         return tmp;
     }
