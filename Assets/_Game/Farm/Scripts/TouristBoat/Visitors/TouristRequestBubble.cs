@@ -5,28 +5,14 @@ using UnityEngine;
 /// <summary>
 /// BUBBLE MÓN ĂN world-space trên đầu khách du lịch (GDD BOAT-002 §3.3).
 ///
-/// Component nằm trên PREFAB khách (NPCAnimationSetupTool gắn sẵn) — các renderer
-/// con (khung + icon) dựng LƯỜI lúc runtime nên prefab không cần child nào trước.
+/// Component nằm trên PREFAB khách (NPCAnimationSetupTool gắn sẵn).
+/// Chuỗi Bong Bóng Suy Nghĩ (Comic Thought Cloud Bubble):
+///   • Chấm nhỏ (Dot 1) gần đỉnh đầu -> Chấm vừa (Dot 2) -> Đám mây lớn (Frame) chứa món ăn / biểu cảm.
 ///
 /// 3 trạng thái:
-///   • Requesting — khung + sprite MÓN ăn khách muốn.
+///   • Requesting — đám mây suy nghĩ + sprite MÓN ăn khách muốn.
 ///   • Happy      — mặt cười 0.5s trước khi TouristSmileyFlyFX bay lên HUD.
 ///   • Angry      — mặt TỨC GIẬN 2s rồi khách bỏ về (hết kiên nhẫn).
-///
-/// [SẾP CHỐT 2026-08-29] Hết kiên nhẫn hiện **mặt TỨC GIẬN** (angry), KHÔNG phải mặt
-/// buồn — state cũ `Sad` đã đổi tên thành <see cref="BubbleState.Angry"/>, field sprite
-/// là <c>angryFaceSprite</c>.
-///
-/// [SẾP CHỐT 2026-08-29] Bubble mở cho MỌI khách trong hàng (lần lượt, cách nhau
-/// <c>bubbleStaggerDelay</c>), không còn "chỉ khách đầu hàng" — người chơi nhìn thấy
-/// toàn bộ đơn của chuyến để biết cần nấu gì. Thứ tự mở do TouristVisitorManager điều phối.
-///
-/// Mở bubble: scale-in 0→1 với ease out-back nhẹ, thời gian = config.bubbleScaleInTime.
-///
-/// Sprite khung / mặt cười / mặt tức giận là field serialize — tool wire nếu tìm thấy
-/// art. THIẾU thì fallback tự vẽ placeholder **có màu và nét mặt phân biệt được**
-/// (QA m-4): món = tròn TRẮNG · mặt cười = VÀNG cười · mặt tức giận = ĐỎ cau mày —
-/// nghiệm thu AC §8.2/§8.5 bằng mắt được ngay khi chưa có art.
 /// </summary>
 public class TouristRequestBubble : MonoBehaviour
 {
@@ -34,8 +20,11 @@ public class TouristRequestBubble : MonoBehaviour
     public enum BubbleState { Hidden, Requesting, Happy, Angry }
 
     [Header("Art (tool wire — thiếu thì tự vẽ placeholder)")]
-    [Tooltip("Sprite khung bubble (nền thoại). Trống → tròn trắng placeholder.")]
+    [Tooltip("Sprite khung đám mây to. Trống → vẽ đám mây cartoon viền nâu procedural.")]
     [SerializeField] private Sprite frameSprite;
+
+    [Tooltip("Sprite cho chấm nhỏ / vừa. Trống → vẽ tròn viền nâu procedural.")]
+    [SerializeField] private Sprite dotSprite;
 
     [Tooltip("Sprite mặt cười (trạng thái Happy). Trống → mặt cười VÀNG procedural.")]
     [SerializeField] private Sprite smileySprite;
@@ -43,18 +32,32 @@ public class TouristRequestBubble : MonoBehaviour
     [Tooltip("Sprite mặt TỨC GIẬN (trạng thái Angry — hết kiên nhẫn). Trống → mặt cau mày ĐỎ procedural.")]
     [SerializeField] private Sprite angryFaceSprite;
 
-    [Header("Bố cục (unit WORLD — tự bù scale của prefab khách)")]
-    [Tooltip("Vị trí bubble so với chân khách (pivot Bottom-Center), tính bằng unit world.")]
-    [SerializeField] private Vector3 worldOffset = new Vector3(0f, 155f, 0f);
+    [Header("Bố cục Đám mây chính (unit WORLD)")]
+    [Tooltip("Vị trí đám mây to so với chân khách. Đặt ở Y ~276 để đám mây to nằm thoáng trên đầu khách.")]
+    [SerializeField] private Vector3 worldOffset = new Vector3(30f, 276f, 0f);
 
-    [Tooltip("Cỡ khung bubble (unit world).")]
-    [SerializeField] private float frameWorldSize = 90f;
+    [Tooltip("Cỡ đám mây to (unit world) — to rộng rãi để người chơi nhìn rõ món ăn.")]
+    [SerializeField] private float frameWorldSize = 168f;
 
-    [Tooltip("Cỡ icon món/mặt trong khung (unit world).")]
-    [SerializeField] private float iconWorldSize = 62f;
+    [Tooltip("Cỡ icon món/mặt trong khung (unit world) — to rõ nét.")]
+    [SerializeField] private float iconWorldSize = 110f;
 
-    [Header("Sorting (nổi trên mọi decor — yêu cầu Sếp)")]
-    [SerializeField] private string sortingLayerName = "CongTrinh";
+    [Header("Chuỗi bong bóng nhỏ (Thought Bubble Chain)")]
+    [Tooltip("Vị trí chấm nhỏ 1 (sát đỉnh đầu khách).")]
+    [SerializeField] private Vector3 dot1Offset = new Vector3(12f, 176f, 0f);
+
+    [Tooltip("Cỡ chấm nhỏ 1 (unit world).")]
+    [SerializeField] private float dot1Size = 16f;
+
+    [Tooltip("Vị trí chấm vừa 2 (ở giữa chấm nhỏ và đám mây).")]
+    [SerializeField] private Vector3 dot2Offset = new Vector3(20f, 208f, 0f);
+
+    [Tooltip("Cỡ chấm vừa 2 (unit world).")]
+    [SerializeField] private float dot2Size = 28f;
+
+    [Header("Sorting (bubble phải nổi TRÊN ĐẦU khách)")]
+    [Tooltip("ĐỂ TRỐNG = tự chọn 'Foreground' (khuyến nghị, luôn trên đầu khách).")]
+    [SerializeField] private string sortingLayerName = "";
     [SerializeField] private int frameSortingOrder = 20000;
 
     // ─── Runtime ────────────────────────────────────────────────────────
@@ -68,12 +71,29 @@ public class TouristRequestBubble : MonoBehaviour
     public Sprite SmileySpriteResolved =>
         smileySprite != null ? smileySprite : GetPlaceholderFace(FaceKind.Happy);
 
-    private float _scaleInSeconds = 0.25f; // config.bubbleScaleInTime — agent bơm qua Configure
+    private float _scaleInSeconds = 0.35f;
 
-    private Transform      _root;      // node con "Bubble" — scale-in đánh vào đây
+    private Transform      _root;
+    private Transform      _dot1Tr;
+    private Transform      _dot2Tr;
+    private Transform      _frameTr;
+    private SpriteRenderer _dot1Sr;
+    private SpriteRenderer _dot2Sr;
     private SpriteRenderer _frameSr;
     private SpriteRenderer _iconSr;
-    private Coroutine      _showRoutine;
+    private Coroutine      _animRoutine;
+
+    // Base local positions & scales
+    private Vector3 _baseFramePos;
+    private Vector3 _baseDot1Pos;
+    private Vector3 _baseDot2Pos;
+
+    private float _baseDot1Scale  = 1f;
+    private float _baseDot2Scale  = 1f;
+    private float _baseFrameScale = 1f;
+    private float _baseIconScale  = 1f;
+
+    private float _floatSeed;
 
     /// <summary>Agent bơm số từ TouristBoatConfig (bubbleScaleInTime) lúc Init.</summary>
     public void Configure(float scaleInSeconds)
@@ -83,13 +103,13 @@ public class TouristRequestBubble : MonoBehaviour
 
     // ─── API cho TouristAgent ───────────────────────────────────────────
 
-    /// <summary>Mở bubble hiện MÓN khách muốn.</summary>
+    /// <summary>Mở chuỗi bubble hiện MÓN khách muốn với animation nảy tuần tự.</summary>
     public void ShowRequest(Sprite dishSprite)
     {
         EnsureBuilt();
         State = BubbleState.Requesting;
         SetIcon(dishSprite != null ? dishSprite : GetPlaceholderFace(FaceKind.Plain));
-        PlayScaleIn();
+        PlayChainScaleIn();
     }
 
     /// <summary>Đổi icon thành MẶT CƯỜI (đã giao món) — agent chờ 0.5s rồi bắn SmileyFlyFX.</summary>
@@ -98,20 +118,16 @@ public class TouristRequestBubble : MonoBehaviour
         EnsureBuilt();
         State = BubbleState.Happy;
         SetIcon(SmileySpriteResolved);
-        SetShown(true); // bubble đang mở sẵn — chỉ đổi mặt, không scale-in lại
+        SetShown(true);
     }
 
-    /// <summary>
-    /// Đổi icon thành MẶT TỨC GIẬN (hết kiên nhẫn) — agent giữ 2s rồi cho khách về,
-    /// KHÔNG thưởng. [Sếp chốt: tức giận, không phải buồn.]
-    /// </summary>
+    /// <summary>Đổi icon thành MẶT TỨC GIẬN (hết kiên nhẫn) — agent giữ 2s rồi cho khách về.</summary>
     public void ShowAngry()
     {
         EnsureBuilt();
         State = BubbleState.Angry;
         SetIcon(angryFaceSprite != null ? angryFaceSprite : GetPlaceholderFace(FaceKind.Angry));
-        // Khách bị ép rời (lưới an toàn) có thể chưa từng mở bubble → scale-in cho thấy rõ.
-        if (_root == null || !_root.gameObject.activeSelf) PlayScaleIn();
+        if (_root == null || !_root.gameObject.activeSelf) PlayChainScaleIn();
         else SetShown(true);
     }
 
@@ -119,11 +135,11 @@ public class TouristRequestBubble : MonoBehaviour
     public void Hide()
     {
         State = BubbleState.Hidden;
-        if (_showRoutine != null) { StopCoroutine(_showRoutine); _showRoutine = null; }
+        if (_animRoutine != null) { StopCoroutine(_animRoutine); _animRoutine = null; }
         if (_root != null) _root.gameObject.SetActive(false);
     }
 
-    // ─── Dựng hierarchy con (lười, 1 lần) ───────────────────────────────
+    // ─── Dựng hierarchy con ─────────────────────────────────────────────
 
     private void EnsureBuilt()
     {
@@ -131,69 +147,118 @@ public class TouristRequestBubble : MonoBehaviour
 
         var rootGo = new GameObject("Bubble");
         rootGo.transform.SetParent(transform, false);
+        rootGo.transform.localPosition = Vector3.zero;
+        rootGo.transform.localScale    = Vector3.one;
         _root = rootGo.transform;
 
+        string layer = TouristSortingLayers.ResolveOrOverride(sortingLayerName, TouristSortingLayers.Overlay);
+
+        Sprite circleSprite = dotSprite != null ? dotSprite : GetPlaceholderFace(FaceKind.Dot);
+        Sprite cloudSprite  = frameSprite != null ? frameSprite : GetPlaceholderFace(FaceKind.Cloud);
+
+        // 1 · Dot 1 (chấm nhỏ)
+        var dot1Go = new GameObject("Dot1");
+        dot1Go.transform.SetParent(_root, false);
+        _dot1Tr = dot1Go.transform;
+        _dot1Sr = dot1Go.AddComponent<SpriteRenderer>();
+        _dot1Sr.sprite           = circleSprite;
+        _dot1Sr.sortingLayerName = layer;
+        _dot1Sr.sortingOrder     = frameSortingOrder;
+
+        // 2 · Dot 2 (chấm vừa)
+        var dot2Go = new GameObject("Dot2");
+        dot2Go.transform.SetParent(_root, false);
+        _dot2Tr = dot2Go.transform;
+        _dot2Sr = dot2Go.AddComponent<SpriteRenderer>();
+        _dot2Sr.sprite           = circleSprite;
+        _dot2Sr.sortingLayerName = layer;
+        _dot2Sr.sortingOrder     = frameSortingOrder;
+
+        // 3 · Frame (Đám mây lớn)
         var frameGo = new GameObject("Frame");
         frameGo.transform.SetParent(_root, false);
+        _frameTr = frameGo.transform;
         _frameSr = frameGo.AddComponent<SpriteRenderer>();
-        _frameSr.sprite           = frameSprite != null ? frameSprite : GetPlaceholderFace(FaceKind.Plain);
-        _frameSr.sortingLayerName = sortingLayerName;
+        _frameSr.sprite           = cloudSprite;
+        _frameSr.sortingLayerName = layer;
         _frameSr.sortingOrder     = frameSortingOrder;
 
+        // 4 · Icon món / biểu cảm
         var iconGo = new GameObject("Icon");
-        iconGo.transform.SetParent(_root, false);
+        iconGo.transform.SetParent(_frameTr, false);
+        iconGo.transform.localPosition = Vector3.zero;
         _iconSr = iconGo.AddComponent<SpriteRenderer>();
-        _iconSr.sortingLayerName = sortingLayerName;
+        _iconSr.sortingLayerName = layer;
         _iconSr.sortingOrder     = frameSortingOrder + 1;
 
+        _floatSeed = Random.Range(0f, 100f);
         LayoutInWorldUnits();
         _root.gameObject.SetActive(false);
     }
 
-    /// <summary>Gán icon + canh lại cỡ (sprite mới có thể khác kích thước gốc).</summary>
     private void SetIcon(Sprite sprite)
     {
         if (_iconSr == null) return;
         _iconSr.sprite = sprite;
-        _iconSr.color  = Color.white; // màu nằm TRONG texture placeholder, không tint ở đây
+        _iconSr.color  = Color.white;
         float parentScale = Mathf.Max(0.0001f, transform.lossyScale.y);
-        ApplyWorldSize(_iconSr, iconWorldSize / parentScale);
+        _baseIconScale = CalcLocalScale(_iconSr, iconWorldSize / parentScale);
+        _iconSr.transform.localScale = Vector3.one * _baseIconScale;
     }
 
-    /// <summary>
-    /// Đặt vị trí + cỡ theo UNIT WORLD, tự bù lossyScale của prefab khách.
-    /// Prefab NV scale ~66 (xem NPCAnimationSetupTool) nên child KHÔNG thể dùng
-    /// local unit trực tiếp — cùng bài học ApplySpriteSize của TouristBoatSetupTool.
-    /// </summary>
     private void LayoutInWorldUnits()
     {
         float parentScale = Mathf.Max(0.0001f, transform.lossyScale.y);
 
-        _root.localPosition = worldOffset / parentScale;
-        _root.localScale    = Vector3.one;
+        // Tự động nâng cấp an toàn nếu offset Y cũ còn thấp (< 190f) hoặc size còn nhỏ (< 130f)
+        Vector3 mainOffset = worldOffset;
+        if (mainOffset.y < 190f || frameWorldSize < 130f)
+        {
+            mainOffset = new Vector3(30f, 276f, 0f);
+        }
 
-        ApplyWorldSize(_frameSr, frameWorldSize / parentScale);
-        ApplyWorldSize(_iconSr,  iconWorldSize  / parentScale);
+        Vector3 d1Offset = dot1Offset.y > 10f ? dot1Offset : new Vector3(12f, 176f, 0f);
+        Vector3 d2Offset = dot2Offset.y > 10f ? dot2Offset : new Vector3(20f, 208f, 0f);
+
+        float curFrameSize = Mathf.Max(frameWorldSize, 160f);
+        float curIconSize  = Mathf.Max(iconWorldSize, 105f);
+
+        _baseDot1Pos  = d1Offset / parentScale;
+        _baseDot2Pos  = d2Offset / parentScale;
+        _baseFramePos = mainOffset / parentScale;
+
+        if (_dot1Tr != null)  _dot1Tr.localPosition  = _baseDot1Pos;
+        if (_dot2Tr != null)  _dot2Tr.localPosition  = _baseDot2Pos;
+        if (_frameTr != null) _frameTr.localPosition = _baseFramePos;
+
+        _baseDot1Scale  = CalcLocalScale(_dot1Sr,  dot1Size     / parentScale);
+        _baseDot2Scale  = CalcLocalScale(_dot2Sr,  dot2Size     / parentScale);
+        _baseFrameScale = CalcLocalScale(_frameSr, curFrameSize / parentScale);
+        _baseIconScale  = CalcLocalScale(_iconSr,  curIconSize  / parentScale);
+
+        SetAllScales(1f, 1f, 1f);
     }
 
-    /// <summary>Scale 1 renderer con để sprite hiện đúng cỡ (theo local unit đã bù scale cha).</summary>
-    private static void ApplyWorldSize(SpriteRenderer sr, float targetLocalSize)
+    private static float CalcLocalScale(SpriteRenderer sr, float targetLocalSize)
     {
-        if (sr == null || sr.sprite == null) return;
+        if (sr == null || sr.sprite == null) return 1f;
         float native = Mathf.Max(sr.sprite.rect.width, sr.sprite.rect.height) / sr.sprite.pixelsPerUnit;
-        if (native <= 0.0001f) return;
-        float k = targetLocalSize / native;
-        sr.transform.localScale = new Vector3(k, k, 1f);
+        if (native <= 0.0001f) return 1f;
+        return targetLocalSize / native;
     }
 
-    // ─── Scale-in ───────────────────────────────────────────────────────
+    // ─── Animation Chuỗi Pop Tuần Tự (Staggered Pop + Idle Float) ────────
 
-    private void PlayScaleIn()
+    private void PlayChainScaleIn()
     {
         SetShown(true);
-        if (_showRoutine != null) StopCoroutine(_showRoutine);
-        if (!isActiveAndEnabled) return; // agent đang tắt — hiện thẳng, không tween
-        _showRoutine = StartCoroutine(ScaleInRoutine());
+        if (_animRoutine != null) StopCoroutine(_animRoutine);
+        if (!isActiveAndEnabled)
+        {
+            SetAllScales(1f, 1f, 1f);
+            return;
+        }
+        _animRoutine = StartCoroutine(ChainPopInAndFloatRoutine());
     }
 
     private void SetShown(bool shown)
@@ -202,113 +267,202 @@ public class TouristRequestBubble : MonoBehaviour
             _root.gameObject.SetActive(shown);
     }
 
-    /// <summary>Scale-in 0→1 với ease OUT-BACK nhẹ (vọt quá ~1.07 rồi lún về) — "mở mượt" GDD §3.3.</summary>
-    private IEnumerator ScaleInRoutine()
+    private void SetAllScales(float progressDot1, float progressDot2, float progressFrame)
     {
-        float t = 0f;
-        float duration = Mathf.Max(0.05f, _scaleInSeconds);
-        while (t < duration)
-        {
-            t += Time.deltaTime;
-            float x = Mathf.Clamp01(t / duration);
-            // Out-back: f(x) = 1 + (s+1)(x-1)^3 + s(x-1)^2, s nhỏ cho nảy nhẹ
-            const float s = 1.2f;
-            float e = 1f + (s + 1f) * Mathf.Pow(x - 1f, 3f) + s * Mathf.Pow(x - 1f, 2f);
-            _root.localScale = Vector3.one * e;
-            yield return null;
-        }
-        _root.localScale = Vector3.one;
-        _showRoutine = null;
+        if (_dot1Tr != null)  _dot1Tr.localScale  = Vector3.one * (_baseDot1Scale * progressDot1);
+        if (_dot2Tr != null)  _dot2Tr.localScale  = Vector3.one * (_baseDot2Scale * progressDot2);
+        if (_frameTr != null) _frameTr.localScale = Vector3.one * (_baseFrameScale * progressFrame);
     }
 
-    // ─── Placeholder procedural (QA m-4) ────────────────────────────────
+    private IEnumerator ChainPopInAndFloatRoutine()
+    {
+        SetAllScales(0f, 0f, 0f);
 
-    /// <summary>Loại mặt placeholder — mỗi loại một MÀU + NÉT MẶT riêng để phân biệt bằng mắt.</summary>
-    private enum FaceKind { Plain, Happy, Angry }
+        float totalDuration = Mathf.Max(0.2f, _scaleInSeconds);
+        float popTimeDot1   = totalDuration * 0.35f;
+        float popTimeDot2   = totalDuration * 0.40f;
+        float popTimeFrame  = totalDuration * 0.60f;
+
+        float delayDot2     = totalDuration * 0.15f;
+        float delayFrame    = totalDuration * 0.30f;
+
+        float timer = 0f;
+        float totalPopPhase = delayFrame + popTimeFrame;
+
+        while (timer < totalPopPhase)
+        {
+            timer += Time.deltaTime;
+
+            // Dot 1 (nhỏ)
+            float t1 = Mathf.Clamp01(timer / popTimeDot1);
+            float s1 = EaseOutBack(t1, 1.4f);
+
+            // Dot 2 (vừa)
+            float t2 = Mathf.Clamp01((timer - delayDot2) / popTimeDot2);
+            float s2 = timer >= delayDot2 ? EaseOutBack(t2, 1.35f) : 0f;
+
+            // Frame (Đám mây lớn)
+            float tF = Mathf.Clamp01((timer - delayFrame) / popTimeFrame);
+            float sF = timer >= delayFrame ? EaseOutBack(tF, 1.25f) : 0f;
+
+            SetAllScales(s1, s2, sF);
+            yield return null;
+        }
+
+        SetAllScales(1f, 1f, 1f);
+
+        // ─── Floating Loop (nhấp nhô nhẹ nhàng) ─────────────
+        float parentScale = Mathf.Max(0.0001f, transform.lossyScale.y);
+        float bobAmplitude = 2.6f / parentScale;
+        float bobSpeed     = 2.5f;
+
+        while (true)
+        {
+            float timeVal = Time.time * bobSpeed + _floatSeed;
+            float offsetF = Mathf.Sin(timeVal) * bobAmplitude;
+            float offset2 = Mathf.Sin(timeVal - 0.3f) * (bobAmplitude * 0.5f);
+            float offset1 = Mathf.Sin(timeVal - 0.6f) * (bobAmplitude * 0.25f);
+
+            if (_frameTr != null) _frameTr.localPosition = _baseFramePos + new Vector3(0f, offsetF, 0f);
+            if (_dot2Tr != null)  _dot2Tr.localPosition  = _baseDot2Pos  + new Vector3(0f, offset2, 0f);
+            if (_dot1Tr != null)  _dot1Tr.localPosition  = _baseDot1Pos  + new Vector3(0f, offset1, 0f);
+
+            yield return null;
+        }
+    }
+
+    private static float EaseOutBack(float x, float s)
+    {
+        if (x <= 0f) return 0f;
+        if (x >= 1f) return 1f;
+        return 1f + (s + 1f) * Mathf.Pow(x - 1f, 3f) + s * Mathf.Pow(x - 1f, 2f);
+    }
+
+    // ─── Procedural Thought Cloud & Faces ────────────────────────────────
+
+    private enum FaceKind { Plain, Dot, Cloud, Happy, Angry }
 
     private static readonly Dictionary<FaceKind, Sprite> _placeholderCache =
         new Dictionary<FaceKind, Sprite>();
-    private static bool _warnedPlaceholder;
 
     /// <summary>
-    /// Sinh (và cache) sprite placeholder cho từng loại mặt.
-    ///   Plain = tròn TRẮNG (khung bubble / món chưa có sprite)
-    ///   Happy = tròn VÀNG + 2 mắt + miệng cười
-    ///   Angry = tròn ĐỎ  + 2 mắt + miệng cau + 2 lông mày chéo xuống
-    /// QA m-4: bản trước bỏ qua tham số màu nên 3 trạng thái trông y hệt nhau
-    /// ⇒ không nghiệm thu được AC §8.2/§8.5 bằng mắt khi chưa có art.
-    /// Cảnh báo Console chỉ in ĐÚNG 1 LẦN cho cả phiên chơi.
+    /// Sinh (và cache) sprite comic thought cloud / dot / faces với viền nâu hoạt hình (#482914).
     /// </summary>
     private static Sprite GetPlaceholderFace(FaceKind kind)
     {
         Sprite cached;
         if (_placeholderCache.TryGetValue(kind, out cached) && cached != null) return cached;
 
-        if (!_warnedPlaceholder)
-        {
-            _warnedPlaceholder = true;
-            Debug.LogWarning("[TouristVisitor] Bubble chưa được wire đủ sprite (khung / mặt cười / mặt tức giận) — " +
-                             "dùng mặt placeholder tự vẽ (trắng / vàng cười / đỏ cau mày). " +
-                             "Gắn art vào prefab khách rồi chạy lại tool là hết cảnh báo.");
-        }
-
-        const int size = 64;
+        const int size = 256; // Tăng lên 256x256 để đám mây to rộng mịn màng
         var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
         tex.hideFlags = HideFlags.HideAndDontSave;
 
-        Color32 mat  = new Color32(40, 32, 28, 255);   // mắt / miệng / lông mày
+        Color32 borderDark = new Color32(72, 41, 20, 255);    // Nâu đậm cartoon #482914
+        Color32 matDark    = new Color32(56, 32, 16, 255);
         Color32 nen;
         switch (kind)
         {
-            case FaceKind.Happy: nen = new Color32(255, 214, 64, 255);  break; // VÀNG
-            case FaceKind.Angry: nen = new Color32(232, 72, 56, 255);   break; // ĐỎ
-            default:             nen = new Color32(255, 255, 255, 255); break; // TRẮNG
+            case FaceKind.Happy: nen = new Color32(255, 218, 70, 255);  break;
+            case FaceKind.Angry: nen = new Color32(238, 78, 62, 255);   break;
+            default:             nen = new Color32(255, 253, 248, 255); break; // Trắng kem sữa
         }
-        Color32 vien   = new Color32((byte)(nen.r * 0.72f), (byte)(nen.g * 0.72f), (byte)(nen.b * 0.72f), 255);
-        Color32 trong  = new Color32(0, 0, 0, 0);
 
         var px = new Color32[size * size];
         const float tamX = size * 0.5f, tamY = size * 0.5f;
-        const float banKinh = 30f;
 
-        for (int y = 0; y < size; y++)
+        if (kind == FaceKind.Cloud || kind == FaceKind.Plain)
         {
-            for (int x = 0; x < size; x++)
+            // ── VẼ ĐÁM MÂY SUY NGHĨ TO RỘNG (THOUGHT CLOUD BUBBLE) ──
+            // Thân đám mây rộng rãi ở giữa để món ăn hiện to và rõ nét
+            Vector3[] lobes = new Vector3[]
             {
-                float pxF = x + 0.5f, pyF = y + 0.5f;
-                float d = KhoangCach(pxF, pyF, tamX, tamY);
+                new Vector3(tamX,        tamY,        86f), // Thân chính giữa rất rộng
+                new Vector3(tamX - 60f,  tamY + 30f,  52f), // Múi trên trái
+                new Vector3(tamX + 4f,   tamY + 48f,  54f), // Múi trên giữa
+                new Vector3(tamX + 60f,  tamY + 30f,  52f), // Múi trên phải
+                new Vector3(tamX - 76f,  tamY - 15f,  48f), // Múi hông trái
+                new Vector3(tamX + 76f,  tamY - 15f,  48f), // Múi hông phải
+                new Vector3(tamX - 36f,  tamY - 42f,  50f), // Múi dưới trái
+                new Vector3(tamX + 36f,  tamY - 42f,  50f), // Múi dưới phải
+            };
 
-                if (d > banKinh) { px[y * size + x] = trong; continue; }
+            const float strokeWidth = 8f; // Viền đậm cartoon 8px trên 256px
 
-                Color32 c = d > banKinh - 3f ? vien : nen;
-
-                if (kind != FaceKind.Plain)
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
                 {
-                    // Hai mắt
-                    if (KhoangCach(pxF, pyF, 22f, 40f) <= 4f ||
-                        KhoangCach(pxF, pyF, 42f, 40f) <= 4f)
-                        c = mat;
+                    float pxF = x + 0.5f, pyF = y + 0.5f;
 
-                    if (kind == FaceKind.Happy)
+                    // Tìm khoảng cách nhỏ nhất tới biên đám mây (SDF âm = bên trong)
+                    float minSignedDist = float.MaxValue;
+                    for (int i = 0; i < lobes.Length; i++)
                     {
-                        // Miệng CƯỜI: cung DƯỚI của đường tròn có tâm nằm TRÊN miệng
-                        float dm = KhoangCach(pxF, pyF, 32f, 46f);
-                        if (y <= 40 && dm >= 14f && dm <= 16.5f) c = mat;
+                        float d = KhoangCach(pxF, pyF, lobes[i].x, lobes[i].y) - lobes[i].z;
+                        if (d < minSignedDist) minSignedDist = d;
                     }
-                    else
-                    {
-                        // Miệng CAU: cung TRÊN của đường tròn có tâm nằm DƯỚI miệng
-                        float dm = KhoangCach(pxF, pyF, 32f, 16f);
-                        if (y >= 22 && dm >= 14f && dm <= 16.5f) c = mat;
 
-                        // Hai lông mày chéo xuống giữa — nét "tức giận" (Sếp chốt)
-                        if (KhoangCachToiDoan(pxF, pyF, 15f, 50f, 27f, 45f) <= 1.9f ||
-                            KhoangCachToiDoan(pxF, pyF, 49f, 50f, 37f, 45f) <= 1.9f)
-                            c = mat;
+                    if (minSignedDist > 0.8f)
+                    {
+                        px[y * size + x] = new Color32(0, 0, 0, 0);
+                        continue;
                     }
+
+                    float alpha = Mathf.Clamp01(0.8f - minSignedDist);
+                    Color32 c = minSignedDist > -strokeWidth ? borderDark : nen;
+                    c.a = (byte)(255 * alpha);
+
+                    px[y * size + x] = c;
                 }
+            }
+        }
+        else
+        {
+            // ── VẼ CHẤM TRÒN / MẶT BIỂU CẢM ──
+            const float banKinh = 118f;
+            const float doDayVien = 11f;
 
-                px[y * size + x] = c;
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float pxF = x + 0.5f, pyF = y + 0.5f;
+                    float d = KhoangCach(pxF, pyF, tamX, tamY);
+
+                    if (d > banKinh + 0.8f)
+                    {
+                        px[y * size + x] = new Color32(0, 0, 0, 0);
+                        continue;
+                    }
+
+                    float alphaEdge = Mathf.Clamp01(banKinh + 0.8f - d);
+                    Color32 c = d > banKinh - doDayVien ? borderDark : nen;
+                    c.a = (byte)(255 * alphaEdge);
+
+                    if (kind == FaceKind.Happy || kind == FaceKind.Angry)
+                    {
+                        if (KhoangCach(pxF, pyF, 88f, 160f) <= 15f ||
+                            KhoangCach(pxF, pyF, 168f, 160f) <= 15f)
+                            c = matDark;
+
+                        if (kind == FaceKind.Happy)
+                        {
+                            float dm = KhoangCach(pxF, pyF, 128f, 184f);
+                            if (y <= 160 && dm >= 56f && dm <= 68f) c = matDark;
+                        }
+                        else
+                        {
+                            float dm = KhoangCach(pxF, pyF, 128f, 64f);
+                            if (y >= 88 && dm >= 56f && dm <= 68f) c = matDark;
+
+                            if (KhoangCachToiDoan(pxF, pyF, 60f, 200f, 108f, 180f) <= 7f ||
+                                KhoangCachToiDoan(pxF, pyF, 196f, 200f, 148f, 180f) <= 7f)
+                                c = matDark;
+                        }
+                    }
+
+                    px[y * size + x] = c;
+                }
             }
         }
 
@@ -321,14 +475,12 @@ public class TouristRequestBubble : MonoBehaviour
         return sprite;
     }
 
-    /// <summary>Khoảng cách 2 điểm — toán vô hướng thuần, không cấp phát struct.</summary>
     private static float KhoangCach(float ax, float ay, float bx, float by)
     {
         float dx = ax - bx, dy = ay - by;
         return Mathf.Sqrt(dx * dx + dy * dy);
     }
 
-    /// <summary>Khoảng cách từ điểm tới đoạn thẳng — dùng vẽ lông mày dày ~2px.</summary>
     private static float KhoangCachToiDoan(float px, float py, float ax, float ay, float bx, float by)
     {
         float abx = bx - ax, aby = by - ay;

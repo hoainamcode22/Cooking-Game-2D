@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -18,9 +19,9 @@ namespace Assetsgame.Animals
     {
         [Header("Movement Bounds (Tọa độ Local trong chuồng)")]
         [Tooltip("Giới hạn di chuyển nhỏ nhất bên trong hàng rào chuồng")]
-        public Vector2 localBoundsMin = new Vector2(-1.15f, -0.6f);
+        public Vector2 localBoundsMin = new Vector2(-0.85f, -0.40f);
         [Tooltip("Giới hạn di chuyển lớn nhất bên trong hàng rào chuồng")]
-        public Vector2 localBoundsMax = new Vector2(1.15f, 0.45f);
+        public Vector2 localBoundsMax = new Vector2(0.85f, 0.30f);
         [Tooltip("Tự động nhận diện biên chuồng (để false để dùng tọa độ chính xác bên trong hàng rào)")]
         public bool autoCalculateBounds = false;
 
@@ -272,8 +273,8 @@ namespace Assetsgame.Animals
 
             // Điều chỉnh biên góc để con vật không đi vào 4 góc nhọn của hàng rào quả trám
             float xRatio = Mathf.Abs(rx) / Mathf.Max(0.1f, localBoundsMax.x);
-            float yMaxAllowed = Mathf.Lerp(localBoundsMax.y, 0f, xRatio * 0.45f);
-            float yMinAllowed = Mathf.Lerp(localBoundsMin.y, 0f, xRatio * 0.45f);
+            float yMaxAllowed = Mathf.Lerp(localBoundsMax.y, 0f, xRatio * 0.60f);
+            float yMinAllowed = Mathf.Lerp(localBoundsMin.y, 0f, xRatio * 0.60f);
             ry = Mathf.Clamp(ry, yMinAllowed, yMaxAllowed);
 
             return new Vector3(rx, ry, transform.localPosition.z);
@@ -283,8 +284,8 @@ namespace Assetsgame.Animals
         {
             pos.x = Mathf.Clamp(pos.x, localBoundsMin.x, localBoundsMax.x);
             float xRatio = Mathf.Abs(pos.x) / Mathf.Max(0.1f, localBoundsMax.x);
-            float yMaxAllowed = Mathf.Lerp(localBoundsMax.y, 0f, xRatio * 0.45f);
-            float yMinAllowed = Mathf.Lerp(localBoundsMin.y, 0f, xRatio * 0.45f);
+            float yMaxAllowed = Mathf.Lerp(localBoundsMax.y, 0f, xRatio * 0.60f);
+            float yMinAllowed = Mathf.Lerp(localBoundsMin.y, 0f, xRatio * 0.60f);
             pos.y = Mathf.Clamp(pos.y, yMinAllowed, yMaxAllowed);
         }
 
@@ -303,15 +304,69 @@ namespace Assetsgame.Animals
             transform.localScale = scale;
         }
 
-        private void PlayAnimalSound()
+        private void SetupDefaultAudioClipsIfMissing()
         {
+            if (soundClips != null && soundClips.Length > 0) return;
+
+            string n = (gameObject.name + " " + (transform.parent != null ? transform.parent.name : "")).ToLowerInvariant();
+            List<AudioClip> loaded = new List<AudioClip>();
+
+            if (n.Contains("chicken") || n.Contains("ga") || n.Contains("gà"))
+            {
+                var c1 = Resources.Load<AudioClip>("Audio/Animals/Chicken-001");
+                var c2 = Resources.Load<AudioClip>("Audio/Animals/Chicken-002");
+                if (c1 != null) loaded.Add(c1);
+                if (c2 != null) loaded.Add(c2);
+            }
+            else if (n.Contains("pig") || n.Contains("heo") || n.Contains("lợn"))
+            {
+                var c1 = Resources.Load<AudioClip>("Audio/Animals/Pig-001");
+                var c2 = Resources.Load<AudioClip>("Audio/Animals/Pig-002");
+                if (c1 != null) loaded.Add(c1);
+                if (c2 != null) loaded.Add(c2);
+            }
+            else
+            {
+                var c1 = Resources.Load<AudioClip>("Audio/Animals/Cow-001");
+                var c2 = Resources.Load<AudioClip>("Audio/Animals/Cow-002");
+                if (c1 != null) loaded.Add(c1);
+                if (c2 != null) loaded.Add(c2);
+            }
+
+            if (loaded.Count > 0)
+                soundClips = loaded.ToArray();
+        }
+
+        public void PlayAnimalSound(bool forced = false)
+        {
+            SetupDefaultAudioClipsIfMissing();
             if (soundClips == null || soundClips.Length == 0 || audioSource == null) return;
+
+            // Kiểm tra camera zoom và khoảng cách nếu không phải tương tác trực tiếp
+            if (!forced)
+            {
+                Camera cam = Camera.main;
+                if (cam == null) return;
+                float dist = Vector2.Distance(cam.transform.position, transform.position);
+                if (dist > 12f || (cam.orthographic && cam.orthographicSize > 12f))
+                    return;
+            }
+
             AudioClip clip = soundClips[Random.Range(0, soundClips.Length)];
             if (clip != null)
             {
                 audioSource.pitch = Random.Range(0.92f, 1.08f);
-                audioSource.PlayOneShot(clip, soundVolume);
+                float vol = forced ? Mathf.Min(1f, soundVolume * 1.35f) : (soundVolume * 0.40f);
+                audioSource.PlayOneShot(clip, vol);
             }
+        }
+
+        private void OnMouseDown()
+        {
+            if (EditModeManager.IsEditMode) return;
+            PlayAnimalSound(true);
+            if (parentPen != null && !parentPen.IsPanelOpen())
+                parentPen.OpenPanel();
         }
 
         private void OnDrawGizmosSelected()

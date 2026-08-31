@@ -625,11 +625,12 @@ namespace KitchenUIv2
 
         private static void SetText(TMP_Text t, string s) { if (t != null) t.text = s; }
 
-        /// <summary>Nâng sorting canvas của minigame + popup CŨ lên trên UI v2 (runtime, không sửa scene).</summary>
+        /// <summary>Nâng sorting canvas của popup CŨ lên trên UI v2 (runtime, không sửa scene).</summary>
+        // [DỌN 2026-08-31] Đã xoá hẳn 2 minigame (LetterMiniGame + CookingTimingMiniGameUI)
+        // theo lệnh Sếp 27/08 — luồng nấu đi thẳng, không còn minigame chen giữa.
+        // Backup: production/backup_xoa_minigame_2026-08-31/
         private void RaiseLegacyOverlays()
         {
-            RaiseOne(FindFirstObjectByType<CookingTimingMiniGameUI>(FindObjectsInactive.Include));
-            RaiseOne(FindFirstObjectByType<LetterMiniGame>(FindObjectsInactive.Include));
             RaiseOne(FindFirstObjectByType<CookingPopupController>(FindObjectsInactive.Include));
         }
 

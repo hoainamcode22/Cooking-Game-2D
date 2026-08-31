@@ -62,6 +62,35 @@ Chơi liền mạch L1→L30 không kẹt tiền/kẹt đơn · tutorial L1 chu�
   Toạ độ nguồn (parse từ SCN_Farm.unity): Berth1(-531,-4285) Berth2(151,-4573) Berth3(948,-4839)
   BlindPoint(-9818,-7819) CookingGate(494,-2367); Grid_Iso45 iso cellSize(1,0.5) scale tích luỹ 300;
   đường đất = Tilemap_IsoDirt (332 ô).
+- **BẢN VÁ 3 (2026-08-31) — Lead toàn quyền quyết 4 điểm lệch, đã thực thi + QA vòng 3:**
+  1. **Công thức thưởng V2.1**: bỏ `Σ nguyên liệu ×2` (nó trả 50 vàng cho khoai tây chiên khi bán chợ được 95 —
+     phục vụ khách LỖ hơn bán chợ). Nay dùng chính bảng 38 món đã cân bằng của Sếp:
+     `vàng = round(sellPrice × diffMult × rarityBonus × touristGoldMultiplier)` (Easy 1.00 / Normal 1.15 / Hard 1.35;
+     rarity = 1 + 0.05×nRare + 0.12×nEpic, kẹp 1.5) · `exp = round(rewardExp × expMult × touristExpMultiplier)`.
+     Ví dụ: com_chien_bap_cai 62 vàng · bo_xao_tieu 362 · pho_bo_tai 540 · salad_dua_hau_bo_ap_chao 1193.
+  2. **Nhịp tàu 3 mức**: 1 bến 5' · 2 bến 7' · 3 bến 10' (Sếp nói 10' là khi mở ĐỦ 3 slot). Field mới `gapTwoDockMinutes`.
+  3. **Mặt cười**: bỏ hẳn nhánh bay về tâm màn hình; 3 nhánh `hudGoldTarget` wire cứng → dò tên → bay thẳng lên trời.
+     Scale 0.4→1.5, fade từ t=0.45.
+  4. **Fade-in 0.25s** khi khách xuống tàu (đối xứng fade-out), trên mọi SpriteRenderer con.
+  Phụ: seed **SplitMix64** (QA đo: 3 bến trùng số khách 31.15%→6.26%, kỳ vọng 6.25%) · waypoint **tự bám
+  `Tilemap_IsoDirt` bằng Dijkstra + Douglas-Peucker** (cost đất1/dock2/cát5/cỏ9, fallback 3 mốc thẳng) ·
+  typewriter 0.02s/ký tự cho popup báo tàu.
+- **QA vòng 3 bắt 2 lỗi Lead chưa lường, đã sửa:**
+  · **B-6**: Dev A và Dev B ship TRÙNG file `TouristSmileyFlyFX.cs` (2 class 2 chủ) — copy A→B thì player build
+    compile SẠCH nhưng chạy công thức thưởng CŨ, im lặng hoàn toàn. Đã **tách `TouristRewardCalculator` ra file riêng**.
+  · **M-9 lạm phát EXP**: nấu đã cộng `rewardExp × hệ số` rồi phục vụ cộng THÊM ⇒ 2× EXP thiết kế, hết nội dung
+    game trong 1.2-3.7 giờ. Đã thêm núm hãm **`touristExpMultiplier = 0.4`** (pho_bo_tai 68→27 EXP).
+  · **M-8**: tool ★ ghi đè waypoint Sếp kéo tay dù HANDOFF nói không. Nay dùng **dấu vết băm FNV-1a toạ độ**
+    trong EditorPrefs: chỉ đặt lại khi waypoint còn đúng chỗ tool sinh, đã kéo tay thì GIỮ NGUYÊN + log;
+    muốn dựng lại phải tick ô `⚙ Ghi đè waypoint đã chỉnh tay`. QueueAnchor cũng được bảo vệ y hệt.
+  · Giá bến 2: QA đề nghị tăng 2000→6000-8000 vì vàng dồi dào hơn. **Lead GIỮ 2000** (nằm trong GDD BOAT-001
+    đã duyệt; cổ chai thật là cái bếp, phải nấu 4.5 món/5 phút mới đạt trần lý thuyết). Con số ghi trong HANDOFF
+    để Sếp tự quyết sau khi chơi thật.
+- Test: lịch tàu **127/127** · công thức thưởng **64/64** · compile 3 pass 0 error. Tool mới:
+  `Xuất bảng thưởng khách (38 món)` → ghi `production/session-state/BANG_THUONG_KHACH_DU_LICH.md`.
+- Sửa ngoài lề cùng phiên: **LockIcon** scale 750 sprite Knob (cái đĩa vàng che map) → tắt LockUI 3 bến đã mở +
+  thu icon về 60 · **10 file hoa** 50/50/50 → **22/30/35** (hoa mới nhú đang to bằng lúc chín, rau thì 35→40→50).
+  Backup: `production/backup_lockicon_2026-08-30/`, `production/backup_hoa_2026-08-30/`.
 - CẦN SẾP: mở SCN_Farm → bấm nút ★ → Ctrl+S → Play test. Hướng dẫn: `production/HUONG_DAN_BAM_NUT_TAU_KHACH.md`.
 
 

@@ -82,11 +82,11 @@ SpriteRenderer:
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
   m_GlobalIlluminationMeshLod: 0
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingLayerID: -733290359
+  m_SortingLayer: 2
+  m_SortingOrder: 5000
   m_MaskInteraction: 0
-  m_Sprite: {fileID: -6332168524203040016, guid: 92d32186befc8824f9538d37a5d11ac3, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 92d32186befc8824f9538d37a5d11ac3, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -143,12 +143,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f91b998418ecafd439904efebc6ee294, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TouristAgent
-  sortingLayerName: CongTrinh
+  sortingLayerName: 
   baseSortingOrder: 5000
   ySortFactor: 0.5
   ySortClamp: 8000
   arriveThreshold: 6
   walkBackLaneOffset: 26
+  fadeInSeconds: 0.25
+  fadeOutSeconds: 0.25
   happyHoldSeconds: 0.5
   angryHoldSeconds: 2
   forcedAngryHoldSeconds: 0.4
@@ -165,12 +167,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TouristRequestBubble
   frameSprite: {fileID: 0}
+  dotSprite: {fileID: 0}
   smileySprite: {fileID: 0}
   angryFaceSprite: {fileID: 0}
-  worldOffset: {x: 0, y: 155, z: 0}
-  frameWorldSize: 90
-  iconWorldSize: 62
-  sortingLayerName: CongTrinh
+  worldOffset: {x: 30, y: 276, z: 0}
+  frameWorldSize: 168
+  iconWorldSize: 110
+  dot1Offset: {x: 12, y: 176, z: 0}
+  dot1Size: 16
+  dot2Offset: {x: 20, y: 208, z: 0}
+  dot2Size: 28
+  sortingLayerName: 
   frameSortingOrder: 20000
 --- !u!61 &4122621179428543588
 BoxCollider2D:
@@ -209,7 +216,7 @@ BoxCollider2D:
   m_Offset: {x: 0, y: 1.152}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
+    pivot: {x: 0.5, y: 0}
     oldSize: {x: 1.49, y: 2.56}
     newSize: {x: 1.49, y: 2.56}
     adaptiveTilingThreshold: 0.5

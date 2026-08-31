@@ -6,12 +6,37 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Quản lý toàn bộ âm thanh và nhạc nền trong game.
-/// Tự động nạp các file âm thanh chuẩn từ Assets/Audio Game và Assets/Resources/Audio.
-/// Thiết lập âm lượng nhẹ nhàng, chống nhiễu / chống spam âm thanh liên tục.
+/// Tự động sinh singleton, nạp các file âm thanh từ Resources/Audio và Assets/Audio Game.
+/// Đảm bảo âm thanh 2D rõ nét, không bị tắt tiếng hay phụ thuộc khoảng cách camera.
 /// </summary>
 public class AudioManager : MonoBehaviour
 {
-    public static AudioManager Instance;
+    private static AudioManager _instance;
+    public static AudioManager Instance
+    {
+        get
+        {
+            if (_instance == null)
+            {
+                _instance = FindFirstObjectByType<AudioManager>();
+                if (_instance == null)
+                {
+                    GameObject go = new GameObject("AudioManager");
+                    _instance = go.AddComponent<AudioManager>();
+                }
+            }
+            return _instance;
+        }
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void AutoInit()
+    {
+        if (_instance == null)
+        {
+            var inst = Instance;
+        }
+    }
 
     [Header("Audio Sources")]
     [SerializeField] private AudioSource bgmSource;
@@ -31,13 +56,13 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip successJingle;
     [SerializeField] private AudioClip waterFlowClip;
 
-    [Header("Volume (Êm dịu, nhẹ nhàng, không chói tai)")]
-    [Range(0f, 1f)][SerializeField] private float bgmVolume = 0.16f;     // Nhạc nền êm dịu
-    [Range(0f, 1f)][SerializeField] private float uiVolume = 0.22f;      // Tiếng nút bấm vừa vặn
-    [Range(0f, 1f)][SerializeField] private float fxVolume = 0.35f;      // Tiếng gieo hạt, thu hoạch, vàng, exp
-    [Range(0f, 1f)][SerializeField] private float waterVolume = 0.18f;
+    [Header("Volume")]
+    [Range(0f, 1f)][SerializeField] private float bgmVolume = 0.35f;     // Nhạc nền rõ ràng, êm dịu
+    [Range(0f, 1f)][SerializeField] private float uiVolume = 0.70f;      // Tiếng nút bấm nảy giòn
+    [Range(0f, 1f)][SerializeField] private float fxVolume = 0.85f;      // Tiếng gieo hạt, thu hoạch, vàng, exp
+    [Range(0f, 1f)][SerializeField] private float waterVolume = 0.25f;
 
-    [Header("Anti-Spam Cooldowns (Tránh mở liên tục gây ồn)")]
+    [Header("Anti-Spam Cooldowns")]
     [SerializeField] private float uiClickCooldown = 0.05f;
     [SerializeField] private float expCooldown = 0.08f;
     [SerializeField] private float farmCooldown = 0.07f;
@@ -51,14 +76,17 @@ public class AudioManager : MonoBehaviour
 
     private void Awake()
     {
-        if (Instance != null && Instance != this)
+        if (_instance != null && _instance != this)
         {
             Destroy(gameObject);
             return;
         }
 
-        Instance = this;
+        _instance = this;
+        transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
+
+        EnsureAudioListener();
 
         if (bgmSource == null) bgmSource = CreateChildSource("BGM_Source");
         if (uiSource == null) uiSource = CreateChildSource("UI_Source");
@@ -68,7 +96,7 @@ public class AudioManager : MonoBehaviour
         SetupSource(bgmSource, true, bgmVolume);
         SetupSource(uiSource, false, uiVolume);
         SetupSource(fxSource, false, fxVolume);
-        SetupSource(waterAmbienceSource, true, waterVolume);
+        SetupSource(waterAmbienceSource, true, 0f);
 
         LoadDefaultClipsIfMissing();
     }
@@ -77,6 +105,19 @@ public class AudioManager : MonoBehaviour
     {
         PlayMainBGM();
         StartWaterAmbience();
+    }
+
+    private void EnsureAudioListener()
+    {
+        AudioListener listener = FindFirstObjectByType<AudioListener>();
+        if (listener == null)
+        {
+            Camera cam = Camera.main;
+            if (cam != null)
+                cam.gameObject.AddComponent<AudioListener>();
+            else
+                gameObject.AddComponent<AudioListener>();
+        }
     }
 
     private void Update()
@@ -110,6 +151,62 @@ public class AudioManager : MonoBehaviour
                 }
             }
         }
+
+        UpdateWaterProximity();
+    }
+
+    private GameObject[] _cachedWaterObjects;
+    private float _lastWaterSearchTime = -99f;
+
+    /// <summary>
+    /// Giảm nhỏ tiếng nước chảy khi ở xa.
+    /// Chỉ khi Camera di chuyển hoặc zoom tới gần sông/suối/biển mới phát to dần lên.
+    /// </summary>
+    private void UpdateWaterProximity()
+    {
+        if (waterAmbienceSource == null || waterFlowClip == null) return;
+
+        Camera cam = Camera.main;
+        if (cam == null) return;
+
+        if (Time.unscaledTime - _lastWaterSearchTime > 3f || _cachedWaterObjects == null)
+        {
+            _lastWaterSearchTime = Time.unscaledTime;
+            var list = new List<GameObject>();
+            var all = FindObjectsByType<GameObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            for (int i = 0; i < all.Length; i++)
+            {
+                string lname = all[i].name.ToLowerInvariant();
+                if (lname.Contains("water") || lname.Contains("song") || lname.Contains("bien") || lname.Contains("river") || lname.Contains("ocean"))
+                {
+                    list.Add(all[i]);
+                }
+            }
+            _cachedWaterObjects = list.ToArray();
+        }
+
+        float minDistance = float.MaxValue;
+        Vector3 camPos = cam.transform.position;
+
+        if (_cachedWaterObjects != null && _cachedWaterObjects.Length > 0)
+        {
+            for (int i = 0; i < _cachedWaterObjects.Length; i++)
+            {
+                if (_cachedWaterObjects[i] == null) continue;
+                float d = Vector2.Distance(camPos, _cachedWaterObjects[i].transform.position);
+                if (d < minDistance) minDistance = d;
+            }
+        }
+
+        float targetVol = 0f;
+        if (minDistance < 22f)
+        {
+            float proximity = Mathf.Clamp01(1f - (minDistance / 22f));
+            float zoomFactor = cam.orthographic ? Mathf.Clamp01((14f - cam.orthographicSize) / 8f) : 0.8f;
+            targetVol = waterVolume * proximity * Mathf.Max(0.2f, zoomFactor);
+        }
+
+        waterAmbienceSource.volume = Mathf.MoveTowards(waterAmbienceSource.volume, targetVol, Time.unscaledDeltaTime * 0.5f);
     }
 
     private void LoadDefaultClipsIfMissing()
@@ -123,6 +220,7 @@ public class AudioManager : MonoBehaviour
         if (coinReward == null) coinReward = Resources.Load<AudioClip>("Audio/gold")
             ?? Resources.Load<AudioClip>("Audio/vang")
             ?? Resources.Load<AudioClip>("Audio/vàng");
+        if (waterFlowClip == null) waterFlowClip = Resources.Load<AudioClip>("Audio/Ambience/water_flowing");
 
 #if UNITY_EDITOR
         // 2. Fallback trực tiếp từ Assets/Audio Game
@@ -140,6 +238,8 @@ public class AudioManager : MonoBehaviour
             coinReward = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/gold.wav")
                 ?? UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/vang.wav")
                 ?? UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/vàng.wav");
+        if (waterFlowClip == null)
+            waterFlowClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Day_Night/Audio/Ambience/Water flowing.wav");
 #endif
     }
 
@@ -155,11 +255,13 @@ public class AudioManager : MonoBehaviour
         source.loop = loop;
         source.playOnAwake = false;
         source.volume = volume;
+        source.spatialBlend = 0f; // 2D âm thanh trực diện, không bị suy giảm theo toạ độ camera
     }
 
     /// <summary>🎵 Nhạc nền êm dịu, nhẹ nhàng (Morning_Garden_Waltz.mp3)</summary>
     public void PlayMainBGM()
     {
+        if (bgmMain == null && bgmSource != null) LoadDefaultClipsIfMissing();
         if (bgmMain == null || bgmSource == null) return;
 
         if (bgmSource.clip == bgmMain && bgmSource.isPlaying)
@@ -167,21 +269,25 @@ public class AudioManager : MonoBehaviour
 
         bgmSource.clip = bgmMain;
         bgmSource.volume = bgmVolume;
+        bgmSource.spatialBlend = 0f;
         bgmSource.Play();
     }
 
     public void StartWaterAmbience()
     {
+        if (waterFlowClip == null && waterAmbienceSource != null) LoadDefaultClipsIfMissing();
         if (waterFlowClip == null || waterAmbienceSource == null) return;
         if (waterAmbienceSource.clip == waterFlowClip && waterAmbienceSource.isPlaying) return;
 
         waterAmbienceSource.clip = waterFlowClip;
-        waterAmbienceSource.volume = waterVolume;
+        waterAmbienceSource.volume = 0f;
+        waterAmbienceSource.spatialBlend = 0f;
         waterAmbienceSource.Play();
     }
 
     private void PlayFX(AudioClip clip, float volumeScale = 1f, float pitchMin = 0.98f, float pitchMax = 1.02f)
     {
+        if (clip == null && fxSource != null) LoadDefaultClipsIfMissing();
         if (clip == null || fxSource == null) return;
 
         fxSource.pitch = Random.Range(pitchMin, pitchMax);
@@ -195,6 +301,7 @@ public class AudioManager : MonoBehaviour
             return;
 
         lastUIClickTime = Time.unscaledTime;
+        if (uiClick == null) LoadDefaultClipsIfMissing();
         if (uiClick != null && uiSource != null)
         {
             uiSource.pitch = Random.Range(0.99f, 1.01f);
@@ -213,6 +320,7 @@ public class AudioManager : MonoBehaviour
         if (Time.unscaledTime - lastFarmActionTime < farmCooldown) return;
         lastFarmActionTime = Time.unscaledTime;
 
+        if (plantingClip == null) LoadDefaultClipsIfMissing();
         AudioClip clip = plantingClip != null ? plantingClip : uiClick;
         PlayFX(clip, 1f, 0.96f, 1.04f);
     }
@@ -223,6 +331,7 @@ public class AudioManager : MonoBehaviour
         if (Time.unscaledTime - lastFarmActionTime < farmCooldown) return;
         lastFarmActionTime = Time.unscaledTime;
 
+        if (harvestClip == null) LoadDefaultClipsIfMissing();
         AudioClip clip = harvestClip != null ? harvestClip : uiClick;
         PlayFX(clip, 1f, 0.97f, 1.03f);
     }
@@ -233,6 +342,7 @@ public class AudioManager : MonoBehaviour
         if (Time.unscaledTime - lastExpTime < expCooldown) return;
         lastExpTime = Time.unscaledTime;
 
+        if (expClip == null) LoadDefaultClipsIfMissing();
         AudioClip clip = expClip != null ? expClip : uiClick;
         PlayFX(clip, 0.95f, 0.98f, 1.02f);
     }
@@ -243,6 +353,7 @@ public class AudioManager : MonoBehaviour
         if (Time.unscaledTime - lastCoinTime < coinCooldown) return;
         lastCoinTime = Time.unscaledTime;
 
+        if (coinReward == null) LoadDefaultClipsIfMissing();
         AudioClip clip = coinReward != null ? coinReward : uiClick;
         PlayFX(clip, 0.9f, 0.98f, 1.02f);
     }

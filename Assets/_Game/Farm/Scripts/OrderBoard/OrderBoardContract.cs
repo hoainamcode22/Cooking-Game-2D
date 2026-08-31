@@ -273,10 +273,10 @@ public static class OrderBoardIconResolver
 
         if (string.IsNullOrEmpty(customerId)) return null;
 
-        // Fallback tự động nạp từ bộ 9 avatar trong Resources/Avatars
+        // Fallback tự động nạp từ bộ 8 avatar trong Resources/Avatars
         int idx = System.Array.IndexOf(OrderNameBank.CustomerIds, customerId);
-        if (idx < 0) idx = Mathf.Abs(customerId.GetHashCode()) % 9;
-        else idx = idx % 9;
+        if (idx < 0) idx = Mathf.Abs(customerId.GetHashCode()) % 8;
+        else idx = idx % 8;
 
         return Resources.Load<Sprite>($"Avatars/avatar_npc_{idx}");
     }

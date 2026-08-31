@@ -304,8 +304,10 @@ public static class TouristBoatSetupTool
             SetControllerDockIndex(controller, index);
 
             GameObject visual = CreateGO("Visual", boat, boat.position);
-            AddPlaceholderSprite(visual, new Vector2(240f, 120f), Color.white, sortingOrder: 10);
-            Note(added, ref addedCount, dockName + "/Boat (TouristBoatController + Visual placeholder)");
+            var sr = visual.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = 10;
+            AssignDirectionalBoatSprites(controller, index);
+            Note(added, ref addedCount, dockName + "/Boat (TouristBoatController 12-Direction 360° + Visual)");
         }
         else
         {
@@ -319,9 +321,11 @@ public static class TouristBoatSetupTool
             if (boat.Find("Visual") == null)
             {
                 GameObject visual = CreateGO("Visual", boat, boat.position);
-                AddPlaceholderSprite(visual, new Vector2(240f, 120f), Color.white, sortingOrder: 10);
-                Note(added, ref addedCount, dockName + "/Boat/Visual (placeholder trắng)");
+                var sr = visual.AddComponent<SpriteRenderer>();
+                sr.sortingOrder = 10;
+                Note(added, ref addedCount, dockName + "/Boat/Visual (12-Direction 360°)");
             }
+            AssignDirectionalBoatSprites(controller, index);
         }
 
         Transform lockUi = dock.Find("LockUI");
@@ -438,6 +442,27 @@ public static class TouristBoatSetupTool
         if (p == null) return;
         if (force || p.objectReferenceValue == null)
             p.objectReferenceValue = value;
+    }
+
+    private static void AssignDirectionalBoatSprites(TouristBoatController controller, int dockIndex)
+    {
+        if (controller == null) return;
+        var so = new SerializedObject(controller);
+        var propArray = so.FindProperty("directionalSprites");
+        if (propArray == null) return;
+
+        propArray.arraySize = 12;
+        string prefix = (dockIndex == 1) ? "boat_red_12_dir_" : "boat_blue_12_dir_";
+
+        for (int i = 0; i < 12; i++)
+        {
+            string path = $"Assets/Assetsgame/TouristBoat/12_Directions/{prefix}{i}.png";
+            Sprite s = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            var element = propArray.GetArrayElementAtIndex(i);
+            if (element != null) element.objectReferenceValue = s;
+        }
+
+        so.ApplyModifiedProperties();
     }
 
     // ─────────────────────────────────────────────────────────────────────────

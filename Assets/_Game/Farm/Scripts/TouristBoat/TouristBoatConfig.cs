@@ -42,7 +42,10 @@ public class TouristBoatConfig : ScriptableObject
     [Tooltip("Chỉ 1 bến đang mở: tàu rời bến xong bao nhiêu phút thì cập bến lại")]
     public float gapOneDockMinutes = 5f;
 
-    [Tooltip("Từ 2 bến mở trở lên: gap của MỖI bến (arrival kế = lúc rời bến + gap này)")]
+    [Tooltip("ĐÚNG 2 bến mở: gap của mỗi bến. 2 bến × gap 5 phút thì cứ 2,5 phút lại có tàu vào bờ — quá dồn; 7 phút giữ nhịp ~3,5 phút")]
+    public float gapTwoDockMinutes = 7f;
+
+    [Tooltip("Đủ 3 bến mở: gap của MỖI bến (arrival kế = lúc rời bến + gap này) — mốc 10 phút Sếp chốt cho giai đoạn mở hết slot")]
     public float gapMultiDockMinutes = 10f;
 
     [Tooltip("Hai lần cập bến của 2 bến BẤT KỲ phải cách nhau ít nhất bấy nhiêu phút — vi phạm thì dời arrival muộn hơn")]
@@ -73,8 +76,39 @@ public class TouristBoatConfig : ScriptableObject
     [Tooltip("Khách chờ tối đa bấy nhiêu phút (UTC tuyệt đối từ lúc bubble mở, offline vẫn chạy) — hết giờ buồn bã về tàu, không thưởng")]
     public float patienceMinutes = 30f;
 
-    [Tooltip("Vàng thưởng = tổng giá nguyên liệu chính của món × hệ số này")]
+    // [Lead chốt 2026-08-29] Công thức thưởng V2.1 — xem doc của TouristRewardCalculator.
+    // Đường CHÍNH: vàng = round(sellPrice × diffMult × rarityBonus × touristGoldMultiplier).
+    // rewardIngredientMultiplier bên dưới CHỈ còn dùng cho đường FALLBACK (món chưa điền sellPrice).
+    [Tooltip("[Chỉ dùng cho đường FALLBACK] Món chưa điền sellPrice: vàng = tổng giá nguyên liệu chính × hệ số này")]
     public int rewardIngredientMultiplier = 2;
+
+    [Tooltip("Núm chỉnh chung độ hào phóng của khách du lịch. 1.0 = đúng thiết kế; thấy lạm phát vàng thì hạ xuống 0.9/0.8, thấy khách trả bèo thì nâng 1.1. Nhân vào TẤT CẢ vàng khách trả")]
+    public float touristGoldMultiplier = 1.0f;
+
+    // [QA M-9] CHỐNG LẠM PHÁT EXP — đừng nâng lên trên 1.0 nếu chưa đo lại đường cong level.
+    // Nấu xong trong minigame ĐÃ cộng rewardExp × hệ số điểm (CookingChallengeManager),
+    // phục vụ khách cộng THÊM một lần nữa ⇒ mỗi món cho ~2× EXP thiết kế. Trần level 30,
+    // tổng L10→L30 chỉ 5.619 EXP mà một chuyến khách cho 128-306 EXP ⇒ ở L10 lên
+    // 0,9-2,2 level MỘT CHUYẾN, hết nội dung game sau 1,2-3,7 giờ.
+    // 0.4 = nấu ăn (phần chơi chính) giữ trọn EXP của nó, phục vụ khách là thưởng THÊM
+    // ~40%: đủ khích lệ mà tổng chỉ còn ~1,4× thiết kế thay vì 2,25×.
+    [Tooltip("Hệ số EXP khách du lịch trả — chống lạm phát cấp độ (QA M-9).\n" +
+             "Nấu xong trong bếp ĐÃ cộng EXP của món; phục vụ khách cộng thêm lần nữa nên phải hãm lại. " +
+             "0.4 = khách trả 40% EXP món (tổng ~1,4× thiết kế). ĐỪNG đặt > 1.0: người chơi sẽ lên hết " +
+             "cấp trần chỉ trong 1-2 giờ. Muốn khách cho nhiều EXP hơn thì nâng từng bước 0.1 rồi đo lại.")]
+    public float touristExpMultiplier = 0.4f;
+
+    [Tooltip("Hệ số vàng cho món Easy (nhân với sellPrice). 1.00 = trả đúng giá bán chợ")]
+    public float diffMultEasy = 1.00f;
+
+    [Tooltip("Hệ số vàng cho món Normal — cao hơn Easy để nấu món khó có lời hơn")]
+    public float diffMultNormal = 1.15f;
+
+    [Tooltip("Hệ số vàng cho món Hard")]
+    public float diffMultHard = 1.35f;
+
+    [Tooltip("Trần của thưởng thêm theo nguyên liệu quý (Rare +5%, Epic +12% mỗi loại). 1.5 = tối đa +50%, tránh món 5 nguyên liệu Epic trả gấp đôi")]
+    public float rarityBonusCap = 1.5f;
 
     [Tooltip("Giây giãn cách giữa 2 khách lần lượt xuống tàu (gangplank)")]
     public float disembarkInterval = 0.8f;
@@ -176,7 +210,10 @@ public class TouristBoatConfig : ScriptableObject
     /// <summary>V2: giây gap khi chỉ 1 bến mở (đã kẹp không âm).</summary>
     public float GapOneDockSeconds => Mathf.Max(0f, gapOneDockMinutes) * 60f;
 
-    /// <summary>V2: giây gap khi ≥2 bến mở (đã kẹp không âm).</summary>
+    /// <summary>V2: giây gap khi ĐÚNG 2 bến mở (đã kẹp không âm).</summary>
+    public float GapTwoDockSeconds => Mathf.Max(0f, gapTwoDockMinutes) * 60f;
+
+    /// <summary>V2: giây gap khi đủ 3 bến mở (đã kẹp không âm).</summary>
     public float GapMultiDockSeconds => Mathf.Max(0f, gapMultiDockMinutes) * 60f;
 
     /// <summary>V2: giây so le tối thiểu giữa 2 arrival bất kỳ (đã kẹp không âm).</summary>
@@ -254,6 +291,7 @@ public class TouristBoatConfig : ScriptableObject
         // V2 — lịch tàu: gap tối thiểu 0.5 phút để không spam tàu liên tục,
         // stagger không âm (0 = tắt luật so le, chỉ nên dùng khi debug).
         gapOneDockMinutes   = Mathf.Max(0.5f, gapOneDockMinutes);
+        gapTwoDockMinutes   = Mathf.Max(0.5f, gapTwoDockMinutes);
         gapMultiDockMinutes = Mathf.Max(0.5f, gapMultiDockMinutes);
         minStaggerMinutes   = Mathf.Max(0f, minStaggerMinutes);
         maxDockMinutes      = Mathf.Max(0f, maxDockMinutes); // 0 = tắt lưới an toàn
@@ -264,6 +302,15 @@ public class TouristBoatConfig : ScriptableObject
         visitorsMax                = Mathf.Max(visitorsMin, visitorsMax);
         patienceMinutes            = Mathf.Max(1f, patienceMinutes);
         rewardIngredientMultiplier = Mathf.Max(0, rewardIngredientMultiplier);
+
+        // Thưởng V2.1: hệ số phải > 0 (0 làm khách trả 1 vàng — sàn của calculator),
+        // cap không được nhỏ hơn 1 (nhỏ hơn 1 thành hình phạt cho nguyên liệu quý).
+        touristGoldMultiplier      = Mathf.Max(0.01f, touristGoldMultiplier);
+        touristExpMultiplier       = Mathf.Max(0.01f, touristExpMultiplier); // [QA M-9] 0 sẽ làm EXP về sàn 1
+        diffMultEasy               = Mathf.Max(0.01f, diffMultEasy);
+        diffMultNormal             = Mathf.Max(0.01f, diffMultNormal);
+        diffMultHard               = Mathf.Max(0.01f, diffMultHard);
+        rarityBonusCap             = Mathf.Max(1f,    rarityBonusCap);
         disembarkInterval          = Mathf.Max(0.05f, disembarkInterval);
         visitorWalkSpeed           = Mathf.Max(1f, visitorWalkSpeed);
         queueSpacing               = Mathf.Max(1f, queueSpacing);

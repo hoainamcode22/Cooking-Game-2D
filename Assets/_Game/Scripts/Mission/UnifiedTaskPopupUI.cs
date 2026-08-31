@@ -1145,9 +1145,16 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
         h.ten = CreateText(h.goc, "Txt_Title", "", TaskPopupDesign.CoChuTen,
             TaskPopupDesign.TenBinhThuong, TextAlignmentOptions.Left,
-            new Vector2(xCot, 21f), new Vector2(TaskPopupDesign.CotChuRong, 34f), FontStyles.Bold);
+            new Vector2(xCot, 21f), new Vector2(TaskPopupDesign.CotChuRong, 44f), FontStyles.Bold);
         h.ten.textWrappingMode = TextWrappingModes.NoWrap;
-        h.ten.overflowMode = TextOverflowModes.Ellipsis;
+        // [FIX 2026-08-30] Ellipsis + NoWrap + font Baloo2 (rộng hơn LiberationSans) khiến tên
+        // nhiệm vụ dài tràn khung 480px → TMP trả VỀ 0 KÝ TỰ (mất hẳn chữ).
+        // Truncate cắt phần thừa nhưng LUÔN hiện phần đầu — không bao giờ mất trắng.
+        // [FIX 2026-08-31] Vẫn mất trắng vì lý do THẲNG ĐỨNG: Baloo2 cao dòng 1.602×cỡ chữ
+        // → cỡ 25 cần 40px, khung cũ chỉ 34px. Truncate/Ellipsis cắt CẢ theo chiều cao:
+        // không lọt nổi 1 dòng → 0 ký tự. Nâng khung 34→44px (tâm giữ nguyên y=21,
+        // không chạm thanh tiến độ ở y=-18) — tên hiện lại, phần ngang dài quá vẫn bị Truncate cắt gọn.
+        h.ten.overflowMode = TextOverflowModes.Truncate;
 
         var ktTd = new Vector2(TaskPopupDesign.CotChuRong, TaskPopupDesign.TdCao);
         RectTransform mangTd = CreateImage(h.goc, "Progress", BoGoc(TaskPopupDesign.TdBoGoc),
@@ -2361,7 +2368,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         tmp.color = color;
         tmp.alignment = alignment;
         tmp.fontStyle = style;
-        tmp.enableWordWrapping = false;
+        tmp.textWrappingMode = TextWrappingModes.NoWrap;
         tmp.overflowMode = TextOverflowModes.Overflow;
         tmp.raycastTarget = false;
         return tmp;

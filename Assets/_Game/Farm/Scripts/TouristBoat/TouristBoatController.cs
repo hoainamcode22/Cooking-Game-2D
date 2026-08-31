@@ -29,12 +29,19 @@ public class TouristBoatController : MonoBehaviour
     [Tooltip("Index bến 0-2. Để -1 sẽ tự suy từ tên 'Dock_XX' của node cha (hierarchy tool sinh).")]
     [SerializeField] private int dockIndex = -1;
 
-    [Header("Visual")]
-    [Tooltip("SpriteRenderer của tàu (child 'Visual'). Bỏ trống sẽ tự tìm.")]
-    [SerializeField] private SpriteRenderer visual;
+    [Header("12 Directional Sprites (360° Clockwise: 0=12h, 3=3h, 6=6h, 9=9h)")]
+    [Tooltip("Mảng 12 sprite hướng quay tròn 360 độ (mỗi góc 30 độ). Nếu để trống sẽ tự động tải từ Assets/Assetsgame/TouristBoat/12_Directions/.")]
+    [SerializeField] private Sprite[] directionalSprites = new Sprite[12];
 
-    [Tooltip("Sprite gốc quay mặt sang TRÁI? (như FerryController.spriteFacesLeft)")]
-    [SerializeField] private bool spriteFacesLeft = false;
+    [Header("Visual Scale & Motion")]
+    [Tooltip("Cỡ mong muốn của tàu trong thế giới (unit world).")]
+    [SerializeField] private float boatWorldWidth = 260f;
+
+    [Tooltip("Góc nghiêng mạn thuyền tối đa khi dập dềnh sóng (độ).")]
+    [SerializeField] private float waveRollAngle = 2.4f;
+
+    [Tooltip("Góc nghiêng thân thuyền khi bẻ lái cua (độ).")]
+    [SerializeField] private float turnBankingAngle = 4.5f;
 
     [Header("Nhãn khi đậu bến (world-space TMPro)")]
     [Tooltip("Bỏ trống sẽ tìm child 'Countdown', không có thì tự tạo TextMeshPro placeholder. " +
@@ -69,16 +76,18 @@ public class TouristBoatController : MonoBehaviour
     private float     _totalLength;
     private bool      _pathReady;
     private bool      _warnedNoPath;
-    // Cờ chống spam log: mỗi cảnh báo setup chỉ in đúng 1 lần cho mỗi tàu.
     private bool      _warnedNoSetup;
     private bool      _warnedNoVisual;
 
-    private Vector3 _visualBaseLocalPos;   // localPosition gốc của Visual — bob cộng lên từ đây
-    private float   _bobTime;
-    private bool    _visualShown    = true;
-    private bool    _countdownShown = true;
-    private bool    _facingLeft;
-    private bool    _dockedLabelSet;       // đã ghi chữ cho lần đậu này chưa (không alloc mỗi frame)
+    private Vector3   _visualBaseLocalPos;
+    private float     _bobTime;
+    private bool      _visualShown    = true;
+    private bool      _countdownShown = true;
+    private bool      _dockedLabelSet;
+
+    private float     _currentBankZ;
+    private Vector3   _lastDirection = Vector3.right;
+    private bool      _isInitializedSprites;
 
     // ─── Unity lifecycle ────────────────────────────────────────────────
 
@@ -86,23 +95,62 @@ public class TouristBoatController : MonoBehaviour
     {
         _dockIndex = ResolveDockIndex();
         if (_dockIndex < 0)
-            Debug.LogWarning($"[TouristBoat] {name}: không xác định được dockIndex " +
-                             "(đặt trong Inspector hoặc đặt tàu dưới node 'Dock_XX'). Tàu sẽ đứng yên.");
+            Debug.LogWarning($"[TouristBoat] {name}: không xác định được dockIndex. Tàu sẽ đứng yên.");
 
-        // Tự tìm Visual nếu chưa gán — ưu tiên child đúng tên theo hierarchy tool sinh.
         if (visual == null)
         {
             Transform v = transform.Find("Visual");
             visual = v != null ? v.GetComponent<SpriteRenderer>()
                                : GetComponentInChildren<SpriteRenderer>(true);
         }
-        if (visual == null)
-            Debug.LogWarning($"[TouristBoat] {name}: không tìm thấy SpriteRenderer 'Visual' — tàu chạy không hình (chờ Sếp gắn art).");
-        else
+
+        if (visual != null)
             _visualBaseLocalPos = visual.transform.localPosition;
 
+        EnsureDirectionalSprites();
         SetupCountdown();
         ShowCountdown(false);
+    }
+
+    private void EnsureDirectionalSprites()
+    {
+        if (_isInitializedSprites) return;
+        _isInitializedSprites = true;
+
+        bool hasMissing = false;
+        if (directionalSprites == null || directionalSprites.Length != 12)
+        {
+            directionalSprites = new Sprite[12];
+            hasMissing = true;
+        }
+        else
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                if (directionalSprites[i] == null) { hasMissing = true; break; }
+            }
+        }
+
+        if (!hasMissing) return;
+
+        // Tự động load 12 sprite tương ứng (Tàu đỏ cho dock 1, Tàu xanh cho dock 0 & 2)
+        string prefix = (_dockIndex == 1) ? "boat_red_12_dir_" : "boat_blue_12_dir_";
+
+        for (int i = 0; i < 12; i++)
+        {
+            if (directionalSprites[i] != null) continue;
+
+            string fileName = $"{prefix}{i}";
+            Sprite s = Resources.Load<Sprite>($"TouristBoat/{fileName}");
+#if UNITY_EDITOR
+            if (s == null)
+            {
+                string path = $"Assets/Assetsgame/TouristBoat/12_Directions/{fileName}.png";
+                s = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            }
+#endif
+            directionalSprites[i] = s;
+        }
     }
 
     private void Update()
@@ -110,36 +158,22 @@ public class TouristBoatController : MonoBehaviour
         BoatDockManager mgr = BoatDockManager.Instance;
         if (mgr == null || mgr.Config == null || _dockIndex < 0)
         {
-            // dockIndex = -1 (tool không wire được, hoặc object cha bị đổi tên khác
-            // "Dock_XX") làm tàu tắt VĨNH VIỄN mà không ai biết vì sao.
-            // Cảnh báo MỘT LẦN duy nhất — không spam mỗi frame.
             if (!_warnedNoSetup && mgr != null && mgr.Config != null && _dockIndex < 0)
             {
                 _warnedNoSetup = true;
-                Debug.LogWarning($"[TouristBoat] '{name}': dockIndex = -1 nen tau nay se KHONG BAO GIO hien. " +
-                                 "Sua: gan dockIndex trong Inspector (0/1/2), hoac dat tau duoi object ten " +
-                                 "'Dock_01'/'Dock_02'/'Dock_03' roi chay Tools/Farm Game/Tourist Boat/1. Setup All. " +
-                                 "Chan doan day du: menu 6. Chan Doan.", this);
+                Debug.LogWarning($"[TouristBoat] '{name}': dockIndex = -1 nên tàu sẽ không hiện.", this);
             }
             return;
         }
 
-        if (!_warnedNoVisual && visual == null)
-        {
-            _warnedNoVisual = true;
-            Debug.LogWarning($"[TouristBoat] '{name}': field Visual chua gan — logic thoi gian van chay " +
-                             "nhung khong co gi hien tren man hinh. Keo SpriteRenderer cua con tau vao field Visual.", this);
-        }
-
-        // Path dựng lười: Start của manager có thể chạy SAU Start của tàu
-        // (thứ tự script không đảm bảo) nên thử lại mỗi frame tới khi có.
         if (!_pathReady)
             TryBuildPath(mgr);
+
+        EnsureDirectionalSprites();
 
         BoatPhaseInfo info;
         if (!mgr.TryGetPhaseInfo(_dockIndex, out info))
         {
-            // Locked / manager chưa sẵn sàng — tàu ẩn hoàn toàn.
             SetVisualShown(false);
             ShowCountdown(false);
             return;
@@ -147,7 +181,6 @@ public class TouristBoatController : MonoBehaviour
 
         switch (info.State)
         {
-            // WaitingNext == Hidden (V1): tàu núp ở điểm mù chờ giờ cập bến kế tiếp.
             case BoatState.WaitingNext:
                 SetVisualShown(false);
                 ShowCountdown(false);
@@ -158,16 +191,19 @@ public class TouristBoatController : MonoBehaviour
             case BoatState.Arriving:
                 SetVisualShown(true);
                 ShowCountdown(false);
-                // Tiến độ 0→1 = điểm mù → berth. Flip theo hướng chạy (mũi hướng bến).
                 if (_pathReady)
-                    PlaceAlongPath((float)info.Progress, true);
+                    PlaceAlongPathArriving((float)info.Progress);
                 break;
 
             case BoatState.Docked:
                 SetVisualShown(true);
                 if (_pathReady)
-                    transform.position = _points[_points.Length - 1] + berthOffset; // đậu chính xác tại berth
-                // V2: pha Docked vô hạn → KHÔNG countdown. Hiện nhãn tĩnh hoặc ẩn hẳn.
+                {
+                    Vector3 berthPos = _points[_points.Length - 1] + berthOffset;
+                    transform.position = berthPos;
+                    // Hướng đậu bến: quay mặt vào bến
+                    ApplyDirectionSprite(_lastDirection);
+                }
                 ShowCountdown(showDockedLabel);
                 if (showDockedLabel)
                     ApplyDockedLabel();
@@ -176,26 +212,24 @@ public class TouristBoatController : MonoBehaviour
             case BoatState.Departing:
                 SetVisualShown(true);
                 ShowCountdown(false);
-                // Đi NGƯỢC path: tiến độ pha 0→1 ứng với quãng đường 1→0.
-                // KHÔNG cập nhật flip — tàu LÙI thẳng ra, không quay đầu (GDD §3.1).
                 if (_pathReady)
-                    PlaceAlongPath(1f - (float)info.Progress, false);
+                    PlaceAlongPathDeparting((float)info.Progress);
                 break;
         }
 
         if (_visualShown)
-            Bob(mgr.Config);
+            Bob(mgr.Config, info.State == BoatState.Docked);
     }
 
-    // ─── Di chuyển theo polyline ────────────────────────────────────────
+    // ─── Di chuyển & Quay đầu 360° ──────────────────────────────────────
 
     /// <summary>
-    /// Đặt tàu tại vị trí ứng với tỉ lệ quãng đường t (0 = điểm mù, 1 = berth).
-    /// updateFacing = true chỉ trong pha Arriving — Departing giữ nguyên hướng cũ.
-    /// Không alloc: đọc mảng cache, toàn phép toán struct.
+    /// Tiến vào bến (Arriving): đi từ Điểm Mù → Berth, cập bến mượt mà với hướng mũi tàu chuẩn.
     /// </summary>
-    private void PlaceAlongPath(float t, bool updateFacing)
+    private void PlaceAlongPathArriving(float progress)
     {
+        // Smooth deceleration khi gần tới bến
+        float t = progress;
         float distance = Mathf.Clamp01(t) * _totalLength;
 
         Vector3 position;
@@ -203,9 +237,106 @@ public class TouristBoatController : MonoBehaviour
         SamplePath(distance, out position, out direction);
 
         transform.position = position + berthOffset;
+        _lastDirection = direction;
 
-        if (updateFacing && Mathf.Abs(direction.x) > 0.0001f)
-            SetFacing(direction.x < 0f);
+        ApplyDirectionSprite(direction);
+    }
+
+    /// <summary>
+    /// Rời bến (Departing): Bẻ lái quay đầu 180° mượt mà rồi rẽ sóng thẳng tiến ra khơi!
+    /// </summary>
+    private void PlaceAlongPathDeparting(float progress)
+    {
+        // Quãng đường thực tế đi từ 1 -> 0 (từ Berth về BlindPoint)
+        float t = Mathf.Clamp01(progress);
+
+        // Giai đoạn 1: Quay đầu 180° (Turn Arc) trong 28% tiến độ đầu tiên khi rời bến
+        const float turnPhaseDuration = 0.28f;
+
+        Vector3 berthPos = _points[_points.Length - 1];
+        Vector3 arrivalDir = (_points[_points.Length - 1] - _points[_points.Length - 2]).normalized;
+        Vector3 departDir  = -arrivalDir;
+
+        if (t < turnPhaseDuration)
+        {
+            float turnT = t / turnPhaseDuration;
+            float smoothTurn = Mathf.SmoothStep(0f, 1f, turnT);
+
+            // Nội suy góc quay 180 độ từ Hướng Cập Bến -> Hướng Rời Bến
+            float arrivalAngle = Mathf.Atan2(arrivalDir.y, arrivalDir.x) * Mathf.Rad2Deg;
+            float departAngle  = Mathf.Atan2(departDir.y, departDir.x)   * Mathf.Rad2Deg;
+            float curAngle     = Mathf.LerpAngle(arrivalAngle, departAngle, smoothTurn);
+
+            float rad = curAngle * Mathf.Deg2Rad;
+            Vector3 headingDir = new Vector3(Mathf.Cos(rad), Mathf.Sin(rad), 0f);
+
+            // Vòng cua nhẹ ra ngoài mạn bến để tàu không bị va vào cầu cảng
+            Vector3 lateralNorm = new Vector3(-arrivalDir.y, arrivalDir.x, 0f);
+            float arcOffset = Mathf.Sin(turnT * Mathf.PI) * 48f;
+
+            // Di chuyển nhích dần ra khỏi bến
+            float backDist = smoothTurn * 70f;
+            Vector3 pos = berthPos + (departDir * backDist) + (lateralNorm * arcOffset);
+
+            transform.position = pos + berthOffset;
+            ApplyDirectionSprite(headingDir);
+            _currentBankZ = Mathf.Sin(turnT * Mathf.PI) * -turnBankingAngle;
+        }
+        else
+        {
+            // Giai đoạn 2: Đã quay đầu xong -> rẽ sóng chạy thẳng về Điểm Mù ngoài khơi
+            float cruiseProgress = (t - turnPhaseDuration) / (1f - turnPhaseDuration);
+            // Đi từ quãng đường (totalLength - 70) về 0
+            float remainDist = _totalLength - 70f;
+            float distance = (_totalLength - 70f) * (1f - cruiseProgress);
+
+            Vector3 position;
+            Vector3 pathTangent;
+            SamplePath(distance, out position, out pathTangent);
+
+            transform.position = position + berthOffset;
+            Vector3 outDir = -pathTangent; // Mũi tàu hướng về phía trước theo hướng chạy
+            _lastDirection = outDir;
+
+            ApplyDirectionSprite(outDir);
+            _currentBankZ = 0f;
+        }
+    }
+
+    /// <summary>
+    /// Nhận diện góc vector và áp dụng đúng 1 trong 12 sprite hướng 360° (chuẩn mặt đồng hồ).
+    /// </summary>
+    private void ApplyDirectionSprite(Vector3 dir)
+    {
+        if (visual == null) return;
+        if (dir.sqrMagnitude < 0.0001f) return;
+
+        // Góc toán học (-180..180) từ trục +X
+        float angleDeg = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+        // Đổi sang góc đồng hồ: 12h (lên) = 0°, 3h (phải) = 90°, 6h (xuống) = 180°, 9h (trái) = 270°
+        float clockDeg = (450f - angleDeg) % 360f;
+        if (clockDeg < 0f) clockDeg += 360f;
+
+        // Mỗi nấc 30 độ (12 hướng: 0..11)
+        int dirIndex = Mathf.RoundToInt(clockDeg / 30f) % 12;
+
+        if (directionalSprites != null && dirIndex < directionalSprites.Length && directionalSprites[dirIndex] != null)
+        {
+            visual.sprite = directionalSprites[dirIndex];
+            visual.flipX = false; // Không cần flip vì 12 hướng đã vẽ chuẩn 360 độ
+        }
+
+        // Đảm bảo kích thước tàu hiển thị đúng tỷ lệ bản đồ
+        if (visual.sprite != null)
+        {
+            float nativeWidth = visual.sprite.rect.width / visual.sprite.pixelsPerUnit;
+            if (nativeWidth > 0.001f)
+            {
+                float targetScale = boatWorldWidth / nativeWidth;
+                visual.transform.localScale = Vector3.one * targetScale;
+            }
+        }
     }
 
     /// <summary>Nội suy vị trí + hướng đoạn tại quãng đường d dọc polyline.</summary>
@@ -242,7 +373,6 @@ public class TouristBoatController : MonoBehaviour
             return;
         }
 
-        // Không tới được đây (đã chặn distance >= _totalLength) — trả berth cho chắc.
         position  = _points[last];
         direction = _points[last] - _points[last - 1];
         direction.Normalize();
@@ -319,20 +449,32 @@ public class TouristBoatController : MonoBehaviour
     // ─── Visual: bob + flip (tái dùng cách làm FerryController) ─────────
 
     /// <summary>
-    /// Dập dềnh sprite theo sin — chỉ đụng localPosition.y của child Visual,
-    /// root vẫn nằm đúng path. Biên độ/tần số từ config (không hardcode).
+    /// Dập dềnh thân tàu theo sóng nước (Heave trục Y + Roll lắc lư mạn + Banking khi bẻ lái).
     /// </summary>
-    private void Bob(TouristBoatConfig cfg)
+    private void Bob(TouristBoatConfig cfg, bool isDocked)
     {
         if (visual == null) return;
+
+        float freq = cfg != null ? cfg.bobFrequency : 1.2f;
+        float amp  = cfg != null ? cfg.bobAmplitude : 3.5f;
 
         _bobTime += Time.deltaTime;
         float scaleY = Mathf.Max(0.0001f, transform.lossyScale.y);
 
+        // 1. Nhấp nhô Heave (trục Y)
+        float waveSpeed = isDocked ? freq * 0.8f : freq;
+        float waveAmp   = isDocked ? amp * 0.7f : amp;
+        float heaveY    = Mathf.Sin(_bobTime * waveSpeed * Mathf.PI * 2f) * waveAmp / scaleY;
+
         Vector3 lp = visual.transform.localPosition;
-        lp.y = _visualBaseLocalPos.y +
-               Mathf.Sin(_bobTime * cfg.bobFrequency * Mathf.PI * 2f) * cfg.bobAmplitude / scaleY;
+        lp.y = _visualBaseLocalPos.y + heaveY;
         visual.transform.localPosition = lp;
+
+        // 2. Lắc lư Roll (góc Z) + Nghiêng thân khi bẻ lái (Banking)
+        float rollAngle = Mathf.Sin(_bobTime * (waveSpeed * 0.9f) * Mathf.PI * 2f) * (isDocked ? waveRollAngle * 0.6f : waveRollAngle);
+        float totalRotZ = rollAngle + _currentBankZ;
+
+        visual.transform.localRotation = Quaternion.Euler(0f, 0f, totalRotZ);
     }
 
     /// <summary>Flip sprite theo hướng chạy ngang (flipX, không xoay). Chỉ gọi khi Arriving.</summary>

@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 /// <summary>
 /// Editor Tool: Tools/Farm Game/Tourist Boat/Setup Tourist Visitors (Scene) — BOAT-002 §3.3.
@@ -44,12 +46,27 @@ public static class TouristVisitorSetupTool
 
     // Khoảng cách MẶC ĐỊNH giữa các mốc (unit world). Map dùng toạ độ rất lớn
     // (3 bến cách nhau ~740 unit) nên số nhỏ kiểu 1-2 unit là vô nghĩa ở đây.
-    private const float GangplankDistance = 110f;  // từ Berth vào bờ
-    private const float WaypointSpacing   = 260f;  // giữa 2 WP
-    private const float QueueExtra        = 240f;  // từ WP cuối tới hàng chờ (khi không thấy nhà hàng)
+    private const float WaypointSpacing = 260f;  // giữa 2 WP
+    private const float QueueExtra      = 240f;  // từ WP cuối tới hàng chờ (khi không thấy nhà hàng)
 
-    private const float GangplankWidth  = 190f;
-    private const float GangplankHeight = 46f;
+    // ── CỠ TẤM GỖ (unit world) ──────────────────────────────────────────
+    // [BUG Sếp gặp lúc Play test 2026-08-29] Bản đầu để 190x46 và gán sprite
+    // WoodBoard_Frame (512px, PPU 100 = 5.12 unit) — nhưng ApplySpriteSize chỉ chạy khi
+    // sprite có border; sprite không border thì phóng bằng scale, và với cỡ mục tiêu quá
+    // nhỏ so với map (3 bến cách nhau ~740 unit, khách cao 170 unit) thì tấm ván chỉ là
+    // một chấm gần như vô hình. Nay canh theo world size THẬT như cách làm nhân vật.
+    /// <summary>Chiều DÀI tấm gỗ (unit world) — đủ nối từ mạn tàu vào bờ.</summary>
+    public const float GangplankWorldLength = 420f;
+
+    /// <summary>Chiều DÀY tấm gỗ (unit world) — đủ rộng cho 1 khách cao 170 unit đi qua.</summary>
+    public const float GangplankWorldThickness = 90f;
+
+    /// <summary>
+    /// Khoảng cách từ Berth tới TÂM tấm gỗ = nửa chiều dài ⇒ tấm gỗ bắt đầu ĐÚNG tại
+    /// mạn tàu và kéo dài trọn 420 unit vào bờ (trả lời câu hỏi "lệch 110 unit" của Lead:
+    /// 110 là số cũ, quá ngắn nên ván không chạm được cả hai đầu).
+    /// </summary>
+    public const float GangplankDistance = GangplankWorldLength * 0.5f;
 
     // ─────────────────────────────────────────────────────────────────────
     //  SETUP
@@ -117,6 +134,7 @@ public static class TouristVisitorSetupTool
         int huongDem    = 0;
 
         Sprite woodSprite = FindWoodSprite(out string woodInfo);
+        var duDungMocThang = new bool[DockTotal]; // path nào còn đang là mốc thẳng dự phòng
 
         for (int i = 0; i < DockTotal; i++)
         {
@@ -144,9 +162,10 @@ public static class TouristVisitorSetupTool
                 var sr = Undo.AddComponent<SpriteRenderer>(go);
                 sr.sprite = woodSprite;
                 sr.color  = woodSprite != null ? Color.white : new Color(0.55f, 0.38f, 0.20f, 1f);
-                sr.sortingLayerName = "CongTrinh";
-                sr.sortingOrder     = 900; // trên mặt nước, dưới khách
-                ApplySpriteSize(sr, new Vector2(GangplankWidth, GangplankHeight));
+                // Layer THẬT của project (Objects) — dưới khách (ObjectsFront), trên mặt nước.
+                sr.sortingLayerName = TouristSortingLayers.Resolve(TouristSortingLayers.Gangplank);
+                sr.sortingOrder     = 900;
+                ApplySpriteSize(sr, new Vector2(GangplankWorldLength, GangplankWorldThickness));
 
                 // Quay tấm gỗ theo hướng bến → bờ cho hợp mắt.
                 go.transform.rotation = Quaternion.Euler(0f, 0f,
@@ -154,7 +173,8 @@ public static class TouristVisitorSetupTool
 
                 Undo.AddComponent<GangplankController>(go);
                 gp = go.transform;
-                Note(added, ref addedCount, $"Dock_{i + 1:00}/Gangplank ({woodInfo})");
+                Note(added, ref addedCount,
+                     $"Dock_{i + 1:00}/Gangplank {GangplankWorldLength:0}x{GangplankWorldThickness:0} unit ({woodInfo})");
             }
             else if (gp.GetComponent<GangplankController>() == null)
             {
@@ -169,11 +189,41 @@ public static class TouristVisitorSetupTool
             if (path == null)
             {
                 path = CreateGO(pathName, root.transform, gp.position).transform;
-                for (int k = 1; k <= DefaultWaypoints; k++)
-                    CreateGO($"WP_{k:00}", path, gp.position + dir * (WaypointSpacing * k));
 
-                Note(added, ref addedCount, $"{pathName} ({DefaultWaypoints} WP mặc định — CẦN SẾP KÉO theo đường đất)");
-                canLam.AppendLine($"• Kéo WP_01..WP_{DefaultWaypoints:00} của {pathName} bám theo con đường đất đã vẽ (REVIEW).");
+                // Ưu tiên BÁM ĐƯỜNG ĐẤT thật; đích tạm là QueueAnchor nếu đã có, không thì
+                // hướng đất liền. (Tool ★ chạy bước 4 sau bước này nên sẽ ghi lại lần nữa
+                // với QueueAnchor chính xác — ở đây chỉ để tool con dùng độc lập cũng đúng.)
+                Transform anchorCo = root.transform.Find("QueueAnchor");
+                Vector3 dauVan = gp.position;
+                var gpSr = gp.GetComponent<SpriteRenderer>();
+                if (gpSr != null && gpSr.sprite != null)
+                    dauVan += Vector3.up * (gpSr.bounds.size.y * 0.5f);
+
+                KetQuaTimDuong kqDuong = null;
+                if (BamDuongDat && anchorCo != null)
+                    kqDuong = TimDuongBamDat(dauVan, anchorCo.position);
+
+                if (kqDuong != null && kqDuong.ThanhCong)
+                {
+                    for (int k = 0; k < kqDuong.Waypoints.Count; k++)
+                        CreateGO($"WP_{k + 1:00}", path, kqDuong.Waypoints[k]);
+
+                    Note(added, ref addedCount, $"{pathName} — BÁM ĐƯỜNG ĐẤT: {kqDuong.MoTaNgan()}");
+                    if (kqDuong.TiLeCo > 0.4f)
+                        canLam.AppendLine($"• {pathName}: {kqDuong.TiLeCo * 100f:0}% quãng đường đi trên CỎ — " +
+                                          "kiểm lại Tilemap_IsoDirt xem đường đất có nối tới nhà hàng chưa.");
+                }
+                else
+                {
+                    for (int k = 1; k <= DefaultWaypoints; k++)
+                        CreateGO($"WP_{k:00}", path, gp.position + dir * (WaypointSpacing * k));
+
+                    string lyDo = kqDuong != null ? kqDuong.LyDoThatBai
+                                : !BamDuongDat ? "cờ bám đường đất đang TẮT"
+                                : "chưa có QueueAnchor để làm đích";
+                    duDungMocThang[i] = true;
+                    Note(added, ref addedCount, $"{pathName} ({DefaultWaypoints} WP thẳng dự phòng — {lyDo})");
+                }
             }
             pathRoots[i] = path;
         }
@@ -215,6 +265,41 @@ public static class TouristVisitorSetupTool
         {
             Undo.AddComponent<TouristQueue>(queueAnchor.gameObject);
             Note(added, ref addedCount, "QueueAnchor: component TouristQueue");
+        }
+
+        // ── Lượt 2: path nào vừa phải dùng mốc thẳng vì CHƯA có QueueAnchor thì bám lại ──
+        // (QueueAnchor được tạo SAU vòng lặp bến, nên lần đầu chạy tool chưa có đích để tìm đường.)
+        if (BamDuongDat && queueAnchor != null)
+        {
+            for (int i = 0; i < DockTotal; i++)
+            {
+                if (!duDungMocThang[i] || pathRoots[i] == null || gangplanks[i] == null) continue;
+
+                Vector3 dauVan = gangplanks[i].position;
+                var gsr = gangplanks[i].GetComponent<SpriteRenderer>();
+                if (gsr != null && gsr.sprite != null)
+                    dauVan += Vector3.up * (gsr.bounds.size.y * 0.5f);
+
+                KetQuaTimDuong kq = TimDuongBamDat(dauVan, queueAnchor.position);
+                if (!kq.ThanhCong)
+                {
+                    canLam.AppendLine($"• Kéo WP của TouristPath_Dock{i + 1:00} bám theo đường đất đã vẽ (REVIEW) " +
+                                      $"— tool chưa bám tự động được: {kq.LyDoThatBai}.");
+                    continue;
+                }
+
+                Transform path = pathRoots[i];
+                for (int c = path.childCount - 1; c >= 0; c--)
+                    Undo.DestroyObjectImmediate(path.GetChild(c).gameObject);
+
+                for (int k = 0; k < kq.Waypoints.Count; k++)
+                    CreateGO($"WP_{k + 1:00}", path, kq.Waypoints[k]);
+
+                Note(added, ref addedCount, $"TouristPath_Dock{i + 1:00} — BÁM ĐƯỜNG ĐẤT (lượt 2): {kq.MoTaNgan()}");
+                if (kq.TiLeCo > 0.4f)
+                    canLam.AppendLine($"• TouristPath_Dock{i + 1:00}: {kq.TiLeCo * 100f:0}% quãng đường đi trên CỎ — " +
+                                      "kiểm lại Tilemap_IsoDirt xem đường đất có nối tới nhà hàng chưa.");
+            }
         }
 
         // ── Wire field cho manager (chỉ điền chỗ TRỐNG) ─────────────────
@@ -303,7 +388,7 @@ public static class TouristVisitorSetupTool
             var cfg = AssetDatabase.LoadAssetAtPath<TouristBoatConfig>(ConfigPath);
             if (cfg == null)
             {
-                var boatMgr = Object.FindFirstObjectByType<BoatDockManager>(FindObjectsInactive.Include);
+                var boatMgr = UnityEngine.Object.FindFirstObjectByType<BoatDockManager>(FindObjectsInactive.Include);
                 if (boatMgr != null) cfg = boatMgr.Config;
             }
             cfgProp.objectReferenceValue = cfg;
@@ -354,7 +439,7 @@ public static class TouristVisitorSetupTool
         return report.ToString();
     }
 
-    private static void SetRefIfEmpty(SerializedObject so, string propName, Object value)
+    private static void SetRefIfEmpty(SerializedObject so, string propName, UnityEngine.Object value)
     {
         SerializedProperty p = so.FindProperty(propName);
         if (p == null) return;
@@ -447,7 +532,7 @@ public static class TouristVisitorSetupTool
     {
         string[] hints = { "cooking", "nhahang", "nha_hang", "restaurant", "bep", "kitchen" };
 
-        foreach (var t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        foreach (var t in UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
             if (t == null) continue;
             string ten = t.name.ToLowerInvariant();
@@ -465,16 +550,422 @@ public static class TouristVisitorSetupTool
         return null;
     }
 
+    // ═════════════════════════════════════════════════════════════════════
+    //  TÌM ĐƯỜNG BÁM ĐƯỜNG ĐẤT THẬT (Sếp: "đi theo cái đường đất tôi đã vẽ")
+    // ═════════════════════════════════════════════════════════════════════
+    //
+    // Bản trước đặt 3 mốc trên ĐƯỜNG THẲNG bến → nhà hàng nên khách đi xuyên qua cỏ.
+    // Nay: Dijkstra 8 hướng trên chính lưới ô của tilemap, chi phí theo loại mặt đất
+    // (đất rẻ nhất) ⇒ đường tự bám con đường đất Sếp vẽ; rồi rút gọn bằng
+    // Douglas-Peucker xuống 4-7 waypoint cho Sếp còn kéo tinh chỉnh được.
+    //
+    // Cỏ KHÔNG bị chặn, chỉ đắt — nhờ vậy không bao giờ "không tìm được đường" khiến
+    // khách đứng im; nếu đường đất chưa nối tới nhà hàng thì đường đi sẽ nhiều ô cỏ và
+    // tool CẢNH BÁO để Sếp kiểm lại tilemap.
+
+    /// <summary>Chi phí đi vào 1 ô theo loại mặt đất (Lead chốt 2026-08-29).</summary>
+    private const int ChiPhiDat    = 1;
+    private const int ChiPhiCauTau = 2;
+    private const int ChiPhiCat    = 5;
+    private const int ChiPhiCo     = 9;   // không chặn, chỉ đắt
+
+    /// <summary>Dung sai rút gọn Douglas-Peucker (unit world) — điểm khởi đầu, tool tự nới nếu ra quá nhiều WP.</summary>
+    private const float DungSaiRutGon = 200f;
+
+    private const int SoWpToiThieu = 4;
+    private const int SoWpToiDa    = 7;
+
+    /// <summary>Trần số ô quét — chặn trường hợp tilemap khổng lồ làm Editor treo.</summary>
+    private const int TranSoO = 250000;
+
+    /// <summary>Khoá EditorPrefs cho cờ bật/tắt tính năng bám đường đất.</summary>
+    private const string KhoaBamDuongDat = "TouristBoat_BamDuongDat";
+
+    /// <summary>
+    /// Cờ Sếp bật/tắt: TRUE = tool tự tìm đường bám tilemap đất; FALSE = giữ 3 mốc thẳng
+    /// (dùng khi Sếp đã kéo tay waypoint và không muốn bị ghi đè).
+    /// Đổi bằng menu "Bám đường đất khi setup (bật/tắt)".
+    /// </summary>
+    public static bool BamDuongDat
+    {
+        get { return EditorPrefs.GetBool(KhoaBamDuongDat, true); }
+        set { EditorPrefs.SetBool(KhoaBamDuongDat, value); }
+    }
+
+    [MenuItem(MenuRoot + "⚙ Bám đường đất khi setup (bật/tắt)", false, 23)]
+    private static void ToggleBamDuongDat()
+    {
+        BamDuongDat = !BamDuongDat;
+        Debug.Log("[TouristVisitor] Bám đường đất khi setup: " + (BamDuongDat ? "BẬT" : "TẮT (dùng 3 mốc thẳng)"));
+    }
+
+    [MenuItem(MenuRoot + "⚙ Bám đường đất khi setup (bật/tắt)", true)]
+    private static bool ToggleBamDuongDatValidate()
+    {
+        Menu.SetChecked(MenuRoot + "⚙ Bám đường đất khi setup (bật/tắt)", BamDuongDat);
+        return true;
+    }
+
+    /// <summary>Kết quả một lần tìm đường — dùng cho cả việc ghi waypoint lẫn in report.</summary>
+    public class KetQuaTimDuong
+    {
+        /// <summary>Waypoint đã rút gọn (KHÔNG gồm điểm đầu và điểm đích).</summary>
+        public List<Vector3> Waypoints = new List<Vector3>();
+
+        public int   ODat, OCauTau, OCat, OCo;
+        public float TongDaiUnit;
+
+        /// <summary>null/rỗng = thành công. Có nội dung = lý do phải rơi về 3 mốc thẳng.</summary>
+        public string LyDoThatBai;
+
+        public bool ThanhCong => string.IsNullOrEmpty(LyDoThatBai) && Waypoints.Count > 0;
+        public int  TongO     => ODat + OCauTau + OCat + OCo;
+        public float TiLeCo   => TongO > 0 ? (float)OCo / TongO : 0f;
+
+        public string MoTaNgan()
+        {
+            if (!ThanhCong) return "thất bại: " + LyDoThatBai;
+            return $"{Waypoints.Count} WP · {TongO} ô (đất {ODat} · cầu tàu {OCauTau} · cát {OCat} · cỏ {OCo}" +
+                   $" = {TiLeCo * 100f:0}% cỏ) · dài {TongDaiUnit:0} unit";
+        }
+    }
+
+    /// <summary>
+    /// Tìm đường bám đường đất từ <paramref name="batDau"/> tới <paramref name="dich"/>.
+    /// Không bao giờ ném exception — thất bại thì trả kết quả có <c>LyDoThatBai</c>.
+    /// </summary>
+    public static KetQuaTimDuong TimDuongBamDat(Vector3 batDau, Vector3 dich)
+    {
+        var kq = new KetQuaTimDuong();
+
+        try
+        {
+            Tilemap dat = null, cauTau = null, cat = null;
+            foreach (Tilemap tm in UnityEngine.Object.FindObjectsByType<Tilemap>(
+                         FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (tm == null) continue;
+                string ten = tm.gameObject.name.ToLowerInvariant();
+                if (dat    == null && ten.Contains("isodirt")) dat    = tm;
+                if (cauTau == null && ten.Contains("isodock")) cauTau = tm;
+                if (cat    == null && ten.Contains("isosand")) cat    = tm;
+            }
+
+            if (dat == null)
+            {
+                kq.LyDoThatBai = "không thấy tilemap tên chứa 'IsoDirt' trong scene";
+                return kq;
+            }
+
+            // Ô của điểm đầu/đích — quy chiếu theo lưới của tilemap đất.
+            Vector3Int oDau  = dat.WorldToCell(batDau);
+            Vector3Int oDich = dat.WorldToCell(dich);
+
+            // Vùng quét = bao của các tilemap + điểm đầu/đích, nới 8 ô cho có đường lách.
+            BoundsInt vung = GopVung(dat, cauTau, cat, oDau, oDich, 8);
+            long soO = (long)vung.size.x * vung.size.y;
+            if (soO <= 0 || soO > TranSoO)
+            {
+                kq.LyDoThatBai = $"vùng quét không hợp lệ ({vung.size.x}x{vung.size.y} ô)";
+                return kq;
+            }
+
+            // ── Bảng chi phí ──
+            int w = vung.size.x, h = vung.size.y;
+            var chiPhi = new int[w * h];
+            for (int y = 0; y < h; y++)
+            {
+                for (int x = 0; x < w; x++)
+                {
+                    var o = new Vector3Int(vung.xMin + x, vung.yMin + y, 0);
+                    int c = ChiPhiCo;                                    // mặc định: cỏ / trống
+                    if (cat    != null && cat.HasTile(o))    c = ChiPhiCat;
+                    if (cauTau != null && cauTau.HasTile(o)) c = ChiPhiCauTau;
+                    if (dat.HasTile(o))                      c = ChiPhiDat; // đất thắng tất cả
+                    chiPhi[y * w + x] = c;
+                }
+            }
+
+            List<Vector3Int> duong = Dijkstra(chiPhi, w, h, vung, oDau, oDich);
+            if (duong == null || duong.Count < 2)
+            {
+                kq.LyDoThatBai = "không nối được ô đầu tới ô đích trong vùng quét";
+                return kq;
+            }
+
+            // ── Đếm loại ô + đổi sang world ──
+            var diem = new List<Vector3>(duong.Count);
+            for (int i = 0; i < duong.Count; i++)
+            {
+                Vector3Int o = duong[i];
+                int c = chiPhi[(o.y - vung.yMin) * w + (o.x - vung.xMin)];
+                if      (c == ChiPhiDat)    kq.ODat++;
+                else if (c == ChiPhiCauTau) kq.OCauTau++;
+                else if (c == ChiPhiCat)    kq.OCat++;
+                else                        kq.OCo++;
+
+                // GetCellCenterWorld tự lo layout Isometric + cellSize + scale cha —
+                // cho ra đúng công thức ((cx-cy)*0.5*S, (cx+cy)*0.25*S) mà Lead đã kiểm.
+                Vector3 wpos = dat.GetCellCenterWorld(o);
+                wpos.z = 0f;
+                diem.Add(wpos);
+            }
+
+            for (int i = 1; i < diem.Count; i++)
+                kq.TongDaiUnit += Vector3.Distance(diem[i - 1], diem[i]);
+
+            // ── Rút gọn về 4..7 waypoint sẽ ghi ──
+            List<int> giu = RutGonVeKhoang(diem, SoWpToiThieu, SoWpToiDa);
+
+            // Bỏ điểm ĐẦU (manager tự thêm đầu tấm gỗ) và điểm CUỐI (khách tự đi vào slot hàng chờ).
+            for (int i = 1; i < giu.Count - 1; i++)
+                kq.Waypoints.Add(diem[giu[i]]);
+
+            if (kq.Waypoints.Count == 0)
+            {
+                kq.LyDoThatBai = "đường quá ngắn, rút gọn xong không còn waypoint trung gian nào";
+                return kq;
+            }
+
+            return kq;
+        }
+        catch (Exception e)
+        {
+            kq.LyDoThatBai = "lỗi khi tìm đường: " + e.Message;
+            Debug.LogWarning("[TouristVisitor] TimDuongBamDat: " + e);
+            return kq;
+        }
+    }
+
+    /// <summary>Bao chung của các tilemap + 2 ô mốc, nới thêm <paramref name="noi"/> ô mỗi phía.</summary>
+    private static BoundsInt GopVung(Tilemap dat, Tilemap cauTau, Tilemap cat,
+                                     Vector3Int oDau, Vector3Int oDich, int noi)
+    {
+        BoundsInt b = dat.cellBounds;
+        int xMin = b.xMin, xMax = b.xMax, yMin = b.yMin, yMax = b.yMax;
+
+        if (cauTau != null)
+        {
+            BoundsInt c = cauTau.cellBounds;
+            xMin = Mathf.Min(xMin, c.xMin); xMax = Mathf.Max(xMax, c.xMax);
+            yMin = Mathf.Min(yMin, c.yMin); yMax = Mathf.Max(yMax, c.yMax);
+        }
+        if (cat != null)
+        {
+            BoundsInt c = cat.cellBounds;
+            xMin = Mathf.Min(xMin, c.xMin); xMax = Mathf.Max(xMax, c.xMax);
+            yMin = Mathf.Min(yMin, c.yMin); yMax = Mathf.Max(yMax, c.yMax);
+        }
+
+        xMin = Mathf.Min(xMin, Mathf.Min(oDau.x, oDich.x));
+        xMax = Mathf.Max(xMax, Mathf.Max(oDau.x, oDich.x) + 1);
+        yMin = Mathf.Min(yMin, Mathf.Min(oDau.y, oDich.y));
+        yMax = Mathf.Max(yMax, Mathf.Max(oDau.y, oDich.y) + 1);
+
+        xMin -= noi; yMin -= noi; xMax += noi; yMax += noi;
+        return new BoundsInt(xMin, yMin, 0, xMax - xMin, yMax - yMin, 1);
+    }
+
+    /// <summary>
+    /// Dijkstra 8 hướng trên lưới ô (mọi ô đều đi được, chỉ khác giá) — đường đi rẻ nhất
+    /// tự bám dải ô đất. Đường chéo nhân 1.41 để không "ăn gian" khoảng cách.
+    /// Trả danh sách ô từ đầu tới đích, null nếu không tới được.
+    /// </summary>
+    private static List<Vector3Int> Dijkstra(int[] chiPhi, int w, int h, BoundsInt vung,
+                                             Vector3Int oDau, Vector3Int oDich)
+    {
+        int iDau  = ChiSo(oDau,  vung, w, h);
+        int iDich = ChiSo(oDich, vung, w, h);
+        if (iDau < 0 || iDich < 0) return null;
+
+        int n = w * h;
+        var dist = new float[n];
+        var truoc = new int[n];
+        var xong  = new bool[n];
+        for (int i = 0; i < n; i++) { dist[i] = float.MaxValue; truoc[i] = -1; }
+        dist[iDau] = 0f;
+
+        // Heap nhị phân tối giản (không dùng SortedSet để tránh cấp phát nhiều).
+        var heap = new List<int>(256) { iDau };
+        var uuTien = new List<float>(256) { 0f };
+
+        int[] dx = { 1, -1, 0, 0, 1, 1, -1, -1 };
+        int[] dy = { 0, 0, 1, -1, 1, -1, 1, -1 };
+
+        while (heap.Count > 0)
+        {
+            // Lấy phần tử nhỏ nhất (quét tuyến tính — vùng quét nhỏ, đủ nhanh cho Editor).
+            int best = 0;
+            for (int i = 1; i < heap.Count; i++) if (uuTien[i] < uuTien[best]) best = i;
+            int cur = heap[best];
+            heap.RemoveAt(best); uuTien.RemoveAt(best);
+
+            if (xong[cur]) continue;
+            xong[cur] = true;
+            if (cur == iDich) break;
+
+            int cx = cur % w, cy = cur / w;
+            for (int k = 0; k < 8; k++)
+            {
+                int nx = cx + dx[k], ny = cy + dy[k];
+                if (nx < 0 || ny < 0 || nx >= w || ny >= h) continue;
+
+                int next = ny * w + nx;
+                if (xong[next]) continue;
+
+                float buoc = chiPhi[next] * (k >= 4 ? 1.41f : 1f);
+                float mo = dist[cur] + buoc;
+                if (mo >= dist[next]) continue;
+
+                dist[next] = mo;
+                truoc[next] = cur;
+                heap.Add(next); uuTien.Add(mo);
+            }
+        }
+
+        if (truoc[iDich] < 0 && iDich != iDau) return null;
+
+        var ds = new List<Vector3Int>();
+        for (int i = iDich; i >= 0; i = truoc[i])
+        {
+            ds.Add(new Vector3Int(vung.xMin + (i % w), vung.yMin + (i / w), 0));
+            if (i == iDau) break;
+        }
+        ds.Reverse();
+        return ds;
+    }
+
+    private static int ChiSo(Vector3Int o, BoundsInt vung, int w, int h)
+    {
+        int x = o.x - vung.xMin, y = o.y - vung.yMin;
+        if (x < 0 || y < 0 || x >= w || y >= h) return -1;
+        return y * w + x;
+    }
+
+    /// <summary>
+    /// Rút gọn polyline rồi bảo đảm SỐ WAYPOINT SẼ GHI nằm trong [min..max].
+    /// (Số waypoint ghi = số điểm giữ − 2, vì điểm đầu và điểm cuối bị bỏ: điểm đầu do
+    /// manager tự thêm là đầu tấm gỗ, điểm cuối là hàng chờ khách tự đi tới.)
+    ///
+    /// Ba bước:
+    ///   ① Douglas-Peucker với dung sai khởi điểm;
+    ///   ② quá NHIỀU điểm → nới dung sai (×1.6); quá ÍT → siết (÷1.6);
+    ///   ③ vẫn quá ít (đường đất gần như thẳng / hình L thì DP đúng ra chỉ còn 3-4 điểm)
+    ///      → CHÈN THÊM điểm lấy từ CHÍNH đường đã truy, chia đôi đoạn dài nhất.
+    ///      Điểm chèn vẫn nằm trên ô đất nên khách không rời đường; chỉ là Sếp có thêm
+    ///      mốc để kéo tinh chỉnh.
+    /// Trả về danh sách CHỈ SỐ trong <paramref name="diem"/> (đã sắp tăng).
+    /// </summary>
+    private static List<int> RutGonVeKhoang(List<Vector3> diem, int minGhi, int maxGhi)
+    {
+        int muonToiThieu = minGhi + 2;
+        int muonToiDa    = maxGhi + 2;
+
+        float dungSai = DungSaiRutGon;
+        List<int> giu = DouglasPeucker(diem, dungSai);
+
+        for (int lan = 0; lan < 12 && giu.Count > muonToiDa; lan++)
+        {
+            dungSai *= 1.6f;
+            giu = DouglasPeucker(diem, dungSai);
+        }
+        for (int lan = 0; lan < 12 && giu.Count < muonToiThieu && dungSai > 10f; lan++)
+        {
+            dungSai /= 1.6f;
+            giu = DouglasPeucker(diem, dungSai);
+        }
+
+        ChenThemDiemTrenDuong(diem, giu, muonToiThieu);
+        return giu;
+    }
+
+    /// <summary>
+    /// Chèn thêm mốc cho tới khi đủ <paramref name="soDiemMuon"/>: mỗi lần tìm khoảng
+    /// TRỐNG DÀI NHẤT giữa 2 mốc liền kề (đo bằng số ô của đường gốc) rồi lấy ô giữa.
+    /// Không còn ô nào chèn được thì dừng — đường quá ngắn thì ít mốc là ĐÚNG, không bịa thêm.
+    /// </summary>
+    private static void ChenThemDiemTrenDuong(List<Vector3> diem, List<int> giu, int soDiemMuon)
+    {
+        while (giu.Count < soDiemMuon)
+        {
+            int viTriChen = -1, khoangRong = 1;
+            for (int i = 1; i < giu.Count; i++)
+            {
+                int rong = giu[i] - giu[i - 1];
+                if (rong > khoangRong) { khoangRong = rong; viTriChen = i; }
+            }
+            if (viTriChen < 0 || khoangRong < 2) return; // hết chỗ chèn
+
+            int giua = giu[viTriChen - 1] + khoangRong / 2;
+            giu.Insert(viTriChen, giua);
+        }
+    }
+
+    /// <summary>
+    /// Douglas-Peucker kinh điển (đệ quy) — trả về CHỈ SỐ các điểm được giữ, luôn gồm 2 đầu.
+    /// </summary>
+    private static List<int> DouglasPeucker(List<Vector3> diem, float dungSai)
+    {
+        var kq = new List<int>();
+        if (diem == null || diem.Count == 0) return kq;
+        if (diem.Count < 3)
+        {
+            for (int i = 0; i < diem.Count; i++) kq.Add(i);
+            return kq;
+        }
+
+        var giu = new bool[diem.Count];
+        giu[0] = giu[diem.Count - 1] = true;
+        DPDeQuy(diem, 0, diem.Count - 1, dungSai, giu);
+
+        for (int i = 0; i < diem.Count; i++) if (giu[i]) kq.Add(i);
+        return kq;
+    }
+
+    private static void DPDeQuy(List<Vector3> d, int dau, int cuoi, float dungSai, bool[] giu)
+    {
+        if (cuoi <= dau + 1) return;
+
+        float xaNhat = -1f;
+        int iXa = -1;
+        for (int i = dau + 1; i < cuoi; i++)
+        {
+            float kc = KhoangCachToiDoanThang(d[i], d[dau], d[cuoi]);
+            if (kc > xaNhat) { xaNhat = kc; iXa = i; }
+        }
+
+        if (xaNhat <= dungSai || iXa < 0) return;
+
+        giu[iXa] = true;
+        DPDeQuy(d, dau, iXa, dungSai, giu);
+        DPDeQuy(d, iXa, cuoi, dungSai, giu);
+    }
+
+    private static float KhoangCachToiDoanThang(Vector3 p, Vector3 a, Vector3 b)
+    {
+        float abx = b.x - a.x, aby = b.y - a.y;
+        float len2 = abx * abx + aby * aby;
+        if (len2 < 0.0001f)
+        {
+            float ddx = p.x - a.x, ddy = p.y - a.y;
+            return Mathf.Sqrt(ddx * ddx + ddy * ddy);
+        }
+        float t = Mathf.Clamp01(((p.x - a.x) * abx + (p.y - a.y) * aby) / len2);
+        float qx = a.x + abx * t, qy = a.y + aby * t;
+        float dx = p.x - qx, dy = p.y - qy;
+        return Mathf.Sqrt(dx * dx + dy * dy);
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     //  Helpers (copy pattern TouristBoatSetupTool)
     // ─────────────────────────────────────────────────────────────────────
 
     private static GameObject FindBoatSystem()
     {
-        var mgr = Object.FindFirstObjectByType<BoatDockManager>(FindObjectsInactive.Include);
+        var mgr = UnityEngine.Object.FindFirstObjectByType<BoatDockManager>(FindObjectsInactive.Include);
         if (mgr != null) return mgr.gameObject;
 
-        foreach (Transform t in Object.FindObjectsByType<Transform>(
+        foreach (Transform t in UnityEngine.Object.FindObjectsByType<Transform>(
                      FindObjectsInactive.Include, FindObjectsSortMode.None))
         {
             if (t != null && t.parent == null && t.name == BoatRootName) return t.gameObject;
@@ -512,11 +1003,16 @@ public static class TouristVisitorSetupTool
 
         if (sr.sprite.border != Vector4.zero)
         {
+            // Sprite 9-slice: set size trực tiếp, scale giữ 1.
             sr.drawMode = SpriteDrawMode.Sliced;
             sr.size     = size;
         }
         else
         {
+            // Sprite KHÔNG border: Sliced/size vô nghĩa → phóng bằng localScale.
+            // Đây chính là đường mà WoodBoard_Frame đi qua (512px, PPU 100 = 5.12 unit):
+            // phải scale ~82 lần mới ra 420 unit. Bản đầu đặt size mục tiêu quá nhỏ nên
+            // tấm ván gần như vô hình trên map toạ độ lớn.
             sr.drawMode = SpriteDrawMode.Simple;
             Vector2 native = sr.sprite.rect.size / sr.sprite.pixelsPerUnit;
             if (native.x <= 0.0001f || native.y <= 0.0001f) return;

@@ -18,6 +18,7 @@ public class PenMiniPanelUI : MonoBehaviour
 
     [Header("Config")]
     [SerializeField] private PenMiniPanelConfig config;
+    public PenMiniPanelConfig Config => config;
 
     [Header("Panel Root")]
     [SerializeField] private GameObject panelRoot;
@@ -217,6 +218,9 @@ public class PenMiniPanelUI : MonoBehaviour
     {
         if (config == null) return;
 
+        NotifyAnimalsVoice();
+
+        // 1. Nếu đang nuôi (Processing) -> Mở Process Popup (thanh đếm ngược + Speed-up Gem - GIỮ NGUYÊN)
         if (CurrentState == PenState.Processing)
         {
             var popup = PenProcessPopupUI.Instance ?? FindFirstObjectByType<PenProcessPopupUI>(FindObjectsInactive.Include);
@@ -232,18 +236,37 @@ public class PenMiniPanelUI : MonoBehaviour
             }
         }
 
-        _openedAtFrame = Time.frameCount;
-        _openedAtTime = Time.unscaledTime; // Bắt đầu tính giờ giữ panel
-        if (panelRoot != null) panelRoot.SetActive(true);
-        AcquirePopupInputBlock();
-        RefreshUI();
-        TutorialManager.Instance?.NotifyOpenPen();
+        // 2. Nếu đã sẵn sàng thu hoạch (Ready) -> Mở Khay Cái Rổ (Basket Tray) giống gặt lúa
+        if (CurrentState == PenState.Ready)
+        {
+            FarmUIManager.Instance?.ShowPenBasketTray(this);
+            return;
+        }
+
+        // 3. Nếu đang đói (Idle) -> Mở Screen-Space Feed Popup (giống Seed Popup)
+        if (CurrentState == PenState.Idle)
+        {
+            FarmUIManager.Instance?.ShowLivestockFeedPopup(this);
+            TutorialManager.Instance?.NotifyOpenPen();
+            return;
+        }
+    }
+
+    private void NotifyAnimalsVoice()
+    {
+        var ais = GetComponentsInChildren<Assetsgame.Animals.LivestockAI>(true);
+        if (ais != null && ais.Length > 0)
+        {
+            ais[UnityEngine.Random.Range(0, ais.Length)].PlayAnimalSound(true);
+        }
     }
 
     public void ClosePanel()
     {
         ReleasePopupInputBlock();
         if (panelRoot != null) panelRoot.SetActive(false);
+        FarmUIManager.Instance?.HideLivestockFeedPopup();
+        FarmUIManager.Instance?.HidePenBasketTray();
         FarmInputLock.SuppressWorldClickForCurrentFrame();
     }
 
@@ -288,6 +311,7 @@ public class PenMiniPanelUI : MonoBehaviour
         MissionProgressTracker.ReportEvent(MissionEventType.FeedAnimal, foodItemId, need);
         PlayFeedVFX(foodItemId, vfxWorldPosition);
         AudioManager.Instance?.PlayPlanting();
+        NotifyAnimalsVoice();
         activeFoodId = foodItemId;
         processStartUnix = (float)GetUnixNow();
         SetState(PenState.Processing);
@@ -356,6 +380,7 @@ public class PenMiniPanelUI : MonoBehaviour
             HarvestFeedbackSpawner.Instance.SpawnExpFly(transform.position + Vector3.up * harvestSpawnUpOffset, expThuong);
 
         AudioManager.Instance?.PlayHarvest();
+        NotifyAnimalsVoice();
 
         FarmInventoryManager.Instance.AddItem(config.productItemId, productAmount);
         MissionProgressTracker.ReportEvent(MissionEventType.CollectAnimalProduct, config.productItemId, productAmount);

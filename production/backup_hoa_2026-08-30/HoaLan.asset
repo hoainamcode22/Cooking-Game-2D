@@ -1,0 +1,56 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: HoaLan
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_hoa_lan
+  itemName: Hoa Lan
+  itemIcon: {fileID: 21300000, guid: 31518b4c053f4176b2ace65611ae44c0, type: 3}
+  goldPrice: 80
+  diamondPrice: 0
+  cropCategory: 1
+  cropId: hoa_lan
+  plantSeedFxIcon: {fileID: 0}
+  harvestIcon: {fileID: -5282305146031929904, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
+  sproutSprite: {fileID: 4276873430628212148, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
+  growingSprite: {fileID: -4761241310524006394, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
+  readySprite: {fileID: -5282305146031929904, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 50, y: 50, z: 1}
+  readyScale: {x: 50, y: 50, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: 0c8904921d27d27d08b5ae6672f2f5a1, type: 3}
+  - {fileID: 21300000, guid: d445e908e1a3065a4b1dfbb41cdc8387, type: 3}
+  - {fileID: 21300000, guid: e322a2cbc1be24bb18781e90ea2f7afc, type: 3}
+  - {fileID: 21300000, guid: 1b50e6f70c3ac46c18a3caa18dff4c28, type: 3}
+  - {fileID: 21300000, guid: 3f78b4da17fde2fd98469cb4274fbddc, type: 3}
+  stageScales:
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  displayCount: 12
+  seedItemId: seed_hoa_lan
+  harvestItemId: hoa_lan
+  unlockLevel: 7
+  growSeconds: 280
+  sellGold: 38
+  harvestAmount: 4
+  plantCost: 1
+  expReward: 28
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1

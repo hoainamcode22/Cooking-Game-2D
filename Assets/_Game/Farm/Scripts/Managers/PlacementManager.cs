@@ -562,6 +562,17 @@ public class PlacementManager : MonoBehaviour
     [Tooltip("Nới thêm/thu bớt biên, world unit. Dương = nới rộng.")]
     public float mapBoundsPadding = 0f;
 
+    [Header("Xoay công trình")]
+    // Sếp chốt (2026-08-31): BỎ nút xoay khỏi luồng của người chơi.
+    // KHÔNG xoá object Btn_Rotate trong prefab (nhiều prefab, rủi ro cao, phải Sếp
+    // duyệt riêng) — khoanh vùng bằng cờ này thay vì đụng asset:
+    //   • tắt (mặc định): bind bỏ qua nút → rotateRect = null, và nút Btn_Rotate tìm
+    //     được bị SetActive(false) nên người chơi KHÔNG THẤY nút; phím R cũng câm.
+    //   • bật: mọi thứ về đúng như cũ, không mất gì.
+    // RotateGhost() vẫn là public API — bật lại chỉ cần tick cờ này.
+    [Tooltip("Cho phép người chơi xoay công trình (nút ↻ + phím R). Sếp đã chốt TẮT — nút ↻ trong prefab sẽ bị ẩn.")]
+    [SerializeField] private bool choPhepXoayCongTrinh = false;
+
     [Header("Debug")]
     [Tooltip("In log mỗi lần dò lại biên bản đồ và mỗi lần từ chối vì chồng lấn.")]
     public bool verboseGridLog = false;
@@ -689,6 +700,8 @@ public class PlacementManager : MonoBehaviour
             if (IsMouseOverRect(deleteRect))  { DeleteEditingBuilding(); return; }
             if (IsMouseOverRect(confirmRect)) { ConfirmPlacement();      return; }
             if (IsMouseOverRect(cancelRect))  { CancelPlacement();       return; }
+            // rotateRect = null khi choPhepXoayCongTrinh = false → IsMouseOverRect
+            // trả false ngay ở dòng đầu (đã guard rt == null) nên KHÔNG có NRE.
             if (IsMouseOverRect(rotateRect))  { RotateGhost();           return; }
         }
 
@@ -706,8 +719,9 @@ public class PlacementManager : MonoBehaviour
         }
 #endif
 
-        // Phím R: xoay nhanh khi test trong Editor (nút ↻ vẫn là đường chính).
-        if (Input.GetKeyDown(KeyCode.R)) { RotateGhost(); return; }
+        // Phím R: xoay nhanh khi test trong Editor. Sếp đã bỏ tính năng xoay nên phím
+        // này cũng phải câm theo — không thì bản PC/WebGL vẫn xoay được bằng bàn phím.
+        if (choPhepXoayCongTrinh && Input.GetKeyDown(KeyCode.R)) { RotateGhost(); return; }
 
         Vector2Int size = CurrentGridSize();
 
@@ -2172,8 +2186,18 @@ public class PlacementManager : MonoBehaviour
                     btn.onClick.AddListener(CancelPlacement);
                     break;
                 case "Btn_Rotate":                       // V5 — trước đây KHÔNG bind, nút chết
-                    rotateRect = btn.GetComponent<RectTransform>();
-                    btn.onClick.AddListener(RotateGhost);
+                    if (choPhepXoayCongTrinh)
+                    {
+                        rotateRect = btn.GetComponent<RectTransform>();
+                        btn.onClick.AddListener(RotateGhost);
+                    }
+                    else
+                    {
+                        // Sếp đã bỏ tính năng xoay: ẩn hẳn nút khỏi mắt người chơi và
+                        // KHÔNG nối onClick. rotateRect để null → nhánh kiểm tra chuột
+                        // trong Update() tự bỏ qua (IsMouseOverRect trả false khi rect null).
+                        btn.gameObject.SetActive(false);
+                    }
                     break;
                 case "Btn_Delete":
                     // KHÔNG nối onClick ở đây — PlacementGhostVisualController.EnsureDeleteButton
@@ -2188,7 +2212,9 @@ public class PlacementManager : MonoBehaviour
 
         if (btnConfirm == null || cancelRect == null)
             Debug.LogWarning("[PlacementManager] Ghost thiếu Btn_Confirm / Btn_Cancel — kiểm tra prefab Placement_Ghost.");
-        if (rotateRect == null)
+        // Chỉ cảnh báo khi tính năng xoay đang BẬT — cờ tắt thì rotateRect null là ĐÚNG Ý,
+        // log warning ở đây sẽ thành rác Console mỗi lần đặt công trình.
+        if (choPhepXoayCongTrinh && rotateRect == null)
             Debug.LogWarning("[PlacementManager] Ghost thiếu Btn_Rotate — không xoay được bằng nút (phím R vẫn chạy).");
     }
 

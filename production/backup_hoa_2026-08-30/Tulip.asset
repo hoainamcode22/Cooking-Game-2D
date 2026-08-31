@@ -1,0 +1,56 @@
+﻿%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b8f1907f411ed604abf419997a259372, type: 3}
+  m_Name: Tulip
+  m_EditorClassIdentifier: Assembly-CSharp::CropData
+  itemID: seed_tulip
+  itemName: Tulip
+  itemIcon: {fileID: 21300000, guid: 455b0765f53b4e1e8db9fec07c56dd96, type: 3}
+  goldPrice: 107
+  diamondPrice: 0
+  cropCategory: 1
+  cropId: tulip
+  plantSeedFxIcon: {fileID: 0}
+  harvestIcon: {fileID: -9055938408451778832, guid: ee879aad837187b4aa8c50051bbdae2a, type: 3}
+  sproutSprite: {fileID: 4423348639872467012, guid: ee879aad837187b4aa8c50051bbdae2a, type: 3}
+  growingSprite: {fileID: -4181482422429129563, guid: ee879aad837187b4aa8c50051bbdae2a, type: 3}
+  readySprite: {fileID: -9055938408451778832, guid: ee879aad837187b4aa8c50051bbdae2a, type: 3}
+  sproutScale: {x: 50, y: 50, z: 1}
+  growingScale: {x: 50, y: 50, z: 1}
+  readyScale: {x: 50, y: 50, z: 1}
+  stageSprites:
+  - {fileID: 21300000, guid: a16c80300ee4fb17d9bfb78bf28f86a4, type: 3}
+  - {fileID: 21300000, guid: 3da06e89216eb70e3167952832a17482, type: 3}
+  - {fileID: 21300000, guid: 287dddc1eb114b63a8ec004f72f70af3, type: 3}
+  - {fileID: 21300000, guid: 7b306fa7f933b117514b62edeb0dc078, type: 3}
+  - {fileID: 21300000, guid: 10649b754ec0ae8997313485d988cc67, type: 3}
+  stageScales:
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  - {x: 64.453, y: 64.453, z: 1}
+  displayCount: 12
+  seedItemId: seed_tulip
+  harvestItemId: tulip
+  unlockLevel: 9
+  growSeconds: 420
+  sellGold: 57
+  harvestAmount: 4
+  plantCost: 1
+  expReward: 42
+  sweet: 0
+  spicy: 0
+  sour: 0
+  umami: 0
+  texture: 0
+  canBuyInSeedShop: 1

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -22,8 +23,10 @@ using UnityEngine.UI;
 ///   • Nhiều event dồn lúc mở 3 bến → vào hàng đợi, hiện LẦN LƯỢT, không chồng.
 ///   • KHÔNG hiện khi: tutorial đang chạy · popup khác đang mở (FarmInputLock /
 ///     PopupManager) · đang ở scene bếp (GDD §5 edge 6 — hoãn tới khi về farm).
-///   • Hiệu ứng: dim đen 60% fade-in + card scale-pop 0.9→1 (ease-out-back
-///     ~0.25s) + text fade-in; nút "Đã rõ" đóng.
+///   • Hiệu ứng: dim đen 60% fade-in + card scale-pop 0.9→1 (ease-out-back ~0.25s)
+///     + tiêu đề fade-in + dòng nội dung chạy TYPEWRITER 0.02s/ký tự (đúng nhịp
+///     typing của TutorialManager — cảm giác nhất quán toàn game); tap vào đâu cũng
+///     hiện đủ chữ ngay; nút "Đã rõ" đóng.
 ///
 /// Input lock: FarmInputLock.RegisterPopupOpen/RegisterPopupClose (đúng pattern —
 /// RegisterPopupClose tự SuppressWorldClickForCurrentFrame chống tap xuyên).
@@ -66,6 +69,12 @@ public class BoatAnnouncePopupUI : MonoBehaviour
     [Tooltip("Thời gian fade chữ (giây) — chạy sau khi card pop xong một nửa.")]
     [SerializeField] private float textFadeSeconds = 0.30f;
 
+    [Tooltip("Chạy chữ kiểu typewriter cho dòng NỘI DUNG. Tắt = hiện cả câu ngay (chỉ còn fade).")]
+    [SerializeField] private bool hieuUngChuTypewriter = true;
+
+    [Tooltip("Tốc độ typewriter (giây/ký tự). 0.02 = đúng nhịp typing của TutorialManager.")]
+    [SerializeField] private float giaySoiChu = 0.02f;
+
     [Tooltip("Alpha đích của dim nền (0.6 = đen 60% theo GDD §3.5).")]
     [SerializeField] private float dimAlpha = 0.6f;
 
@@ -77,6 +86,10 @@ public class BoatAnnouncePopupUI : MonoBehaviour
     // 1 key/bến, value = ticks của arrival ĐÃ báo gần nhất. Lịch tàu per-dock
     // đơn điệu tăng nên "ticks đã báo == ticks chuyến này" ⇔ chuyến này đã báo.
     private const string KeyDaBaoFormat = "TouristBoat_DaBaoChuyen_{0}";
+
+    // TMP: maxVisibleCharacters lớn hơn số ký tự thật = hiện hết câu. Dùng số cố định
+    // thay vì int.MaxValue để TMP không phải nghĩ nhiều, và tránh tràn khi cộng.
+    private const int KyTuHienHet = 99999;
 
     // ─── Runtime ────────────────────────────────────────────────────────────
 
@@ -209,6 +222,11 @@ public class BoatAnnouncePopupUI : MonoBehaviour
         if (cardRect != null)     cardRect.localScale = Vector3.one;
         if (contentGroup != null) contentGroup.alpha  = 1f;
         if (dimImage != null)     SetAlpha(dimImage, dimAlpha);
+
+        // Typewriter bị dập giữa câu (vào bếp / object bị tắt) → trả về "hiện hết"
+        // để không có object nào nằm lại với nửa câu. Lần mở sau HienPopupRoutine
+        // đặt lại maxVisibleCharacters = 0 nên chữ vẫn chạy lại từ đầu.
+        if (bodyText != null) bodyText.maxVisibleCharacters = KyTuHienHet;
     }
 
     /// <summary>
@@ -374,8 +392,16 @@ public class BoatAnnouncePopupUI : MonoBehaviour
         if (titleText != null)
             titleText.text = $"Tàu số {soHieu:00} sắp cập bến!";
         if (bodyText != null)
+        {
+            // Câu này đọc tự nhiên với mọi mức gap Dev A đang dùng (1 bến 5' · 2 bến 7'
+            // · 3 bến 10') vì số phút là số thật lấy từ lịch, không phải chuỗi cứng.
             bodyText.text = $"Tàu số {soHieu:00} sẽ cập bến sau {phut} phút! " +
                             "Chuẩn bị nguyên liệu, nấu món ngon tiếp đãi khách nhé!";
+
+            // Đặt mốc NGAY ĐÂY (trước khi popupRoot bật) để không kịp lóe cả câu
+            // ở frame đầu. Tắt typewriter → hiện đủ chữ luôn.
+            bodyText.maxVisibleCharacters = hieuUngChuTypewriter ? 0 : KyTuHienHet;
+        }
 
         FarmInputLock.RegisterPopupOpen();
         FarmInputLock.SetPopupRaycastBlock(popupRoot, true);
@@ -433,7 +459,77 @@ public class BoatAnnouncePopupUI : MonoBehaviour
         if (cardRect != null)     cardRect.localScale = Vector3.one;
         if (dimImage != null)     SetAlpha(dimImage, dimAlpha);
         if (contentGroup != null) contentGroup.alpha = 1f;
+
+        // Chữ chạy SAU khi card + tiêu đề đã vào chỗ: tiêu đề fade, nội dung
+        // typewriter — 2 hiệu ứng nối tiếp nhau, không chồng lên nhau cho rối.
+        // Nằm trong CHÍNH coroutine này (_animRoutine) nên khi đóng popup /
+        // OnDisable, StopCoroutine hoặc Unity tự dập là chữ cũng dừng theo.
+        if (hieuUngChuTypewriter)
+            yield return ChayChuRoutine();
+
         _animRoutine = null;
+    }
+
+    /// <summary>
+    /// Typewriter cho dòng NỘI DUNG: tăng dần <see cref="TMP_Text.maxVisibleCharacters"/>,
+    /// KHÔNG cắt chuỗi bằng Substring — cắt chuỗi buộc TMP re-layout mỗi frame và làm
+    /// chữ tiếng Việt có dấu nhảy dòng loạn khi câu dài ra từng ký tự.
+    ///
+    /// Tap vào đâu cũng hiện đủ chữ ngay (giống tap-to-skip của tutorial). Nút "Đã rõ"
+    /// vẫn ăn bình thường trong lúc chữ đang chạy — cú tap đó chỉ vừa skip vừa đóng.
+    /// Chạy theo unscaled time để không dính Time.timeScale.
+    /// </summary>
+    private IEnumerator ChayChuRoutine()
+    {
+        if (bodyText == null) yield break;
+
+        // Độ dài chuỗi là CHẶN TRÊN an toàn của số ký tự hiển thị (số ký tự thật
+        // luôn ≤ độ dài chuỗi), đủ dùng làm đích mà không cần ForceMeshUpdate.
+        int tong = bodyText.text != null ? bodyText.text.Length : 0;
+        if (tong <= 0)
+        {
+            bodyText.maxVisibleCharacters = KyTuHienHet;
+            yield break;
+        }
+
+        // Nuốt 1 frame: cú tap ngay trước lúc popup hiện (người chơi vừa chạm gì đó
+        // trong farm) không được tính là "skip" của câu này.
+        yield return null;
+
+        float troi = 0f;
+        int   hien = 0;
+        while (hien < tong)
+        {
+            if (TapDownThisFrame()) break; // tap = bỏ qua, hiện hết câu
+
+            troi += Time.unscaledDeltaTime;
+            int dich = Mathf.Min(tong, Mathf.FloorToInt(troi / Mathf.Max(0.001f, giaySoiChu)));
+            if (dich != hien)
+            {
+                hien = dich;
+                bodyText.maxVisibleCharacters = hien;
+            }
+            yield return null;
+        }
+
+        bodyText.maxVisibleCharacters = KyTuHienHet;
+    }
+
+    /// <summary>
+    /// Tap/click down frame này? Cùng chiến lược 2 tầng của CameraController /
+    /// TouristBoatUnlockFlow: New Input System trước, fallback Input cũ (Unity Simulator).
+    /// </summary>
+    private static bool TapDownThisFrame()
+    {
+        var mouse = Mouse.current;
+        if (mouse != null && mouse.leftButton.wasPressedThisFrame) return true;
+
+        var touch = Touchscreen.current;
+        if (touch != null && touch.primaryTouch.press.wasPressedThisFrame) return true;
+
+        if (Input.GetMouseButtonDown(0)) return true; // legacy fallback
+
+        return false;
     }
 
     /// <summary>Đóng: thu 1→0.92 + fade toàn bộ trong ~0.15s rồi tắt + trả input lock.</summary>
@@ -455,6 +551,7 @@ public class BoatAnnouncePopupUI : MonoBehaviour
         popupRoot.SetActive(false);
         if (cardRect != null)     cardRect.localScale = Vector3.one; // trả scale cho lần mở sau
         if (contentGroup != null) contentGroup.alpha = 1f;
+        if (bodyText != null)     bodyText.maxVisibleCharacters = KyTuHienHet; // chữ không kẹt nửa câu
 
         FarmInputLock.RegisterPopupClose(); // tự suppress world-click frame này
         _dangHien    = false;               // DrainRoutine tiếp tục chuyến kế (nếu có)

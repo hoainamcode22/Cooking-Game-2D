@@ -55,8 +55,13 @@ public class TouristAgent : MonoBehaviour
     }
 
     [Header("Sorting (khách phải nổi trên decor — yêu cầu Sếp)")]
-    [Tooltip("Sorting layer của khách. Để trùng layer decor cao nhất của map ('CongTrinh' như LivestockAI).")]
-    [SerializeField] private string sortingLayerName = "CongTrinh";
+    // [BUG Sếp gặp lúc Play test 2026-08-29] Bản đầu để "CongTrinh" (chép từ LivestockAI)
+    // — layer đó KHÔNG có trong project, Unity im lặng đẩy renderer về Default ⇒ khách bị
+    // cây/nhà che kín. Nay để TRỐNG = tự giải theo TouristSortingLayers.Visitor
+    // (ObjectsFront → Objects → Default) và CẢNH BÁO nếu phải rơi dự phòng.
+    [Tooltip("Sorting layer của khách. ĐỂ TRỐNG = tự chọn 'ObjectsFront' (khuyến nghị). " +
+             "Gõ tên khác chỉ khi layer đó CÓ THẬT trong Project Settings > Tags and Layers.")]
+    [SerializeField] private string sortingLayerName = "";
 
     [Tooltip("Order gốc — cộng thêm phần tính theo Y. Đặt CAO hơn decor để khách không bị che.")]
     [SerializeField] private int baseSortingOrder = 5000;
@@ -76,6 +81,14 @@ public class TouristAgent : MonoBehaviour
              "luồng khách đang lên bờ (QA/Sếp: polish 2026-08-29). Đặt 0 để tắt.")]
     [SerializeField] private float walkBackLaneOffset = 26f;
 
+    [Header("Fade (GIÂY THỰC — cố ý KHÔNG chia debugTimeScale, cho khớp nhau)")]
+    [Tooltip("Giây mờ-dần-hiện khi khách vừa xuống tàu. Đối xứng với fade-out lúc lên tàu " +
+             "(0.25s) để hai đầu vòng đời trông cùng một nhịp.")]
+    [SerializeField] private float fadeInSeconds = 0.25f;
+
+    [Tooltip("Giây mờ-dần-tắt khi khách lên tàu xong.")]
+    [SerializeField] private float fadeOutSeconds = 0.25f;
+
     [Header("Thời lượng cảm xúc (GIÂY THỰC — cố ý KHÔNG chia debugTimeScale)")]
     [Tooltip("Giữ mặt cười trước khi bay lên HUD (GDD §3.3: 0.5s).")]
     [SerializeField] private float happyHoldSeconds = 0.5f;
@@ -93,8 +106,11 @@ public class TouristAgent : MonoBehaviour
     private TouristQueue          _queue;
     private TouristRequestBubble  _bubble;
     private Animator              _animator;
-    private SpriteRenderer        _renderer;
+    private SpriteRenderer[]      _renderers;   // MỌI renderer con — nhân vật có thể nhiều mảnh
     private SortingGroup          _sortingGroup;
+
+    // Fade-in lúc vừa xuống tàu: chạy SONG SONG với bước đi đầu tiên (không chặn state machine).
+    private float _fadeInConLai = -1f;
 
     private Vector3[] _pathPoints;      // [gangplankEnd, WP_01..WP_n] — hàng chờ nối sau
     private int       _pathIndex;
@@ -107,6 +123,22 @@ public class TouristAgent : MonoBehaviour
     private float _speed = 150f;
     private float _bubbleOpenAt = -1f;   // Time.time được phép mở bubble (lượt do manager cấp)
     private float _angryHold;            // thời lượng giữ mặt giận của lần này
+
+    // ─── Procedural Living Animation ─────────────────────────────────────
+    private Vector3 _baseLocalScale = Vector3.one;
+    private Vector3 _logicalWorldPos;
+    private float   _motionSeed;
+    private bool    _hasBaseScale;
+
+    // Tên layer đã GIẢI XONG (có thật trong project) — tính 1 lần trong Awake, không
+    // gọi lại mỗi frame trong UpdateDynamicSorting.
+    private string _layerDaGiai;
+
+    // [BUG Sếp gặp 2026-08-29] Controller hỏng (thiếu statemachine) làm mọi lời gọi
+    // Animator.SetBool/SetFloat ném "Animator has not been initialized" — 60 lần/giây ×
+    // số khách ⇒ Console ngập hàng nghìn dòng, che hết log thật. Cờ này để cảnh báo
+    // ĐÚNG MỘT LẦN cho mỗi khách rồi im lặng bỏ qua.
+    private bool _daCanhBaoAnimator;
 
     private static readonly int HashDirX     = Animator.StringToHash("DirX");
     private static readonly int HashDirY     = Animator.StringToHash("DirY");
@@ -157,6 +189,9 @@ public class TouristAgent : MonoBehaviour
     /// <summary>Slot hiện tại trong hàng chờ (-1 = chưa xếp hàng).</summary>
     public int QueueSlot => _slotIndex;
 
+    /// <summary>Tên sorting layer đang THỰC SỰ dùng (đã giải fallback) — tool chẩn đoán đọc.</summary>
+    public string SortingLayerResolved => _layerDaGiai;
+
     /// <summary>Đang đứng chờ nhưng bubble chưa kịp mở (còn trong nhịp stagger 0.4s).</summary>
     public bool IsWaitingBubble =>
         State == AgentState.WaitingServe && !WasServed && !WasTimedOut &&
@@ -167,17 +202,33 @@ public class TouristAgent : MonoBehaviour
     private void Awake()
     {
         _animator     = GetComponentInChildren<Animator>(true);
-        _renderer     = GetComponentInChildren<SpriteRenderer>(true);
         _bubble       = GetComponent<TouristRequestBubble>();
         _sortingGroup = GetComponent<SortingGroup>();
         if (_sortingGroup == null)
             _sortingGroup = gameObject.AddComponent<SortingGroup>();
+
+        // Lưu scale và vị trí ban đầu cho procedural animation
+        _baseLocalScale  = transform.localScale;
+        _hasBaseScale    = true;
+        _motionSeed      = Random.Range(0f, 100f);
+        _logicalWorldPos = transform.position;
+
+        // Giải layer NGAY lúc Awake: prefab đời cũ có thể còn lưu tên layer không tồn tại,
+        // và runtime phải sửa được để khách không bị chìm dưới decor.
+        _layerDaGiai = TouristSortingLayers.ResolveOrOverride(sortingLayerName, TouristSortingLayers.Visitor);
+
+        // Ép luôn cho mọi SpriteRenderer con (prefab cũ ghi sẵn layer Default trong .prefab).
+        _renderers = GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < _renderers.Length; i++)
+            if (_renderers[i] != null) _renderers[i].sortingLayerName = _layerDaGiai;
+
         _angryHold = angryHoldSeconds;
     }
 
     private void Update()
     {
         UpdateDynamicSorting();
+        TickFadeIn();
 
         switch (State)
         {
@@ -190,6 +241,72 @@ public class TouristAgent : MonoBehaviour
             case AgentState.WalkingBack:   TickWalkBack();   break;
             case AgentState.Boarding:      TickBoarding();   break;
         }
+    }
+
+    private void LateUpdate()
+    {
+        ApplyLivingMotion();
+    }
+
+    /// <summary>
+    /// Hiệu ứng nhún nhảy, thở, nghiêng người và bước chân sinh động bằng code (procedural animation).
+    /// </summary>
+    private void ApplyLivingMotion()
+    {
+        if (!_hasBaseScale)
+        {
+            _baseLocalScale = transform.localScale;
+            _hasBaseScale = true;
+        }
+
+        float timeVal = Time.time;
+        float squashX = 1f;
+        float stretchY = 1f;
+        float offsetY = 0f;
+        float rotZ = 0f;
+
+        bool isMoving = _hasTarget;
+
+        if (State == AgentState.Happy)
+        {
+            // Nhảy cẫng lên vui mừng (Happy bounce)
+            float hop = Mathf.Abs(Mathf.Sin(timeVal * 15f)) * 8f;
+            offsetY = hop;
+            stretchY = 1f + 0.15f * (hop / 8f);
+            squashX  = 1f - 0.08f * (hop / 8f);
+            rotZ = Mathf.Sin(timeVal * 15f) * 5f;
+        }
+        else if (State == AgentState.Angry)
+        {
+            // Giậm chân tức giận rung người
+            float shakeX = Mathf.Sin(timeVal * 38f) * 3f;
+            transform.position = _logicalWorldPos + new Vector3(shakeX, 0f, 0f);
+            transform.localScale = new Vector3(_baseLocalScale.x * 1.05f, _baseLocalScale.y * 0.95f, _baseLocalScale.z);
+            transform.localRotation = Quaternion.identity;
+            return;
+        }
+        else if (isMoving)
+        {
+            // Nhịp bước chân khi đi bộ (Walk step bounce)
+            float step = Mathf.Abs(Mathf.Sin(timeVal * 11f + _motionSeed)) * 3.5f;
+            offsetY = step;
+            stretchY = 1f + 0.03f * (step / 3.5f);
+            squashX  = 1f - 0.02f * (step / 3.5f);
+            rotZ = Mathf.Sin(timeVal * 11f + _motionSeed) * 2.2f;
+        }
+        else
+        {
+            // Đứng chờ (Idle Breathing & Soft Body Swaying): nhún thở tự nhiên + nghiêng nhẹ
+            float breathPhase = Mathf.Sin(timeVal * 3.0f + _motionSeed);
+            stretchY = 1f + 0.04f * breathPhase;
+            squashX  = 1f - 0.025f * breathPhase;
+            offsetY  = Mathf.Abs(breathPhase) * 1.8f;
+            rotZ     = Mathf.Sin(timeVal * 1.3f + _motionSeed * 1.5f) * 1.8f;
+        }
+
+        transform.position = _logicalWorldPos + new Vector3(0f, offsetY, 0f);
+        transform.localScale = new Vector3(_baseLocalScale.x * squashX, _baseLocalScale.y * stretchY, _baseLocalScale.z);
+        transform.localRotation = Quaternion.Euler(0f, 0f, rotZ);
     }
 
     // ─── Khởi tạo (manager gọi) ─────────────────────────────────────────
@@ -223,9 +340,14 @@ public class TouristAgent : MonoBehaviour
     public void BeginDisembark(Vector3 boatPos)
     {
         transform.position = boatPos;
+        _logicalWorldPos   = boatPos;
         _pathIndex = 0;
         SetState(AgentState.Disembarking);
         SetTarget(FirstPathPoint());
+
+        // Khách hiện ra MỜ RỒI RÕ thay vì pop đột ngột ở mạn tàu — đối xứng với
+        // fade-out lúc lên tàu. Chạy trong Update nên KHÔNG chặn bước đi đầu tiên.
+        BatDauFadeIn();
     }
 
     /// <summary>
@@ -239,9 +361,16 @@ public class TouristAgent : MonoBehaviour
         PatienceEndUtcTicks = patienceEndUtcTicks;
 
         transform.position = slotPos;
+        _logicalWorldPos   = slotPos;
         _hasTarget = false;
         SetMovingAnim(false);
         FaceTowardQueue();
+
+        // Khôi phục từ save: khách vốn đã đứng sẵn trong hàng từ phiên trước ⇒ hiện RÕ
+        // ngay, fade-in ở đây sẽ trông như vừa mới xuống tàu (sai ngữ nghĩa).
+        _fadeInConLai = -1f;
+        DatAlpha(1f);
+
         EnterWaitServe();
     }
 
@@ -462,20 +591,65 @@ public class TouristAgent : MonoBehaviour
     {
         if (MoveToTarget()) return;
 
-        // Tới mạn tàu → mờ dần rất nhanh rồi despawn (không cần animation riêng).
+        // Tới mạn tàu → mờ dần rồi despawn (không cần animation riêng).
+        float raGiay = Mathf.Max(0.01f, fadeOutSeconds);
         _stateTimer += Time.deltaTime;
-        if (_renderer != null)
-        {
-            Color c = _renderer.color;
-            c.a = Mathf.Clamp01(1f - _stateTimer / 0.25f);
-            _renderer.color = c;
-        }
-        if (_stateTimer < 0.25f) return;
+        DatAlpha(Mathf.Clamp01(1f - _stateTimer / raGiay));
+        if (_stateTimer < raGiay) return;
 
         SetState(AgentState.Done);
         SetMovingAnim(false);
         if (_manager != null) _manager.NotifyAboard(this);
         else Destroy(gameObject);
+    }
+
+    // ─── Fade in / out ──────────────────────────────────────────────────
+
+    /// <summary>Bật fade-in (alpha 0 → 1). Dùng GIÂY THỰC để khớp nhịp với fade-out.</summary>
+    private void BatDauFadeIn()
+    {
+        if (fadeInSeconds <= 0.01f) { DatAlpha(1f); return; }
+        _fadeInConLai = fadeInSeconds;
+        DatAlpha(0f);
+    }
+
+    /// <summary>
+    /// Chạy fade-in mỗi frame — SONG SONG với state machine, không chặn khách đi bộ.
+    /// Cố ý KHÔNG chia debugTimeScale: đây là nhịp hình, giống fade-out và giống
+    /// cửa sổ ân hạn của Dev A.
+    /// </summary>
+    private void TickFadeIn()
+    {
+        if (_fadeInConLai < 0f) return;
+
+        _fadeInConLai -= Time.deltaTime;
+        if (_fadeInConLai <= 0f)
+        {
+            _fadeInConLai = -1f;
+            DatAlpha(1f);
+            return;
+        }
+
+        float giay = Mathf.Max(0.01f, fadeInSeconds);
+        DatAlpha(Mathf.Clamp01(1f - _fadeInConLai / giay));
+    }
+
+    /// <summary>
+    /// Đặt alpha cho MỌI SpriteRenderer con (prefab nhân vật có thể gồm nhiều mảnh:
+    /// thân, tóc, bóng…). Bản trước chỉ đụng renderer đầu tiên nên mảnh khác không mờ theo.
+    /// </summary>
+    private void DatAlpha(float alpha)
+    {
+        if (_renderers == null) return;
+
+        for (int i = 0; i < _renderers.Length; i++)
+        {
+            SpriteRenderer sr = _renderers[i];
+            if (sr == null) continue;
+            Color c = sr.color;
+            c.a = alpha;
+            sr.color = c;
+        }
     }
 
     // ─── Bubble ─────────────────────────────────────────────────────────
@@ -515,19 +689,20 @@ public class TouristAgent : MonoBehaviour
     {
         if (!_hasTarget) return false;
 
-        Vector3 pos = transform.position;
+        Vector3 pos = _logicalWorldPos;
         Vector3 to  = _target - pos;
         to.z = 0f;
 
         if (to.sqrMagnitude <= arriveThreshold * arriveThreshold)
         {
-            transform.position = new Vector3(_target.x, _target.y, pos.z);
+            _logicalWorldPos = new Vector3(_target.x, _target.y, pos.z);
+            transform.position = _logicalWorldPos;
             _hasTarget = false;
             SetMovingAnim(false);
             return false;
         }
 
-        transform.position = Vector3.MoveTowards(pos, new Vector3(_target.x, _target.y, pos.z),
+        _logicalWorldPos = Vector3.MoveTowards(pos, new Vector3(_target.x, _target.y, pos.z),
                                                  _speed * Time.deltaTime);
         SetMovingAnim(true);
         FaceCardinal(to);
@@ -580,7 +755,7 @@ public class TouristAgent : MonoBehaviour
     /// </summary>
     private void FaceCardinal(Vector2 dir)
     {
-        if (_animator == null || dir.sqrMagnitude < 0.0001f) return;
+        if (dir.sqrMagnitude < 0.0001f || !AnimatorSanSang()) return;
 
         float x = 0f, y = 0f;
         if (Mathf.Abs(dir.x) >= Mathf.Abs(dir.y)) x = Mathf.Sign(dir.x);
@@ -608,7 +783,33 @@ public class TouristAgent : MonoBehaviour
 
     private void SetMovingAnim(bool moving)
     {
-        if (_animator != null) _animator.SetBool(HashIsMoving, moving);
+        if (!AnimatorSanSang()) return;
+        _animator.SetBool(HashIsMoving, moving);
+    }
+
+    /// <summary>
+    /// Animator có DÙNG ĐƯỢC không (đã gán controller + đã khởi tạo).
+    /// Không đạt → trả false, cảnh báo ĐÚNG 1 LẦN cho khách này rồi im lặng bỏ qua:
+    /// khách vẫn đi lại đúng logic (di chuyển là transform thuần), chỉ là đứng im hình.
+    /// Bản trước gọi thẳng SetBool/SetFloat nên một controller hỏng đủ làm ngập Console.
+    /// </summary>
+    private bool AnimatorSanSang()
+    {
+        if (_animator != null && _animator.runtimeAnimatorController != null && _animator.isInitialized)
+            return true;
+
+        if (!_daCanhBaoAnimator)
+        {
+            _daCanhBaoAnimator = true;
+            string lyDo = _animator == null ? "prefab thiếu component Animator"
+                        : _animator.runtimeAnimatorController == null ? "Animator chưa gán AnimatorController"
+                        : "AnimatorController hỏng (thiếu statemachine) nên Animator không khởi tạo được";
+            Debug.LogWarning($"[TouristVisitor] '{name}': {lyDo} — khách vẫn đi lại bình thường " +
+                             "nhưng KHÔNG có animation. Khắc phục: chạy " +
+                             "Tools/Farm Game/Tourist Boat/Setup NPC Animations (tool tự xoá và tạo lại controller hỏng). " +
+                             "(Cảnh báo này chỉ in 1 lần cho khách này.)", this);
+        }
+        return false;
     }
 
     // ─── Sorting theo Y (pattern LivestockAI) ───────────────────────────
@@ -624,7 +825,7 @@ public class TouristAgent : MonoBehaviour
 
         int dynamic = Mathf.Clamp(Mathf.RoundToInt(-transform.position.y * ySortFactor),
                                   -ySortClamp, ySortClamp);
-        _sortingGroup.sortingLayerName = sortingLayerName;
+        _sortingGroup.sortingLayerName = _layerDaGiai;   // tên ĐÃ giải, chắc chắn có thật
         _sortingGroup.sortingOrder     = baseSortingOrder + dynamic;
     }
 

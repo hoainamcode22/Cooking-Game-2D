@@ -16,6 +16,8 @@ public class FarmUIManager : MonoBehaviour
     [Header("Popup Root")]
     [SerializeField] private GameObject popupSeed;
     [SerializeField] private GameObject popupSeedFlower;
+    [SerializeField] private GameObject popupLivestockFeed;
+    [SerializeField] private GameObject penBasketTray;
 
     [Header("Drag Icon")]
     [SerializeField] private FloatingDragIcon floatingDragIcon;
@@ -394,8 +396,114 @@ public class FarmUIManager : MonoBehaviour
         if (popupSeedFlower != null)
             popupSeedFlower.SetActive(false);
 
+        HideLivestockFeedPopup();
+        HidePenBasketTray();
+
         FarmInputLock.IsSeedPopupOpen = false;
         FarmInputLock.IsDraggingSeed  = false;
+    }
+
+    /// <summary>Mở Popup Cho Ăn Gia Súc dạng Screen-Space UI (giống hệt Popup Hạt Giống).</summary>
+    public void ShowLivestockFeedPopup(PenMiniPanelUI pen)
+    {
+        if (isCookingMode || pen == null) return;
+
+        HideAllPopups();
+
+        if (popupLivestockFeed == null)
+        {
+            // Tự tìm hoặc tạo host dynamic trên CanvasPopupRoot
+            var found = FindFirstObjectByType<LivestockFeedPopupController>(FindObjectsInactive.Include);
+            if (found != null)
+            {
+                popupLivestockFeed = found.gameObject;
+            }
+            else
+            {
+                Transform parent = canvasPopupRoot != null ? canvasPopupRoot.transform : transform;
+                var go = new GameObject("LivestockFeedPopup", typeof(RectTransform), typeof(LivestockFeedPopupController));
+                go.transform.SetParent(parent, false);
+                popupLivestockFeed = go;
+            }
+        }
+
+        Transform p = popupLivestockFeed.transform.parent;
+        while (p != null)
+        {
+            if (!p.gameObject.activeSelf) p.gameObject.SetActive(true);
+            p = p.parent;
+        }
+
+        var controller = popupLivestockFeed.GetComponent<LivestockFeedPopupController>();
+        if (controller != null)
+        {
+            controller.Open(pen);
+        }
+        else
+        {
+            popupLivestockFeed.SetActive(true);
+        }
+
+        FarmInputLock.IsSeedPopupOpen = true;
+        ShowHint("Kéo bao thức ăn vào chuồng để cho gia súc ăn.");
+    }
+
+    public void HideLivestockFeedPopup()
+    {
+        if (popupLivestockFeed != null)
+            popupLivestockFeed.SetActive(false);
+
+        FarmInputLock.IsSeedPopupOpen = false;
+        FarmInputLock.IsDraggingSeed  = false;
+    }
+
+    /// <summary>Mở Khay Cái Rổ Thu Hoạch Gia Súc dạng Screen-Space UI (giống hệt Khay Cái Liềm).</summary>
+    public void ShowPenBasketTray(PenMiniPanelUI pen)
+    {
+        if (isCookingMode || pen == null) return;
+
+        HideAllPopups();
+
+        if (penBasketTray == null)
+        {
+            var found = FindFirstObjectByType<PenBasketTrayController>(FindObjectsInactive.Include);
+            if (found != null)
+            {
+                penBasketTray = found.gameObject;
+            }
+            else
+            {
+                Transform parent = canvasPopupRoot != null ? canvasPopupRoot.transform : transform;
+                var go = new GameObject("PenBasketTray", typeof(RectTransform), typeof(PenBasketTrayController));
+                go.transform.SetParent(parent, false);
+                penBasketTray = go;
+            }
+        }
+
+        Transform p = penBasketTray.transform.parent;
+        while (p != null)
+        {
+            if (!p.gameObject.activeSelf) p.gameObject.SetActive(true);
+            p = p.parent;
+        }
+
+        var controller = penBasketTray.GetComponent<PenBasketTrayController>();
+        if (controller != null)
+        {
+            controller.Open(pen);
+        }
+        else
+        {
+            penBasketTray.SetActive(true);
+        }
+
+        ShowHint("Kéo chiếc rổ quét qua chuồng để thu hoạch sản phẩm.");
+    }
+
+    public void HidePenBasketTray()
+    {
+        if (penBasketTray != null)
+            penBasketTray.SetActive(false);
     }
 
     /// <summary>Hiá»‡n floating icon theo chuá»™t khi báº¯t Ä‘áº§u kÃ©o háº¡t giá»‘ng.</summary>

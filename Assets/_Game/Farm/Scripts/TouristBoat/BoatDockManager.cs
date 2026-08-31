@@ -17,8 +17,9 @@ using UnityEngine;
 ///   WaitingNext(arrivalUtc) → Arriving(travel) → Docked (VÔ HẠN, chờ lệnh)
 ///   → [Dev B gọi ReportVisitorsAllAboard] → Departing(travel) → WaitingNext(...)
 ///
-/// Lịch chuyến kế (GDD V2 §3.2): gap = gapOneDockMinutes (5) nếu chỉ 1 bến mở,
-/// gapMultiDockMinutes (10) nếu ≥2 bến; mọi cặp arrival bị ép cách nhau
+/// Lịch chuyến kế (GDD V2 §3.2, Lead chốt lại 2026-08-29 — BA MỨC):
+/// gap = gapOneDockMinutes (5) khi 1 bến mở · gapTwoDockMinutes (7) khi 2 bến ·
+/// gapMultiDockMinutes (10) khi đủ 3 bến; mọi cặp arrival bị ép cách nhau
 /// ≥ minStaggerMinutes (3) bằng cách DỜI MUỘN.
 ///
 /// Trạng thái tàu vẫn là hàm thuần của (state persist, mốc UTC, now) nên
@@ -643,12 +644,41 @@ public class BoatDockManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Kiểm tra xem có bến nào khác đang ĐỖ (Docked) hoặc đang vào bến (Arriving) không.
+    /// Giúp đảm bảo các tàu phục vụ tuần tự, không bị dồn 2 tàu cùng lúc khi khách tàu 1 chưa xong.
+    /// </summary>
+    public bool IsAnyOtherDockBusy(int excludeDockIndex)
+    {
+        for (int i = 0; i < DockCount; i++)
+        {
+            if (i == excludeDockIndex || !_unlocked[i]) continue;
+            if (_states[i].State == BoatState.Docked || _states[i].State == BoatState.Arriving)
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Tua máy trạng thái của 1 bến tới nowUtc, persist khi đổi, bắn
     /// OnBoatStateChanged, và xử lý cờ JustDocked (bắn ngay hay hoãn tới khi
     /// Dev B kịp subscribe — xem FlushPendingDockedEvents).
     /// </summary>
     private void ResolveDock(int dockIndex, long nowUtcTicks, bool allowImmediateDockedEvent)
     {
+        // Nếu bến khác đang ĐỖ hoặc đang vào bến mà bến này đang ở WaitingNext,
+        // giữ tàu này ở WaitingNext (dời arrivalUtc về sau) để không cập bến chồng lấn.
+        if (_states[dockIndex].State == BoatState.WaitingNext && IsAnyOtherDockBusy(dockIndex))
+        {
+            long travelTicks = BoatScheduleCore.SecondsToTicks(EffectiveTravelSeconds());
+            long arriveStart = _states[dockIndex].AnchorUtcTicks - travelTicks;
+            if (nowUtcTicks >= arriveStart)
+            {
+                long delayTicks = BoatScheduleCore.SecondsToTicks(EffectiveTravelSeconds() + EffectiveStaggerSeconds());
+                _states[dockIndex].AnchorUtcTicks = nowUtcTicks + delayTicks;
+                SaveDock(dockIndex);
+            }
+        }
+
         DockResolveResult r = BoatScheduleCore.ResolveDock(
             _states[dockIndex], nowUtcTicks, EffectiveTravelSeconds());
 
@@ -782,12 +812,16 @@ public class BoatDockManager : MonoBehaviour
         return Mathf.Max(0.01f, _scheduleTravelSeconds) / EffectiveTimeScale();
     }
 
-    /// <summary>Gap hiệu lực (giây thực): 5 phút nếu 1 bến mở, 10 phút nếu ≥2 — đã chia timeScale.</summary>
+    /// <summary>
+    /// Gap hiệu lực (giây thực), BA MỨC theo số bến đã mở — 1 bến: 5 phút ·
+    /// 2 bến: 7 phút · 3 bến: 10 phút (Lead chốt 2026-08-29). Đã chia timeScale.
+    /// </summary>
     private double EffectiveGapSeconds()
     {
         if (config == null) return 300.0;
         double gap = BoatScheduleCore.SelectGapSeconds(
-            UnlockedDockCount, config.GapOneDockSeconds, config.GapMultiDockSeconds);
+            UnlockedDockCount,
+            config.GapOneDockSeconds, config.GapTwoDockSeconds, config.GapMultiDockSeconds);
         return gap / EffectiveTimeScale();
     }
 

@@ -1,0 +1,153 @@
+TRAIN SPRITE IMPORT FIX — 2026-08-31 12:50:06
+Thư mục sprite: Assets/Export_Train_UI_Package/Sprites
+========================================================================
+
+── BƯỚC 1-2: quét 48 texture ──
+  ✔ Assets/Export_Train_UI_Package/Sprites/btn_blue_gem_3d.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/btn_disabled_3d.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/btn_green_3d.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/btn_yellow_3d.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/bubble_cargo_req.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/check_badge_green.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/flat_locomotive_horizontal.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/flat_wagon_horizontal.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/icon_disc_large.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/mini_train_track_bg.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/popup_frame_wood.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/popup_panel_paper.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/progress_fill_green.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/progress_track_bar.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/ribbon_banner_gold.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/station_building_flat.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/station_full_scene_bg.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/steam_smoke_cloud.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/timer_box_dark.png
+      textureType → Sprite · spriteImportMode → Single
+  ✔ Assets/Export_Train_UI_Package/Sprites/train_popup_mini_horizontal.png
+      textureType → Sprite · spriteImportMode → Single
+
+  Tổng: sửa 20 · đã đúng sẵn 28 · lỗi 0
+
+  ⚠ 36 ảnh CHƯA BIẾT BORDER 9-slice (đang để 0,0,0,0).
+    Nếu ảnh nào là khung/nút bo góc mà thấy MÉO khi phóng to:
+    mở Sprite Editor canh border, hoặc thêm tên vào BangBorder trong tool này.
+      - Assets/Export_Train_UI_Package/Sprites/check_badge_green.png
+      - Assets/Export_Train_UI_Package/Sprites/flat_locomotive_horizontal.png
+      - Assets/Export_Train_UI_Package/Sprites/flat_wagon_horizontal.png
+      - Assets/Export_Train_UI_Package/Sprites/icon_disc_large.png
+      - Assets/Export_Train_UI_Package/Sprites/icon_speedup_wing.png
+      - Assets/Export_Train_UI_Package/Sprites/station_building_flat.png
+      - Assets/Export_Train_UI_Package/Sprites/station_building_world.png
+      - Assets/Export_Train_UI_Package/Sprites/station_full_scene_bg.png
+      - Assets/Export_Train_UI_Package/Sprites/steam_smoke_cloud.png
+      - Assets/Export_Train_UI_Package/Sprites/train_popup_mini_horizontal.png
+      - Assets/Export_Train_UI_Package/Sprites/train_smoke_puff.png
+      - Assets/Export_Train_UI_Package/Sprites/world_bubble_train_arrived.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_frontleft_01.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_frontleft_02.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_frontleft_03.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_frontleft_04.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_frontleft_05.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_frontleft_06.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_upright_01.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_upright_02.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_upright_03.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_upright_04.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_upright_05.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_loco_upright_06.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_frontleft_01.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_frontleft_02.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_frontleft_03.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_frontleft_04.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_frontleft_05.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_frontleft_06.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_upright_01.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_upright_02.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_upright_03.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_upright_04.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_upright_05.png
+      - Assets/Export_Train_UI_Package/Sprites/WorldTrain/world_wagon_upright_06.png
+
+── BƯỚC 3: dựng lại prefab qua TrainPackageBuildTool ──
+  · Không thấy class TrainPackageBuildTool trong project — bỏ qua. Nếu prefab vẫn thiếu sprite, chạy tool dựng gói Train của bạn rồi bấm lại menu này.
+
+── BƯỚC 4: Image còn thiếu sprite trong prefab Train ──
+  ✖ Popup_item_Train (Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab): 10 Image thiếu sprite
+       Popup_item_Train
+       Popup_item_Train/Paper_Panel
+       Popup_item_Train/Paper_Panel/Icon_Disc
+       Popup_item_Train/Paper_Panel/Icon_Disc/Img_Icon
+       Popup_item_Train/Paper_Panel/Progress_Track
+       Popup_item_Train/Paper_Panel/Progress_Track/Progress_Fill
+       Popup_item_Train/Paper_Panel/Btn_themhang
+       Popup_item_Train/Paper_Panel/Btn_napTatCa
+       Popup_item_Train/Paper_Panel/Btn_DaDuHang
+       Popup_item_Train/Ribbon_Banner
+  ✖ Popup_train (Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab): 8 Image thiếu sprite
+       Popup_train
+       Popup_train/Paper_Panel
+       Popup_train/Paper_Panel/Mini_Track_Box
+       Popup_train/Paper_Panel/Mini_Track_Box/Mini_Train
+       Popup_train/Paper_Panel/Timer_Box
+       Popup_train/Paper_Panel/Btn_SpeedUp
+       Popup_train/Paper_Panel/Btn_RaGa
+       Popup_train/Ribbon_Banner
+  ✖ Popup_Train_MasterStation (Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab): 29 Image thiếu sprite
+       Popup_Train_MasterStation
+       Popup_Train_MasterStation/Building_GaHang
+       Popup_Train_MasterStation/Ribbon_Banner
+       Popup_Train_MasterStation/Hint_Pill
+       Popup_Train_MasterStation/Train_Container/Wagon_1/Img_Wagon
+       Popup_Train_MasterStation/Train_Container/Wagon_1/Bubble_Req
+       Popup_Train_MasterStation/Train_Container/Wagon_1/Bubble_Req/Icon_Disc
+       Popup_Train_MasterStation/Train_Container/Wagon_1/Bubble_Req/Icon_Disc/Img_Icon
+       Popup_Train_MasterStation/Train_Container/Wagon_1/Check_Badge
+       Popup_Train_MasterStation/Train_Container/Wagon_1/Empty_Pill
+       Popup_Train_MasterStation/Train_Container/Wagon_2/Img_Wagon
+       Popup_Train_MasterStation/Train_Container/Wagon_2/Bubble_Req
+       Popup_Train_MasterStation/Train_Container/Wagon_2/Bubble_Req/Icon_Disc
+       Popup_Train_MasterStation/Train_Container/Wagon_2/Bubble_Req/Icon_Disc/Img_Icon
+       Popup_Train_MasterStation/Train_Container/Wagon_2/Check_Badge
+       Popup_Train_MasterStation/Train_Container/Wagon_2/Empty_Pill
+       Popup_Train_MasterStation/Train_Container/Wagon_3/Img_Wagon
+       Popup_Train_MasterStation/Train_Container/Wagon_3/Bubble_Req
+       Popup_Train_MasterStation/Train_Container/Wagon_3/Bubble_Req/Icon_Disc
+       Popup_Train_MasterStation/Train_Container/Wagon_3/Bubble_Req/Icon_Disc/Img_Icon
+       Popup_Train_MasterStation/Train_Container/Wagon_3/Check_Badge
+       Popup_Train_MasterStation/Train_Container/Wagon_3/Empty_Pill
+       Popup_Train_MasterStation/Train_Container/Wagon_4/Img_Wagon
+       Popup_Train_MasterStation/Train_Container/Wagon_4/Bubble_Req
+       Popup_Train_MasterStation/Train_Container/Wagon_4/Bubble_Req/Icon_Disc
+       Popup_Train_MasterStation/Train_Container/Wagon_4/Bubble_Req/Icon_Disc/Img_Icon
+       Popup_Train_MasterStation/Train_Container/Wagon_4/Check_Badge
+       Popup_Train_MasterStation/Train_Container/Wagon_4/Empty_Pill
+       Popup_Train_MasterStation/Train_Container/Locomotive_Flat
+
+── CẦN SẾP LÀM TRONG UNITY ──
+1) Nhìn Project window: các PNG trong Assets/Export_Train_UI_Package/Sprites
+   giờ phải BUNG RA được (mũi tên ►) và có sub-asset Sprite bên trong.
+   Không bung được = file .meta còn hỏng nặng hơn → báo lại, ĐỪNG xoá .meta tay.
+2) Mở prefab Popup_Train_MasterStation, xem popup đã hết trắng chưa.
+3) Gán tay sprite cho 47 Image liệt kê ở BƯỚC 4 (tool cố ý KHÔNG đoán).
+4) Ctrl+S lưu scene/prefab nếu Unity hỏi.
+
+GHI CHÚ AN TOÀN: tool KHÔNG đụng vào file .meta (giữ nguyên GUID,
+mọi reference cũ còn nguyên) — chỉ đi qua TextureImporter API.

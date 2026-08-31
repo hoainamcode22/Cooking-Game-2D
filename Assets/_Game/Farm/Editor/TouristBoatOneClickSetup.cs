@@ -46,6 +46,10 @@ public static class TouristBoatOneClickSetup
     private const string UndoLabel    = "Tourist Boat — Setup tất cả";
     private const string RootBoat     = "BoatSystem";
     private const string RootTourist  = "TouristSystem";
+    private const string PrefabTouristRoot = "Assets/_Game/Farm/Prefabs/Tourists";
+
+    /// <summary>Số bến của hệ — bằng BoatDockManager.DockCount, để riêng cho code Editor.</summary>
+    private const int DockTotal = 3;
 
     // ─────────────────────────────────────────────────────────────────────
     //  TOẠ ĐỘ THẬT — Lead trích từ SCN_Farm.unity (world space, đã tính scale cha)
@@ -315,7 +319,27 @@ public static class TouristBoatOneClickSetup
         report.AppendLine("── BƯỚC 3: TouristSystem trong scene ──");
         try
         {
+            // [QA M-8] Ghi nhận TRƯỚC khi dựng: mốc nào đã tồn tại (có thể do Sếp kéo tay),
+            // mốc nào chưa. Sau khi dựng, chỉ ĐÓNG DẤU VẾT cho mốc VỪA ĐƯỢC TẠO — nhờ vậy
+            // bước 4 phân biệt được "tool vừa sinh" (được phép ghi tiếp) với "Sếp đã kéo".
+            bool[] pathDaCoTruoc = new bool[DockTotal];
+            bool anchorDaCoTruoc = false;
+            Transform tsCu = FindTouristRoot();
+            if (tsCu != null)
+            {
+                anchorDaCoTruoc = tsCu.Find("QueueAnchor") != null;
+                for (int d = 0; d < DockTotal; d++)
+                {
+                    Transform pt = tsCu.Find($"TouristPath_Dock{d + 1:00}");
+                    pathDaCoTruoc[d] = pt != null && pt.childCount > 0;
+                }
+            }
+
             report.AppendLine(TouristVisitorSetupTool.RunSetup(quiet: true));
+            DongDauVetChoMocMoi(pathDaCoTruoc, anchorDaCoTruoc);
+
+            DonTenSortingLayerCu(report);
+            WireHudGoldTarget(report);
             return GameObject.Find(RootTourist) != null;
         }
         catch (Exception e)
@@ -326,14 +350,212 @@ public static class TouristBoatOneClickSetup
         }
     }
 
+    /// <summary>
+    /// WIRE ĐÍCH BAY CỦA MẶT CƯỜI = ô VÀNG trên HUD.
+    ///
+    /// [Lead chốt 2026-08-29] Không wire thì FX phải dò tên lúc chạy, dò trượt là bay
+    /// lung tung. Wire cứng một lần ở đây thì chắc chắn đúng.
+    ///
+    /// Cách dò (chỉ trong canvas HUD có sortingOrder cao nhất, bỏ qua canvas popup):
+    ///   ① object có tên chứa "gold"/"vang"/"coin"/"tien" VÀ có Image hoặc TMP_Text
+    ///   ② icon vàng: tên sprite của Image chứa "gold"/"vang"/"coin"
+    ///   ③ không thấy → để trống, FX sẽ tự bay lên trời (vẫn đúng ý Sếp)
+    /// Chỉ ghi khi field đang TRỐNG — không đè lựa chọn tay của Sếp.
+    /// </summary>
+    private static void WireHudGoldTarget(StringBuilder report)
+    {
+        var vm = UnityEngine.Object.FindFirstObjectByType<TouristVisitorManager>(FindObjectsInactive.Include);
+        if (vm == null) return;
+
+        var so = new SerializedObject(vm);
+        SerializedProperty p = so.FindProperty("hudGoldTarget");
+        if (p == null) return;
+
+        if (p.objectReferenceValue != null)
+        {
+            report.AppendLine("✔ hudGoldTarget: đã gắn từ trước (" + p.objectReferenceValue.name + ") — giữ nguyên.");
+            return;
+        }
+
+        Transform target = TimOVangHud(out string cachTim);
+        if (target == null)
+        {
+            report.AppendLine("⚠ Không tìm được ô vàng HUD để mặt cười bay tới — " +
+                              "FX sẽ cho mặt cười BAY THẲNG LÊN TRỜI (vẫn đúng ý đồ, không bay về giữa màn hình). " +
+                              "Muốn bay về ví tiền: kéo tay object ô vàng vào field 'hudGoldTarget' của TouristVisitorManager.");
+            return;
+        }
+
+        Undo.RecordObject(vm, UndoLabel);
+        p.objectReferenceValue = target;
+        so.ApplyModifiedProperties();
+        EditorUtility.SetDirty(vm);
+
+        report.AppendLine($"✔ hudGoldTarget → \"{target.name}\" ({cachTim})");
+        report.AppendLine("      đường dẫn: " + DuongDanHierarchy(target));
+    }
+
+    /// <summary>Dò ô vàng trong canvas HUD. Trả null nếu không có gì đáng tin.</summary>
+    private static Transform TimOVangHud(out string cachTim)
+    {
+        cachTim = string.Empty;
+
+        // Canvas HUD = canvas root có sortingOrder cao nhất trong số canvas ĐANG BẬT.
+        Canvas hud = null;
+        foreach (Canvas c in UnityEngine.Object.FindObjectsByType<Canvas>(
+                     FindObjectsInactive.Exclude, FindObjectsSortMode.None))
+        {
+            if (c == null || !c.isRootCanvas) continue;
+            // Bỏ qua canvas popup của Dev C — mặt cười phải bay về HUD, không về popup.
+            if (c.gameObject.name.ToLowerInvariant().Contains("popup")) continue;
+            if (hud == null || c.sortingOrder > hud.sortingOrder) hud = c;
+        }
+        if (hud == null) return null;
+
+        string[] goiY = { "gold", "vang", "coin", "tien" };
+        RectTransform[] all = hud.GetComponentsInChildren<RectTransform>(true);
+
+        // ① Tên khớp + có thành phần hiển thị (Image / TMP_Text)
+        for (int g = 0; g < goiY.Length; g++)
+        {
+            for (int i = 0; i < all.Length; i++)
+            {
+                if (all[i] == null) continue;
+                if (!all[i].name.ToLowerInvariant().Contains(goiY[g])) continue;
+
+                bool coHinh = all[i].GetComponent<UnityEngine.UI.Image>() != null ||
+                              all[i].GetComponent<TMPro.TMP_Text>() != null;
+                if (!coHinh) continue;
+
+                cachTim = "khớp tên \"" + goiY[g] + "\" trong canvas " + hud.gameObject.name;
+                return all[i];
+            }
+        }
+
+        // ② Icon vàng: tên SPRITE của Image khớp gợi ý
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] == null) continue;
+            var img = all[i].GetComponent<UnityEngine.UI.Image>();
+            if (img == null || img.sprite == null) continue;
+
+            string ten = img.sprite.name.ToLowerInvariant();
+            for (int g = 0; g < goiY.Length; g++)
+            {
+                if (!ten.Contains(goiY[g])) continue;
+                cachTim = "khớp tên sprite \"" + img.sprite.name + "\"";
+                return all[i];
+            }
+        }
+
+        return null;
+    }
+
+    private static string DuongDanHierarchy(Transform t)
+    {
+        if (t == null) return "(null)";
+        string s = t.name;
+        Transform p = t.parent;
+        while (p != null) { s = p.name + "/" + s; p = p.parent; }
+        return s;
+    }
+
+    /// <summary>
+    /// DỌN TÊN SORTING LAYER CŨ còn sót trong Inspector (scene + prefab khách).
+    ///
+    /// [BUG Sếp gặp 2026-08-29] Lưới an toàn TouristSortingLayers chạy đúng, nhưng giá
+    /// trị "CongTrinh" vẫn nằm trong field serialize của TouristVisitorManager /
+    /// TouristAgent / bubble / gangplank ⇒ MỖI LẦN spawn khách lại in một dòng cảnh báo
+    /// "layer không tồn tại", làm ngập Console.
+    /// Cách dọn: field nào đang giữ tên layer KHÔNG tồn tại thì ghi về RỖNG
+    /// (= "tự chọn layer đúng"). Tên layer CÓ THẬT thì giữ nguyên — tôn trọng chỉnh tay.
+    /// </summary>
+    private static void DonTenSortingLayerCu(StringBuilder report)
+    {
+        string[] tenField = { "sortingLayerName", "fxSortingLayerName" };
+        int daDon = 0;
+
+        // 1 · Component trong scene
+        foreach (MonoBehaviour mb in UnityEngine.Object.FindObjectsByType<MonoBehaviour>(
+                     FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (mb == null) continue;
+            string ten = mb.GetType().Name;
+            if (ten != "TouristVisitorManager" && ten != "TouristAgent" &&
+                ten != "TouristRequestBubble" && ten != "GangplankController") continue;
+
+            if (DonFieldLayer(mb, tenField, UndoLabel)) daDon++;
+        }
+
+        // 2 · Prefab khách (giá trị nằm trong file .prefab, scene không chạm tới được)
+        if (AssetDatabase.IsValidFolder(PrefabTouristRoot))
+        {
+            string[] guids = AssetDatabase.FindAssets("t:Prefab Tourist_NV", new[] { PrefabTouristRoot });
+            for (int i = 0; i < guids.Length; i++)
+            {
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(guids[i]));
+                if (go == null) continue;
+
+                foreach (MonoBehaviour mb in go.GetComponents<MonoBehaviour>())
+                {
+                    if (mb == null) continue;
+                    if (DonFieldLayer(mb, tenField, null)) daDon++;
+                }
+            }
+            AssetDatabase.SaveAssets();
+        }
+
+        report.AppendLine(daDon > 0
+            ? $"✔ Dọn {daDon} field sorting layer giữ tên không tồn tại (vd \"CongTrinh\") → để trống = tự chọn đúng. Hết spam cảnh báo."
+            : "✔ Không field sorting layer nào giữ tên sai — Console sẽ không bị spam.");
+    }
+
+    /// <summary>Ghi rỗng cho các field layer đang giữ tên KHÔNG tồn tại. Trả true nếu có sửa.</summary>
+    private static bool DonFieldLayer(MonoBehaviour mb, string[] tenField, string undoLabel)
+    {
+        var so = new SerializedObject(mb);
+        bool doi = false;
+
+        for (int i = 0; i < tenField.Length; i++)
+        {
+            SerializedProperty p = so.FindProperty(tenField[i]);
+            if (p == null || p.propertyType != SerializedPropertyType.String) continue;
+            if (string.IsNullOrEmpty(p.stringValue)) continue;
+            if (TouristSortingLayers.Exists(p.stringValue)) continue; // tên có thật — tôn trọng
+
+            if (!string.IsNullOrEmpty(undoLabel)) Undo.RecordObject(mb, undoLabel);
+            p.stringValue = string.Empty;
+            doi = true;
+        }
+
+        if (doi)
+        {
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(mb);
+        }
+        return doi;
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     //  BƯỚC 4 — GHI ĐÈ TOẠ ĐỘ THẬT (điểm mấu chốt: Sếp hết phải kéo tay)
     // ─────────────────────────────────────────────────────────────────────
 
     /// <summary>
-    /// Đặt QueueAnchor + 3×3 waypoint đúng bảng toạ độ Lead đo từ scene.
-    /// Số WP mỗi path được CHUẨN HOÁ về đúng 3 (thừa thì xoá, thiếu thì tạo) nên chạy
-    /// lại nhiều lần không nhân đôi. Mọi thay đổi đều Undo.RecordObject.
+    /// Đặt QueueAnchor + waypoint đường đi bộ.
+    ///
+    /// [QA M-8 · 2026-08-29] TÔN TRỌNG CHỈNH TAY CỦA SẾP. Bản trước ghi
+    /// <c>wp.position = …</c> VÔ ĐIỀU KIỆN — cờ <c>bamDuongDat</c> chỉ đổi NGUỒN toạ độ
+    /// (Dijkstra hay mốc thẳng) chứ không đổi việc CÓ ĐÈ hay không; tắt cờ còn tệ hơn
+    /// (đè bằng 3 mốc thẳng hardcode). Sếp kéo waypoint bám đường đất rồi Ctrl+S, bấm lại
+    /// nút ★ là mất sạch — mà báo cáo lại nói "không đè gì".
+    ///
+    /// Nay mỗi mốc chỉ bị ghi khi RƠI VÀO MỘT TRONG BA:
+    ///   ① vừa được TẠO MỚI trong lần chạy này (chưa từng có);
+    ///   ② còn nằm ĐÚNG chỗ tool sinh lần trước — đối chiếu bằng DẤU VẾT toạ độ
+    ///      (<see cref="DauVetToaDo"/>) lưu trong EditorPrefs theo scene + bến;
+    ///   ③ Sếp tự bật ô tick <see cref="GhiDeWaypointChinhTay"/> (mặc định TẮT).
+    /// Ngoài ra → BỎ QUA + log rõ để Sếp biết vì sao không đổi.
+    /// Áp dụng cho cả QueueAnchor (Sếp cũng được dặn kéo nó trong HANDOFF).
     /// </summary>
     private static bool Buoc4_GhiToaDo(StringBuilder report)
     {
@@ -354,14 +576,41 @@ public static class TouristBoatOneClickSetup
             report.AppendLine("✖ Thiếu QueueAnchor dưới " + RootTourist + ".");
             return false;
         }
-        Undo.RecordObject(anchor, UndoLabel);
-        Vector3 cu = anchor.position;
-        anchor.position = new Vector3(QueueAnchorPos.x, QueueAnchorPos.y, anchor.position.z);
-        EditorUtility.SetDirty(anchor);
-        report.AppendLine($"✔ QueueAnchor: ({cu.x:0}, {cu.y:0}) → ({QueueAnchorPos.x:0}, {QueueAnchorPos.y:0}) — trước cửa CookingGate.");
+        string khoaAnchor = KhoaDauVet("anchor");
+        string vetAnchorHienTai = DauVetToaDo(new[] { anchor.position });
+        bool anchorDaKeoTay = EditorPrefs.HasKey(khoaAnchor) &&
+                              EditorPrefs.GetString(khoaAnchor, string.Empty) != vetAnchorHienTai;
+        // Chưa có dấu vết = tool chưa từng ghi mốc này ⇒ coi như CHƯA đụng, được phép đặt lần đầu.
 
-        // 3 path × 3 WP
-        int daDat = 0, taoMoi = 0, xoaThua = 0;
+        if (anchorDaKeoTay && !GhiDeWaypointChinhTay)
+        {
+            report.AppendLine($"• QueueAnchor đang ở ({anchor.position.x:0}, {anchor.position.y:0}) — " +
+                              "BẠN ĐÃ KÉO TAY nên GIỮ NGUYÊN. Muốn đưa về vị trí tool tính: " +
+                              "tick menu \"⚙ Ghi đè waypoint đã chỉnh tay\" rồi chạy lại.");
+        }
+        else
+        {
+            Undo.RecordObject(anchor, UndoLabel);
+            Vector3 cu = anchor.position;
+            anchor.position = new Vector3(QueueAnchorPos.x, QueueAnchorPos.y, anchor.position.z);
+            EditorUtility.SetDirty(anchor);
+            EditorPrefs.SetString(khoaAnchor, DauVetToaDo(new[] { anchor.position }));
+            report.AppendLine($"✔ QueueAnchor: ({cu.x:0}, {cu.y:0}) → ({QueueAnchorPos.x:0}, {QueueAnchorPos.y:0}) — trước cửa CookingGate." +
+                              (anchorDaKeoTay ? "  (ghi đè theo yêu cầu)" : ""));
+        }
+
+        // ── 3 path × N WP ──
+        // [Lead chốt 2026-08-29 — việc 4] Ưu tiên TÌM ĐƯỜNG BÁM TILEMAP ĐẤT thật
+        // (Dijkstra 8 hướng, đất rẻ / cỏ đắt, rút gọn Douglas-Peucker). Bảng 3 mốc thẳng
+        // bên dưới chỉ còn là ĐƯỜNG DỰ PHÒNG khi không đọc được tilemap.
+        int daDat = 0, taoMoi = 0, xoaThua = 0, benBamDat = 0, benDuPhong = 0, benGiuNguyen = 0;
+        bool batBamDat = TouristVisitorSetupTool.BamDuongDat;
+
+        if (!batBamDat)
+            report.AppendLine("• Cờ \"Bám đường đất khi setup\" đang TẮT — nguồn toạ độ là 3 mốc thẳng.");
+        if (GhiDeWaypointChinhTay)
+            report.AppendLine("• ⚠ Ô tick \"Ghi đè waypoint đã chỉnh tay\" đang BẬT — mọi mốc bạn kéo tay SẼ BỊ GHI LẠI.");
+
         for (int d = 0; d < DockWaypoints.Length; d++)
         {
             string pathName = $"TouristPath_Dock{d + 1:00}";
@@ -372,16 +621,68 @@ public static class TouristBoatOneClickSetup
                 continue;
             }
 
-            Vector2[] wps = DockWaypoints[d];
+            // Điểm bắt đầu = ĐẦU BỜ của tấm gỗ (khớp đúng cách manager dựng đường lúc chạy)
+            Vector3 batDau = DiemDauDuongDiBo(d, anchor.position);
 
-            // Xoá WP thừa (chạy lại sau khi bản cũ sinh 4 WP)
-            for (int c = path.childCount - 1; c >= wps.Length; c--)
+            List<Vector3> wps = null;
+            if (batBamDat)
+            {
+                var kq = TouristVisitorSetupTool.TimDuongBamDat(batDau, anchor.position);
+                if (kq.ThanhCong)
+                {
+                    wps = kq.Waypoints;
+                    benBamDat++;
+                    report.AppendLine($"✔ {pathName}: BÁM ĐƯỜNG ĐẤT — {kq.MoTaNgan()}");
+                    if (kq.TiLeCo > 0.4f)
+                        report.AppendLine($"   ⚠ {kq.TiLeCo * 100f:0}% quãng đường đi trên CỎ — " +
+                                          "đường đất có thể không nối tới nhà hàng, bạn kiểm lại tilemap " +
+                                          "Tilemap_IsoDirt (hoặc vẽ thêm đoạn nối).");
+                }
+                else
+                {
+                    report.AppendLine($"⚠ {pathName}: không bám được đường đất ({kq.LyDoThatBai}) — " +
+                                      "dùng 3 mốc thẳng dự phòng.");
+                    Debug.LogWarning($"[TouristBoat] {pathName}: {kq.LyDoThatBai} — rơi về 3 mốc thẳng.");
+                }
+            }
+
+            if (wps == null)
+            {
+                wps = new List<Vector3>();
+                for (int k = 0; k < DockWaypoints[d].Length; k++)
+                    wps.Add(new Vector3(DockWaypoints[d][k].x, DockWaypoints[d][k].y, 0f));
+                benDuPhong++;
+                if (batBamDat == false)
+                    report.AppendLine($"• {pathName}: 3 mốc thẳng (toạ độ đo từ scene).");
+            }
+
+            // ── [QA M-8] Có được phép ghi lên path này không? ──
+            //   • path RỖNG            → tạo mới, đương nhiên được ghi
+            //   • dấu vết KHỚP         → mốc vẫn đúng chỗ tool sinh lần trước, ghi tiếp được
+            //   • dấu vết LỆCH/không có→ Sếp đã kéo tay ⇒ GIỮ NGUYÊN (trừ khi bật ô ghi đè)
+            string khoa = KhoaDauVet("dock" + d);
+            bool pathRong = path.childCount == 0;
+            bool khopDauVet = pathRong ||
+                              (EditorPrefs.HasKey(khoa) &&
+                               EditorPrefs.GetString(khoa, string.Empty) == DauVetToaDo(LayToaDoCon(path)));
+
+            if (!pathRong && !khopDauVet && !GhiDeWaypointChinhTay)
+            {
+                benGiuNguyen++;
+                report.AppendLine($"• {pathName}: waypoint ĐÃ ĐƯỢC CHỈNH TAY ({path.childCount} WP) — GIỮ NGUYÊN, không ghi đè.");
+                report.AppendLine("      Muốn dựng lại theo đường đất: tick menu " +
+                                  "\"⚙ Ghi đè waypoint đã chỉnh tay\" rồi chạy lại nút ★.");
+                continue;
+            }
+
+            // Xoá WP thừa (số WP thay đổi giữa các lần chạy / bản tool cũ sinh 4 cái)
+            for (int c = path.childCount - 1; c >= wps.Count; c--)
             {
                 Undo.DestroyObjectImmediate(path.GetChild(c).gameObject);
                 xoaThua++;
             }
 
-            for (int k = 0; k < wps.Length; k++)
+            for (int k = 0; k < wps.Count; k++)
             {
                 Transform wp = k < path.childCount ? path.GetChild(k) : null;
                 if (wp == null)
@@ -400,15 +701,181 @@ public static class TouristBoatOneClickSetup
                 daDat++;
             }
 
-            report.AppendLine($"✔ {pathName}: " +
-                              $"WP_01({wps[0].x:0},{wps[0].y:0}) → WP_02({wps[1].x:0},{wps[1].y:0}) → WP_03({wps[2].x:0},{wps[2].y:0})");
+            // Đóng dấu vết để lần chạy sau biết "mốc này do tool sinh, chưa ai kéo".
+            EditorPrefs.SetString(khoa, DauVetToaDo(LayToaDoCon(path)));
+
+            if (!pathRong && !khopDauVet && GhiDeWaypointChinhTay)
+                report.AppendLine($"   ⚠ {pathName}: đã GHI ĐÈ waypoint bạn từng chỉnh tay (do ô tick đang bật).");
         }
 
-        report.AppendLine($"   Tổng: {daDat} waypoint đã đặt đúng toạ độ" +
+        report.AppendLine($"   Tổng: {daDat} waypoint đã đặt" +
                           (taoMoi > 0 ? $", {taoMoi} tạo mới" : "") +
-                          (xoaThua > 0 ? $", {xoaThua} WP thừa đã xoá" : "") + ".");
-        report.AppendLine("   Đường đi bám khu đất/cát, tránh House_05 và House_02, 3 bến hội tụ về nhà hàng.");
+                          (xoaThua > 0 ? $", {xoaThua} WP thừa đã xoá" : "") +
+                          $" · {benBamDat} bến bám tilemap đất, {benDuPhong} bến dùng mốc thẳng dự phòng" +
+                          (benGiuNguyen > 0 ? $", {benGiuNguyen} bến GIỮ NGUYÊN vì bạn đã kéo tay" : "") + ".");
+        if (benBamDat > 0)
+            report.AppendLine("   Đường tự bám Tilemap_IsoDirt (đất 1 · cầu tàu 2 · cát 5 · cỏ 9), " +
+                              "rút gọn Douglas-Peucker. Vẫn kéo tay tinh chỉnh được — " +
+                              "muốn khỏi bị ghi đè thì tắt menu \"⚙ Bám đường đất khi setup\".");
         return true;
+    }
+
+    /// <summary>
+    /// [QA M-8] Đóng dấu vết cho những mốc mà bước 3 VỪA TẠO (trước đó chưa có).
+    /// Mốc đã tồn tại từ trước thì KHÔNG đóng dấu — giữ nguyên khả năng nhận ra
+    /// "Sếp đã kéo tay" ở bước 4.
+    /// </summary>
+    private static void DongDauVetChoMocMoi(bool[] pathDaCoTruoc, bool anchorDaCoTruoc)
+    {
+        Transform ts = FindTouristRoot();
+        if (ts == null) return;
+
+        if (!anchorDaCoTruoc)
+        {
+            Transform a = ts.Find("QueueAnchor");
+            if (a != null) EditorPrefs.SetString(KhoaDauVet("anchor"), DauVetToaDo(new[] { a.position }));
+        }
+
+        for (int d = 0; d < DockTotal && d < pathDaCoTruoc.Length; d++)
+        {
+            if (pathDaCoTruoc[d]) continue;
+            Transform pt = ts.Find($"TouristPath_Dock{d + 1:00}");
+            if (pt != null && pt.childCount > 0)
+                EditorPrefs.SetString(KhoaDauVet("dock" + d), DauVetToaDo(LayToaDoCon(pt)));
+        }
+    }
+
+    private static Transform FindTouristRoot()
+    {
+        GameObject go = GameObject.Find(RootTourist);
+        return go != null ? go.transform : null;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    //  [QA M-8] DẤU VẾT TOẠ ĐỘ — phân biệt "mốc do tool sinh" với "mốc Sếp kéo tay"
+    // ─────────────────────────────────────────────────────────────────────
+    //
+    // VÌ SAO DÙNG EditorPrefs CHỨ KHÔNG THÊM COMPONENT ĐÁNH DẤU VÀO SCENE:
+    //   • không phải thêm file runtime mới chỉ để ghi sổ cho Editor;
+    //   • không làm bẩn scene/prefab, không rủi ro serialize;
+    //   • MẶC ĐỊNH AN TOÀN: máy khác (hoặc EditorPrefs bị xoá) thì KHÔNG có dấu vết ⇒
+    //     tool coi như mốc đã bị chỉnh tay ⇒ GIỮ NGUYÊN. Thà bỏ qua còn hơn xoá công của Sếp.
+    // Dấu vết là băm FNV-1a của toạ độ đã LÀM TRÒN 1 unit — kéo lệch ≥1 unit là phát hiện,
+    // còn sai số float khi Unity serialize lại thì không tính là "đã kéo".
+
+    private const string KhoaGhiDeWaypoint = "TouristBoat_GhiDeWaypointChinhTay";
+
+    /// <summary>
+    /// Ô tick "Ghi đè waypoint đã chỉnh tay" — MẶC ĐỊNH TẮT. Bật thì nút ★ được phép
+    /// ghi lại cả mốc Sếp đã kéo (dùng khi muốn dựng lại từ đầu theo đường đất).
+    /// </summary>
+    public static bool GhiDeWaypointChinhTay
+    {
+        get { return EditorPrefs.GetBool(KhoaGhiDeWaypoint, false); }
+        set { EditorPrefs.SetBool(KhoaGhiDeWaypoint, value); }
+    }
+
+    [MenuItem("Tools/Farm Game/Tourist Boat/⚙ Ghi đè waypoint đã chỉnh tay (nguy hiểm)", false, 6)]
+    private static void ToggleGhiDeWaypoint()
+    {
+        GhiDeWaypointChinhTay = !GhiDeWaypointChinhTay;
+        Debug.Log("[TouristBoat] Ghi đè waypoint đã chỉnh tay: " +
+                  (GhiDeWaypointChinhTay ? "BẬT — nút ★ sẽ ghi lại cả mốc bạn đã kéo!"
+                                         : "TẮT (an toàn) — nút ★ giữ nguyên mốc bạn đã kéo."));
+    }
+
+    [MenuItem("Tools/Farm Game/Tourist Boat/⚙ Ghi đè waypoint đã chỉnh tay (nguy hiểm)", true)]
+    private static bool ToggleGhiDeWaypointValidate()
+    {
+        Menu.SetChecked("Tools/Farm Game/Tourist Boat/⚙ Ghi đè waypoint đã chỉnh tay (nguy hiểm)",
+                        GhiDeWaypointChinhTay);
+        return true;
+    }
+
+    /// <summary>Khoá EditorPrefs riêng cho từng SCENE + từng mốc (2 scene khác nhau không đè dấu vết nhau).</summary>
+    private static string KhoaDauVet(string phanTu)
+    {
+        string scene = EditorSceneManager.GetActiveScene().name;
+        if (string.IsNullOrEmpty(scene)) scene = "(scene-chua-luu)";
+        return "TouristBoat_DauVetWP_" + scene + "_" + phanTu;
+    }
+
+    /// <summary>Toạ độ các con của một node, theo thứ tự hiện có.</summary>
+    private static Vector3[] LayToaDoCon(Transform node)
+    {
+        if (node == null) return new Vector3[0];
+        var ds = new Vector3[node.childCount];
+        for (int i = 0; i < node.childCount; i++)
+            ds[i] = node.GetChild(i) != null ? node.GetChild(i).position : Vector3.zero;
+        return ds;
+    }
+
+    /// <summary>
+    /// Băm FNV-1a của danh sách toạ độ (làm tròn 1 unit). Tự cài thay vì
+    /// <c>string.GetHashCode</c> vì hash chuỗi của .NET KHÔNG ổn định giữa các phiên bản
+    /// runtime — dấu vết lưu trên đĩa thì phải tái lập được mãi.
+    /// </summary>
+    private static string DauVetToaDo(Vector3[] diem)
+    {
+        if (diem == null || diem.Length == 0) return "rong";
+
+        unchecked
+        {
+            uint h = 2166136261u;
+            for (int i = 0; i < diem.Length; i++)
+            {
+                long x = (long)Mathf.Round(diem[i].x);
+                long y = (long)Mathf.Round(diem[i].y);
+                h = BamSo(h, x);
+                h = BamSo(h, y);
+            }
+            return diem.Length + ":" + h.ToString("x8");
+        }
+    }
+
+    private static uint BamSo(uint h, long v)
+    {
+        unchecked
+        {
+            for (int b = 0; b < 8; b++)
+            {
+                h ^= (uint)((v >> (b * 8)) & 0xFF);
+                h *= 16777619u;
+            }
+            return h;
+        }
+    }
+
+    /// <summary>
+    /// Điểm bắt đầu đường đi bộ của bến = ĐẦU BỜ của tấm gỗ (đo từ bounds sprite),
+    /// khớp đúng cách <c>TouristVisitorManager.GetPathPoints</c> dựng đường lúc chạy.
+    /// Không có gangplank → lấy Berth; không có cả Berth → lùi từ đích về phía bến.
+    /// </summary>
+    private static Vector3 DiemDauDuongDiBo(int dock, Vector3 dich)
+    {
+        GameObject boatRoot = TimBoatSystem();
+        Transform gp = null, berth = null;
+        if (boatRoot != null)
+        {
+            Transform d = boatRoot.transform.Find($"Dock_{dock + 1:00}");
+            if (d != null) { gp = d.Find("Gangplank"); berth = d.Find("Berth"); }
+        }
+
+        if (gp != null)
+        {
+            Vector3 p = gp.position;
+            var sr = gp.GetComponent<SpriteRenderer>();
+            if (sr != null && sr.sprite != null) p += Vector3.up * (sr.bounds.size.y * 0.5f);
+            return p;
+        }
+
+        if (berth != null)
+            return berth.position + new Vector3(0f, TouristVisitorSetupTool.GangplankWorldLength, 0f);
+
+        // Không có gì trong scene — dùng bảng toạ độ Berth gốc đã dịch sát bờ.
+        return new Vector3(BerthOriginal[dock].x,
+                           BerthOriginal[dock].y + BoatShoreAdjustTool.DefaultShoreOffset.y
+                           + TouristVisitorSetupTool.GangplankWorldLength, 0f);
     }
 
     // ─────────────────────────────────────────────────────────────────────
@@ -646,8 +1113,39 @@ public static class TouristBoatOneClickSetup
         }
 
         Undo.RecordObject(gp, UndoLabel);
-        gp.position = berth.position + new Vector3(0f, 110f, 0f); // 110 = GangplankDistance của tool bước 3
-        gp.rotation = Quaternion.Euler(0f, 0f, 90f);              // tấm gỗ nằm dọc theo hướng vào bờ (+Y)
+
+        // Tâm tấm gỗ = Berth + nửa chiều dài ⇒ ván bắt đầu ĐÚNG tại mạn tàu và kéo trọn
+        // GangplankWorldLength unit vào bờ. Hằng lấy từ TouristVisitorSetupTool để hai tool
+        // không bao giờ lệch nhau (bản trước ghi cứng 110 ở đây → ván ngắn, lệch mạn tàu).
+        gp.position = berth.position + new Vector3(0f, TouristVisitorSetupTool.GangplankDistance, 0f);
+        gp.rotation = Quaternion.Euler(0f, 0f, 90f); // ván nằm dọc theo hướng vào bờ (+Y)
+
+        // Áp lại CỠ THẬT: object có sẵn từ bản tool cũ đang mang scale bé xíu.
+        var sr = gp.GetComponent<SpriteRenderer>();
+        if (sr != null && sr.sprite != null)
+        {
+            Undo.RecordObject(sr, UndoLabel);
+            sr.sortingLayerName = TouristSortingLayers.Resolve(TouristSortingLayers.Gangplank);
+
+            if (sr.sprite.border != Vector4.zero)
+            {
+                sr.drawMode = SpriteDrawMode.Sliced;
+                sr.size     = new Vector2(TouristVisitorSetupTool.GangplankWorldLength,
+                                          TouristVisitorSetupTool.GangplankWorldThickness);
+                gp.localScale = Vector3.one;
+            }
+            else
+            {
+                sr.drawMode = SpriteDrawMode.Simple;
+                Vector2 native = sr.sprite.rect.size / sr.sprite.pixelsPerUnit;
+                if (native.x > 0.0001f && native.y > 0.0001f)
+                    gp.localScale = new Vector3(
+                        TouristVisitorSetupTool.GangplankWorldLength / native.x,
+                        TouristVisitorSetupTool.GangplankWorldThickness / native.y, 1f);
+            }
+            EditorUtility.SetDirty(sr);
+        }
+
         EditorUtility.SetDirty(gp);
     }
 
@@ -700,13 +1198,69 @@ public static class TouristBoatOneClickSetup
         }
 
         // 2 · 11 prefab khách
-        string[] prefabGuids = AssetDatabase.IsValidFolder("Assets/_Game/Farm/Prefabs/Tourists")
-            ? AssetDatabase.FindAssets("t:Prefab Tourist_NV", new[] { "Assets/_Game/Farm/Prefabs/Tourists" })
+        string[] prefabGuids = AssetDatabase.IsValidFolder(PrefabTouristRoot)
+            ? AssetDatabase.FindAssets("t:Prefab Tourist_NV", new[] { PrefabTouristRoot })
             : new string[0];
         if (prefabGuids.Length < 11)
             Thieu(report, thieu, $"Prefab khách mới có {prefabGuids.Length}/11",
                   "kiểm tra Assets/NV_NPC/NVGAME/Processed/NV01..NV11 đủ 132 file chưa, rồi chạy lại");
-        else report.AppendLine($"✔ Prefab khách: {prefabGuids.Length}/11.");
+        else
+        {
+            report.AppendLine($"✔ Prefab khách: {prefabGuids.Length}/11.");
+
+            // Kiểm layer THẬT trong prefab — lỗi Sếp gặp: 11 prefab đều nằm layer Default
+            // (id 0) vì bản đầu ghi tên layer "CongTrinh" không tồn tại.
+            string layerMongDoi = TouristSortingLayers.Resolve(TouristSortingLayers.Visitor);
+            int saiLayer = 0;
+            for (int i = 0; i < prefabGuids.Length; i++)
+            {
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(prefabGuids[i]));
+                var sr = go != null ? go.GetComponent<SpriteRenderer>() : null;
+                if (sr != null && sr.sortingLayerName != layerMongDoi) saiLayer++;
+            }
+            if (saiLayer > 0)
+                Thieu(report, thieu,
+                      $"{saiLayer}/{prefabGuids.Length} prefab khách còn sai sorting layer (cần \"{layerMongDoi}\") — sẽ bị decor che",
+                      "chạy lại menu ★ SETUP TẤT CẢ (bước 2 ghi lại layer)");
+            else
+                report.AppendLine($"✔ Sorting layer prefab khách: \"{layerMongDoi}\" (nổi trên decor).");
+
+            // AnimatorController: file tồn tại VẪN có thể hỏng (thiếu statemachine) —
+            // đây chính là lỗi làm nhân vật đứng đơ và Console spam lúc Sếp Play test.
+            int ctrlHong = 0, ctrlThieu = 0;
+            var tenHong = new List<string>();
+            for (int i = 0; i < prefabGuids.Length; i++)
+            {
+                var go = AssetDatabase.LoadAssetAtPath<GameObject>(AssetDatabase.GUIDToAssetPath(prefabGuids[i]));
+                var anim = go != null ? go.GetComponent<Animator>() : null;
+                if (anim == null || anim.runtimeAnimatorController == null) { ctrlThieu++; continue; }
+
+                string ctrlPath = AssetDatabase.GetAssetPath(anim.runtimeAnimatorController);
+                string loiCtrl;
+                if (!NPCAnimationSetupTool.ControllerHopLe(ctrlPath, out loiCtrl))
+                {
+                    ctrlHong++;
+                    tenHong.Add(go.name + " (" + loiCtrl + ")");
+                }
+            }
+
+            if (ctrlThieu > 0)
+                Thieu(report, thieu, $"{ctrlThieu}/{prefabGuids.Length} prefab khách CHƯA gán AnimatorController",
+                      "chạy lại menu ★ SETUP TẤT CẢ");
+
+            if (ctrlHong > 0)
+            {
+                Thieu(report, thieu,
+                      $"{ctrlHong}/{prefabGuids.Length} AnimatorController HỎNG (thiếu statemachine) — nhân vật sẽ đứng đơ, Console spam \"Animator has not been initialized\"",
+                      "chạy lại menu ★ SETUP TẤT CẢ (bước 2 tự xoá và tạo lại controller hỏng)");
+                for (int i = 0; i < tenHong.Count; i++) report.AppendLine("      · " + tenHong[i]);
+            }
+            else if (ctrlThieu == 0 && prefabGuids.Length > 0)
+            {
+                report.AppendLine($"✔ AnimatorController: {prefabGuids.Length}/{prefabGuids.Length} hợp lệ " +
+                                  $"({NPCAnimationSetupTool.ExpectedStateCount} state, có statemachine).");
+            }
+        }
 
         // 3 · TouristVisitorManager wire đủ chưa
         var vm = UnityEngine.Object.FindFirstObjectByType<TouristVisitorManager>(FindObjectsInactive.Include);
@@ -757,7 +1311,35 @@ public static class TouristBoatOneClickSetup
                 if (mat.Count > 0)
                     Thieu(report, thieu, $"Dock_{i + 1:00} thiếu: {string.Join(", ", mat)}", "chạy tool V1 Setup All");
                 else
-                    report.AppendLine($"✔ Dock_{i + 1:00}: đủ Berth + Path + Boat + Gangplank.");
+                    report.AppendLine($"✔ Dock_{i + 1:00}: đủ Berth + Path + Boat.");
+
+                // Tấm gỗ: kiểm CỠ THẬT trên màn hình, không chỉ kiểm có object hay không —
+                // lỗi Sếp gặp là ván tồn tại nhưng bé 5 unit nên coi như vô hình.
+                Transform gp = dock.Find("Gangplank");
+                if (gp == null)
+                {
+                    Thieu(report, thieu, $"Dock_{i + 1:00} thiếu Gangplank", "chạy lại menu ★ SETUP TẤT CẢ");
+                }
+                else
+                {
+                    var gsr = gp.GetComponent<SpriteRenderer>();
+                    if (gsr == null || gsr.sprite == null)
+                    {
+                        Thieu(report, thieu, $"Dock_{i + 1:00}/Gangplank chưa có sprite",
+                              "gắn sprite gỗ vào SpriteRenderer, hoặc chạy lại menu ★");
+                    }
+                    else
+                    {
+                        Vector3 cỡ = gsr.bounds.size;
+                        float dai = Mathf.Max(cỡ.x, cỡ.y);
+                        if (dai < TouristVisitorSetupTool.GangplankWorldLength * 0.5f)
+                            Thieu(report, thieu,
+                                  $"Dock_{i + 1:00}/Gangplank chỉ {dai:0} unit (cần ~{TouristVisitorSetupTool.GangplankWorldLength:0}) — quá bé, gần như vô hình",
+                                  "chạy lại menu ★ SETUP TẤT CẢ (bước 6 áp lại cỡ)");
+                        else
+                            report.AppendLine($"✔ Dock_{i + 1:00}/Gangplank: {cỡ.x:0}x{cỡ.y:0} unit, layer \"{gsr.sortingLayerName}\".");
+                    }
+                }
             }
         }
     }

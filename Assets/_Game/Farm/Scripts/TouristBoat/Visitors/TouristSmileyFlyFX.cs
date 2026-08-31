@@ -26,8 +26,14 @@ public class TouristSmileyFlyFX : MonoBehaviour
         "topbar", "hudtop", "canvashud", "hud"
     };
 
+    /// <summary>Mốc thời gian (0-1) bắt đầu mờ dần. Lead chốt 0.45 — thấy rõ hiệu ứng tan biến.</summary>
+    private const float FadeStart = 0.45f;
+
     /// <summary>[QA m-5] Chống spam Console: chỉ cảnh báo thiếu sprite đúng 1 lần.</summary>
     private static bool _warnedNoSprite;
+
+    /// <summary>Chống spam khi không dò được đích HUD — cảnh báo đúng 1 lần/phiên.</summary>
+    private static bool _warnedNoHud;
 
     private SpriteRenderer _renderer;
     private Vector3 _startPos;
@@ -44,8 +50,13 @@ public class TouristSmileyFlyFX : MonoBehaviour
     /// <param name="sortingLayerName">Layer sorting để FX nổi trên mọi thứ.</param>
     /// <param name="sortingOrder">Order sorting (đặt cao hơn bubble).</param>
     /// <param name="worldSize">Cỡ mặt cười ở scale 1.0, tính bằng unit world.</param>
+    /// <param name="hudTarget">
+    /// Đích bay wire cứng (ô vàng HUD). Có thì dùng THẲNG, không dò tên.
+    /// Null thì dò theo tên; dò không ra thì BAY THẲNG LÊN TRỜI.
+    /// </param>
     public static TouristSmileyFlyFX Spawn(Vector3 worldStart, Sprite smiley, float flyTime,
-                                           string sortingLayerName, int sortingOrder, float worldSize)
+                                           string sortingLayerName, int sortingOrder, float worldSize,
+                                           Transform hudTarget)
     {
         if (smiley == null)
         {
@@ -73,16 +84,16 @@ public class TouristSmileyFlyFX : MonoBehaviour
             go.transform.localScale = Vector3.one * (worldSize / native);
 
         var fx = go.AddComponent<TouristSmileyFlyFX>();
-        fx.Init(worldStart, flyTime, sr);
+        fx.Init(worldStart, flyTime, sr, hudTarget);
         return fx;
     }
 
-    private void Init(Vector3 start, float flyTime, SpriteRenderer sr)
+    private void Init(Vector3 start, float flyTime, SpriteRenderer sr, Transform hudTarget)
     {
         _renderer  = sr;
         _startPos  = start;
         _duration  = Mathf.Max(0.15f, flyTime);
-        _endPos    = ResolveHudWorldPosition(start);
+        _endPos    = ResolveHudWorldPosition(start, hudTarget);
         _baseScale = transform.localScale;
     }
 
@@ -97,14 +108,14 @@ public class TouristSmileyFlyFX : MonoBehaviour
         float ease = 1f - Mathf.Pow(1f - t, 2f);
         transform.position = Vector3.Lerp(_startPos, _endPos, ease);
 
-        // Nhỏ → to (0.4 → 1.4) đúng GDD.
-        transform.localScale = _baseScale * Mathf.Lerp(0.4f, 1.4f, t);
+        // Nhỏ → to. [Lead chốt 2026-08-29] 0.4 → 1.5 (to hơn bản 1.4 cho rõ "to dần").
+        transform.localScale = _baseScale * Mathf.Lerp(0.4f, 1.5f, t);
 
-        // Fade ở 35% cuối.
+        // Fade bắt đầu từ t = 0.45 (bản trước 0.65 nên mờ chỉ loé ở cuối, gần như không thấy).
         if (_renderer != null)
         {
             Color c = _renderer.color;
-            c.a = t < 0.65f ? 1f : Mathf.Clamp01(1f - (t - 0.65f) / 0.35f);
+            c.a = t < FadeStart ? 1f : Mathf.Clamp01(1f - (t - FadeStart) / (1f - FadeStart));
             _renderer.color = c;
         }
 
@@ -112,36 +123,77 @@ public class TouristSmileyFlyFX : MonoBehaviour
     }
 
     /// <summary>
-    /// Tìm đích bay: RectTransform trong canvas HUD có tên khớp gợi ý → đổi sang world.
-    /// Không thấy → bay thẳng lên trời (1.5 lần nửa chiều cao camera).
+    /// Chọn đích bay theo 3 nhánh, ưu tiên giảm dần:
+    ///   ① <paramref name="hudTarget"/> wire cứng (tool ★ gán ô vàng HUD) — dùng thẳng;
+    ///   ② dò RectTransform theo TÊN trong canvas HUD;
+    ///   ③ dò không ra → **BAY THẲNG LÊN TRỜI** (đúng ý Sếp: "mặt cười bay lên").
+    ///
+    /// [Lead chốt 2026-08-29] Bản trước, khi không khớp tên nào thì
+    /// <c>return best.GetComponent&lt;RectTransform&gt;()</c> = rect GỐC của canvas =
+    /// **TÂM MÀN HÌNH** ⇒ mặt cười bay vào giữa màn hình, trông như lỗi. Nhánh đó đã XOÁ HẲN.
+    /// Nhánh ③ giờ là đường chạy thật, không phải code chết.
     /// </summary>
-    private static Vector3 ResolveHudWorldPosition(Vector3 fallbackFrom)
+    private static Vector3 ResolveHudWorldPosition(Vector3 batDau, Transform hudTarget)
     {
         Camera cam = Camera.main;
 
-        RectTransform target = FindHudTarget();
-        if (target != null && cam != null)
+        // ① Wire cứng — có thể là RectTransform (UI) hoặc Transform world thường.
+        if (hudTarget != null)
         {
-            Canvas canvas = target.GetComponentInParent<Canvas>();
-            Camera uiCam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
-                ? canvas.worldCamera
-                : null;
+            var rtWire = hudTarget as RectTransform;
+            if (rtWire != null) return UiSangWorld(rtWire, batDau, cam);
 
-            Vector3 screen = RectTransformUtility.WorldToScreenPoint(uiCam, target.position);
-            // z = khoảng cách từ camera tới mặt phẳng world của khách (camera 2D orthographic).
-            float depth = Mathf.Abs(cam.transform.position.z - fallbackFrom.z);
-            Vector3 world = cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, depth));
-            world.z = fallbackFrom.z;
-            return world;
+            Vector3 w = hudTarget.position;
+            w.z = batDau.z;
+            return w;
         }
 
-        float rise = cam != null && cam.orthographic ? cam.orthographicSize * 1.5f : 300f;
-        return fallbackFrom + new Vector3(0f, rise, 0f);
+        // ② Dò theo tên
+        RectTransform target = FindHudTarget();
+        if (target != null) return UiSangWorld(target, batDau, cam);
+
+        // ③ Bay thẳng lên trời — TUYỆT ĐỐI không rơi về tâm màn hình
+        if (!_warnedNoHud)
+        {
+            _warnedNoHud = true;
+            Debug.LogWarning("[TouristVisitor] Không tìm được ô vàng HUD để mặt cười bay tới — " +
+                             "cho bay THẲNG LÊN TRỜI. Muốn bay về ví tiền: chạy " +
+                             "Tools/Farm Game/Tourist Boat/★ SETUP TẤT CẢ (tool tự wire hudGoldTarget), " +
+                             "hoặc kéo tay object đó vào field 'hudGoldTarget' của TouristVisitorManager. " +
+                             "(Cảnh báo này chỉ in 1 lần.)");
+        }
+        return BayLenTroi(batDau, cam);
+    }
+
+    /// <summary>Đổi vị trí một RectTransform UI sang toạ độ world trên mặt phẳng của khách.</summary>
+    private static Vector3 UiSangWorld(RectTransform rt, Vector3 batDau, Camera cam)
+    {
+        if (cam == null) return BayLenTroi(batDau, null);
+
+        Canvas canvas = rt.GetComponentInParent<Canvas>();
+        Camera uiCam = canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay
+            ? canvas.worldCamera
+            : null;
+
+        Vector3 screen = RectTransformUtility.WorldToScreenPoint(uiCam, rt.position);
+        float depth = Mathf.Abs(cam.transform.position.z - batDau.z);
+        Vector3 world = cam.ScreenToWorldPoint(new Vector3(screen.x, screen.y, depth));
+        world.z = batDau.z;
+        return world;
+    }
+
+    /// <summary>Đích dự phòng: thẳng lên trên, cao 1.5× nửa chiều cao camera.</summary>
+    private static Vector3 BayLenTroi(Vector3 batDau, Camera cam)
+    {
+        float cao = cam != null && cam.orthographic ? cam.orthographicSize * 1.5f : 300f;
+        return batDau + new Vector3(0f, cao, 0f);
     }
 
     /// <summary>
     /// Dò RectTransform HUD theo tên (không đụng field private của FarmUIManager).
     /// Ưu tiên canvas có sortingOrder cao nhất (HUD nằm trên cùng).
+    /// KHÔNG khớp tên nào → trả NULL để bên gọi bay lên trời (bản cũ trả rect gốc canvas
+    /// = tâm màn hình, đó là bug).
     /// </summary>
     private static RectTransform FindHudTarget()
     {
@@ -164,126 +216,21 @@ public class TouristSmileyFlyFX : MonoBehaviour
                     return all[i];
             }
         }
-        return best.GetComponent<RectTransform>();
+        return null;   // không có đích hợp lệ — KHÔNG trả canvas gốc
     }
 }
 
-/// <summary>
-/// TÍNH THƯỞNG KHI GIAO MÓN CHO KHÁCH (GDD BOAT-002 §3.4).
-///
-///   goldReward = Σ BasePriceBook giá nguyên liệu của món × rewardIngredientMultiplier
-///   expReward  = dish.rewardExp
-///
-/// Nguồn giá: <see cref="BasePriceBook.TryGetBasePrice"/> — ĐÚNG sổ giá duy nhất của dự
-/// án (provider của Dev A → MarketPriceTable → StallItemCatalog asset thật → bảng dự
-/// phòng). GDD §3.4 cấm bịa bảng giá mới, nên ở đây KHÔNG có một con số giá nào.
-///
-/// Map id: dùng thẳng <c>IngredientData.id</c> làm khoá tra giá — cùng khoá mà kho
-/// (FarmInventoryManager tự normalize lowercase) và BasePriceBook (cũng normalize
-/// lowercase) đang dùng; bảng dự phòng của BasePriceBook liệt kê đúng các id kiểu
-/// "rice"/"khoaitay"/"beef" nên hai bên khớp nhau.
-///
-/// [QA M-4] CHỈ cộng <c>IngredientKind.Ingredient</c> — GIA VỊ (Seasoning) bị loại,
-/// đúng chữ GDD "Σ giá NGUYÊN LIỆU CHÍNH của món". Cộng cả gia vị làm thưởng phồng 30-60%.
-///
-/// FALLBACK AN TOÀN: chỉ cần MỘT nguyên liệu không tra được giá thì CẢ MÓN rơi về
-/// <c>dish.sellPrice × multiplier</c> + log warning; [QA B-3] nếu sellPrice = 0 thì rơi
-/// tiếp xuống BasePriceBook.DefaultBasePrice — KHÔNG BAO GIỜ trả 0, vì thưởng 0 sẽ làm
-/// DeliverTo huỷ giao dịch và người chơi không giao được món.
-/// </summary>
-public static class TouristRewardCalculator
-{
-    /// <summary>
-    /// Tính vàng thưởng. <paramref name="usedFallback"/> = true khi phải rơi về sellPrice.
-    /// Món null / không có nguyên liệu → 0 (bên gọi tự quyết định có thưởng không).
-    /// </summary>
-    public static int ComputeGold(DishData dish, float multiplier, out bool usedFallback)
-    {
-        usedFallback = false;
-        if (dish == null) return 0;
-
-        float mul = multiplier > 0.01f ? multiplier : 1f;
-
-        var list = dish.requiredIngredients;
-        if (list == null || list.Count == 0)
-        {
-            usedFallback = true;
-            return GiaFallback(dish, mul, "món không khai nguyên liệu nào");
-        }
-
-        int tong = 0;
-        int soNguyenLieuChinh = 0;
-
-        for (int i = 0; i < list.Count; i++)
-        {
-            IngredientData ing = list[i];
-            if (ing == null || string.IsNullOrEmpty(ing.id))
-            {
-                usedFallback = true;
-                break;
-            }
-
-            // [QA M-4] GDD §3.4 ghi rõ "Σ giá NGUYÊN LIỆU CHÍNH của món".
-            // IngredientData đã phân biệt sẵn Ingredient / Seasoning — cộng cả gia vị
-            // (muối, nước mắm, tiêu) làm thưởng phồng 30-60% so với số Sếp đã cân bằng.
-            if (ing.kind == IngredientKind.Seasoning) continue;
-
-            int gia;
-            if (!BasePriceBook.TryGetBasePrice(ing.id, out gia))
-            {
-                usedFallback = true;
-                Debug.LogWarning($"[TouristVisitor] Không tra được giá nguyên liệu '{ing.id}' " +
-                                 $"của món '{dish.dishId}' — cả món rơi về sellPrice (GDD §3.4). " +
-                                 "Bổ sung giá vào MarketPriceTable/StallItemCatalog để tuning đúng.");
-                break;
-            }
-            tong += gia;
-            soNguyenLieuChinh++;
-        }
-
-        if (usedFallback)
-            return GiaFallback(dish, mul, "thiếu giá nguyên liệu");
-
-        // Món TOÀN GIA VỊ (không có nguyên liệu chính nào) — không được trả 0 (QA B-3).
-        if (soNguyenLieuChinh == 0 || tong <= 0)
-        {
-            usedFallback = true;
-            return GiaFallback(dish, mul, "món không có nguyên liệu chính nào có giá");
-        }
-
-        // Sàn 1 vàng: thưởng bằng 0 sẽ làm DeliverTo HỦY giao dịch (QA B-3) — người chơi
-        // nấu xong mà không giao được món thì cũng là hỏng, nên luôn giữ > 0.
-        return Mathf.Max(1, Mathf.RoundToInt(tong * mul));
-    }
-
-    /// <summary>
-    /// [QA B-3] Đường thưởng dự phòng — KHÔNG BAO GIỜ trả 0.
-    /// GDD §3.4 nói fallback dùng <c>dish.sellPrice</c>, nhưng <c>sellPrice</c> mặc định
-    /// của DishData là 0; món nào chưa điền số sẽ khiến thưởng = 0 và giao dịch bị huỷ.
-    /// Nên khi sellPrice ≤ 0 thì rơi tiếp xuống <see cref="BasePriceBook.DefaultBasePrice"/>
-    /// (giá của vật phẩm "không biết" — cố tình thấp, không gây lạm phát) + cảnh báo để tuning.
-    /// </summary>
-    private static int GiaFallback(DishData dish, float mul, string lyDo)
-    {
-        int goc = dish.sellPrice;
-        if (goc <= 0)
-        {
-            goc = BasePriceBook.DefaultBasePrice;
-            Debug.LogWarning($"[TouristVisitor] Món '{dish.dishId}': {lyDo} VÀ sellPrice = 0 — " +
-                             $"tạm thưởng theo giá mặc định {BasePriceBook.DefaultBasePrice}. " +
-                             "Điền sellPrice/requiredIngredients cho asset món này để số thưởng đúng thiết kế.");
-        }
-        else
-        {
-            Debug.LogWarning($"[TouristVisitor] Món '{dish.dishId}': {lyDo} — " +
-                             $"dùng sellPrice ({goc}) × {mul:0.##} làm thưởng (GDD §3.4).");
-        }
-        return Mathf.Max(1, Mathf.RoundToInt(goc * mul));
-    }
-
-    /// <summary>EXP thưởng = dish.rewardExp (số nằm sẵn trên asset món — GDD §3.4).</summary>
-    public static int ComputeExp(DishData dish)
-    {
-        return dish != null ? Mathf.Max(0, dish.rewardExp) : 0;
-    }
-}
+// ─────────────────────────────────────────────────────────────────────────────
+//  [QA B-6 · 2026-08-29] TouristRewardCalculator KHÔNG còn nằm trong file này.
+//
+//  Trước đây class đó ở đây (Dev B viết bản V2.0), rồi Dev A viết lại công thức
+//  thưởng V2.1 — thành ra HAI CHỦ trong CÙNG MỘT FILE: copy gói A đè gói B thì
+//  player build vẫn compile sạch nhưng chạy công thức thưởng CŨ, im lặng hoàn toàn.
+//
+//  Nay class thuộc về Dev A ở file riêng:
+//      Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+//
+//  File này CHỈ còn hiệu ứng mặt cười của Dev B. TouristVisitorManager gọi calculator
+//  qua chữ ký nhận config (ComputeGold(dish, config, out fallback) /
+//  ComputeExp(dish, config)) — Dev A vẫn giữ cả 2 chữ ký cũ để tương thích.
+// ─────────────────────────────────────────────────────────────────────────────

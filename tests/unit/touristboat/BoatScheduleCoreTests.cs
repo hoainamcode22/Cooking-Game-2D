@@ -76,7 +76,8 @@ public static class BoatScheduleCoreTests
 
     private const double Travel   = 20.0;   // giây chạy 1 chiều (fallbackTravelSeconds mặc định)
     private const double GapOne   = 300.0;  // 5 phút — config gapOneDockMinutes
-    private const double GapMulti = 600.0;  // 10 phút — config gapMultiDockMinutes
+    private const double GapTwo   = 420.0;  // 7 phút  — config gapTwoDockMinutes (đúng 2 bến mở)
+    private const double GapMulti = 600.0;  // 10 phút — config gapMultiDockMinutes (đủ 3 bến)
     private const double Stagger  = 180.0;  // 3 phút — config minStaggerMinutes
     private const double MaxDock  = 1800.0; // 30 phút — giá trị TEST cho lưới an toàn (config thật
                                             // maxDockMinutes = 35 phút; lõi nhận tham số nên số nào cũng chạy)
@@ -150,18 +151,31 @@ public static class BoatScheduleCoreTests
 
     private static void TestGapSelection()
     {
-        Group("A. Chọn gap theo số bến đang mở (GDD V2 §3.2)");
+        Group("A. Chọn gap theo số bến đang mở — BA MỨC 5/7/10 (Lead chốt 2026-08-29)");
 
-        CheckNear(BoatScheduleCore.SelectGapSeconds(1, GapOne, GapMulti), GapOne, 0.001,
+        CheckNear(BoatScheduleCore.SelectGapSeconds(1, GapOne, GapTwo, GapMulti), GapOne, 0.001,
                   "1 bến mở → gap 5 phút");
-        CheckNear(BoatScheduleCore.SelectGapSeconds(0, GapOne, GapMulti), GapOne, 0.001,
+        CheckNear(BoatScheduleCore.SelectGapSeconds(0, GapOne, GapTwo, GapMulti), GapOne, 0.001,
                   "0 bến (biên) → vẫn dùng gap 1 bến");
-        CheckNear(BoatScheduleCore.SelectGapSeconds(2, GapOne, GapMulti), GapMulti, 0.001,
-                  "2 bến mở → gap 10 phút");
-        CheckNear(BoatScheduleCore.SelectGapSeconds(3, GapOne, GapMulti), GapMulti, 0.001,
-                  "3 bến mở → gap 10 phút");
-        CheckNear(BoatScheduleCore.SelectGapSeconds(1, -5.0, GapMulti), 0.0, 0.001,
+        CheckNear(BoatScheduleCore.SelectGapSeconds(2, GapOne, GapTwo, GapMulti), GapTwo, 0.001,
+                  "ĐÚNG 2 bến mở → gap 7 phút (KHÔNG nhảy thẳng lên 10)");
+        CheckNear(BoatScheduleCore.SelectGapSeconds(3, GapOne, GapTwo, GapMulti), GapMulti, 0.001,
+                  "đủ 3 bến mở → gap 10 phút (mốc Sếp chốt)");
+        CheckNear(BoatScheduleCore.SelectGapSeconds(4, GapOne, GapTwo, GapMulti), GapMulti, 0.001,
+                  "hơn 3 bến (biên, không xảy ra) → vẫn gap 10 phút");
+        CheckNear(BoatScheduleCore.SelectGapSeconds(1, -5.0, GapTwo, GapMulti), 0.0, 0.001,
                   "gap âm trong config bị kẹp về 0");
+        CheckNear(BoatScheduleCore.SelectGapSeconds(2, GapOne, -5.0, GapMulti), 0.0, 0.001,
+                  "gap 2 bến âm cũng bị kẹp về 0");
+
+        // Nhịp "có tàu cập bến" trên toàn bờ = gap / số bến — phải ổn định, không dồn dập.
+        CheckNear(GapOne / 1.0, 300.0, 0.001, "1 bến: cứ 5 phút có 1 tàu vào bờ");
+        CheckNear(GapTwo / 2.0, 210.0, 0.001, "2 bến: cứ 3,5 phút có 1 tàu vào bờ (để 5 phút thì chỉ 2,5 phút — quá dồn)");
+        CheckNear(GapMulti / 3.0, 200.0, 0.001, "3 bến: cứ ~3,3 phút có 1 tàu vào bờ");
+
+        // Overload 2 mức cũ vẫn phải chạy (code ngoài có thể còn gọi).
+        CheckNear(BoatScheduleCore.SelectGapSeconds(2, GapOne, GapMulti), GapMulti, 0.001,
+                  "[compat] overload 2 mức: ≥2 bến → gap multi");
     }
 
     private static void TestScheduleNextArrival()
@@ -387,7 +401,7 @@ public static class BoatScheduleCoreTests
         DockScheduleState after;
         bool ok = BoatScheduleCore.TryBeginDeparture(
             Docked(dockedAt), allAboard,
-            BoatScheduleCore.SelectGapSeconds(1, GapOne, GapMulti), Travel, Stagger,
+            BoatScheduleCore.SelectGapSeconds(1, GapOne, GapTwo, GapMulti), Travel, Stagger,
             null, 0, out after);
 
         Check(ok, "đang Docked → nhận lệnh rời bến");
@@ -395,19 +409,35 @@ public static class BoatScheduleCoreTests
         CheckEqual(after.AnchorUtcTicks, allAboard, "mốc rời bến = đúng lúc khách cuối lên tàu");
         CheckEqual(after.NextArrivalUtcTicks, allAboard + Sec(GapOne), "1 bến: chuyến kế = rời bến + 5 phút");
 
-        // ≥2 bến mở → gap 10 phút + né arrival bến khác.
-        long otherArrival = allAboard + Sec(GapMulti) + Sec(60.0); // bến khác cập bến gần đó
+        // 2 bến mở → gap 7 phút + né arrival bến khác.
+        long otherArrival = allAboard + Sec(GapTwo) + Sec(60.0); // bến khác cập bến gần đó
         long[] others = { otherArrival, 0L, 0L };
         DockScheduleState after2;
         BoatScheduleCore.TryBeginDeparture(
             Docked(dockedAt), allAboard,
-            BoatScheduleCore.SelectGapSeconds(2, GapOne, GapMulti), Travel, Stagger,
+            BoatScheduleCore.SelectGapSeconds(2, GapOne, GapTwo, GapMulti), Travel, Stagger,
             others, 1, out after2);
 
         Check(Math.Abs(after2.NextArrivalUtcTicks - otherArrival) >= Sec(Stagger),
               "2 bến: chuyến kế bị dời cho cách arrival bến khác ≥ 3 phút");
-        Check(after2.NextArrivalUtcTicks >= allAboard + Sec(GapMulti),
-              "2 bến: chuyến kế không bao giờ SỚM hơn rời bến + 10 phút");
+        Check(after2.NextArrivalUtcTicks >= allAboard + Sec(GapTwo),
+              "2 bến: chuyến kế không bao giờ SỚM hơn rời bến + 7 phút");
+
+        // 3 bến mở → gap 10 phút, vẫn né arrival của CẢ HAI bến còn lại.
+        long arr3a = allAboard + Sec(GapMulti) + Sec(45.0);
+        long arr3b = allAboard + Sec(GapMulti) + Sec(200.0);
+        long[] others3 = { arr3a, arr3b, 0L };
+        DockScheduleState after3;
+        BoatScheduleCore.TryBeginDeparture(
+            Docked(dockedAt), allAboard,
+            BoatScheduleCore.SelectGapSeconds(3, GapOne, GapTwo, GapMulti), Travel, Stagger,
+            others3, 2, out after3);
+
+        Check(after3.NextArrivalUtcTicks >= allAboard + Sec(GapMulti),
+              "3 bến: chuyến kế không bao giờ SỚM hơn rời bến + 10 phút");
+        Check(Math.Abs(after3.NextArrivalUtcTicks - arr3a) >= Sec(Stagger) &&
+              Math.Abs(after3.NextArrivalUtcTicks - arr3b) >= Sec(Stagger),
+              "3 bến: chuyến kế cách arrival của CẢ HAI bến kia ≥ 3 phút");
 
         // Vòng đời khép kín: Departing → WaitingNext → Arriving → Docked lại.
         long t = allAboard + Sec(Travel + 1.0);

@@ -76,15 +76,25 @@ public class TouristVisitorManager : MonoBehaviour
     [Tooltip("Node cha chứa khách spawn ra. Bỏ trống sẽ tự tạo con 'Visitors'.")]
     [SerializeField] private Transform visitorsRoot;
 
+    [Tooltip("Bỏ qua các waypoint ĐẦU đường mà khách đã đi qua rồi (nằm xa hàng chờ hơn cả " +
+             "đầu tấm gỗ) — tránh cảnh khách bước xuống ván rồi vòng ngược lại. Tắt nếu " +
+             "muốn khách bám ĐÚNG mọi waypoint bạn đặt.")]
+    [SerializeField] private bool boQuaWaypointDaDiQua = true;
+
     [Header("Hiệu ứng mặt cười")]
-    [Tooltip("Sorting layer của FX mặt cười — để trùng layer khách.")]
-    [SerializeField] private string fxSortingLayerName = "CongTrinh";
+    [Tooltip("Sorting layer của FX mặt cười. ĐỂ TRỐNG = tự chọn 'Foreground' (trên đầu khách).")]
+    [SerializeField] private string fxSortingLayerName = "";
 
     [Tooltip("Sorting order FX (đặt CAO hơn bubble để không bị bubble che).")]
     [SerializeField] private int fxSortingOrder = 25000;
 
     [Tooltip("Cỡ mặt cười lúc scale 1.0 (unit world). Map dùng toạ độ lớn nên số này lớn.")]
     [SerializeField] private float fxWorldSize = 90f;
+
+    [Tooltip("Đích bay của mặt cười = ô VÀNG trên HUD. Tool ★ tự wire. " +
+             "Bỏ trống thì FX dò theo tên; dò không ra thì bay THẲNG LÊN TRỜI " +
+             "(không bao giờ bay về tâm màn hình).")]
+    [SerializeField] private Transform hudGoldTarget;
 
     [Header("Nhiệm vụ (mission)")]
     // [Lead chốt 2026-08-29] GIỮ TẮT. MissionEventType không có loại "phục vụ khách";
@@ -544,12 +554,41 @@ public class TouristVisitorManager : MonoBehaviour
 
     // ─── Random helper ──────────────────────────────────────────────────
 
-    /// <summary>Seed ổn định từ mốc cập bến + bến (GDD §4: offline tái lập đúng chuyến).</summary>
+    /// <summary>
+    /// Seed ổn định từ mốc cập bến + bến (GDD §4: offline tái lập đúng chuyến).
+    ///
+    /// [QA đo được 2026-08-29] Công thức cũ <c>(giây ^ giây>>32) * 397 + dock * 7919</c>
+    /// là phép NHÂN TUYẾN TÍNH: gap giữa 2 chuyến cố định ⇒ seed tăng đều ⇒ số khách ra
+    /// dãy RĂNG CƯA nhìn thấy bằng mắt. Đo thật với gap 7 phút, 200 chuyến:
+    /// <c>3 3 3 4 4 4 4 4 5 5 5 5 6 6 6 6 3 3 3 3…</c> — bậc thang leo rồi tụt.
+    ///
+    /// Nay dùng **SplitMix64 finalizer** — hàm băm trộn bit thật (avalanche): đổi 1 bit
+    /// đầu vào làm đổi ~nửa số bit đầu ra, nên seed liền kề cho ra kết quả không tương quan.
+    /// Vẫn TÁI LẬP tuyệt đối: cùng arrivalUtc + dock luôn cho cùng một seed, nên tắt/mở
+    /// game không đổi số khách của chuyến đang dở.
+    ///
+    /// Kiểm chứng bằng test console (mono), 200 chuyến/cấu hình, so với RNG i.i.d. lý tưởng:
+    /// <code>
+    ///   chuỗi không-giảm dài nhất:  cũ 11-20  ·  MỚI 6-9  ·  i.i.d. lý tưởng 6-8
+    ///   chuỗi giảm-hẳn dài nhất:    cũ 2-4    ·  MỚI 3-4  ·  i.i.d. lý tưởng 3-4
+    ///   phân phối 3/4/5/6 (chi²/df=3): MỚI 2.0-10.3 · i.i.d. lý tưởng 0.7-6.2
+    /// </code>
+    /// ⇒ hết răng cưa, phân phối tương đương RNG thật.
+    /// </summary>
     private static int MakeSeed(long arrivalUtcTicks, int dock)
     {
-        // Ticks 100ns quá mịn — quy về GIÂY để lệch vài tick không đổi chuyến.
-        long giay = arrivalUtcTicks / TimeSpan.TicksPerSecond;
-        unchecked { return (int)(giay ^ (giay >> 32)) * 397 + dock * 7919; }
+        unchecked
+        {
+            // Ticks 100ns quá mịn — quy về GIÂY để lệch vài tick không đổi chuyến.
+            ulong z = (ulong)(arrivalUtcTicks / TimeSpan.TicksPerSecond)
+                      + 0x9E3779B97F4A7C15UL * (ulong)(dock + 1); // tỉ lệ vàng 64-bit, tách bến
+            z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;
+            z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
+            z ^= z >> 31;
+
+            // Kẹp về non-negative: System.Random nhận int, và int.MinValue làm Abs() nổ.
+            return (int)(z & 0x7FFFFFFF);
+        }
     }
 
     /// <summary>Chọn <paramref name="count"/> nhân vật KHÔNG LẶP từ roster (Fisher-Yates).</summary>
@@ -737,10 +776,15 @@ public class TouristVisitorManager : MonoBehaviour
         }
 
         // ── ① TÍNH THƯỞNG TRƯỚC KHI ĐỘNG VÀO KHO (QA B-3) ──
-        float mul = config != null ? config.rewardIngredientMultiplier : 2f;
+        // [QA B-6] TouristRewardCalculator là file RIÊNG của Dev A
+        // (Visitors/TouristRewardCalculator.cs) — không còn nằm trong TouristSmileyFlyFX.cs.
+        // Gọi chữ ký NHẬN CONFIG thay vì chữ ký cũ: ta đã có sẵn config trong tay, khỏi
+        // phụ thuộc ẩn vào BoatDockManager.Instance (nó có thể null khi test scene riêng),
+        // và chắc chắn ăn đúng các knob mới của Dev A (touristGoldMultiplier /
+        // touristExpMultiplier = 0.4 — núm hãm lạm phát EXP, QA M-9).
         bool fallback;
-        int vang = TouristRewardCalculator.ComputeGold(dish, mul, out fallback);
-        int exp  = TouristRewardCalculator.ComputeExp(dish);
+        int vang = TouristRewardCalculator.ComputeGold(dish, config, out fallback);
+        int exp  = TouristRewardCalculator.ComputeExp(dish, config);
 
         var eco  = FarmEconomyManager.Instance;
         var tien = PlayerProgressManager.Instance;
@@ -844,7 +888,8 @@ public class TouristVisitorManager : MonoBehaviour
         var sr = agent.GetComponentInChildren<SpriteRenderer>();
         if (sr != null) start = new Vector3(sr.bounds.center.x, sr.bounds.max.y, start.z);
 
-        TouristSmileyFlyFX.Spawn(start, smiley, flyTime, fxSortingLayerName, fxSortingOrder, fxWorldSize);
+        string layer = TouristSortingLayers.ResolveOrOverride(fxSortingLayerName, TouristSortingLayers.Overlay);
+        TouristSmileyFlyFX.Spawn(start, smiley, flyTime, layer, fxSortingOrder, fxWorldSize, hudGoldTarget);
     }
 
     /// <summary>Vị trí lên/xuống tàu của bến (mạn tàu) — Berth của Dev A, fallback gangplank.</summary>
@@ -1081,8 +1126,23 @@ public class TouristVisitorManager : MonoBehaviour
     {
         var points = new List<Vector3>(6);
 
+        // ── Điểm đầu = ĐẦU BỜ của tấm gỗ, không phải tâm ván ──
+        // Ván dài 420 unit (sau khi sửa bug "ván bé xíu"), lấy tâm làm điểm đầu thì khách
+        // mới đi được nửa ván đã rẽ đi. Đo từ bounds nên ván to nhỏ thế nào cũng đúng.
+        bool coDiemDau = false;
+        Vector3 diemDau = Vector3.zero;
         if (IsValidDock(dock) && gangplanks[dock] != null)
-            points.Add(gangplanks[dock].position);
+        {
+            Transform gp = gangplanks[dock];
+            diemDau = gp.position;
+
+            var gsr = gp.GetComponent<SpriteRenderer>();
+            if (gsr != null && gsr.sprite != null)
+                diemDau += Vector3.up * (gsr.bounds.size.y * 0.5f); // +Y = hướng vào bờ
+
+            points.Add(diemDau);
+            coDiemDau = true;
+        }
 
         Transform root = IsValidDock(dock) ? dockPathRoots[dock] : null;
         if (root != null && root.childCount > 0)
@@ -1090,7 +1150,27 @@ public class TouristVisitorManager : MonoBehaviour
             var wps = new Transform[root.childCount];
             for (int i = 0; i < root.childCount; i++) wps[i] = root.GetChild(i);
             Array.Sort(wps, (a, b) => string.CompareOrdinal(a.name, b.name));
-            for (int i = 0; i < wps.Length; i++)
+
+            // Waypoint ĐẦU đường nào còn nằm XA hàng chờ hơn cả đầu ván thì khách đã đi
+            // qua rồi — giữ lại sẽ thành đi giật lùi. Chỉ bỏ ở ĐẦU danh sách, gặp waypoint
+            // hợp lệ đầu tiên là ngừng bỏ (không đụng tới waypoint giữa/cuối đường).
+            int batDau = 0;
+            if (boQuaWaypointDaDiQua && coDiemDau && queue != null)
+            {
+                Vector3 dich = queue.transform.position;
+                float xaNhat = KhoangCachPhang(diemDau, dich);
+
+                while (batDau < wps.Length && wps[batDau] != null &&
+                       KhoangCachPhang(wps[batDau].position, dich) > xaNhat)
+                    batDau++;
+
+                if (batDau > 0)
+                    Debug.Log($"[TouristVisitor] Bến {dock + 1}: bỏ qua {batDau} waypoint đầu " +
+                              "(nằm sau đầu tấm gỗ — khách đã đi qua rồi). " +
+                              "Tắt bằng cờ 'boQuaWaypointDaDiQua' nếu muốn bám đủ waypoint.");
+            }
+
+            for (int i = batDau; i < wps.Length; i++)
                 if (wps[i] != null) points.Add(wps[i].position);
         }
 
@@ -1100,6 +1180,13 @@ public class TouristVisitorManager : MonoBehaviour
                              "khách sẽ đi thẳng tới hàng chờ. Chạy tool Setup Tourist Visitors (Scene) rồi kéo WP theo đường đất.");
         }
         return points.ToArray();
+    }
+
+    /// <summary>Khoảng cách phẳng (bỏ Z) — dùng so sánh "ai gần hàng chờ hơn".</summary>
+    private static float KhoangCachPhang(Vector3 a, Vector3 b)
+    {
+        float dx = a.x - b.x, dy = a.y - b.y;
+        return Mathf.Sqrt(dx * dx + dy * dy);
     }
 
     private static bool IsValidDock(int dock)

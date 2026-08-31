@@ -368,15 +368,37 @@ public static class BoatScheduleCore
     // ─── V2: lên lịch chuyến kế (GDD V2 §3.2) ───────────────────────────
 
     /// <summary>
-    /// Chọn gap (giây) theo số bến đang mở: 1 bến → gapOne (5 phút),
-    /// ≥2 bến → gapMulti (10 phút). Số đọc từ TouristBoatConfig, truyền vào
-    /// dạng giây (manager đã chia debugTimeScale nếu đang tua nhanh).
+    /// Chọn gap (giây) theo số bến đang mở — BA MỨC (Lead chốt 2026-08-29 theo lời Sếp
+    /// "sau này user mở hết 3 slot rồi lúc này cứ cách 10 phút sẽ tới so le nhau"):
+    ///   1 bến  → gapOne   (5 phút)
+    ///   2 bến  → gapTwo   (7 phút)
+    ///   ≥3 bến → gapMulti (10 phút)
+    ///
+    /// Vì sao không nhảy thẳng 5 → 10 ở bến thứ hai: mốc 10 phút là của giai đoạn ĐỦ
+    /// 3 SLOT. Còn để 2 bến cùng gap 5 phút thì cứ ~2,5 phút lại có tàu cập bờ, quá dồn
+    /// dập. Ba mức giữ nhịp "có tàu vào bến" ổn định ~3,3-5 phút ở mọi giai đoạn:
+    ///   1 bến: 5 phút/tàu · 2 bến: 7/2 = 3,5 phút · 3 bến: 10/3 ≈ 3,3 phút.
+    ///
+    /// Số đọc từ TouristBoatConfig, truyền vào dạng giây (manager đã chia debugTimeScale
+    /// nếu đang tua nhanh). Giá trị âm trong config bị kẹp về 0.
+    /// </summary>
+    public static double SelectGapSeconds(int unlockedDockCount,
+                                          double gapOneDockSeconds,
+                                          double gapTwoDockSeconds,
+                                          double gapMultiDockSeconds)
+    {
+        if (unlockedDockCount <= 1) return Math.Max(0.0, gapOneDockSeconds);
+        if (unlockedDockCount == 2) return Math.Max(0.0, gapTwoDockSeconds);
+        return Math.Max(0.0, gapMultiDockSeconds);
+    }
+
+    /// <summary>
+    /// [V2.0 COMPAT] Bản 2 mức cũ (1 bến / ≥2 bến) — giữ cho code ngoài đã gọi theo
+    /// chữ ký này khỏi gãy. Code mới dùng bản 3 mức ở trên.
     /// </summary>
     public static double SelectGapSeconds(int unlockedDockCount, double gapOneDockSeconds, double gapMultiDockSeconds)
     {
-        return unlockedDockCount <= 1
-            ? Math.Max(0.0, gapOneDockSeconds)
-            : Math.Max(0.0, gapMultiDockSeconds);
+        return SelectGapSeconds(unlockedDockCount, gapOneDockSeconds, gapMultiDockSeconds, gapMultiDockSeconds);
     }
 
     /// <summary>

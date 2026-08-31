@@ -113,9 +113,16 @@ public class PlantDragController : MonoBehaviour
         SweepForPlots(prevMouseWorld, cur);
         prevMouseWorld = cur;
 
-        // Failsafe: use new input system (same as FarmPlotInput) so it always fires.
-        bool mouseUp = Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame;
-        if (mouseUp)
+        // Failsafe nhấc tay/nhả chuột.
+        //
+        // TRƯỚC (lỗi mobile): `Mouse.current != null && ...wasReleasedThisFrame`.
+        // Trên điện thoại KHÔNG có chuột nên Mouse.current là NULL ⇒ lưới an toàn này
+        // CHƯA BAO GIỜ chạy trên máy thật; chỉ còn đường chính OnEndDrag của
+        // EventSystem, hỏng đường đó là kéo hạt kẹt vĩnh viễn (ngón đã nhấc mà game
+        // vẫn tưởng đang kéo).
+        // NAY: đi qua TouchInput — Touchscreen trước, Mouse sau, Input legacy cuối;
+        // có tính cả TouchPhase.Canceled (hệ điều hành hủy touch khi có cuộc gọi đến).
+        if (TouchInput.TapUpThisFrame())
         {
             EndPlantDrag();
         }
@@ -296,10 +303,17 @@ public class PlantDragController : MonoBehaviour
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
+    /// <summary>
+    /// Toạ độ con trỏ trong thế giới. Đi qua TouchInput (Touchscreen → Mouse →
+    /// Input legacy) thay vì đọc thẳng Input.mousePosition: trên mobile
+    /// Input.mousePosition tuy vẫn có giá trị (dự án dùng activeInputHandler = Both)
+    /// nhưng lấy đúng touch đầu tiên thì rõ ràng và không phụ thuộc cấu hình đó.
+    /// Giữ nguyên tên hàm để không đổi chữ ký nội bộ nào.
+    /// </summary>
     private Vector2 GetMouseWorld()
     {
         if (mainCam == null) mainCam = Camera.main;
         if (mainCam == null) return Vector2.zero;
-        return mainCam.ScreenToWorldPoint(Input.mousePosition);
+        return TouchInput.PointerWorld(mainCam);
     }
 }

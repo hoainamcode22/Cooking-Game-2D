@@ -104,12 +104,12 @@ public static class MarketSellerDirectory
 
     public static Sprite GetAvatarSprite(int avatarIndex)
     {
-        int safe = ((avatarIndex % 9) + 9) % 9;
+        int safe = ((avatarIndex % 8) + 8) % 8;
         Sprite res = Resources.Load<Sprite>($"Avatars/avatar_npc_{safe}");
         if (res != null) return res;
 
 #if UNITY_EDITOR
-        return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/_Game/Farm/Art/UI_MarketBoard/avatar_npc_{safe}.png");
+        return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Resources/Avatars/avatar_npc_{safe}.png");
 #else
         return null;
 #endif

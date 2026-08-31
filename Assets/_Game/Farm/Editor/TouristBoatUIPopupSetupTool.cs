@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using TMPro;
 using UnityEditor;
 using UnityEngine;
@@ -47,6 +48,36 @@ public static class TouristBoatUIPopupSetupTool
 {
     private const string MenuSetupPopups = "Tools/Farm Game/Tourist Boat/Setup Popups (UI)";
     private const string UndoLabel       = "Tourist Boat Popups Setup";
+
+    // ── Phạm vi dò sprite (thu hẹp — bài học từ Play test) ──────────────────
+    //
+    // TRƯỚC: FindAssets("t:Sprite") quét TOÀN project rồi lấy match tên đầu tiên.
+    // Sau khi thêm 132 PNG nhân vật (Assets/NV_NPC/NVGAME/Processed/NV01..NV11/
+    // NVxx_*.png), phép dò đó có thể vớ nhầm ảnh nhân vật làm khung card / icon tiền.
+    // NAY: chỉ tìm trong các thư mục UI thật sự, loại trừ tuyệt đối thư mục nhân vật,
+    // và khớp tên CHÍNH XÁC trước rồi mới tới khớp chứa.
+    private static readonly string[] ThuMucUI =
+    {
+        "Assets/_Game/Resources",
+        "Assets/Assetsgame",
+        "Assets/Anh",
+        "Assets/Export_Train_UI_Package/Sprites",
+    };
+
+    // Không bao giờ lấy sprite từ những nơi này (kể cả khi phải fallback quét Assets/)
+    private static readonly string[] ThuMucCam =
+    {
+        "Assets/NV_NPC",
+        "Assets/_Game/Farm/Prefabs/Tourists",
+    };
+
+    // Ảnh nhân vật đặt tên kiểu NV01_down_1 / NV11_left_3 — chặn theo mẫu tên luôn,
+    // phòng khi sheet nhân vật được copy sang thư mục khác.
+    private static readonly Regex MauTenNhanVat = new Regex(@"^NV\d{1,2}[_-]", RegexOptions.IgnoreCase);
+
+    // Mốc chắc chắn do lead xác nhận: khung gỗ THẬT của project (512x512, PPU 100,
+    // border 64 mỗi cạnh → Image PHẢI để Type = Sliced, không thì méo).
+    private const string DuongDanKhungGoChuan = "Assets/_Game/Resources/UI_ChuyenCanh/WoodBoard_Frame.png";
 
     private const string RootName     = "TouristBoatPopups";
     private const string AnnounceName = "BoatAnnouncePopup";
@@ -108,7 +139,8 @@ public static class TouristBoatUIPopupSetupTool
     public static string SetupPopups(bool quiet)
     {
         _ghiChuArtTam.Clear();
-        _log.Length = 0;
+        _log.Length     = 0;
+        _ungVienSprite  = null; // dựng lại danh sách ứng viên mỗi lần chạy (asset có thể vừa thêm/xoá)
 
         Undo.IncrementCurrentGroup();
         Undo.SetCurrentGroupName(UndoLabel);
@@ -578,6 +610,7 @@ public static class TouristBoatUIPopupSetupTool
         foreach (string guid in guids)
         {
             string path = AssetDatabase.GUIDToAssetPath(guid);
+            if (BiCam(path)) continue; // đồng bộ luật loại trừ với phần dò sprite
             var f = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(path);
             if (f == null) continue;
 
@@ -609,39 +642,69 @@ public static class TouristBoatUIPopupSetupTool
     }
 
     /// <summary>
-    /// Sprite khung gỗ: dò AssetDatabase theo tên ưu tiên "khunggo" → "WoodBoard_Frame"
-    /// → "khung" → "wood"/"frame"/"board"/"panel". Không thấy → sprite built-in
-    /// UISprite (9-slice bo góc) làm placeholder + ghi chú cho Sếp.
+    /// Sprite khung gỗ cho card popup, theo thứ tự chắc chắn dần:
+    ///   1. ĐƯỜNG DẪN CHUẨN do lead xác nhận (WoodBoard_Frame.png trong UI_ChuyenCanh)
+    ///      — không phụ thuộc phép dò nào cả.
+    ///   2. Khớp tên CHÍNH XÁC trong các thư mục UI ("khunggo", "WoodBoard_Frame"...).
+    ///   3. Khớp tên CHỨA từ khóa (wood/frame/board/panel) trong các thư mục UI.
+    ///   4. Không có gì → UISprite built-in (hộp xám bo góc) + ghi chú cho Sếp.
+    /// Mọi bước đều loại trừ thư mục nhân vật và tên kiểu NVxx_.
     /// </summary>
     private static Sprite TimSpriteKhungGo()
     {
-        string[] tuKhoaUuTien = { "khunggo", "khung_go", "woodboard_frame", "woodboard", "khung", "wood_frame" };
-        string[] tuKhoaPhu    = { "wood", "frame", "board", "panel", "popup" };
+        // 1. Mốc chắc chắn
+        var chuan = AssetDatabase.LoadAssetAtPath<Sprite>(DuongDanKhungGoChuan);
+        if (chuan != null)
+        {
+            Ghi($"Sprite khung: {chuan.name}  ({DuongDanKhungGoChuan})  [đường dẫn chuẩn của project]");
+            CanhBaoBorderKhung(chuan, DuongDanKhungGoChuan);
+            return chuan;
+        }
+        Ghi($"· Không thấy khung gỗ ở đường dẫn chuẩn ({DuongDanKhungGoChuan}) — chuyển sang dò theo tên.");
 
-        Sprite s = TimSpriteTheoTuKhoa(tuKhoaUuTien, out string path);
-        if (s == null) s = TimSpriteTheoTuKhoa(tuKhoaPhu, out path);
+        // 2 + 3. Dò theo tên trong thư mục UI
+        string[] tenChinhXac = { "WoodBoard_Frame", "khunggo", "khung_go", "khung", "WoodBoard", "Frame_Wood" };
+        string[] tuKhoaChua  = { "khunggo", "khung", "woodboard", "wood", "frame", "board", "panel", "popup" };
 
+        string path;
+        Sprite s = TimSpriteTheoTen(tenChinhXac, tuKhoaChua, out path);
         if (s != null)
         {
             Ghi($"Sprite khung: {s.name}  ({path})");
+            CanhBaoBorderKhung(s, path);
             _ghiChuArtTam.Add($"Khung card 2 popup đang dùng sprite '{s.name}' ({path}) — " +
                               "đúng khung gỗ art request thì giữ, không thì thay ở field Source Image của Card.");
             return s;
         }
 
-        _ghiChuArtTam.Add("KHÔNG tìm thấy sprite khung gỗ nào trong project (đã tìm 'khunggo', " +
-                          "'WoodBoard_Frame', 'khung', 'wood', 'frame'...) — Card đang dùng UISprite built-in " +
-                          "(hộp xám bo góc). Art xong thì kéo vào Source Image của Card ở CẢ 2 popup.");
+        _ghiChuArtTam.Add("KHÔNG tìm thấy sprite khung gỗ trong các thư mục UI " +
+                          $"({string.Join(", ", ThuMucUI)}) — Card đang dùng UISprite built-in (hộp xám bo góc). " +
+                          "Art xong thì kéo vào Source Image của Card ở CẢ 2 popup.");
+        Ghi("! Sprite khung: KHÔNG tìm được — dùng UI/Skin/UISprite.psd built-in.");
         return SpriteBuiltin("UI/Skin/UISprite.psd");
     }
 
     /// <summary>
+    /// Khung 9-slice mà border = 0 thì Image Sliced vô nghĩa và ảnh sẽ bị kéo méo.
+    /// Ghi chú lại để Sếp mở Sprite Editor canh border (khung chuẩn của project là 64
+    /// mỗi cạnh). Không tự sửa importer ở đây — tool này chỉ dựng UI, không đụng asset.
+    /// </summary>
+    private static void CanhBaoBorderKhung(Sprite khung, string path)
+    {
+        if (khung == null || khung.border != Vector4.zero) return;
+
+        _ghiChuArtTam.Add($"Sprite khung '{khung.name}' ({path}) đang có border 9-slice = 0 → " +
+                          "Image phải vẽ Simple, phóng to sẽ méo góc. Mở Sprite Editor đặt border " +
+                          "(khung gỗ chuẩn của project là 64 mỗi cạnh) rồi chạy lại tool.");
+    }
+
+    /// <summary>
     /// Icon tiền: ưu tiên lấy ĐÚNG icon HUD đang dùng (Image anh em của txtGold/
-    /// txtGem trong FarmUIManager), fallback dò asset theo tên.
+    /// txtGem trong FarmUIManager), fallback dò tên trong các thư mục UI.
     /// </summary>
     private static Sprite TimIconTien(bool laVang)
     {
-        // 1. Icon thật trên HUD
+        // 1. Icon thật trên HUD — chắc chắn nhất, không dính chuyện dò tên
         var uiMgr = Object.FindFirstObjectByType<FarmUIManager>(FindObjectsInactive.Include);
         if (uiMgr != null)
         {
@@ -656,62 +719,138 @@ public static class TouristBoatUIPopupSetupTool
                     foreach (var img in cha.GetComponentsInChildren<Image>(true))
                     {
                         if (img == null || img.sprite == null) continue;
-                        Ghi($"Icon {(laVang ? "vàng" : "gem")}: lấy từ HUD ({img.sprite.name}).");
+                        if (MauTenNhanVat.IsMatch(img.sprite.name)) continue; // an toàn kép
+
+                        string duongDanHud = AssetDatabase.GetAssetPath(img.sprite);
+                        Ghi($"Icon {(laVang ? "vàng" : "gem")}: {img.sprite.name}  " +
+                            $"({(string.IsNullOrEmpty(duongDanHud) ? "sprite trong scene/prefab" : duongDanHud)})  [lấy từ HUD]");
                         return img.sprite;
                     }
                 }
             }
         }
 
-        // 2. Dò theo tên asset
-        string[] tuKhoa = laVang
+        // 2. Dò theo tên trong thư mục UI
+        string[] tenChinhXac = laVang
+            ? new[] { "icon_gold", "Icon_Vang", "gold", "coin", "vang" }
+            : new[] { "icon_gem", "Icon_KimCuong", "gem", "diamond", "kimcuong" };
+        string[] tuKhoaChua = laVang
             ? new[] { "icon_gold", "gold", "coin", "vang", "xu" }
             : new[] { "icon_gem", "gem", "diamond", "kimcuong", "kim_cuong" };
 
-        Sprite s = TimSpriteTheoTuKhoa(tuKhoa, out string path);
+        string path;
+        Sprite s = TimSpriteTheoTen(tenChinhXac, tuKhoaChua, out path);
         if (s != null)
         {
-            Ghi($"Icon {(laVang ? "vàng" : "gem")}: {s.name} ({path})");
+            Ghi($"Icon {(laVang ? "vàng" : "gem")}: {s.name}  ({path})");
             return s;
         }
 
-        _ghiChuArtTam.Add($"KHÔNG thấy icon {(laVang ? "VÀNG" : "GEM")} trong project — " +
-                          $"hàng giá của popup mua sẽ dùng chấm tròn placeholder. Kéo icon HUD thật vào field " +
+        _ghiChuArtTam.Add($"KHÔNG thấy icon {(laVang ? "VÀNG" : "GEM")} trong các thư mục UI — " +
+                          "hàng giá của popup mua sẽ dùng chấm tròn placeholder. Kéo icon HUD thật vào field " +
                           $"'{(laVang ? "Gold Icon Sprite" : "Gem Icon Sprite")}' của DockPurchasePopupUI.");
+        Ghi($"! Icon {(laVang ? "vàng" : "gem")}: KHÔNG tìm được — dùng Knob built-in.");
         return null;
     }
 
     /// <summary>
-    /// Quét mọi Sprite trong Assets/, trả sprite đầu tiên có tên chứa 1 trong các
-    /// từ khóa (so sánh không phân biệt hoa/thường, ưu tiên theo THỨ TỰ từ khóa).
-    /// Bỏ qua asset trong Packages/ và thư mục Editor.
+    /// Dò sprite trong CÁC THƯ MỤC UI (không phải toàn project):
+    ///   • pass 1 — tên khớp CHÍNH XÁC, theo đúng thứ tự ưu tiên của tenChinhXac;
+    ///   • pass 2 — tên CHỨA từ khóa, theo thứ tự tuKhoaChua.
+    /// Loại bỏ: thư mục cấm (Assets/NV_NPC, prefab khách du lịch), thư mục Editor,
+    /// và mọi ứng viên có tên kiểu NVxx_ (ảnh nhân vật).
     /// </summary>
-    private static Sprite TimSpriteTheoTuKhoa(string[] tuKhoa, out string duongDan)
+    private static Sprite TimSpriteTheoTen(string[] tenChinhXac, string[] tuKhoaChua, out string duongDan)
     {
         duongDan = null;
-        string[] guids = AssetDatabase.FindAssets("t:Sprite", new[] { "Assets" });
+        List<KeyValuePair<Sprite, string>> ungVien = LayUngVienSprite();
 
-        for (int k = 0; k < tuKhoa.Length; k++)
+        // pass 1 — khớp chính xác
+        for (int k = 0; k < tenChinhXac.Length; k++)
         {
-            string key = tuKhoa[k].ToLowerInvariant();
-            foreach (string guid in guids)
+            string ten = tenChinhXac[k];
+            foreach (var uv in ungVien)
             {
-                string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (string.IsNullOrEmpty(path) || path.Contains("/Editor/")) continue;
-
-                // Sprite có thể là sub-asset của texture (sprite sheet) — quét hết
-                foreach (Object obj in AssetDatabase.LoadAllAssetsAtPath(path))
-                {
-                    var sp = obj as Sprite;
-                    if (sp == null) continue;
-                    if (!sp.name.ToLowerInvariant().Contains(key)) continue;
-
-                    duongDan = path;
-                    return sp;
-                }
+                if (!string.Equals(uv.Key.name, ten, System.StringComparison.OrdinalIgnoreCase)) continue;
+                duongDan = uv.Value;
+                return uv.Key;
             }
         }
+
+        // pass 2 — khớp chứa
+        for (int k = 0; k < tuKhoaChua.Length; k++)
+        {
+            string key = tuKhoaChua[k].ToLowerInvariant();
+            foreach (var uv in ungVien)
+            {
+                if (uv.Key.name.ToLowerInvariant().IndexOf(key, System.StringComparison.Ordinal) < 0) continue;
+                duongDan = uv.Value;
+                return uv.Key;
+            }
+        }
+
         return null;
+    }
+
+    // Danh sách ứng viên dựng 1 LẦN mỗi lần chạy tool (3 ô khung/vàng/gem dùng chung) —
+    // quét AssetDatabase 3 lần là phí, và bảo đảm 3 ô cùng nhìn một tập ứng viên.
+    private static List<KeyValuePair<Sprite, string>> _ungVienSprite;
+
+    private static List<KeyValuePair<Sprite, string>> LayUngVienSprite()
+    {
+        if (_ungVienSprite != null) return _ungVienSprite;
+        _ungVienSprite = new List<KeyValuePair<Sprite, string>>();
+
+        // Chỉ quét thư mục UI CÓ THẬT; không có cái nào thì đành quét Assets/ nhưng
+        // vẫn lọc thư mục cấm + tên nhân vật ở dưới.
+        var thuMuc = new List<string>();
+        foreach (string f in ThuMucUI)
+            if (AssetDatabase.IsValidFolder(f)) thuMuc.Add(f);
+
+        bool quetToanBo = thuMuc.Count == 0;
+        if (quetToanBo)
+        {
+            thuMuc.Add("Assets");
+            Ghi("! Không thấy thư mục UI nào trong danh sách ThuMucUI — phải quét cả Assets/ " +
+                "(vẫn loại trừ Assets/NV_NPC và ảnh tên NVxx_). Nên cập nhật ThuMucUI trong tool.");
+        }
+        else
+        {
+            Ghi("Phạm vi dò sprite: " + string.Join(" · ", thuMuc));
+        }
+
+        string[] guids = AssetDatabase.FindAssets("t:Sprite", thuMuc.ToArray());
+        foreach (string guid in guids)
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            if (string.IsNullOrEmpty(path)) continue;
+            if (path.Contains("/Editor/")) continue;
+            if (BiCam(path)) continue;
+
+            // Sprite có thể là sub-asset của texture (sprite sheet) — quét hết
+            foreach (Object obj in AssetDatabase.LoadAllAssetsAtPath(path))
+            {
+                var sp = obj as Sprite;
+                if (sp == null) continue;
+                if (MauTenNhanVat.IsMatch(sp.name)) continue; // ảnh nhân vật NVxx_
+
+                _ungVienSprite.Add(new KeyValuePair<Sprite, string>(sp, path));
+            }
+        }
+
+        Ghi($"Số sprite ứng viên sau khi lọc: {_ungVienSprite.Count}");
+        return _ungVienSprite;
+    }
+
+    /// <summary>Đường dẫn nằm trong thư mục cấm (ảnh nhân vật / prefab khách du lịch)?</summary>
+    private static bool BiCam(string path)
+    {
+        for (int i = 0; i < ThuMucCam.Length; i++)
+        {
+            if (path.StartsWith(ThuMucCam[i], System.StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+        return false;
     }
 
     private static Sprite SpriteBuiltin(string ten)
@@ -844,14 +983,20 @@ public static class TouristBoatUIPopupSetupTool
         rt.offsetMax = Vector2.zero;
     }
 
-    /// <summary>Áp sprite khung cho Card (9-slice nếu sprite có border — bo góc không méo).</summary>
+    /// <summary>
+    /// Áp sprite khung cho Card. Sprite CÓ border → Type = Sliced (bắt buộc: khung gỗ
+    /// chuẩn của project có border 64 mỗi cạnh, để Simple là 4 góc bị kéo méo).
+    /// Sprite không border → Simple (Sliced khi border = 0 chẳng khác gì Simple).
+    /// </summary>
     private static void ApSpriteKhung(Image card, Sprite khung)
     {
         card.sprite        = khung;
         card.color         = Color.white;
         card.raycastTarget = true; // card cũng chặn click xuyên
-        card.type          = khung != null && khung.border != Vector4.zero
-            ? Image.Type.Sliced : Image.Type.Simple;
+
+        bool coBorder = khung != null && khung.border != Vector4.zero;
+        card.type = coBorder ? Image.Type.Sliced : Image.Type.Simple;
+        // fillCenter để mặc định (true) — khung gỗ cần phần ruột được vẽ.
     }
 
     /// <summary>

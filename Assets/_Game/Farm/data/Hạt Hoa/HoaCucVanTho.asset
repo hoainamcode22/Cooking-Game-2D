@@ -24,9 +24,9 @@ MonoBehaviour:
   sproutSprite: {fileID: -232010230765169813, guid: 0828ac8d0d4472142a222e90e77e182c, type: 3}
   growingSprite: {fileID: -2433396042965232811, guid: 0828ac8d0d4472142a222e90e77e182c, type: 3}
   readySprite: {fileID: 3389596833372498006, guid: 0828ac8d0d4472142a222e90e77e182c, type: 3}
-  sproutScale: {x: 50, y: 50, z: 1}
-  growingScale: {x: 50, y: 50, z: 1}
-  readyScale: {x: 50, y: 50, z: 1}
+  sproutScale: {x: 22, y: 22, z: 1}
+  growingScale: {x: 30, y: 30, z: 1}
+  readyScale: {x: 35, y: 35, z: 1}
   stageSprites:
   - {fileID: 21300000, guid: 4ff3e8e659430c3731186badcfcd190b, type: 3}
   - {fileID: 21300000, guid: 4e24e8cce8ea4bf62e85a1ed9e6f3293, type: 3}

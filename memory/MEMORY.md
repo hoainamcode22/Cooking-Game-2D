@@ -30,6 +30,16 @@ This directory holds persistent project memory files that survive session compac
   KHÔNG tự save scene. Toạ độ scene đã đo (dùng lại khi cần): Berth1(-531,-4285) Berth2(151,-4573)
   Berth3(948,-4839) BlindPoint(-9818,-7819) CookingGate(494,-2367) QueueAnchor(400,-2700);
   Grid_Iso45 isometric cellSize(1,0.5) world scale 300 → world=((cx-cy)*0.5*300, (cx+cy)*0.25*300);
+- KINH TẾ khách du lịch (V2.1, 2026-08-31): **38 file DishData trong `data/Farm_Cooking/` ĐÃ cân bằng sẵn rất kỹ**
+  (difficulty 0/1/2 · unlockLevel 1-30 · sellPrice 62-884 · rewardExp 3-180 · rewardGold = đúng round(sellPrice×0.25)).
+  ĐỪNG tự phát minh công thức — dùng lại sellPrice: `vàng = round(sellPrice × diffMult × rarityBonus × touristGoldMultiplier)`
+  (Easy 1.00/Normal 1.15/Hard 1.35), `exp = round(rewardExp × expMult × touristExpMultiplier)` với
+  **touristExpMultiplier = 0.4 là NÚM HÃM LẠM PHÁT** (nấu đã cộng EXP rồi, phục vụ cộng thêm ⇒ 2× nếu để 1.0,
+  hết nội dung game trong 1.2-3.7 giờ). Nhịp tàu 3 mức: 1 bến 5' · 2 bến 7' · 3 bến 10'.
+- BÀI HỌC GHÉP NỐI: 2 class không liên quan nằm chung 1 file mà 2 Dev cùng sửa ⇒ copy sai thứ tự thì
+  **player build compile SẠCH nhưng chạy code cũ, im lặng hoàn toàn**. Luật: mỗi file một chủ.
+- Tool ★ **KHÔNG ghi đè waypoint/QueueAnchor đã kéo tay** (dấu vết băm FNV-1a toạ độ trong EditorPrefs);
+  muốn dựng lại phải tick `⚙ Ghi đè waypoint đã chỉnh tay`.
   đường đất=Tilemap_IsoDirt(332 ô), cát=IsoSand(868), cầu tàu=IsoDock(63). Cách parse scene 16MB:
   tách theo regex '--- !u!<cls> &<fid>', cls 1=GameObject(m_Name) cls 4=Transform(pos/father/scale),
   cls 1839735485=Tilemap(m_Tiles first.x/y), cls 156049354=Grid. Nếu waypoint bị kéo tay thì ĐỪNG bấm lại nút ★.

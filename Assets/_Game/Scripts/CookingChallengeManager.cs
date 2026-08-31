@@ -17,8 +17,6 @@ public class CookingChallengeManager : MonoBehaviour
     [SerializeField] private float cookSubmitDelay = 0.8f;
     [SerializeField] private int successScoreThreshold = 70;
 
-    [Header("Mini Game")]
-    [SerializeField] private CookingTimingMiniGameUI timingMiniGame;
 
 
     // ── Events cho Kitchen UI v2 (additive 2026-08-26 — view mới nghe, KHÔNG đổi logic) ──
@@ -42,8 +40,7 @@ public class CookingChallengeManager : MonoBehaviour
     private DishData currentDishData;
 
     private bool isCooking = false;
-    [Header("Letter Mini Game")]
-    [SerializeField] private LetterMiniGame letterMiniGame;
+    [Header("Cooking Refs")]
     [SerializeField] private CookingBoot cookingBoot;
 
     [SerializeField] private CookingEffectController cookingEffectController;
@@ -94,14 +91,6 @@ public class CookingChallengeManager : MonoBehaviour
         hintsBoxUI.BindDish(currentDishData);
     }
 // CÃ¡c hÃ m liÃªn quan Ä‘áº¿n mini game
-    private void OnTimingMiniGameFinished(bool isSuccess)
-    {
-        OnCookingMiniGameFinished(isSuccess);
-    }
-    private void OnLetterMiniGameFinished(bool isSuccess)
-    {
-        OnCookingMiniGameFinished(isSuccess);
-    }
 
     private void OnCookingMiniGameFinished(bool isSuccess)
     {
@@ -350,19 +339,12 @@ public class CookingChallengeManager : MonoBehaviour
 
         return true;
     }
-    private void StartRandomMiniGame()
-    {
-        int randomMiniGame = UnityEngine.Random.Range(0, 2);
-
-        if (randomMiniGame == 0)
-        {
-            timingMiniGame.StartMiniGame(currentDishData.difficulty, OnTimingMiniGameFinished);
-        }
-        else
-        {
-            letterMiniGame.StartMiniGame(currentDishData.difficulty, OnLetterMiniGameFinished);
-        }
-    }
+    // [Sếp 2026-08-31] ĐÃ BỎ HẲN MINIGAME KHỎI LUỒNG NẤU.
+    // StartRandomMiniGame() + 2 callback + 2 field tham chiếu panel đã được xoá:
+    // chúng là code chết từ 2026-08-27 (không một chỗ nào gọi tới), giữ lại chỉ gây
+    // nhầm lẫn cho phiên sau. Nấu ăn nay: chọn nguyên liệu → chấm điểm → ra món.
+    // Hai file panel vẫn nằm trong Assets vì SampleScene còn object mang component đó —
+    // muốn xoá hẳn phải xoá object trong scene trước (việc trong Unity, cần Sếp duyệt).
 
     //
     /// <summary>

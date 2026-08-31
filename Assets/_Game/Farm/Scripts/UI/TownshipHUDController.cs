@@ -178,6 +178,8 @@ namespace FarmGame.UI
             {
                 FarmLevelManager.Instance.OnLevelChanged += OnLevelChanged;
             }
+
+            AvatarProfilePopupUI.OnAvatarSelected += HandleAvatarChanged;
         }
 
         private void UnsubscribeEvents()
@@ -197,6 +199,8 @@ namespace FarmGame.UI
             {
                 FarmLevelManager.Instance.OnLevelChanged -= OnLevelChanged;
             }
+
+            AvatarProfilePopupUI.OnAvatarSelected -= HandleAvatarChanged;
         }
 
         // ── Xử lý Cập nhật UI ──────────────────────────────────────────────────
@@ -227,6 +231,26 @@ namespace FarmGame.UI
 
             UpdateLevel(currentLevel);
             UpdateExp(currentExp, requiredExp);
+
+            // 3. Avatar người chơi
+            RefreshAvatar();
+        }
+
+        public void RefreshAvatar(int index = -1)
+        {
+            if (imgAvatar == null) return;
+            if (index < 0) index = PlayerPrefs.GetInt("PLAYER_PROFILE_AVATAR_INDEX", 0);
+            Sprite spr = Resources.Load<Sprite>($"Avatars/avatar_npc_{index}");
+#if UNITY_EDITOR
+            if (spr == null)
+                spr = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Resources/Avatars/avatar_npc_{index}.png");
+#endif
+            if (spr != null) imgAvatar.sprite = spr;
+        }
+
+        private void HandleAvatarChanged(int index)
+        {
+            RefreshAvatar(index);
         }
 
         private void OnCurrencyChanged(int gold, int gems)
