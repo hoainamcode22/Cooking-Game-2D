@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L23
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 23
+  giftGold: 1950
+  giftGems: 7
+  giftItems:
+  - itemId: seed_sugarcane
+    displayName: "H\u1EA1t M\xEDa"
+    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
+    amount: 3
+  unlockEntries:
+  - label: "B\u1EBFn T\xE0u Du L\u1ECBch \u0111\xE3 m\u1EDF"
+    icon: {fileID: 4560433487954533715, guid: f79850f38b909e246a3f676d91e415e9, type: 3}
+  unlockDescriptions:
+  - "B\u1EBFn T\xE0u Du L\u1ECBch \u0111\xE3 m\u1EDF"
+  hintText: "B\u1EBFn T\xE0u Du L\u1ECBch \u0111\xE3 m\u1EDF \u2014 ph\u1EE5c v\u1EE5
+    kh\xE1ch du l\u1ECBch \u0111\u1EC3 ki\u1EBFm l\u1EDBn!"

@@ -20,6 +20,30 @@ MonoBehaviour:
     displayName: "H\u1EA1t Chanh"
     icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
     amount: 3
+  - itemId: seed_hoa_cam_tu_cau
+    displayName: "H\u1EA1t Hoa C\u1EA9m T\xFA C\u1EA7u"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: ca_rot
+    displayName: "H\u1EA1t C\xE0 R\u1ED1t"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: carot
+    displayName: "C\xE0 R\u1ED1t"
+    icon: {fileID: 0}
+    amount: 5
+  - itemId: lemon
+    displayName: Chanh
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: beef
+    displayName: "Th\u1ECBt B\xF2"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: 0}
+    amount: 2
   unlockEntries:
   - label: "C\xE2y & \u0111\u01A1n h\xE0ng cao c\u1EA5p"
     icon: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}

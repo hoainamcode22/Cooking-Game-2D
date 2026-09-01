@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L3
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 3
+  giftGold: 200
+  giftGems: 2
+  giftItems:
+  - itemId: seed_cachua
+    displayName: "H\u1EA1t C\xE0 chua"
+    icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+    amount: 3
+  unlockEntries:
+  - label: "M\u1EDF kh\xF3a C\xE0 chua v\xE0 C\xE0 r\u1ED1t"
+    icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+  - label: "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
+    icon: {fileID: 950524911477112507, guid: 0772edf2be2709a42bc3f4e453c8fec2, type: 3}
+  unlockDescriptions:
+  - "M\u1EDF kh\xF3a C\xE0 chua v\xE0 C\xE0 r\u1ED1t"
+  - "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
+  hintText: "Tr\u1ED3ng C\xE0 chua v\xE0 C\xE0 r\u1ED1t \u0111\u1EC3 ho\xE0n th\xE0nh
+    \u0111\u01A1n h\xE0ng t\u1EEB nh\xE0 d\xE2n m\u1EDBi nh\xE9!"

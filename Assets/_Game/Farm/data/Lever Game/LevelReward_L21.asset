@@ -20,6 +20,26 @@ MonoBehaviour:
     displayName: "H\u1EA1t Ti\xEAu"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 3
+  - itemId: seed_pumpkin
+    displayName: "H\u1EA1t B\xED \u0110\u1ECF"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: pumpkin
+    displayName: "B\xED \u0110\u1ECF"
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: herbs
+    displayName: "Rau Th\u01A1m"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: milk
+    displayName: "S\u1EEFa"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: dinh
+    displayName: "\u0110inh"
+    icon: {fileID: 0}
+    amount: 2
   unlockEntries:
   - label: "N\xE2ng c\u1EA5p kho l\u1EA7n 2"
     icon: {fileID: 21300000, guid: ec37c4358fcdf50428a97e00a3d56320, type: 3}

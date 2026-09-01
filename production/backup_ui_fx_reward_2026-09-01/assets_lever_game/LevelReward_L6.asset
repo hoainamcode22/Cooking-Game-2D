@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L6
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 6
+  giftGold: 350
+  giftGems: 3
+  giftItems:
+  - itemId: seed_nam
+    displayName: "H\u1EA1t N\u1EA5m"
+    icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
+    amount: 3
+  unlockEntries:
+  - label: "M\u1EDF kh\xF3a N\u1EA5m"
+    icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
+  - label: "Chu\u1ED3ng b\xF2 \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+    icon: {fileID: 3939136077963233266, guid: 8b583cc7808b2d44da70fbe84e2b5c31, type: 3}
+  - label: "Nhi\u1EC7m v\u1EE5 h\u1EB1ng ng\xE0y \u0111\xE3 m\u1EDF"
+    icon: {fileID: -2858330702786226967, guid: 6f085ae258ca6204ab9f38c88778590d, type: 3}
+  unlockDescriptions:
+  - "M\u1EDF kh\xF3a N\u1EA5m"
+  - "Chu\u1ED3ng b\xF2 \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+  - "Nhi\u1EC7m v\u1EE5 h\u1EB1ng ng\xE0y \u0111\xE3 m\u1EDF"
+  hintText: "N\u1EA5m \u0111\xE3 c\xF3 trong Shop. \u0110\u1EEBng qu\xEAn l\xE0m
+    nhi\u1EC7m v\u1EE5 h\u1EB1ng ng\xE0y \u0111\u1EC3 nh\u1EADn th\xEAm th\u01B0\u1EDFng!"

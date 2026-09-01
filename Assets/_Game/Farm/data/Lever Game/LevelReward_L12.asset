@@ -16,6 +16,30 @@ MonoBehaviour:
   giftGold: 760
   giftGems: 5
   giftItems:
+  - itemId: seed_watermelon
+    displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: seed_pumpkin
+    displayName: "H\u1EA1t B\xED \u0110\u1ECF"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: watermelon
+    displayName: "D\u01B0a H\u1EA5u"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: mushroom
+    displayName: "N\u1EA5m"
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: herbs
+    displayName: "Rau Th\u01A1m"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: son
+    displayName: "S\u01A1n"
+    icon: {fileID: 0}
+    amount: 1
   - itemId: seed_ngo
     displayName: "H\u1EA1t Ng\xF4"
     icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}

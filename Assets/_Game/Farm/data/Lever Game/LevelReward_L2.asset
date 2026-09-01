@@ -20,6 +20,26 @@ MonoBehaviour:
     displayName: "H\u1EA1t Ng\xF4"
     icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
     amount: 3
+  - itemId: seed_rice
+    displayName: "H\u1EA1t L\xFAa"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: seed_bapcai
+    displayName: "H\u1EA1t B\u1EAFp C\u1EA3i"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: ngo
+    displayName: "Ng\xF4"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: egg
+    displayName: "Tr\u1EE9ng"
+    icon: {fileID: 0}
+    amount: 1
+  - itemId: salt
+    displayName: "Mu\u1ED1i"
+    icon: {fileID: 0}
+    amount: 2
   unlockEntries:
   - label: "M\u1EDF kh\xF3a h\u1EA1t Ng\xF4"
     icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}

@@ -20,6 +20,26 @@ MonoBehaviour:
     displayName: "H\u1EA1t Ti\xEAu"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 3
+  - itemId: seed_cachua
+    displayName: "H\u1EA1t C\xE0 Chua"
+    icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+    amount: 3
+  - itemId: cachua
+    displayName: "C\xE0 Chua"
+    icon: {fileID: 0}
+    amount: 5
+  - itemId: pepper
+    displayName: "Ti\xEAu"
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: milk
+    displayName: "S\u1EEFa"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: 0}
+    amount: 2
   unlockEntries:
   - label: "M\u1EDF to\xE0n b\u1ED9 pool n\u1ED9i dung"
     icon: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}

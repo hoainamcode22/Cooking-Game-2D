@@ -16,10 +16,30 @@ MonoBehaviour:
   giftGold: 820
   giftGems: 5
   giftItems:
+  - itemId: seed_sugarcane
+    displayName: "H\u1EA1t M\xEDa"
+    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
+    amount: 3
   - itemId: seed_lemon
     displayName: "H\u1EA1t Chanh"
     icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
+    amount: 2
+  - itemId: sugarcane
+    displayName: "M\xEDa"
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: lemon
+    displayName: Chanh
+    icon: {fileID: 0}
     amount: 3
+  - itemId: milk
+    displayName: "S\u1EEFa"
+    icon: {fileID: 0}
+    amount: 1
+  - itemId: kinh
+    displayName: "K\xEDnh"
+    icon: {fileID: 0}
+    amount: 1
   unlockEntries:
   - label: "M\xE1y \xC9p M\xEDa \u0111\xE3 m\u1EDF b\xE1n trong Shop"
     icon: {fileID: -5178242575216520492, guid: bfc7fe251655c4146a2c2dafad2c57d3, type: 3}

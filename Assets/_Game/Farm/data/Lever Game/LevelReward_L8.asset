@@ -20,6 +20,26 @@ MonoBehaviour:
     displayName: "H\u1EA1t Chanh"
     icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
     amount: 3
+  - itemId: seed_sugarcane
+    displayName: "H\u1EA1t M\xEDa"
+    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
+    amount: 2
+  - itemId: lemon
+    displayName: Chanh
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: mushroom
+    displayName: "N\u1EA5m"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: beef
+    displayName: "Th\u1ECBt B\xF2"
+    icon: {fileID: 0}
+    amount: 1
+  - itemId: son
+    displayName: "S\u01A1n"
+    icon: {fileID: 0}
+    amount: 1
   unlockEntries:
   - label: "M\u1EDF kh\xF3a Chanh"
     icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}

@@ -20,6 +20,30 @@ MonoBehaviour:
     displayName: "H\u1EA1t Ti\xEAu"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 3
+  - itemId: seed_hoa_mau_don
+    displayName: "H\u1EA1t Hoa M\u1EABu \u0110\u01A1n"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: seed_hoa_cam_tu_cau
+    displayName: "H\u1EA1t Hoa C\u1EA9m T\xFA C\u1EA7u"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: pepper
+    displayName: "Ti\xEAu"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: hoa_hong
+    displayName: "Hoa H\u1ED3ng"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: beef
+    displayName: "Th\u1ECBt B\xF2"
+    icon: {fileID: 0}
+    amount: 1
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: 0}
+    amount: 1
   unlockEntries:
   - label: "M\u1EDF kh\xF3a Ti\xEAu v\xE0 c\xE1c lo\u1EA1i hoa c\xF2n l\u1EA1i"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}

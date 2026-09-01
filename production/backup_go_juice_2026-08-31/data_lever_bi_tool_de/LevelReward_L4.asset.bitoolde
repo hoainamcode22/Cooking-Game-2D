@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L4
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 4
+  giftGold: 250
+  giftGems: 3
+  giftItems:
+  - itemId: seed_hoa_hong
+    displayName: "H\u1EA1t Hoa h\u1ED3ng"
+    icon: {fileID: 21300000, guid: be5905bd85d640fe999f56d9f082def4, type: 3}
+    amount: 2
+  unlockEntries:
+  - label: "M\u1EDF kh\xF3a Hoa h\u1ED3ng v\xE0 O\u1EA3i h\u01B0\u01A1ng"
+    icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
+  - label: "Chu\u1ED3ng heo \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+    icon: {fileID: -6437395713708752273, guid: cf63b2f7d48b30a419f6f54b3ce4cda7, type: 3}
+  unlockDescriptions:
+  - "M\u1EDF kh\xF3a Hoa h\u1ED3ng v\xE0 O\u1EA3i h\u01B0\u01A1ng"
+  - "Chu\u1ED3ng heo \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+  hintText: "Hoa h\u1ED3ng v\xE0 O\u1EA3i h\u01B0\u01A1ng \u0111\xE3 c\xF3 trong
+    Shop. Gh\xE9 xem chu\u1ED3ng heo m\u1EDBi nh\xE9!"

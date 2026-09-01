@@ -1,0 +1,862 @@
+using System.Collections;
+using System.Reflection;
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
+
+/// <summary>
+/// PEN SUPPLY TRAY V2 — Khay vật phẩm chuồng gia súc kiểu Hay Day (một khay duy nhất).
+/// ════════════════════════════════════════════════════════════════════════════════
+///
+/// TRƯỚC ĐÂY: bấm chuồng → rỗ thu hoạch nằm PenBasketTrayController, bao thức ăn nằm
+/// LivestockFeedPopupController — hai UI rời rạc. Khay V2 gom cả hai về MỘT panel bo góc
+/// màu than mờ nổi cạnh chuồng: [Ô 1: RỖ THU HOẠCH] [Ô 2: BAO THỨC ĂN + badge số lượng].
+///
+/// NGUYÊN TẮC SỐNG CÒN — KHÔNG ĐỔI PROCESS:
+///   • Khay này CHỈ LÀ LỚP VỎ. Toàn bộ kéo–thả–cho ăn–thu hoạch vẫn chạy qua đúng
+///     hai handler cũ được NHÚNG NGUYÊN VẸN vào 2 ô:
+///       - Ô thức ăn  = AddComponent&lt;LivestockFeedDragItem&gt; + Setup(...) như
+///         LivestockFeedPopupController.PopulateFeedItems vẫn làm. OnBeginDrag (check kho,
+///         hint hết đồ, FloatingDragIcon), OnEndDrag → TryDropOnPen → PenMiniPanelUI.TryFeed
+///         — tất cả là CODE CŨ, không viết lại một dòng logic nào.
+///       - Ô rỗ = AddComponent&lt;PenBasketDragItem&gt; — ghost canvas + FindDropTarget +
+///         PenDropTarget.ReceiveBasketDrop → TryHarvest, nguyên bản.
+///   • Badge số lượng thức ăn do CHÍNH LivestockFeedDragItem.RefreshStock ghi (bind
+///     txtStock của nó vào TMP_Text của badge) — tức đọc từ đúng nguồn code cũ:
+///     FarmInventoryManager.Instance.GetAmount(itemId). Có fallback tự ghi nếu bind hụt.
+///   • Khoá input: chế độ cho ăn (Idle) mô phỏng đúng cặp ShowLivestockFeedPopup +
+///     LivestockFeedPopupController.OnEnable (IsSeedPopupOpen = true + RegisterPopupOpen);
+///     chế độ thu hoạch (Ready) KHÔNG giữ khoá — y hệt PenBasketTrayController cũ.
+///
+/// HÌNH ẢNH: panel bo góc vẽ runtime (sprite 9-slice sinh bằng SDF, cùng thủ thuật
+/// GetRoundSprite của PenMiniPanelUI — không cần art mới), nền game dim tối alpha ~0.45
+/// nhưng có LỖ radial mềm quanh chuồng (texture sinh runtime, tâm = vị trí chuồng trên
+/// màn hình), khay pop-in scale 0.8→1 ease-out-back ~0.18s bằng FxEase (không DOTween).
+///
+/// KÍCH THƯỚC TỰ TÍNH: cạnh ô = clamp(Screen.height * 0.13, 110, 190) px; icon ~82% ô;
+/// đổi resolution / xoay màn hình → tự tính lại và dựng lại slot.
+///
+/// CÁCH NỐI: PenMiniPanelUI.OpenPanel gọi PenSupplyTrayV2.TryShow(this) khi toggle
+/// useSupplyTrayV2 bật; TryShow trả false (thiếu camera, đang Processing…) → rơi về
+/// đúng 2 UI cũ, không mất gì.
+/// </summary>
+public class PenSupplyTrayV2 : MonoBehaviour
+{
+    // ─────────────────────────────────────────────────────────────────────────
+    //  SINGLETON MỀM — giống PenProcessPopupUI nhưng KHÔNG DontDestroyOnLoad:
+    //  khay tham chiếu pen trong scene, đổi scene thì chết theo scene cho sạch.
+    // ─────────────────────────────────────────────────────────────────────────
+    public static PenSupplyTrayV2 Instance { get; private set; }
+
+    [Header("Kích thước ô (px màn hình — tự tính)")]
+    [Tooltip("Cạnh ô = Screen.height * tỉ lệ này, kẹp trong [cellMinPx, cellMaxPx].")]
+    [SerializeField] private float cellHeightRatio = 0.13f;
+    [SerializeField] private float cellMinPx = 110f;
+    [SerializeField] private float cellMaxPx = 190f;
+    [Tooltip("Icon vật phẩm chiếm bao nhiêu phần cạnh ô.")]
+    [Range(0.5f, 0.95f)][SerializeField] private float iconFillRatio = 0.82f;
+
+    [Header("Màu khay (than mờ đậm + viền sáng nhẹ)")]
+    [SerializeField] private Color panelColor  = new Color(42f / 255f, 42f / 255f, 48f / 255f, 0.85f); // #2A2A30 a~0.85
+    [SerializeField] private Color borderColor = new Color(1f, 1f, 1f, 0.30f);
+    [SerializeField] private Color slotColor   = new Color(60f / 255f, 60f / 255f, 70f / 255f, 0.92f);
+
+    [Header("Dim + Spotlight quanh chuồng")]
+    [Range(0f, 1f)][SerializeField] private float dimAlpha = 0.45f;
+    [Tooltip("Bán kính vùng sáng quanh chuồng = hệ số này × cạnh ô.")]
+    [SerializeField] private float spotlightRadiusScale = 2.3f;
+    [Tooltip("Trong bán kính × tỉ lệ này thì sáng hoàn toàn, ra ngoài mờ dần (lỗ mềm).")]
+    [Range(0.05f, 0.95f)][SerializeField] private float spotlightInnerRatio = 0.45f;
+
+    [Header("Pop-in (coroutine thuần, không DOTween)")]
+    [SerializeField] private float popDuration   = 0.18f;
+    [SerializeField] private float popStartScale = 0.8f;
+    [Tooltip("Độ vượt đỉnh của ease-out-back (0.10 = đỉnh 1.10).")]
+    [SerializeField] private float popOvershoot  = 0.10f;
+
+    [Header("Sorting")]
+    [Tooltip("Dưới ghost kéo rỗ (999) và ghost khay cũ (9999) để item kéo luôn nổi trên khay.")]
+    [SerializeField] private int sortingOrder = 800;
+
+    // ── Runtime refs (dựng một lần) ──────────────────────────────────────────
+    private Canvas        _canvas;
+    private GameObject    _canvasGO;
+    private RawImage      _dim;
+    private Texture2D     _dimTex;
+    private RectTransform _trayRoot;
+    private CanvasGroup   _trayCg;
+    private Image         _panelFill;
+    private Image         _panelBorder;
+    private TMP_FontAsset _font;
+
+    // ── Slot (dựng lại mỗi lần Show để handler cũ bind đúng ngữ cảnh) ────────
+    private GameObject  _slotBasketGO;
+    private GameObject  _slotFeedGO;
+    private CanvasGroup _cgBasket;
+    private CanvasGroup _cgFeed;
+    private Image       _imgBasketIcon;
+    private Image       _imgFeedIcon;
+    private TMP_Text    _txtBadge;
+    private LivestockFeedDragItem _feedDrag;   // handler CŨ — nhúng nguyên vẹn
+    private PenBasketDragItem     _basketDrag; // handler CŨ — nhúng nguyên vẹn
+
+    // ── Trạng thái ───────────────────────────────────────────────────────────
+    private PenMiniPanelUI          _pen;
+    private PenMiniPanelUI.PenState _stateLucMo;
+    private string _feedItemId;
+    private bool   _hienThi;
+    private bool   _giuKhoaPopup;      // đã RegisterPopupOpen (parity feed popup cũ)
+    private bool   _datCoSeedPopup;    // đã set IsSeedPopupOpen = true (parity)
+    private bool   _badgeGanReflection;
+    private float  _cell = 130f;
+    private float  _thoiDiemShow = -99f;
+    private int    _lastW, _lastH;
+    private Vector2 _tamSpotCu = new Vector2(-9999f, -9999f);
+    private float  _lanRegenDim = -99f;
+    private float  _alphaVao = 1f;     // tiến độ fade pop-in 0→1
+    private bool   _dangKeoTruoc;
+    private Coroutine _coPop;
+
+    // Sprite bo góc dùng chung — sinh một lần, sống suốt phiên chơi (pattern _roundSprite cũ)
+    private static Sprite _sprBoGocDac;
+    private static Sprite _sprBoGocVien;
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  API TĨNH — điểm nối duy nhất từ PenMiniPanelUI
+    // ═════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Mở khay V2 cho một chuồng. Trả FALSE nếu không mở được (pen null, đang Processing,
+    /// thiếu Camera…) — caller (PenMiniPanelUI.OpenPanel) khi đó rơi về flow UI cũ.
+    /// Tự tạo host nếu scene chưa có (tool editor có thể đặt sẵn để chỉnh tham số).
+    /// </summary>
+    public static bool TryShow(PenMiniPanelUI pen)
+    {
+        if (pen == null || pen.Config == null) return false;
+        if (pen.CurrentState == PenMiniPanelUI.PenState.Processing) return false;
+
+        PenSupplyTrayV2 inst = Instance;
+        if (inst == null)
+            inst = FindFirstObjectByType<PenSupplyTrayV2>(FindObjectsInactive.Include);
+        if (inst == null)
+        {
+            var go = new GameObject("PenSupplyTrayV2_Host", typeof(PenSupplyTrayV2));
+            inst = go.GetComponent<PenSupplyTrayV2>();
+        }
+        if (inst == null) return false;
+        return inst.Show(pen);
+    }
+
+    /// <summary>Đóng khay nếu đang mở — no-op an toàn khi chưa từng dùng V2.</summary>
+    public static void HideIfShowing()
+    {
+        if (Instance != null && Instance._hienThi) Instance.Hide();
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  LIFECYCLE
+    // ═════════════════════════════════════════════════════════════════════════
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+        NhaKhoaInput();
+        HuyDangKyKho();
+        if (_dimTex != null) { Destroy(_dimTex); _dimTex = null; }
+    }
+
+    private void OnDisable()
+    {
+        // Host bị tắt (đổi scene, HideAllPopups quét trúng…) → trả khoá như popup cũ vẫn làm.
+        NhaKhoaInput();
+    }
+
+    private void Update()
+    {
+        if (!_hienThi) return;
+
+        // 1. Pen chết / bị tắt (vd vào chế độ bếp) → đóng ngay, trả khoá.
+        if (_pen == null || !_pen.isActiveAndEnabled)
+        {
+            Hide();
+            return;
+        }
+
+        // 2. Trạng thái chuồng đã nhảy (đã cho ăn → Processing, đã thu hoạch → Idle)
+        //    → đóng khay, KHỚP flow cũ: TryFeed tự mở PenProcessPopupUI, TryHarvest xong
+        //    thì PenBasketTrayController cũ cũng Close().
+        if (_pen.CurrentState != _stateLucMo)
+        {
+            Hide();
+            return;
+        }
+
+        // 3. Xoay màn hình / đổi resolution → tính lại size ô + dựng lại slot + dim.
+        //    Không làm giữa lúc đang kéo (handler cũ đang giữ ghost + trạng thái riêng).
+        if ((_lastW != Screen.width || _lastH != Screen.height) && !FarmInputLock.IsDraggingSeed)
+        {
+            Show(_pen); // re-show trọn gói: relayout, rebind, reposition, regen dim
+            return;
+        }
+
+        // 4. Khi đang kéo item: khay + dim tự nhún xuống cho item nổi bật (và tránh
+        //    trường hợp FloatingDragIcon nằm ở canvas order thấp hơn bị dim đè màu).
+        bool dangKeo = FarmInputLock.IsDraggingSeed;
+        if (dangKeo != _dangKeoTruoc)
+        {
+            _dangKeoTruoc = dangKeo;
+            ApDungAlpha();
+        }
+
+        // 5. Ở chế độ cho ăn: handler cũ khi thả TRƯỢT gọi FarmUIManager.HideLivestockFeedPopup()
+        //    → cờ IsSeedPopupOpen bị hạ dù khay V2 vẫn mở (item bay về khay). Dựng lại cờ
+        //    để hành vi khoá thế giới GIỐNG HỆT lúc feed popup cũ còn mở.
+        if (_stateLucMo == PenMiniPanelUI.PenState.Idle && !dangKeo && !FarmInputLock.IsSeedPopupOpen)
+            FarmInputLock.IsSeedPopupOpen = true;
+
+        // 6. Bám theo chuồng (camera có thể pan ở chế độ thu hoạch — khay cũ cũng screen-space).
+        DatViTriKhayVaSpotlight(false);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  SHOW / HIDE
+    // ═════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Mở (hoặc chuyển ngữ cảnh sang chuồng khác khi đang mở). Trả false nếu thiếu điều kiện.
+    /// </summary>
+    public bool Show(PenMiniPanelUI pen)
+    {
+        if (pen == null || pen.Config == null) return false;
+        if (pen.CurrentState == PenMiniPanelUI.PenState.Processing) return false;
+        Camera cam = Camera.main;
+        if (cam == null) return false;
+
+        // Host bị đặt inactive trong scene → bật lại; vẫn không active được (cha tắt)
+        // thì trả false để OpenPanel rơi về UI cũ — tuyệt đối không ném exception.
+        if (!isActiveAndEnabled)
+        {
+            gameObject.SetActive(true);
+            enabled = true;
+            if (!isActiveAndEnabled) return false;
+        }
+
+        // Đang mở cho chuồng khác → trả khoá cũ trước khi nhận ngữ cảnh mới.
+        if (_hienThi) NhaKhoaInput();
+        HuyDangKyKho();
+
+        // Parity với ShowLivestockFeedPopup / ShowPenBasketTray cũ: dọn popup khác trước.
+        FarmUIManager.Instance?.HideAllPopups();
+
+        _pen        = pen;
+        _stateLucMo = pen.CurrentState;
+        _lastW      = Screen.width;
+        _lastH      = Screen.height;
+
+        DamBaoDungKhung();
+        _cell = Mathf.Clamp(Screen.height * cellHeightRatio, cellMinPx, cellMaxPx);
+        DungLaiSlot();      // dựng 2 ô + nhúng handler cũ theo ngữ cảnh pen mới
+        XepLayout();
+        DatViTriKhayVaSpotlight(true);
+        DatTrangThaiSlot();
+        LamMoiBadge();
+        DangKyKho();
+
+        _canvasGO.SetActive(true);
+        _hienThi      = true;
+        _dangKeoTruoc = false; // xoá trạng thái "đang kéo" cũ khi re-show
+        _thoiDiemShow = Time.unscaledTime;
+
+        // Khoá input đúng theo chế độ — GIỐNG HỆT hai UI cũ:
+        if (_stateLucMo == PenMiniPanelUI.PenState.Idle)
+        {
+            FarmInputLock.IsSeedPopupOpen = true;   // ShowLivestockFeedPopup:447
+            _datCoSeedPopup = true;
+            if (!_giuKhoaPopup)
+            {
+                FarmInputLock.RegisterPopupOpen();  // LivestockFeedPopupController.OnEnable
+                _giuKhoaPopup = true;
+            }
+            FarmUIManager.Instance?.ShowHint("Kéo bao thức ăn vào chuồng để cho gia súc ăn.");
+        }
+        else
+        {
+            // Ready: khay rỗ cũ không giữ khoá nào — giữ nguyên hành vi.
+            FarmUIManager.Instance?.ShowHint("Kéo chiếc rổ thả vào chuồng để thu hoạch sản phẩm.");
+        }
+
+        // Pop-in 0.8 → 1, ease-out-back, dim fade 0 → 1 (nhân với alpha nướng trong texture).
+        if (_coPop != null) StopCoroutine(_coPop);
+        _coPop = StartCoroutine(CoPopIn());
+        return true;
+    }
+
+    /// <summary>Đóng khay, trả mọi khoá input đúng như HideLivestockFeedPopup cũ.</summary>
+    public void Hide()
+    {
+        if (_coPop != null) { StopCoroutine(_coPop); _coPop = null; }
+        NhaKhoaInput();
+        HuyDangKyKho();
+        if (_canvasGO != null) _canvasGO.SetActive(false);
+        _hienThi = false;
+        _pen     = null;
+        _feedDrag   = null;
+        _basketDrag = null;
+        _tamSpotCu  = new Vector2(-9999f, -9999f);
+    }
+
+    /// <summary>Chạm lớp dim (ra ngoài khay) → đóng. Gọi từ PenSupplyTrayV2DimCatcher.</summary>
+    public void OnDimPressed()
+    {
+        if (!_hienThi) return;
+        if (FarmInputLock.IsDraggingSeed) return;               // đang kéo thì không phải "chạm ra ngoài"
+        if (Time.unscaledTime - _thoiDiemShow < 0.08f) return;  // nuốt click-mở dội lại frame đầu
+        Hide();
+        // KHÔNG SuppressWorldClickForCurrentFrame ở đây — feed popup cũ đóng bằng chạm ngoài
+        // cũng không chặn, nhờ vậy chạm thẳng vào chuồng khác vẫn mở được khay chuồng đó.
+    }
+
+    private void NhaKhoaInput()
+    {
+        if (_giuKhoaPopup)
+        {
+            FarmInputLock.RegisterPopupClose();
+            _giuKhoaPopup = false;
+        }
+        if (_datCoSeedPopup)
+        {
+            // Parity HideLivestockFeedPopup:456-457
+            FarmInputLock.IsSeedPopupOpen = false;
+            FarmInputLock.IsDraggingSeed  = false;
+            _datCoSeedPopup = false;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  BADGE — đọc từ ĐÚNG nguồn code cũ đang đọc
+    // ═════════════════════════════════════════════════════════════════════════
+
+    private void DangKyKho()
+    {
+        // Parity LivestockFeedPopupController.OnEnable — nghe cả kho tay lẫn kho lớn.
+        if (FarmInventoryManager.Instance != null)
+        {
+            FarmInventoryManager.Instance.OnInventoryChanged -= LamMoiBadge;
+            FarmInventoryManager.Instance.OnInventoryChanged += LamMoiBadge;
+        }
+        if (WarehouseManager.Instance != null)
+        {
+            WarehouseManager.Instance.OnWarehouseChanged -= LamMoiBadge;
+            WarehouseManager.Instance.OnWarehouseChanged += LamMoiBadge;
+        }
+    }
+
+    private void HuyDangKyKho()
+    {
+        if (FarmInventoryManager.Instance != null)
+            FarmInventoryManager.Instance.OnInventoryChanged -= LamMoiBadge;
+        if (WarehouseManager.Instance != null)
+            WarehouseManager.Instance.OnWarehouseChanged -= LamMoiBadge;
+    }
+
+    private void LamMoiBadge()
+    {
+        // Chỉ cần pen còn ngữ cảnh — hàm này được gọi cả TRONG Show (trước khi _hienThi bật).
+        if (_pen == null) return;
+
+        // Đường CHÍNH: để chính LivestockFeedDragItem.RefreshStock ghi số + màu vào badge
+        // (txtStock của nó đã được bind vào _txtBadge) — nguồn: FarmInventoryManager.GetAmount.
+        if (_feedDrag != null) _feedDrag.RefreshStock();
+
+        int stock = 0;
+        if (!string.IsNullOrEmpty(_feedItemId) && FarmInventoryManager.Instance != null)
+            stock = FarmInventoryManager.Instance.GetAmount(_feedItemId);
+
+        // Đường DỰ PHÒNG: bind reflection hụt (field đổi tên trong tương lai) thì tự ghi,
+        // vẫn từ cùng một nguồn — không bao giờ hiện số khác code cũ.
+        if (!_badgeGanReflection && _txtBadge != null)
+        {
+            _txtBadge.text  = stock.ToString();
+            _txtBadge.color = stock > 0 ? Color.white : new Color(1f, 0.4f, 0.4f, 1f);
+        }
+
+        // Kho hết thức ăn → ô mờ (nhưng vẫn nhận drag để handler cũ hiện hint như trước).
+        DatTrangThaiSlot(stock);
+    }
+
+    /// <summary>Bật/mờ 2 ô theo trạng thái chuồng + tồn kho.</summary>
+    private void DatTrangThaiSlot(int stockDaBiet = -1)
+    {
+        bool idle  = _stateLucMo == PenMiniPanelUI.PenState.Idle;
+        bool ready = _stateLucMo == PenMiniPanelUI.PenState.Ready;
+
+        if (stockDaBiet < 0 && !string.IsNullOrEmpty(_feedItemId) && FarmInventoryManager.Instance != null)
+            stockDaBiet = FarmInventoryManager.Instance.GetAmount(_feedItemId);
+
+        if (_cgFeed != null)
+        {
+            // Idle + có đồ: sáng. Idle + hết đồ: mờ nhưng VẪN kéo được → hint cũ chạy.
+            // Ready: mờ hẳn + khoá raycast (TryFeed lúc Ready trả false, khỏi cho kéo).
+            _cgFeed.alpha          = idle ? (stockDaBiet > 0 ? 1f : 0.45f) : 0.4f;
+            _cgFeed.blocksRaycasts = idle;
+            _cgFeed.interactable   = idle;
+        }
+        if (_cgBasket != null)
+        {
+            _cgBasket.alpha          = ready ? 1f : 0.4f;
+            _cgBasket.blocksRaycasts = ready;
+            _cgBasket.interactable   = ready;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  DỰNG UI — khung tĩnh dựng 1 lần, slot dựng lại mỗi Show
+    // ═════════════════════════════════════════════════════════════════════════
+
+    private void DamBaoDungKhung()
+    {
+        if (_canvasGO != null) return;
+
+        _font = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF"); // cùng font PenProcessPopupUI
+
+        // Canvas overlay riêng — không đụng canvas HUD/popup của scene.
+        _canvasGO = new GameObject("PenSupplyTrayV2_Canvas", typeof(RectTransform), typeof(Canvas), typeof(GraphicRaycaster));
+        _canvasGO.transform.SetParent(transform, false);
+        _canvas = _canvasGO.GetComponent<Canvas>();
+        _canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+        _canvas.sortingOrder = sortingOrder;
+
+        // Lớp dim toàn màn hình có lỗ spotlight — RawImage nhận texture sinh runtime.
+        var dimGO = new GameObject("Dim_Spotlight", typeof(RectTransform), typeof(RawImage), typeof(PenSupplyTrayV2DimCatcher));
+        dimGO.transform.SetParent(_canvasGO.transform, false);
+        var dimRt = (RectTransform)dimGO.transform;
+        dimRt.anchorMin = Vector2.zero;
+        dimRt.anchorMax = Vector2.one;
+        dimRt.offsetMin = Vector2.zero;
+        dimRt.offsetMax = Vector2.zero;
+        _dim = dimGO.GetComponent<RawImage>();
+        _dim.color = new Color(1f, 1f, 1f, 0f); // alpha nhân — pop-in kéo 0 → 1
+        _dim.raycastTarget = true;              // bắt chạm-ra-ngoài để đóng
+        dimGO.GetComponent<PenSupplyTrayV2DimCatcher>().owner = this;
+
+        // Panel khay: fill than mờ + viền sáng nhẹ (2 Image, cùng sprite 9-slice sinh runtime).
+        var trayGO = new GameObject("TrayRoot", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+        trayGO.transform.SetParent(_canvasGO.transform, false);
+        _trayRoot = (RectTransform)trayGO.transform;
+        _trayRoot.anchorMin = _trayRoot.anchorMax = new Vector2(0.5f, 0.5f);
+        _trayRoot.pivot     = new Vector2(0.5f, 0.5f);
+        _trayCg    = trayGO.GetComponent<CanvasGroup>();
+        _panelFill = trayGO.GetComponent<Image>();
+        _panelFill.sprite = LaySpriteBoGocDac();
+        _panelFill.type   = Image.Type.Sliced;
+        _panelFill.color  = panelColor;
+        _panelFill.raycastTarget = true; // chặn chạm xuyên qua thân khay xuống dim
+
+        var borderGO = new GameObject("Border", typeof(RectTransform), typeof(Image));
+        borderGO.transform.SetParent(_trayRoot, false);
+        var borderRt = (RectTransform)borderGO.transform;
+        borderRt.anchorMin = Vector2.zero;
+        borderRt.anchorMax = Vector2.one;
+        borderRt.offsetMin = Vector2.zero;
+        borderRt.offsetMax = Vector2.zero;
+        _panelBorder = borderGO.GetComponent<Image>();
+        _panelBorder.sprite = LaySpriteBoGocVien();
+        _panelBorder.type   = Image.Type.Sliced;
+        _panelBorder.color  = borderColor;
+        _panelBorder.raycastTarget = false;
+
+        _canvasGO.SetActive(false);
+    }
+
+    /// <summary>
+    /// Dựng lại 2 ô mỗi lần Show. VÌ SAO dựng lại thay vì tái dùng: PenBasketDragItem
+    /// cache originalAnchoredPos trong Start(), LivestockFeedDragItem giữ _targetPen —
+    /// object mới toanh mỗi lần là cách chắc nhất để handler cũ luôn đúng ngữ cảnh.
+    /// </summary>
+    private void DungLaiSlot()
+    {
+        if (_slotBasketGO != null) Destroy(_slotBasketGO);
+        if (_slotFeedGO   != null) Destroy(_slotFeedGO);
+
+        var cfg = _pen.Config;
+
+        // ── Ô 1: RỖ THU HOẠCH ────────────────────────────────────────────────
+        _slotBasketGO = TaoSlot("Slot_Basket", out _cgBasket, out _imgBasketIcon);
+        Sprite sprRo = cfg.basketIcon != null ? cfg.basketIcon : cfg.productIcon;
+        if (_imgBasketIcon != null)
+        {
+            _imgBasketIcon.sprite  = sprRo;
+            _imgBasketIcon.enabled = sprRo != null;
+        }
+        // NHÚNG HANDLER CŨ — toàn bộ OnBeginDrag/OnDrag/OnEndDrag của rỗ chạy nguyên vẹn.
+        _basketDrag = _slotBasketGO.AddComponent<PenBasketDragItem>();
+        // basketImage là [SerializeField] private → bind bằng reflection (helper có fallback).
+        if (!GanFieldRieng(_basketDrag, "basketImage", _imgBasketIcon))
+            Debug.LogWarning("[PenSupplyTrayV2] Không bind được PenBasketDragItem.basketImage — ghost kéo sẽ thiếu sprite (chức năng thả vẫn chạy).");
+
+        // ── Ô 2: BAO THỨC ĂN + BADGE ─────────────────────────────────────────
+        _slotFeedGO = TaoSlot("Slot_Feed", out _cgFeed, out _imgFeedIcon);
+
+        // Cùng luật chọn thức ăn với slot1 của panel world cũ (PenMiniPanelUI:546-547):
+        // ưu tiên food1, trống thì dùng túi cám premium.
+        _feedItemId = !string.IsNullOrEmpty(cfg.food1ItemId) ? cfg.food1ItemId : cfg.premiumFoodItemId;
+        Sprite sprAn = cfg.food1Icon != null ? cfg.food1Icon : cfg.premiumFoodIcon;
+        if (sprAn == null && !string.IsNullOrEmpty(_feedItemId))
+        {
+            // Fallback y hệt LivestockFeedPopupController.GetDefaultFeedSprite
+            sprAn = Resources.Load<Sprite>($"Icons/{_feedItemId}") ?? Resources.Load<Sprite>($"Sprites/{_feedItemId}");
+        }
+
+        // Badge số lượng — góc dưới-phải ô thức ăn.
+        var badgeGO = new GameObject("Badge", typeof(RectTransform), typeof(Image));
+        badgeGO.transform.SetParent(_slotFeedGO.transform, false);
+        var badgeRt = (RectTransform)badgeGO.transform;
+        badgeRt.anchorMin = badgeRt.anchorMax = new Vector2(1f, 0f);
+        badgeRt.pivot     = new Vector2(1f, 0f);
+        var badgeBg = badgeGO.GetComponent<Image>();
+        badgeBg.sprite = LaySpriteBoGocDac();
+        badgeBg.type   = Image.Type.Sliced;
+        badgeBg.color  = new Color(0.09f, 0.09f, 0.12f, 0.92f);
+        badgeBg.raycastTarget = false;
+
+        var badgeTxtGO = new GameObject("Txt_Badge", typeof(RectTransform));
+        badgeTxtGO.transform.SetParent(badgeRt, false);
+        var badgeTxtRt = (RectTransform)badgeTxtGO.transform;
+        badgeTxtRt.anchorMin = Vector2.zero;
+        badgeTxtRt.anchorMax = Vector2.one;
+        badgeTxtRt.offsetMin = Vector2.zero;
+        badgeTxtRt.offsetMax = Vector2.zero;
+        var badgeTxt = badgeTxtGO.AddComponent<TextMeshProUGUI>();
+        if (_font != null) badgeTxt.font = _font;
+        badgeTxt.text      = "0";
+        badgeTxt.fontStyle = FontStyles.Bold;
+        badgeTxt.alignment = TextAlignmentOptions.Center;
+        badgeTxt.color     = Color.white;
+        badgeTxt.enableAutoSizing = true;
+        badgeTxt.fontSizeMin = 10f;
+        badgeTxt.fontSizeMax = 96f;
+        badgeTxt.raycastTarget = false;
+        _txtBadge = badgeTxt;
+
+        // NHÚNG HANDLER CŨ — đúng cách LivestockFeedPopupController vẫn nhúng vào item.
+        _feedDrag = _slotFeedGO.AddComponent<LivestockFeedDragItem>(); // RequireComponent tự thêm CanvasGroup nếu thiếu
+        // Bind UI riêng của handler cũ vào UI của khay: icon + badge do CODE CŨ ghi.
+        GanFieldRieng(_feedDrag, "imgIcon", _imgFeedIcon);
+        _badgeGanReflection = GanFieldRieng(_feedDrag, "txtStock", _txtBadge);
+
+        string tenHienThi = LayTenHienThi(_feedItemId);
+        _feedDrag.Setup(_feedItemId, sprAn, tenHienThi, _pen); // callback flow cũ: Setup → RefreshStock
+
+        // Setup không đụng preserveAspect trên icon do mình tạo → tự bảo đảm.
+        if (_imgFeedIcon != null)
+        {
+            _imgFeedIcon.preserveAspect = true;
+            _imgFeedIcon.enabled = _imgFeedIcon.sprite != null;
+        }
+    }
+
+    /// <summary>Tạo khung một ô: nền bo góc (nhận raycast cho drag) + CanvasGroup + icon con.</summary>
+    private GameObject TaoSlot(string ten, out CanvasGroup cg, out Image icon)
+    {
+        var go = new GameObject(ten, typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
+        go.transform.SetParent(_trayRoot, false);
+        var bg = go.GetComponent<Image>();
+        bg.sprite = LaySpriteBoGocDac();
+        bg.type   = Image.Type.Sliced;
+        bg.color  = slotColor;
+        bg.raycastTarget = true; // handler cũ nhận drag qua chính Image này
+        cg = go.GetComponent<CanvasGroup>();
+
+        var iconGO = new GameObject("Icon", typeof(RectTransform), typeof(Image));
+        iconGO.transform.SetParent(go.transform, false);
+        icon = iconGO.GetComponent<Image>();
+        icon.preserveAspect = true;
+        icon.raycastTarget  = false; // để mọi pointer event rơi vào slot root — nơi handler cũ đứng
+        return go;
+    }
+
+    /// <summary>Xếp kích thước khay + 2 ô + icon + badge theo cạnh ô đã clamp.</summary>
+    private void XepLayout()
+    {
+        float pad = _cell * 0.13f;
+        float gap = _cell * 0.10f;
+        float w   = pad * 2f + _cell * 2f + gap;
+        float h   = pad * 2f + _cell;
+        _trayRoot.sizeDelta = new Vector2(w, h);
+
+        float slotX = (_cell + gap) * 0.5f;
+        XepSlot(_slotBasketGO, new Vector2(-slotX, 0f));
+        XepSlot(_slotFeedGO,   new Vector2(+slotX, 0f));
+
+        if (_slotFeedGO != null)
+        {
+            Transform badge = _slotFeedGO.transform.Find("Badge");
+            if (badge != null)
+            {
+                var brt = (RectTransform)badge;
+                brt.sizeDelta        = new Vector2(_cell * 0.46f, _cell * 0.30f);
+                brt.anchoredPosition = new Vector2(_cell * 0.06f, -_cell * 0.06f); // lấn nhẹ ra góc cho giống ref
+            }
+        }
+    }
+
+    private void XepSlot(GameObject slot, Vector2 pos)
+    {
+        if (slot == null) return;
+        var rt = (RectTransform)slot.transform;
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot     = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta        = new Vector2(_cell, _cell);
+        rt.anchoredPosition = pos;
+
+        Transform icon = slot.transform.Find("Icon");
+        if (icon != null)
+        {
+            var irt = (RectTransform)icon;
+            irt.anchorMin = irt.anchorMax = new Vector2(0.5f, 0.5f);
+            irt.sizeDelta = new Vector2(_cell * iconFillRatio, _cell * iconFillRatio);
+            irt.anchoredPosition = Vector2.zero;
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  ĐỊNH VỊ CẠNH CHUỒNG + SPOTLIGHT
+    // ═════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// world → screen, đặt khay bên phía màn hình còn rộng, clamp lọt hẳn trong màn.
+    /// Spotlight tâm = chuồng; chỉ sinh lại texture khi tâm dịch đáng kể (tiết kiệm CPU).
+    /// </summary>
+    private void DatViTriKhayVaSpotlight(bool epRegenDim)
+    {
+        Camera cam = Camera.main;
+        if (cam == null || _pen == null || _trayRoot == null) return;
+
+        Vector3 sp3 = cam.WorldToScreenPoint(_pen.transform.position);
+        Vector2 penSp = new Vector2(sp3.x, sp3.y);
+
+        Vector2 khay = _trayRoot.sizeDelta;
+        float margin = 16f;
+
+        // Chuồng ở nửa trái màn hình → khay nổi bên phải chuồng, và ngược lại.
+        float dat = _cell * 0.9f + khay.x * 0.5f;
+        float x   = penSp.x + (penSp.x <= Screen.width * 0.5f ? dat : -dat);
+        float y   = penSp.y + _cell * 0.35f;
+
+        x = Mathf.Clamp(x, khay.x * 0.5f + margin, Screen.width  - khay.x * 0.5f - margin);
+        y = Mathf.Clamp(y, khay.y * 0.5f + margin, Screen.height - khay.y * 0.5f - margin);
+
+        _trayRoot.anchoredPosition = new Vector2(x - Screen.width * 0.5f, y - Screen.height * 0.5f);
+
+        // Regen dim khi: ép (mở khay / đổi resolution) hoặc chuồng dịch > 2px, throttle 0.08s.
+        bool dichXa = (penSp - _tamSpotCu).sqrMagnitude > 4f;
+        if (epRegenDim || (dichXa && Time.unscaledTime - _lanRegenDim > 0.08f))
+        {
+            SinhTextureDim(penSp);
+            _tamSpotCu  = penSp;
+            _lanRegenDim = Time.unscaledTime;
+        }
+    }
+
+    /// <summary>
+    /// Texture dim toàn màn (thu nhỏ ~192px ngang, bilinear kéo giãn = lỗ mềm mượt):
+    /// alpha = 0 trong lòng spotlight, mượt dần lên dimAlpha ở ngoài.
+    /// </summary>
+    private void SinhTextureDim(Vector2 tamScreen)
+    {
+        int w = 192;
+        int h = Mathf.Clamp(Mathf.RoundToInt(w * (float)Screen.height / Mathf.Max(1, Screen.width)), 24, 512);
+
+        if (_dimTex == null || _dimTex.width != w || _dimTex.height != h)
+        {
+            if (_dimTex != null) Destroy(_dimTex);
+            _dimTex = new Texture2D(w, h, TextureFormat.RGBA32, false)
+            {
+                wrapMode   = TextureWrapMode.Clamp,
+                filterMode = FilterMode.Bilinear
+            };
+        }
+
+        float rNgoai = Mathf.Max(1f, spotlightRadiusScale * _cell);
+        float rTrong = rNgoai * spotlightInnerRatio;
+        float scaleX = (float)Screen.width  / w;
+        float scaleY = (float)Screen.height / h;
+
+        var px = new Color32[w * h];
+        for (int yy = 0; yy < h; yy++)
+        {
+            float sy = (yy + 0.5f) * scaleY;
+            float dy = sy - tamScreen.y;
+            int hang = yy * w;
+            for (int xx = 0; xx < w; xx++)
+            {
+                float sx = (xx + 0.5f) * scaleX;
+                float dx = sx - tamScreen.x;
+                float d  = Mathf.Sqrt(dx * dx + dy * dy);
+                float k  = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(rTrong, rNgoai, d));
+                byte  a  = (byte)Mathf.RoundToInt(k * dimAlpha * 255f);
+                px[hang + xx] = new Color32(8, 8, 12, a);
+            }
+        }
+        _dimTex.SetPixels32(px);
+        _dimTex.Apply(false);
+        if (_dim != null) _dim.texture = _dimTex;
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  POP-IN & ALPHA
+    // ═════════════════════════════════════════════════════════════════════════
+
+    private IEnumerator CoPopIn()
+    {
+        float c1 = FxEase.BackConstantFor(Mathf.Max(0f, popOvershoot)); // giải 1 lần, không giải mỗi frame
+        float d  = Mathf.Max(0.05f, popDuration);
+        float t  = 0f;
+        _alphaVao = 0f;
+        ApDungAlpha();
+        if (_trayRoot != null) _trayRoot.localScale = new Vector3(popStartScale, popStartScale, 1f);
+
+        while (t < d)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / d);
+            float s = Mathf.LerpUnclamped(popStartScale, 1f, FxEase.OutBackRaw(k, c1));
+            if (_trayRoot != null) _trayRoot.localScale = new Vector3(s, s, 1f);
+            _alphaVao = FxEase.OutQuad(k);
+            ApDungAlpha();
+            yield return null;
+        }
+
+        if (_trayRoot != null) _trayRoot.localScale = Vector3.one;
+        _alphaVao = 1f;
+        ApDungAlpha();
+        _coPop = null;
+    }
+
+    /// <summary>Một chỗ duy nhất chốt alpha: pop-in × trạng thái đang-kéo.</summary>
+    private void ApDungAlpha()
+    {
+        float heSoKeo = _dangKeoTruoc ? 0.35f : 1f; // đang kéo → dim nhún xuống cho item nổi
+        if (_dim != null)
+        {
+            Color c = _dim.color;
+            c.a = _alphaVao * heSoKeo;
+            _dim.color = c;
+        }
+        if (_trayCg != null)
+            _trayCg.alpha = _alphaVao * (_dangKeoTruoc ? 0.6f : 1f);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  SPRITE BO GÓC 9-SLICE SINH RUNTIME (SDF rounded-rect, không cần art mới)
+    // ═════════════════════════════════════════════════════════════════════════
+
+    private static Sprite LaySpriteBoGocDac()
+    {
+        if (_sprBoGocDac == null) _sprBoGocDac = SinhSpriteBoGoc(false);
+        return _sprBoGocDac;
+    }
+
+    private static Sprite LaySpriteBoGocVien()
+    {
+        if (_sprBoGocVien == null) _sprBoGocVien = SinhSpriteBoGoc(true);
+        return _sprBoGocVien;
+    }
+
+    /// <summary>
+    /// Rounded-rect 64×64, bán kính 20, AA 1px, border 9-slice (26,26,26,26).
+    /// vien=true → chỉ vẽ vành 3px sát mép (viền sáng đặt chồng lên fill).
+    /// </summary>
+    private static Sprite SinhSpriteBoGoc(bool vien)
+    {
+        const int   size = 64;
+        const float bk   = 20f;   // bán kính bo
+        const float day  = 3f;    // độ dày viền
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false)
+        {
+            wrapMode   = TextureWrapMode.Clamp,
+            filterMode = FilterMode.Bilinear
+        };
+
+        float half = size * 0.5f;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                // SDF rounded-rect: q = |p| - (half - bk); d = len(max(q,0)) - bk
+                float qx = Mathf.Abs(x + 0.5f - half) - (half - bk);
+                float qy = Mathf.Abs(y + 0.5f - half) - (half - bk);
+                float d  = Mathf.Sqrt(Mathf.Max(qx, 0f) * Mathf.Max(qx, 0f)
+                                    + Mathf.Max(qy, 0f) * Mathf.Max(qy, 0f)) - bk
+                           + Mathf.Min(Mathf.Max(qx, qy), 0f);
+
+                float phu = Mathf.Clamp01(0.5f - d);               // độ phủ trong hình (AA 1px)
+                float a   = vien ? Mathf.Clamp01(phu - Mathf.Clamp01(0.5f - (d + day))) : phu;
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+        }
+        tex.Apply(false);
+        return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0,
+            SpriteMeshType.FullRect, new Vector4(26, 26, 26, 26));
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  HELPER
+    // ═════════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Bind field [SerializeField] private của handler CŨ mà không sửa file cũ
+    /// (nguyên tắc additive-only). Trả false nếu field không còn — mọi chỗ gọi đều có fallback.
+    /// </summary>
+    private static bool GanFieldRieng(object doiTuong, string tenField, object giaTri)
+    {
+        if (doiTuong == null) return false;
+        try
+        {
+            FieldInfo f = doiTuong.GetType().GetField(tenField,
+                BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+            if (f == null) return false;
+            f.SetValue(doiTuong, giaTri);
+            return true;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[PenSupplyTrayV2] Bind field '{tenField}' thất bại: {e.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>Tên hiển thị — dùng bảng giá chung như FarmUIManager (tự trả itemId nếu thiếu).</summary>
+    private static string LayTenHienThi(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId)) return string.Empty;
+        try { return MarketPriceTable.GetDisplayName(itemId); }
+        catch { return itemId; }
+    }
+}
+
+/// <summary>
+/// Lớp bắt chạm trên nền dim của khay V2 — chạm ra ngoài khay thì đóng.
+/// Tách class riêng vì AddComponent runtime cần MonoBehaviour cụ thể; nằm chung file
+/// để không rải thêm file phụ (Unity cho phép nhiều class một file khi chỉ add runtime).
+/// </summary>
+public class PenSupplyTrayV2DimCatcher : MonoBehaviour, IPointerDownHandler
+{
+    [System.NonSerialized] public PenSupplyTrayV2 owner;
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (owner != null) owner.OnDimPressed();
+    }
+}

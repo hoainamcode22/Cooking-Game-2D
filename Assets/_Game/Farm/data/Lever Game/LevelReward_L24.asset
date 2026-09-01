@@ -20,6 +20,26 @@ MonoBehaviour:
     displayName: "H\u1EA1t Chanh"
     icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
     amount: 3
+  - itemId: seed_cachua
+    displayName: "H\u1EA1t C\xE0 Chua"
+    icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+    amount: 3
+  - itemId: lemon
+    displayName: Chanh
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: cachua
+    displayName: "C\xE0 Chua"
+    icon: {fileID: 0}
+    amount: 5
+  - itemId: fishsauce
+    displayName: "N\u01B0\u1EDBc M\u1EAFm"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: 0}
+    amount: 2
   unlockEntries:
   - label: "Nh\xE0 h\xE0ng ven bi\u1EC3n"
     icon: {fileID: -5775399491718878476, guid: 7b314202f7e3b20499171246a1b4a97c, type: 3}

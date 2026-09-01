@@ -63,6 +63,24 @@ public class LevelUpPopupUI : MonoBehaviour
     [Header("Buttons")]
     [SerializeField] private Button claimButton;
 
+    // [V2 ADD] ────────────────────────────────────────────────────────────────
+    //  BỘ "JUICE" V2 — nhân vật ăn mừng + sparkle thuần code + chạm-để-đóng.
+    //  Tool dựng & nối dây: Tools ▸ Farm Game ▸ Level Up Popup ▸ ★ Nâng cấp V2 (1 nút)
+    // ─────────────────────────────────────────────────────────────────────────
+    [Header("V2 — Nhân vật ăn mừng / Sparkle / Chạm-để-đóng")]
+    [Tooltip("[V2] 4 slot nhân vật nhảy múa quanh badge (2 trái 2 phải). " +
+             "Slot nào chưa có frames sẽ TỰ ẨN — an toàn khi chờ art.")]
+    [SerializeField] private CelebrationCharacterSlot[] celebrationSlots;   // [V2 ADD]
+
+    [Tooltip("[V2] Bộ tia sáng quay + sparkle 4 cánh + glow pulse (vẽ runtime, không cần art).")]
+    [SerializeField] private LevelUpSparkleFX sparkleFx;                    // [V2 ADD]
+
+    [Tooltip("[V2] Overlay trong suốt bắt tap toàn màn hình để đóng popup.")]
+    [SerializeField] private LevelUpTapToClose tapCatcher;                  // [V2 ADD]
+
+    [Tooltip("[V2] Bật/tắt tính năng chạm bất kỳ đâu để nhận quà + đóng popup.")]
+    [SerializeField] private bool tapAnywhereToClose = true;                // [V2 ADD]
+
     [Header("VFX")]
     [Tooltip("LanaDemo02 – confetti bắn từ trên (Confetti_blast_multicolor)")]
     [SerializeField] private GameObject vfxConfettiPrefab;
@@ -120,6 +138,10 @@ public class LevelUpPopupUI : MonoBehaviour
     private int                 _pendingUnlockPopCount;
     private bool                _warnedNoUnlockSlots;
 
+    // [V2 ADD] Chống nhận quà 2 lần khi tap màn hình và bấm nút gần như đồng thời
+    // (tap-to-close + claimButton đều dẫn về ClaimAndClose). Reset mỗi lần mở popup.
+    private bool                _v2Closing;
+
     // =========================================================================
     // Unity Lifecycle
     // =========================================================================
@@ -150,6 +172,7 @@ public class LevelUpPopupUI : MonoBehaviour
 
         IsActive = false;   // tránh kẹt cờ nếu popup bị huỷ giữa chừng
         StopVFX();
+        StopV2Fx();         // [V2 ADD] dừng sparkle/nhân vật/tap-catcher khi popup bị huỷ
         ReleaseInputLock();
     }
 
@@ -202,6 +225,7 @@ public class LevelUpPopupUI : MonoBehaviour
 
         _isShowing    = true;
         IsActive      = true;            // có popup đang hiện → tutorial chờ
+        _v2Closing    = false;           // [V2 ADD] popup mới → mở lại cửa ClaimAndClose
 
         PopulateUI(level, _currentConfig);
         popupRoot.SetActive(true);
@@ -239,6 +263,10 @@ public class LevelUpPopupUI : MonoBehaviour
         // Chỉ tới ĐÂY các ô mở khoá mới thật sự activeInHierarchy → mới chạy được
         // coroutine hiệu ứng. Gọi sớm hơn (trong PopulateUI) là vô tác dụng.
         PlayUnlockPops();
+
+        // [V2 ADD] Bật bộ juice V2 — cũng phải nằm SAU popupRoot.SetActive(true)
+        // vì sparkleFx / celebrationSlots đều StartCoroutine trên object con của popup.
+        StartV2Fx();
 
         StartCoroutine(AnimateIn());
     }
@@ -286,22 +314,41 @@ public class LevelUpPopupUI : MonoBehaviour
             // nếu không cùng một icon xuất hiện hai lần trong cùng một popup.
             // Vật phẩm vẫn được tặng đủ khi bấm "Nhận" (chỗ đó vẫn duyệt cfg.giftItems).
             var quaCanVe = cfg.GetGiftItemsToShow();
+
+            // [V4 ADD] Vàng + Kim cương thành 2 Ô QUÀ TRÒN đầu dải (Sếp muốn thấy
+            // NHIỀU quà). 2 entry này CHỈ ĐỂ VẼ — grant thật vẫn qua giftGold/giftGems
+            // trong GrantRewards, itemId "__gold"/"__gem" không bao giờ vào kho.
+            var quaHienThi = new List<LevelRewardConfig.ItemGift>(quaCanVe.Count + 2);
+            if (cfg.giftGold > 0)
+                quaHienThi.Add(new LevelRewardConfig.ItemGift { itemId = "__gold", displayName = "Vàng", amount = cfg.giftGold, icon = TimIconVangV4() });
+            if (cfg.giftGems > 0)
+                quaHienThi.Add(new LevelRewardConfig.ItemGift { itemId = "__gem", displayName = "Kim cương", amount = cfg.giftGems, icon = TimIconGemV4() });
+            quaHienThi.AddRange(quaCanVe);
+
+            // [V4 ADD] Vàng/gem đã có ô tròn riêng → tắt 2 dòng chữ cũ (khỏi lặp thông tin)
+            if (goldRewardRow != null) goldRewardRow.SetActive(false);
+            if (gemRewardRow  != null) gemRewardRow.SetActive(false);
             if (giftItemsContainer != null)
             {
                 if (giftItemSlotPrefab != null)
                 {
                     // Có prefab thật → dùng prefab
-                    foreach (var gift in quaCanVe)
+                    foreach (var gift in quaHienThi)   // [V4]
                     {
                         var go   = Instantiate(giftItemSlotPrefab, giftItemsContainer);
                         var slot = go.GetComponent<LevelUpGiftSlotUI>();
                         if (slot != null) slot.Setup(gift);
+                        go.AddComponent<GiftSlotBounceTooltip>().Init(gift);      // [V3 ADD] chạm quà → nhún mẩy + tooltip
                     }
+
+                    // [V2 ADD] 5–6 quà/level: co dải quà lại cho vừa khung,
+                    // không để ô tràn ra ngoài ContentPanel.
+                    FitGiftRowV2(quaHienThi.Count);   // [V4]
                 }
                 else
                 {
                     // Chưa có prefab → DỰNG NỀN ô quà bằng code (placeholder, thay sprite sau)
-                    BuildProceduralGiftSlots(quaCanVe);
+                    BuildProceduralGiftSlots(quaHienThi);   // [V4]
                 }
             }
 
@@ -353,7 +400,18 @@ public class LevelUpPopupUI : MonoBehaviour
                 child.gameObject.SetActive(false);
 
         int n = gifts.Count;
-        const float spacing = 118f;
+
+        // [V2 ADD] KHOẢNG CÁCH CO GIÃN: spacing cứng 118px chỉ vừa tới 4 quà
+        // (khung ~460px). Yêu cầu mới là hiển thị được 5–6 quà/level → khi đông,
+        // tự chia đều bề rộng khung và THU NHỎ ô theo cùng tỉ lệ, không tràn khung.
+        float areaW = 460f;
+        var contRt = giftItemsContainer as RectTransform;
+        if (contRt != null && contRt.rect.width > 1f) areaW = contRt.rect.width;
+
+        float spacing = 118f;                                        // giữ nguyên khi ≤ 4 quà
+        if (n > 1) spacing = Mathf.Min(118f, areaW / n);             // [V2 ADD]
+        float slotScale = Mathf.Clamp(spacing / 118f, 0.6f, 1f);     // [V2 ADD]
+
         float startX = -(n - 1) * 0.5f * spacing;
 
         for (int i = 0; i < n; i++)
@@ -364,14 +422,16 @@ public class LevelUpPopupUI : MonoBehaviour
             rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
             rt.pivot = new Vector2(0.5f, 0.5f);
             rt.anchoredPosition = new Vector2(startX + i * spacing, 0f);
+            rt.localScale = new Vector3(slotScale, slotScale, 1f);   // [V2 ADD]
 
             // LayoutElement để nếu container có LayoutGroup thì vẫn dàn đẹp
             var le = go.AddComponent<LayoutElement>();
-            le.preferredWidth  = 108f;
-            le.preferredHeight = 120f;
+            le.preferredWidth  = 108f * slotScale;                   // [V2 ADD] khớp scale mới
+            le.preferredHeight = 120f * slotScale;                   // [V2 ADD]
 
             var slot = go.AddComponent<LevelUpGiftSlotUI>();
             slot.BuildProcedural(gifts[i]);
+            go.AddComponent<GiftSlotBounceTooltip>().Init(gifts[i]);          // [V3 ADD] chạm quà → nhún mẩy + tooltip
         }
     }
 
@@ -384,6 +444,10 @@ public class LevelUpPopupUI : MonoBehaviour
     ///
     /// Prefab dựng CỨNG 9 ô, còn mỗi level chỉ mở 1–3 thứ → phần lớn ô sẽ bị ẩn,
     /// đó là ĐÚNG. Không ẩn thì người chơi thấy 6–8 khung tròn trắng trơn.
+    ///
+    /// [V2 ADD] SIẾT THÊM: mục unlock KHÔNG có icon cũng bị ẨN LUÔN (trước đây vẫn
+    /// hiện khung tròn trắng + nhãn NEW — chính là cái ảnh chụp bị sếp chê).
+    /// Nhãn chữ của mục đó vẫn hiện đầy đủ ở dòng "Mở khóa: ..." nên không mất thông tin.
     /// </summary>
     private void ApplyUnlockSlots(LevelRewardConfig cfg)
     {
@@ -411,6 +475,13 @@ public class LevelUpPopupUI : MonoBehaviour
 
             bool inUse = i < used;
 
+            // [V2 ADD] LUẬT MỚI: ô KHÔNG CÓ ICON thì coi như KHÔNG DÙNG → tắt hẳn.
+            // Dẹp nạn "vòng tròn trắng rỗng đeo tag NEW". Đọc entry TRƯỚC khi quyết
+            // định bật/tắt để một lần SetActive là xong, không bật lên rồi tắt lại.
+            LevelRewardConfig.UnlockEntry entry = inUse ? entries[i] : null;
+            Sprite icon = entry != null ? entry.icon : null;
+            if (inUse && icon == null) inUse = false;        // [V2 ADD]
+
             // BẮT BUỘC: ô thừa phải TẮT hẳn. HorizontalLayoutGroup bỏ qua con đang tắt
             // nên dải icon tự co lại vừa số ô — không để khoảng trống.
             if (slot.gameObject.activeSelf != inUse)
@@ -418,9 +489,7 @@ public class LevelUpPopupUI : MonoBehaviour
 
             if (!inUse) continue;
 
-            var   entry = entries[i];
-            Sprite icon = entry != null ? entry.icon : null;
-            if (icon != null) withIcon++;
+            withIcon++;
 
             // caption để rỗng: nhãn chữ đã hiện gộp ở dòng "Mở khóa: ..." (unlockDescText),
             // nhồi thêm chữ vào ô 190px sẽ tràn khung.
@@ -430,9 +499,11 @@ public class LevelUpPopupUI : MonoBehaviour
         // Hiệu ứng "bung ra" phải hoãn — xem PlayUnlockPops().
         _pendingUnlockPopCount = used;
 
-        // Level không mở gì (hoặc chưa có asset) → ẩn cả dải, tránh thanh nền tối rỗng.
-        if (unlockStripRoot != null && unlockStripRoot.activeSelf != (used > 0))
-            unlockStripRoot.SetActive(used > 0);
+        // Level không mở gì / không mục nào CÓ ICON → ẩn cả dải, tránh thanh nền tối rỗng.
+        // [V2 ADD] đổi điều kiện used → withIcon: nếu mọi mục đều thiếu icon thì các ô
+        // đã bị ẩn hết ở trên, giữ nền dải lại sẽ thành thanh tối rỗng.
+        if (unlockStripRoot != null && unlockStripRoot.activeSelf != (withIcon > 0))
+            unlockStripRoot.SetActive(withIcon > 0);
 
         if (wanted > slots.Length)
             Debug.LogWarning($"[LevelUpPopupUI] Level mở {wanted} thứ nhưng popup chỉ có {slots.Length} ô → " +
@@ -440,11 +511,12 @@ public class LevelUpPopupUI : MonoBehaviour
                              "bằng Tools ▸ Farm ▸ Popup Lên Cấp (Township).");
 
         if (used - withIcon > 0)
-            Debug.LogWarning($"[LevelUpPopupUI] {used - withIcon}/{used} ô mở khoá có icon = NULL → " +
-                             "ô chỉ còn khung tròn. Chạy Tools ▸ Farm ▸ Điền Icon Unlock (Level Reward) " +
-                             "để điền unlockEntries.");
+            Debug.LogWarning($"[LevelUpPopupUI] {used - withIcon}/{used} mục mở khoá có icon = NULL → " +
+                             "đã ẨN các ô đó (luật V2: không hiện vòng tròn trắng rỗng). " +   // [V2 ADD]
+                             "Chạy Tools ▸ Farm ▸ Điền Icon Unlock (Level Reward) để điền unlockEntries.");
 
-        Debug.Log($"[LevelUpPopupUI] Ô mở khoá: bật {used}/{slots.Length}, có icon {withIcon}/{used}.");
+        Debug.Log($"[LevelUpPopupUI] Ô mở khoá: hiện {withIcon}/{slots.Length} (mục có icon), " +
+                  $"{used - withIcon} mục thiếu icon đã ẩn.");
     }
 
     /// <summary>
@@ -543,6 +615,13 @@ public class LevelUpPopupUI : MonoBehaviour
 
     private void ClaimAndClose()
     {
+        // [V2 ADD] Chống double-claim: tap màn hình + bấm nút (hoặc double-tap)
+        // có thể gọi hàm này 2 lần trước khi AnimateOut kịp đóng → nhận quà 2 lần.
+        if (_v2Closing) return;
+        _v2Closing = true;
+
+        StopV2Fx();   // [V2 ADD] tắt sparkle + nhân vật + tap-catcher NGAY khi bắt đầu đóng
+
         GrantRewards(_currentConfig);
         StopVFX(); // bấm Nhận Quà → tắt pháo hoa NGAY rồi mới đóng popup
         StartCoroutine(AnimateOut(() =>
@@ -552,6 +631,27 @@ public class LevelUpPopupUI : MonoBehaviour
             ReleaseInputLock();
             ShowNextPopup();
         }));
+    }
+
+    /// <summary>[V4 ADD] Icon vàng cho ô quà: RewardIconLibrary → HUD Icon_Gold → null.</summary>
+    private static Sprite TimIconVangV4()
+    {
+        var lib = RewardIconLibrary.Instance;
+        if (lib != null && lib.goldSprite != null) return lib.goldSprite;
+        var go = GameObject.Find("Icon_Gold");
+        var img = go != null ? go.GetComponent<UnityEngine.UI.Image>() : null;
+        return img != null ? img.sprite : null;
+    }
+
+    /// <summary>[V4 ADD] Icon kim cương cho ô quà: RewardIconLibrary → HUD Icon_Gem/Icon_Diamond → null.</summary>
+    private static Sprite TimIconGemV4()
+    {
+        var lib = RewardIconLibrary.Instance;
+        if (lib != null && lib.gemSprite != null) return lib.gemSprite;
+        var go = GameObject.Find("Icon_Gem") ?? GameObject.Find("Icon_Diamond") ?? GameObject.Find("Diamond_Container");
+        var img = go != null ? go.GetComponent<UnityEngine.UI.Image>() : null;
+        if (img == null && go != null) img = go.GetComponentInChildren<UnityEngine.UI.Image>();
+        return img != null ? img.sprite : null;
     }
 
     private void GrantRewards(LevelRewardConfig cfg)
@@ -579,6 +679,93 @@ public class LevelUpPopupUI : MonoBehaviour
                 Debug.Log($"[LevelUpPopup] +{gift.amount}x {gift.displayName}");
             }
         }
+    }
+
+    // =========================================================================
+    // [V2 ADD] Bộ juice V2 — nhân vật ăn mừng / sparkle / tap-to-close
+    // =========================================================================
+
+    /// <summary>
+    /// [V2 ADD] Bật toàn bộ hiệu ứng V2. Gọi từ ShowNextPopup() SAU khi popupRoot
+    /// đã activeInHierarchy (các component con mới StartCoroutine được).
+    /// Mọi tham chiếu đều nullable — chưa chạy tool Nâng cấp V2 thì popup vẫn
+    /// hoạt động y như cũ, không lỗi.
+    /// </summary>
+    private void StartV2Fx()
+    {
+        if (sparkleFx != null)
+            sparkleFx.Play();
+
+        if (celebrationSlots != null)
+            for (int i = 0; i < celebrationSlots.Length; i++)
+                if (celebrationSlots[i] != null)
+                    celebrationSlots[i].Play();   // slot thiếu frames sẽ tự SetActive(false)
+
+        if (tapCatcher != null)
+        {
+            tapCatcher.gameObject.SetActive(tapAnywhereToClose);
+            if (tapAnywhereToClose)
+                tapCatcher.Arm(OnTapAnywhereV2);  // reset delay 0.8s cho MỖI popup trong hàng đợi
+            else
+                tapCatcher.Disarm();
+        }
+    }
+
+    /// <summary>[V2 ADD] Tắt toàn bộ hiệu ứng V2. Gọi khi bắt đầu đóng popup / OnDestroy.</summary>
+    private void StopV2Fx()
+    {
+        if (sparkleFx != null)
+            sparkleFx.Stop();
+
+        if (celebrationSlots != null)
+            for (int i = 0; i < celebrationSlots.Length; i++)
+                if (celebrationSlots[i] != null)
+                    celebrationSlots[i].StopAndReset();
+
+        if (tapCatcher != null)
+            tapCatcher.Disarm();
+    }
+
+    /// <summary>
+    /// [V2 ADD] Callback khi người chơi chạm vào vùng trống của màn hình
+    /// (sau delay tối thiểu của LevelUpTapToClose). Hành xử Y HỆT bấm nút Nhận Quà:
+    /// nhận đủ vàng / ngọc / vật phẩm rồi đóng popup.
+    /// </summary>
+    private void OnTapAnywhereV2()
+    {
+        ClaimAndClose();
+    }
+
+    /// <summary>
+    /// [V2 ADD] Co dải quà (nhánh dùng prefab + HorizontalLayoutGroup) khi có 5–6 quà:
+    /// giảm spacing và scale từng ô theo cùng tỉ lệ để cả dải nằm gọn trong khung.
+    /// Bật childScaleWidth/Height để LayoutGroup tính đúng bề rộng ô đã thu nhỏ.
+    /// </summary>
+    private void FitGiftRowV2(int slotCount)
+    {
+        if (giftItemsContainer == null || slotCount < 5) return;
+
+        var contRt = giftItemsContainer as RectTransform;
+        float areaW = contRt != null && contRt.rect.width > 1f ? contRt.rect.width : 460f;
+
+        var layout = giftItemsContainer.GetComponent<HorizontalLayoutGroup>();
+        float spacing = 8f;
+        if (layout != null)
+        {
+            layout.spacing = Mathf.Min(layout.spacing, spacing);
+            spacing = layout.spacing;
+            layout.childScaleWidth  = true;   // LayoutGroup nhân scale vào bề rộng con
+            layout.childScaleHeight = true;
+        }
+
+        const float slotW = 108f;   // bề rộng ô quà chuẩn của prefab / procedural
+        float need = slotCount * slotW + (slotCount - 1) * spacing;
+        float k = Mathf.Clamp(areaW / need, 0.55f, 1f);
+        if (k >= 0.999f) return;    // vẫn vừa khung → không đụng gì
+
+        foreach (Transform child in giftItemsContainer)
+            if (child.gameObject.activeSelf && child.GetComponent<LevelUpGiftSlotUI>() != null)
+                child.localScale = new Vector3(k, k, 1f);
     }
 
     // =========================================================================

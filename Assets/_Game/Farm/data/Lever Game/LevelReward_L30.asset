@@ -19,7 +19,31 @@ MonoBehaviour:
   - itemId: seed_pepper
     displayName: "H\u1EA1t Ti\xEAu"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
+    amount: 4
+  - itemId: khoai_tay
+    displayName: "H\u1EA1t Khoai T\xE2y"
+    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
+    amount: 4
+  - itemId: watermelon
+    displayName: "D\u01B0a H\u1EA5u"
+    icon: {fileID: 0}
     amount: 5
+  - itemId: mushroom
+    displayName: "N\u1EA5m"
+    icon: {fileID: 0}
+    amount: 5
+  - itemId: beef
+    displayName: "Th\u1ECBt B\xF2"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: milk
+    displayName: "S\u1EEFa"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: 0}
+    amount: 2
   unlockEntries:
   - label: "\u0110\u1EA1t n\u1ED9i dung t\u1ED1i \u0111a c\u1EE7a b\u1EA3n demo"
     icon: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}

@@ -16,6 +16,30 @@ MonoBehaviour:
   giftGold: 880
   giftGems: 5
   giftItems:
+  - itemId: seed_hoa_mau_don
+    displayName: "H\u1EA1t Hoa M\u1EABu \u0110\u01A1n"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: seed_hoa_anh_thao
+    displayName: "H\u1EA1t Hoa Anh Th\u1EA3o"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: hoa_hong
+    displayName: "Hoa H\u1ED3ng"
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: cachua
+    displayName: "C\xE0 Chua"
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: milk
+    displayName: "S\u1EEFa"
+    icon: {fileID: 0}
+    amount: 1
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: 0}
+    amount: 1
   - itemId: seed_hoa_hong
     displayName: "H\u1EA1t Hoa h\u1ED3ng"
     icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}

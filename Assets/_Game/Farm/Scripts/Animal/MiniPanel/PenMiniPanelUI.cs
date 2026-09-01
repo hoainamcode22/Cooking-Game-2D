@@ -20,6 +20,21 @@ public class PenMiniPanelUI : MonoBehaviour
     [SerializeField] private PenMiniPanelConfig config;
     public PenMiniPanelConfig Config => config;
 
+    // [V2 ADD] ═══════════════════════════════════════════════════════════════
+    // KHAY VẬT PHẨM V2 (PenSupplyTrayV2) — một khay duy nhất kiểu Hay Day gom
+    // [rỗ thu hoạch] + [bao thức ăn] nổi cạnh chuồng, thay cho 2 UI rời rạc
+    // (PenBasketTrayController + LivestockFeedPopupController).
+    //
+    // BẬT (mặc định): OpenPanel chuyển hướng sang PenSupplyTrayV2.TryShow(this).
+    // TẮT: quay về NGUYÊN TRẠNG 100% — hai UI cũ, không một dòng logic nào bị xoá.
+    // TryShow trả false (thiếu Camera, chuồng đang Processing…) cũng tự rơi về UI cũ.
+    // Toàn bộ callback cho ăn / thu hoạch (TryFeed / TryHarvest) không đổi — khay V2
+    // chỉ là lớp vỏ nhúng lại LivestockFeedDragItem + PenBasketDragItem.
+    // ═════════════════════════════════════════════════════════════════════════
+    [Header("Khay Vật Phẩm V2")] // [V2 ADD]
+    [Tooltip("Bật: mở khay hợp nhất V2 (rỗ + thức ăn cạnh chuồng). Tắt: dùng 2 UI cũ như nguyên trạng.")] // [V2 ADD]
+    [SerializeField] private bool useSupplyTrayV2 = true; // [V2 ADD]
+
     [Header("Panel Root")]
     [SerializeField] private GameObject panelRoot;
 
@@ -55,7 +70,6 @@ public class PenMiniPanelUI : MonoBehaviour
     private float   processStartUnix;
     private string  activeFoodId;
     private Coroutine timerCoroutine;
-    private int     _openedAtFrame = -10;
     private bool    popupInputLockHeld;
 
     // Giữ panel mở đủ lâu để user kéo thức ăn vào (không bị đóng ngay sau khi mở)
@@ -239,6 +253,8 @@ public class PenMiniPanelUI : MonoBehaviour
         // 2. Nếu đã sẵn sàng thu hoạch (Ready) -> Mở Khay Cái Rổ (Basket Tray) giống gặt lúa
         if (CurrentState == PenState.Ready)
         {
+            // [V2 ADD] Khay hợp nhất V2 — TryShow false thì rơi về khay rỗ cũ y nguyên.
+            if (useSupplyTrayV2 && PenSupplyTrayV2.TryShow(this)) return; // [V2 ADD]
             FarmUIManager.Instance?.ShowPenBasketTray(this);
             return;
         }
@@ -246,6 +262,12 @@ public class PenMiniPanelUI : MonoBehaviour
         // 3. Nếu đang đói (Idle) -> Mở Screen-Space Feed Popup (giống Seed Popup)
         if (CurrentState == PenState.Idle)
         {
+            // [V2 ADD] Khay hợp nhất V2 — giữ đúng thứ tự cũ: mở UI xong mới Notify tutorial.
+            if (useSupplyTrayV2 && PenSupplyTrayV2.TryShow(this)) // [V2 ADD]
+            {                                                     // [V2 ADD]
+                TutorialManager.Instance?.NotifyOpenPen();        // [V2 ADD]
+                return;                                           // [V2 ADD]
+            }                                                     // [V2 ADD]
             FarmUIManager.Instance?.ShowLivestockFeedPopup(this);
             TutorialManager.Instance?.NotifyOpenPen();
             return;
@@ -267,6 +289,7 @@ public class PenMiniPanelUI : MonoBehaviour
         if (panelRoot != null) panelRoot.SetActive(false);
         FarmUIManager.Instance?.HideLivestockFeedPopup();
         FarmUIManager.Instance?.HidePenBasketTray();
+        PenSupplyTrayV2.HideIfShowing(); // [V2 ADD] đóng khay V2 cùng nhịp 2 UI cũ (no-op khi không dùng)
         FarmInputLock.SuppressWorldClickForCurrentFrame();
     }
 

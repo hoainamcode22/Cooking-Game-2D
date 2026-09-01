@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 4741091914948717161}
   - component: {fileID: 2079100653440348635}
   - component: {fileID: 4656849418880103488}
+  - component: {fileID: 6693217904341072750}
   m_Layer: 0
   m_Name: Tourist_NV03
   m_TagString: Untagged
@@ -225,3 +226,31 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 0.88199997, y: 2.304}
   m_EdgeRadius: 0
+--- !u!114 &6693217904341072750
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7642276004360284272}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3856e61d5176ed04cb40b8e1f95018a8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NpcBreathingIdle
+  downFrames:
+  - {fileID: 21300000, guid: 2d51664b8dce76b48af03ac41c703b5c, type: 3}
+  - {fileID: 21300000, guid: 4f42a56f54ce75e469e85efef00be616, type: 3}
+  - {fileID: 21300000, guid: e7b8edaafcae7864d87c465e46b9a6c9, type: 3}
+  lookLeftFrame: {fileID: 21300000, guid: c23d48a95fdc428468e9a5aaca9552ba, type: 3}
+  lookRightFrame: {fileID: 21300000, guid: 8f784b60069ab0b478f5ff518b38ecad, type: 3}
+  breatheCycle: 3
+  breatheAmount: 0.02
+  idleTiltDegrees: 0.8
+  actionEveryMin: 2.2
+  actionEveryMax: 4.5
+  bounceSquash: 0.05
+  bounceDuration: 1.1
+  onlyWhenStanding: 1
+  standingSpeedThreshold: 6
+  useUnscaledTime: 0

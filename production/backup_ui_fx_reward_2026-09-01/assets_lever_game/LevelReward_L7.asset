@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L7
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 7
+  giftGold: 400
+  giftGems: 4
+  giftItems:
+  - itemId: seed_sugarcane
+    displayName: "H\u1EA1t M\xEDa"
+    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
+    amount: 3
+  unlockEntries:
+  - label: "M\u1EDF kh\xF3a M\xEDa"
+    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
+  - label: "M\u1EDF kh\xF3a Hoa lan, C\xFAc tr\u1EAFng"
+    icon: {fileID: -5282305146031929904, guid: 25b6627dbe5660f41a62f733dff01f1e, type: 3}
+  - label: "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
+    icon: {fileID: 950524911477112507, guid: 0772edf2be2709a42bc3f4e453c8fec2, type: 3}
+  unlockDescriptions:
+  - "M\u1EDF kh\xF3a M\xEDa"
+  - "M\u1EDF kh\xF3a Hoa lan, C\xFAc tr\u1EAFng"
+  - "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
+  hintText: "M\xEDa ng\u1ECDt v\xE0 hoa m\u1EDBi \u0111\xE3 s\u1EB5n s\xE0ng. Th\xEAm
+    nh\xE0 d\xE2n l\xE0 th\xEAm \u0111\u01A1n h\xE0ng m\u1EDBi!"

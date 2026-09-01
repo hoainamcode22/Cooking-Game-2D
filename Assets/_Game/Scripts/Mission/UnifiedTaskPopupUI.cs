@@ -1154,7 +1154,14 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         // → cỡ 25 cần 40px, khung cũ chỉ 34px. Truncate/Ellipsis cắt CẢ theo chiều cao:
         // không lọt nổi 1 dòng → 0 ký tự. Nâng khung 34→44px (tâm giữ nguyên y=21,
         // không chạm thanh tiến độ ở y=-18) — tên hiện lại, phần ngang dài quá vẫn bị Truncate cắt gọn.
-        h.ten.overflowMode = TextOverflowModes.Truncate;
+        // [FIX v2 2026-09-01] CHỐNG MẤT CHỮ TUYỆT ĐỐI: Truncate/Ellipsis đều có thể
+        // trả 0 ký tự khi khung chật (đã dính 2 lần). Chuyển sang Overflow — giống MỌI
+        // chữ khác trong popup (chưa bao giờ mất) — và bật auto-size 14→25 để tên dài
+        // tự co cho vừa 480px thay vì tràn đè ô thưởng.
+        h.ten.overflowMode = TextOverflowModes.Overflow;
+        h.ten.enableAutoSizing = true;
+        h.ten.fontSizeMin = 14f;
+        h.ten.fontSizeMax = TaskPopupDesign.CoChuTen;
 
         var ktTd = new Vector2(TaskPopupDesign.CotChuRong, TaskPopupDesign.TdCao);
         RectTransform mangTd = CreateImage(h.goc, "Progress", BoGoc(TaskPopupDesign.TdBoGoc),

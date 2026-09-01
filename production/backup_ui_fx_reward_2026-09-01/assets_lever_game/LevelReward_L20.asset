@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L20
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 20
+  giftGold: 1600
+  giftGems: 15
+  giftItems:
+  - itemId: seed_lemon
+    displayName: "H\u1EA1t Chanh"
+    icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
+    amount: 3
+  unlockEntries:
+  - label: "C\xE2y & \u0111\u01A1n h\xE0ng cao c\u1EA5p"
+    icon: {fileID: -2398023241171923016, guid: ec131f41709eb97428b2f0a821ad1a55, type: 3}
+  - label: "Trang tr\xED c\u1EA5p 2"
+    icon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}
+  - label: "\U0001F3C5 Danh hi\u1EC7u \"Ch\u1EE7 tr\u1EA1i gi\u1ECFi\""
+    icon: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}
+  unlockDescriptions:
+  - "C\xE2y & \u0111\u01A1n h\xE0ng cao c\u1EA5p"
+  - "Trang tr\xED c\u1EA5p 2"
+  - "\U0001F3C5 Danh hi\u1EC7u \"Ch\u1EE7 tr\u1EA1i gi\u1ECFi\""
+  hintText: "Ch\xFAc m\u1EEBng c\u1EA5p 20! N\u1ED9i dung cao c\u1EA5p v\xE0 trang
+    tr\xED m\u1EDBi \u0111\xE3 m\u1EDF."

@@ -20,6 +20,30 @@ MonoBehaviour:
     displayName: "H\u1EA1t N\u1EA5m"
     icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
     amount: 3
+  - itemId: seed_pumpkin
+    displayName: "H\u1EA1t B\xED \u0110\u1ECF"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: mushroom
+    displayName: "N\u1EA5m"
+    icon: {fileID: 0}
+    amount: 5
+  - itemId: pumpkin
+    displayName: "B\xED \u0110\u1ECF"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: milk
+    displayName: "S\u1EEFa"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: fishsauce
+    displayName: "N\u01B0\u1EDBc M\u1EAFm"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: 0}
+    amount: 2
   unlockEntries:
   - label: "M\xE1y Ph\xF4 Mai \u0111\xE3 m\u1EDF b\xE1n trong Shop"
     icon: {fileID: -5178242575216520492, guid: bfc7fe251655c4146a2c2dafad2c57d3, type: 3}

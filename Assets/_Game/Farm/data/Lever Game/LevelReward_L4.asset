@@ -17,8 +17,28 @@ MonoBehaviour:
   giftGems: 3
   giftItems:
   - itemId: seed_hoa_hong
-    displayName: "H\u1EA1t Hoa h\u1ED3ng"
+    displayName: "H\u1EA1t Hoa H\u1ED3ng"
     icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
+    amount: 2
+  - itemId: seed_hoa_oai_huong
+    displayName: "H\u1EA1t Hoa O\u1EA3i H\u01B0\u01A1ng"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: hoa_hong
+    displayName: "Hoa H\u1ED3ng"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: pork
+    displayName: "Th\u1ECBt Heo"
+    icon: {fileID: 0}
+    amount: 1
+  - itemId: soysauce
+    displayName: "N\u01B0\u1EDBc T\u01B0\u01A1ng"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: salt
+    displayName: "Mu\u1ED1i"
+    icon: {fileID: 0}
     amount: 2
   unlockEntries:
   - label: "M\u1EDF kh\xF3a Hoa h\u1ED3ng v\xE0 O\u1EA3i h\u01B0\u01A1ng"

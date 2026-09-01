@@ -20,6 +20,26 @@ MonoBehaviour:
     displayName: "H\u1EA1t N\u1EA5m"
     icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}
     amount: 3
+  - itemId: khoai_tay
+    displayName: "H\u1EA1t Khoai T\xE2y"
+    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
+    amount: 2
+  - itemId: mushroom
+    displayName: "N\u1EA5m"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: ngo
+    displayName: "Ng\xF4"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: chicken_meat
+    displayName: "Th\u1ECBt G\xE0"
+    icon: {fileID: 0}
+    amount: 1
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: 0}
+    amount: 1
   unlockEntries:
   - label: "M\u1EDF kh\xF3a N\u1EA5m"
     icon: {fileID: -7866956879579072398, guid: 3b43b65c074ee26468f6a2e2d779edb0, type: 3}

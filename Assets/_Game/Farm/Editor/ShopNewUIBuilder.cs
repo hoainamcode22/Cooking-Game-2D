@@ -105,9 +105,9 @@ public static class ShopNewUIBuilder
         Sprite iconGoldSpr = LoadSprite(DesignAssetsFolder, "Icon_vang.png") ?? FindSprite("gold", "vang", "coin");
         Sprite iconDiamondSpr = LoadSprite(DesignAssetsFolder, "kimcuong.png") ?? FindSprite("diamond", "gem");
 
-        Sprite iconTabSeedSpr = LoadSprite(DesignAssetsFolder, "iconlua.png");
-        Sprite iconTabBuildSpr = LoadSprite(DesignAssetsFolder, "khungchuong.png") ?? LoadSprite(DesignAssetsFolder, "chuongheo.png") ?? iconTabSeedSpr;
-        Sprite iconTabDecorSpr = LoadSprite(DesignAssetsFolder, "caythong.png") ?? iconTabSeedSpr;
+        Sprite iconTabSeedSpr = LoadSprite("Assets/Art/UI/Icons", "tab_seeds.png") ?? LoadSprite(DesignAssetsFolder, "iconlua.png");
+        Sprite iconTabBuildSpr = LoadSprite("Assets/Art/UI/Icons", "tab_buildings.png") ?? LoadSprite(DesignAssetsFolder, "khungchuong.png");
+        Sprite iconTabDecorSpr = LoadSprite("Assets/Art/UI/Icons", "tab_decorations.png") ?? LoadSprite(DesignAssetsFolder, "caythong.png");
 
         // 2b. LỚP MÀN MỜ TỐI CHE TOÀN MÀN HÌNH (Panel_Dim giống Quầy Hàng & Nhiệm Vụ)
         RectTransform dim = CreateRect(rootRect, "Panel_Dim", new Vector2(3840f, 2160f), Vector2.zero);

@@ -1,0 +1,603 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
+using UnityEngine;
+using UnityEditor;
+
+/// <summary>
+/// Editor Tool: Tools/Farm Game/Setup Level Up Popup/...
+///
+/// Tự động tạo/cập nhật LevelRewardConfig assets cho Level 2→30.
+///   - Idempotent: chạy nhiều lần không tạo duplicate, giá trị luôn được
+///     ghi đè về đúng REWARD_TABLE (L2-L10: bảng demo đã duyệt;
+///     L11-L30: bảng mở rộng tới cấp tối đa, maxLevel=30)
+///   - Tự scan CropData + InventoryItemData để lấy icon thật
+///     (displayName dùng đúng bản đã duyệt trong REWARD_TABLE)
+///   - Tự gán configs vào LevelUpPopupUI trong scene
+///   - Tự tìm và gán VFX Confetti prefab
+///   - Report duplicate assets cũ (không xóa tự động)
+/// </summary>
+public static class LevelUpRewardDataSetupTool
+{
+    private const string MENU_SETUP = "Tools/Farm Game/Setup Level Up Popup/Setup Reward Data (L2-L30)";
+    private const string MENU_SCAN  = "Tools/Farm Game/Setup Level Up Popup/Scan Item Database";
+    private const string FOLDER     = "Assets/_Game/Farm/data/Lever Game";
+
+    // ─── Item Info Lookup ─────────────────────────────────────────────────────
+
+    private struct ItemInfo
+    {
+        public string displayName;
+        public Sprite icon;
+    }
+
+    private static Dictionary<string, ItemInfo> _cache;
+
+    private static void BuildCache()
+    {
+        _cache = new Dictionary<string, ItemInfo>(System.StringComparer.OrdinalIgnoreCase);
+
+        // 1. CropData assets — seed + harvest IDs
+        foreach (string guid in AssetDatabase.FindAssets("t:CropData"))
+        {
+            string path = AssetDatabase.GUIDToAssetPath(guid);
+            var crop = AssetDatabase.LoadAssetAtPath<CropData>(path);
+            if (crop == null) continue;
+
+            var info = new ItemInfo { displayName = crop.itemName, icon = crop.itemIcon };
+            Register(crop.itemID,        info);
+            Register(crop.seedItemId,    info);
+            Register(crop.harvestItemId, info);
+            Register(crop.cropId,        info);
+        }
+
+        // 2. Generic ScriptableObject scan for animal / cooking items
+        //    dùng reflection để không cần cast sang class cụ thể
+        string[] extraFolders =
+        {
+            "Assets/_Game/Farm/data/Farm_dong_vat",
+            "Assets/_Game/Farm/data/Item_Kho_Cook",
+        };
+        const BindingFlags BF = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+        foreach (string folder in extraFolders)
+        {
+            if (!AssetDatabase.IsValidFolder(folder)) continue;
+
+            foreach (string guid in AssetDatabase.FindAssets("t:ScriptableObject", new[] { folder }))
+            {
+                var so = AssetDatabase.LoadAssetAtPath<ScriptableObject>(
+                    AssetDatabase.GUIDToAssetPath(guid));
+                if (so == null) continue;
+
+                var t   = so.GetType();
+                var fId = t.GetField("itemId", BF) ?? t.GetField("itemID", BF);
+                if (fId == null || fId.FieldType != typeof(string)) continue;
+
+                string id = fId.GetValue(so) as string;
+                if (string.IsNullOrEmpty(id)) continue;
+
+                string name = "";
+                var fName = t.GetField("displayName", BF) ?? t.GetField("itemName", BF);
+                if (fName != null && fName.FieldType == typeof(string))
+                    name = fName.GetValue(so) as string ?? "";
+
+                Sprite icon = null;
+                var fIcon = t.GetField("icon", BF) ?? t.GetField("itemIcon", BF);
+                if (fIcon != null && fIcon.FieldType == typeof(Sprite))
+                    icon = fIcon.GetValue(so) as Sprite;
+
+                Register(id, new ItemInfo { displayName = name, icon = icon });
+            }
+        }
+
+        Debug.Log($"[LevelUpSetup] Item cache built: {_cache.Count} entries.");
+    }
+
+    private static void Register(string key, ItemInfo info)
+    {
+        if (!string.IsNullOrEmpty(key) && !_cache.ContainsKey(key))
+            _cache[key] = info;
+    }
+
+    private static (string name, Sprite icon, bool found) Lookup(string id, string fallback)
+    {
+        if (_cache != null && _cache.TryGetValue(id, out var v))
+            return (string.IsNullOrEmpty(v.displayName) ? fallback : v.displayName, v.icon, true);
+        return (fallback, null, false);
+    }
+
+    // ─── Default Reward Table (L2-L30) ───────────────────────────────────────
+    //     L2-L10: bảng thưởng demo Cấp 1-10 đã duyệt.
+    //     L11-L30: bảng mở rộng tới cấp tối đa (maxLevel=30 — PlayerProgressManager).
+    //     displayName giữ nguyên như bảng;
+    //     icon được tra tự động từ item database khi chạy tool.
+    //     Đồng bộ với assets: Assets/_Game/Farm/data/Lever Game/LevelReward_L*.asset
+
+    private class GiftDef
+    {
+        public readonly string id;
+        public readonly string name;
+        public readonly int    amount;
+
+        public GiftDef(string id, string name, int amount)
+        {
+            this.id     = id;
+            this.name   = name;
+            this.amount = amount;
+        }
+    }
+
+    private class LevelDef
+    {
+        public int       level;
+        public int       gold;
+        public int       gems;
+        public GiftDef[] gifts;
+        public string[]  unlocks;
+        public string    hint;
+    }
+
+    private static readonly LevelDef[] REWARD_TABLE =
+    {
+        new LevelDef
+        {
+            level = 2, gold = 150, gems = 2,
+            gifts   = new[] { new GiftDef("seed_ngo", "Hạt Ngô", 3) },
+            unlocks = new[]
+            {
+                "Mở khóa hạt Ngô",
+                "Chuồng gà đã mở bán trong Shop",
+                "Nhà dân mới sẽ mở ở cấp 3",
+            },
+            hint = "Bạn đã lên cấp 2! Hạt giống mới đã sẵn sàng để trồng.",
+        },
+        new LevelDef
+        {
+            level = 3, gold = 200, gems = 2,
+            gifts   = new[] { new GiftDef("seed_cachua", "Hạt Cà chua", 3) },
+            unlocks = new[]
+            {
+                "Mở khóa Cà chua và Cà rốt",
+                "Thêm 1 nhà dân nhận đơn hàng",
+            },
+            hint = "Trồng Cà chua và Cà rốt để hoàn thành đơn hàng từ nhà dân mới nhé!",
+        },
+        new LevelDef
+        {
+            level = 4, gold = 250, gems = 3,
+            gifts   = new[] { new GiftDef("seed_hoa_hong", "Hạt Hoa hồng", 2) },
+            unlocks = new[]
+            {
+                "Mở khóa Hoa hồng và Oải hương",
+                "Chuồng heo đã mở bán trong Shop",
+            },
+            hint = "Hoa hồng và Oải hương đã có trong Shop. Ghé xem chuồng heo mới nhé!",
+        },
+        new LevelDef
+        {
+            // LƯU Ý: id hạt Khoai tây KHÔNG có prefix seed_ (theo CropData)
+            level = 5, gold = 300, gems = 3,
+            gifts   = new[] { new GiftDef("khoai_tay", "Khoai tây giống", 5) },
+            unlocks = new[]
+            {
+                "MỞ KHÓA NHÀ BẾP — nấu ăn ngay!",
+                "Mở khóa Khoai tây",
+                "Thêm 1 nhà dân nhận đơn hàng",
+            },
+            hint = "Bếp nấu ăn đã mở! Hãy nấu món đầu tiên rồi mang về kho để giao cho dân làng.",
+        },
+        new LevelDef
+        {
+            level = 6, gold = 350, gems = 3,
+            gifts   = new[] { new GiftDef("seed_nam", "Hạt Nấm", 3) },
+            unlocks = new[]
+            {
+                "Mở khóa Nấm",
+                "Chuồng bò đã mở bán trong Shop",
+                "Nhiệm vụ hằng ngày đã mở",
+            },
+            hint = "Nấm đã có trong Shop. Đừng quên làm nhiệm vụ hằng ngày để nhận thêm thưởng!",
+        },
+        new LevelDef
+        {
+            level = 7, gold = 400, gems = 4,
+            gifts   = new[] { new GiftDef("seed_sugarcane", "Hạt Mía", 3) },
+            unlocks = new[]
+            {
+                "Mở khóa Mía",
+                "Mở khóa Hoa lan, Cúc trắng",
+                "Thêm 1 nhà dân nhận đơn hàng",
+            },
+            hint = "Mía ngọt và hoa mới đã sẵn sàng. Thêm nhà dân là thêm đơn hàng mới!",
+        },
+        new LevelDef
+        {
+            level = 8, gold = 450, gems = 4,
+            gifts   = new[] { new GiftDef("seed_lemon", "Hạt Chanh", 3) },
+            unlocks = new[]
+            {
+                "Mở khóa Chanh",
+                "Dân làng bắt đầu đặt món thịt bò",
+            },
+            hint = "Chanh đã có trong Shop. Dân làng bắt đầu thèm các món thịt bò đấy!",
+        },
+        new LevelDef
+        {
+            level = 9, gold = 500, gems = 5,
+            gifts   = new[] { new GiftDef("seed_chili", "Hạt Ớt", 2) },
+            unlocks = new[]
+            {
+                "Mở khóa Ớt",
+                "Mở khóa Tulip, Cúc vạn thọ",
+                "Thêm 1 nhà dân nhận đơn hàng",
+            },
+            hint = "Ớt đã sẵn sàng để trồng. Tulip và Cúc vạn thọ sẽ tô điểm cho nông trại.",
+        },
+        new LevelDef
+        {
+            level = 10, gold = 600, gems = 8,
+            gifts   = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[]
+            {
+                "Mở khóa Tiêu và các loại hoa còn lại",
+                "Bạn đã hoàn thành hành trình Cấp 1-10!",
+            },
+            hint = "Chúc mừng! Bạn đã hoàn thành hành trình Cấp 1-10. Hãy tiếp tục phát triển nông trại nhé!",
+        },
+    };
+
+    // ─── L11-L30: bảng tường minh khớp REWARDS_MASTER_LIST §1 ────────────────
+    //     Vàng/Gem = ĐÚNG số master (760/820/.../2600 — không còn công thức xấp xỉ).
+    //     unlockDescriptions = cột "MỞ KHOÁ" của master (chỉ hiển thị).
+    //     gifts = 1 hạt giống THẬT/cấp (id đã verify trong CropData: seed_sugarcane=mía,
+    //       seed_lemon=chanh, seed_pepper/seed_chili/seed_nam...). Quà placeholder phi-chức-năng
+    //       của master (booster/pet/skin/decor/fishing) CHƯA thêm — chờ bạn duyệt (xem báo cáo).
+
+    private static readonly LevelDef[] REWARD_TABLE_L11_L30 =
+    {
+        new LevelDef { level = 11, gold = 700,  gems = 5,
+            gifts = new[] { new GiftDef("seed_sugarcane", "Hạt Mía", 3) },
+            unlocks = new[] { "Máy Xay Bột đã mở bán trong Shop", "Mở khóa bột gạo" },
+            hint = "Máy Xay Bột đã có trong Shop — xay lúa thành bột gạo để bán hoặc nấu ăn!" },
+        new LevelDef { level = 12, gold = 760,  gems = 5,
+            gifts = new[] { new GiftDef("seed_ngo", "Hạt Ngô", 3) },
+            unlocks = new[] { "Nâng cấp kho lần 1", "Mở thêm cây trồng mới" },
+            hint = "Kho đã có thể nâng cấp — chứa được nhiều nông sản hơn." },
+        new LevelDef { level = 13, gold = 820,  gems = 5,
+            gifts = new[] { new GiftDef("seed_lemon", "Hạt Chanh", 3) },
+            unlocks = new[] { "Máy Ép Mía đã mở bán trong Shop", "Mở khóa nước mía" },
+            hint = "Máy Ép Mía đã có trong Shop — ép mía thành nước mía giải khát!" },
+        new LevelDef { level = 14, gold = 880,  gems = 5,
+            gifts = new[] { new GiftDef("seed_hoa_hong", "Hạt Hoa hồng", 2) },
+            unlocks = new[] { "Đơn 2 món xuất hiện nhiều hơn", "Mở thêm hoa mới" },
+            hint = "Dân làng bắt đầu đặt nhiều đơn 2 món hơn — chuẩn bị nguyên liệu nhé!" },
+        new LevelDef { level = 15, gold = 1000, gems = 10,
+            gifts = new[] { new GiftDef("seed_nam", "Hạt Nấm", 3) },
+            unlocks = new[] { "Máy Phô Mai đã mở bán trong Shop", "Mở khóa phô mai", "🏅 Danh hiệu \"Đầu bếp khéo\"" },
+            hint = "Máy Phô Mai đã có trong Shop — làm phô mai từ sữa bò!" },
+        new LevelDef { level = 16, gold = 1100, gems = 6,
+            gifts = new[] { new GiftDef("seed_cachua", "Hạt Cà chua", 3) },
+            unlocks = new[] { "Hồ Cá đã mở — bắt đầu câu cá", "Mở khóa các món cá" },
+            hint = "Hồ Cá đã mở! Thả cần câu để bắt cá cho các món mới." },
+        new LevelDef { level = 17, gold = 1200, gems = 6,
+            gifts = new[] { new GiftDef("seed_chili", "Hạt Ớt", 3) },
+            unlocks = new[] { "Món cá vào pool đơn hàng", "Mở khóa loại cá mới" },
+            hint = "Các món cá đã xuất hiện trong đơn hàng của dân làng." },
+        new LevelDef { level = 18, gold = 1300, gems = 6,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[] { "Mở rộng đất khu 2 (ô 9–14)" },
+            hint = "Đã mở rộng đất khu 2 — thêm nhiều ô để trồng trọt!" },
+        new LevelDef { level = 19, gold = 1400, gems = 6,
+            gifts = new[] { new GiftDef("seed_sugarcane", "Hạt Mía", 3) },
+            unlocks = new[] { "Pet đi quanh trại (nhặt xu rơi)", "Mở khóa decor cho pet" },
+            hint = "Thú cưng đầu tiên đã xuất hiện — đi quanh trại nhặt xu giúp bạn!" },
+        new LevelDef { level = 20, gold = 1600, gems = 15,
+            gifts = new[] { new GiftDef("seed_lemon", "Hạt Chanh", 3) },
+            unlocks = new[] { "Cây & đơn hàng cao cấp", "Trang trí cấp 2", "🏅 Danh hiệu \"Chủ trại giỏi\"" },
+            hint = "Chúc mừng cấp 20! Nội dung cao cấp và trang trí mới đã mở." },
+        new LevelDef { level = 21, gold = 1700, gems = 7,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[] { "Nâng cấp kho lần 2", "Thêm slot sản xuất" },
+            hint = "Kho đã nâng cấp lần 2 — sản xuất nhiều hơn cùng lúc!" },
+        new LevelDef { level = 22, gold = 1800, gems = 7,
+            gifts = new[] { new GiftDef("seed_chili", "Hạt Ớt", 3) },
+            unlocks = new[] { "Đơn cá nhiều hơn", "Mở khóa cây hiếm" },
+            hint = "Dân làng đặt nhiều món cá hơn — câu cá đều tay nhé!" },
+        new LevelDef { level = 23, gold = 1950, gems = 7,
+            gifts = new[] { new GiftDef("seed_sugarcane", "Hạt Mía", 3) },
+            unlocks = new[] { "Bến Tàu Du Lịch đã mở" },
+            hint = "Bến Tàu Du Lịch đã mở — phục vụ khách du lịch để kiếm lớn!" },
+        new LevelDef { level = 24, gold = 2050, gems = 7,
+            gifts = new[] { new GiftDef("seed_lemon", "Hạt Chanh", 3) },
+            unlocks = new[] { "Nhà hàng ven biển", "Đơn tàu cao cấp" },
+            hint = "Nhà hàng ven biển đã mở — đón các đơn tàu giá trị cao." },
+        new LevelDef { level = 25, gold = 2200, gems = 15,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[] { "Trang trí cấp 3", "Đơn combo 3 món", "🏅 Danh hiệu \"Ông/Bà chủ lớn\"" },
+            hint = "Cấp 25! Combo 3 món và trang trí cấp 3 đã mở khóa." },
+        new LevelDef { level = 26, gold = 2300, gems = 8,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[] { "Công thức cao cấp", "Trang trí theo mùa" },
+            hint = "Các công thức nấu cao cấp đã mở — thử món mới nhé!" },
+        new LevelDef { level = 27, gold = 2400, gems = 8,
+            gifts = new[] { new GiftDef("seed_chili", "Hạt Ớt", 3) },
+            unlocks = new[] { "Đơn tàu khó (payout x3)", "Mở khóa cây cao cấp" },
+            hint = "Đơn tàu khó trả thưởng gấp 3 — đáng để thử sức!" },
+        new LevelDef { level = 28, gold = 2480, gems = 8,
+            gifts = new[] { new GiftDef("seed_sugarcane", "Hạt Mía", 3) },
+            unlocks = new[] { "Sự kiện mùa (placeholder)", "Decor hiếm" },
+            hint = "Sự kiện theo mùa sắp ra mắt — tiếp tục phát triển nông trại!" },
+        new LevelDef { level = 29, gold = 2550, gems = 8,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 3) },
+            unlocks = new[] { "Mở toàn bộ pool nội dung", "Trang trí top" },
+            hint = "Gần tới đỉnh cao! Toàn bộ nội dung sắp trong tầm tay." },
+        new LevelDef { level = 30, gold = 2600, gems = 30,
+            gifts = new[] { new GiftDef("seed_pepper", "Hạt Tiêu", 5) },
+            unlocks = new[] { "Đạt nội dung tối đa của bản demo", "🏅 Danh hiệu \"BẬC THẦY NÔNG TRẠI\"" },
+            hint = "BẬC THẦY NÔNG TRẠI! Nông trại của bạn thật huyền thoại — cảm ơn bạn đã chơi!" },
+    };
+
+    private static List<LevelDef> GetFullTable()
+    {
+        var table = new List<LevelDef>(REWARD_TABLE);
+        table.AddRange(REWARD_TABLE_L11_L30);
+        return table;
+    }
+
+    // ─── Main Entry ──────────────────────────────────────────────────────────
+
+    [MenuItem(MENU_SETUP)]
+    public static void SetupRewardData()
+    {
+        BuildCache();
+        EnsureFolder(FOLDER);
+
+        var log       = new System.Text.StringBuilder();
+        var configs   = new List<LevelRewardConfig>();
+        var fullTable = GetFullTable();
+
+        log.AppendLine("[LevelUpSetup] ════════════════════════════════════════");
+
+        // ── L2 → L30 từ bảng đầy đủ ──────────────────────────────────────────
+        foreach (var def in fullTable)
+        {
+            // [JUICE T3 2026-08-31 — Sếp duyệt] mỗi cấp 4 ô quà object (+vàng+gem = 6 ô như video).
+            var giftList = new List<LevelRewardConfig.ItemGift>();
+            for (int i = 0; i < def.gifts.Length; i++)
+                giftList.Add(G(def.gifts[i].id, def.gifts[i].name, def.gifts[i].amount, log));
+            foreach (var ex in ExtraGifts(def.level))
+                giftList.Add(G(ex.id, ex.name, ex.amount, log));
+            var gifts = giftList.ToArray();
+
+            configs.Add(Build($"LevelReward_L{def.level}", def.level, def.gold, def.gems,
+                gifts, def.unlocks, def.hint, log));
+        }
+
+        AssetDatabase.SaveAssets();
+        AssetDatabase.Refresh();
+
+        // ── Assign configs to LevelUpPopupUI ─────────────────────────────────
+        // FindObjectsInactive.Include: popup thường inactive trong scene — bản cũ tìm không ra nên không gán config.
+        var popup = Object.FindFirstObjectByType<LevelUpPopupUI>(FindObjectsInactive.Include);
+        if (popup != null)
+        {
+            var so   = new SerializedObject(popup);
+            var prop = so.FindProperty("levelRewardConfigs");
+            prop.ClearArray();
+            for (int i = 0; i < configs.Count; i++)
+            {
+                prop.InsertArrayElementAtIndex(i);
+                prop.GetArrayElementAtIndex(i).objectReferenceValue = configs[i];
+            }
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(popup);
+            log.AppendLine($"[LevelUpSetup] Assigned {configs.Count} configs to LevelUpPopupUI '{popup.gameObject.name}'");
+        }
+        else
+        {
+            log.AppendLine("[LevelUpSetup] ⚠ LevelUpPopupUI không tìm thấy trong scene — configs chưa gán.");
+            log.AppendLine("[LevelUpSetup]   Chạy Setup Level Up Popup trước, rồi chạy lại tool này.");
+        }
+
+        // ── Find and assign VFX Confetti ─────────────────────────────────────
+        var vfx = FindConfetti(log);
+        if (vfx != null && popup != null)
+        {
+            var so = new SerializedObject(popup);
+            so.FindProperty("vfxConfettiPrefab").objectReferenceValue = vfx;
+            so.ApplyModifiedProperties();
+            EditorUtility.SetDirty(popup);
+        }
+
+        // ── Report duplicate assets ───────────────────────────────────────────
+        ReportDuplicates(log);
+
+        log.AppendLine("[LevelUpSetup] DONE ════════════════════════════════════");
+        Debug.Log(log.ToString());
+
+        EditorUtility.DisplayDialog("Level Up Reward Setup",
+            $"✅ Setup xong!\n\n" +
+            $"• {fullTable.Count} LevelRewardConfig (L2-L30): tạo / cập nhật\n" +
+            $"• LevelUpPopupUI: {(popup != null ? "✅ gán configs xong" : "❌ không tìm thấy\n  → Chạy Setup Level Up Popup trước")}\n" +
+            $"• VFX Confetti: {(vfx != null ? "✅ tự gán" : "⚠ không tìm thấy — gán tay sau")}\n\n" +
+            "Còn thủ công:\n" +
+            "• Kiểm tra icon gift items trong Inspector (icon tra tự động từ CropData/ItemData — gán tay nếu thiếu)\n\n" +
+            "Xem Console để biết chi tiết từng item.",
+            "OK");
+    }
+
+    // ─── Scan Report (debug) ─────────────────────────────────────────────────
+
+    [MenuItem(MENU_SCAN)]
+    public static void ScanItems()
+    {
+        BuildCache();
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"[LevelUpSetup] ═══ Item Database ({_cache.Count} entries) ═══");
+        foreach (var kv in _cache)
+            sb.AppendLine($"  {kv.Key,-30} → \"{kv.Value.displayName,-20}\"  icon={(kv.Value.icon != null ? "✅" : "❌")}");
+        sb.AppendLine("[LevelUpSetup] ═══════════════════════════════════════════");
+        Debug.Log(sb.ToString());
+    }
+
+    // ─── [JUICE T3] Quà bổ sung mỗi cấp — xoay vòng, id ĐÃ VERIFY trong item database ───
+    //     Ô 2: nguyên liệu (2 + N/4) · Ô 3: món ăn ×(1 + N/10, từ L5 khi bếp mở, trước đó = trứng)
+    //     Ô 4: cám/gia vị theo band cấp. Vàng/Gem GIỮ NGUYÊN bảng đã duyệt.
+    private static readonly (string id, string name)[] EXTRA_INGREDIENTS =
+    {
+        ("egg", "Trứng"), ("milk", "Sữa"), ("rice", "Gạo"), ("mushroom", "Nấm"),
+        ("carot", "Cà Rốt"), ("cachua", "Cà Chua"), ("bapcai", "Bắp Cải"), ("ngo", "Ngô"),
+    };
+    private static readonly (string id, string name)[] EXTRA_DISHES =
+    {
+        ("banh_ngo_chien", "Bánh ngô chiên"), ("bap_cai_xao_nam", "Bắp cải xào nấm"),
+        ("banh_bi_do_hap", "Bánh bí đỏ hấp"), ("banh_khoai_tay_nam_chien", "Bánh khoai tây chiên"),
+        ("banh_ngo_nuong_mia", "Bánh ngô nướng mía"),
+    };
+    private static readonly (string id, string name)[] EXTRA_BOOST_LOW  =
+        { ("cam_ga", "Cám gà"), ("cam_heo", "Cám heo") };
+    private static readonly (string id, string name)[] EXTRA_BOOST_MID  =
+        { ("cam_bo_sua", "Cám bò sữa"), ("co_tron_bo", "Cỏ trộn bò") };
+    private static readonly (string id, string name)[] EXTRA_BOOST_HIGH =
+        { ("herbs", "Rau thơm"), ("pepper", "Tiêu"), ("lemon", "Chanh") };
+
+    private static List<GiftDef> ExtraGifts(int level)
+    {
+        var list = new List<GiftDef>();
+
+        var ing = EXTRA_INGREDIENTS[level % EXTRA_INGREDIENTS.Length];
+        list.Add(new GiftDef(ing.id, ing.name, 2 + level / 4));
+
+        if (level >= 5)
+        {
+            var dish = EXTRA_DISHES[level % EXTRA_DISHES.Length];
+            list.Add(new GiftDef(dish.id, dish.name, 1 + level / 10));
+        }
+        else
+        {
+            list.Add(new GiftDef("egg", "Trứng", 3));
+        }
+
+        var band = level >= 20 ? EXTRA_BOOST_HIGH : level >= 10 ? EXTRA_BOOST_MID : EXTRA_BOOST_LOW;
+        var b = band[level % band.Length];
+        list.Add(new GiftDef(b.id, b.name, 2 + level / 10));
+
+        return list;
+    }
+
+    // ─── Build Helper ─────────────────────────────────────────────────────────
+
+    private static LevelRewardConfig Build(
+        string assetName,
+        int lvl, int gold, int gems,
+        LevelRewardConfig.ItemGift[] gifts,
+        string[] unlocks,
+        string hint,
+        System.Text.StringBuilder log)
+    {
+        var cfg = LoadOrCreate(assetName);
+        cfg.levelReached       = lvl;
+        cfg.giftGold           = gold;
+        cfg.giftGems           = gems;
+        cfg.giftItems          = new List<LevelRewardConfig.ItemGift>(gifts);
+        cfg.unlockDescriptions = new List<string>(unlocks);
+        cfg.hintText           = hint;
+        EditorUtility.SetDirty(cfg);
+        log.AppendLine($"[LevelUpSetup] Loaded/Created {assetName}.asset  (L{lvl}  +{gold}g  +{gems}💎)");
+        return cfg;
+    }
+
+    // Shorthand: make a gift item.
+    // displayName dùng đúng bản đã duyệt trong REWARD_TABLE (không bị DB ghi đè);
+    // chỉ icon được tra từ item database.
+    private static LevelRewardConfig.ItemGift G(
+        string itemId, string displayName, int amount, System.Text.StringBuilder log)
+    {
+        var (_, icon, found) = Lookup(itemId, displayName);
+        log.AppendLine($"  gift: {itemId,-20} | {displayName,-15} | x{amount,2} | icon {(found && icon != null ? "found ✅" : "missing ⚠")}");
+        return new LevelRewardConfig.ItemGift
+        {
+            itemId      = itemId,
+            displayName = displayName,
+            icon        = icon,
+            amount      = amount,
+        };
+    }
+
+    private static LevelRewardConfig LoadOrCreate(string assetName)
+    {
+        string path     = $"{FOLDER}/{assetName}.asset";
+        var    existing = AssetDatabase.LoadAssetAtPath<LevelRewardConfig>(path);
+        if (existing != null) return existing;
+
+        var cfg = ScriptableObject.CreateInstance<LevelRewardConfig>();
+        AssetDatabase.CreateAsset(cfg, path);
+        return cfg;
+    }
+
+    // ─── VFX ─────────────────────────────────────────────────────────────────
+
+    private static GameObject FindConfetti(System.Text.StringBuilder log)
+    {
+        string[] terms = { "Confetti_blast_multicolor", "Confetti_blast", "Confetti", "Firework", "Sparkle" };
+        foreach (string term in terms)
+        {
+            string[] guids = AssetDatabase.FindAssets($"{term} t:prefab");
+            if (guids.Length == 0) continue;
+            string path   = AssetDatabase.GUIDToAssetPath(guids[0]);
+            var    prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab != null)
+            {
+                log.AppendLine($"[LevelUpSetup] Confetti prefab assigned: {path} ✅");
+                return prefab;
+            }
+        }
+        log.AppendLine("[LevelUpSetup] ⚠ Confetti prefab không tìm thấy — gán tay vào vfxConfettiPrefab.");
+        return null;
+    }
+
+    // ─── Duplicate Report ────────────────────────────────────────────────────
+
+    private static void ReportDuplicates(System.Text.StringBuilder log)
+    {
+        string[] guids = AssetDatabase.FindAssets("t:LevelRewardConfig", new[] { FOLDER });
+        var      dups  = new List<string>();
+
+        foreach (string g in guids)
+        {
+            string fname  = Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(g));
+            string[] parts = fname.Split(' ');
+            if (parts.Length > 1 && int.TryParse(parts[parts.Length - 1], out _))
+                dups.Add(AssetDatabase.GUIDToAssetPath(g));
+        }
+
+        if (dups.Count > 0)
+        {
+            log.AppendLine($"[LevelUpSetup] ⚠ Duplicate assets ({dups.Count} — chưa xóa, chỉ report):");
+            foreach (string d in dups)
+                log.AppendLine($"  {d}");
+            log.AppendLine("[LevelUpSetup]   → Xóa tay trong Project window nếu không cần.");
+        }
+        else
+        {
+            log.AppendLine("[LevelUpSetup] Không có duplicate assets.");
+        }
+    }
+
+    // ─── Folder Helper ────────────────────────────────────────────────────────
+
+    private static void EnsureFolder(string path)
+    {
+        if (AssetDatabase.IsValidFolder(path)) return;
+        int    sep    = path.LastIndexOf('/');
+        string parent = path.Substring(0, sep);
+        string child  = path.Substring(sep + 1);
+        EnsureFolder(parent);
+        AssetDatabase.CreateFolder(parent, child);
+    }
+
+    [MenuItem(MENU_SETUP, true)]
+    [MenuItem(MENU_SCAN,  true)]
+    private static bool Validate() => !EditorApplication.isPlaying;
+}

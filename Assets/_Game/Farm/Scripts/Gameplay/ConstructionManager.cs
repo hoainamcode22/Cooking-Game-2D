@@ -69,6 +69,25 @@ public class ConstructionManager : MonoBehaviour
     [Tooltip("VFX của Lana Studio dựng cho world unit nhỏ; map này 1 ô = 100 unit nên phải phóng to.")]
     [SerializeField] private float completeVfxScale = 40f;
 
+    // [V2 ADD] ══════════════════════════════════════════════════════════════
+    // ĂN MỪNG V2 — ConstructionCelebrationFX (Township-style, thuần code).
+    // BẬT (mặc định): khói poof + sao EXP + confetti SO LE vẽ TRƯỚC công trình
+    // + bóng bay từ nóc; chuỗi cũ (hộp quà + prefab confetti mượn của LevelUp)
+    // KHÔNG chạy để không double hiệu ứng.
+    // TẮT: chạy lại đúng chuỗi cũ ConstructionCompleteFX như trước, không đổi gì.
+    [Header("◆ Ăn mừng V2 (Township-style, dựng 100% bằng code)")]
+    [Tooltip("BẬT = dùng ConstructionCelebrationFX (poof + sao EXP + confetti trước công trình " +
+             "+ bóng bay). Chuỗi cũ hộp quà/prefab confetti bị bỏ qua để không nổ hai lần.\n" +
+             "TẮT = chạy lại đúng hiệu ứng cũ.")]
+    [SerializeField] private bool useCelebrationV2 = true;                       // [V2 ADD]
+
+    // [V2 ADD] Số EXP hiện trong hiệu ứng V2 ("+N" bay lên từ đỉnh). 0 = chỉ hiện sao.
+    // ⚠ CHỈ LÀ SỐ HIỂN THỊ — không tự cộng EXP vào PlayerProgress (muốn cộng thật thì
+    // gọi HarvestFeedbackSpawner.Instance.SpawnExpFly ở nơi quyết định kinh tế).
+    [Tooltip("EXP hiển thị trong ăn mừng V2. 0 = chỉ hiện ngôi sao, không hiện số. " +
+             "KHÔNG tự cộng EXP thật.")]
+    [SerializeField] private int celebrationExpReward = 0;                       // [V2 ADD]
+
     [Header("Giá tăng tốc (rush)")]
     [SerializeField] private ConstructionRushCurrency rushCurrency = ConstructionRushCurrency.Gold;
 
@@ -229,6 +248,11 @@ public class ConstructionManager : MonoBehaviour
 
     private bool _loaded;
     private bool _warnedNoPlacementManager;
+
+    // [V2 ADD] Cầu chuyền: SpawnFinishedBuilding ghi object vừa Instantiate vào đây để
+    // nhánh V2 trong CompleteSite lấy được Transform mà KHÔNG phải đổi chữ ký hàm cũ
+    // (void → GameObject là một đổi ruột không cần thiết; field private này rẻ hơn).
+    private GameObject _lastSpawnedBuildingV2;
 
     public int ActiveSiteCount => _sites.Count;
     public IReadOnlyList<ConstructionSite> Sites => _sites;
@@ -554,6 +578,30 @@ public class ConstructionManager : MonoBehaviour
         int               rot    = site.RotationSteps;
         Vector2Int        size   = site.GridSize;
 
+        // [V2 ADD] ══ NHÁNH ĂN MỪNG V2 ════════════════════════════════════════
+        // Dựng công trình NGAY rồi nổ ConstructionCelebrationFX TRƯỚC/QUANH nó
+        // (FX tự đọc bounds + max sortingOrder từ chính công trình vừa mọc).
+        // Chuỗi cũ bên dưới (ConstructionCompleteFX + prefab confetti mượn) chỉ còn
+        // chạy khi useCelebrationV2 = false — tức là ĐÃ ĐƯỢC BỌC điều kiện qua lệnh
+        // return này, không nổ double. Không xoá một dòng cũ nào.
+        if (useCelebrationV2)
+        {
+            _lastSpawnedBuildingV2 = null;
+            SpawnFinishedBuilding(site, data, anchor, rot);
+
+            if (_lastSpawnedBuildingV2 != null)
+                ConstructionCelebrationFX.Play(_lastSpawnedBuildingV2.transform,
+                                               celebrationExpReward);
+            else
+                // data/prefab null → không có gì để ăn mừng quanh; log cho dễ lần.
+                Debug.LogWarning("[Construction] V2: công trình không Instantiate được " +
+                                 "— bỏ qua hiệu ứng ăn mừng.");
+
+            _lastSpawnedBuildingV2 = null;
+            return;
+        }
+        // [V2 ADD] ══ HẾT NHÁNH V2 — dưới đây là hiệu ứng cũ, giữ nguyên ═══════
+
         // VFX phủ đúng vùng ô nên phải nhận TÂM; công trình thật thì mọc từ NEO.
         ConstructionCompleteFX.Play(
             center, size, SiteSortingLayerName, SiteBaseOrder + 60,
@@ -570,6 +618,8 @@ public class ConstructionManager : MonoBehaviour
         if (data != null && data.prefabToBuild != null)
         {
             GameObject spawned = Instantiate(data.prefabToBuild, anchor, PlacementManager.RotationOf(rot));
+
+            _lastSpawnedBuildingV2 = spawned;   // [V2 ADD] cho nhánh V2 của CompleteSite đọc
 
             // ⚠ BẮT BUỘC (hợp đồng §3.3): không gọi thì công trình KHÔNG được lưu,
             // ô lưới không được nhả, và mất trắng khi tắt game.

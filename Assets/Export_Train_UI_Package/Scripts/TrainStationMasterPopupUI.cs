@@ -259,35 +259,43 @@ namespace ExportTrainUIPackage
 
             // 6. Train Container (Nằm trên nền cảnh, khớp đúng đường ray)
             Transform tcTr = innerTr.Find("Train_Container");
-            if (tcTr == null)
+            bool isNewTc = tcTr == null;
+            if (isNewTc)
             {
                 GameObject tcGo = new GameObject("Train_Container", typeof(RectTransform));
                 tcGo.transform.SetParent(innerTr, false);
                 tcTr = tcGo.transform;
             }
             trainContainer = tcTr.GetComponent<RectTransform>();
-            trainContainer.anchorMin = new Vector2(0.5f, 0.5f);
-            trainContainer.anchorMax = new Vector2(0.5f, 0.5f);
-            trainContainer.pivot = new Vector2(0.5f, 0.5f);
-            trainContainer.anchoredPosition = new Vector2(-60f, -145f); // Tọa độ bánh xe đặt trực tiếp trên mặt ray
-            trainContainer.sizeDelta = new Vector2(1050f, 300f);
+            if (isNewTc)
+            {
+                trainContainer.anchorMin = new Vector2(0.5f, 0.5f);
+                trainContainer.anchorMax = new Vector2(0.5f, 0.5f);
+                trainContainer.pivot = new Vector2(0.5f, 0.5f);
+                trainContainer.anchoredPosition = new Vector2(-60f, -145f); // Tọa độ bánh xe đặt trực tiếp trên mặt ray
+                trainContainer.sizeDelta = new Vector2(1050f, 300f);
+            }
 
             // 4 Wagons
             for (int i = 0; i < 4; i++)
             {
                 Transform wTr = trainContainer.Find($"Wagon_{i + 1}");
-                if (wTr == null)
+                bool isNewWagon = wTr == null;
+                if (isNewWagon)
                 {
                     GameObject wGo = new GameObject($"Wagon_{i + 1}", typeof(RectTransform));
                     wGo.transform.SetParent(trainContainer, false);
                     wTr = wGo.transform;
                 }
                 wagonContainers[i] = wTr.GetComponent<RectTransform>();
-                wagonContainers[i].anchorMin = new Vector2(0f, 0.5f);
-                wagonContainers[i].anchorMax = new Vector2(0f, 0.5f);
-                wagonContainers[i].pivot = new Vector2(0.5f, 0.5f);
-                wagonContainers[i].anchoredPosition = new Vector2(i * 185f + 95f, 0f);
-                wagonContainers[i].sizeDelta = new Vector2(180f, 240f);
+                if (isNewWagon)
+                {
+                    wagonContainers[i].anchorMin = new Vector2(0f, 0.5f);
+                    wagonContainers[i].anchorMax = new Vector2(0f, 0.5f);
+                    wagonContainers[i].pivot = new Vector2(0.5f, 0.5f);
+                    wagonContainers[i].anchoredPosition = new Vector2(i * 185f + 95f, 0f);
+                    wagonContainers[i].sizeDelta = new Vector2(180f, 240f);
+                }
 
                 wagonSlots[i] = wTr.GetComponent<StationWagonSlotUI>() ?? wTr.gameObject.AddComponent<StationWagonSlotUI>();
                 wagonSlots[i].BuildWagonHierarchy();
@@ -295,7 +303,8 @@ namespace ExportTrainUIPackage
 
             // Locomotive
             Transform locoTr = trainContainer.Find("Locomotive_Flat");
-            if (locoTr == null)
+            bool isNewLoco = locoTr == null;
+            if (isNewLoco)
             {
                 GameObject lGo = new GameObject("Locomotive_Flat", typeof(RectTransform));
                 lGo.transform.SetParent(trainContainer, false);
@@ -303,18 +312,22 @@ namespace ExportTrainUIPackage
             }
             imgLocomotive = locoTr.GetComponent<Image>() ?? locoTr.gameObject.AddComponent<Image>();
             RectTransform lRt = locoTr.GetComponent<RectTransform>();
-            lRt.anchorMin = new Vector2(0f, 0.5f);
-            lRt.anchorMax = new Vector2(0f, 0.5f);
-            lRt.pivot = new Vector2(0.5f, 0.5f);
-            lRt.anchoredPosition = new Vector2(4 * 185f + 115f, 30f);
-            lRt.sizeDelta = new Vector2(240f, 240f);
+            if (isNewLoco)
+            {
+                lRt.anchorMin = new Vector2(0f, 0.5f);
+                lRt.anchorMax = new Vector2(0f, 0.5f);
+                lRt.pivot = new Vector2(0.5f, 0.5f);
+                lRt.anchoredPosition = new Vector2(4 * 185f + 115f, 30f);
+                lRt.sizeDelta = new Vector2(240f, 240f);
+            }
             TrainSpriteLoader.Assign(imgLocomotive, $"{SpritesDir}/flat_locomotive_horizontal.png");
             imgLocomotive.preserveAspect = true;
             imgLocomotive.color = Color.white;
 
             // Smoke Puff Root (Nằm trên Train_Container, SetAsLastSibling để vẽ đè lên miệng ống khói)
             Transform smkTr = trainContainer.Find("Smoke_Puff_Root");
-            if (smkTr == null)
+            bool isNewSmk = smkTr == null;
+            if (isNewSmk)
             {
                 GameObject smkGo = new GameObject("Smoke_Puff_Root", typeof(RectTransform));
                 smkGo.transform.SetParent(trainContainer, false);
@@ -323,11 +336,14 @@ namespace ExportTrainUIPackage
             smkTr.SetAsLastSibling();
 
             smokePuffRoot = smkTr.GetComponent<RectTransform>();
-            smokePuffRoot.anchorMin = new Vector2(0f, 0.5f);
-            smokePuffRoot.anchorMax = new Vector2(0f, 0.5f);
-            smokePuffRoot.pivot = new Vector2(0.5f, 0.5f);
-            smokePuffRoot.anchoredPosition = new Vector2(4 * 185f + 115f + 55f, 145f); // Ngay đỉnh miệng ống khói đầu tàu
-            smokePuffRoot.sizeDelta = new Vector2(60f, 60f);
+            if (isNewSmk)
+            {
+                smokePuffRoot.anchorMin = new Vector2(0f, 0.5f);
+                smokePuffRoot.anchorMax = new Vector2(0f, 0.5f);
+                smokePuffRoot.pivot = new Vector2(0.5f, 0.5f);
+                smokePuffRoot.anchoredPosition = new Vector2(4 * 185f + 115f + 55f, 145f); // Ngay đỉnh miệng ống khói đầu tàu
+                smokePuffRoot.sizeDelta = new Vector2(60f, 60f);
+            }
 
             Sprite puffSp = TrainSpriteLoader.GetSprite($"{MillSvgDir}/mill_smoke_puff.png")
                          ?? TrainSpriteLoader.GetSprite($"{SpritesDir}/train_smoke_puff.png")
@@ -832,7 +848,8 @@ namespace ExportTrainUIPackage
 
             // 1. Wagon Image
             Transform wTr = transform.Find("Img_Wagon");
-            if (wTr == null)
+            bool isNewWagon = wTr == null;
+            if (isNewWagon)
             {
                 GameObject wGo = new GameObject("Img_Wagon", typeof(RectTransform));
                 wGo.transform.SetParent(transform, false);
@@ -840,18 +857,22 @@ namespace ExportTrainUIPackage
             }
             imgWagon = wTr.GetComponent<Image>() ?? wTr.gameObject.AddComponent<Image>();
             RectTransform wiRt = wTr.GetComponent<RectTransform>();
-            wiRt.anchorMin = new Vector2(0.5f, 0f);
-            wiRt.anchorMax = new Vector2(0.5f, 0f);
-            wiRt.pivot = new Vector2(0.5f, 0.5f);
-            wiRt.anchoredPosition = new Vector2(0f, 55f);
-            wiRt.sizeDelta = new Vector2(170f, 110f);
+            if (isNewWagon)
+            {
+                wiRt.anchorMin = new Vector2(0.5f, 0f);
+                wiRt.anchorMax = new Vector2(0.5f, 0f);
+                wiRt.pivot = new Vector2(0.5f, 0.5f);
+                wiRt.anchoredPosition = new Vector2(0f, 55f);
+                wiRt.sizeDelta = new Vector2(170f, 110f);
+            }
             TrainSpriteLoader.Assign(imgWagon, $"{SpritesDir}/flat_wagon_horizontal.png");
             imgWagon.preserveAspect = true;
             imgWagon.color = Color.white;
 
             // 2. Bubble Req
             Transform bTr = transform.Find("Bubble_Req");
-            if (bTr == null)
+            bool isNewBubble = bTr == null;
+            if (isNewBubble)
             {
                 GameObject bGo = new GameObject("Bubble_Req", typeof(RectTransform));
                 bGo.transform.SetParent(transform, false);
@@ -864,15 +885,19 @@ namespace ExportTrainUIPackage
             imgBubble.color = Color.white;
 
             RectTransform bRt = bTr.GetComponent<RectTransform>();
-            bRt.anchorMin = new Vector2(0.5f, 0f);
-            bRt.anchorMax = new Vector2(0.5f, 0f);
-            bRt.pivot = new Vector2(0.5f, 0.5f);
-            bRt.anchoredPosition = new Vector2(0f, 175f);
-            bRt.sizeDelta = new Vector2(130f, 62f);
+            if (isNewBubble)
+            {
+                bRt.anchorMin = new Vector2(0.5f, 0f);
+                bRt.anchorMax = new Vector2(0.5f, 0f);
+                bRt.pivot = new Vector2(0.5f, 0.5f);
+                bRt.anchoredPosition = new Vector2(0f, 175f);
+                bRt.sizeDelta = new Vector2(130f, 62f);
+            }
 
             // Icon Disc
             Transform dTr = bTr.Find("Icon_Disc");
-            if (dTr == null)
+            bool isNewDisc = dTr == null;
+            if (isNewDisc)
             {
                 GameObject dGo = new GameObject("Icon_Disc", typeof(RectTransform));
                 dGo.transform.SetParent(bTr, false);
@@ -884,15 +909,19 @@ namespace ExportTrainUIPackage
             imgDisc.color = Color.white;
 
             RectTransform dRt = dTr.GetComponent<RectTransform>();
-            dRt.anchorMin = new Vector2(0f, 0.5f);
-            dRt.anchorMax = new Vector2(0f, 0.5f);
-            dRt.pivot = new Vector2(0.5f, 0.5f);
-            dRt.anchoredPosition = new Vector2(32f, 0f);
-            dRt.sizeDelta = new Vector2(40f, 40f);
+            if (isNewDisc)
+            {
+                dRt.anchorMin = new Vector2(0f, 0.5f);
+                dRt.anchorMax = new Vector2(0f, 0.5f);
+                dRt.pivot = new Vector2(0.5f, 0.5f);
+                dRt.anchoredPosition = new Vector2(32f, 0f);
+                dRt.sizeDelta = new Vector2(40f, 40f);
+            }
 
             // Icon
             Transform icTr = dTr.Find("Img_Icon");
-            if (icTr == null)
+            bool isNewIcon = icTr == null;
+            if (isNewIcon)
             {
                 GameObject icGo = new GameObject("Img_Icon", typeof(RectTransform));
                 icGo.transform.SetParent(dTr, false);
@@ -901,14 +930,18 @@ namespace ExportTrainUIPackage
             imgIcon = icTr.GetComponent<Image>() ?? icTr.gameObject.AddComponent<Image>();
             imgIcon.preserveAspect = true;
             RectTransform icRt = icTr.GetComponent<RectTransform>();
-            icRt.anchorMin = Vector2.zero;
-            icRt.anchorMax = Vector2.one;
-            icRt.offsetMin = new Vector2(4f, 4f);
-            icRt.offsetMax = new Vector2(-4f, -4f);
+            if (isNewIcon)
+            {
+                icRt.anchorMin = Vector2.zero;
+                icRt.anchorMax = Vector2.one;
+                icRt.offsetMin = new Vector2(4f, 4f);
+                icRt.offsetMax = new Vector2(-4f, -4f);
+            }
 
             // Amount Text
             Transform amTr = bTr.Find("Txt_Amount");
-            if (amTr == null)
+            bool isNewAm = amTr == null;
+            if (isNewAm)
             {
                 GameObject amGo = new GameObject("Txt_Amount", typeof(RectTransform));
                 amGo.transform.SetParent(bTr, false);
@@ -916,18 +949,22 @@ namespace ExportTrainUIPackage
             }
             txtAmount = amTr.GetComponent<TextMeshProUGUI>() ?? amTr.gameObject.AddComponent<TextMeshProUGUI>();
             RectTransform amRt = amTr.GetComponent<RectTransform>();
-            amRt.anchorMin = new Vector2(0.45f, 0f);
-            amRt.anchorMax = new Vector2(1f, 1f);
-            amRt.offsetMin = Vector2.zero;
-            amRt.offsetMax = new Vector2(-4f, 0f);
-            txtAmount.alignment = TextAlignmentOptions.Center;
-            txtAmount.fontSize = 22;
-            txtAmount.fontStyle = FontStyles.Bold;
-            txtAmount.color = new Color(0.36f, 0.20f, 0.09f);
+            if (isNewAm)
+            {
+                amRt.anchorMin = new Vector2(0.45f, 0f);
+                amRt.anchorMax = new Vector2(1f, 1f);
+                amRt.offsetMin = Vector2.zero;
+                amRt.offsetMax = new Vector2(-4f, 0f);
+                txtAmount.alignment = TextAlignmentOptions.Center;
+                txtAmount.fontSize = 22;
+                txtAmount.fontStyle = FontStyles.Bold;
+                txtAmount.color = new Color(0.36f, 0.20f, 0.09f);
+            }
 
             // 3. Check Badge
             Transform chkTr = transform.Find("Check_Badge");
-            if (chkTr == null)
+            bool isNewChk = chkTr == null;
+            if (isNewChk)
             {
                 GameObject chkGo = new GameObject("Check_Badge", typeof(RectTransform));
                 chkGo.transform.SetParent(transform, false);
@@ -940,11 +977,14 @@ namespace ExportTrainUIPackage
             imgCheckBadge.color = Color.white;
 
             RectTransform chkRt = chkTr.GetComponent<RectTransform>();
-            chkRt.anchorMin = new Vector2(1f, 0f);
-            chkRt.anchorMax = new Vector2(1f, 0f);
-            chkRt.pivot = new Vector2(0.5f, 0.5f);
-            chkRt.anchoredPosition = new Vector2(-25f, 55f);
-            chkRt.sizeDelta = new Vector2(38f, 38f);
+            if (isNewChk)
+            {
+                chkRt.anchorMin = new Vector2(1f, 0f);
+                chkRt.anchorMax = new Vector2(1f, 0f);
+                chkRt.pivot = new Vector2(0.5f, 0.5f);
+                chkRt.anchoredPosition = new Vector2(-25f, 55f);
+                chkRt.sizeDelta = new Vector2(38f, 38f);
+            }
             checkBadge.SetActive(false);
 
             // Button

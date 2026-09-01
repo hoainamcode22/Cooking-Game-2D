@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L5
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 5
+  giftGold: 300
+  giftGems: 3
+  giftItems:
+  - itemId: khoai_tay
+    displayName: "Khoai t\xE2y gi\u1ED1ng"
+    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
+    amount: 5
+  unlockEntries:
+  - label: "M\u1EDE KH\xD3A NH\xC0 B\u1EBEP \u2014 n\u1EA5u \u0103n ngay!"
+    icon: {fileID: -5775399491718878476, guid: 7b314202f7e3b20499171246a1b4a97c, type: 3}
+  - label: "M\u1EDF kh\xF3a Khoai t\xE2y"
+    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
+  - label: "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
+    icon: {fileID: 950524911477112507, guid: 0772edf2be2709a42bc3f4e453c8fec2, type: 3}
+  unlockDescriptions:
+  - "M\u1EDE KH\xD3A NH\xC0 B\u1EBEP \u2014 n\u1EA5u \u0103n ngay!"
+  - "M\u1EDF kh\xF3a Khoai t\xE2y"
+  - "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
+  hintText: "B\u1EBFp n\u1EA5u \u0103n \u0111\xE3 m\u1EDF! H\xE3y n\u1EA5u m\xF3n
+    \u0111\u1EA7u ti\xEAn r\u1ED3i mang v\u1EC1 kho \u0111\u1EC3 giao cho d\xE2n
+    l\xE0ng."

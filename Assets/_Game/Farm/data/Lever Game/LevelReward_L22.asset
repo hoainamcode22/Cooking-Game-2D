@@ -20,6 +20,26 @@ MonoBehaviour:
     displayName: "H\u1EA1t \u1EDAt"
     icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
     amount: 3
+  - itemId: seed_watermelon
+    displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: watermelon
+    displayName: "D\u01B0a H\u1EA5u"
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: pepper
+    displayName: "Ti\xEAu"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: chicken_meat
+    displayName: "Th\u1ECBt G\xE0"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: son
+    displayName: "S\u01A1n"
+    icon: {fileID: 0}
+    amount: 2
   unlockEntries:
   - label: "\u0110\u01A1n c\xE1 nhi\u1EC1u h\u01A1n"
     icon: {fileID: 7005514672714901730, guid: d197209a165418540bf98d74d7fca7a2, type: 3}

@@ -20,6 +20,26 @@ MonoBehaviour:
     displayName: "H\u1EA1t M\xEDa"
     icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
     amount: 3
+  - itemId: seed_hoa_lan
+    displayName: "H\u1EA1t Hoa Lan"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: mushroom
+    displayName: "N\u1EA5m"
+    icon: {fileID: 0}
+    amount: 5
+  - itemId: sugarcane
+    displayName: "M\xEDa"
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: milk
+    displayName: "S\u1EEFa"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: 0}
+    amount: 2
   unlockEntries:
   - label: "Pet \u0111i quanh tr\u1EA1i (nh\u1EB7t xu r\u01A1i)"
     icon: {fileID: -4124955473789098222, guid: bc358f291943afe42aef17b45f1291a9, type: 3}

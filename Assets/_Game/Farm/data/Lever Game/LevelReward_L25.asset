@@ -20,6 +20,30 @@ MonoBehaviour:
     displayName: "H\u1EA1t Ti\xEAu"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 3
+  - itemId: khoai_tay
+    displayName: "H\u1EA1t Khoai T\xE2y"
+    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
+    amount: 3
+  - itemId: pepper
+    displayName: "Ti\xEAu"
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: khoaitay
+    displayName: "Khoai T\xE2y"
+    icon: {fileID: 0}
+    amount: 5
+  - itemId: milk
+    displayName: "S\u1EEFa"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: beef
+    displayName: "Th\u1ECBt B\xF2"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: 0}
+    amount: 2
   unlockEntries:
   - label: "Trang tr\xED c\u1EA5p 3"
     icon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}

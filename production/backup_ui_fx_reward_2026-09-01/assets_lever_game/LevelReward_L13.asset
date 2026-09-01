@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L13
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 13
+  giftGold: 820
+  giftGems: 5
+  giftItems:
+  - itemId: seed_lemon
+    displayName: "H\u1EA1t Chanh"
+    icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
+    amount: 3
+  unlockEntries:
+  - label: "M\xE1y \xC9p M\xEDa \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+    icon: {fileID: -5178242575216520492, guid: bfc7fe251655c4146a2c2dafad2c57d3, type: 3}
+  - label: "M\u1EDF kh\xF3a n\u01B0\u1EDBc m\xEDa"
+    icon: {fileID: 6062651183374977786, guid: fcbf07e621aaf0f4d86841f67367c8be, type: 3}
+  unlockDescriptions:
+  - "M\xE1y \xC9p M\xEDa \u0111\xE3 m\u1EDF b\xE1n trong Shop"
+  - "M\u1EDF kh\xF3a n\u01B0\u1EDBc m\xEDa"
+  hintText: "M\xE1y \xC9p M\xEDa \u0111\xE3 c\xF3 trong Shop \u2014 \xE9p m\xEDa
+    th\xE0nh n\u01B0\u1EDBc m\xEDa gi\u1EA3i kh\xE1t!"

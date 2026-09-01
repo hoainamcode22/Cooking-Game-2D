@@ -20,6 +20,26 @@ MonoBehaviour:
     displayName: "H\u1EA1t \u1EDAt"
     icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
     amount: 2
+  - itemId: seed_tulip
+    displayName: "H\u1EA1t Tulip"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: tulip
+    displayName: Tulip
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: chili
+    displayName: "\u1EDAt"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: egg
+    displayName: "Tr\u1EE9ng"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: 0}
+    amount: 1
   unlockEntries:
   - label: "M\u1EDF kh\xF3a \u1EDAt"
     icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}

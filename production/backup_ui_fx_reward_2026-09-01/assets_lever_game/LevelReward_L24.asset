@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L24
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 24
+  giftGold: 2050
+  giftGems: 7
+  giftItems:
+  - itemId: seed_lemon
+    displayName: "H\u1EA1t Chanh"
+    icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
+    amount: 3
+  unlockEntries:
+  - label: "Nh\xE0 h\xE0ng ven bi\u1EC3n"
+    icon: {fileID: -5775399491718878476, guid: 7b314202f7e3b20499171246a1b4a97c, type: 3}
+  - label: "\u0110\u01A1n t\xE0u cao c\u1EA5p"
+    icon: {fileID: 4580813103884654232, guid: 25ad36064caef954bb6f485d1b7fd6f2, type: 3}
+  unlockDescriptions:
+  - "Nh\xE0 h\xE0ng ven bi\u1EC3n"
+  - "\u0110\u01A1n t\xE0u cao c\u1EA5p"
+  hintText: "Nh\xE0 h\xE0ng ven bi\u1EC3n \u0111\xE3 m\u1EDF \u2014 \u0111\xF3n c\xE1c
+    \u0111\u01A1n t\xE0u gi\xE1 tr\u1ECB cao."

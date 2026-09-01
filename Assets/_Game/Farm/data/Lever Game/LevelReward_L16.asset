@@ -17,9 +17,29 @@ MonoBehaviour:
   giftGems: 6
   giftItems:
   - itemId: seed_cachua
-    displayName: "H\u1EA1t C\xE0 chua"
+    displayName: "H\u1EA1t C\xE0 Chua"
     icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
     amount: 3
+  - itemId: ca_rot
+    displayName: "H\u1EA1t C\xE0 R\u1ED1t"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: carot
+    displayName: "C\xE0 R\u1ED1t"
+    icon: {fileID: 0}
+    amount: 4
+  - itemId: egg
+    displayName: "Tr\u1EE9ng"
+    icon: {fileID: 0}
+    amount: 2
+  - itemId: salt
+    displayName: "Mu\u1ED1i"
+    icon: {fileID: 0}
+    amount: 3
+  - itemId: dinh
+    displayName: "\u0110inh"
+    icon: {fileID: 0}
+    amount: 1
   unlockEntries:
   - label: "H\u1ED3 C\xE1 \u0111\xE3 m\u1EDF \u2014 b\u1EAFt \u0111\u1EA7u c\xE2u
       c\xE1"

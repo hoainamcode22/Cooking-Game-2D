@@ -37,6 +37,11 @@ public class PlayerProgressManager : MonoBehaviour
     public event Action<int, int> OnExpChanged; // currentExp, requiredExp
     public event Action<int> OnLevelChanged;
 
+    // [V2 ADD] FX: bắn khi CỘNG EXP để RewardFlyFX bay sao xanh về HUD
+    // (mirror FarmEconomyManager.OnGoldAddedFx / OnGemAddedFx — event tĩnh, chỉ phục vụ hiệu ứng,
+    // KHÔNG mang logic gameplay; ai nghe cũng không được đổi state từ đây).
+    public static event Action<int> OnExpAddedFx;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -90,6 +95,10 @@ public class PlayerProgressManager : MonoBehaviour
             return;
 
         AudioManager.Instance?.PlayExp();
+
+        // [V2 ADD] Bắn FX TRƯỚC xử lý level-up: hiệu ứng "sao xanh bay về HUD" minh hoạ
+        // việc NHẬN exp, không phụ thuộc kết quả cộng dồn/lên cấp phía dưới.
+        OnExpAddedFx?.Invoke(amount);
 
         if (Level >= maxLevel)
         {
