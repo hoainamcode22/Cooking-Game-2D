@@ -70,7 +70,7 @@ public class CameraController : MonoBehaviour
     public float ActiveMaxSize => _devMode ? Mathf.Max(devMaxSize, maxSize) : maxSize;
 
     [Header("Smooth Damp")]
-    [SerializeField] private float panSmoothTime  = 0.12f; // Thời gian giảm tốc khi thả tay (pan)
+    [SerializeField] private float panSmoothTime  = 0.08f; // Thời gian giảm tốc khi thả tay (pan mượt mà)
     [SerializeField] private float zoomSmoothTime = 0.1f;  // Thời gian giảm tốc khi thả tay (zoom)
 
     [Header("Cinematic (Tutorial)")]
@@ -79,7 +79,7 @@ public class CameraController : MonoBehaviour
     public  bool IsCinematic => _cinematicActive;
 
     [Header("Drag Detection")]
-    [SerializeField] private float dragThreshold = 40f; // Pixel tối thiểu phải di chuyển để tính là drag (không phải tap)
+    [SerializeField] private float dragThreshold = 8f; // Pixel tối thiểu phải di chuyển để tính là drag (nhạy bén mượt mà)
 
     [Header("Bounds (minX, maxX, minY, maxY)")]
     public Vector4 bounds = new Vector4(-50f, 50f, -50f, 50f); // Giới hạn di chuyển camera
@@ -237,8 +237,15 @@ public class CameraController : MonoBehaviour
         ApplyZoomStep(ReadMouseScrollSteps(), mouse.position.ReadValue());
 
         // ── BƯỚC 1: Nhấn chuột xuống → lưu vị trí screen, chưa drag ────
-        // Không bắt đầu drag ngay: EventSystem/Physics2DRaycaster vẫn
-        // nhận được sự kiện này để xử lý click popup bình thường.
+        // Không bắt đầu drag nếu con trỏ đang ở trên UI element
+        if (ConTroDangTrenUI(mouse.position.ReadValue()))
+        {
+            isDragging          = false;
+            pressHeld           = false;
+            pressStartScreenPos = Vector2.zero;
+            return;
+        }
+
         if (mouse.leftButton.wasPressedThisFrame)
         {
             pressStartScreenPos = mouse.position.ReadValue();
@@ -323,6 +330,14 @@ public class CameraController : MonoBehaviour
         ApplyZoomStep(ReadLegacyScrollSteps(), (Vector2)Input.mousePosition);
 
         // ── BƯỚC 1: Nhấn chuột xuống → lưu vị trí screen, chưa drag ────
+        if (ConTroDangTrenUI((Vector2)Input.mousePosition))
+        {
+            isDragging          = false;
+            pressHeld           = false;
+            pressStartScreenPos = Vector2.zero;
+            return;
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
             pressStartScreenPos = (Vector2)Input.mousePosition;
@@ -506,8 +521,39 @@ public class CameraController : MonoBehaviour
             transform.position, targetPosition, ref panVelocity, posTime);
 
         // Smooth damp zoom về targetSize
+        float prevSize = cam.orthographicSize;
         cam.orthographicSize = Mathf.SmoothDamp(
             cam.orthographicSize, targetSize, ref zoomVelocity, zoomTime);
+
+        if (prevSize > 550f && cam.orthographicSize <= 480f)
+        {
+            CheckAndTriggerNearbyCharacterGreeting();
+        }
+    }
+
+    private float _lastZoomGreetTime = -999f;
+    private void CheckAndTriggerNearbyCharacterGreeting()
+    {
+        if (Time.unscaledTime - _lastZoomGreetTime < 3.0f) return;
+        _lastZoomGreetTime = Time.unscaledTime;
+
+        var charReactions = Object.FindObjectsByType<CharacterVoiceReaction>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        if (charReactions != null && charReactions.Length > 0)
+        {
+            Vector3 camPos = transform.position;
+            foreach (var cr in charReactions)
+            {
+                if (Vector2.Distance(camPos, cr.transform.position) < 350f)
+                {
+                    cr.TryGreet();
+                    break;
+                }
+            }
+        }
+        else
+        {
+            AudioManager.Instance?.PlayCharacterGreet();
+        }
     }
 
     // ── PUBLIC API ───────────────────────────────────────────────────────
@@ -770,6 +816,53 @@ public class CameraController : MonoBehaviour
     }
 
     /// <summary>Kẹp vị trí camera trong bounds.</summary>
+    // ═══════════════════════════════════════════════════════════════════════
+    //  [FIX 2026-09-04] "Tới vùng bến tàu là map cứng đơ, không kéo đi đâu được"
+    //
+    //  GỐC RỄ: Main Camera có component Physics2DRaycaster (Main Camera.prefab:101).
+    //  Vì vậy EventSystem.IsPointerOverGameObject() trả TRUE khi con trỏ nằm trên
+    //  BẤT KỲ Collider2D nào trong thế giới — KHÔNG chỉ riêng UI. Mà
+    //  BoatSystem/Dock_0X/LockUI có BoxCollider2D 180x90 phủ kín vùng bến tàu
+    //  ⇒ đứng ở đó là không bắt đầu kéo map được. Bằng chứng đo tại chỗ (UiBlockerProbe):
+    //      "KÉO MAP BỊ CHẶN — 1. BoatSystem/Dock_02/LockUI · nút bấm thật=KHÔNG"
+    //  và F9 xác nhận BlockMapPan=False, IsAnyPopupOpen=False ⇒ không phải khoá input.
+    //
+    //  CÁCH CHỮA: chỉ chặn kéo map khi con trỏ nằm trên UI THẬT (Graphic trên Canvas,
+    //  tức hit đến từ GraphicRaycaster). Va chạm world do Physics2DRaycaster bắt được
+    //  thì BỎ QUA — chúng vốn đã có đường xử lý riêng (OnMouseDown của LockUI,
+    //  ObjectDragHandler, PlacementManager...), không liên quan tới việc kéo map.
+    //
+    //  Revert: bỏ tick "chiChanBoiUiThat" trên Inspector ⇒ quay lại hành vi cũ.
+    // ═══════════════════════════════════════════════════════════════════════
+    [Header("Chặn kéo map")]
+    [Tooltip("BẬT (khuyến nghị): chỉ UI thật (nút/panel trên Canvas) mới chặn kéo map. " +
+             "TẮT: quay lại hành vi cũ — mọi Collider2D dưới con trỏ cũng chặn (gây kẹt ở bến tàu).")]
+    [SerializeField] private bool chiChanBoiUiThat = true;
+
+    private static readonly System.Collections.Generic.List<RaycastResult> _uiHits =
+        new System.Collections.Generic.List<RaycastResult>(16);
+
+    /// <summary>True khi con trỏ đang nằm trên UI ĐÁNG ĐỂ chặn kéo map.</summary>
+    private bool ConTroDangTrenUI(Vector2 screenPos)
+    {
+        EventSystem es = EventSystem.current;
+        if (es == null) return false;
+
+        if (!chiChanBoiUiThat) return es.IsPointerOverGameObject();
+
+        var data = new PointerEventData(es) { position = screenPos };
+        _uiHits.Clear();
+        es.RaycastAll(data, _uiHits);
+
+        for (int i = 0; i < _uiHits.Count; i++)
+        {
+            // Chỉ hit đến từ GraphicRaycaster mới là UI thật (Canvas + Graphic).
+            // Hit từ Physics2DRaycaster là va chạm world ⇒ bỏ qua.
+            if (_uiHits[i].module is UnityEngine.UI.GraphicRaycaster) return true;
+        }
+        return false;
+    }
+
     private Vector3 ClampToBounds(Vector3 pos)
     {
         pos.x = Mathf.Clamp(pos.x, bounds.x, bounds.y);

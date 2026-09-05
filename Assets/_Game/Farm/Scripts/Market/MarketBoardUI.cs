@@ -311,10 +311,25 @@ public class MarketBoardUI : MonoBehaviour
         switch (result)
         {
             case MarketBuyResult.Success:
-                // Thẻ mờ đi tại chỗ trước, lần vẽ lại kế tiếp mới gỡ hẳn —
-                // biến mất ngay lập tức làm người chơi không kịp thấy mình vừa mua gì
+                Sprite boughtSprite = null;
+                Vector3 startPos = Vector3.zero;
+                for (int i = 0; i < spawnedCards.Count; i++)
+                {
+                    if (spawnedCards[i] != null && spawnedCards[i].ListingId == listingId)
+                    {
+                        boughtSprite = spawnedCards[i].ItemSprite;
+                        startPos = spawnedCards[i].IconScreenPosition;
+                        break;
+                    }
+                }
+
                 MarkCardSold(listingId);
                 ShowToast("Đã mua!");
+
+                if (boughtSprite != null)
+                {
+                    StartCoroutine(PlayBuyItemFlyToWarehouse(boughtSprite, startPos));
+                }
                 break;
 
             case MarketBuyResult.NotEnoughGold:
@@ -472,5 +487,116 @@ public class MarketBoardUI : MonoBehaviour
 
         if (Time.unscaledTime >= toastHideAt)
             panelToast.SetActive(false);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  HIỆU ỨNG MUA HÀNG: RỚT XUỐNG NẢY LÊN RỒI BAY VÀO KHO (WAREHOUSE)
+    // ══════════════════════════════════════════════════════════════════════
+
+    private System.Collections.IEnumerator PlayBuyItemFlyToWarehouse(Sprite sprite, Vector3 worldStartPos)
+    {
+        Canvas rootCanvas = GetComponentInParent<Canvas>();
+        if (rootCanvas != null && rootCanvas.rootCanvas != null)
+            rootCanvas = rootCanvas.rootCanvas;
+
+        if (rootCanvas == null)
+            yield break;
+
+        Camera uiCam = rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : rootCanvas.worldCamera;
+        RectTransform canvasRect = rootCanvas.transform as RectTransform;
+        if (canvasRect == null)
+            yield break;
+
+        // Điểm xuất phát trên Canvas
+        Vector2 startScreen = RectTransformUtility.WorldToScreenPoint(uiCam, worldStartPos);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, startScreen, uiCam, out Vector2 startLocal);
+
+        // Đích đến: WarehouseGainToastUI hoặc vị trí mặc định trên HUD
+        RectTransform warehouseTarget = null;
+        if (WarehouseGainToastUI.Instance != null && WarehouseGainToastUI.Instance.PanelRect != null)
+            warehouseTarget = WarehouseGainToastUI.Instance.PanelRect;
+
+        Vector2 endScreen;
+        if (warehouseTarget != null)
+            endScreen = RectTransformUtility.WorldToScreenPoint(uiCam, warehouseTarget.position);
+        else
+            endScreen = new Vector2(Screen.width * 0.5f, Screen.height * 0.88f);
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, endScreen, uiCam, out Vector2 endLocal);
+
+        // Tạo icon bay
+        var flyGo = new GameObject("MarketBoughtItem_Fly", typeof(RectTransform), typeof(Image));
+        flyGo.layer = rootCanvas.gameObject.layer;
+        var rt = (RectTransform)flyGo.transform;
+        rt.SetParent(rootCanvas.transform, false);
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(85f, 85f);
+        rt.SetAsLastSibling();
+
+        var img = flyGo.GetComponent<Image>();
+        img.sprite = sprite;
+        img.raycastTarget = false;
+        img.preserveAspect = true;
+
+        // ── Pha 1: Rớt xuống nảy nhẹ (Drop & Pop Bounce) ──
+        Vector2 dropPos = startLocal + new Vector2(0f, -42f);
+        float dropTime = 0.22f;
+        float elapsed = 0f;
+        while (elapsed < dropTime)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float raw = Mathf.Clamp01(elapsed / dropTime);
+            float k = FxEase.OutBackRaw(raw, 0.25f);
+
+            rt.anchoredPosition = Vector2.LerpUnclamped(startLocal, dropPos, k);
+            float s = Mathf.Lerp(0.85f, 1.25f, FxEase.OutBackRaw(raw, 0.2f));
+            rt.localScale = new Vector3(s, s, 1f);
+            yield return null;
+        }
+
+        // Khựng nhẹ 0.05s
+        float pause = 0.05f;
+        while (pause > 0f)
+        {
+            pause -= Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        // ── Pha 2: Bay hình vòng cung về kho (Bezier Arc Fly) ──
+        Vector2 dir = endLocal - dropPos;
+        Vector2 perp = new Vector2(-dir.y, dir.x).normalized;
+        float bend = Random.Range(50f, 90f) * (Random.value < 0.5f ? -1f : 1f);
+        Vector2 control = (dropPos + endLocal) * 0.5f + perp * bend + new Vector2(0f, 60f);
+
+        float flyTime = 0.55f;
+        elapsed = 0f;
+        while (elapsed < flyTime)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float raw = Mathf.Clamp01(elapsed / flyTime);
+            float k = raw * raw * (3f - 2f * raw); // smoothstep
+
+            float u = 1f - k;
+            Vector2 curPos = (u * u) * dropPos + (2f * u * k) * control + (k * k) * endLocal;
+            rt.anchoredPosition = curPos;
+
+            // Thu nhỏ dần từ 1.25x -> 0.45x khi chui vào kho
+            float s = Mathf.Lerp(1.25f, 0.45f, raw);
+            rt.localScale = new Vector3(s, s, 1f);
+
+            yield return null;
+        }
+
+        // ── Pha 3: Chạm kho: kích hoạt nảy kho + hiện thanh kho Toast ──
+        if (WarehouseGainToastUI.Instance != null)
+        {
+            WarehouseGainToastUI.Instance.OnHarvestItemArrived(sprite);
+        }
+        if (warehouseTarget != null)
+        {
+            JuicyPulseFX.Play(warehouseTarget, 1.25f, 0.20f);
+        }
+
+        Destroy(flyGo);
     }
 }

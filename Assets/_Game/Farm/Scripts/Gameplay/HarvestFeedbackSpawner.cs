@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class HarvestFeedbackSpawner : MonoBehaviour
@@ -59,12 +59,12 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         StartCoroutine(CoSpawnFly(icon, worldPosition, amount));
     }
 
-    public void SpawnExpFly(Vector3 worldPosition, int expAmount)
+    public void SpawnExpFly(Vector3 worldPosition, int expAmount, bool addExpOnArrival = true)
     {
         if (expAmount <= 0 || expFlyPrefab == null)
             return;
 
-        StartCoroutine(CoSpawnExp(worldPosition, expAmount));
+        StartCoroutine(CoSpawnExp(worldPosition, expAmount, addExpOnArrival));
     }
 
     private IEnumerator CoSpawnFly(Sprite icon, Vector3 worldPosition, int amount)
@@ -101,7 +101,7 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         }
     }
 
-    private IEnumerator CoSpawnExp(Vector3 worldPosition, int expAmount)
+    private IEnumerator CoSpawnExp(Vector3 worldPosition, int expAmount, bool addExpOnArrival)
     {
         int visualCount = Mathf.Clamp(expAmount, minVisualExpOrbs, maxVisualExpOrbs);
         int perOrbExp = Mathf.Max(1, expAmount / visualCount);
@@ -124,7 +124,8 @@ public class HarvestFeedbackSpawner : MonoBehaviour
                 // Khi viên EXP chạm vào thanh EXP_Bar_Container: nảy mẩy mẩy + cộng EXP
                 PlayExpTargetPulse();
 
-                if (PlayerProgressManager.Instance != null)
+                // [FIX 2026-09-03] EXP đã cộng ở dòng 372; orb chỉ chạy FX, không cộng lần 2 (bug cộng đôi).
+                if (addExpOnArrival && PlayerProgressManager.Instance != null)
                     PlayerProgressManager.Instance.AddExp(thisOrbExp);
             });
 

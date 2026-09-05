@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L2_07_FocusPen
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: 
+  npcText: "Ch\u1EA1m v\xE0o chu\u1ED3ng g\xE0 \u0111\u1EC3 xem \u0111\xE0n g\xE0
+    n\xE0o!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
-  targetID: 
+  targetID: Pen_03
   useCircleHole: 1
   holePaddingPx: 16
   waitAction: 19
   showGuideBoard: 0
-  showHandPointer: 0
-  handOffset: {x: 40, y: -30}
+  showHandPointer: 1
+  handOffset: {x: 0, y: 0}
   dragToTargetId: 

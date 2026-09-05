@@ -22,23 +22,23 @@ MonoBehaviour:
     amount: 3
   - itemId: seed_watermelon
     displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 3
   - itemId: watermelon
     displayName: "D\u01B0a H\u1EA5u"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 4
   - itemId: pepper
     displayName: "Ti\xEAu"
-    icon: {fileID: 0}
+    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 3
   - itemId: chicken_meat
     displayName: "Th\u1ECBt G\xE0"
-    icon: {fileID: 0}
+    icon: {fileID: -2283333445584976228, guid: 888289491956e5347952a87ca3ec06d1, type: 3}
     amount: 2
   - itemId: son
     displayName: "S\u01A1n"
-    icon: {fileID: 0}
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 2
   unlockEntries:
   - label: "\u0110\u01A1n c\xE1 nhi\u1EC1u h\u01A1n"

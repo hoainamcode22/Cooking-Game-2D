@@ -98,6 +98,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     [Header("FX")]
     [SerializeField] private Transform harvestSpawnPoint;
     [SerializeField] private Transform expSpawnPoint;
+    // [EXP-DEDUP 2026-09-02] Co tat he EXP orb CU (ExpFlyToAvatarFX) o RUONG theo chot cua Sep.
+    [Tooltip("[EXP-DEDUP 2026-09-02] TRUE = quay lai he EXP CU: orb ExpFlyToAvatarFX hien ngay t=0 de len item roi, giu EXP toi ~3.12s moi cong. FALSE (mac dinh) = cong EXP NGAY luc thu hoach -> he MOI RewardFlyFX ban CUNG LUC item roi.")]
+    [SerializeField] private bool legacyExpOrbsEnabled = false;
 
     [Header("Plot VFX")]
     [SerializeField] private Transform cropVFXRoot;
@@ -695,7 +698,15 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         if (expReward <= 0)
             expReward = 5;
 
-        HarvestFeedbackSpawner.Instance?.SpawnExpFly(GetExpSpawnPosition(), expReward);
+        // [EXP-DEDUP 2026-09-02] TRUOC DAY: SpawnExpFly -> orb EXP CU (PF_ExpFly_World) hien NGAY t=0
+        // DE LEN item vua roi, roi giu EXP toi ~3.12s (drop 0.12s + nam dat 2.0s + bay 1.0s theo prefab)
+        // moi AddExp -> luc do he MOI RewardFlyFX (nghe OnExpAddedFx) moi ban -> TRE hon item.
+        // Sep chot: TAT orb cu o RUONG, AddExp NGAY de RewardFlyFX ban cung luc item roi (t=0).
+        // Chuong (PenMiniPanelUI:403) va tau (TrainManager:786) van dung orb cu - KHONG dung o day.
+        if (legacyExpOrbsEnabled)
+            HarvestFeedbackSpawner.Instance?.SpawnExpFly(GetExpSpawnPosition(), expReward);
+        else
+            PlayerProgressManager.Instance?.AddExp(expReward);
 
         plantedCrop = null;
         plantedCropId = "";
@@ -734,6 +745,14 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
     public int GetSpeedUpGemCost()
     {
         if (state != PlotState.Growing)
+            return 0;
+
+        // 🎁 [VÒNG 15] TRONG TUTORIAL: MIỄN PHÍ.
+        // Người chơi mới vào game có đúng 5 kim cương, mà RushCostFor trả về ~29 cho một ô
+        // lúa vừa trồng ⇒ bước "bấm kim cương cho chín ngay" là NGÕ CỤT: không đủ tiền,
+        // nút chỉ hiện hint rồi thôi, tutorial đứng luôn. Trả 0 ở đây là chữa tận gốc —
+        // nút hiện giá 0, InstantGrow trừ 0 gem, không phải sửa thêm chỗ nào khác.
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
             return 0;
 
         return ConstructionManager.RushCostFor(GetRemainingSeconds());

@@ -1,0 +1,429 @@
+fileFormatVersion: 2
+guid: ef01fb06e3f471e43b9bb980dcb7327f
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -5855997050781707005
+    second: gataulua_clock_spritesheet_0
+  - first:
+      213: -7752784356693500412
+    second: gataulua_clock_spritesheet_1
+  - first:
+      213: 8047204243656125798
+    second: gataulua_clock_spritesheet_2
+  - first:
+      213: 8219914825259551410
+    second: gataulua_clock_spritesheet_3
+  - first:
+      213: 788557988466827560
+    second: gataulua_clock_spritesheet_4
+  - first:
+      213: 4216474263407586114
+    second: gataulua_clock_spritesheet_5
+  - first:
+      213: 2038832052256622291
+    second: gataulua_clock_spritesheet_6
+  - first:
+      213: 3648535833757803968
+    second: gataulua_clock_spritesheet_7
+  - first:
+      213: -8154857846629461114
+    second: gataulua_clock_spritesheet_8
+  - first:
+      213: 2324129842289527043
+    second: gataulua_clock_spritesheet_9
+  - first:
+      213: -6429302939408535850
+    second: gataulua_clock_spritesheet_10
+  - first:
+      213: 5123252119608717552
+    second: gataulua_clock_spritesheet_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_0
+      rect:
+        serializedVersion: 2
+        x: 43
+        y: 1052
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 305db6e65b15bbea0800000000000000
+      internalID: -5855997050781707005
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 555
+        y: 1052
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40e141f14b3986490800000000000000
+      internalID: -7752784356693500412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 1067
+        y: 1052
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 66da32aaf996daf60800000000000000
+      internalID: 8047204243656125798
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 1579
+        y: 1052
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ba009b8bf0031270800000000000000
+      internalID: 8219914825259551410
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 43
+        y: 540
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 821ac53005581fa00800000000000000
+      internalID: 788557988466827560
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 555
+        y: 540
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24b6cf2b00de38a30800000000000000
+      internalID: 4216474263407586114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 1067
+        y: 540
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3d6cf6703f26b4c10800000000000000
+      internalID: 2038832052256622291
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 1579
+        y: 540
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0c5ea61920432a230800000000000000
+      internalID: 3648535833757803968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 43
+        y: 28
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68318d9aeff14de80800000000000000
+      internalID: -8154857846629461114
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 555
+        y: 28
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3094d8d17c7f04020800000000000000
+      internalID: 2324129842289527043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 1067
+        y: 28
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6deed2f5a0786c6a0800000000000000
+      internalID: -6429302939408535850
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: gataulua_clock_spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 1579
+        y: 28
+        width: 428
+        height: 460
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f07b0c98a2791740800000000000000
+      internalID: 5123252119608717552
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      gataulua_clock_spritesheet_0: -5855997050781707005
+      gataulua_clock_spritesheet_1: -7752784356693500412
+      gataulua_clock_spritesheet_10: -6429302939408535850
+      gataulua_clock_spritesheet_11: 5123252119608717552
+      gataulua_clock_spritesheet_2: 8047204243656125798
+      gataulua_clock_spritesheet_3: 8219914825259551410
+      gataulua_clock_spritesheet_4: 788557988466827560
+      gataulua_clock_spritesheet_5: 4216474263407586114
+      gataulua_clock_spritesheet_6: 2038832052256622291
+      gataulua_clock_spritesheet_7: 3648535833757803968
+      gataulua_clock_spritesheet_8: -8154857846629461114
+      gataulua_clock_spritesheet_9: 2324129842289527043
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

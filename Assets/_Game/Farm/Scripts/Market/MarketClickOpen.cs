@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.EventSystems;
@@ -58,6 +58,7 @@ public class MarketClickOpen : MonoBehaviour
     // mở chợ
     private void TryOpenMarket(Vector2 screenPos)
     {
+        if (FarmInputLock.BlockWorldInteraction) return;
         if (SceneManager.GetSceneByName("SampleScene").isLoaded)
             return;
 

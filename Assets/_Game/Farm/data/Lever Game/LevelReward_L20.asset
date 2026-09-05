@@ -26,23 +26,23 @@ MonoBehaviour:
     amount: 2
   - itemId: ca_rot
     displayName: "H\u1EA1t C\xE0 R\u1ED1t"
-    icon: {fileID: 0}
+    icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
     amount: 3
   - itemId: carot
     displayName: "C\xE0 R\u1ED1t"
-    icon: {fileID: 0}
+    icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
     amount: 5
   - itemId: lemon
     displayName: Chanh
-    icon: {fileID: 0}
+    icon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}
     amount: 4
   - itemId: beef
     displayName: "Th\u1ECBt B\xF2"
-    icon: {fileID: 0}
+    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
     amount: 2
   - itemId: go
     displayName: "G\u1ED7"
-    icon: {fileID: 0}
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 2
   unlockEntries:
   - label: "C\xE2y & \u0111\u01A1n h\xE0ng cao c\u1EA5p"

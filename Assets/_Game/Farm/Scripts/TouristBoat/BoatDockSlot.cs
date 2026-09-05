@@ -1,3 +1,5 @@
+#pragma warning disable CS0414
+using System;
 using System.Collections;
 using System.Globalization;
 using TMPro;
@@ -114,6 +116,8 @@ public class BoatDockSlot : MonoBehaviour
     /// </summary>
     private void OnMouseDown()
     {
+        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         _dangNhan  = false;
         _viTriNhan = Vector2.zero;
 
@@ -136,27 +140,20 @@ public class BoatDockSlot : MonoBehaviour
     }
 
     /// <summary>
-    /// Nhả chuột/ngón tay TRÊN CHÍNH collider này (Unity chỉ gọi khi nhấn và nhả cùng
-    /// một collider) và không kéo quá ngưỡng → coi là một cú chạm thật.
+    /// Nhả chuột/ngón tay trên collider hoặc tap trực tiếp để mở bảng mua slot bến tàu.
     /// </summary>
     private void OnMouseUpAsButton()
     {
-        if (!_dangNhan) return;
+        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         _dangNhan = false;
-
-        // Kéo quá ngưỡng = pan bản đồ, không phải chạm
-        if ((ViTriConTro() - _viTriNhan).sqrMagnitude > NguongKeoPixel * NguongKeoPixel) return;
-
-        // Trong lúc giữ tay, tình hình có thể đã đổi (popup khác vừa mở, bắt đầu kéo hạt…)
-        if (FarmInputLock.BlockMapPan || FarmInputLock.IsDraggingSeed ||
-            FarmInputLock.IsDraggingSickle || FarmInputLock.IsPopupOpen) return;
 
         var mgr = _manager != null ? _manager : BoatDockManager.Instance;
         if (mgr == null) return;
         if (mgr.IsDockUnlocked(dockIndex)) return;
-        if (dockIndex == 0 && !mgr.IsIntroDone) return; // guard m-1, kiểm lại lúc nhả
+        if (dockIndex == 0 && !mgr.IsIntroDone) return;
 
-        // ── V2 (BOAT-002 §3.6): tap bảng khóa → MỞ POPUP MUA, không mua thẳng ──
+        // ── V2: tap bảng khóa → MỞ POPUP MUA ──
         if (_popupMua == null)
             _popupMua = FindFirstObjectByType<DockPurchasePopupUI>(FindObjectsInactive.Include);
 
@@ -218,10 +215,53 @@ public class BoatDockSlot : MonoBehaviour
 
         bool unlocked = mgr.IsDockUnlocked(dockIndex);
 
-        if (lockRoot != null)    lockRoot.SetActive(!unlocked);
+        if (lockRoot != null)
+        {
+            lockRoot.SetActive(!unlocked);
+
+            if (!unlocked)
+            {
+                // Tắt hoàn toàn LockIcon placeholder nếu dùng sprite Knob (vòng tròn vàng to đùng)
+                Transform icon = lockRoot.transform.Find("LockIcon");
+                if (icon != null)
+                {
+                    var isr = icon.GetComponent<SpriteRenderer>();
+                    if (isr == null || isr.sprite == null || isr.sprite.name == "Knob" || isr.sprite.name == "Circle")
+                    {
+                        icon.gameObject.SetActive(false);
+                    }
+                }
+
+                // Căn chỉnh chữ teaser nằm gọn gàng bên trong bảng gỗ
+                if (teaserText != null)
+                {
+                    teaserText.text = BuildTeaserText(mgr.Config);
+                    if (mgr.Config != null)
+                    {
+                        teaserText.fontSize = mgr.Config.lockTeaserFontSize > 0 ? mgr.Config.lockTeaserFontSize : 18f;
+                        teaserText.alignment = TextAlignmentOptions.Center;
+                        teaserText.textWrappingMode = TextWrappingModes.Normal;
+                        var rt = teaserText.rectTransform;
+                        if (rt != null)
+                        {
+                            rt.sizeDelta = new Vector2(mgr.Config.lockPanelWidth * 0.9f, mgr.Config.lockPanelHeight * 0.65f);
+                        }
+                        teaserText.transform.localPosition = new Vector3(0f, -mgr.Config.lockPanelHeight * 0.05f, 0f);
+                    }
+                }
+
+                // Đảm bảo BoxCollider2D phủ đúng kích thước bảng gỗ để click mượt 100%
+                var col = lockRoot.GetComponent<BoxCollider2D>();
+                if (col == null) col = GetComponent<BoxCollider2D>();
+                if (col != null && mgr.Config != null)
+                {
+                    col.size = new Vector2(mgr.Config.lockPanelWidth, mgr.Config.lockPanelHeight);
+                    col.offset = Vector2.zero;
+                }
+            }
+        }
+
         if (tapCollider != null) tapCollider.enabled = !unlocked;
-        if (!unlocked && teaserText != null)
-            teaserText.text = BuildTeaserText(mgr.Config);
     }
 
     /// <summary>
@@ -229,8 +269,6 @@ public class BoatDockSlot : MonoBehaviour
     ///   dock 0: "Mở ở Lv10" (miễn phí, mở qua intro)
     ///   dock 1: "Mở ở Lv12 · 2.000 vàng"
     ///   dock 2: "Mở ở Lv14 · 25 Kim Cương"
-    /// KHÔNG dùng emoji trong text runtime (quyết định lead sau QA — font TMP mặc định
-    /// thiếu glyph emoji). Sếp có thể thêm emoji lại nếu font TMP của dự án có glyph.
     /// </summary>
     private string BuildTeaserText(TouristBoatConfig config)
     {
@@ -239,7 +277,6 @@ public class BoatDockSlot : MonoBehaviour
         switch (dockIndex)
         {
             case 0:  return $"Mở ở Lv{config.unlockLevel}";
-            // Xuống dòng thay vì một dòng dài: chữ to hơn mà vẫn nằm gọn trong bảng.
             case 1:  return $"Mở ở Lv{config.dock2Level}\n{FormatVN(config.dock2GoldCost)} vàng";
             case 2:  return $"Mở ở Lv{config.dock3Level}\n{config.dock3GemCost} Kim Cương";
             default: return string.Empty;
@@ -317,7 +354,12 @@ public class BoatDockSlot : MonoBehaviour
             _floatingText.overflowMode     = TextOverflowModes.Overflow;
             _floatingText.color            = new Color(1f, 0.95f, 0.75f); // trắng ấm, thân thiện
             var mr = _floatingText.GetComponent<MeshRenderer>();
-            if (mr != null) mr.sortingOrder = 200;
+            if (mr != null)
+            {
+                // [FIX 2026-09-03] Thiếu sortingLayerName ⇒ rơi về layer "Default" (thấp hơn "Objects" của khách) ⇒ khách đè lên chữ. Ép về cùng layer với thân tàu.
+                mr.sortingLayerName = "ObjectsFront";
+                mr.sortingOrder = 210;
+            }
         }
 
         Vector3 basePos = (lockRoot != null ? lockRoot.transform.position : transform.position)

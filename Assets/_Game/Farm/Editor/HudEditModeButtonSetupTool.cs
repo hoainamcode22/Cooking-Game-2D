@@ -57,8 +57,8 @@ public static class HudEditModeButtonSetupTool
     private static readonly Regex MauTenNhanVat = new Regex(@"^NV\d{1,2}[_-]", RegexOptions.IgnoreCase);
 
     // Từ khoá sprite "sửa" — ưu tiên khớp chính xác trước, rồi khớp chứa
-    private static readonly string[] TenSpriteChinhXac = { "btn_edit_mode_icon", "btn_edit_mode_forge_1788194641095_transparent", "btn_edit_mode", "icon_sua", "Icon_Sua", "sua", "edit", "bua", "hammer", "setting" };
-    private static readonly string[] TuKhoaSpriteChua  = { "btn_edit_mode", "edit_mode", "sua", "edit", "bua", "hammer", "setting", "wrench" };
+    private static readonly string[] TenSpriteChinhXac = { "btn_edit_mode_forge_1788194641095_transparent", "btn_edit_mode_icon", "btn_edit_mode", "icon_sua", "Icon_Sua", "edit_mode", "edit", "bua", "hammer", "setting" };
+    private static readonly string[] TuKhoaSpriteChua  = { "btn_edit_mode", "edit_mode", "edit", "bua", "hammer", "wrench" };
 
     [MenuItem(MenuDung, false, 40)]
     private static void DungNutMenu()
@@ -90,96 +90,97 @@ public static class HudEditModeButtonSetupTool
         Undo.IncrementCurrentGroup();
         Undo.SetCurrentGroupName(UndoLabel);
 
-        // ── 2. Tìm hoặc tạo nút mới (idempotent) ────────────────────────────
-        Transform cu = gocHUD.Find(TenNutMoi);
-        bool taoMoi = cu == null;
+        // ── 2. Tìm hoặc tạo nút mới trực tiếp trên Canvas_HUD (để không bị trượt mất khi đóng mission) ──
+        Transform canvasHUD = gocHUD.parent != null && gocHUD.parent.name.Contains("Canvas") ? gocHUD.parent : gocHUD;
+        Transform cu = canvasHUD.Find(TenNutMoi);
+        if (cu == null) cu = gocHUD.Find(TenNutMoi);
 
+        bool taoMoi = cu == null;
         GameObject go;
         if (taoMoi)
         {
             go = new GameObject(TenNutMoi, typeof(RectTransform));
             Undo.RegisterCreatedObjectUndo(go, UndoLabel);
-            go.transform.SetParent(gocHUD, false);
+            go.transform.SetParent(canvasHUD, false);
+            go.layer = 5; // Layer UI
 
-            // Đặt ngay SAU nút nhiệm vụ trong hierarchy cho dễ nhìn
-            int idx = nutNhiemVu.transform.GetSiblingIndex();
-            go.transform.SetSiblingIndex(Mathf.Min(idx + 1, gocHUD.childCount - 1));
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot     = new Vector2(0f, 1f);
+            rt.localScale = Vector3.one;
+            rt.sizeDelta        = new Vector2(105f, 105f);
+            rt.anchoredPosition = new Vector2(30f, -230f);
 
-            var rtSrc = nutNhiemVu.GetComponent<RectTransform>();
-            var rt    = (RectTransform)go.transform;
-            // Copy anchor/pivot của nút nhiệm vụ TRƯỚC khi đặt toạ độ — nếu không,
-            // con số (52.5, -172.5) sẽ ăn theo hệ toạ độ khác và nút bay đi đâu mất.
-            if (rtSrc != null)
-            {
-                rt.anchorMin = rtSrc.anchorMin;
-                rt.anchorMax = rtSrc.anchorMax;
-                rt.pivot     = rtSrc.pivot;
-                rt.localScale = rtSrc.localScale;
-            }
-            rt.sizeDelta        = CoNutMoi;
-            rt.anchoredPosition = ViTriNutMoi;
-
-            log.AppendLine($"+ Tạo {TenNutMoi} tại pos {ViTriNutMoi} size {CoNutMoi} " +
-                           "(anchor/pivot copy từ nút nhiệm vụ)");
+            log.AppendLine($"+ Tạo {TenNutMoi} tại Top-Left pos (30, -230) size (105, 105) trên Canvas_HUD");
         }
         else
         {
             go = cu.gameObject;
-            log.AppendLine($"· {TenNutMoi} đã có — GIỮ NGUYÊN vị trí/cỡ bạn đã kéo, chỉ kiểm phần thiếu.");
+            go.layer = 5;
+            go.transform.SetParent(canvasHUD, false);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot     = new Vector2(0f, 1f);
+            rt.localScale = Vector3.one;
+            rt.sizeDelta        = new Vector2(105f, 105f);
+            rt.anchoredPosition = new Vector2(30f, -230f);
+            log.AppendLine($"· {TenNutMoi} đã có — chuyển lên Canvas_HUD và ghim vị trí (30, -230).");
         }
 
-        // ── 3. Image: mặc bộ mặt của nút nhiệm vụ, ưu tiên sprite "sửa" ─────
-        var imgSrc = nutNhiemVu.GetComponent<Image>();
-        var img    = go.GetComponent<Image>();
-        if (img == null)
+        // ── 3. Background Card: Luôn dùng sprite khung thẻ bo góc chuẩn của Game ─────
+        var img = go.GetComponent<Image>();
+        if (img == null) img = Undo.AddComponent<Image>(go);
+
+        Sprite cardBgSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_township_exact_bases/generated_sprites/hud_bottom_tab_base.png")
+                        ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Resources/UI_ChuyenCanh/WoodBoard_Frame.png")
+                        ?? SkinKit.BoGoc(22f);
+
+        img.sprite = cardBgSpr;
+        img.type = Image.Type.Sliced;
+        img.color = Color.white;
+        img.raycastTarget = true;
+        log.AppendLine($"  ✓ Image Background: {cardBgSpr.name} (Sliced 9-slice)");
+
+        // ── 4. Icon Búa / Forge Sửa Chữa (Kích thước 68x68 ở chính giữa) ─────────────
+        Transform iconTf = go.transform.Find("Icon_Forge");
+        if (iconTf == null)
         {
-            img = Undo.AddComponent<Image>(go);
-
-            if (imgSrc != null)
-            {
-                // CopySerialized lấy TRỌN sprite + type + color + material +
-                // pixelsPerUnitMultiplier... của nút nhiệm vụ (không kéo theo listener
-                // nào vì đây là Image, không phải Button).
-                EditorUtility.CopySerialized(imgSrc, img);
-                log.AppendLine("  + Image: copy nguyên bộ mặt từ nút nhiệm vụ " +
-                               $"(sprite '{(imgSrc.sprite != null ? imgSrc.sprite.name : "null")}', type {imgSrc.type})");
-            }
-            else
-            {
-                img.color = new Color(0.42f, 0.72f, 0.30f, 0.95f);
-                log.AppendLine("  ! Nút nhiệm vụ không có Image — dùng màu xanh lá đặc.");
-            }
-
-            // Sprite riêng cho "Sửa" nếu tìm được (nổi bật hơn là dùng lại icon nhiệm vụ)
-            Sprite riengCuaSua = TimSpriteSua(out string duongDanSprite);
-            if (riengCuaSua != null)
-            {
-                img.sprite = riengCuaSua;
-                if (img.sprite.border != Vector4.zero) img.type = Image.Type.Sliced;
-                log.AppendLine($"  + Sprite riêng cho nút Sửa: {riengCuaSua.name}  ({duongDanSprite})");
-            }
-            else
-            {
-                log.AppendLine("  · Không tìm được sprite tên chứa sua/edit/bua/hammer/setting " +
-                               "trong thư mục UI — dùng lại sprite của nút nhiệm vụ (art xong thì thay ở Source Image).");
-            }
-            img.raycastTarget = true;
-        }
-        else
-        {
-            log.AppendLine("  · Image đã có — không đè.");
+            GameObject iconGo = new GameObject("Icon_Forge", typeof(RectTransform));
+            Undo.RegisterCreatedObjectUndo(iconGo, UndoLabel);
+            iconGo.transform.SetParent(go.transform, false);
+            iconTf = iconGo.transform;
         }
 
-        // ── 4. Button: copy cảm giác bấm, KHÔNG copy onClick ────────────────
+        var iconRt = (RectTransform)iconTf;
+        iconRt.anchorMin = new Vector2(0.5f, 0.5f);
+        iconRt.anchorMax = new Vector2(0.5f, 0.5f);
+        iconRt.pivot = new Vector2(0.5f, 0.5f);
+        iconRt.sizeDelta = new Vector2(68f, 68f);
+        iconRt.anchoredPosition = new Vector2(0f, 4f);
+
+        var iconImg = iconTf.GetComponent<Image>();
+        if (iconImg == null) iconImg = iconTf.gameObject.AddComponent<Image>();
+
+        Sprite hammerSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/btn_EditMode/btn_edit_mode_forge_1788194641095_transparent.png")
+                        ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png")
+                        ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/iconbuabua.png")
+                        ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/Icons/btn_edit_mode_icon.png");
+
+        iconImg.sprite = hammerSpr;
+        iconImg.color = Color.white;
+        iconImg.preserveAspect = true;
+        iconImg.raycastTarget = false;
+        log.AppendLine($"  ✓ Icon Sửa: {(hammerSpr != null ? hammerSpr.name : "null")}");
+
+        // ── 5. Button: copy cảm giác bấm, KHÔNG copy onClick ────────────────
         var btn = go.GetComponent<Button>();
         if (btn == null)
         {
             btn = Undo.AddComponent<Button>(go);
             btn.targetGraphic = img;
 
-            // Chỉ copy 3 thứ về "cảm giác bấm". CỐ Ý không EditorUtility.CopySerialized
-            // trên Button: nó sẽ copy luôn danh sách onClick của nút nhiệm vụ ⇒ bấm
-            // nút Sửa lại mở bảng nhiệm vụ.
             btn.transition  = nutNhiemVu.transition;
             btn.colors      = nutNhiemVu.colors;
             btn.spriteState = nutNhiemVu.spriteState;
@@ -187,54 +188,38 @@ public static class HudEditModeButtonSetupTool
         }
         else
         {
-            log.AppendLine("  · Button đã có — không đè.");
+            btn.targetGraphic = img;
+            log.AppendLine("  · Button đã có.");
         }
 
-        // ── 5. Label TMP "Sửa" ──────────────────────────────────────────────
+        // ── 6. Label TMP "Sửa" ──────────────────────────────────────────────
         Transform labelCu = go.transform.Find("Label");
         if (labelCu == null)
         {
             var labelGo = new GameObject("Label", typeof(RectTransform));
             Undo.RegisterCreatedObjectUndo(labelGo, UndoLabel);
             labelGo.transform.SetParent(go.transform, false);
-
-            var lrt = (RectTransform)labelGo.transform;
-            lrt.anchorMin = Vector2.zero;
-            lrt.anchorMax = Vector2.one;
-            lrt.offsetMin = Vector2.zero;
-            lrt.offsetMax = Vector2.zero;
-
-            var tmp = labelGo.AddComponent<TextMeshProUGUI>();
-            tmp.text          = "Sửa";
-            tmp.alignment     = TextAlignmentOptions.Center;
-            tmp.raycastTarget = false; // chữ không được nuốt click của nút
-
-            TMP_Text nhanNguon = nutNhiemVu.GetComponentInChildren<TMP_Text>(true);
-            if (nhanNguon != null)
-            {
-                tmp.font      = nhanNguon.font;
-                tmp.fontSize  = nhanNguon.fontSize;
-                tmp.color     = nhanNguon.color;
-                tmp.fontStyle = nhanNguon.fontStyle;
-                log.AppendLine($"  + Label \"Sửa\" (font/cỡ/màu copy từ label nút nhiệm vụ: {nhanNguon.name})");
-            }
-            else
-            {
-                TMP_FontAsset font = TimFontTMP();
-                if (font != null) tmp.font = font;
-                tmp.fontSize = CoNutMoi.y * 0.30f; // 105 → ~32
-                tmp.color    = Color.white;
-                tmp.fontStyle = FontStyles.Bold;
-                log.AppendLine("  + Label \"Sửa\" (nút nhiệm vụ không có label TMP — dùng font TMP của dự án" +
-                               (font != null ? $": {font.name})" : ", không thấy font nào)"));
-            }
+            labelCu = labelGo.transform;
         }
-        else
-        {
-            var tmpCu = labelCu.GetComponent<TMP_Text>();
-            if (tmpCu != null && string.IsNullOrEmpty(tmpCu.text)) tmpCu.text = "Sửa";
-            log.AppendLine("  · Label đã có — không đè.");
-        }
+
+        var lrt = (RectTransform)labelCu;
+        lrt.anchorMin = new Vector2(0.5f, 0f);
+        lrt.anchorMax = new Vector2(0.5f, 0f);
+        lrt.pivot = new Vector2(0.5f, 0.5f);
+        lrt.sizeDelta = new Vector2(90f, 26f);
+        lrt.anchoredPosition = new Vector2(0f, 16f);
+
+        var tmp = labelCu.GetComponent<TextMeshProUGUI>();
+        if (tmp == null) tmp = labelCu.gameObject.AddComponent<TextMeshProUGUI>();
+        tmp.text          = "SỬA";
+        tmp.alignment     = TextAlignmentOptions.Center;
+        tmp.fontSize      = 16f;
+        tmp.fontStyle     = FontStyles.Bold;
+        tmp.color         = new Color32(92, 52, 18, 255); // Nâu gỗ đồng bộ
+        tmp.raycastTarget = false;
+
+        if (SkinKit.FontVo != null) tmp.font = SkinKit.FontVo;
+        log.AppendLine("  ✓ Label \"SỬA\" (Font đẹp, màu nâu gỗ sắc nét)");
 
         // ── 6. MobileEditModeButton + wire nutCoSan ─────────────────────────
         var comp = go.GetComponent<MobileEditModeButton>();

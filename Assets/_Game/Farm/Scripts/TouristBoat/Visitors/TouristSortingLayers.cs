@@ -31,8 +31,14 @@ public static class TouristSortingLayers
     /// <summary>Ưu tiên layer cho TẤM GỖ (dưới chân khách).</summary>
     public static readonly string[] Gangplank = { "Objects", "ObjectsFront", "Default" };
 
-    /// <summary>Ưu tiên layer cho KHÁCH DU LỊCH (trên decor).</summary>
-    public static readonly string[] Visitor = { "ObjectsFront", "Objects", "Default" };
+    /// <summary>
+    /// Ưu tiên layer cho KHÁCH DU LỊCH (cùng layer với công trình/thế giới, dưới mái tàu).
+    /// [GIẢI THÍCH 2026-09-03 — DEV-3, Sếp duyệt] "Objects" ở đây là CỐ Ý, không phải thiếu
+    /// sót: tàu (TrainPathFollower) cố định layer "ObjectsFront" (order 650-660), đứng TRÊN
+    /// "Objects" theo TagManager. Khách phải nằm DƯỚI "ObjectsFront" để không đè lên tàu, nên
+    /// KHÔNG được thêm "ObjectsFront" vào danh sách ưu tiên này. Không đổi giá trị mảng này.
+    /// </summary>
+    public static readonly string[] Visitor = { "Objects", "Default" };
 
     /// <summary>Ưu tiên layer cho BUBBLE / MẶT CƯỜI (trên cùng).</summary>
     public static readonly string[] Overlay = { "Foreground", "ObjectsFront", "Objects", "Default" };

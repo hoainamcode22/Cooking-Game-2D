@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 /// <summary>
@@ -671,6 +671,11 @@ public class TrainManager : MonoBehaviour
     {
         State = newState;
 
+        if (newState == TrainState.WaitingForLoad || newState == TrainState.RewardArriving || newState == TrainState.ShipDeparting)
+        {
+            AudioManager.Instance?.PlayTrainWhistle();
+        }
+
         // Ẩn process popup cũ ở mọi state ngoại trừ Processing
         if (newState != TrainState.Processing)
             processPopup?.Hide();
@@ -783,7 +788,8 @@ public class TrainManager : MonoBehaviour
         }
 
         // Dự phòng: cùng hệ FX với ruộng/chuồng (xem giải thích ở SpawnItemFlyFX).
-        HarvestFeedbackSpawner.Instance?.SpawnExpFly(pos, expPerReward);
+        // [FIX 2026-09-03] EXP đã cộng ở dòng 372; orb chỉ chạy FX, không cộng lần 2 (bug cộng đôi).
+        HarvestFeedbackSpawner.Instance?.SpawnExpFly(pos, expPerReward, addExpOnArrival: false);
     }
 
     private Vector3 GetRewardSlotWorldPos(int i)

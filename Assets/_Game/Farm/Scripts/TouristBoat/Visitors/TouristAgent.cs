@@ -58,9 +58,17 @@ public class TouristAgent : MonoBehaviour
     // [BUG Sếp gặp lúc Play test 2026-08-29] Bản đầu để "CongTrinh" (chép từ LivestockAI)
     // — layer đó KHÔNG có trong project, Unity im lặng đẩy renderer về Default ⇒ khách bị
     // cây/nhà che kín. Nay để TRỐNG = tự giải theo TouristSortingLayers.Visitor
-    // (ObjectsFront → Objects → Default) và CẢNH BÁO nếu phải rơi dự phòng.
-    [Tooltip("Sorting layer của khách. ĐỂ TRỐNG = tự chọn 'ObjectsFront' (khuyến nghị). " +
-             "Gõ tên khác chỉ khi layer đó CÓ THẬT trong Project Settings > Tags and Layers.")]
+    // (Objects → Default) và CẢNH BÁO nếu phải rơi dự phòng.
+    // [SUA 2026-09-03 - DEV-3, Sep duyet] Comment/Tooltip ban cu ghi NHAM "ObjectsFront"
+    // la lua chon khuyen nghi -- SAI so voi code that (TouristSortingLayers.Visitor thuc te
+    // la {"Objects","Default"}) va la CAI BAY: "ObjectsFront" la layer CUA TAU
+    // (TrainPathFollower, order 650). Go tay "ObjectsFront" vao field ben duoi se khien
+    // khach (baseSortingOrder 5000) de LEN TREN tau ngay lap tuc.
+    // TUYET DOI KHONG dat "ObjectsFront" vao sortingLayerName.
+    [Tooltip("Sorting layer của khách. ĐỂ TRỐNG = tự chọn 'Objects' (khuyến nghị, đúng với code thật). " +
+             "TUYỆT ĐỐI KHÔNG gõ 'ObjectsFront' — đó là layer của TÀU (TrainPathFollower, order 650); " +
+             "đặt vào đây sẽ khiến khách đè lên tàu. Gõ tên khác chỉ khi layer đó CÓ THẬT trong " +
+             "Project Settings > Tags and Layers và KHÔNG PHẢI 'ObjectsFront'.")]
     [SerializeField] private string sortingLayerName = "";
 
     [Tooltip("Order gốc — cộng thêm phần tính theo Y. Đặt CAO hơn decor để khách không bị che.")]
@@ -72,6 +80,20 @@ public class TouristAgent : MonoBehaviour
 
     [Tooltip("Biên kẹp phần Y-sort — giữ tổng order trong khoảng an toàn của Unity.")]
     [SerializeField] private int ySortClamp = 8000;
+
+    // [LUOI AN TOAN 2026-09-03 - DEV-3, Sep duyet] Tau (TrainPathFollower) co dinh layer
+    // "ObjectsFront", order 650-660 (TrainPathFollower.cs -- CHI DOC, khong sua). Neu tuong
+    // lai ai do lo go "ObjectsFront" vao sortingLayerName phia tren (bat chap canh bao
+    // Tooltip), khach se roi vao layer cua tau -- kep tran order duoi day dam bao khach van
+    // KHONG de len tau trong tinh huong do. Hien khach dang o layer "Objects" (khac layer
+    // tau "ObjectsFront") nen dieu kien kep KHONG kich hoat -- hanh vi runtime hien tai
+    // KHONG doi.
+    private const int TrainSortingOrderRef = 650; // khop TrainPathFollower.TrainSortingOrder
+
+    [Tooltip("Lưới an toàn: nếu sortingLayerName bị đặt trùng layer của TÀU ('ObjectsFront'), " +
+             "kẹp trần sortingOrder của khách xuống dưới tàu để không đè lên tàu. " +
+             "Bật mặc định (revert bằng cách bỏ tick).")]
+    [SerializeField] private bool clampBelowTrain = true;
 
     [Header("Ngưỡng di chuyển")]
     [Tooltip("Khoảng cách coi như 'đã tới điểm' (unit world). Map lớn nên số này không thể là 0.05.")]
@@ -140,6 +162,10 @@ public class TouristAgent : MonoBehaviour
     // ĐÚNG MỘT LẦN cho mỗi khách rồi im lặng bỏ qua.
     private bool _daCanhBaoAnimator;
 
+    // [LUOI AN TOAN 2026-09-03 - DEV-3] Canh bao DUNG MOT LAN cho khach nay neu phat hien
+    // sortingLayerName trung layer cua TAU ("ObjectsFront") -- khong spam moi frame.
+    private bool _daCanhBaoObjectsFront;
+
     private static readonly int HashDirX     = Animator.StringToHash("DirX");
     private static readonly int HashDirY     = Animator.StringToHash("DirY");
     private static readonly int HashIsMoving = Animator.StringToHash("IsMoving");
@@ -196,6 +222,25 @@ public class TouristAgent : MonoBehaviour
     public bool IsWaitingBubble =>
         State == AgentState.WaitingServe && !WasServed && !WasTimedOut &&
         (_bubble == null || _bubble.State == TouristRequestBubble.BubbleState.Hidden);
+
+    /// <summary>Lấy Sprite hình ảnh nhân vật của khách du lịch này để hiển thị avatar.</summary>
+    public Sprite GetAvatarSprite()
+    {
+        if (_renderers != null && _renderers.Length > 0)
+        {
+            for (int i = 0; i < _renderers.Length; i++)
+            {
+                if (_renderers[i] != null && _renderers[i].sprite != null)
+                {
+                    Transform t = _renderers[i].transform;
+                    if (t.name != "Bubble" && t.name != "Frame" && t.name != "Icon" && t.name != "Dot1" && t.name != "Dot2")
+                        return _renderers[i].sprite;
+                }
+            }
+        }
+        var sr = GetComponentInChildren<SpriteRenderer>(true);
+        return sr != null ? sr.sprite : null;
+    }
 
     // ─── Unity lifecycle ────────────────────────────────────────────────
 
@@ -459,6 +504,8 @@ public class TouristAgent : MonoBehaviour
     /// </summary>
     private void OnMouseUpAsButton()
     {
+        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         // Popup đang mở / đang kéo hạt giống-liềm → không nhận tap world (luật FarmInputLock).
         if (FarmInputLock.IsPopupOpen || FarmInputLock.BlockMapPan) return;
         if (_manager == null) return;
@@ -825,8 +872,26 @@ public class TouristAgent : MonoBehaviour
 
         int dynamic = Mathf.Clamp(Mathf.RoundToInt(-transform.position.y * ySortFactor),
                                   -ySortClamp, ySortClamp);
+        int order = baseSortingOrder + dynamic;
+
+        // [LUOI AN TOAN 2026-09-03 - DEV-3, Sep duyet] CHI ap kep khi layer hien hanh dang
+        // la "ObjectsFront" (tuc co nguy co dung tau). Hien khach o layer "Objects" nen
+        // dieu kien nay KHONG thoa => KHONG kep gi => hanh vi runtime hien tai KHONG doi.
+        if (_layerDaGiai == "ObjectsFront")
+        {
+            if (!_daCanhBaoObjectsFront)
+            {
+                _daCanhBaoObjectsFront = true;
+                Debug.LogWarning("[Tourist] sortingLayer = ObjectsFront trùng layer TÀU — khách sẽ đè lên tàu. " +
+                                 "Nên để trống field để dùng 'Objects'.", this);
+            }
+
+            if (clampBelowTrain)
+                order = Mathf.Min(order, TrainSortingOrderRef - 50);
+        }
+
         _sortingGroup.sortingLayerName = _layerDaGiai;   // tên ĐÃ giải, chắc chắn có thật
-        _sortingGroup.sortingOrder     = baseSortingOrder + dynamic;
+        _sortingGroup.sortingOrder     = order;
     }
 
     private void SetState(AgentState next)

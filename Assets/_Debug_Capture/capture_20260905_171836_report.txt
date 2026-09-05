@@ -1,0 +1,73 @@
+﻿═══════════════════════════════════════════════════
+  BÁO CÁO TRẠNG THÁI POPUP LÊN CẤP
+  Thời điểm : 2026-09-05 17:18:36
+  Màn hình  : 1920 x 1080
+  isPlaying : True
+═══════════════════════════════════════════════════
+
+✔ Tìm thấy 'Popup_LevelUp_Township'
+   Đường dẫn: Canvas_Popup / Popup_LevelUp_Township
+
+── CHUỖI TỔ TIÊN (từ gốc xuống popup) ──
+   ✔  Canvas_Popup   [scale=(1,000, 1,000, 1,000)]
+   ✔  Popup_LevelUp_Township   [scale=(1,000, 1,000, 1,000)]
+   → activeInHierarchy của popup: TRUE ✔
+
+── SCALE ──
+   lossyScale = (1,000, 1,000, 1,000)   ✔
+
+── CANVAS ──
+   • 'Popup_LevelUp_Township'  renderMode=ScreenSpaceOverlay  order=310  overrideSorting=True  enabled=True  isRoot=False
+       CanvasScaler: KHÔNG CÓ
+   • 'Canvas_Popup'  renderMode=ScreenSpaceOverlay  order=300  overrideSorting=False  enabled=True  isRoot=True
+       CanvasScaler: mode=ScaleWithScreenSize, refRes=(1920.00, 1080.00)
+
+── CANVAS GROUP ──
+   • 'Root_HienThi'  alpha=1,00  ✔  blocksRaycasts=True
+
+── THÀNH PHẦN CHÍNH ──
+   ✘tắt Root_HienThi       rect=1920x1080    pos=(0, 0)
+   ✘tắt Bg_NenToi          rect=1920x1080    pos=(0, 0)  sprite=NULL ✘  alpha=0,65  enabled=True
+   ✘tắt Content            rect=1920x1134    pos=(0, 63)
+   ✘tắt BangRon            rect=980x150      pos=(0, 120)
+   ✘tắt Than_BangRon       rect=980x150      pos=(0, 0)  sprite=spr_banner_body  alpha=1,00  enabled=True
+   ✘tắt Text_TieuDe        rect=740x142      pos=(0, 2)  text="CẤP MỚI!"  size=88  alpha=1,00
+   ✘tắt NgoiSao            rect=250x250      pos=(0, 232)
+   ✘tắt Hinh_Sao           rect=250x250      pos=(0, 0)  sprite=spr_star  alpha=1,00  enabled=True
+   ✘tắt Text_SoCap         rect=180x130      pos=(0, 6)  text="5"  size=24  alpha=1,00
+   ✘tắt Hang_PhanThuong    rect=980x74       pos=(0, -10)
+   ✘tắt Dai_MoKhoa         rect=1920x250     pos=(0, -272)
+   ✘tắt Btn_TiepTuc        rect=420x118      pos=(0, -462)  sprite=btn_big_green  alpha=1,00  enabled=True
+   ✘tắt Text_Nut           rect=380x98       pos=(0, -2)  text="Bắt đầu nào"  size=52  alpha=1,00
+
+── Ô MỞ KHOÁ: 9 cái ──
+   → Đang bật: 0/9   Có icon: 0
+   ✘ TẤT CẢ BỊ TẮT!
+
+── ICON TIỀN TỆ (hàng Phần thưởng) ──
+   Hang_Vang    sprite=vang-removebg-preview_0            ✔ sprite thật
+   Hang_Ngoc    sprite=kimcuong-removebg-preview_0        ✔ sprite thật
+
+── LevelUpPopupUI ──
+   Nằm trên  : 'Popup_LevelUp_Township'  activeInHierarchy=True
+   Đường dẫn : Canvas_Popup / Popup_LevelUp_Township
+   IsActive (static) = False
+   _isShowing = False
+   _lastKnownLevel = 1
+   levelRewardConfigs = 29  ✔
+
+── TẤT CẢ CANVAS TRONG SCENE ──
+   • 'Canvas_MarketPopup'  order=220  mode=ScreenSpaceOverlay  active=True
+   • 'TransitionCanvas'  order=9999  mode=ScreenSpaceOverlay  active=False
+   • 'Tutorial_Canvas'  order=250  mode=ScreenSpaceOverlay  active=True
+   • 'Canvas_HUD'  order=100  mode=ScreenSpaceOverlay  active=True
+   • 'Popup_LevelUp_Township'  order=310  mode=ScreenSpaceOverlay  active=True
+   • 'Canvas_OrderBoardPopup'  order=121  mode=ScreenSpaceOverlay  active=True
+   • 'Canvas_StallPopup'  order=120  mode=ScreenSpaceOverlay  active=True
+   • 'MillPopup_Root'  order=410  mode=ScreenSpaceOverlay  active=True
+   • 'Canvas_TouristBoatPopup'  order=400  mode=ScreenSpaceOverlay  active=True
+   • 'Canvas_Popup'  order=300  mode=ScreenSpaceOverlay  active=True
+   (+ 14 canvas World Space bị lược — bong bóng đơn hàng của nhà)
+
+── KẾT LUẬN ──
+✔ Popup ĐANG hiện đúng cấu hình. Hãy đối chiếu với ảnh game_view.png.

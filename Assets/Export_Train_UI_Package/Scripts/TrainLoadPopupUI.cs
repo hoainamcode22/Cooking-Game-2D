@@ -66,6 +66,16 @@ namespace ExportTrainUIPackage
 
         private void Awake()
         {
+            // [VÒNG 13] Guard trùng: scene từng có 2-3 bản popup này (do FindPopupCanvas chọn
+            // nhầm canvas). Bản Awake sau cùng ghi đè Instance, bản trước thành "popup ma" có
+            // nút X chết. Giữ bản ĐẦU TIÊN, bản sau chỉ tự ẩn chứ KHÔNG Destroy — destroy sẽ
+            // làm rỗng reference ai đó đã kéo tay trong Inspector.
+            if (Instance != null && Instance != this)
+            {
+                Debug.LogWarning($"[TrainLoadPopupUI] Phát hiện bản TRÙNG tại '{name}' — tự ẩn. Chạy Tools/Farm Game/Train/★ Dọn popup tàu bị nhân bản để dọn hẳn.");
+                gameObject.SetActive(false);
+                return;
+            }
             Instance = this;
             if (btnClose != null) btnClose.onClick.AddListener(ClosePopup);
             if (btnThemHang != null) btnThemHang.onClick.AddListener(OnAddSingleCargo);
@@ -173,7 +183,9 @@ namespace ExportTrainUIPackage
                 var img = btnClose.GetComponent<Image>();
                 if (img != null)
                 {
-                    TrainSpriteLoader.Assign(img, "Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/btnX.png", "Assets/Assetsgame/btnX.png");
+                    Sprite sprClose = UIStandardSprites.Close;         // WP-D2b: nút đóng chuẩn
+                    if (sprClose != null) { img.sprite = sprClose; img.type = Image.Type.Sliced; img.color = Color.white; }
+                    else TrainSpriteLoader.Assign(img, "Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/btnX.png", "Assets/Assetsgame/btnX.png");
                     img.preserveAspect = true;
                 }
             }

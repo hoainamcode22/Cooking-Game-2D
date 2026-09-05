@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d5cf4db3275fbc4f8c90b87f51416ac, type: 3}
+  m_Name: ShipperConfig
+  m_EditorClassIdentifier: Assembly-CSharp::ShipperConfig
+  enabled: 1
+  shipperPrefab: {fileID: 4705308209329398361, guid: 3a7abbac7d097864c90911823d591996, type: 3}
+  walkFrames:
+  - {fileID: 695448142, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: 1286365337, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: -1535814090, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: 969529770, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: -375884931, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: 1840287416, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: -846072252, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: 1025604157, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: 39095809, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: 1735979012, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: -1602586150, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  - {fileID: -666152329, guid: 9d0f3a0188794c7eb9cf121e025a497e, type: 3}
+  walkFps: 8
+  worldHeight: 170
+  walkSpeed: 420
+  arriveThreshold: 12
+  homeAnchorOffset: {x: -300, y: -88}
+  standAtHouseSeconds: 1.6
+  walkBackLaneOffset: 40
+  maxQueuedDeliveries: 3
+  onlyDeliverToCompletedHouses: 0
+  houseFrontOffsetY: -120
+  drawRoadRing: 1
+  roadColor: {r: 0.72, g: 0.56, b: 0.36, a: 0.85}
+  roadWidth: 90
+  roadRingPadding: 260
+  roadSprite: {fileID: 0}
+  roadSortingLayer: Bottom
+  roadSortingOrder: -50
+  arrowSprite: {fileID: 0}
+  arrowHeightAboveHouse: 150
+  arrowBobPixels: 24
+  arrowBobPeriod: 1.1
+  arrowWorldSize: 120

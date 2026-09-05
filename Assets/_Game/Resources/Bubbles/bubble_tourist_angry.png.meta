@@ -1,0 +1,12 @@
+﻿fileFormatVersion: 2
+guid: da45d76f3a7c4aff824f2d0aa41a4368
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 12
+  isReadable: 1
+  alphaIsTransparency: 1
+  spriteImportMode: 1
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spritePivot: {x: 0.5, y: 0.5}

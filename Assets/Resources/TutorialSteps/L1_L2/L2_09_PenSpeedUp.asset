@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L2_09_PenSpeedUp
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: 
+  npcText: "\u0110\xE0n g\xE0 \u0111ang \u0103n r\u1ED3i! D\xF9ng kim c\u01B0\u01A1ng
+    \u0111\u1EC3 g\xE0 \u0111\u1EBB tr\u1EE9ng ngay nh\xE9!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 
@@ -21,5 +22,5 @@ MonoBehaviour:
   waitAction: 21
   showGuideBoard: 0
   showHandPointer: 0
-  handOffset: {x: 40, y: -30}
+  handOffset: {x: 0, y: 0}
   dragToTargetId: 

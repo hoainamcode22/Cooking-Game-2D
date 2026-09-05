@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_06_PlantAllRice
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "Gi\u1ECFi l\u1EAFm! Gieo n\u1ED1t cho \u0111\u1EE7 6 \xF4 nh\xE9."
+  npcText: "L\xE0m t\u1ED1t l\u1EAFm! Gieo n\u1ED1t c\xE1c \xF4 \u0111\u1EA5t c\xF2n
+    l\u1EA1i cho ph\u1EE7 k\xEDn ru\u1ED9ng nh\xE9."
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 

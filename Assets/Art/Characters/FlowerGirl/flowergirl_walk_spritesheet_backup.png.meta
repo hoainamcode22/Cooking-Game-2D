@@ -1,0 +1,429 @@
+fileFormatVersion: 2
+guid: aaee91b2b66ecbc4b94d532dd47ac3c1
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -8840782442903710240
+    second: flowergirl_walk_spritesheet_backup_0
+  - first:
+      213: 2056402599216985627
+    second: flowergirl_walk_spritesheet_backup_1
+  - first:
+      213: -1149109895451139639
+    second: flowergirl_walk_spritesheet_backup_2
+  - first:
+      213: 3274679353306642922
+    second: flowergirl_walk_spritesheet_backup_3
+  - first:
+      213: 6918237834172661058
+    second: flowergirl_walk_spritesheet_backup_4
+  - first:
+      213: 6379418354989734384
+    second: flowergirl_walk_spritesheet_backup_5
+  - first:
+      213: -8301336412267698635
+    second: flowergirl_walk_spritesheet_backup_6
+  - first:
+      213: 1628133733895002213
+    second: flowergirl_walk_spritesheet_backup_7
+  - first:
+      213: -3819599869150506838
+    second: flowergirl_walk_spritesheet_backup_8
+  - first:
+      213: 5257739394677876198
+    second: flowergirl_walk_spritesheet_backup_9
+  - first:
+      213: 249222805013691743
+    second: flowergirl_walk_spritesheet_backup_10
+  - first:
+      213: 5542259615003982378
+    second: flowergirl_walk_spritesheet_backup_11
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_0
+      rect:
+        serializedVersion: 2
+        x: 109
+        y: 949
+        width: 152
+        height: 275
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0e5d63a653b3f4580800000000000000
+      internalID: -8840782442903710240
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_1
+      rect:
+        serializedVersion: 2
+        x: 350
+        y: 957
+        width: 149
+        height: 267
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b16b489c44fc98c10800000000000000
+      internalID: 2056402599216985627
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_2
+      rect:
+        serializedVersion: 2
+        x: 589
+        y: 951
+        width: 149
+        height: 273
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9c1afb963aa8d00f0800000000000000
+      internalID: -1149109895451139639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_3
+      rect:
+        serializedVersion: 2
+        x: 114
+        y: 637
+        width: 134
+        height: 268
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ae9f527958ff17d20800000000000000
+      internalID: 3274679353306642922
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_4
+      rect:
+        serializedVersion: 2
+        x: 366
+        y: 633
+        width: 123
+        height: 270
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 24d7781e7a4820060800000000000000
+      internalID: 6918237834172661058
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_5
+      rect:
+        serializedVersion: 2
+        x: 602
+        y: 633
+        width: 125
+        height: 270
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0f915cab13f388850800000000000000
+      internalID: 6379418354989734384
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_6
+      rect:
+        serializedVersion: 2
+        x: 128
+        y: 319
+        width: 134
+        height: 265
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 536a4c1f38abbcc80800000000000000
+      internalID: -8301336412267698635
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_7
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 317
+        width: 122
+        height: 267
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 56854a7310b489610800000000000000
+      internalID: 1628133733895002213
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_8
+      rect:
+        serializedVersion: 2
+        x: 593
+        y: 317
+        width: 127
+        height: 267
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aa0d727f72e0efac0800000000000000
+      internalID: -3819599869150506838
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_9
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 1
+        width: 152
+        height: 271
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6e52a5d6f1e37f840800000000000000
+      internalID: 5257739394677876198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_10
+      rect:
+        serializedVersion: 2
+        x: 352
+        y: 7
+        width: 150
+        height: 266
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5d74ca12da657300800000000000000
+      internalID: 249222805013691743
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: flowergirl_walk_spritesheet_backup_11
+      rect:
+        serializedVersion: 2
+        x: 593
+        y: 1
+        width: 150
+        height: 272
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a2a3e4571cf0aec40800000000000000
+      internalID: 5542259615003982378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      flowergirl_walk_spritesheet_backup_0: -8840782442903710240
+      flowergirl_walk_spritesheet_backup_1: 2056402599216985627
+      flowergirl_walk_spritesheet_backup_10: 249222805013691743
+      flowergirl_walk_spritesheet_backup_11: 5542259615003982378
+      flowergirl_walk_spritesheet_backup_2: -1149109895451139639
+      flowergirl_walk_spritesheet_backup_3: 3274679353306642922
+      flowergirl_walk_spritesheet_backup_4: 6918237834172661058
+      flowergirl_walk_spritesheet_backup_5: 6379418354989734384
+      flowergirl_walk_spritesheet_backup_6: -8301336412267698635
+      flowergirl_walk_spritesheet_backup_7: 1628133733895002213
+      flowergirl_walk_spritesheet_backup_8: -3819599869150506838
+      flowergirl_walk_spritesheet_backup_9: 5257739394677876198
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

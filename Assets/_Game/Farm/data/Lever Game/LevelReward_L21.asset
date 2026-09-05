@@ -22,23 +22,23 @@ MonoBehaviour:
     amount: 3
   - itemId: seed_pumpkin
     displayName: "H\u1EA1t B\xED \u0110\u1ECF"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
     amount: 2
   - itemId: pumpkin
     displayName: "B\xED \u0110\u1ECF"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
     amount: 4
   - itemId: herbs
     displayName: "Rau Th\u01A1m"
-    icon: {fileID: 0}
+    icon: {fileID: -6473379884045465844, guid: 050a1194adf72f046adc525bddd7bb28, type: 3}
     amount: 3
   - itemId: milk
     displayName: "S\u1EEFa"
-    icon: {fileID: 0}
+    icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
     amount: 2
   - itemId: dinh
     displayName: "\u0110inh"
-    icon: {fileID: 0}
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 2
   unlockEntries:
   - label: "N\xE2ng c\u1EA5p kho l\u1EA7n 2"

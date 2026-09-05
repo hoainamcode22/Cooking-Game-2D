@@ -16,14 +16,18 @@ using UnityEngine;
 /// (nút ✕ chui sau chip vàng), và nền mờ Panel_Dim (đen 62%, có sẵn, đang bật)
 /// không phủ được HUD nên nhìn như "không có nền xám" trong khi các popup khác có.
 ///
-/// Tool đặt order = 122 — cùng nhóm popup thường (120-121), trên HUD, dưới Canvas_Popup
-/// (150) và popup máy xay (400). Chạy nhiều lần an toàn.
+/// [VÒNG 17] Con số 122 đã LỖI THỜI — bảng lớp UI nay tập trung ở UILayers.cs
+/// (World 0 · HUD 100 · Panel 200 · Tutorial 250 · Popup 300 · PopupCaoCap 400).
+/// Tool này giữ lại để sửa nhanh một mình Canvas_MarketPopup, nhưng lấy số TỪ BẢNG
+/// (UILayers.Panel + 20 = 220) để không phá kết quả của UILayerApplyTool.
+/// Chạy nhiều lần an toàn.
 /// </summary>
 public static class FixMarketLayerTool
 {
-    private const int OrderMoi = 122;
+    // [VÒNG 17] Lấy từ bảng lớp chung, KHÔNG hardcode nữa.
+    private static int OrderMoi => UILayers.Panel + 2 * UILayers.BuocTrongLop;   // = 220
 
-    [MenuItem("Tools/Farm/Cho: Dua Len Tren HUD (order 122)")]
+    [MenuItem("Tools/Farm/UI/Cho: Dua ve dung lop (UILayers.Panel + 20)")]
     public static void Sua()
     {
         foreach (Canvas c in Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include,

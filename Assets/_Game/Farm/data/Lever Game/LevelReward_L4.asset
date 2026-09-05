@@ -30,15 +30,15 @@ MonoBehaviour:
     amount: 3
   - itemId: pork
     displayName: "Th\u1ECBt Heo"
-    icon: {fileID: 0}
+    icon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}
     amount: 1
   - itemId: soysauce
     displayName: "N\u01B0\u1EDBc T\u01B0\u01A1ng"
-    icon: {fileID: 0}
+    icon: {fileID: -6838146847458198126, guid: 0d8b9e5342fcc9e4ba5df2a11bf75d31, type: 3}
     amount: 2
   - itemId: salt
     displayName: "Mu\u1ED1i"
-    icon: {fileID: 0}
+    icon: {fileID: -1162442978445507191, guid: a849ade4905cf98419e62a9cf5b043e5, type: 3}
     amount: 2
   unlockEntries:
   - label: "M\u1EDF kh\xF3a Hoa h\u1ED3ng v\xE0 O\u1EA3i h\u01B0\u01A1ng"

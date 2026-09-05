@@ -52,6 +52,7 @@ public class WarehouseClickOpen : MonoBehaviour
     // mở kho
     private void TryOpenWarehouse(Vector2 screenPos)
     {
+        if (FarmInputLock.BlockWorldInteraction) return;
         if (SceneManager.GetSceneByName("SampleScene").isLoaded)
             return;
 

@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_11_TransitionFlower
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "Tr\u1ED3ng th\xEAm hoa cho n\xF4ng tr\u1EA1i th\u1EADt xinh nh\xE9!"
+  npcText: "B\xEAn c\u1EA1nh l\xFAa, n\xF4ng tr\u1EA1i c\xF2n c\xF3 v\u01B0\u1EDDn
+    hoa h\u01B0\u1EDBng d\u01B0\u01A1ng r\u1EF1c r\u1EE1 \u0111\u1EA5y!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 

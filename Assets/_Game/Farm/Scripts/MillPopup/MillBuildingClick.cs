@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -309,6 +309,8 @@ public class MillBuildingClick : MonoBehaviour
             if (logGoLoi) Debug.Log(LOG + "Bỏ qua: popup máy xay đang mở.", this);
             return true;
         }
+
+        if (FarmInputLock.BlockWorldInteraction) return true;
 
         // 2. Đang ở Edit Mode (kéo/đặt công trình)
         if (EditModeManager.IsEditMode)

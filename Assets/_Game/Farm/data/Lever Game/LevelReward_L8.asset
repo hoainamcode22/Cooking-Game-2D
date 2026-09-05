@@ -26,19 +26,19 @@ MonoBehaviour:
     amount: 2
   - itemId: lemon
     displayName: Chanh
-    icon: {fileID: 0}
+    icon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}
     amount: 3
   - itemId: mushroom
     displayName: "N\u1EA5m"
-    icon: {fileID: 0}
+    icon: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
     amount: 3
   - itemId: beef
     displayName: "Th\u1ECBt B\xF2"
-    icon: {fileID: 0}
+    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
     amount: 1
   - itemId: son
     displayName: "S\u01A1n"
-    icon: {fileID: 0}
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 1
   unlockEntries:
   - label: "M\u1EDF kh\xF3a Chanh"

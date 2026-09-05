@@ -48,7 +48,16 @@ public static class SkinVi
     public static void NutDong(Button nut)
     {
         if (nut == null) return;
-        SkinKit.MacAoNut(nut, SkinKit.NutDo, 18f);
+        // WP-D2b: có sprite đóng CHUẨN thì dùng thẳng (9-slice, trắng), KHÔNG mặc áo vẽ code.
+        Sprite sprDong = UIStandardSprites.Close;
+        Image nenDong = nut.image != null ? nut.image : nut.GetComponent<Image>();
+        if (sprDong != null && nenDong != null)
+        {
+            nenDong.sprite = sprDong;
+            nenDong.type   = Image.Type.Sliced;
+            nenDong.color  = Color.white;
+        }
+        else SkinKit.MacAoNut(nut, SkinKit.NutDo, 18f);
         if (nut.GetComponentInChildren<TMP_Text>(true) == null)
         {
             var go = new GameObject("Skin_X", typeof(RectTransform));

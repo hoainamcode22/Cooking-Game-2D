@@ -181,19 +181,37 @@ public class HouseGrowthController : MonoBehaviour
 
     private void CheckInputClick()
     {
+        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         if (state == GrowthState.Completed) return;
 
-        if (Input.GetMouseButtonDown(0))
+        // [FIX-HOPQUA 2026-09-02] Đọc input qua TouchInput (Core/TouchInput.cs — helper
+        // DÙNG CHUNG, thứ tự Touchscreen → Mouse → Input legacy) thay vì chỉ Input legacy.
+        // Đây là world-click DUY NHẤT còn poll Input.GetMouseButton* sau đợt rà soát
+        // 2026-08-31 (RA_SOAT_INPUT_MOBILE.md §1.3/§4.2 xếp file này "ưu tiên chuyển sớm"):
+        // trên điện thoại Mouse.current = null và mô phỏng chuột từ ngón tay không đáng
+        // tin, trong khi plot (FarmPlotInput) đã đọc Input System nên "plot bấm được,
+        // hộp quà thì không". Editor/PC: TouchInput rơi về đúng GetMouseButton* cũ.
+        if (TouchInput.TapDownThisFrame())
         {
             _isPressed = true;
-            _pressScreenPos = Input.mousePosition;
+            _pressScreenPos = TouchInput.PointerScreen();
         }
 
-        if (Input.GetMouseButtonUp(0) && _isPressed)
+        if (TouchInput.TapUpThisFrame() && _isPressed)
         {
             _isPressed = false;
-            Vector2 releasePos = Input.mousePosition;
-            if ((releasePos - _pressScreenPos).magnitude <= 18f)
+            Vector2 releasePos = TouchInput.PointerScreen();
+
+            // [FIX-HOPQUA 2026-09-02] 18f là ngưỡng CỨNG theo pixel — trên màn ~450dpi
+            // 18px ≈ 1mm nên tap thật rất dễ bị loại oan (Android touch-slop chuẩn là
+            // 8dp ≈ 0.05 inch). Máy cảm ứng: quy theo kích thước vật lý ~3.8mm
+            // (0.15 inch, tối thiểu 24px như BoatDockSlot). Editor/PC giữ nguyên 18px.
+            float slopPx = (TouchInput.HasTouchscreen && Screen.dpi > 1f)
+                ? Mathf.Max(24f, Screen.dpi * 0.15f)
+                : 18f;
+
+            if ((releasePos - _pressScreenPos).magnitude <= slopPx)
             {
                 Camera cam = Camera.main;
                 if (cam != null)
@@ -204,7 +222,12 @@ public class HouseGrowthController : MonoBehaviour
                     bool hit = false;
                     if (_collider != null && _collider.OverlapPoint(world2D))
                         hit = true;
-                    else if (_sr != null && _sr.bounds.Contains(worldPoint))
+                    // [FIX-HOPQUA 2026-09-02] worldPoint.z = mặt phẳng camera (không phải
+                    // z của sprite) nên bounds.Contains(worldPoint) 3D trước đây LUÔN false
+                    // — lưới an toàn chết im lặng. Ép z về đúng z của bounds để phép thử
+                    // thành 2D thật sự.
+                    else if (_sr != null && _sr.bounds.Contains(
+                                 new Vector3(world2D.x, world2D.y, _sr.bounds.center.z)))
                         hit = true;
 
                     if (hit)
@@ -355,8 +378,15 @@ public class HouseGrowthController : MonoBehaviour
 
         transform.localScale = _initialScale;
 
-        // 3. Chuỗi Đại Tiệc Pháo Hoa Lana FX BÙM BÙM BÙM bay cao liên hồi trong 3.5s
-        StartCoroutine(EpicFireworksSequence());
+        // 3. Pháo hoa khánh thành 3.5s — [FIX-HOPQUA 2026-09-02] dùng FX chung của studio
+        //    (CONTRACT §3): tự đo bounds nhà, tự resolve sorting theo CHÍNH công trình
+        //    (layer của sprite có order cao nhất + 100) nên nổi RÕ TRÊN nhà, kích thước
+        //    tính bằng world-unit thật (map 1 ô = 100 unit), tự Destroy khi xong.
+        //    Chuỗi EpicFireworksSequence cũ spawn prefab demo Lana: chỉ ghi đè sortingOrder
+        //    mà KHÔNG đổi sorting LAYER → hạt kẹt ở "Default" (dưới "Objects"/500 của nhà
+        //    do PlacementManager.FixBuildingRenderSorting gán) + hạt cỡ đơn vị demo li ti
+        //    → người chơi không thấy gì. Giữ code cũ bên dưới làm tài liệu, KHÔNG gọi nữa.
+        ConstructionCelebrationFX.Play(transform);
 
         yield return new WaitForSecondsRealtime(1.0f);
 
@@ -458,9 +488,14 @@ public class HouseGrowthController : MonoBehaviour
         fx.transform.localScale = Vector3.one * objectScale;
 
         // Ép Sorting Order cực đại và chỉnh hạt to x2 x3, bay lâu
+        // [FIX-HOPQUA 2026-09-02] Phải ép cả sorting LAYER: order 32767 ở layer "Default"
+        // vẫn nằm DƯỚI toàn bộ layer "Objects"/"ObjectsFront"/"Foreground" (bài học
+        // CHAN_DOAN_PHAOHOA_2026-09-01 + pattern LevelUpPopupUI.cs:794-800).
         ParticleSystemRenderer[] psrs = fx.GetComponentsInChildren<ParticleSystemRenderer>(true);
+        string fxLayer = TouristSortingLayers.Resolve(TouristSortingLayers.Overlay);
         foreach (var psr in psrs)
         {
+            psr.sortingLayerName = fxLayer;
             psr.sortingOrder = 32767;
         }
 

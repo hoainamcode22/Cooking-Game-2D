@@ -53,6 +53,10 @@ public class MarketManager : MonoBehaviour
 
     [Header("Popup")]
     [SerializeField] private GameObject popupRoot;
+
+    [Tooltip("Vào game thì ĐÓNG bảng tin chợ (scene đang lưu Panel_Dim/Popup_Board ở trạng thái bật). " +
+             "Bấm vào chợ mới mở. Tắt ô này nếu muốn quay lại hành vi cũ.")]
+    [SerializeField] private bool closeBoardOnSceneStart = true;
     [SerializeField] private Button buttonClose;
 
     private readonly Dictionary<string, MarketItemVisual> visualLookup =
@@ -123,6 +127,54 @@ public class MarketManager : MonoBehaviour
         // Sinh hàng NGAY ở Awake chứ không đợi mở popup: bảng tin phải có sẵn hàng
         // trước khi UI vẽ khung đầu tiên, nếu không người chơi thấy nháy "chưa có vật phẩm".
         RegenerateListings();
+    }
+
+    /// <summary>
+    /// [FIX 2026-09-03 — lệnh Sếp] Vào game KHÔNG bật sẵn bảng tin chợ.
+    /// Scene đang lưu Panel_Dim + Popup_Board active nên popup hiện ngay khi load.
+    /// Đóng ở Start() (sau khi MỌI Awake đã chạy: Instance đã set, hàng đã sinh,
+    /// MarketBoardUI đã wire nút) — không đụng file scene.
+    ///
+    /// CHỐT AN TOÀN chống tái diễn "LỖI 1" ghi ở đầu file (Start của popup chạy
+    /// lần đầu tiên NGƯỜI CHƠI mở → đóng sập ngay trước mặt họ): dùng cờ tĩnh
+    /// s_daDongBangTinLanDau thay cho đồng hồ thực (Time.timeSinceLevelLoad), vì
+    /// máy chậm có thể load scene lâu hơn bất kỳ ngưỡng thời gian cố định nào.
+    /// Cờ được reset về false ngay khi vào Play/scene mới (xem
+    /// ResetDaDongBangTinLanDauKhiVaoScene bên dưới), nên LẦN Start() ĐẦU TIÊN
+    /// sau khi load scene luôn là lần đóng "câm" — dù máy chậm bao nhiêu giây
+    /// cũng đúng. Mọi lần Start() sau đó (do người chơi tự mở popup, nếu về sau
+    /// scene được lưu ở trạng thái tắt) sẽ KHÔNG bị đóng, vì cờ đã được bật.
+    /// Đóng "câm": SetActive(false) thẳng, không animation, không toast.
+    /// </summary>
+    private void Start()
+    {
+        if (closeBoardOnSceneStart && IsOpen && !s_daDongBangTinLanDau)
+        {
+            popupRoot.SetActive(false);
+            ReleasePopupInputBlock();
+            Debug.Log("[Market] Đã đóng bảng tin chợ đang bật sẵn trong scene (lần Start đầu tiên).");
+        }
+
+        s_daDongBangTinLanDau = true;
+    }
+
+    /// <summary>
+    /// Cờ đáng tin thay cho đồng hồ thực (Time.timeSinceLevelLoad): true nghĩa là
+    /// lần Start() đầu tiên của MarketManager kể từ khi vào Play/scene mới đã
+    /// trôi qua. Là static nên sống dai qua Domain Reload tắt — bắt buộc phải
+    /// reset thủ công mỗi khi vào Play/scene mới, xem
+    /// ResetDaDongBangTinLanDauKhiVaoScene bên dưới.
+    /// </summary>
+    private static bool s_daDongBangTinLanDau = false;
+
+    /// <summary>
+    /// Reset cờ s_daDongBangTinLanDau về false mỗi khi vào Play/scene mới, để
+    /// giá trị static không "dính" từ lần chạy trước qua Domain Reload tắt.
+    /// </summary>
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetDaDongBangTinLanDauKhiVaoScene()
+    {
+        s_daDongBangTinLanDau = false;
     }
 
     private void OnDestroy()

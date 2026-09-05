@@ -26,23 +26,23 @@ MonoBehaviour:
     amount: 4
   - itemId: watermelon
     displayName: "D\u01B0a H\u1EA5u"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 5
   - itemId: mushroom
     displayName: "N\u1EA5m"
-    icon: {fileID: 0}
+    icon: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
     amount: 5
   - itemId: beef
     displayName: "Th\u1ECBt B\xF2"
-    icon: {fileID: 0}
+    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
     amount: 2
   - itemId: milk
     displayName: "S\u1EEFa"
-    icon: {fileID: 0}
+    icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
     amount: 2
   - itemId: go
     displayName: "G\u1ED7"
-    icon: {fileID: 0}
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 2
   unlockEntries:
   - label: "\u0110\u1EA1t n\u1ED9i dung t\u1ED1i \u0111a c\u1EE7a b\u1EA3n demo"

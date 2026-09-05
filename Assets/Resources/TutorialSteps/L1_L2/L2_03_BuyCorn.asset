@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L2_03_BuyCorn
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: 
+  npcText: "B\u1EA5m d\u1EA5u \uFF0B \u0111\u1EC3 ch\u1ECDn \u0111\u1EE7 8 h\u1EA1t
+    B\u1EAFp C\u1EA3i r\u1ED3i b\u1EA5m Mua nh\xE9!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
-  targetID: 
+  targetID: shop_bapcai_buy
   useCircleHole: 1
   holePaddingPx: 16
   waitAction: 5
   showGuideBoard: 0
-  showHandPointer: 0
-  handOffset: {x: 40, y: -30}
+  showHandPointer: 1
+  handOffset: {x: 0, y: 0}
   dragToTargetId: 

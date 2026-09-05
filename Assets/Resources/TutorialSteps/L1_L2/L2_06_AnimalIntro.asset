@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L2_06_AnimalIntro
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "B\u1EA1n \u0111\xE3 l\xE0m t\u1ED1t l\u1EAFm! Tr\u1ED3ng tr\u1ECDt xong
-    r\u1ED3i \u2014 gi\u1EDD m\xECnh t\u1EADp ch\u0103n nu\xF4i gia s\xFAc nh\xE9!"
+  npcText: "Tuy\u1EC7t v\u1EDDi! Ngo\xE0i tr\u1ED3ng tr\u1ECDt, n\xF4ng tr\u1EA1i
+    c\xF2n nu\xF4i nh\u1EEFng ch\xFA g\xE0 \u0111\u1EBB tr\u1EE9ng \u0111\xE1ng y\xEAu.
+    H\xE3y c\xF9ng ch\u0103m s\xF3c \u0111\xE0n g\xE0 n\xE0o!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 
@@ -22,5 +23,5 @@ MonoBehaviour:
   waitAction: 0
   showGuideBoard: 0
   showHandPointer: 0
-  handOffset: {x: 40, y: -30}
+  handOffset: {x: 0, y: 0}
   dragToTargetId: 

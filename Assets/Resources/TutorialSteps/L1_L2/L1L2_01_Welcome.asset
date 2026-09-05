@@ -12,7 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_01_Welcome
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "Ch\xE0o m\u1EEBng b\u1EA1n \u0111\u1EBFn v\u1EDBi n\xF4ng tr\u1EA1i!"
+  npcText: "Ch\xE0o m\u1EEBng b\u1EA1n \u0111\u1EBFn v\u1EDBi n\xF4ng tr\u1EA1i!
+    M\xECnh s\u1EBD \u0111\u1ED3ng h\xE0nh c\xF9ng b\u1EA1n x\xE2y d\u1EF1ng m\u1ED9t
+    n\xF4ng tr\u1EA1i th\u1EADt tr\xF9 ph\xFA nh\xE9."
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 

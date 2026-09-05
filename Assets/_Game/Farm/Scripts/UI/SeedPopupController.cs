@@ -17,7 +17,11 @@ public class SeedPopupController : MonoBehaviour
 
     [Header("Item Size")]
     [SerializeField] private float itemPreferredWidth  = 120f;
-    [SerializeField] private float itemPreferredHeight = 150f;
+    // WP-C3: 150 → 170 khớp prefab Iteam_1 mới (120x170, có tên hạt). Scene cũ vẫn có thể giữ 150 (serialize) → Start() cảnh báo.
+    [SerializeField] private float itemPreferredHeight = 170f;
+
+    /// <summary>Chiều cao ô hạt tối thiểu để không cắt chữ tên/số lượng (khớp prefab Iteam_1 sau WP-C3).</summary>
+    public const float MinItemPreferredHeight = 170f;
 
     private bool popupInputLockHeld;
 
@@ -27,23 +31,47 @@ public class SeedPopupController : MonoBehaviour
     {
         FarmInputLock.IsSeedPopupOpen = true;
         AcquirePopupInputBlock();
+        // Khay hạt (Popup_seed) / khay hoa (Popup_hoa) trải đáy màn hình y 0→240, đè lên 4 nút
+        // Tab_Shop/Warehouse/Market/Cooking của Canvas_HUD (y 22→180). Khay bán trong suốt nên nút
+        // lộ ra và có thể nuốt tap ⇒ ẩn hẳn hàng nút khi khay mở. Đếm tham chiếu theo `this`
+        // ⇒ 2 khay (hoặc card tutorial) chồng nhau vẫn trả HUD đúng lúc chủ cuối cùng đóng.
+        HudNavHider.An(this, 0f);
         SpawnAllItems();
+    }
+
+    private void Start()
+    {
+        // WP-C3: nếu scene còn serialize giá trị cũ (150) thì ô hạt sẽ cắt chữ → nhắc chạy tool APPLY để đồng bộ lên 170.
+        if (itemPreferredHeight < MinItemPreferredHeight)
+        {
+            Debug.LogWarning(
+                $"[SeedPopup] itemPreferredHeight={itemPreferredHeight} < {MinItemPreferredHeight} trên '{name}' — ô hạt có thể bị cắt chữ. " +
+                "Chạy menu Tools/Farm/UI/Sua panel hat giong + hoa - APPLY (ghi vao scene) rồi Ctrl+S.", this);
+        }
     }
 
     private void OnDisable()
     {
         FarmInputLock.IsSeedPopupOpen = false;
         ReleasePopupInputBlock();
+        HudNavHider.Hien(this);   // trả hàng nút HUD (chỉ thật sự hiện khi không còn ai khác giữ)
     }
 
     private void Update()
     {
-        // Re-assert má»—i frame trong khi popup Ä‘ang má»Ÿ, phÃ²ng code bÃªn ngoÃ i
+        // Re-assert mỗi frame trong khi popup đang mở, phòng code bên ngoài
         // (VD: PlantDragController.CleanupPlantDragState) clear flag sai.
         FarmInputLock.IsSeedPopupOpen = true;
 
         if (FarmInputLock.IsDraggingSeed) return;
         if (!InputBridge.IsPointerDownThisFrame) return;
+
+        // [TUTORIAL] Trong lúc đang tutorial, KHÔNG cho click ngoài rìa tắt popup hạt giống
+        // để tránh trường hợp người chơi bấm trượt làm mất khay hạt và kẹt tiến trình tutorial.
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+        {
+            return;
+        }
 
         bool onPopup = IsPointerOnThisPopup();
 

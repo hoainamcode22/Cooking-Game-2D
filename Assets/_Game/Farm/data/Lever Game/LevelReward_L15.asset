@@ -22,27 +22,27 @@ MonoBehaviour:
     amount: 3
   - itemId: seed_pumpkin
     displayName: "H\u1EA1t B\xED \u0110\u1ECF"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
     amount: 2
   - itemId: mushroom
     displayName: "N\u1EA5m"
-    icon: {fileID: 0}
+    icon: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
     amount: 5
   - itemId: pumpkin
     displayName: "B\xED \u0110\u1ECF"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
     amount: 3
   - itemId: milk
     displayName: "S\u1EEFa"
-    icon: {fileID: 0}
+    icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
     amount: 2
   - itemId: fishsauce
     displayName: "N\u01B0\u1EDBc M\u1EAFm"
-    icon: {fileID: 0}
+    icon: {fileID: 1949655777808321501, guid: e05efc49d25b1ac4d8fc62cc1760bf9f, type: 3}
     amount: 2
   - itemId: go
     displayName: "G\u1ED7"
-    icon: {fileID: 0}
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 2
   unlockEntries:
   - label: "M\xE1y Ph\xF4 Mai \u0111\xE3 m\u1EDF b\xE1n trong Shop"

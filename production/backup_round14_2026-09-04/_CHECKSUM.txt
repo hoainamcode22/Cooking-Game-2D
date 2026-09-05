@@ -1,0 +1,4 @@
+dc9cc3e6f98b53283743316070221e30  Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+b69d15619e828abf512d6f33b5d23efd  Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+e269e3d820b29ce234d0d387ced76e0d  Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+15f1a703c7bd2a3b73816cb4a635c395  Assets/_Game/Farm/Editor/TutorialV2SetupTool.cs

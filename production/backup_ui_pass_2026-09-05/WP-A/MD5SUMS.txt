@@ -1,0 +1,7 @@
+e2600a446b382d73f812292adb8a4db0 *Assets/_Game/Farm/Scripts/Tutorial/TutorialStepTriggerBridge.cs
+d8587c6a2163db927941c32a6eb74c73 *Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+79fef525d1c0728faeceaceba37c0bd1 *Assets/_Game/Farm/Scripts/Tutorial/TutorialRuntimeTargetResolver.cs
+42b21bbd38130d0bc6dba324788fe4ea *Assets/_Game/Farm/Scripts/Tutorial/TutorialNpcActor.cs
+b2617b9407307ae806492dcf5ea941f0 *Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+df9138b2469280e250714145c5997cba *Assets/_Game/Farm/Editor/ChoiLaiTuDauTool.cs
+d46ed59dd960a5bdf6ed31375ac97b4b *Assets/_Game/Farm/Scripts/Tutorial/TutorialDebugJump.cs

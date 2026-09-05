@@ -1,0 +1,533 @@
+fileFormatVersion: 2
+guid: abdfb1875c1f83547b5da6e056bcf2d9
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2148370827989143439
+    second: cooking_smoke_spritesheet_0
+  - first:
+      213: 8212547436918559343
+    second: cooking_smoke_spritesheet_1
+  - first:
+      213: -2293260265346375128
+    second: cooking_smoke_spritesheet_2
+  - first:
+      213: -5453993044537774829
+    second: cooking_smoke_spritesheet_3
+  - first:
+      213: -6330831689484253767
+    second: cooking_smoke_spritesheet_4
+  - first:
+      213: 5439066332922166898
+    second: cooking_smoke_spritesheet_5
+  - first:
+      213: 8412805504665782875
+    second: cooking_smoke_spritesheet_6
+  - first:
+      213: 4906836918556781944
+    second: cooking_smoke_spritesheet_7
+  - first:
+      213: -6521035142744060376
+    second: cooking_smoke_spritesheet_8
+  - first:
+      213: -7587150605886390878
+    second: cooking_smoke_spritesheet_9
+  - first:
+      213: 2529624302998683941
+    second: cooking_smoke_spritesheet_10
+  - first:
+      213: -7823386399191316565
+    second: cooking_smoke_spritesheet_11
+  - first:
+      213: -4303713069582052034
+    second: cooking_smoke_spritesheet_12
+  - first:
+      213: -8961989052850818378
+    second: cooking_smoke_spritesheet_13
+  - first:
+      213: -3224004503844240023
+    second: cooking_smoke_spritesheet_14
+  - first:
+      213: -6207388694040908933
+    second: cooking_smoke_spritesheet_15
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_0
+      rect:
+        serializedVersion: 2
+        x: 344
+        y: 1477
+        width: 45
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8fca10b2eb80dd10800000000000000
+      internalID: 2148370827989143439
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_1
+      rect:
+        serializedVersion: 2
+        x: 567
+        y: 1060
+        width: 409
+        height: 427
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f625396c164d8f170800000000000000
+      internalID: 8212547436918559343
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_2
+      rect:
+        serializedVersion: 2
+        x: 853
+        y: 1481
+        width: 48
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 822e28a50f3bc20e0800000000000000
+      internalID: -2293260265346375128
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_3
+      rect:
+        serializedVersion: 2
+        x: 1079
+        y: 1060
+        width: 409
+        height: 470
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 31defd4f8368f44b0800000000000000
+      internalID: -5453993044537774829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_4
+      rect:
+        serializedVersion: 2
+        x: 1591
+        y: 1060
+        width: 409
+        height: 476
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9b5418fde1e5428a0800000000000000
+      internalID: -6330831689484253767
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_5
+      rect:
+        serializedVersion: 2
+        x: 55
+        y: 1060
+        width: 409
+        height: 419
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 27ebc9b23027b7b40800000000000000
+      internalID: 5439066332922166898
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_6
+      rect:
+        serializedVersion: 2
+        x: 55
+        y: 548
+        width: 409
+        height: 477
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b5a0e06980a40c470800000000000000
+      internalID: 8412805504665782875
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_7
+      rect:
+        serializedVersion: 2
+        x: 567
+        y: 548
+        width: 409
+        height: 477
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 87d695d0e26981440800000000000000
+      internalID: 4906836918556781944
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_8
+      rect:
+        serializedVersion: 2
+        x: 1368
+        y: 965
+        width: 45
+        height: 41
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 82ec6ec6611a085a0800000000000000
+      internalID: -6521035142744060376
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_9
+      rect:
+        serializedVersion: 2
+        x: 1591
+        y: 548
+        width: 409
+        height: 427
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2ad70cee8b605b690800000000000000
+      internalID: -7587150605886390878
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_10
+      rect:
+        serializedVersion: 2
+        x: 1877
+        y: 969
+        width: 48
+        height: 43
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5218e6ba6e70b1320800000000000000
+      internalID: 2529624302998683941
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_11
+      rect:
+        serializedVersion: 2
+        x: 1079
+        y: 548
+        width: 409
+        height: 419
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba7449f158fbd6390800000000000000
+      internalID: -7823386399191316565
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_12
+      rect:
+        serializedVersion: 2
+        x: 55
+        y: 36
+        width: 409
+        height: 470
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e351b58e3c32644c0800000000000000
+      internalID: -4303713069582052034
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_13
+      rect:
+        serializedVersion: 2
+        x: 567
+        y: 36
+        width: 409
+        height: 476
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6b233e7607e90a380800000000000000
+      internalID: -8961989052850818378
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_14
+      rect:
+        serializedVersion: 2
+        x: 1079
+        y: 36
+        width: 409
+        height: 477
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 965ca1a3cf80243d0800000000000000
+      internalID: -3224004503844240023
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: cooking_smoke_spritesheet_15
+      rect:
+        serializedVersion: 2
+        x: 1591
+        y: 36
+        width: 409
+        height: 477
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7b6ae4fedcead9a0800000000000000
+      internalID: -6207388694040908933
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      cooking_smoke_spritesheet_0: 2148370827989143439
+      cooking_smoke_spritesheet_1: 8212547436918559343
+      cooking_smoke_spritesheet_10: 2529624302998683941
+      cooking_smoke_spritesheet_11: -7823386399191316565
+      cooking_smoke_spritesheet_12: -4303713069582052034
+      cooking_smoke_spritesheet_13: -8961989052850818378
+      cooking_smoke_spritesheet_14: -3224004503844240023
+      cooking_smoke_spritesheet_15: -6207388694040908933
+      cooking_smoke_spritesheet_2: -2293260265346375128
+      cooking_smoke_spritesheet_3: -5453993044537774829
+      cooking_smoke_spritesheet_4: -6330831689484253767
+      cooking_smoke_spritesheet_5: 5439066332922166898
+      cooking_smoke_spritesheet_6: 8412805504665782875
+      cooking_smoke_spritesheet_7: 4906836918556781944
+      cooking_smoke_spritesheet_8: -6521035142744060376
+      cooking_smoke_spritesheet_9: -7587150605886390878
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

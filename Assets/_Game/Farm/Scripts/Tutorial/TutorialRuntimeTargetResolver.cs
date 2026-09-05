@@ -28,6 +28,9 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
     private static readonly string[] FLOWER_ALIASES = {
         "huong_duong", "Huong_Duong", "hoa_huong_duong", "seed_huong_duong", "sunflower"
     };
+    private static readonly string[] BAPCAI_ALIASES = {
+        "bapcai", "BapCai", "bap_cai", "seed_bapcai", "cabbage", "Cabbage", "bap_sui", "ngo", "seed_ngo"
+    };
 
     [Tooltip("Canvas để tạo world-proxy UI elements. Nếu null, setup tool sẽ gán.")]
     [SerializeField] private Canvas _tutorialCanvas;
@@ -43,11 +46,21 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
     private static readonly Dictionary<string, PlotController> _plotById
         = new Dictionary<string, PlotController>();
 
+    // [WP-A1] id chưa map đã cảnh báo — chỉ báo 1 lần / id để không spam Console mỗi frame.
+    private static readonly HashSet<string> _idChuaMapDaBao = new HashSet<string>();
+
     /// <summary>Ô/chậu còn việc? plant → cần trống (IsEmpty); harvest → cần chín (IsReady).
-    /// Không rõ (chưa map) → trả true để vẫn hiện tay (an toàn).</summary>
+    /// [WP-A1] Không rõ (chưa map) → trả FALSE + cảnh báo 1 lần. Trước đây trả true ⇒ tay cứ chỉ
+    /// vào một ô "ma" không tồn tại trong gate ⇒ người chơi tưởng còn việc mà bước không qua.</summary>
     public static bool IsPlotPending(string id, bool needReady)
     {
-        if (!_plotById.TryGetValue(id, out var pc) || pc == null) return true;
+        if (!_plotById.TryGetValue(id, out var pc) || pc == null)
+        {
+            if (_idChuaMapDaBao.Add(id))
+                Debug.LogWarning($"[Tutorial][Gate] IsPlotPending: id '{id}' chưa map tới PlotController " +
+                                 "→ coi là KHÔNG còn việc (tay bỏ qua ô này).");
+            return false;
+        }
         return needReady ? pc.IsReady : pc.IsEmpty;
     }
 
@@ -188,7 +201,10 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
         if (ShopManager.Instance == null || !ShopManager.Instance.IsOpen)
             return;
 
-        if (TutorialManager.GetTargetRect("shop_corn") == null
+        if (TutorialManager.GetTargetRect("shop_bapcai") == null
+            || TutorialManager.GetTargetRect("shop_bapcai_plus") == null
+            || TutorialManager.GetTargetRect("shop_bapcai_buy") == null
+            || TutorialManager.GetTargetRect("shop_corn") == null
             || TutorialManager.GetTargetRect("shop_corn_plus") == null
             || TutorialManager.GetTargetRect("shop_corn_buy") == null)
             TryRegisterCornShopItem();
@@ -207,14 +223,26 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
         {
             var data = item.Data;
             if (data == null) continue;
-            bool isCorn = string.Equals(data.itemID, "seed_ngo", System.StringComparison.OrdinalIgnoreCase)
-                || (data is CropData c && string.Equals(c.cropId, "ngo", System.StringComparison.OrdinalIgnoreCase));
-            if (!isCorn) continue;
+            bool isBapCaiOrCorn = string.Equals(data.itemID, "seed_bapcai", System.StringComparison.OrdinalIgnoreCase)
+                || string.Equals(data.itemID, "seed_ngo", System.StringComparison.OrdinalIgnoreCase)
+                || (data is CropData c && (string.Equals(c.cropId, "bapcai", System.StringComparison.OrdinalIgnoreCase)
+                                        || string.Equals(c.cropId, "cabbage", System.StringComparison.OrdinalIgnoreCase)
+                                        || string.Equals(c.cropId, "ngo", System.StringComparison.OrdinalIgnoreCase)));
+            if (!isBapCaiOrCorn) continue;
 
+            AddRuntimeTarget(item.gameObject, "shop_bapcai");
             AddRuntimeTarget(item.gameObject, "shop_corn");
-            if (item.btnPlus != null) AddRuntimeTarget(item.btnPlus.gameObject, "shop_corn_plus");
-            if (item.btnBuy  != null) AddRuntimeTarget(item.btnBuy.gameObject,  "shop_corn_buy");
-            Debug.Log("[TutorialTargetResolver] Registered shop_corn (Ngô) + ＋/Mua.");
+            if (item.btnPlus != null)
+            {
+                AddRuntimeTarget(item.btnPlus.gameObject, "shop_bapcai_plus");
+                AddRuntimeTarget(item.btnPlus.gameObject, "shop_corn_plus");
+            }
+            if (item.btnBuy != null)
+            {
+                AddRuntimeTarget(item.btnBuy.gameObject, "shop_bapcai_buy");
+                AddRuntimeTarget(item.btnBuy.gameObject, "shop_corn_buy");
+            }
+            Debug.Log("[TutorialTargetResolver] Registered shop_bapcai / shop_corn + ＋/Mua.");
             return;
         }
     }
@@ -284,6 +312,10 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
                 TryScanSeed("seed_rice", RICE_ALIASES);
             if (TutorialManager.GetTargetRect("seed_huong_duong") == null)
                 TryScanSeed("seed_huong_duong", FLOWER_ALIASES);
+            if (TutorialManager.GetTargetRect("seed_bapcai") == null)
+                TryScanSeed("seed_bapcai", BAPCAI_ALIASES);
+            if (TutorialManager.GetTargetRect("seed_ngo") == null)
+                TryScanSeed("seed_ngo", BAPCAI_ALIASES);
             yield return wait;
         }
     }
@@ -343,8 +375,8 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
     {
         _ricePlots.Clear();
 
-        // Lấy TẤT CẢ ô Normal rồi xếp theo đúng thứ tự pos user gửi (RICE_ORDER).
-        var ordered = OrderByTargets(FindPlotsByCategory(PlotCategory.Normal), RICE_ORDER);
+        // [WP-A1] Lấy ĐÚNG tập ô mà gate đếm (Normal + IsUnlocked + không phải chậu hoa) rồi xếp theo RICE_ORDER.
+        var ordered = OrderByTargets(LayTransform(TutorialStepTriggerBridge.LayODatLua()), RICE_ORDER);
 
         if (ordered.Count == 0)
         {
@@ -358,8 +390,7 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
             if (t == null) continue;
             _ricePlots.Add(t);
             CreateWorldProxy($"tutorial_plot_{idx:00}", t);   // tutorial_plot_01 … tutorial_plot_08
-            idx++;
-            if (idx > 8) break;
+            idx++;   // [WP-A1] không cắt ở 8 — tay phải phủ đúng tập ô của gate
         }
     }
 
@@ -468,8 +499,8 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
     {
         _flowerPots.Clear();
 
-        // Lấy TẤT CẢ chậu Flower rồi xếp theo đúng thứ tự pos user gửi (FLOWER_ORDER).
-        var ordered = OrderByTargets(FindPlotsByCategory(PlotCategory.Flower), FLOWER_ORDER);
+        // [WP-A1] Lấy ĐÚNG tập chậu mà gate đếm (Flower + IsUnlocked) rồi xếp theo FLOWER_ORDER.
+        var ordered = OrderByTargets(LayTransform(TutorialStepTriggerBridge.LayChauHoa()), FLOWER_ORDER);
 
         if (ordered.Count == 0)
         {
@@ -483,18 +514,17 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
             if (t == null) continue;
             _flowerPots.Add(t);
             CreateWorldProxy($"tutorial_flower_{idx:00}", t);  // tutorial_flower_01 … tutorial_flower_06
-            idx++;
-            if (idx > 6) break;
+            idx++;   // [WP-A1] không cắt ở 6 — tay phải phủ đúng tập chậu của gate
         }
     }
 
-    // Tìm mọi PlotController theo category.
-    private static List<Transform> FindPlotsByCategory(PlotCategory cat)
+    // [WP-A1] Đổi danh sách PlotController (từ TutorialStepTriggerBridge) sang Transform để xếp thứ tự.
+    // Thay cho FindPlotsByCategory cũ (lọc riêng, không xét IsUnlocked ⇒ tay lệch gate).
+    private static List<Transform> LayTransform(List<PlotController> plots)
     {
-        var result = new List<Transform>();
-        var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
-        foreach (var p in all)
-            if (p != null && p.Category == cat) result.Add(p.transform);
+        var result = new List<Transform>(plots.Count);
+        foreach (var p in plots)
+            if (p != null) result.Add(p.transform);
         return result;
     }
 
@@ -528,7 +558,7 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
         proxyGo.layer = gameObject.layer;
 
         var rt = proxyGo.GetComponent<RectTransform>();
-        rt.sizeDelta = new Vector2(80f, 80f);
+        rt.sizeDelta = new Vector2(160f, 130f);
         rt.pivot     = new Vector2(0.5f, 0.5f);
 
         var tt = proxyGo.AddComponent<TutorialTarget>();
@@ -555,7 +585,26 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
             Vector3 screen = _cam.WorldToScreenPoint(PlotVisualCenter(worldT));
             bool behindCam = screen.z < 0f;
             proxyRT.gameObject.SetActive(!behindCam);
-            if (!behindCam) proxyRT.position = screen;
+            if (!behindCam)
+            {
+                if (_tutorialCanvas != null && _tutorialCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+                {
+                    Camera uiCam = _tutorialCanvas.worldCamera != null ? _tutorialCanvas.worldCamera : _cam;
+                    if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                        _tutorialCanvas.transform as RectTransform, screen, uiCam, out Vector2 localPoint))
+                    {
+                        proxyRT.anchoredPosition = localPoint;
+                    }
+                    else
+                    {
+                        proxyRT.position = screen;
+                    }
+                }
+                else
+                {
+                    proxyRT.position = screen;
+                }
+            }
         }
     }
 

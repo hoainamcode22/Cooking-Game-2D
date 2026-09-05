@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 69a363e6c16666945ac5438e62388fb7, type: 3}
+  m_Name: Home2
+  m_EditorClassIdentifier: Assembly-CSharp::BuildingData
+  itemID: 102
+  itemName: "Nh\xE0 D\xE2n 2"
+  itemIcon: {fileID: 21300000, guid: d6151659a4eadee5ba65a80b15ec331a, type: 3}
+  goldPrice: 350
+  diamondPrice: 0
+  prefabToBuild: {fileID: 8741544369598970430, guid: 4b0123a1c7700ba4aaf0b4c1e3a91ebd, type: 3}
+  unlockLevel: 1
+  gridSize: {x: 4, y: 4}
+  buildTimeSeconds: 180
+  rushGemCost: 0

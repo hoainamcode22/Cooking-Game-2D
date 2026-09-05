@@ -82,30 +82,20 @@ public class TouristBoatConfig : ScriptableObject
     [Tooltip("[Chỉ dùng cho đường FALLBACK] Món chưa điền sellPrice: vàng = tổng giá nguyên liệu chính × hệ số này")]
     public int rewardIngredientMultiplier = 2;
 
-    [Tooltip("Núm chỉnh chung độ hào phóng của khách du lịch. 1.0 = đúng thiết kế; thấy lạm phát vàng thì hạ xuống 0.9/0.8, thấy khách trả bèo thì nâng 1.1. Nhân vào TẤT CẢ vàng khách trả")]
-    public float touristGoldMultiplier = 1.0f;
+    [Tooltip("Núm chỉnh chung độ hào phóng của khách du lịch. Đảm bảo món nấu lời lãi gấp nhiều lần nguyên liệu thô.")]
+    public float touristGoldMultiplier = 1.8f;
 
-    // [QA M-9] CHỐNG LẠM PHÁT EXP — đừng nâng lên trên 1.0 nếu chưa đo lại đường cong level.
-    // Nấu xong trong minigame ĐÃ cộng rewardExp × hệ số điểm (CookingChallengeManager),
-    // phục vụ khách cộng THÊM một lần nữa ⇒ mỗi món cho ~2× EXP thiết kế. Trần level 30,
-    // tổng L10→L30 chỉ 5.619 EXP mà một chuyến khách cho 128-306 EXP ⇒ ở L10 lên
-    // 0,9-2,2 level MỘT CHUYẾN, hết nội dung game sau 1,2-3,7 giờ.
-    // 0.4 = nấu ăn (phần chơi chính) giữ trọn EXP của nó, phục vụ khách là thưởng THÊM
-    // ~40%: đủ khích lệ mà tổng chỉ còn ~1,4× thiết kế thay vì 2,25×.
-    [Tooltip("Hệ số EXP khách du lịch trả — chống lạm phát cấp độ (QA M-9).\n" +
-             "Nấu xong trong bếp ĐÃ cộng EXP của món; phục vụ khách cộng thêm lần nữa nên phải hãm lại. " +
-             "0.4 = khách trả 40% EXP món (tổng ~1,4× thiết kế). ĐỪNG đặt > 1.0: người chơi sẽ lên hết " +
-             "cấp trần chỉ trong 1-2 giờ. Muốn khách cho nhiều EXP hơn thì nâng từng bước 0.1 rồi đo lại.")]
-    public float touristExpMultiplier = 0.4f;
+    [Tooltip("Hệ số EXP khách du lịch trả thêm khi được phục vụ món ngon.")]
+    public float touristExpMultiplier = 0.75f;
 
-    [Tooltip("Hệ số vàng cho món Easy (nhân với sellPrice). 1.00 = trả đúng giá bán chợ")]
-    public float diffMultEasy = 1.00f;
+    [Tooltip("Hệ số vàng cho món Easy (nhân với sellPrice).")]
+    public float diffMultEasy = 1.25f;
 
-    [Tooltip("Hệ số vàng cho món Normal — cao hơn Easy để nấu món khó có lời hơn")]
-    public float diffMultNormal = 1.15f;
+    [Tooltip("Hệ số vàng cho món Normal — lời cao hơn để khích lệ người chơi")]
+    public float diffMultNormal = 1.50f;
 
     [Tooltip("Hệ số vàng cho món Hard")]
-    public float diffMultHard = 1.35f;
+    public float diffMultHard = 1.85f;
 
     [Tooltip("Trần của thưởng thêm theo nguyên liệu quý (Rare +5%, Epic +12% mỗi loại). 1.5 = tối đa +50%, tránh món 5 nguyên liệu Epic trả gấp đôi")]
     public float rarityBonusCap = 1.5f;
@@ -177,27 +167,24 @@ public class TouristBoatConfig : ScriptableObject
     // ─── Cỡ tàu trong world ─────────────────────────────────────────────
     [Header("Cỡ tàu — unit world")]
     [Tooltip("Chiều rộng sprite tàu. 3 bến cách nhau ~740 unit nên tàu ~300 là vừa 1 ô đậu. Đặt 0 để KHÔNG can thiệp (giữ nguyên cỡ bạn tự chỉnh).")]
-    public float boatVisualWidth = 300f;
+    public float boatVisualWidth = 500f;
 
     [Tooltip("Chiều cao sprite tàu. Đặt 0 để suy theo tỉ lệ gốc của ảnh.")]
     public float boatVisualHeight = 0f;
 
     // ─── Cỡ bảng khóa (LockUI) trong world ──────────────────────────────
-    // Map của game dùng hệ toạ độ RẤT lớn (3 bến cách nhau ~740-840 unit) nên
-    // bảng khóa phải tính theo unit world, không phải pixel UI. Số mặc định dưới
-    // đây canh theo khoảng cách bến thật: bảng 620 rộng để 3 bảng không chạm nhau.
     [Header("Cỡ bảng khóa (LockUI) — unit world")]
-    [Tooltip("Chiều rộng bảng khóa. Nên nhỏ hơn khoảng cách giữa 2 bến (~740) để 2 bảng không chạm nhau.")]
-    public float lockPanelWidth = 520f;
+    [Tooltip("Chiều rộng bảng khóa.")]
+    public float lockPanelWidth = 180f;
 
     [Tooltip("Chiều cao bảng khóa.")]
-    public float lockPanelHeight = 250f;
+    public float lockPanelHeight = 90f;
 
     [Tooltip("Đường kính icon ổ khóa.")]
-    public float lockIconSize = 100f;
+    public float lockIconSize = 24f;
 
-    [Tooltip("Cỡ chữ teaser ('Mở ở Lv12 · 2.000 vàng'). Đây là chiều cao chữ tính bằng unit world — 96 đọc rõ ở mức zoom thường.")]
-    public float lockTeaserFontSize = 80f;
+    [Tooltip("Cỡ chữ teaser ('Mở ở Lv12 · 2.000 vàng'). Chiều cao chữ tính bằng unit world.")]
+    public float lockTeaserFontSize = 18f;
 
     // ─── Debug ──────────────────────────────────────────────────────────
 

@@ -56,6 +56,21 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip successJingle;
     [SerializeField] private AudioClip waterFlowClip;
 
+    [Header("Expanded Pro Clips")]
+    [SerializeField] private AudioClip fanfareLevelUp; // fanfare_levelup.wav
+    [SerializeField] private AudioClip coinTing;       // coin_ting.wav
+    [SerializeField] private AudioClip gemSparkle;     // gem_sparkle.wav
+    [SerializeField] private AudioClip bubblePop;      // bubble_pop.wav
+    [SerializeField] private AudioClip trainWhistle;   // train_whistle.wav
+    [SerializeField] private AudioClip boatHorn;       // boat_horn.wav
+    [SerializeField] private AudioClip cookingSizzle;  // cooking_sizzle.wav
+    [SerializeField] private AudioClip cookingChop;    // cooking_chop.wav
+    [SerializeField] private AudioClip buildingPlace;  // building_place.wav
+    [SerializeField] private AudioClip giftUnbox;      // gift_unbox.wav
+    [SerializeField] private AudioClip buildingHammer;  // building_hammer.wav
+    [SerializeField] private AudioClip touristChatter;  // tourist_chatter.wav
+    [SerializeField] private AudioClip characterGreet;  // character_greet.wav
+
     [Header("Volume")]
     [Range(0f, 1f)][SerializeField] private float bgmVolume = 0.35f;     // Nhạc nền rõ ràng, êm dịu
     [Range(0f, 1f)][SerializeField] private float uiVolume = 0.70f;      // Tiếng nút bấm nảy giòn
@@ -99,29 +114,123 @@ public class AudioManager : MonoBehaviour
         SetupSource(waterAmbienceSource, true, 0f);
 
         LoadDefaultClipsIfMissing();
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += HandleSceneLoaded;
+    }
+
+    private void OnDestroy()
+    {
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= HandleSceneLoaded;
+    }
+
+    private void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        EnsureAudioListener();
+        PlayMainBGM();
     }
 
     private void Start()
     {
+        // [FIX 2026-09-04] Start chay SAU khi scene da len ⇒ luc nay Main Camera va
+        // AudioListener cua no da ton tai, quet lai de don cai thua.
+        EnsureAudioListener();
+
         PlayMainBGM();
         StartWaterAmbience();
     }
 
+    /// <summary>
+    /// [FIX 2026-09-04 — Sếp báo "map cứng đơ, Console 999+ dòng"] Giữ ĐÚNG MỘT AudioListener.
+    ///
+    /// LỖI CŨ: AutoInit chạy ở BeforeSceneLoad ⇒ khi Awake gọi hàm này thì scene CHƯA load,
+    /// FindFirstObjectByType trả null VÀ Camera.main cũng null ⇒ rơi vào nhánh cuối, tự gắn
+    /// AudioListener lên chính AudioManager (DontDestroyOnLoad). Sau đó scene load, Main Camera
+    /// mang sẵn AudioListener của nó ⇒ THÀNH 2 CÁI. Unity cảnh báo MỖI FRAME
+    /// ("There are 2 audio listeners in the scene") ⇒ Console ngập 999+ dòng ⇒ FPS tụt còn ~10
+    /// ⇒ kéo map giật cứng. Bản cũ có gọi lại hàm này lúc scene load, nhưng chỉ THÊM khi thiếu,
+    /// KHÔNG BAO GIỜ tắt cái thừa ⇒ lỗi tồn tại vĩnh viễn.
+    ///
+    /// CÁCH CHỮA: quét mọi AudioListener đang bật, giữ lại đúng 1 (ưu tiên cái trên Camera.main
+    /// để âm thanh theo đúng vị trí nghe), TẮT — không xoá — những cái còn lại. Tắt thì revert
+    /// được và KHÔNG đụng vào prefab Main Camera của Sếp.
+    /// </summary>
     private void EnsureAudioListener()
     {
-        AudioListener listener = FindFirstObjectByType<AudioListener>();
-        if (listener == null)
+        // Lay MOI AudioListener, ke ca cai dang bi tat (component disabled van duoc tra ve).
+        AudioListener[] all = FindObjectsByType<AudioListener>(FindObjectsInactive.Include,
+                                                               FindObjectsSortMode.None);
+        Camera main = Camera.main;
+
+        // Dem nhung cai DANG THUC SU HOAT DONG (Unity chi canh bao voi loai nay).
+        int soDangBat = 0;
+        AudioListener dangBatDauTien = null;
+        AudioListener trenMainCam     = null;
+        AudioListener cuaChinhMinh    = null;
+
+        for (int i = 0; i < all.Length; i++)
         {
-            Camera cam = Camera.main;
-            if (cam != null)
-                cam.gameObject.AddComponent<AudioListener>();
-            else
-                gameObject.AddComponent<AudioListener>();
+            AudioListener l = all[i];
+            if (l == null) continue;
+            if (l.gameObject == gameObject) cuaChinhMinh = l;
+            if (main != null && l.gameObject == main.gameObject) trenMainCam = l;
+            if (l.enabled && l.gameObject.activeInHierarchy)
+            {
+                soDangBat++;
+                if (dangBatDauTien == null) dangBatDauTien = l;
+            }
         }
+
+        // ── Truong hop 1: KHONG co cai nao hoat dong ⇒ bat len dung 1 cai ──────────
+        // Xay ra khi vao Bep: FarmUIManager tat listener cua camera farm. Neu khong lo
+        // thi Unity spam "There are no audio listeners in the scene" va game mat tieng.
+        if (soDangBat == 0)
+        {
+            AudioListener chon = null;
+            if (treNull(trenMainCam)) chon = trenMainCam;
+            else if (main != null)    chon = main.gameObject.AddComponent<AudioListener>();
+            else if (treNull(cuaChinhMinh)) chon = cuaChinhMinh;
+            else                      chon = gameObject.AddComponent<AudioListener>();
+
+            if (chon != null && chon.gameObject.activeInHierarchy) chon.enabled = true;
+            return;
+        }
+
+        // ── Truong hop 2: co NHIEU HON 1 ⇒ giu dung 1, tat phan con lai ────────────
+        if (soDangBat <= 1) return;
+
+        AudioListener giuLai = (treNull(trenMainCam) && trenMainCam.enabled &&
+                                trenMainCam.gameObject.activeInHierarchy)
+                             ? trenMainCam : dangBatDauTien;
+        if (giuLai == null) return;
+
+        int daTat = 0;
+        for (int i = 0; i < all.Length; i++)
+        {
+            AudioListener l = all[i];
+            if (l == null || l == giuLai) continue;
+            if (!l.enabled || !l.gameObject.activeInHierarchy) continue;
+            l.enabled = false;
+            daTat++;
+        }
+
+        if (daTat > 0)
+            Debug.Log("[Audio] Da tat " + daTat + " AudioListener thua, giu lai 1 cai tren '" +
+                      giuLai.gameObject.name + "'.");
     }
+
+    private static bool treNull(AudioListener l) { return l != null; }
+
+    // [FIX 2026-09-04] Kiem lai dinh ky: chuyen canh Farm <-> Bep bat/tat listener
+    // ngoai tam kiem soat cua AudioManager, nen chi kiem luc sceneLoaded la KHONG DU.
+    private float _nextListenerCheck;
 
     private void Update()
     {
+        if (Time.unscaledTime >= _nextListenerCheck)
+        {
+            _nextListenerCheck = Time.unscaledTime + 0.5f;
+            EnsureAudioListener();
+        }
+
         // Tự động bắt sự kiện bấm cho TẤT CẢ nút bấm (UI Button / Toggle) trong game
         if (Input.GetMouseButtonDown(0) && EventSystem.current != null)
         {
@@ -222,6 +331,20 @@ public class AudioManager : MonoBehaviour
             ?? Resources.Load<AudioClip>("Audio/vàng");
         if (waterFlowClip == null) waterFlowClip = Resources.Load<AudioClip>("Audio/Ambience/water_flowing");
 
+        if (fanfareLevelUp == null) fanfareLevelUp = Resources.Load<AudioClip>("Audio/fanfare_levelup");
+        if (coinTing == null) coinTing = Resources.Load<AudioClip>("Audio/coin_ting");
+        if (gemSparkle == null) gemSparkle = Resources.Load<AudioClip>("Audio/gem_sparkle");
+        if (bubblePop == null) bubblePop = Resources.Load<AudioClip>("Audio/bubble_pop");
+        if (trainWhistle == null) trainWhistle = Resources.Load<AudioClip>("Audio/train_whistle");
+        if (boatHorn == null) boatHorn = Resources.Load<AudioClip>("Audio/boat_horn");
+        if (cookingSizzle == null) cookingSizzle = Resources.Load<AudioClip>("Audio/cooking_sizzle");
+        if (cookingChop == null) cookingChop = Resources.Load<AudioClip>("Audio/cooking_chop");
+        if (buildingPlace == null) buildingPlace = Resources.Load<AudioClip>("Audio/building_place");
+        if (giftUnbox == null) giftUnbox = Resources.Load<AudioClip>("Audio/gift_unbox");
+        if (buildingHammer == null) buildingHammer = Resources.Load<AudioClip>("Audio/building_hammer");
+        if (touristChatter == null) touristChatter = Resources.Load<AudioClip>("Audio/tourist_chatter");
+        if (characterGreet == null) characterGreet = Resources.Load<AudioClip>("Audio/character_greet");
+
 #if UNITY_EDITOR
         // 2. Fallback trực tiếp từ Assets/Audio Game
         if (bgmMain == null)
@@ -240,6 +363,20 @@ public class AudioManager : MonoBehaviour
                 ?? UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/vàng.wav");
         if (waterFlowClip == null)
             waterFlowClip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Day_Night/Audio/Ambience/Water flowing.wav");
+
+        if (fanfareLevelUp == null) fanfareLevelUp = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/fanfare_levelup.wav");
+        if (coinTing == null) coinTing = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/coin_ting.wav");
+        if (gemSparkle == null) gemSparkle = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/gem_sparkle.wav");
+        if (bubblePop == null) bubblePop = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/bubble_pop.wav");
+        if (trainWhistle == null) trainWhistle = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/train_whistle.wav");
+        if (boatHorn == null) boatHorn = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/boat_horn.wav");
+        if (cookingSizzle == null) cookingSizzle = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/cooking_sizzle.wav");
+        if (cookingChop == null) cookingChop = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/cooking_chop.wav");
+        if (buildingPlace == null) buildingPlace = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/building_place.wav");
+        if (giftUnbox == null) giftUnbox = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/gift_unbox.wav");
+        if (buildingHammer == null) buildingHammer = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/building_hammer.wav");
+        if (touristChatter == null) touristChatter = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/tourist_chatter.wav");
+        if (characterGreet == null) characterGreet = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Audio Game/character_greet.wav");
 #endif
     }
 
@@ -375,6 +512,104 @@ public class AudioManager : MonoBehaviour
         PlayFX(successJingle != null ? successJingle : expClip, 0.8f, 1f, 1.02f);
     }
 
+    /// <summary>🎺 Nhạc Fanfare chúc mừng Lên Cấp rực rỡ (fanfare_levelup.wav)</summary>
+    public void PlayLevelUpFanfare()
+    {
+        DuckBGM(0.3f, 2.0f);
+        if (fanfareLevelUp == null) LoadDefaultClipsIfMissing();
+        PlayFX(fanfareLevelUp != null ? fanfareLevelUp : successJingle, 1f, 1f, 1f);
+    }
+
+    /// <summary>🔔 Tiếng Vàng Ting leng keng khi chạm HUD (coin_ting.wav)</summary>
+    public void PlayCoinTing()
+    {
+        if (Time.unscaledTime - lastCoinTime < coinCooldown) return;
+        lastCoinTime = Time.unscaledTime;
+        if (coinTing == null) LoadDefaultClipsIfMissing();
+        PlayFX(coinTing != null ? coinTing : coinReward, 0.95f, 0.98f, 1.04f);
+    }
+
+    /// <summary>💎 Tiếng Kim Cương lấp lánh (gem_sparkle.wav)</summary>
+    public void PlayGemSparkle()
+    {
+        if (gemSparkle == null) LoadDefaultClipsIfMissing();
+        PlayFX(gemSparkle != null ? gemSparkle : expClip, 1f, 0.98f, 1.02f);
+    }
+
+    /// <summary>🫧 Tiếng Bong Bóng nổ / Pop (bubble_pop.wav)</summary>
+    public void PlayBubblePop()
+    {
+        if (bubblePop == null) LoadDefaultClipsIfMissing();
+        PlayFX(bubblePop != null ? bubblePop : uiClick, 0.9f, 0.95f, 1.05f);
+    }
+
+    /// <summary>🚂 Tiếng Còi Tàu Hỏa xình xịch (train_whistle.wav)</summary>
+    public void PlayTrainWhistle()
+    {
+        DuckBGM(0.5f, 1.8f);
+        if (trainWhistle == null) LoadDefaultClipsIfMissing();
+        PlayFX(trainWhistle != null ? trainWhistle : successJingle, 0.9f, 0.98f, 1.02f);
+    }
+
+    /// <summary>🚢 Tiếng Còi Tàu Thủy Du Lịch cập bến (boat_horn.wav)</summary>
+    public void PlayBoatHorn()
+    {
+        DuckBGM(0.5f, 1.8f);
+        if (boatHorn == null) LoadDefaultClipsIfMissing();
+        PlayFX(boatHorn != null ? boatHorn : successJingle, 0.9f, 0.98f, 1.02f);
+    }
+
+    /// <summary>🍳 Tiếng Nấu Ăn xèo xèo (cooking_sizzle.wav)</summary>
+    public void PlayCookingSizzle()
+    {
+        if (cookingSizzle == null) LoadDefaultClipsIfMissing();
+        PlayFX(cookingSizzle != null ? cookingSizzle : cookStart, 0.85f, 0.97f, 1.03f);
+    }
+
+    /// <summary>🔪 Tiếng Băm Chặt / Thái rau củ trên thớt (cooking_chop.wav)</summary>
+    public void PlayCookingChop()
+    {
+        if (cookingChop == null) LoadDefaultClipsIfMissing();
+        PlayFX(cookingChop != null ? cookingChop : uiClick, 0.9f, 0.95f, 1.05f);
+    }
+
+    /// <summary>📦 Tiếng Đặt Công Trình / Đồ Trang Trí xuống đất (building_place.wav)</summary>
+    public void PlayBuildingPlace()
+    {
+        if (buildingPlace == null) LoadDefaultClipsIfMissing();
+        PlayFX(buildingPlace != null ? buildingPlace : uiClick, 0.95f, 0.95f, 1.05f);
+    }
+
+    /// <summary>🎁 Tiếng Bung Quà / Ăn mừng mở hộp (gift_unbox.wav)</summary>
+    public void PlayGiftUnbox()
+    {
+        DuckBGM(0.4f, 1.2f);
+        if (giftUnbox == null) LoadDefaultClipsIfMissing();
+        PlayFX(giftUnbox != null ? giftUnbox : successJingle, 1f, 0.98f, 1.02f);
+    }
+
+    /// <summary>🔨 Tiếng Xây Dựng / Đập Búa đóng đinh (building_hammer.wav)</summary>
+    public void PlayBuildingHammer()
+    {
+        if (buildingHammer == null) LoadDefaultClipsIfMissing();
+        PlayFX(buildingHammer != null ? buildingHammer : uiClick, 0.95f, 0.96f, 1.04f);
+    }
+
+    /// <summary>👥 Tiếng Khách Du Lịch nói cười ríu rít khi xuống bến (tourist_chatter.wav)</summary>
+    public void PlayTouristChatter()
+    {
+        DuckBGM(0.6f, 1.4f);
+        if (touristChatter == null) LoadDefaultClipsIfMissing();
+        PlayFX(touristChatter != null ? touristChatter : successJingle, 0.9f, 0.98f, 1.02f);
+    }
+
+    /// <summary>👋 Tiếng Nhân Vật chào & huýt sáo khi zoom tới / tương tác (character_greet.wav)</summary>
+    public void PlayCharacterGreet()
+    {
+        if (characterGreet == null) LoadDefaultClipsIfMissing();
+        PlayFX(characterGreet != null ? characterGreet : uiClick, 1f, 0.98f, 1.04f);
+    }
+
     private void DuckBGM(float multiplier, float duration)
     {
         if (duckRoutine != null)
@@ -392,9 +627,55 @@ public class AudioManager : MonoBehaviour
 
         yield return new WaitForSecondsRealtime(duration);
 
-        if (bgmSource != null)
-            bgmSource.volume = originalVolume;
-
         duckRoutine = null;
+    }
+
+    // ─── Settings Controls (Music / SFX / Mute) ─────────────────────────────
+
+    public float BGMVolume
+    {
+        get => PlayerPrefs.GetFloat("SETTING_BGM_VOLUME", bgmVolume);
+        set
+        {
+            bgmVolume = Mathf.Clamp01(value);
+            PlayerPrefs.SetFloat("SETTING_BGM_VOLUME", bgmVolume);
+            if (bgmSource != null)
+                bgmSource.volume = IsBGMEnabled ? bgmVolume : 0f;
+        }
+    }
+
+    public float SFXVolume
+    {
+        get => PlayerPrefs.GetFloat("SETTING_SFX_VOLUME", fxVolume);
+        set
+        {
+            fxVolume = Mathf.Clamp01(value);
+            uiVolume = Mathf.Clamp01(value * 0.85f);
+            PlayerPrefs.SetFloat("SETTING_SFX_VOLUME", fxVolume);
+            if (fxSource != null) fxSource.volume = IsSFXEnabled ? fxVolume : 0f;
+            if (uiSource != null) uiSource.volume = IsSFXEnabled ? uiVolume : 0f;
+        }
+    }
+
+    public bool IsBGMEnabled
+    {
+        get => PlayerPrefs.GetInt("SETTING_BGM_ENABLED", 1) == 1;
+        set
+        {
+            PlayerPrefs.SetInt("SETTING_BGM_ENABLED", value ? 1 : 0);
+            if (bgmSource != null)
+                bgmSource.volume = value ? BGMVolume : 0f;
+        }
+    }
+
+    public bool IsSFXEnabled
+    {
+        get => PlayerPrefs.GetInt("SETTING_SFX_ENABLED", 1) == 1;
+        set
+        {
+            PlayerPrefs.SetInt("SETTING_SFX_ENABLED", value ? 1 : 0);
+            if (fxSource != null) fxSource.volume = value ? SFXVolume : 0f;
+            if (uiSource != null) uiSource.volume = value ? uiVolume : 0f;
+        }
     }
 }

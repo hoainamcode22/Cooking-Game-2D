@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_18_LevelUpCelebration
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "Ch\u00FAc m\u1EEBng b\u1EA1n \u0111\u00E3 ho\u00E0n th\u00E0nh vi\u1EC7c tr\u1ED3ng hoa! B\u1EA1n \u0111\u00FAng l\u00E0 m\u1ED9t n\u00F4ng d\u00E2n t\u00E0i ba!"
+  npcText: "CH\xDAC M\u1EEANG B\u1EA0N L\xCAN C\u1EA4P 2! N\xF4ng tr\u1EA1i \u0111\xE3
+    m\u1EDF kho\xE1 th\xEAm nhi\u1EC1u t\xEDnh n\u0103ng m\u1EDBi!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 

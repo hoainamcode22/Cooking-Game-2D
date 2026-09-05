@@ -22,23 +22,23 @@ MonoBehaviour:
     amount: 3
   - itemId: ca_rot
     displayName: "H\u1EA1t C\xE0 R\u1ED1t"
-    icon: {fileID: 0}
+    icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
     amount: 3
   - itemId: carot
     displayName: "C\xE0 R\u1ED1t"
-    icon: {fileID: 0}
+    icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
     amount: 4
   - itemId: egg
     displayName: "Tr\u1EE9ng"
-    icon: {fileID: 0}
+    icon: {fileID: -8307804571547316847, guid: 20cfa699d7411b0499297e423fec3d8a, type: 3}
     amount: 2
   - itemId: salt
     displayName: "Mu\u1ED1i"
-    icon: {fileID: 0}
+    icon: {fileID: -1162442978445507191, guid: a849ade4905cf98419e62a9cf5b043e5, type: 3}
     amount: 3
   - itemId: dinh
     displayName: "\u0110inh"
-    icon: {fileID: 0}
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 1
   unlockEntries:
   - label: "H\u1ED3 C\xE1 \u0111\xE3 m\u1EDF \u2014 b\u1EAFt \u0111\u1EA7u c\xE2u

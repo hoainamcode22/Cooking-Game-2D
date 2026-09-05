@@ -30,7 +30,7 @@ MonoBehaviour:
     amount: 2
   - itemId: pepper
     displayName: "Ti\xEAu"
-    icon: {fileID: 0}
+    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
     amount: 3
   - itemId: hoa_hong
     displayName: "Hoa H\u1ED3ng"
@@ -38,11 +38,11 @@ MonoBehaviour:
     amount: 3
   - itemId: beef
     displayName: "Th\u1ECBt B\xF2"
-    icon: {fileID: 0}
+    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
     amount: 1
   - itemId: go
     displayName: "G\u1ED7"
-    icon: {fileID: 0}
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 1
   unlockEntries:
   - label: "M\u1EDF kh\xF3a Ti\xEAu v\xE0 c\xE1c lo\u1EA1i hoa c\xF2n l\u1EA1i"

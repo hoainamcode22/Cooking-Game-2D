@@ -9,6 +9,18 @@ public class MasterTutorialBeautifier : EditorWindow
     [MenuItem("Tools/Farm/Master Beautify Tutorial & Mission UI")]
     public static void RunBeautify()
     {
+        // [B3 KHOÁ TOOL PHÁ — 2026-09-05] Tool này ép sprite builtin Background + màu #8CC63F lên nút,
+        // và đưa nền mờ Bg_NenToi về alpha 0 → nút "Bắt đầu nào" phẳng, popup lên cấp mất nền mờ.
+        // Chặn bằng dialog, nút MẶC ĐỊNH (focus) = Huỷ. Muốn phục hồi: chạy '★ Nối lại dây popup (APPLY)'.
+        bool huy = EditorUtility.DisplayDialog(
+            "⚠ Tool này GHI ĐÈ style lên toàn bộ UI tutorial/mission trong scene",
+            "MasterTutorialBeautifier sẽ ép sprite builtin 'Background' + màu #8CC63F lên mọi nút,\n" +
+            "đổi font, và có thể làm phẳng nút 'Bắt đầu nào' / mất nền mờ popup lên cấp.\n\n" +
+            "Chỉ chạy khi bạn chủ động muốn style lại tutorial. Có Undo (Ctrl+Z) nhưng KHÔNG tự lưu.\n\n" +
+            "Bạn có chắc muốn chạy?",
+            "Huỷ (an toàn)", "Vẫn chạy");
+        if (huy) { Debug.Log("[MasterTutorialBeautifier] Đã huỷ theo yêu cầu — chưa đụng gì."); return; }
+
         // Colors
         Color pureWhite = Color.white;
         

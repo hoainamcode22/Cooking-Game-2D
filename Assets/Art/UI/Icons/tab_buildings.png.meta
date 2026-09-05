@@ -5,12 +5,6 @@ TextureImporter:
   - first:
       213: -2107771471988508026
     second: tab_buildings_0
-  - first:
-      213: 6023627416189132087
-    second: tab_buildings_1
-  - first:
-      213: 2223884075295306366
-    second: tab_buildings_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -109,12 +103,12 @@ TextureImporter:
       name: tab_buildings_0
       rect:
         serializedVersion: 2
-        x: 178
-        y: 234
-        width: 11
-        height: 10
+        x: 7
+        y: 12
+        width: 242
+        height: 223
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
@@ -123,50 +117,6 @@ TextureImporter:
       bones: []
       spriteID: 68a3c608301bfb2e0800000000000000
       internalID: -2107771471988508026
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: tab_buildings_1
-      rect:
-        serializedVersion: 2
-        x: 191
-        y: 238
-        width: 7
-        height: 6
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 73dd1417839389350800000000000000
-      internalID: 6023627416189132087
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: tab_buildings_2
-      rect:
-        serializedVersion: 2
-        x: 7
-        y: 12
-        width: 242
-        height: 223
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: e72ff99a8c2dcde10800000000000000
-      internalID: 2223884075295306366
       vertices: []
       indices: 
       edges: []
@@ -186,8 +136,6 @@ TextureImporter:
       entries: []
     nameFileIdTable:
       tab_buildings_0: -2107771471988508026
-      tab_buildings_1: 6023627416189132087
-      tab_buildings_2: 2223884075295306366
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

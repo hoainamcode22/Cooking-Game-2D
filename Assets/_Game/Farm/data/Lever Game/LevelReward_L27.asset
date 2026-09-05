@@ -26,19 +26,19 @@ MonoBehaviour:
     amount: 2
   - itemId: mushroom
     displayName: "N\u1EA5m"
-    icon: {fileID: 0}
+    icon: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
     amount: 5
   - itemId: chili
     displayName: "\u1EDAt"
-    icon: {fileID: 0}
+    icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
     amount: 4
   - itemId: herbs
     displayName: "Rau Th\u01A1m"
-    icon: {fileID: 0}
+    icon: {fileID: -6473379884045465844, guid: 050a1194adf72f046adc525bddd7bb28, type: 3}
     amount: 3
   - itemId: son
     displayName: "S\u01A1n"
-    icon: {fileID: 0}
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 2
   unlockEntries:
   - label: "\u0110\u01A1n t\xE0u kh\xF3 (payout x3)"

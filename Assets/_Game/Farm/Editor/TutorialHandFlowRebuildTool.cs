@@ -4,7 +4,14 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.UI;
 
-[InitializeOnLoad]
+// ⛔ [VÒNG 13 — 04/09/2026] ĐÃ TẮT TỰ CHẠY THEO LỆNH LEAD.
+// Trước đây attribute [InitializeOnLoad] khiến static constructor chạy MỖI LẦN Unity biên dịch
+// lại, kéo theo EditorApplication.delayCall → tool tự sửa scene rồi TỰ LƯU. Hậu quả: mọi thứ
+// Sếp kéo tay trong scene (vị trí prefab tàu, nút HUD, reference nhân vật popup) đều bị ghi đè
+// âm thầm sau mỗi lần compile — đây chính là nguyên nhân của chuỗi lỗi "tự nhiên hỏng".
+// Menu trong Tools/... VẪN CÒN — muốn chạy thì bấm tay, chủ động và kiểm soát được.
+// Muốn bật lại: bỏ dấu // ở dòng dưới.
+// [InitializeOnLoad]
 public static class TutorialHandFlowRebuildTool
 {
     private const string MenuPath = "Tools/Farm Game/Rebuild Tutorial Hand Flow (One Click)";
@@ -14,7 +21,11 @@ public static class TutorialHandFlowRebuildTool
 
     static TutorialHandFlowRebuildTool()
     {
-        EditorApplication.delayCall += TryAutoRunOnce;
+        // ⛔ [VÒNG 14] ĐÃ TẮT — dòng dưới từng khiến tool tự chạy + tự lưu scene mỗi lần compile.
+        // Comment [InitializeOnLoad] ở vòng 13 là CHƯA ĐỦ: chỉ cần code khác chạm vào bất kỳ
+        // member nào của class là static constructor vẫn chạy, và dòng này vẫn đăng ký.
+        // Muốn chạy: bấm menu trong Tools/... (chủ động, kiểm soát được).
+        // EditorApplication.delayCall += TryAutoRunOnce;
     }
 
     [MenuItem(MenuPath)]

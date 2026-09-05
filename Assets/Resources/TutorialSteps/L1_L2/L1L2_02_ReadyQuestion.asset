@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_02_ReadyQuestion
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "S\u1EB5n s\xE0ng x\xE2y n\xF4ng tr\u1EA1i trong m\u01A1 c\u1EE7a ri\xEAng
-    b\u1EA1n ch\u01B0a?"
+  npcText: "Tr\u01B0\u1EDBc ti\xEAn, ch\xFAng ta h\xE3y c\xF9ng gieo nh\u1EEFng h\u1EA1t
+    gi\u1ED1ng l\xFAa \u0111\u1EA7u ti\xEAn xu\u1ED1ng ru\u1ED9ng n\xE0o! H\xE3y
+    ch\u1EA1m v\xE0o \xF4 \u0111\u1EA5t nh\xE9."
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 

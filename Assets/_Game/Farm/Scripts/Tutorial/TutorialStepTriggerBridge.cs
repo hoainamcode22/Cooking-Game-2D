@@ -69,18 +69,107 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         _allRiceHarvestsNotified = false;
     }
 
-    // Lúa coi là trồng xong khi mọi Ô RUỘNG (Normal, KHÔNG phải chậu hoa) đã có cây.
-    // Loại trừ chậu hoa (Chauhoa) — trước đây gate tính cả chậu trống nên kẹt mãi.
-    private static bool AllRiceFieldPlanted()
+    // =========================================================================
+    // [WP-A1] NGUỒN DUY NHẤT về "ô nào thuộc tutorial"
+    // Gate (AllRiceFieldPlanted / NoUnlockedPlanted…) và BÀN TAY (TutorialRuntimeTargetResolver)
+    // trước đây mỗi bên tự lọc một kiểu ⇒ tay chỉ vào ô mà gate không đếm (hoặc ngược lại) ⇒ kẹt.
+    // Nay cả hai cùng gọi LayODatLua()/LayChauHoa() ⇒ tập ô của tay == tập ô của gate.
+    // =========================================================================
+
+    /// <summary>Tên ô có dấu hiệu là chậu hoa (Chauhoa/Pot/Hoa) — bị loại khỏi ruộng lúa.</summary>
+    private static bool LaChauHoaTheoTen(PlotController p)
     {
+        string n = p.name.ToLower();
+        return n.Contains("chau") || n.Contains("pot") || n.Contains("hoa");
+    }
+
+    /// <summary>
+    /// Ô RUỘNG lúa hợp lệ cho tutorial: Category Normal + IsUnlocked + KHÔNG phải chậu hoa theo tên.
+    /// Xếp theo PlotId tăng dần. Không giới hạn số lượng (trước đây FindNormalPlotsByName cắt ở 6).
+    /// </summary>
+    public static List<PlotController> LayODatLua()
+    {
+        var result = new List<PlotController>();
         var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
-        int total = 0;
-        var empties = new System.Text.StringBuilder();
+        System.Array.Sort(all, (a, b) => a.PlotId.CompareTo(b.PlotId));
         foreach (var p in all)
         {
             if (p == null || p.Category != PlotCategory.Normal || !p.IsUnlocked) continue;
-            string n = p.name.ToLower();
-            if (n.Contains("chau") || n.Contains("pot") || n.Contains("hoa")) continue; // bỏ chậu hoa
+            if (LaChauHoaTheoTen(p)) continue;
+            result.Add(p);
+        }
+        return result;
+    }
+
+    /// <summary>Chậu hoa hợp lệ cho tutorial: Category Flower + IsUnlocked. Xếp theo PlotId tăng dần.</summary>
+    public static List<PlotController> LayChauHoa()
+    {
+        var result = new List<PlotController>();
+        var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
+        System.Array.Sort(all, (a, b) => a.PlotId.CompareTo(b.PlotId));
+        foreach (var p in all)
+        {
+            if (p == null || p.Category != PlotCategory.Flower || !p.IsUnlocked) continue;
+            result.Add(p);
+        }
+        return result;
+    }
+
+    /// <summary>Tập ô mà gate đếm cho từng loại: Normal → LayODatLua(), Flower → LayChauHoa().</summary>
+    private static List<PlotController> LayODatTheoLoai(PlotCategory cat)
+        => cat == PlotCategory.Flower ? LayChauHoa() : LayODatLua();
+
+    /// <summary>
+    /// [WP-A1] Reset MỌI latch một-lần (lúa/hoa, trồng/thu hoạch) + bộ đếm.
+    /// TutorialManager gọi khi VÀO một bước chờ quét ô, để gate của bước đó có thể bắn lại.
+    /// </summary>
+    public void ResetAllTracking() => ResetCounters();
+
+    /// <summary>
+    /// [WP-A1] Kiểm tra lại gate NGAY lúc Manager vào bước chờ — chữa lỗi "tay kẹt":
+    /// người chơi trồng/thu hoạch xong TRƯỚC khi bước chờ bắt đầu ⇒ event đã bắn (và bị Manager bỏ),
+    /// latch đã set ⇒ không bao giờ bắn lại. Nếu điều kiện đã đạt: set latch + gọi Notify tương ứng.
+    /// Trả về true nếu đã bắn Notify. Action không thuộc 4 gate quét ô → false.
+    /// </summary>
+    public bool KiemTraLaiGate(TutorialWaitAction a)
+    {
+        var tm = TutorialManager.Instance;
+        bool dat;
+        switch (a)
+        {
+            case TutorialWaitAction.WaitForAllPlotsPlanted:
+                dat = !_allRicePlantsNotified && AllRiceFieldPlanted();
+                if (dat) { _allRicePlantsNotified = true; tm?.NotifyAllPlotsPlanted(); }
+                break;
+            case TutorialWaitAction.WaitForAllPlotsHarvested:
+                dat = !_allRiceHarvestsNotified && NoUnlockedPlanted(PlotCategory.Normal);
+                if (dat) { _allRiceHarvestsNotified = true; tm?.NotifyAllPlotsHarvested(); }
+                break;
+            case TutorialWaitAction.WaitForAllFlowerPlotsPlanted:
+                dat = !_allFlowerPlantsNotified && AllUnlockedNonEmpty(PlotCategory.Flower);
+                if (dat) { _allFlowerPlantsNotified = true; tm?.NotifyAllFlowerPlotsPlanted(); }
+                break;
+            case TutorialWaitAction.WaitForAllFlowerPlotsHarvested:
+                dat = !_allFlowerHarvestsNotified && NoUnlockedPlanted(PlotCategory.Flower);
+                if (dat) { _allFlowerHarvestsNotified = true; tm?.NotifyAllFlowerPlotsHarvested(); }
+                break;
+            default:
+                return false;
+        }
+        Debug.Log($"[Tutorial][Gate] Kiểm tra lại '{a}' lúc vào bước → " +
+                  (dat ? "ĐÃ ĐẠT — bắn Notify ngay." : "chưa đạt — chờ event trồng/thu hoạch."));
+        return dat;
+    }
+
+    // Lúa coi là trồng xong khi mọi Ô RUỘNG (Normal, KHÔNG phải chậu hoa) đã có cây.
+    // Loại trừ chậu hoa (Chauhoa) — trước đây gate tính cả chậu trống nên kẹt mãi.
+    // [WP-A1] Dùng LayODatLua() — cùng tập ô với bàn tay.
+    private static bool AllRiceFieldPlanted()
+    {
+        int total = 0;
+        var empties = new System.Text.StringBuilder();
+        foreach (var p in LayODatLua())
+        {
             total++;
             if (p.IsEmpty) empties.Append(p.name).Append(' ');
         }
@@ -94,13 +183,12 @@ public class TutorialStepTriggerBridge : MonoBehaviour
     }
 
     // "Đã TRỒNG hết" = KHÔNG còn ô trống nào (unlocked). Chắc hơn đếm số → tránh kẹt vì lệch số ô.
+    // [WP-A1] Dùng LayODatTheoLoai(cat) — cùng tập ô với bàn tay.
     private static bool AllUnlockedNonEmpty(PlotCategory cat)
     {
-        var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
         bool any = false;
-        foreach (var p in all)
+        foreach (var p in LayODatTheoLoai(cat))
         {
-            if (p == null || p.Category != cat || !p.IsUnlocked) continue;
             any = true;
             if (p.IsEmpty) return false;   // còn ô trống → chưa trồng xong
         }
@@ -108,13 +196,12 @@ public class TutorialStepTriggerBridge : MonoBehaviour
     }
 
     // "Đã THU HOẠCH hết" = KHÔNG còn ô nào đang có cây (unlocked) → tất cả đã về Empty.
+    // [WP-A1] Dùng LayODatTheoLoai(cat) — cùng tập ô với bàn tay.
     private static bool NoUnlockedPlanted(PlotCategory cat)
     {
-        var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
         bool any = false;
-        foreach (var p in all)
+        foreach (var p in LayODatTheoLoai(cat))
         {
-            if (p == null || p.Category != cat || !p.IsUnlocked) continue;
             any = true;
             if (p.IsPlanted) return false;  // còn cây → chưa thu hoạch xong
         }
@@ -250,18 +337,8 @@ public class TutorialStepTriggerBridge : MonoBehaviour
         return null;
     }
 
-    private List<PlotController> FindNormalPlotsByName()
-    {
-        var result = new List<PlotController>();
-        var all = Object.FindObjectsByType<PlotController>(FindObjectsSortMode.None);
-        System.Array.Sort(all, (a, b) => a.PlotId.CompareTo(b.PlotId));
-        foreach (var p in all)
-        {
-            if (p.Category == PlotCategory.Normal) result.Add(p);
-            if (result.Count >= 6) break;
-        }
-        return result;
-    }
+    // [WP-A1] Không còn cắt ở 6 ô — trả đúng tập ô ruộng mà gate đếm (LayODatLua).
+    private List<PlotController> FindNormalPlotsByName() => LayODatLua();
 
     public void ResetCounters()
     {

@@ -28,6 +28,14 @@ public class TutorialDragHintAnimator : MonoBehaviour
 
     public bool IsRunning => _loop != null;
 
+    /// <summary>[V6] Object tay kéo đang dùng (chỉ-đọc) — để nơi khác biết nó có
+    /// trùng với tay tĩnh của TutorialManager hay không, và để F10 in tên ra báo cáo.</summary>
+    public RectTransform TayKeoRT => _hand;
+
+    // [V6] Cờ chống dội: StopDragHint được gọi TỪ BÊN TRONG StartDragHint (dọn vòng cũ)
+    // thì không được nhả quyền / không được gọi ngược TutorialManager bật lại tay tĩnh.
+    private bool _dangKhoiDongLai;
+
     // =========================================================================
     void Start()
     {
@@ -48,8 +56,8 @@ public class TutorialDragHintAnimator : MonoBehaviour
         // Resolve hand pointer lazily
         if (_hand == null)
         {
-            var mgr = GetComponent<TutorialManager>();
-            if (mgr != null) _hand = mgr.HandPointerRT;
+            var compMgr = GetComponent<TutorialManager>();
+            if (compMgr != null) _hand = compMgr.HandPointerRT;
         }
 
         if (_hand == null)
@@ -61,7 +69,28 @@ public class TutorialDragHintAnimator : MonoBehaviour
         // Already running same hint? No-op.
         if (_fromId == fromTargetId && _toId == toTargetId && _loop != null) return;
 
-        StopDragHint();
+        // [V6] MỘT TAY MỘT LÚC — giành quyền TRƯỚC, rồi mới dọn vòng cũ.
+        // Đặt cờ để StopDragHint bên dưới không nhả lại quyền vừa giành.
+        _dangKhoiDongLai = true;
+        try
+        {
+            TutorialHandBus.Nhan(LoaiTay.TayKeo);
+            StopDragHint();
+        }
+        finally
+        {
+            _dangKhoiDongLai = false;
+        }
+
+        // Ẩn tay tĩnh + tắt tay hành động để chỉ còn ĐÚNG MỘT bàn tay trên màn hình.
+        // TutorialManager tự bỏ qua nếu tay tĩnh CHÍNH LÀ object này (Inspector bỏ trống).
+        var tutMgr = TutorialManager.Instance;
+        if (tutMgr != null)
+        {
+            tutMgr.AnTayTinh();
+            tutMgr.DungTayHanhDong();
+        }
+
         _fromId = fromTargetId;
         _toId   = toTargetId;
         _loop   = StartCoroutine(DragLoop());
@@ -72,6 +101,13 @@ public class TutorialDragHintAnimator : MonoBehaviour
     {
         if (_loop != null) { StopCoroutine(_loop); _loop = null; }
         if (_hand != null) _hand.gameObject.SetActive(false);
+
+        if (_dangKhoiDongLai) return;   // [V6] đang khởi động lại chính mình → chưa nhả
+
+        // [V6] Nhả quyền rồi báo TutorialManager xem bước hiện tại có còn cần tay tĩnh không.
+        // Không có bước này thì bước "kéo xong" sẽ còn 0 bàn tay — người chơi mất chỉ dẫn.
+        TutorialHandBus.Nha(LoaiTay.TayKeo);
+        TutorialManager.Instance?.CapNhatLaiTayTinh();
     }
 
     // =========================================================================

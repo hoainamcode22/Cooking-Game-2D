@@ -12,8 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L2_02_UnlockCorn
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "Tuy\u1EC7t v\u1EDDi! B\u1EA1n v\u1EEBa m\u1EDF kho\xE1 h\u1EA1t Ng\xF4.
-    M\u1EDF Shop mua \xEDt h\u1EA1t nh\xE9!"
+  npcText: "Ch\xE0o m\u1EEBng \u0111\u1EBFn C\u1EEDa H\xE0ng! N\xF4ng tr\u1EA1i v\u1EEBa
+    m\u1EDF kho\xE1 h\u1EA1t B\u1EAFp C\u1EA3i t\u01B0\u01A1i ngon. H\xE3y mua m\u1ED9t
+    \xEDt v\u1EC1 gieo tr\u1ED3ng nh\xE9!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 
@@ -22,5 +23,5 @@ MonoBehaviour:
   waitAction: 0
   showGuideBoard: 0
   showHandPointer: 0
-  handOffset: {x: 40, y: -30}
+  handOffset: {x: 0, y: 0}
   dragToTargetId: 

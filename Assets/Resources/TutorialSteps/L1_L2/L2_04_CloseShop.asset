@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L2_04_CloseShop
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: 
+  npcText: "\u0110\xE3 mua \u0111\u1EE7 h\u1EA1t gi\u1ED1ng r\u1ED3i! Gi\u1EDD b\u1EA5m
+    n\xFAt \u0111\xF3ng \u0111\u1EC3 quay v\u1EC1 n\xF4ng tr\u1EA1i n\xE0o."
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
-  targetID: 
+  targetID: shop_close
   useCircleHole: 1
   holePaddingPx: 16
   waitAction: 18
   showGuideBoard: 0
-  showHandPointer: 0
-  handOffset: {x: 40, y: -30}
+  showHandPointer: 1
+  handOffset: {x: 0, y: 0}
   dragToTargetId: 

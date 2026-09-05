@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
@@ -46,6 +46,7 @@ public class KitchenClickOpen : MonoBehaviour
 
     private void TryOpenCooking(Vector2 screenPos)
     {
+        if (FarmInputLock.BlockWorldInteraction) return;
         if (EditModeManager.IsEditMode) return;
         if (FarmInputLock.BlockMapPan) return;
 

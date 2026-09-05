@@ -85,7 +85,7 @@ public static class WarehouseNewUIBuilder
         Sprite upgradeBoxSpr = LoadSprite(SpriteFolder, "upgrade_box.png");
 
         // Tab & Button icons
-        Sprite btnCloseSpr = LoadSprite(DesignAssetsFolder, "btnX.png") ?? LoadSprite(SpriteFolder, "btn_close.png");
+        Sprite btnCloseSpr = UIStandardSprites.Close ?? LoadSprite(DesignAssetsFolder, "btnX.png") ?? LoadSprite(SpriteFolder, "btn_close.png"); // WP-D2b: nút đóng chuẩn
         Sprite iconLuaSpr = LoadSprite(DesignAssetsFolder, "iconlua.png");
         Sprite iconTrungSpr = LoadSprite(DesignAssetsFolder, "trung.png");
         Sprite iconMonAnSpr = LoadSprite(DesignAssetsFolder, "monan1.png");
@@ -171,7 +171,8 @@ public static class WarehouseNewUIBuilder
         RectTransform closeRect = CreateRect(rootRect, "Btn_Close", new Vector2(90f, 90f), new Vector2(705f, 445f));
         Image closeImg = closeRect.gameObject.AddComponent<Image>();
         closeImg.sprite = btnCloseSpr;
-        closeImg.type = Image.Type.Simple;
+        closeImg.type = Image.Type.Sliced;
+        closeImg.color = Color.white;
         closeImg.preserveAspect = true;
         Button btnClose = closeRect.gameObject.AddComponent<Button>();
 

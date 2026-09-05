@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: "B\u1EA3ng hi\u1EC7u"
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 3
+  itemName: "B\u1EA3ng Hi\u1EC7u"
+  itemIcon: {fileID: -2243460296935891530, guid: cac2b4f66dea99d469cb49dc1a541a37, type: 3}
+  goldPrice: 0
+  diamondPrice: 20
+  prefabToBuild: {fileID: 2715815453967437310, guid: d4ceffc43b1342d45adafaa3014b0504, type: 3}
+  unlockLevel: 1
+  gridSize: {x: 3, y: 2}
+  buildTimeSeconds: 0
+  rushGemCost: 0

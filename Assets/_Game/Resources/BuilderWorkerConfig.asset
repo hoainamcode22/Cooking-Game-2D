@@ -1,0 +1,142 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fe38d674c502024cb426bd082022a28, type: 3}
+  m_Name: BuilderWorkerConfig
+  m_EditorClassIdentifier: Assembly-CSharp::BuilderWorkerConfig
+  enabled: 1
+  workerPrefabs:
+  - {fileID: 3761741090359277962, guid: 37d81837ccdfc1448ae96951215cca55, type: 3}
+  - {fileID: 401570276217274491, guid: 4922ac2562d47e349a2eac027f265f18, type: 3}
+  - {fileID: 508500832171143850, guid: 3cbd57901af9d504993ea7c2c86743d1, type: 3}
+  workerSpriteSets:
+  - tenThoNhanDang: "Worker 01 \u2014 m\u0169 v\xE0ng, y\u1EBFm xanh"
+    hammerFrames:
+    - {fileID: 754725266, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: -1706340156, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: -1412985738, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: 528226992, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: -783265114, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: -644479159, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: -1657756029, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: 365238876, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: 1771489592, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: -1728460664, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: -1459750875, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    - {fileID: 927082795, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+    celebrateFrames:
+    - {fileID: 1367048389, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: 1833926937, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: -1367899947, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: 1662265106, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: -875263117, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: -905115526, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: -1451853762, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: 1042962414, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: 1579704655, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: 30077009, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: -124306592, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+    - {fileID: -255972248, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - tenThoNhanDang: "Worker 02 \u2014 m\u0169 cam, r\xE2u quai n\xF3n"
+    hammerFrames:
+    - {fileID: 1934734471, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: 1249536658, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: -306827005, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: -955377502, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: 162643245, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: 32412764, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: -1239422107, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: -1490868706, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: -1055479314, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: 1246799770, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: -505069332, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    - {fileID: 640049246, guid: 8ca7e7ac18699e147bcd65660927bf1f, type: 3}
+    celebrateFrames:
+    - {fileID: -52725126, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: -656571433, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: -136549247, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: 1335201177, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: 680890389, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: -948863862, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: -499706582, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: -502390107, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: 1247511522, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: 1527271827, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: -1591172990, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+    - {fileID: 2145937232, guid: d38ec59b3cab6ff4d86828c51a494a2b, type: 3}
+  - tenThoNhanDang: "Worker 03 \u2014 m\u0169 tr\u1EAFng, kh\u0103n \u0111\u1ECF"
+    hammerFrames:
+    - {fileID: -1550811201, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: 1070797790, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: 1936714733, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: -409498609, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: 740574564, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: 1196338768, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: -1206314703, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: 84878799, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: -1258924690, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: 1116367957, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: -1426405238, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    - {fileID: 1531810846, guid: 32e404a06efaca34b9279f39d44d678c, type: 3}
+    celebrateFrames:
+    - {fileID: -1015695132, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: -91820033, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: -1636357885, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: -2085926822, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: 1658811527, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: -1133660996, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: -1947647477, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: -2140373481, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: 862065148, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: 1718696299, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: 111599036, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+    - {fileID: 539762463, guid: af2cf5bb475961a43bc5774547b801e2, type: 3}
+  hammerFrames:
+  - {fileID: 754725266, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -1706340156, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -1412985738, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: 528226992, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -783265114, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -644479159, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -1657756029, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: 365238876, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: 1771489592, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -1728460664, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -1459750875, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: 927082795, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  hammerFps: 10
+  celebrateFrames:
+  - {fileID: 1367048389, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: 1833926937, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -1367899947, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: 1662265106, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -875263117, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -905115526, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -1451853762, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: 1042962414, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: 1579704655, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: 30077009, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -124306592, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -255972248, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  celebrateFps: 12
+  celebrateIdleFrameIndex: 0
+  hammerImpactFrames: 08000000090000000a000000
+  workerWorldHeight: 170
+  placementRadiusPadding: 6
+  placementInsetRatio: 0.62
+  minWorkers: 1
+  maxWorkers: 3
+  fadeInSeconds: 0.25
+  fadeOutSeconds: 0.35
+  phaseSpreadSeconds: 0.4
+  dustVfxPrefab: {fileID: 0}
+  hammerSfx: {fileID: 0}
+  hammerSfxVolume: 0.6

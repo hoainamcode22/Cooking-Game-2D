@@ -26,19 +26,19 @@ MonoBehaviour:
     amount: 3
   - itemId: seed_watermelon
     displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 2
   - itemId: khoaitay
     displayName: "Khoai T\xE2y"
-    icon: {fileID: 0}
+    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
     amount: 4
   - itemId: beef
     displayName: "Th\u1ECBt B\xF2"
-    icon: {fileID: 0}
+    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
     amount: 1
   - itemId: kinh
     displayName: "K\xEDnh"
-    icon: {fileID: 0}
+    icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 2
   unlockEntries:
   - label: "M\u1EDF r\u1ED9ng \u0111\u1EA5t khu 2 (\xF4 9\u201314)"

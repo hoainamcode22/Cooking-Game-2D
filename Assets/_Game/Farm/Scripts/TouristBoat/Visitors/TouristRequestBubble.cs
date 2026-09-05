@@ -68,8 +68,26 @@ public class TouristRequestBubble : MonoBehaviour
     public bool IsRequesting => State == BubbleState.Requesting;
 
     /// <summary>Sprite mặt cười đang dùng (art hoặc placeholder) — FX bay lên HUD dùng đúng sprite này.</summary>
-    public Sprite SmileySpriteResolved =>
-        smileySprite != null ? smileySprite : GetPlaceholderFace(FaceKind.Happy);
+    public Sprite SmileySpriteResolved
+    {
+        get
+        {
+            if (smileySprite != null) return smileySprite;
+            var art = Resources.Load<Sprite>("Bubbles/bubble_tourist_happy");
+            return art != null ? art : GetPlaceholderFace(FaceKind.Happy);
+        }
+    }
+
+    /// <summary>Sprite mặt tức giận đang dùng (art hoặc placeholder).</summary>
+    public Sprite AngrySpriteResolved
+    {
+        get
+        {
+            if (angryFaceSprite != null) return angryFaceSprite;
+            var art = Resources.Load<Sprite>("Bubbles/bubble_tourist_angry");
+            return art != null ? art : GetPlaceholderFace(FaceKind.Angry);
+        }
+    }
 
     private float _scaleInSeconds = 0.35f;
 
@@ -126,7 +144,7 @@ public class TouristRequestBubble : MonoBehaviour
     {
         EnsureBuilt();
         State = BubbleState.Angry;
-        SetIcon(angryFaceSprite != null ? angryFaceSprite : GetPlaceholderFace(FaceKind.Angry));
+        SetIcon(AngrySpriteResolved);
         if (_root == null || !_root.gameObject.activeSelf) PlayChainScaleIn();
         else SetShown(true);
     }

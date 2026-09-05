@@ -106,11 +106,11 @@ public class HoSoSkin : MonoBehaviour
             }
         }
 
-        // Thanh EXP: máng tan nhạt + ruột XANH LÁ thiết kế + số trắng.
+        // Thanh EXP: máng tan nhạt + ruột XANH BIỂN đồng bộ HUD + số trắng.
         var ruot = SkinVi.Lay<Image>(_popup, "expFill");
         if (ruot != null)
         {
-            ruot.color = TaskPopupDesign.TdRuotDuoi;
+            ruot.color = new Color32(28, 164, 255, 255); // Ocean Blue #1CA4FF
             var mang = ruot.transform.parent != null
                 ? ruot.transform.parent.GetComponent<Image>() : null;
             if (mang != null)

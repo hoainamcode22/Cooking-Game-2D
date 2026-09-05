@@ -26,19 +26,19 @@ MonoBehaviour:
     amount: 2
   - itemId: sugarcane
     displayName: "M\xEDa"
-    icon: {fileID: 0}
+    icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
     amount: 3
   - itemId: mushroom
     displayName: "N\u1EA5m"
-    icon: {fileID: 0}
+    icon: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
     amount: 3
   - itemId: herbs
     displayName: "Rau Th\u01A1m"
-    icon: {fileID: 0}
+    icon: {fileID: -6473379884045465844, guid: 050a1194adf72f046adc525bddd7bb28, type: 3}
     amount: 2
   - itemId: dinh
     displayName: "\u0110inh"
-    icon: {fileID: 0}
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 1
   unlockEntries:
   - label: "M\u1EDF kh\xF3a M\xEDa"

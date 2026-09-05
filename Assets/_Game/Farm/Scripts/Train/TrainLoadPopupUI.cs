@@ -19,10 +19,9 @@ public class TrainLoadPopupUI : MonoBehaviour
 
     void Awake()
     {
-        bool startOpen = gameObject.activeSelf;
         if (Btn_themhang != null) Btn_themhang.onClick.AddListener(OnThemHangClicked);
         if (Btn_close    != null) Btn_close.onClick.AddListener(ClosePopup);
-        if (!startOpen) gameObject.SetActive(false);
+        gameObject.SetActive(false);
     }
 
     public void OpenForCargoSlot(int slotIndex, TrainWagonSlotData slotData)

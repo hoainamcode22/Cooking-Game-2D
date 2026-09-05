@@ -81,8 +81,8 @@ namespace KitchenUIv2
         private Canvas _canvas;
         private RectTransform _root;
 
-        private TMP_Text _txtChef, _txtGold, _txtOrderName;
-        private Image _imgChefExpFill, _imgOrderIcon;
+        private TMP_Text _txtChef, _txtGold, _txtOrderName, _txtOrderRewards;
+        private Image _imgChefExpFill, _imgOrderIcon, _imgCustomerAvatar;
 
         private GameObject _boardDetail, _boardList;
         private TMP_Text _txtDishName, _txtDishMeta, _txtNeedTitle, _txtTasteTitle, _txtRewards, _txtProjection;
@@ -187,13 +187,31 @@ namespace KitchenUIv2
 
             // UI SỐNG TRONG HIERARCHY (từ 2026-08-26): scene đã có sẵn khung → chỉ NỐI logic,
             // KHÔNG dựng lại — mọi chỉnh tay của Sếp ngoài editor giữ nguyên khi Play.
-            if (transform.Find("Order_Banner") != null) BindExistingHierarchy();
-            else RebuildNow(); // scene trống → dựng khung lần đầu (sau đó Ctrl+S là thành hierarchy cố định)
+            // [FIX 2026-09-02] Rào TỪNG BƯỚC init: trước đây 1 NullReference trong
+            // BindExistingHierarchy (Need_Chips còn HorizontalLayoutGroup bake cũ →
+            // AddComponent<GridLayoutGroup> trả null) giết cả chuỗi Start → bảng công thức
+            // trống + MỌI nút (kể cả VỀ NÔNG TRẠI, khay nguyên liệu) mất listener cùng lúc.
+            // Một tài nguyên/hierarchy gãy chỉ được phép làm hỏng đúng phần của nó.
+            BuocInit("Bind/Build khung", () =>
+            {
+                if (transform.Find("Order_Banner") != null) BindExistingHierarchy();
+                else RebuildNow(); // scene trống → dựng khung lần đầu (sau đó Ctrl+S là thành hierarchy cố định)
+            });
+            BuocInit("RaiseLegacyOverlays", RaiseLegacyOverlays);
+            BuocInit("BuildTrayCards", BuildTrayCards);
+            BuocInit("PickDefaultDish", PickDefaultDish);
+            BuocInit("RefreshAll", RefreshAll);
+        }
 
-            RaiseLegacyOverlays();
-            BuildTrayCards();
-            PickDefaultDish();
-            RefreshAll();
+        /// <summary>[FIX 2026-09-02] Chạy 1 bước init trong rào try/catch — lỗi thì log rõ
+        /// bước nào gãy và CHO CÁC BƯỚC SAU CHẠY TIẾP (nút vẫn có listener, board vẫn fill).</summary>
+        private static void BuocInit(string ten, System.Action buoc)
+        {
+            try { buoc(); }
+            catch (System.Exception e)
+            {
+                Debug.LogError($"[KitchenV2] Bước init '{ten}' ném exception nhưng KHÔNG chặn các bước sau: {e}");
+            }
         }
 
         private void OnEnable()
@@ -202,6 +220,8 @@ namespace KitchenUIv2
             CookingChallengeManager.OnDishCooked   += HandleDishCooked;
             CookingChallengeManager.OnDishFailed   += HandleDishFailed;
             CookingChallengeManager.OnDishCollected += HandleDishCollected;
+            TouristVisitorManager.OnQueueOrderChanged += RefreshAll;
+            LocalizationManager.OnChanged += HandleLanguageChanged;
         }
 
         private void OnDisable()
@@ -210,6 +230,13 @@ namespace KitchenUIv2
             CookingChallengeManager.OnDishCooked   -= HandleDishCooked;
             CookingChallengeManager.OnDishFailed   -= HandleDishFailed;
             CookingChallengeManager.OnDishCollected -= HandleDishCollected;
+            TouristVisitorManager.OnQueueOrderChanged -= RefreshAll;
+            LocalizationManager.OnChanged -= HandleLanguageChanged;
+        }
+
+        private void HandleLanguageChanged(string lang)
+        {
+            RefreshAll();
         }
 
         private void Update()
@@ -325,17 +352,53 @@ namespace KitchenUIv2
 
         private void RefreshStatic()
         {
-            var dish = challenge != null ? challenge.CurrentDish : null;
+            var frontTourist = TouristVisitorManager.Instance != null ? TouristVisitorManager.Instance.GetFrontWaitingTourist() : null;
+            DishData orderDish = null;
+            Sprite customerAvatar = null;
+            int orderGold = 0;
+            int orderExp = 0;
 
-            SetText(_txtOrderName, dish != null ? dish.dishName : "Chọn món trong sổ công thức");
+            if (frontTourist != null && frontTourist.Dish != null)
+            {
+                orderDish = frontTourist.Dish;
+                customerAvatar = frontTourist.GetAvatarSprite();
+                bool fb;
+                var boatCfg = (BoatDockManager.Instance != null ? BoatDockManager.Instance.Config : (TouristVisitorManager.Instance != null ? TouristVisitorManager.Instance.Config : null));
+                orderGold = TouristRewardCalculator.ComputeGold(orderDish, boatCfg, out fb);
+                orderExp = TouristRewardCalculator.ComputeExp(orderDish, boatCfg);
+            }
+            else
+            {
+                orderDish = challenge != null ? challenge.CurrentDish : null;
+                if (orderDish != null)
+                {
+                    orderGold = orderDish.rewardGold;
+                    orderExp = orderDish.rewardExp;
+                }
+            }
+
+            if (_imgCustomerAvatar != null)
+            {
+                _imgCustomerAvatar.sprite = customerAvatar;
+                _imgCustomerAvatar.enabled = customerAvatar != null;
+            }
+
+            SetText(_txtOrderName, orderDish != null ? orderDish.dishName : (frontTourist != null ? "Đang chọn món..." : "Chưa có khách chờ"));
             if (_imgOrderIcon != null)
             {
-                _imgOrderIcon.sprite  = dish != null ? dish.dishSprite : null;
+                _imgOrderIcon.sprite  = orderDish != null ? orderDish.dishSprite : null;
                 _imgOrderIcon.enabled = _imgOrderIcon.sprite != null;
             }
-            if (dish != null)
+            if (_txtOrderRewards != null)
             {
-                var f = dish.targetFlavor;
+                _txtOrderRewards.text = orderDish != null
+                    ? $"<color=#FFD34D>+{orderGold} 🪙</color>  <color=#5DD6FF>+{orderExp} ⭐</color>"
+                    : "";
+            }
+
+            if (orderDish != null)
+            {
+                var f = orderDish.targetFlavor;
                 var chipVals = new[] { f.sweet, f.spicy, f.sour, f.umami, f.texture };
                 for (int i = 0; i < 5; i++) SetText(_orderChipValues[i], chipVals[i].ToString());
             }
@@ -343,6 +406,8 @@ namespace KitchenUIv2
             {
                 for (int i = 0; i < 5; i++) SetText(_orderChipValues[i], "");
             }
+
+            var dish = challenge != null ? challenge.CurrentDish : null;
 
             SetText(_txtDishName, dish != null ? dish.dishName : "—");
             if (_imgDishIcon != null)
@@ -356,16 +421,7 @@ namespace KitchenUIv2
             // Chip nguyên liệu cần (Xếp vào Grid: tối đa 4 thẻ/hàng, từ 5 thẻ tự động xuống hàng 2)
             if (_needChipsRoot != null && dish != null)
             {
-                var oldHl = _needChipsRoot.GetComponent<HorizontalLayoutGroup>();
-                if (oldHl != null) Destroy(oldHl);
-
-                var gl = _needChipsRoot.GetComponent<GridLayoutGroup>();
-                if (gl == null) gl = _needChipsRoot.gameObject.AddComponent<GridLayoutGroup>();
-                gl.cellSize = new Vector2(66f, 64f);
-                gl.spacing = new Vector2(6f, 6f);
-                gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-                gl.constraintCount = 4;
-                gl.childAlignment = TextAnchor.UpperLeft;
+                EnsureNeedChipsGrid(_needChipsRoot); // [FIX 2026-09-02] null-safe, không throw
 
                 for (int i = _needChipsRoot.childCount - 1; i >= 0; i--)
                     Destroy(_needChipsRoot.GetChild(i).gameObject);
@@ -715,11 +771,55 @@ namespace KitchenUIv2
             }
 
             // ── Banner đơn khách ──
-            _imgOrderIcon  = FI("Order_Banner/Order_Card/Img_Dish");
-            _txtOrderName  = FT("Order_Banner/Order_Card/Txt_Name");
             var orderCardT = F("Order_Banner/Order_Card");
             if (orderCardT != null)
             {
+                var cardRt = orderCardT as RectTransform;
+                if (cardRt != null && cardRt.sizeDelta.x < 550f)
+                {
+                    cardRt.sizeDelta = new Vector2(596f, 72f);
+                    var bannerRt = orderCardT.parent as RectTransform;
+                    if (bannerRt != null) bannerRt.sizeDelta = new Vector2(620f, 112f);
+                }
+
+                var avGo = orderCardT.Find("Img_Avatar");
+                if (avGo == null)
+                {
+                    var aGo = new GameObject("Img_Avatar", typeof(RectTransform), typeof(Image));
+                    aGo.transform.SetParent(orderCardT, false);
+                    _imgCustomerAvatar = aGo.GetComponent<Image>();
+                    _imgCustomerAvatar.preserveAspect = true;
+                    _imgCustomerAvatar.raycastTarget = false;
+                    Anchor((RectTransform)aGo.transform, 0f, 0.5f, new Vector2(34f, 0f), new Vector2(52f, 52f), new Vector2(0.5f, 0.5f));
+                }
+                else
+                {
+                    _imgCustomerAvatar = avGo.GetComponent<Image>();
+                }
+
+                _imgOrderIcon  = FI("Order_Banner/Order_Card/Img_Dish");
+                if (_imgOrderIcon != null)
+                {
+                    Anchor(_imgOrderIcon.rectTransform, 0f, 0.5f, new Vector2(92f, 0f), new Vector2(48f, 48f), new Vector2(0.5f, 0.5f));
+                }
+
+                _txtOrderName  = FT("Order_Banner/Order_Card/Txt_Name");
+                if (_txtOrderName != null)
+                {
+                    Anchor(_txtOrderName.rectTransform, 0f, 1f, new Vector2(124f, -4f), new Vector2(240f, 26f), new Vector2(0f, 1f));
+                }
+
+                var rewGo = orderCardT.Find("Txt_Rewards");
+                if (rewGo == null)
+                {
+                    _txtOrderRewards = MakeText(orderCardT, "Txt_Rewards", "", 15, new Color(0.72f, 0.52f, 0.08f));
+                    Anchor(_txtOrderRewards.rectTransform, 0f, 1f, new Vector2(124f, -36f), new Vector2(240f, 22f), new Vector2(0f, 1f));
+                }
+                else
+                {
+                    _txtOrderRewards = rewGo.GetComponent<TMP_Text>();
+                }
+
                 var oldChips = orderCardT.Find("Txt_Chips"); // bản cũ trước 2026-08-27 — thay bằng chip icon màu
                 if (oldChips != null) DestroyImmediate(oldChips.gameObject);
                 for (int i = 0; i < 5; i++)
@@ -727,10 +827,11 @@ namespace KitchenUIv2
                     var chip = orderCardT.Find($"Chip_{i}");
                     if (chip == null)
                     {
-                        BuildOrderChip(orderCardT, i, 66f + i * 71f);
+                        BuildOrderChip(orderCardT, i, 368f + i * 44f);
                     }
                     else
                     {
+                        Anchor((RectTransform)chip.transform, 0f, 0.5f, new Vector2(368f + i * 44f, 0f), new Vector2(42f, 24f), new Vector2(0f, 0.5f));
                         var vt = chip.Find("Txt_Val");
                         _orderChipValues[i] = vt != null ? vt.GetComponent<TMP_Text>() : null;
                         var dotT = chip.Find("Dot");
@@ -741,6 +842,16 @@ namespace KitchenUIv2
                         }
                     }
                 }
+
+                var cardBtn = orderCardT.GetComponent<Button>() ?? orderCardT.gameObject.AddComponent<Button>();
+                cardBtn.onClick.RemoveAllListeners();
+                cardBtn.onClick.AddListener(() => {
+                    var front = TouristVisitorManager.Instance != null ? TouristVisitorManager.Instance.GetFrontWaitingTourist() : null;
+                    if (front != null && front.Dish != null)
+                    {
+                        SelectDish(front.Dish);
+                    }
+                });
             }
 
             // ── Bảng công thức: DETAIL ──
@@ -754,19 +865,13 @@ namespace KitchenUIv2
             _txtTasteTitle = FT("Recipe_Board/Board_Detail/Txt_TasteTitle");
             _needChipsRoot = F("Recipe_Board/Board_Detail/Need_Chips");
 
+            // [FIX 2026-09-02 — BUG SẾP BÁO "vào bếp trống trơn"] Need_Chips trong scene bake
+            // (SampleScene lưu 2026-08-29) vẫn còn HorizontalLayoutGroup cũ. Destroy() là DEFERRED
+            // (cuối frame) nên AddComponent<GridLayoutGroup> ngay sau đó bị Unity TỪ CHỐI
+            // (mỗi GameObject chỉ 1 LayoutGroup) và trả về null → gl.cellSize nổ NullReference
+            // → chết cả BindExistingHierarchy. Dùng helper DestroyImmediate + null-check.
             if (_needChipsRoot != null)
-            {
-                var oldHl = _needChipsRoot.GetComponent<HorizontalLayoutGroup>();
-                if (oldHl != null) Destroy(oldHl);
-
-                var gl = _needChipsRoot.GetComponent<GridLayoutGroup>();
-                if (gl == null) gl = _needChipsRoot.gameObject.AddComponent<GridLayoutGroup>();
-                gl.cellSize = new Vector2(66f, 64f);
-                gl.spacing = new Vector2(6f, 6f);
-                gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-                gl.constraintCount = 4;
-                gl.childAlignment = TextAnchor.UpperLeft;
-            }
+                EnsureNeedChipsGrid(_needChipsRoot);
 
             _txtRewards    = FT("Recipe_Board/Board_Detail/Txt_Rewards");
             _txtProjection = FT("Recipe_Board/Board_Detail/Txt_Projection");
@@ -995,12 +1100,12 @@ namespace KitchenUIv2
         private void BuildOrderBanner()
         {
             var banner = MakePanel(_root, "Order_Banner", new Color(0.52f, 0.33f, 0.16f));
-            Anchor(banner, 0.5f, 1f, new Vector2(60f, -70f), new Vector2(460f, 104f), new Vector2(0.5f, 1f));
+            Anchor(banner, 0.5f, 1f, new Vector2(70f, -70f), new Vector2(620f, 112f), new Vector2(0.5f, 1f));
             Skin9(banner, skin.panelBoard);
 
             // Ribbon to + chữ TRẮNG đậm nằm TRONG ribbon → không bao giờ tràn/chìm
             var ribbonB = MakePanel((RectTransform)banner.transform, "Ribbon", new Color(0.90f, 0.55f, 0.12f));
-            Anchor(ribbonB, 0.5f, 1f, new Vector2(0f, 12f), new Vector2(330f, 46f), new Vector2(0.5f, 0.5f));
+            Anchor(ribbonB, 0.5f, 1f, new Vector2(0f, 12f), new Vector2(360f, 46f), new Vector2(0.5f, 0.5f));
             Skin9(ribbonB, skin.ribbon);
             var title = MakeText(ribbonB.transform, "Txt_Title", "ĐƠN CỦA KHÁCH", 19, Color.white);
             StretchText(title, 8f, 2f);
@@ -1008,20 +1113,42 @@ namespace KitchenUIv2
             title.fontStyle = FontStyles.Bold;
 
             var card = MakePanel((RectTransform)banner.transform, "Order_Card", new Color(0.98f, 0.94f, 0.84f));
-            Anchor(card, 0.5f, 0f, new Vector2(0f, 8f), new Vector2(436f, 64f), new Vector2(0.5f, 0f));
+            Anchor(card, 0.5f, 0f, new Vector2(0f, 8f), new Vector2(596f, 72f), new Vector2(0.5f, 0f));
             Skin9(card, skin.panelPaper);
+
+            var avGo = new GameObject("Img_Avatar", typeof(RectTransform), typeof(Image));
+            avGo.transform.SetParent(card.transform, false);
+            _imgCustomerAvatar = avGo.GetComponent<Image>();
+            _imgCustomerAvatar.preserveAspect = true;
+            _imgCustomerAvatar.raycastTarget = false;
+            Anchor((RectTransform)avGo.transform, 0f, 0.5f, new Vector2(34f, 0f), new Vector2(52f, 52f), new Vector2(0.5f, 0.5f));
 
             var iconGo = new GameObject("Img_Dish", typeof(RectTransform), typeof(Image));
             iconGo.transform.SetParent(card.transform, false);
             _imgOrderIcon = iconGo.GetComponent<Image>();
             _imgOrderIcon.preserveAspect = true;
             _imgOrderIcon.raycastTarget = false;
-            Anchor((RectTransform)iconGo.transform, 0f, 0.5f, new Vector2(32f, 0f), new Vector2(48f, 48f), new Vector2(0.5f, 0.5f));
+            Anchor((RectTransform)iconGo.transform, 0f, 0.5f, new Vector2(92f, 0f), new Vector2(48f, 48f), new Vector2(0.5f, 0.5f));
 
-            _txtOrderName = MakeText(card.transform, "Txt_Name", "—", 20, new Color(0.30f, 0.16f, 0.07f));
-            Anchor(_txtOrderName.rectTransform, 0f, 1f, new Vector2(66f, -5f), new Vector2(356f, 28f), new Vector2(0f, 1f));
+            _txtOrderName = MakeText(card.transform, "Txt_Name", "—", 19, new Color(0.30f, 0.16f, 0.07f));
+            Anchor(_txtOrderName.rectTransform, 0f, 1f, new Vector2(124f, -4f), new Vector2(240f, 26f), new Vector2(0f, 1f));
+            _txtOrderName.fontStyle = FontStyles.Bold;
 
-            for (int i = 0; i < 5; i++) BuildOrderChip(card.transform, i, 66f + i * 71f);
+            _txtOrderRewards = MakeText(card.transform, "Txt_Rewards", "", 15, new Color(0.72f, 0.52f, 0.08f));
+            Anchor(_txtOrderRewards.rectTransform, 0f, 1f, new Vector2(124f, -36f), new Vector2(240f, 22f), new Vector2(0f, 1f));
+            _txtOrderRewards.fontStyle = FontStyles.Bold;
+
+            for (int i = 0; i < 5; i++) BuildOrderChip(card.transform, i, 368f + i * 44f);
+
+            var cardBtn = card.GetComponent<Button>() ?? card.gameObject.AddComponent<Button>();
+            cardBtn.onClick.RemoveAllListeners();
+            cardBtn.onClick.AddListener(() => {
+                var front = TouristVisitorManager.Instance != null ? TouristVisitorManager.Instance.GetFrontWaitingTourist() : null;
+                if (front != null && front.Dish != null)
+                {
+                    SelectDish(front.Dish);
+                }
+            });
         }
 
         private void BuildRecipeBoard()
@@ -1094,14 +1221,20 @@ namespace KitchenUIv2
             _boardList = lst;
             var lt = (RectTransform)lst.transform;
 
+            // [VÒNG 13] 4 nút lọc trước đây là MÀU PHẲNG be nhạt, cả 4 giống hệt nhau nên người
+            // chơi không biết đang ở tab nào. Nay dùng tab_pill_on/off (9-slice border 24) — art
+            // ĐÃ CÓ SẴN trong skin (nạp ở KitchenV2SetupTool), không phải vẽ mới.
             string[] tabNames = { "Tất cả", "Dễ", "Vừa", "Khó" };
+            _listTabs = new GameObject[4];
             for (int i = 0; i < 4; i++)
             {
                 int filter = i - 1;
                 var b = MakeButton(lt, "Tab_" + i, tabNames[i], new Color(0.93f, 0.80f, 0.55f),
-                    () => { _listFilter = filter; RebuildDishList(); });
+                    () => { _listFilter = filter; CapNhatTabLoc(); RebuildDishList(); });
                 Anchor((RectTransform)b.transform, 0f, 1f, new Vector2(8f + i * 74f, -8f), new Vector2(68f, 30f), new Vector2(0f, 1f));
+                _listTabs[i] = b.gameObject;
             }
+            CapNhatTabLoc();
 
             var scrollGo = new GameObject("Dish_Scroll", typeof(RectTransform), typeof(ScrollRect), typeof(Image), typeof(Mask));
             scrollGo.transform.SetParent(lt, false);
@@ -1180,7 +1313,7 @@ namespace KitchenUIv2
             cimg.raycastTarget = false;
             Skin9(chip, skin.chipTaste); // nền chip bo góc (chờ art "chip_taste"); trống thì trong suốt
             if (skin.chipTaste == null) cimg.color = Color.clear;
-            Anchor((RectTransform)chip.transform, 0f, 0f, new Vector2(x, 4f), new Vector2(66f, 24f), new Vector2(0f, 0f));
+            Anchor((RectTransform)chip.transform, 0f, 0.5f, new Vector2(x, 0f), new Vector2(42f, 24f), new Vector2(0f, 0.5f));
 
             var dot = new GameObject("Dot", typeof(RectTransform), typeof(Image));
             dot.transform.SetParent(chip.transform, false);
@@ -1188,10 +1321,10 @@ namespace KitchenUIv2
             dimg.sprite = GetDotSprite();
             dimg.color = FlavorDotColors[index % FlavorDotColors.Length];
             dimg.raycastTarget = false;
-            Anchor((RectTransform)dot.transform, 0f, 0.5f, new Vector2(6f, 0f), new Vector2(13f, 13f), new Vector2(0f, 0.5f));
+            Anchor((RectTransform)dot.transform, 0f, 0.5f, new Vector2(3f, 0f), new Vector2(11f, 11f), new Vector2(0f, 0.5f));
 
-            var val = MakeText(chip.transform, "Txt_Val", "0", 15, new Color(0.36f, 0.20f, 0.09f));
-            Anchor(val.rectTransform, 0f, 0.5f, new Vector2(22f, 0f), new Vector2(40f, 22f), new Vector2(0f, 0.5f));
+            var val = MakeText(chip.transform, "Txt_Val", "0", 14, new Color(0.36f, 0.20f, 0.09f));
+            Anchor(val.rectTransform, 0f, 0.5f, new Vector2(16f, 0f), new Vector2(24f, 20f), new Vector2(0f, 0.5f));
             val.fontStyle = FontStyles.Bold;
             _orderChipValues[index] = val;
         }
@@ -1958,6 +2091,36 @@ namespace KitchenUIv2
 
         // ── UI factory helpers (skin tạm K1) ───────────────────────
 
+        /// <summary>[FIX 2026-09-02] Bảo đảm Need_Chips dùng GridLayoutGroup mà KHÔNG bao giờ throw.
+        /// HorizontalLayoutGroup bake cũ phải gỡ bằng DestroyImmediate (Destroy() deferred làm
+        /// AddComponent thất bại — chính là NullReference giết cả init scene bếp 2026-09-01).
+        /// Trả null nếu vẫn không gắn được — caller bỏ qua, chip vẫn hiện (không xếp lưới).</summary>
+        private static GridLayoutGroup EnsureNeedChipsGrid(Transform root)
+        {
+            if (root == null) return null;
+
+            var gl = root.GetComponent<GridLayoutGroup>();
+            if (gl == null)
+            {
+                var oldHl = root.GetComponent<HorizontalLayoutGroup>();
+                if (oldHl != null) DestroyImmediate(oldHl); // immediate — cùng frame AddComponent mới ăn
+
+                gl = root.gameObject.AddComponent<GridLayoutGroup>();
+            }
+            if (gl == null)
+            {
+                Debug.LogWarning("[KitchenV2] Không gắn được GridLayoutGroup cho Need_Chips (còn LayoutGroup khác?) — bỏ qua, không chặn init.");
+                return null;
+            }
+
+            gl.cellSize = new Vector2(66f, 64f);
+            gl.spacing = new Vector2(6f, 6f);
+            gl.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+            gl.constraintCount = 4;
+            gl.childAlignment = TextAnchor.UpperLeft;
+            return gl;
+        }
+
         private static TMP_FontAsset _viFont;
         private void ApplyFont(TMP_Text t)
         {
@@ -1967,6 +2130,9 @@ namespace KitchenUIv2
                     if (txt != null && txt.font != null && txt.transform.root != transform.root)
                     { _viFont = txt.font; break; }
             }
+            // [FIX 2026-09-02] Fallback: scene không còn TMP_Text nào có font (font asset bị
+            // xoá/đổi) → dùng font mặc định của TMP Settings, chữ runtime không bao giờ "tàng hình".
+            if (_viFont == null) _viFont = TMP_Settings.defaultFontAsset;
             if (_viFont != null) t.font = _viFont;
         }
 
@@ -1989,6 +2155,46 @@ namespace KitchenUIv2
             t.text = text; t.fontSize = size; t.color = color;
             t.raycastTarget = false;
             return t;
+        }
+
+        /// <summary>
+        /// [VÒNG 13] 4 nút lọc Tất cả / Dễ / Vừa / Khó — nhớ lại để tô trạng thái đang chọn.
+        /// </summary>
+        private GameObject[] _listTabs;
+
+        /// <summary>
+        /// [VÒNG 13] Tô nút đang chọn bằng tab_pill_on, 3 nút còn lại tab_pill_off.
+        /// Thiếu sprite (skin chưa nạp) ⇒ lùi về tô MÀU đậm/nhạt — vẫn phân biệt được,
+        /// không bao giờ để cả 4 nút trông giống hệt nhau như trước.
+        /// </summary>
+        private void CapNhatTabLoc()
+        {
+            if (_listTabs == null) return;
+
+            for (int i = 0; i < _listTabs.Length; i++)
+            {
+                var go = _listTabs[i];
+                if (go == null) continue;
+
+                bool dangChon = (i - 1) == _listFilter;
+
+                if (skin != null && skin.tabOn != null && skin.tabOff != null)
+                {
+                    Skin9(go, dangChon ? skin.tabOn : skin.tabOff);
+                }
+                else
+                {
+                    var img = go.GetComponent<Image>();
+                    if (img != null)
+                        img.color = dangChon ? new Color(0.98f, 0.86f, 0.58f)
+                                             : new Color(0.86f, 0.76f, 0.58f);
+                }
+
+                var txt = go.GetComponentInChildren<TMP_Text>(true);
+                if (txt != null)
+                    txt.color = dangChon ? new Color(0.28f, 0.15f, 0.05f)
+                                         : new Color(0.48f, 0.38f, 0.28f);
+            }
         }
 
         private Button MakeButton(RectTransform parent, string name, string label, Color color, UnityEngine.Events.UnityAction onClick)

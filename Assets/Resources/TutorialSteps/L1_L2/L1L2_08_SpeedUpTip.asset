@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_08_SpeedUpTip
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "M\u1EB9o nh\u1ECF: d\xF9ng kim c\u01B0\u01A1ng \u0111\u1EC3 c\xE2y ch\xEDn
-    ngay l\u1EADp t\u1EE9c!"
+  npcText: "B\u1EA5m n\xFAt kim c\u01B0\u01A1ng \u0111\u1EC3 l\xFAa ch\xEDn v\xE0ng
+    \xF3ng ngay nh\xE9!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 

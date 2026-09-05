@@ -139,6 +139,15 @@ public class TutorialCameraFocus : MonoBehaviour
     {
         if (_camController == null) return;
 
+        // [V2] Director có thể đang chạy dở một cú lia (tới 1s). Nếu ta đặt đích rồi
+        // EndCinematic() ngay, frame sau nó GHI ĐÈ đích VÀ bật lại _cinematicActive = true
+        // — rồi không ai tắt nữa ⇒ camera đứng ở điểm tutorial và người chơi bị KHOÁ
+        // pan/zoom VĨNH VIỄN. Phải cắt nó trước (QA vòng 2, mục D).
+        if (_v2Director != null && _v2Director.isActiveAndEnabled)
+        {
+            _v2Director.HuyNgay();
+        }
+
         if (_savedOriginal)
             _camController.CinematicFocus(_originalPosition, _originalZoom, false);
 
@@ -156,8 +165,38 @@ public class TutorialCameraFocus : MonoBehaviour
             Debug.LogWarning("[TutorialCameraFocus] Không tìm thấy CameraController trên Camera.main.");
             return;
         }
+
+        // ── [V2 2026-09-04] Zoom mượt ────────────────────────────────────────
+        // CinematicFocus() đặt ĐÍCH một phát rồi để SmoothDamp của CameraController tự bò
+        // tới. SmoothDamp ease-out tự nhiên nhưng KHỞI ĐỘNG GIẬT: frame đầu đã lao đi với
+        // vận tốc lớn nhất ⇒ cảm giác "trôi" chứ không phải máy quay có trọng lượng.
+        //
+        // Có TutorialCameraDirector trong scene thì giao cho nó: nó nuôi một ĐÍCH DI ĐỘNG
+        // theo AnimationCurve ease-in-out + overshoot nhẹ 3%, nên camera khởi hành êm,
+        // tăng tốc giữa chặng, hãm dần khi tới. CameraController vẫn là chủ duy nhất của
+        // camera — không ai ghi thẳng transform/orthographicSize.
+        //
+        // KHÔNG có director ⇒ rơi về đúng đường cũ, không đổi hành vi một chút nào.
+        // Sửa ở ĐÂY (1 chỗ) thay vì 5 chỗ gọi FocusOnRice/Flower/Pen trong TutorialManager.
+        // Exclude (KHÔNG Include): director nằm trên GameObject đang TẮT thì StartCoroutine
+        // trong FocusTo không chạy được ⇒ camera đứng im mà cũng đã return, không rơi về
+        // đường cũ. Thà không thấy nó còn hơn thấy một cái chạy không được (QA vòng 2).
+        if (_v2Director == null)
+            _v2Director = FindAnyObjectByType<TutorialCameraDirector>(FindObjectsInactive.Exclude);
+
+        // isActiveAndEnabled: bỏ tick _useV2Dialogue ⇒ TutorialManager tắt component này
+        // ⇒ ở đây tự rơi về đường cũ. Đó là cách "về bản cũ 100%" thật sự có hiệu lực.
+        if (_v2Director != null && _v2Director.isActiveAndEnabled)
+        {
+            _v2Director.FocusTo(worldPos, zoom);
+            return;
+        }
+
         _camController.CinematicFocus(worldPos, zoom, true);
     }
+
+    /// <summary>[V2] Đạo diễn camera mới. Null ⇒ dùng đường cũ. Dò một lần rồi nhớ.</summary>
+    private TutorialCameraDirector _v2Director;
 
     private static float SanitizeZoom(float z) => z < MIN_VALID_ZOOM ? DEFAULT_ZOOM : z;
 

@@ -121,13 +121,24 @@ public class CelebrationCharacterSlot : MonoBehaviour
 
         Sprite master = ResolvePuppetMaster();
         bool hasSheet = master == null && CountNonNullFrames() >= 2;
+        bool coGiDeVe = master != null || hasSheet;
 
-        if ((master == null && !hasSheet) || targetImage == null || _rt == null)
+        if (!coGiDeVe || targetImage == null || _rt == null)
         {
             gameObject.SetActive(false);   // không có gì để vẽ → dẹp slot, không hiện ô trống
             return;
         }
-        if (!isActiveAndEnabled) return;
+
+        // [B1 TỰ HỒI PHỤC — 2026-09-05] Có sprite hợp lệ nhưng slot đang TẮT (vd bị
+        // LevelRewardIconAutoFixer/tool cũ tắt nhầm, hoặc scene chưa qua Rewire tool lần nào)
+        // → TỰ BẬT LẠI thay vì âm thầm bỏ qua. CHỈ tự tắt khi thật sự KHÔNG có gì để vẽ (nhánh trên).
+        if (!gameObject.activeSelf)
+        {
+            gameObject.SetActive(true);
+            Debug.Log($"[LevelUp] CelebrationCharacterSlot '{name}' đang tắt nhưng có sprite hợp lệ → tự bật lại.");
+        }
+
+        if (!isActiveAndEnabled) return;   // tổ tiên (cha) đang tắt → chịu, đợi lần Play() sau khi cha bật
 
         if (!_baseCaptured)
         {

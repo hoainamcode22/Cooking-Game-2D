@@ -59,6 +59,119 @@ namespace ExportTrainUIPackage
             Debug.Log("[TrainPackageBuildTool] HOÀN TẤT 100% DỰNG POPUP VÀ XUẤT PREFAB THÀNH CÔNG!");
         }
 
+        [MenuItem("Tools/Farm Game/Tàu Hỏa/★ CÂN CHỈNH 4 TOA TÀU & VỊ TRÍ KHỚP ĐƯỜNG RAY 100%", false, 1)]
+        public static void SnapAndFixTrainWagons()
+        {
+            Canvas canvasPopup = FindPopupCanvas();
+            if (canvasPopup == null) return;
+
+            Transform masterTr = canvasPopup.transform.Find("Popup_Train_MasterStation");
+            if (masterTr != null)
+            {
+                var masterUI = masterTr.GetComponent<TrainStationMasterPopupUI>() 
+                            ?? masterTr.gameObject.AddComponent<TrainStationMasterPopupUI>();
+                masterUI.BuildOrFixHierarchy();
+                masterUI.ApplyThemeSprites();
+                masterUI.RefreshUI();
+            }
+
+            var scene = EditorSceneManager.GetActiveScene();
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+
+            EditorUtility.DisplayDialog("Thành công",
+                "Đã tự động căn chỉnh lại toàn bộ 4 Toa Tàu, Bong Bóng Yêu Cầu, Đầu Tàu và Ống Khói vào đúng vị trí pixel-perfect trên mặt đường ray 100%!", "Tuyệt vời!");
+        }
+
+        [MenuItem("Tools/Farm Game/Tàu Hỏa/★ MỞ KHÓA POPUP (UNPACK) ĐỂ CHỈNH THỦ CÔNG", false, 2)]
+        public static void UnpackAllTrainPopupsInScene()
+        {
+            Canvas canvasPopup = FindPopupCanvas();
+            if (canvasPopup == null)
+            {
+                Debug.LogError("[TrainPackageBuildTool] Không tìm thấy Canvas_Popup trong Scene!");
+                return;
+            }
+
+            string[] names = { "Popup_train", "Popup_item_Train", "Popup_Train_MasterStation" };
+            int count = 0;
+            foreach (var n in names)
+            {
+                Transform t = canvasPopup.transform.Find(n);
+                if (t != null && PrefabUtility.IsPartOfAnyPrefab(t.gameObject))
+                {
+                    PrefabUtility.UnpackPrefabInstance(t.gameObject, PrefabUnpackMode.Completely, InteractionMode.AutomatedAction);
+                    count++;
+                }
+            }
+
+            var scene = EditorSceneManager.GetActiveScene();
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+
+            EditorUtility.DisplayDialog("Đã mở khóa Unpack",
+                $"Đã Unpack thành công {count} Popup tàu hỏa trong Scene.\n\n" +
+                "Giờ sếp có thể thoải mái kéo thả, chỉnh sửa thủ công bất kỳ object nào trong Scene và bấm Ctrl+S lưu mượt mà không bao giờ bị lỗi!", "Tuyệt vời!");
+        }
+
+        [MenuItem("Tools/Farm Game/★ KHẮC PHỤC LỖI KẸT MAP & ẨN TẤT CẢ POPUP MỞ SẴN", false, 0)]
+        public static void FixMapAndHidePopups()
+        {
+            Canvas canvasPopup = FindPopupCanvas();
+            int hiddenCount = 0;
+            if (canvasPopup != null)
+            {
+                for (int i = 0; i < canvasPopup.transform.childCount; i++)
+                {
+                    Transform child = canvasPopup.transform.GetChild(i);
+                    if (child.gameObject.activeSelf)
+                    {
+                        child.gameObject.SetActive(false);
+                        hiddenCount++;
+                    }
+                }
+            }
+
+            // Đảm bảo Main Camera không bị Input Lock
+            var cam = Object.FindFirstObjectByType<CameraController>(FindObjectsInactive.Include);
+            if (cam != null)
+            {
+                cam.enabled = true;
+            }
+
+            var scene = EditorSceneManager.GetActiveScene();
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+
+            EditorUtility.DisplayDialog("Đã khắc phục xong",
+                $"Đã ẩn {hiddenCount} popup đang mở chắn màn hình.\n\n" +
+                "Kéo map camera đã được giải phóng 100% không còn bị popup che khuất!\n" +
+                "Bấm Play để trải nghiệm mượt mà ngay.", "Tuyệt vời!");
+        }
+
+        [MenuItem("Tools/Farm Game/Tàu Hỏa/★ LƯU ĐÈ VÀO FILE PREFAB SAU KHI CHỈNH TAY", false, 3)]
+        public static void SaveAllTrainPopupsToPrefabs()
+        {
+            Canvas canvasPopup = FindPopupCanvas();
+            if (canvasPopup == null) return;
+
+            Transform t1 = canvasPopup.transform.Find("Popup_Train_MasterStation");
+            if (t1 != null) SaveAsPrefab(t1.gameObject, $"{PrefabsDir}/Popup_Train_MasterStation.prefab");
+
+            Transform t2 = canvasPopup.transform.Find("Popup_item_Train");
+            if (t2 != null) SaveAsPrefab(t2.gameObject, $"{PrefabsDir}/Popup_item_Train.prefab");
+
+            Transform t3 = canvasPopup.transform.Find("Popup_train");
+            if (t3 != null) SaveAsPrefab(t3.gameObject, $"{PrefabsDir}/Popup_train.prefab");
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+
+            EditorUtility.DisplayDialog("Thành công",
+                "Đã lưu toàn bộ thay đổi thủ công từ Scene đè ngược vào các file Prefab trong Assets/Export_Train_UI_Package/Prefabs/!", "Xong!");
+        }
+
         private static Canvas FindPopupCanvas()
         {
             var canvases = Object.FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -89,7 +202,8 @@ namespace ExportTrainUIPackage
                               ?? TrainSpriteLoader.GetSprite($"{SpritesDir}/steam_smoke_cloud.png");
             Sprite woodPanel  = TrainSpriteLoader.GetSprite($"{ShopSvgDir}/shop_panel.png")
                               ?? TrainSpriteLoader.GetSprite($"{SpritesDir}/popup_frame_wood.png");
-            Sprite closeSp    = TrainSpriteLoader.GetSprite("Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/btnX.png")
+            Sprite closeSp    = UIStandardSprites.Close                    // WP-D2b: nút đóng chuẩn
+                              ?? TrainSpriteLoader.GetSprite("Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/btnX.png")
                               ?? TrainSpriteLoader.GetSprite("Assets/Assetsgame/btnX.png");
 
             GameObject rootGo = GetOrCreateChild(canvasTr, "Popup_Train_MasterStation");
@@ -212,7 +326,7 @@ namespace ExportTrainUIPackage
             closeRt.anchoredPosition = new Vector2(-10f, 10f);
             closeRt.sizeDelta = new Vector2(86f, 86f);
             var closeImg = GetOrAddComponent<Image>(closeGo);
-            if (closeSp != null) closeImg.sprite = closeSp;
+            if (closeSp != null) { closeImg.sprite = closeSp; closeImg.type = Image.Type.Sliced; closeImg.color = Color.white; }
             closeImg.preserveAspect = true;
             GetOrAddComponent<Button>(closeGo);
 
@@ -423,7 +537,8 @@ namespace ExportTrainUIPackage
             Sprite btnGray    = TrainSpriteLoader.GetSprite($"{SpritesDir}/btn_disabled_3d.png");
             Sprite bubbleBg   = TrainSpriteLoader.GetSprite($"{ShopSvgDir}/shop_card_outer.png")
                               ?? TrainSpriteLoader.GetSprite($"{SpritesDir}/bubble_cargo_req.png");
-            Sprite closeSp    = TrainSpriteLoader.GetSprite("Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/btnX.png")
+            Sprite closeSp    = UIStandardSprites.Close                    // WP-D2b: nút đóng chuẩn
+                              ?? TrainSpriteLoader.GetSprite("Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/btnX.png")
                               ?? TrainSpriteLoader.GetSprite("Assets/Assetsgame/btnX.png");
 
             GameObject root = GetOrCreateChild(canvasTr, "Popup_item_Train");
@@ -702,7 +817,7 @@ namespace ExportTrainUIPackage
             closeRt.anchoredPosition = new Vector2(12f, 12f);
             closeRt.sizeDelta = new Vector2(56f, 56f);
             var closeImg = GetOrAddComponent<Image>(closeGo);
-            if (closeSp != null) closeImg.sprite = closeSp;
+            if (closeSp != null) { closeImg.sprite = closeSp; closeImg.type = Image.Type.Sliced; closeImg.color = Color.white; }
             closeImg.preserveAspect = true;
             GetOrAddComponent<Button>(closeGo);
 
@@ -731,7 +846,8 @@ namespace ExportTrainUIPackage
             Sprite btnGreen   = TrainSpriteLoader.GetSprite($"{SpritesDir}/btn_green_3d.png");
             Sprite bubbleBg   = TrainSpriteLoader.GetSprite($"{ShopSvgDir}/shop_card_outer.png")
                               ?? TrainSpriteLoader.GetSprite($"{SpritesDir}/bubble_cargo_req.png");
-            Sprite closeSp    = TrainSpriteLoader.GetSprite("Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/btnX.png")
+            Sprite closeSp    = UIStandardSprites.Close                    // WP-D2b: nút đóng chuẩn
+                              ?? TrainSpriteLoader.GetSprite("Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/btnX.png")
                               ?? TrainSpriteLoader.GetSprite("Assets/Assetsgame/btnX.png");
 
             GameObject root = GetOrCreateChild(canvasTr, "Popup_train");
@@ -929,7 +1045,7 @@ namespace ExportTrainUIPackage
             txtSpeedRt.offsetMin = Vector2.zero;
             txtSpeedRt.offsetMax = Vector2.zero;
             var txtSpeed = GetOrAddComponent<TextMeshProUGUI>(txtSpeedGo);
-            txtSpeed.text = "💎 TĂNG TỐC · 12";
+            txtSpeed.text = "TĂNG TỐC · 12 KC";
             txtSpeed.alignment = TextAlignmentOptions.Center;
             txtSpeed.fontSize = 22;
             txtSpeed.fontStyle = FontStyles.Bold;
@@ -970,7 +1086,7 @@ namespace ExportTrainUIPackage
             closeRt.anchoredPosition = new Vector2(12f, 12f);
             closeRt.sizeDelta = new Vector2(56f, 56f);
             var closeImg = GetOrAddComponent<Image>(closeGo);
-            if (closeSp != null) closeImg.sprite = closeSp;
+            if (closeSp != null) { closeImg.sprite = closeSp; closeImg.type = Image.Type.Sliced; closeImg.color = Color.white; }
             closeImg.preserveAspect = true;
             GetOrAddComponent<Button>(closeGo);
 

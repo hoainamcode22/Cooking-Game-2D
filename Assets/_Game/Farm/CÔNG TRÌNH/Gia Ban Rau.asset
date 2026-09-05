@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: Gia Ban Rau
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 18
+  itemName: "Gi\xE1 B\xE1n Rau"
+  itemIcon: {fileID: 21300000, guid: 45ed0c95f3a54f541bbc87634cdf93d8, type: 3}
+  goldPrice: 0
+  diamondPrice: 250
+  prefabToBuild: {fileID: 574090022062555397, guid: 3df2b9e821d2a0a4098afceb3e2b91e3, type: 3}
+  unlockLevel: 1
+  gridSize: {x: 3, y: 3}
+  buildTimeSeconds: 0
+  rushGemCost: 0

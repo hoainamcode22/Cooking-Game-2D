@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_04_FocusPlots
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "\u0110\xE2y l\xE0 khu ru\u1ED9ng c\u1EE7a b\u1EA1n. \u01A0 k\xECa, c\xF3
-    l\xFAa ch\xEDn s\u1EB5n r\u1ED3i!"
+  npcText: "Ch\u1EA1m v\xE0o \xF4 \u0111\u1EA5t \u0111\u1EC3 m\u1EDF khay h\u1EA1t
+    gi\u1ED1ng n\xE0o!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: tutorial_plot_01

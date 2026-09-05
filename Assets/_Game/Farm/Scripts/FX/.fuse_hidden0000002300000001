@@ -1,0 +1,82 @@
+using UnityEngine;
+
+/// <summary>
+/// Gắn lên GameObject nhân vật (bởi <see cref="AfterimageBootstrap"/>):
+/// đo tốc độ world mỗi frame, vượt ngưỡng thì nhả ghost bóng mờ theo nhịp spawnInterval.
+/// Không cấp phát gì mỗi frame; nhân vật bị Destroy thì emitter chết cùng — không leak.
+/// </summary>
+[DisallowMultipleComponent]
+public class SpriteAfterimageEmitter : MonoBehaviour
+{
+    private AfterimageConfig _cfg;
+    private SpriteRenderer   _sr;
+    private Vector3 _lastPos;
+    private float   _timer;
+    private bool    _hasLastPos;
+
+    /// <summary>Gọi ngay sau AddComponent. Tự tìm SpriteRenderer chính của nhân vật.</summary>
+    public void Setup(AfterimageConfig cfg)
+    {
+        _cfg = cfg;
+        _sr  = FindMainRenderer();
+        _lastPos = transform.position;
+        _hasLastPos = true;
+        _timer = 0f;
+        if (_cfg == null || _sr == null) enabled = false;
+    }
+
+    /// <summary>
+    /// SpriteRenderer đầu tiên trong con KHÔNG thuộc về 1 ghost SpriteAfterimage
+    /// (chống đệ quy phòng khi ai đó lỡ parent ghost vào nhân vật).
+    /// </summary>
+    private SpriteRenderer FindMainRenderer()
+    {
+        SpriteRenderer[] all = GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] == null) continue;
+            if (all[i].GetComponent<SpriteAfterimage>() != null) continue;
+            return all[i];
+        }
+        return null;
+    }
+
+    private void OnEnable()
+    {
+        _lastPos = transform.position;
+        _hasLastPos = true;
+        _timer = 0f;
+    }
+
+    private void Update()
+    {
+        if (_cfg == null) { enabled = false; return; }
+        if (_sr == null)  { enabled = false; return; } // mất renderer (child bị destroy)
+
+        float dt = Time.deltaTime;
+        if (dt <= 0f) return;
+
+        Vector3 pos = transform.position;
+        if (!_hasLastPos) { _lastPos = pos; _hasLastPos = true; return; }
+
+        float speed = Vector3.Distance(pos, _lastPos) / dt;
+        _lastPos = pos;
+
+        // Cộng dồn timer nhưng KẸP TRẦN = spawnInterval:
+        // đứng im lâu rồi mới chạy thì chỉ nhả 1 ghost ngay, không xả loạt dồn.
+        _timer = Mathf.Min(_timer + dt, Mathf.Max(0.01f, _cfg.spawnInterval));
+
+        if (speed < _cfg.minSpeed) return;
+
+        // Dịch chuyển tức thời (teleport/warp qua map) — không phải chạy, bỏ qua.
+        if (speed > _cfg.minSpeed * 50f) { _timer = 0f; return; }
+
+        if (_timer < _cfg.spawnInterval) return;
+        if (!_sr.enabled || _sr.sprite == null) return;
+
+        // Trừ interval (giữ phần dư) thay vì reset 0 — nhịp trung bình đúng bằng spawnInterval,
+        // không bị làm tròn lên theo biên frame (0.07s không thành 0.083s ở 60fps).
+        _timer -= _cfg.spawnInterval;
+        AfterimageBootstrap.SpawnGhost(_sr, _cfg);
+    }
+}

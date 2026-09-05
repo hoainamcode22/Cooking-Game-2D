@@ -1492,3 +1492,3748 @@ production/session-logs/agent-audit.log
 production/session-logs/session-log.md
 ---
 
+## Session End: 20260905_134425
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+---
+
+## Session End: 20260905_135338
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_142019
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: SCAN (3 subagent quét code song song) → PLAN → chờ Sếp duyệt changeset
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [ ] SCAN: tutorial (agent 1) · levelup (agent 2) · avatar/close/asset (agent 3)
+- [ ] PLAN: bảng phân chia Dev / đội vẽ / tái dùng — trình Sếp duyệt
+- [ ] Backup `production/backup_ui_pass_2026-09-05/` trước khi sửa
+- [ ] IMPLEMENT theo changeset đã duyệt
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_142019
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_143502
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: SCAN (3 subagent quét code song song) → PLAN → chờ Sếp duyệt changeset
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [ ] SCAN: tutorial (agent 1) · levelup (agent 2) · avatar/close/asset (agent 3)
+- [ ] PLAN: bảng phân chia Dev / đội vẽ / tái dùng — trình Sếp duyệt
+- [ ] Backup `production/backup_ui_pass_2026-09-05/` trước khi sửa
+- [ ] IMPLEMENT theo changeset đã duyệt
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_143502
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_145337
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: IMPLEMENT — 5 gói song song (A tutorial-kẹt · B levelup · C tutorial-UI/panel · D1 avatar/decor · D2 close-sync). PLAN đã duyệt 4/4 Q (gộp quà · talk tạm · đồng bộ đóng toàn bộ · panel 230). File: production/PLAN_UI_PASS_2026-09-05.md · SCAN: session-state/SCAN_UI_PASS_2026-09-05.md · Registry mới: Assets/_Game/Scripts/UI/UIStandardSprites.cs
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [x] SCAN: 4 agent xong → `SCAN_UI_PASS_2026-09-05.md`
+- [x] PLAN: `production/PLAN_UI_PASS_2026-09-05.md` — Sếp duyệt 4/4 Q (recommended)
+- [x] Backup root `production/backup_ui_pass_2026-09-05/` (mỗi WP có thư mục con + MD5)
+- [x] Registry `UIStandardSprites.cs` (mới)
+- [x] Prompt đội vẽ: `production/PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` (gói A NPC 37 file · gói B 4 minh hoạ)
+- [ ] IMPLEMENT: WP-A tutorial-kẹt ⏳ · WP-B levelup ⏳ · WP-C tutorial-UI/panel ⏳ · WP-D1 avatar ⏳ · WP-D2 close-sync ⏳
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_145337
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_145502
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: IMPLEMENT — 5 gói song song (A tutorial-kẹt · B levelup · C tutorial-UI/panel · D1 avatar/decor · D2 close-sync). PLAN đã duyệt 4/4 Q (gộp quà · talk tạm · đồng bộ đóng toàn bộ · panel 230). File: production/PLAN_UI_PASS_2026-09-05.md · SCAN: session-state/SCAN_UI_PASS_2026-09-05.md · Registry mới: Assets/_Game/Scripts/UI/UIStandardSprites.cs
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [x] SCAN: 4 agent xong → `SCAN_UI_PASS_2026-09-05.md`
+- [x] PLAN: `production/PLAN_UI_PASS_2026-09-05.md` — Sếp duyệt 4/4 Q (recommended)
+- [x] Backup root `production/backup_ui_pass_2026-09-05/` (mỗi WP có thư mục con + MD5)
+- [x] Registry `UIStandardSprites.cs` (mới)
+- [x] Prompt đội vẽ: `production/PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` (gói A NPC 37 file · gói B 4 minh hoạ)
+- [ ] IMPLEMENT: WP-A tutorial-kẹt ⏳ · WP-B levelup ⏳ · WP-C tutorial-UI/panel ⏳ · WP-D1 avatar ⏳ · WP-D2 close-sync ⏳
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_145502
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_150055
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: IMPLEMENT — 5 gói song song (A tutorial-kẹt · B levelup · C tutorial-UI/panel · D1 avatar/decor · D2 close-sync). PLAN đã duyệt 4/4 Q (gộp quà · talk tạm · đồng bộ đóng toàn bộ · panel 230). File: production/PLAN_UI_PASS_2026-09-05.md · SCAN: session-state/SCAN_UI_PASS_2026-09-05.md · Registry mới: Assets/_Game/Scripts/UI/UIStandardSprites.cs
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [x] SCAN: 4 agent xong → `SCAN_UI_PASS_2026-09-05.md`
+- [x] PLAN: `production/PLAN_UI_PASS_2026-09-05.md` — Sếp duyệt 4/4 Q (recommended)
+- [x] Backup root `production/backup_ui_pass_2026-09-05/` (mỗi WP có thư mục con + MD5)
+- [x] Registry `UIStandardSprites.cs` (mới)
+- [x] Prompt đội vẽ: `production/PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` (gói A NPC 37 file · gói B 4 minh hoạ)
+- [ ] IMPLEMENT (relaunched as micro-tasks after specialists hit 20-turn cap):
+  - A1 kẹt+persist (Bridge/Manager/Resolver) ⏳ · A2 NPC-talk/seeds 8-6/reset DeleteSave/F8/text-tool ⏳
+  - B levelup ⏳ (đã sửa LevelUpPopupUI, UnlockSlotUI, CelebrationCharacterSlot; backup 7 file)
+  - C1 card auto-grow ⏳ · C2 board frame/buttons/no-rotate ⏳ · C3 GemCostTextFixTool + SeedPanelFixTool ⏳
+  - D1 avatar (cont.) ⏳ · D2a **CloseButtonSyncTool.cs ✅ (444 dòng, 5 menu)** · D2b fallback 5-12 (cont.) ⏳
+- [ ] CHECK: brace/using sanity từng file · grep chồng lấn · danh sách menu mới
+- [ ] REPORT + CẦN BẠN gộp
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_150055
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/BuildingProcessUIBuilderTool.cs
+Assets/_Game/Farm/Editor/ChoiLaiTuDauTool.cs
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/OrderBoardHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/StallHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/TaskPopupSpriteWireTool.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CelebrationCharacterSlot.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_150216
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: IMPLEMENT — 5 gói song song (A tutorial-kẹt · B levelup · C tutorial-UI/panel · D1 avatar/decor · D2 close-sync). PLAN đã duyệt 4/4 Q (gộp quà · talk tạm · đồng bộ đóng toàn bộ · panel 230). File: production/PLAN_UI_PASS_2026-09-05.md · SCAN: session-state/SCAN_UI_PASS_2026-09-05.md · Registry mới: Assets/_Game/Scripts/UI/UIStandardSprites.cs
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [x] SCAN: 4 agent xong → `SCAN_UI_PASS_2026-09-05.md`
+- [x] PLAN: `production/PLAN_UI_PASS_2026-09-05.md` — Sếp duyệt 4/4 Q (recommended)
+- [x] Backup root `production/backup_ui_pass_2026-09-05/` (mỗi WP có thư mục con + MD5)
+- [x] Registry `UIStandardSprites.cs` (mới)
+- [x] Prompt đội vẽ: `production/PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` (gói A NPC 37 file · gói B 4 minh hoạ)
+- [ ] IMPLEMENT (relaunched as micro-tasks after specialists hit 20-turn cap):
+  - A1 kẹt+persist (Bridge/Manager/Resolver) ⏳ · A2 NPC-talk/seeds 8-6/reset DeleteSave/F8/text-tool ⏳
+  - B levelup ⏳ (đã sửa LevelUpPopupUI, UnlockSlotUI, CelebrationCharacterSlot; backup 7 file)
+  - C1 card auto-grow ⏳ · C2 board frame/buttons/no-rotate ⏳ · C3 GemCostTextFixTool + SeedPanelFixTool ⏳
+  - D1 avatar (cont.) ⏳ · D2a **CloseButtonSyncTool.cs ✅ (444 dòng, 5 menu)** · D2b fallback 5-12 (cont.) ⏳
+- [ ] CHECK: brace/using sanity từng file · grep chồng lấn · danh sách menu mới
+- [ ] REPORT + CẦN BẠN gộp
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_150216
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/BuildingProcessUIBuilderTool.cs
+Assets/_Game/Farm/Editor/ChoiLaiTuDauTool.cs
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/OrderBoardHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/StallHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/TaskPopupSpriteWireTool.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CelebrationCharacterSlot.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/SeedPopupController.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_150352
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: IMPLEMENT — 5 gói song song (A tutorial-kẹt · B levelup · C tutorial-UI/panel · D1 avatar/decor · D2 close-sync). PLAN đã duyệt 4/4 Q (gộp quà · talk tạm · đồng bộ đóng toàn bộ · panel 230). File: production/PLAN_UI_PASS_2026-09-05.md · SCAN: session-state/SCAN_UI_PASS_2026-09-05.md · Registry mới: Assets/_Game/Scripts/UI/UIStandardSprites.cs
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [x] SCAN: 4 agent xong → `SCAN_UI_PASS_2026-09-05.md`
+- [x] PLAN: `production/PLAN_UI_PASS_2026-09-05.md` — Sếp duyệt 4/4 Q (recommended)
+- [x] Backup root `production/backup_ui_pass_2026-09-05/` (mỗi WP có thư mục con + MD5)
+- [x] Registry `UIStandardSprites.cs` (mới)
+- [x] Prompt đội vẽ: `production/PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` (gói A NPC 37 file · gói B 4 minh hoạ)
+- [ ] IMPLEMENT (relaunched as micro-tasks after specialists hit 20-turn cap):
+  - A1 kẹt+persist (Bridge/Manager/Resolver) ⏳ · A2 NPC-talk/seeds 8-6/reset DeleteSave/F8/text-tool ⏳
+  - B levelup ⏳ (đã sửa LevelUpPopupUI, UnlockSlotUI, CelebrationCharacterSlot; backup 7 file)
+  - C1 card auto-grow ⏳ · C2 board frame/buttons/no-rotate ⏳ · C3 GemCostTextFixTool + SeedPanelFixTool ⏳
+  - D1 avatar (cont.) ⏳ · D2a **CloseButtonSyncTool.cs ✅ (444 dòng, 5 menu)** · D2b fallback 5-12 (cont.) ⏳
+- [ ] CHECK: brace/using sanity từng file · grep chồng lấn · danh sách menu mới
+- [ ] REPORT + CẦN BẠN gộp
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_150352
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/BuildingProcessUIBuilderTool.cs
+Assets/_Game/Farm/Editor/ChoiLaiTuDauTool.cs
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/OrderBoardHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/StallHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/TaskPopupSpriteWireTool.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CelebrationCharacterSlot.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/SeedPopupController.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+bash.exe.stackdump
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_150435
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: IMPLEMENT — 5 gói song song (A tutorial-kẹt · B levelup · C tutorial-UI/panel · D1 avatar/decor · D2 close-sync). PLAN đã duyệt 4/4 Q (gộp quà · talk tạm · đồng bộ đóng toàn bộ · panel 230). File: production/PLAN_UI_PASS_2026-09-05.md · SCAN: session-state/SCAN_UI_PASS_2026-09-05.md · Registry mới: Assets/_Game/Scripts/UI/UIStandardSprites.cs
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [x] SCAN: 4 agent xong → `SCAN_UI_PASS_2026-09-05.md`
+- [x] PLAN: `production/PLAN_UI_PASS_2026-09-05.md` — Sếp duyệt 4/4 Q (recommended)
+- [x] Backup root `production/backup_ui_pass_2026-09-05/` (mỗi WP có thư mục con + MD5)
+- [x] Registry `UIStandardSprites.cs` (mới)
+- [x] Prompt đội vẽ: `production/PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` (gói A NPC 37 file · gói B 4 minh hoạ)
+- [ ] IMPLEMENT (relaunched as micro-tasks after specialists hit 20-turn cap):
+  - A1 kẹt+persist (Bridge/Manager/Resolver) ⏳ · A2 NPC-talk/seeds 8-6/reset DeleteSave/F8/text-tool ⏳
+  - B levelup ⏳ (đã sửa LevelUpPopupUI, UnlockSlotUI, CelebrationCharacterSlot; backup 7 file)
+  - C1 card auto-grow ⏳ · C2 board frame/buttons/no-rotate ⏳ · C3 GemCostTextFixTool + SeedPanelFixTool ⏳
+  - D1 avatar (cont.) ⏳ · D2a **CloseButtonSyncTool.cs ✅ (444 dòng, 5 menu)** · D2b fallback 5-12 (cont.) ⏳
+- [ ] CHECK: brace/using sanity từng file · grep chồng lấn · danh sách menu mới
+- [ ] REPORT + CẦN BẠN gộp
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_150435
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/BuildingProcessUIBuilderTool.cs
+Assets/_Game/Farm/Editor/ChoiLaiTuDauTool.cs
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/OrderBoardHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/StallHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/TaskPopupSpriteWireTool.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CelebrationCharacterSlot.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/SeedPopupController.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+bash.exe.stackdump
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_150549
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: IMPLEMENT — 5 gói song song (A tutorial-kẹt · B levelup · C tutorial-UI/panel · D1 avatar/decor · D2 close-sync). PLAN đã duyệt 4/4 Q (gộp quà · talk tạm · đồng bộ đóng toàn bộ · panel 230). File: production/PLAN_UI_PASS_2026-09-05.md · SCAN: session-state/SCAN_UI_PASS_2026-09-05.md · Registry mới: Assets/_Game/Scripts/UI/UIStandardSprites.cs
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [x] SCAN: 4 agent xong → `SCAN_UI_PASS_2026-09-05.md`
+- [x] PLAN: `production/PLAN_UI_PASS_2026-09-05.md` — Sếp duyệt 4/4 Q (recommended)
+- [x] Backup root `production/backup_ui_pass_2026-09-05/` (mỗi WP có thư mục con + MD5)
+- [x] Registry `UIStandardSprites.cs` (mới)
+- [x] Prompt đội vẽ: `production/PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` (gói A NPC 37 file · gói B 4 minh hoạ)
+- [ ] IMPLEMENT (relaunched as micro-tasks after specialists hit 20-turn cap):
+  - A1 kẹt+persist (Bridge/Manager/Resolver) ⏳ · A2 NPC-talk/seeds 8-6/reset DeleteSave/F8/text-tool ⏳
+  - B levelup ⏳ (đã sửa LevelUpPopupUI, UnlockSlotUI, CelebrationCharacterSlot; backup 7 file)
+  - C1 card auto-grow ⏳ · C2 board frame/buttons/no-rotate ⏳ · C3 GemCostTextFixTool + SeedPanelFixTool ⏳
+  - D1 avatar (cont.) ⏳ · D2a **CloseButtonSyncTool.cs ✅ (444 dòng, 5 menu)** · D2b fallback 5-12 (cont.) ⏳
+- [ ] CHECK: brace/using sanity từng file · grep chồng lấn · danh sách menu mới
+- [ ] REPORT + CẦN BẠN gộp
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_150549
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/BuildingProcessUIBuilderTool.cs
+Assets/_Game/Farm/Editor/ChoiLaiTuDauTool.cs
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/MarketBoardUIBuilder.cs
+Assets/_Game/Farm/Editor/MillPopupBuilderTool.cs
+Assets/_Game/Farm/Editor/OrderBoardHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopNewUIBuilder.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/StallHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/TaskPopupSpriteWireTool.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Editor/WarehouseNewUIBuilder.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CelebrationCharacterSlot.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/SeedPopupController.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+bash.exe.stackdump
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_150735
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: IMPLEMENT — 5 gói song song (A tutorial-kẹt · B levelup · C tutorial-UI/panel · D1 avatar/decor · D2 close-sync). PLAN đã duyệt 4/4 Q (gộp quà · talk tạm · đồng bộ đóng toàn bộ · panel 230). File: production/PLAN_UI_PASS_2026-09-05.md · SCAN: session-state/SCAN_UI_PASS_2026-09-05.md · Registry mới: Assets/_Game/Scripts/UI/UIStandardSprites.cs
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [x] SCAN: 4 agent xong → `SCAN_UI_PASS_2026-09-05.md`
+- [x] PLAN: `production/PLAN_UI_PASS_2026-09-05.md` — Sếp duyệt 4/4 Q (recommended)
+- [x] Backup root `production/backup_ui_pass_2026-09-05/` (mỗi WP có thư mục con + MD5)
+- [x] Registry `UIStandardSprites.cs` (mới)
+- [x] Prompt đội vẽ: `production/PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` (gói A NPC 37 file · gói B 4 minh hoạ)
+- [ ] IMPLEMENT (relaunched as micro-tasks after specialists hit 20-turn cap):
+  - A1 kẹt+persist (Bridge/Manager/Resolver) ⏳ · A2 NPC-talk/seeds 8-6/reset DeleteSave/F8/text-tool ⏳
+  - B levelup ⏳ (đã sửa LevelUpPopupUI, UnlockSlotUI, CelebrationCharacterSlot; backup 7 file)
+  - C1 card auto-grow ⏳ · C2 board frame/buttons/no-rotate ⏳ · C3 GemCostTextFixTool + SeedPanelFixTool ⏳
+  - D1 avatar (cont.) ⏳ · D2a **CloseButtonSyncTool.cs ✅ (444 dòng, 5 menu)** · D2b fallback 5-12 (cont.) ⏳
+- [ ] CHECK: brace/using sanity từng file · grep chồng lấn · danh sách menu mới
+- [ ] REPORT + CẦN BẠN gộp
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_150735
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/BuildingProcessUIBuilderTool.cs
+Assets/_Game/Farm/Editor/ChoiLaiTuDauTool.cs
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/MarketBoardUIBuilder.cs
+Assets/_Game/Farm/Editor/MillPopupBuilderTool.cs
+Assets/_Game/Farm/Editor/OrderBoardHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopNewUIBuilder.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/StallHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/TaskPopupSpriteWireTool.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Editor/WarehouseNewUIBuilder.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialRuntimeTargetResolver.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialStepTriggerBridge.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CelebrationCharacterSlot.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/SeedPopupController.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/ShopSkin.cs
+Assets/_Game/Scripts/Mission/SkinVi.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+bash.exe.stackdump
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_151245
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: IMPLEMENT — 5 gói song song (A tutorial-kẹt · B levelup · C tutorial-UI/panel · D1 avatar/decor · D2 close-sync). PLAN đã duyệt 4/4 Q (gộp quà · talk tạm · đồng bộ đóng toàn bộ · panel 230). File: production/PLAN_UI_PASS_2026-09-05.md · SCAN: session-state/SCAN_UI_PASS_2026-09-05.md · Registry mới: Assets/_Game/Scripts/UI/UIStandardSprites.cs
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [x] SCAN: 4 agent xong → `SCAN_UI_PASS_2026-09-05.md`
+- [x] PLAN: `production/PLAN_UI_PASS_2026-09-05.md` — Sếp duyệt 4/4 Q (recommended)
+- [x] Backup root `production/backup_ui_pass_2026-09-05/` (mỗi WP có thư mục con + MD5)
+- [x] Registry `UIStandardSprites.cs` (mới)
+- [x] Prompt đội vẽ: `production/PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` (gói A NPC 37 file · gói B 4 minh hoạ)
+- [ ] IMPLEMENT (relaunched as micro-tasks after specialists hit 20-turn cap):
+  - A1 kẹt+persist (Bridge/Manager/Resolver) ⏳ · A2 NPC-talk/seeds 8-6/reset DeleteSave/F8/text-tool ⏳
+  - B levelup ⏳ (đã sửa LevelUpPopupUI, UnlockSlotUI, CelebrationCharacterSlot; backup 7 file)
+  - C1 card auto-grow ⏳ · C2 board frame/buttons/no-rotate ⏳ · C3 GemCostTextFixTool + SeedPanelFixTool ⏳
+  - D1 avatar (cont.) ⏳ · D2a **CloseButtonSyncTool.cs ✅ (444 dòng, 5 menu)** · D2b fallback 5-12 (cont.) ⏳
+- [ ] CHECK: brace/using sanity từng file · grep chồng lấn · danh sách menu mới
+- [ ] REPORT + CẦN BẠN gộp
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_151245
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/BuildingProcessUIBuilderTool.cs
+Assets/_Game/Farm/Editor/ChoiLaiTuDauTool.cs
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/MarketBoardUIBuilder.cs
+Assets/_Game/Farm/Editor/MasterTutorialBeautifier.cs
+Assets/_Game/Farm/Editor/MillPopupBuilderTool.cs
+Assets/_Game/Farm/Editor/OrderBoardHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopNewUIBuilder.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/StallHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/TaskPopupSpriteWireTool.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Editor/WarehouseNewUIBuilder.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialRuntimeTargetResolver.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialStepTriggerBridge.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CelebrationCharacterSlot.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/SeedPopupController.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/ShopSkin.cs
+Assets/_Game/Scripts/Mission/SkinVi.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+bash.exe.stackdump
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+
+## Archived Session State: 20260905_151715
+# ACTIVE SESSION — 2026-09-05
+
+<!-- STATUS -->
+Epic: UI Polish Pass (3 task Sếp giao 2026-09-05)
+Feature: Tutorial UI · Popup Lên Cấp · Avatar + Close button đồng bộ
+Task: ✅ IMPLEMENT xong 9/9 gói → chờ Sếp làm CẦN BẠN (production/BAO_CAO_UI_PASS_2026-09-05.md §3) + gửi prompt đội vẽ. Trước đó: 5 gói song song (A tutorial-kẹt · B levelup · C tutorial-UI/panel · D1 avatar/decor · D2 close-sync). PLAN đã duyệt 4/4 Q (gộp quà · talk tạm · đồng bộ đóng toàn bộ · panel 230). File: production/PLAN_UI_PASS_2026-09-05.md · SCAN: session-state/SCAN_UI_PASS_2026-09-05.md · Registry mới: Assets/_Game/Scripts/UI/UIStandardSprites.cs
+<!-- /STATUS -->
+
+## Lệnh Sếp (nguyên văn rút gọn)
+**TASK 1 — Tutorial**
+- S1: khung text không giãn theo nội dung, chữ đè; NPC nhảy tới lui (frame cắt dính layout khác) → cần cố định, chậm hơn, cảm giác đang nói.
+- S3: UI chưa thân thiện/“có hồn” cho phụ nữ + trẻ em.
+- S4: 8 ô đất nhưng cho 10 hạt lúa (dư 2).
+- S5: text nhỏ, nút “ĐÃ RÕ” + nút kim cương không có asset (khung màu) → lấy asset có sẵn gắn.
+- S6: nhãn “Miễn phí” lòi ra rìa nút kim cương (nghiêm trọng).
+- **KẸT**: bàn tay chỉ ô plot đứng im dù đã trồng, không qua bước kế.
+- Panel hạt giống + panel hoa: text dưới icon bị che → nâng lên.
+
+**TASK 2 — Popup Lên Cấp**
+- 4 nhân vật char_01..04 biến mất.
+- Chỉ 3 item quà đầu có hiệu ứng + text “mới”, còn lại không → nghi 2 nguồn data riêng, phải gộp chung.
+- Pháo hoa mất → cần bắn liên tục tới khi bấm “Bắt đầu nào”.
+- Nút “Bắt đầu nào” là khung màu, chưa có asset.
+
+**TASK 3 — Avatar + Close button**
+- Avatar popup toàn khung màu code → dựng lại bằng asset khung/card bo góc có sẵn.
+- Đồng bộ TOÀN GAME dùng nút close tròn của popup Cài đặt.
+
+**YÊU CẦU MỚI (14:25):** Tutorial chỉ trải qua **1 LẦN** cho người chơi thật (persist "đã xong" qua phiên,
+qua tắt/mở game). Dev reset = bấm tool → chơi lại từ đầu. Không được "cứ Play là hướng dẫn lại".
+
+## Bằng chứng 9 ảnh F10 (14:22–14:24) — đối chiếu mô tả Sếp
+| Ảnh | Thấy gì | Task |
+|---|---|---|
+| 142239 | Hộp thoại chào: NPC cô gái đè lên 4 nút HUD dưới (CỬA HÀNG/KHO…); khung không bám theo text | T1-S1 |
+| 142253 | Bảng bước 1: nền xám phẳng, nút ĐÃ RÕ xanh **phẳng không sprite**, 2 khung minh hoạ đơn điệu | T1-S3, S5 |
+| 142302 | **Panel hạt giống đè lên HUD dưới**, chữ số lượng `x10` bị cắt mép dưới; lúa **x10** (8 ô) | T1-S4, panel |
+| 142311 | Bảng bước 2: icon "kim cương" là **ô xanh vuông + bàn tay** (placeholder), lúa ảnh chụp lệch style | T1-S5 |
+| 142321 | Mini-panel cây: chữ **MIỄN PHÍ lòi ra khỏi nút tròn xanh** (nút phẳng, không sprite) | T1-S6 |
+| 142339 | Popup Lên Cấp: **0 nhân vật**, dải trắng phẳng, 10 ô quà nhưng chỉ 3 tag MỚI, dưới mỗi ô là **thanh cam trống** (text thiếu), nút "Bắt đầu nào" phẳng, **không pháo hoa**, toast HUD lộ xuyên popup, bàn tay tutorial vẫn hiện | T2 |
+| 142348 | Sau lên cấp: tay chỉ ô trống; toast "đủ hàng… giao đơn"; panel hạt lại đè HUD; lúa x4 ngô x3 | T1-kẹt |
+| 142408 | Ngô chín 1 ô, tay vẫn chỉ ô đó; liềm kéo | T1-kẹt |
+| 142417 | **KẸT**: 7/8 ô đã trồng, ô trên cùng trống, tay + ô xám chỉ vào; hết hạt (chỉ có 3 ngô) → không qua bước | T1-kẹt |
+
+**Giả thuyết kẹt:** bước "trồng" gate theo **8 ô thật đã mở** nhưng hạt ngô cấp/đủ tiền chỉ 3 → ô thứ 8 không thể trồng → tay đứng im. Cần agent xác nhận trong `TutorialManager`/gate count.
+
+## Phát hiện từ ảnh F10 + popup_report (14:15)
+- `Tutorial_Canvas order=999`, `Canvas_MarketPopup 125`, `Canvas_StallPopup 120` ⇒ **tool Vòng 17 (sắp lớp UI) CHƯA được Sếp bấm APPLY** — lớp UI vẫn cấu hình cũ.
+- Popup LevelUp: `Root_HienThi alpha=0`, 9 ô mở khoá tắt hết, chỉ 3 ô có icon; nút Tiếp tục sprite=`Background` (UI mặc định Unity = khung màu).
+- F10 ghi đè `game_view.png` ⇒ chỉ giữ được 1 ảnh — cần sửa tool lưu theo timestamp.
+
+## Tiến độ
+- [x] Nhận task, tạo active.md
+- [x] SCAN: 4 agent xong → `SCAN_UI_PASS_2026-09-05.md`
+- [x] PLAN: `production/PLAN_UI_PASS_2026-09-05.md` — Sếp duyệt 4/4 Q (recommended)
+- [x] Backup root `production/backup_ui_pass_2026-09-05/` (mỗi WP có thư mục con + MD5)
+- [x] Registry `UIStandardSprites.cs` (mới)
+- [x] Prompt đội vẽ: `production/PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` (gói A NPC 37 file · gói B 4 minh hoạ)
+- [ ] IMPLEMENT (relaunched as micro-tasks after specialists hit 20-turn cap):
+  - A1 kẹt+persist (Bridge/Manager/Resolver) ⏳ · A2 NPC-talk/seeds 8-6/reset DeleteSave/F8/text-tool ⏳
+  - B levelup ⏳ (đã sửa LevelUpPopupUI, UnlockSlotUI, CelebrationCharacterSlot; backup 7 file)
+  - C1 card auto-grow ⏳ · C2 board frame/buttons/no-rotate ⏳ · C3 GemCostTextFixTool + SeedPanelFixTool ⏳
+  - D1 avatar (cont.) ⏳ · D2a **CloseButtonSyncTool.cs ✅ (444 dòng, 5 menu)** · D2b fallback 5-12 (cont.) ⏳
+- [ ] CHECK: brace/using sanity từng file · grep chồng lấn · danh sách menu mới
+- [ ] REPORT + CẦN BẠN gộp
+- [ ] CHECK: compile 0 đỏ, tool DRY-RUN/APPLY
+- [ ] REPORT + CẦN BẠN + prompt đội vẽ
+
+## Files đang làm
+(chưa sửa file nào)
+---
+
+## Session End: 20260905_151715
+### Uncommitted Changes
+Assets/Anh/ngoinhacoooking.png
+Assets/Anh/vang-removebg-preview.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png
+Assets/Art/Characters/FlowerGirl/flowergirl_walk_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png
+Assets/Art/Characters/Worker/worker_celebrate_spritesheet.png.meta
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png
+Assets/Art/Characters/Worker/worker_hammer_spritesheet.png.meta
+Assets/Art/UI/Icons/tab_buildings.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_01/char_01_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_f05.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png
+Assets/Art/UI/LevelUpV2/characters/char_03/char_03_master.png.meta
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_f01.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png
+Assets/Art/UI/LevelUpV2/characters/char_04/char_04_master.png.meta
+Assets/Assetsgame/AssestCoooking/nhahang.png
+"Assets/Assetsgame/B\303\262/HappyHarvestAnimalVisualSpawner.cs"
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png
+Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/vang-removebg-preview.png.meta
+Assets/Assetsgame/Icon_vang.png
+Assets/Assetsgame/Icon_vang.png.meta
+"Assets/Assetsgame/Nh\303\240/gataulua.png"
+"Assets/Assetsgame/Nh\303\240/quayhang.png"
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_blue_12_dir_9.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_0.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_1.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_10.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_11.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_2.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_3.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_4.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_5.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_6.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_7.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_8.png.meta
+Assets/Assetsgame/TouristBoat/12_Directions/boat_red_12_dir_9.png.meta
+Assets/Assetsgame/btn_EditMode/btn_edit_mode_icon.png.meta
+Assets/Assetsgame/ngoinhacoooking.png
+Assets/Day_Night/VFX/Rain/VFX_WaterDrop.vfx
+Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab
+Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab
+Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+Assets/NV_01/Player.controller
+Assets/NV_01/Player.prefab
+Assets/NV_01/hi-iso_walk_right-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_down-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_left-removebg-preview.png.meta
+Assets/NV_01/n-iso_walk_up-removebg-preview.png.meta
+Assets/Resources/Audio/button.wav.meta
+Assets/Resources/Audio/gold.wav.meta
+Assets/Resources/Audio/vang.wav.meta
+"Assets/Resources/Audio/v\303\240ng.wav.meta"
+Assets/Resources/TutorialSteps/L1_L2/L1L2_18_LevelUpCelebration.asset
+Assets/Source_Home/avata.png
+Assets/Source_Home/avata.png.meta
+Assets/Source_Home/backrounf.png
+Assets/Source_Home/backrounf.png.meta
+Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF - Fallback.asset
+Assets/_Game/Audio/AudioManager.cs
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/DataShop/Buiding/Chu\341\273\223ng B\303\262 S\341\273\257a.asset"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_01.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_02.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_03.prefab"
+"Assets/_Game/Farm/C\303\224NG TR\303\214NH/Pen_04.prefab"
+Assets/_Game/Farm/Editor/BuildingProcessUIBuilderTool.cs
+Assets/_Game/Farm/Editor/ChoiLaiTuDauTool.cs
+Assets/_Game/Farm/Editor/FixMarketLayerTool.cs
+Assets/_Game/Farm/Editor/HudEditModeButtonSetupTool.cs
+Assets/_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+Assets/_Game/Farm/Editor/MarketBoardUIBuilder.cs
+Assets/_Game/Farm/Editor/MasterTutorialBeautifier.cs
+Assets/_Game/Farm/Editor/MillPopupBuilderTool.cs
+Assets/_Game/Farm/Editor/OrderBoardHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/PenAnimalSetupTool.cs
+Assets/_Game/Farm/Editor/ShopNewUIBuilder.cs
+Assets/_Game/Farm/Editor/ShopTabIconUpdater.cs
+Assets/_Game/Farm/Editor/StallHierarchyBuilderTool.cs
+Assets/_Game/Farm/Editor/TaskPopupSpriteWireTool.cs
+Assets/_Game/Farm/Editor/TouristBoatSetupTool.cs
+Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TownshipHUDBuilderTool.cs
+Assets/_Game/Farm/Editor/TutorialFourPopupSetupTool.cs
+Assets/_Game/Farm/Editor/TutorialHandFlowRebuildTool.cs
+Assets/_Game/Farm/Editor/WarehouseNewUIBuilder.cs
+Assets/_Game/Farm/Scripts/Animal/LivestockAI.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenClickDetector.cs
+Assets/_Game/Farm/Scripts/Animal/MiniPanel/PenProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/Camera/CameraController.cs
+Assets/_Game/Farm/Scripts/Cooking/KitchenClickOpen.cs
+Assets/_Game/Farm/Scripts/Debug/PopupCaptureReporter.cs
+Assets/_Game/Farm/Scripts/Gameplay/ConstructionCompleteFX.cs
+Assets/_Game/Farm/Scripts/Gameplay/HarvestFeedbackSpawner.cs
+Assets/_Game/Farm/Scripts/Gameplay/HouseGrowthController.cs
+Assets/_Game/Farm/Scripts/Gameplay/PlotController.cs
+Assets/_Game/Farm/Scripts/Kho/WarehouseClickOpen.cs
+Assets/_Game/Farm/Scripts/Managers/FarmInputLock.cs
+Assets/_Game/Farm/Scripts/Managers/FarmPlotInput.cs
+Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs
+Assets/_Game/Farm/Scripts/Managers/PopupManager.cs
+Assets/_Game/Farm/Scripts/Managers/SaveVersionGuard.cs
+Assets/_Game/Farm/Scripts/Market/MarketBoardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketClickOpen.cs
+Assets/_Game/Farm/Scripts/Market/MarketListingCardUI.cs
+Assets/_Game/Farm/Scripts/Market/MarketManager.cs
+Assets/_Game/Farm/Scripts/MillPopup/MillBuildingClick.cs
+Assets/_Game/Farm/Scripts/OrderBoard/OrderBoardWorldObject.cs
+Assets/_Game/Farm/Scripts/Shop/ShopManager.cs
+Assets/_Game/Farm/Scripts/Stall/StallWorldObject.cs
+Assets/_Game/Farm/Scripts/TouristBoat/BoatDockSlot.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatConfig.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/TouristBoatUnlockFlow.cs
+Assets/_Game/Farm/Scripts/TouristBoat/UI/BoatAnnouncePopupUI.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/GangplankController.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristAgent.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRequestBubble.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristRewardCalculator.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristSortingLayers.cs
+Assets/_Game/Farm/Scripts/TouristBoat/Visitors/TouristVisitorManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainLoadPopupUI.cs
+Assets/_Game/Farm/Scripts/Train/TrainManager.cs
+Assets/_Game/Farm/Scripts/Train/TrainStationBuilding.cs
+Assets/_Game/Farm/Scripts/Train/TrainWagonSlot.cs
+Assets/_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+Assets/_Game/Farm/Scripts/Tutorial/StarterInventorySetup.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialGuideBoardUI.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialRuntimeTargetResolver.cs
+Assets/_Game/Farm/Scripts/Tutorial/TutorialStepTriggerBridge.cs
+Assets/_Game/Farm/Scripts/UI/BuildingProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/CelebrationCharacterSlot.cs
+Assets/_Game/Farm/Scripts/UI/CoinFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/CropProcessPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/FarmUIManager.cs
+Assets/_Game/Farm/Scripts/UI/JuicyPulseFX.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpGiftSlotUI.cs
+Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+Assets/_Game/Farm/Scripts/UI/MobileEditModeButton.cs
+Assets/_Game/Farm/Scripts/UI/RewardFlyFX.cs
+Assets/_Game/Farm/Scripts/UI/SeedPopupController.cs
+Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs
+Assets/_Game/Farm/Scripts/UI/UnlockSlotUI.cs
+Assets/_Game/Farm/Scripts/VFX/HarvestSlashFX.cs
+Assets/_Game/Farm/data/Lever Game/LevelReward_L10.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L11.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L12.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L13.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L14.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L15.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L16.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L17.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L18.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L19.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L2.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L20.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L21.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L22.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L23.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L24.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L25.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L26.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L27.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L28.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L29.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L3.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L30.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L4.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L5.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L6.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L7.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L8.asset
+Assets/_Game/Farm/data/Lever Game/LevelReward_L9.asset
+Assets/_Game/Prefab/ui/Market/MarketListingCard_Prefab.prefab
+Assets/_Game/Prefab/ui/OrderBoard/Canvas_OrderBoardPopup.prefab
+Assets/_Game/Prefab/ui/OrderBoard/PF_OrderTicket.prefab
+Assets/_Game/Prefab/ui/Stall/Canvas_StallPopup.prefab
+Assets/_Game/Prefab/ui/Stall/PF_StallSlot.prefab
+Assets/_Game/Resources/Fonts/Baloo2 SDF.asset
+Assets/_Game/Resources/Fonts/FontVo.asset
+Assets/_Game/Resources/RewardIconLibrary.asset
+Assets/_Game/Scenes/SCN_Farm.unity
+Assets/_Game/Scenes/SCN_Home.unity
+Assets/_Game/ScriptableObjects/TouristBoatConfig.asset
+Assets/_Game/Scripts/CookingChallengeManager.cs
+Assets/_Game/Scripts/KitchenV2/KitchenSceneV2UI.cs
+Assets/_Game/Scripts/Mission/HoSoSkin.cs
+Assets/_Game/Scripts/Mission/ShopSkin.cs
+Assets/_Game/Scripts/Mission/SkinVi.cs
+Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+Assets/_Game/Scripts/UI/AvatarProfilePopupUI.cs
+Claude-Code-Game-Studios
+Cooking-Game-2D.slnx
+bash.exe.stackdump
+production/AUTOPILOT_BACKLOG.md
+production/art-handoff/2026-09-01_Characters_Grandma_Style/worker_celebrate_spritesheet.png
+production/session-logs/agent-audit.log
+production/session-logs/session-log.md
+---
+

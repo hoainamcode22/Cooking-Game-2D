@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_08b_GuideHarvest
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: 
+  npcText: "L\xFAa \u0111\xE3 ch\xEDn v\xE0ng r\u1EF1c! H\xE3y d\xF9ng li\u1EC1m
+    \u0111\u1EC3 thu ho\u1EA1ch n\xF4ng s\u1EA3n n\xE0o."
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 
   useCircleHole: 1
   holePaddingPx: 16
   waitAction: 0
-  showGuideBoard: 1
+  showGuideBoard: 0
   showHandPointer: 0
   handOffset: {x: 0, y: 0}
   dragToTargetId: 

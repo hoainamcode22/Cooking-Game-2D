@@ -264,7 +264,7 @@ public class LevelUpPopupTownshipTool : EditorWindow
         // Canvas riêng để popup luôn nằm trên HUD (HUD hiện đang là 100)
         var ownCanvas = root.gameObject.AddComponent<Canvas>();
         ownCanvas.overrideSorting = true;
-        ownCanvas.sortingOrder    = 300;
+        ownCanvas.sortingOrder    = 310;   // [V6] khớp scene hiện tại (310) — chạy lại tool không hạ order
         root.gameObject.AddComponent<GraphicRaycaster>();
 
         // ── ROOT HIỂN THỊ — đây mới là popupRoot bị bật/tắt ───────────────
@@ -317,13 +317,16 @@ public class LevelUpPopupTownshipTool : EditorWindow
         bannerBody.type = Image.Type.Sliced;
         bannerBody.raycastTarget = false;
 
-        var title = NewText("Text_TieuDe", bannerGroup, _titleText, 88, FontStyles.Bold);
+        var title = NewText("Text_TieuDe", bannerGroup, _titleText, 82, FontStyles.Bold);
         Stretch(title.rectTransform);
-        title.rectTransform.offsetMin = new Vector2(120f, 6f);
-        title.rectTransform.offsetMax = new Vector2(-120f, -2f);
-        title.color = PopupSpriteFactory.Hex("#FFCF14");
+        title.rectTransform.offsetMin = new Vector2(120f, -22f);
+        title.rectTransform.offsetMax = new Vector2(-120f, -22f);
+        title.color = PopupSpriteFactory.Hex("#FFF4B8");
         title.characterSpacing = 4f;
-        AddTextOutline(title, PopupSpriteFactory.Hex("#8A3D00"), 0.28f);
+        AddTextOutline(title, PopupSpriteFactory.Hex("#8A3D00"), 0.35f);
+        var titleShadow = title.gameObject.AddComponent<Shadow>();
+        titleShadow.effectColor = new Color32(10, 45, 80, 240);
+        titleShadow.effectDistance = new Vector2(0f, -6f);
 
         // ── 5b. NHÂN VẬT NẰM TRƯỚC BĂNG RÔN (đè lên băng rôn, như con lợn) ─
         var front = NewUI("Layer_NhanVat_Truoc  ◄ THẢ ART VÀO ĐÂY", content);
@@ -331,9 +334,9 @@ public class LevelUpPopupTownshipTool : EditorWindow
         MakeCharSlot(front, "Slot_Truoc_Phai", new Vector2(340f, 175f), 235f);
         MakeCharSlot(front, "Slot_Truoc_Trai", new Vector2(-340f, 175f), 235f);
 
-        // ── 6. NGÔI SAO + SỐ CẤP (trước băng rôn) ────────────────────────
+        // ── 6. NGÔI SAO + SỐ CẤP (trước băng rôn, nằm cao không che chữ) ─
         var starGroup = NewUI("NgoiSao", content);
-        Anchor(starGroup, new Vector2(0.5f, 0.5f), new Vector2(0f, 232f), new Vector2(STAR_SIZE, STAR_SIZE));
+        Anchor(starGroup, new Vector2(0.5f, 0.5f), new Vector2(0f, 275f), new Vector2(STAR_SIZE, STAR_SIZE));
 
         var star = NewImage("Hinh_Sao", starGroup, PopupSpriteFactory.Load("spr_star"));
         Stretch(star.rectTransform);
@@ -378,13 +381,15 @@ public class LevelUpPopupTownshipTool : EditorWindow
         // ── 8. DẢI ICON MỞ KHOÁ (cuộn ngang) ─────────────────────────────
         // Giãn hết chiều rộng màn hình (giống video: dải icon chạy sát 2 mép),
         // cố định chiều cao.
+        // [V6 2026-09-05] y=-215 (trước -272): khung -340..-90, chừa chỗ cho Text_Hint (-385)
+        // và nút (-500) bên dưới — khớp LevelUpPopupUI.BoTriVungDuoi().
         var strip = NewUI("Dai_MoKhoa", content);
-        Anchor2(strip, 0f, 1f, new Vector2(0f, -272f), STRIP_H);
+        Anchor2(strip, 0f, 1f, new Vector2(0f, -215f), STRIP_H);
 
         var band = NewImage("Nen_Dai", strip, PopupSpriteFactory.Load("spr_band_dark"));
         Stretch(band.rectTransform);
         band.type = Image.Type.Sliced;
-        band.color = new Color(1f, 1f, 1f, 0.85f);
+        band.color = new Color32(255, 243, 214, 235);   // [V6] kem ấm thay trắng chói
         band.raycastTarget = false;
 
         var scroll = NewUI("ScrollView", strip);
@@ -446,7 +451,8 @@ public class LevelUpPopupTownshipTool : EditorWindow
 
         // ── 9. NÚT XANH ──────────────────────────────────────────────────
         var btnRT = NewUI("Btn_TiepTuc", content);
-        Anchor(btnRT, new Vector2(0.5f, 0.5f), new Vector2(0f, -462f), new Vector2(420f, 118f));
+        // [V6] y=-500 (trước -462): nút -559..-441, dưới Text_Hint; đáy nút ở 1080p = canvas -496 (trong màn).
+        Anchor(btnRT, new Vector2(0.5f, 0.5f), new Vector2(0f, -500f), new Vector2(420f, 118f));
 
         var btnImg = btnRT.gameObject.AddComponent<Image>();
         btnImg.sprite = PopupSpriteFactory.Load("spr_btn_green");
@@ -600,7 +606,7 @@ public class LevelUpPopupTownshipTool : EditorWindow
         tagBg.type = Image.Type.Sliced;
         tagBg.raycastTarget = false;
 
-        var tagTxt = NewText("Text", tag, "NEW", 30, FontStyles.Bold);
+        var tagTxt = NewText("Text", tag, "MỚI", 30, FontStyles.Bold);
         Stretch(tagTxt.rectTransform);
         tagTxt.color = Color.white;
         tagTxt.alignment = TextAlignmentOptions.Center;

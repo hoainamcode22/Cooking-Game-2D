@@ -45,11 +45,13 @@ public class GangplankController : MonoBehaviour
     // Tấm gỗ nằm DƯỚI chân khách (khách đi đè lên) ⇒ layer thấp hơn khách một bậc:
     // gangplank = "Objects", khách = "ObjectsFront". Để trống = tự giải + cảnh báo nếu
     // layer không tồn tại (xem TouristSortingLayers — bug "CongTrinh" của bản đầu).
+#pragma warning disable 0414
     [Tooltip("ĐỂ TRỐNG = tự chọn 'Objects' (dưới khách, trên mặt nước).")]
     [SerializeField] private string sortingLayerName = "";
 
     [Tooltip("Order trong layer. Đặt dưới order của khách để khách đi đè lên tấm gỗ.")]
     [SerializeField] private int sortingOrder = 900;
+#pragma warning restore 0414
 
     // ─── Runtime ────────────────────────────────────────────────────────
 
@@ -67,16 +69,9 @@ public class GangplankController : MonoBehaviour
     {
         if (spriteRenderer == null)
             spriteRenderer = GetComponent<SpriteRenderer>();
-        _fullScale = transform.localScale;
-
-        // Ép lại sorting layer lúc chạy: object dựng bằng tool đời cũ còn lưu layer
-        // Default trong scene, để nguyên là tấm gỗ chìm dưới nền/decor.
         if (spriteRenderer != null)
-        {
-            spriteRenderer.sortingLayerName =
-                TouristSortingLayers.ResolveOrOverride(sortingLayerName, TouristSortingLayers.Gangplank);
-            spriteRenderer.sortingOrder = sortingOrder;
-        }
+            spriteRenderer.enabled = false;
+        gameObject.SetActive(false);
     }
 
     private void Start()

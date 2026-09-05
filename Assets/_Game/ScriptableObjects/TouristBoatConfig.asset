@@ -47,10 +47,10 @@ MonoBehaviour:
     du kh\xE1ch s\u1EBD d\u1EA1o ch\u01A1i, ng\u1EAFm n\xF4ng tr\u1EA1i v\xE0 th\u01B0\u1EDFng
     th\u1EE9c \u0111\u1EB7c s\u1EA3n c\u1EE7a b\u1EA1n!"
   - "Nh\xECn k\xECa \u2014 chuy\u1EBFn t\xE0u \u0111\u1EA7u ti\xEAn \u0111ang t\u1EDBi!"
-  boatVisualWidth: 300
+  boatVisualWidth: 680
   boatVisualHeight: 0
-  lockPanelWidth: 520
-  lockPanelHeight: 250
-  lockIconSize: 100
-  lockTeaserFontSize: 80
+  lockPanelWidth: 180
+  lockPanelHeight: 90
+  lockIconSize: 24
+  lockTeaserFontSize: 18
   debugTimeScale: 1

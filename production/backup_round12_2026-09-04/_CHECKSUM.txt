@@ -1,0 +1,4 @@
+07be2590970a6041a4a5b7b44d6f6a26  production/backup_round12_2026-09-04/BuilderWorkerConfig.asset
+856bd67632f0d8f76f6547569f706bfd  Assets/_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+abb8694568ba9502de3dee7a2ef5cb9a  Assets/_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+57a40935faa4c1f40da9a1e562f13435  Assets/_Game/Farm/Scripts/Tutorial/TutorialCameraFocus.cs

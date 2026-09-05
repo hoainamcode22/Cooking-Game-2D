@@ -74,6 +74,15 @@ public static class SaveVersionGuard
         PlayerPrefs.DeleteKey(KeyFor(family));
     }
 
+    /// <summary>Xoá toàn bộ dấu phiên bản của mọi họ save.</summary>
+    public static void ClearAll()
+    {
+        for (int i = 0; i < AllFamilies.Length; i++)
+        {
+            Clear(AllFamilies[i]);
+        }
+    }
+
     /// <summary>
     /// Danh sách MỌI họ save trong dự án — nguồn sự thật duy nhất.
     /// Tool reset (`FarmSaveCleanupTool`, `FarmResetTool`) duyệt danh sách này để xoá sạch dấu

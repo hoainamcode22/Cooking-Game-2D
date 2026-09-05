@@ -19,9 +19,9 @@ namespace Assetsgame.Animals
     {
         [Header("Movement Bounds (Tọa độ Local trong chuồng)")]
         [Tooltip("Giới hạn di chuyển nhỏ nhất bên trong hàng rào chuồng")]
-        public Vector2 localBoundsMin = new Vector2(-0.85f, -0.40f);
+        public Vector2 localBoundsMin = new Vector2(-1.25f, 1.25f);
         [Tooltip("Giới hạn di chuyển lớn nhất bên trong hàng rào chuồng")]
-        public Vector2 localBoundsMax = new Vector2(0.85f, 0.30f);
+        public Vector2 localBoundsMax = new Vector2(1.25f, 2.50f);
         [Tooltip("Tự động nhận diện biên chuồng (để false để dùng tọa độ chính xác bên trong hàng rào)")]
         public bool autoCalculateBounds = false;
 
@@ -271,10 +271,16 @@ namespace Assetsgame.Animals
             float rx = Random.Range(localBoundsMin.x, localBoundsMax.x);
             float ry = Random.Range(localBoundsMin.y, localBoundsMax.y);
 
-            // Điều chỉnh biên góc để con vật không đi vào 4 góc nhọn của hàng rào quả trám
-            float xRatio = Mathf.Abs(rx) / Mathf.Max(0.1f, localBoundsMax.x);
-            float yMaxAllowed = Mathf.Lerp(localBoundsMax.y, 0f, xRatio * 0.60f);
-            float yMinAllowed = Mathf.Lerp(localBoundsMin.y, 0f, xRatio * 0.60f);
+            // Tâm sàn chuồng theo trục Y
+            float centerY = (localBoundsMin.y + localBoundsMax.y) * 0.5f;
+            float halfH = (localBoundsMax.y - localBoundsMin.y) * 0.5f;
+            float halfW = Mathf.Max(0.1f, Mathf.Max(Mathf.Abs(localBoundsMin.x), Mathf.Abs(localBoundsMax.x)));
+
+            // Điều chỉnh biên góc để con vật đi chuẩn trong sàn quả trám (isometric diamond)
+            float xRatio = Mathf.Clamp01(Mathf.Abs(rx) / halfW);
+            float ySpread = halfH * (1f - xRatio * 0.55f);
+            float yMaxAllowed = centerY + ySpread;
+            float yMinAllowed = centerY - ySpread;
             ry = Mathf.Clamp(ry, yMinAllowed, yMaxAllowed);
 
             return new Vector3(rx, ry, transform.localPosition.z);
@@ -283,9 +289,14 @@ namespace Assetsgame.Animals
         private void ClampInsideBounds(ref Vector3 pos)
         {
             pos.x = Mathf.Clamp(pos.x, localBoundsMin.x, localBoundsMax.x);
-            float xRatio = Mathf.Abs(pos.x) / Mathf.Max(0.1f, localBoundsMax.x);
-            float yMaxAllowed = Mathf.Lerp(localBoundsMax.y, 0f, xRatio * 0.60f);
-            float yMinAllowed = Mathf.Lerp(localBoundsMin.y, 0f, xRatio * 0.60f);
+            float centerY = (localBoundsMin.y + localBoundsMax.y) * 0.5f;
+            float halfH = (localBoundsMax.y - localBoundsMin.y) * 0.5f;
+            float halfW = Mathf.Max(0.1f, Mathf.Max(Mathf.Abs(localBoundsMin.x), Mathf.Abs(localBoundsMax.x)));
+
+            float xRatio = Mathf.Clamp01(Mathf.Abs(pos.x) / halfW);
+            float ySpread = halfH * (1f - xRatio * 0.55f);
+            float yMaxAllowed = centerY + ySpread;
+            float yMinAllowed = centerY - ySpread;
             pos.y = Mathf.Clamp(pos.y, yMinAllowed, yMaxAllowed);
         }
 
@@ -363,6 +374,8 @@ namespace Assetsgame.Animals
 
         private void OnMouseDown()
         {
+        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
             if (EditModeManager.IsEditMode) return;
             PlayAnimalSound(true);
             if (parentPen != null && !parentPen.IsPanelOpen())

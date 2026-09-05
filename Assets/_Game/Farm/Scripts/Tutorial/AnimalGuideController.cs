@@ -13,9 +13,12 @@ using UnityEngine.UI;
 ///   • Đơn làng đầu tiên ĐỦ HÀNG giao → toast + tay chỉ vào nhà có bubble (GUIDE_DELIVER_DONE)
 ///   • L3+: tàu chở hàng chờ ở ga → toast + tay chỉ vào toa tàu (GUIDE_TRAIN_DONE)
 ///   • L5: NHÀ BẾP mở → toast + tay chỉ nút/cổng cooking (GUIDE_COOKING_DONE)
-/// KHÔNG dính dáng TutorialManager (tutorial L1 đã khoá) — chỉ nghe
-/// PlayerProgressManager.OnLevelChanged và vài poll nhẹ (5s/lần, dừng hẳn khi xong).
+/// Chỉ nghe PlayerProgressManager.OnLevelChanged và vài poll nhẹ (5s/lần, dừng hẳn khi xong).
+/// NHƯỜNG TUTORIAL: chỉ ĐỌC TutorialManager.Instance.DangChayTutorial — khi tutorial đang chạy
+/// thì không bắn toast / tay chỉ / MarkDone (toast xếp hàng chờ, poll tạm nghỉ 1s/lần), để
+/// "Bạn có đủ hàng rồi! Chạm vào nhà có bong bóng…" không chen vào giữa bước hướng dẫn.
 /// Toast + tap hint tự dựng runtime dưới Canvas_HUD — không cần prefab, không cần asset.
+/// Toast neo đáy-giữa y=320: nằm TRÊN khay hạt (y 0→240) và trên hàng nút HUD (y 22→180).
 /// Cài đặt: Tools → Farm Game → Demo L1-L10 → Setup All (tự gắn lên object TutorialManager).
 /// </summary>
 public class AnimalGuideController : MonoBehaviour
@@ -98,6 +101,19 @@ public class AnimalGuideController : MonoBehaviour
     private CanvasGroup _toastGroup;
     private TextMeshProUGUI _toastText;
     private static Sprite _roundedSprite;
+
+    // Toast neo đáy-giữa Canvas_HUD. 165 cũ nằm lọt trong vùng khay hạt (y 0→240) và sát hàng nút HUD.
+    private const float ToastAnchoredY = 320f;
+
+    // Cooking hint đang bị hoãn vì tutorial chạy (tránh khởi 2 coroutine chờ)
+    private bool _cookingHintDangHoan;
+
+    /// <summary>
+    /// Tutorial chính có đang chạy không. Chỉ ĐỌC API public của TutorialManager (không sửa file đó).
+    /// Mọi toast / tay chỉ / MarkDone của guide này phải nhường khi cờ này bật.
+    /// </summary>
+    private static bool TutorialDangChay =>
+        TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial;
 
     // ── Lifecycle ────────────────────────────────────────────────────────────
 
@@ -188,6 +204,9 @@ public class AnimalGuideController : MonoBehaviour
         var wait = new WaitForSeconds(CoopPollInterval);
         while (!IsDone(FeedPrefKey))
         {
+            // Tutorial đang chạy (L2 dạy chính cái chuồng này) ⇒ nhường, không MarkDone/toast/tay chỉ.
+            if (TutorialDangChay) { yield return new WaitForSecondsRealtime(1f); continue; }
+
             for (int i = 0; i < CoopNames.Length; i++)
             {
                 GameObject coop = GameObject.Find(CoopNames[i]);
@@ -195,6 +214,8 @@ public class AnimalGuideController : MonoBehaviour
                     continue;
 
                 yield return new WaitForSeconds(0.75f); // để thao tác đặt chuồng kết thúc hẳn
+                if (TutorialDangChay) break;            // tutorial vừa bật trong lúc chờ ⇒ quay lại vòng nhường
+
                 MarkDone(FeedPrefKey);
                 EnqueueToast(FeedMessage);
 
@@ -217,7 +238,13 @@ public class AnimalGuideController : MonoBehaviour
         var wait = new WaitForSeconds(DeliverPollInterval);
         while (!IsDone(DeliverPrefKey))
         {
+            // Tutorial đang chạy ⇒ KHÔNG bắn "Bạn có đủ hàng rồi!…" chen vào bước hướng dẫn.
+            if (TutorialDangChay) { yield return new WaitForSecondsRealtime(1f); continue; }
+
             yield return wait;
+
+            if (TutorialDangChay)
+                continue;   // tutorial bật trong 5s chờ ⇒ vòng sau sẽ nhường
 
             if (PlayerProgressManager.Instance == null ||
                 PlayerProgressManager.Instance.Level < DeliverMinLevel)
@@ -270,7 +297,12 @@ public class AnimalGuideController : MonoBehaviour
         var wait = new WaitForSeconds(TrainPollInterval);
         while (!IsDone(TrainPrefKey))
         {
+            if (TutorialDangChay) { yield return new WaitForSecondsRealtime(1f); continue; }
+
             yield return wait;
+
+            if (TutorialDangChay)
+                continue;   // tutorial bật trong 5s chờ ⇒ vòng sau sẽ nhường
 
             if (PlayerProgressManager.Instance == null ||
                 PlayerProgressManager.Instance.Level < TrainMinLevel)
@@ -332,6 +364,15 @@ public class AnimalGuideController : MonoBehaviour
         if (level < CookingMinLevel || IsDone(CookingPrefKey))
             return;
 
+        // Không phải vòng poll mà là one-shot từ OnLevelChanged ⇒ tutorial đang chạy thì HOÃN
+        // (chờ tutorial xong rồi gọi lại), không MarkDone/toast/tay chỉ ngay.
+        if (TutorialDangChay)
+        {
+            if (!_cookingHintDangHoan)
+                StartCoroutine(HoanCookingHintDenKhiHetTutorial(level));
+            return;
+        }
+
         MarkDone(CookingPrefKey);
         EnqueueToast(CookingMessage);
 
@@ -366,6 +407,18 @@ public class AnimalGuideController : MonoBehaviour
             _loggedCookingTargetMissing = true;
             Debug.Log("[AnimalGuide] Không tìm thấy nút/cổng NHÀ BẾP để chỉ tay — chỉ hiện toast.");
         }
+    }
+
+    /// <summary>Chờ tutorial kết thúc (poll 1s realtime) rồi thử lại cooking hint với level MỚI NHẤT.</summary>
+    private IEnumerator HoanCookingHintDenKhiHetTutorial(int level)
+    {
+        _cookingHintDangHoan = true;
+        while (TutorialDangChay)
+            yield return new WaitForSecondsRealtime(1f);
+        _cookingHintDangHoan = false;
+
+        int levelHienTai = PlayerProgressManager.Instance != null ? PlayerProgressManager.Instance.Level : level;
+        TryShowCookingHint(Mathf.Max(level, levelHienTai));
     }
 
     private static RectTransform FindCookingButtonRect(bool requireWiredOnClick)
@@ -430,6 +483,11 @@ public class AnimalGuideController : MonoBehaviour
         while (_pendingToasts.Count > 0)
         {
             string message = _pendingToasts.Dequeue();
+
+            // Tutorial đang chạy ⇒ giữ toast trong tay, KHÔNG hiện chen lên card hội thoại / tay chỉ.
+            while (TutorialDangChay)
+                yield return new WaitForSecondsRealtime(0.5f);
+
             if (!EnsureToastUI())
             {
                 Debug.LogWarning("[AnimalGuide] Không tìm thấy Canvas để hiện toast: " + message);
@@ -507,15 +565,15 @@ public class AnimalGuideController : MonoBehaviour
         _toastRoot.pivot = new Vector2(0.5f, 0f);
 
         Rect canvasRect = canvas.GetComponent<RectTransform>().rect;
-        float width = Mathf.Min(720f, canvasRect.width * 0.92f);
-        if (width <= 0f) width = 720f; // canvas chưa layout xong
-        _toastRoot.sizeDelta = new Vector2(width, 96f);
-        _toastRoot.anchoredPosition = new Vector2(0f, 140f);
+        float width = Mathf.Min(700f, canvasRect.width * 0.90f);
+        if (width <= 0f) width = 700f; // canvas chưa layout xong
+        _toastRoot.sizeDelta = new Vector2(width, 88f);
+        _toastRoot.anchoredPosition = new Vector2(0f, ToastAnchoredY);   // 165 → 320: thoát khay hạt + hàng nút HUD
 
         var bg = go.AddComponent<Image>();
         bg.sprite = GetRoundedSprite();
         bg.type = Image.Type.Sliced;
-        bg.color = new Color(0.07f, 0.09f, 0.14f, 0.92f);
+        bg.color = new Color(0.20f, 0.13f, 0.06f, 0.95f); // Rich warm farm wood/parchment tone
         bg.raycastTarget = true; // chỉ chặn click NGAY TRÊN toast (bấm = tắt sớm)
 
         var button = go.AddComponent<Button>();
@@ -528,7 +586,6 @@ public class AnimalGuideController : MonoBehaviour
         _toastGroup.interactable = true;
 
         // Text — không gán font: TMP tự dùng default trong TMP Settings
-        // (giống các text runtime khác: HarvestAmountTextVFX/SeedCostTextVFX)
         var textGo = new GameObject("Text", typeof(RectTransform));
         textGo.layer = go.layer;
         var textRect = textGo.GetComponent<RectTransform>();
@@ -539,8 +596,9 @@ public class AnimalGuideController : MonoBehaviour
         textRect.offsetMax = new Vector2(-TextPadX, -TextPadY);
 
         _toastText = textGo.AddComponent<TextMeshProUGUI>();
-        _toastText.fontSize = 30f;
-        _toastText.color = new Color(1f, 0.97f, 0.9f, 1f);
+        _toastText.fontSize = 25f;
+        _toastText.fontStyle = FontStyles.Bold;
+        _toastText.color = new Color(1f, 0.97f, 0.88f, 1f); // Warm cream gold
         _toastText.alignment = TextAlignmentOptions.Center;
         _toastText.textWrappingMode = TextWrappingModes.Normal;
         _toastText.raycastTarget = false;

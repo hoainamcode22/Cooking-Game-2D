@@ -1,16 +1,7 @@
 fileFormatVersion: 2
 guid: f4fa26d743f71704e8b9539f2002960e
 TextureImporter:
-  internalIDToNameTable:
-  - first:
-      213: -7123300677565019033
-    second: boat_red_12_dir_6_0
-  - first:
-      213: -7600552853346997655
-    second: boat_red_12_dir_6_1
-  - first:
-      213: -3597472067001424366
-    second: boat_red_12_dir_6_2
+  internalIDToNameTable: []
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -52,7 +43,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -104,78 +95,12 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites:
-    - serializedVersion: 2
-      name: boat_red_12_dir_6_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 146
-        width: 36
-        height: 94
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 76c007d46c3f42d90800000000000000
-      internalID: -7123300677565019033
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: boat_red_12_dir_6_1
-      rect:
-        serializedVersion: 2
-        x: 61
-        y: 0
-        width: 118
-        height: 232
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 96aaba70379658690800000000000000
-      internalID: -7600552853346997655
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: boat_red_12_dir_6_2
-      rect:
-        serializedVersion: 2
-        x: 204
-        y: 147
-        width: 36
-        height: 93
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 2166dfc1736331ec0800000000000000
-      internalID: -3597472067001424366
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
+    sprites: []
     outline: []
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -184,10 +109,7 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable:
-      boat_red_12_dir_6_0: -7123300677565019033
-      boat_red_12_dir_6_1: -7600552853346997655
-      boat_red_12_dir_6_2: -3597472067001424366
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

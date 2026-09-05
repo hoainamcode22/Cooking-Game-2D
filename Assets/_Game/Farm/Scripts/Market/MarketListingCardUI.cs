@@ -47,6 +47,8 @@ public class MarketListingCardUI : MonoBehaviour, IInitializePotentialDragHandle
 
     /// <summary>Id của listing đang hiển thị — MarketBoardUI dùng để tái sử dụng thẻ.</summary>
     public string ListingId => listingId;
+    public Sprite ItemSprite => imageIcon != null ? imageIcon.sprite : null;
+    public Vector3 IconScreenPosition => imageIcon != null ? imageIcon.transform.position : transform.position;
 
     private ScrollRect ParentScrollRect
     {

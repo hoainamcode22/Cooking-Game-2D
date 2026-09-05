@@ -1,0 +1,5 @@
+2b171dbbb33c9bc55cc6358a1de53a7d  PopupCaptureReporter.cs
+dc209e9a9df660a1c6817b1ae0681555  TutorialActionHandGuide.cs
+ff52e3376b8c21302ed71c77b34c5e58  TutorialDragHintAnimator.cs
+185b44160ead1a5d5b8daba585132cc3  TutorialManager.cs
+1500481dd3ba58cf2c41e99ec29ddf8e  SCN_Farm.unity.bak

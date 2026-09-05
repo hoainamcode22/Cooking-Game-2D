@@ -18,6 +18,16 @@ public class TutorialActionHandGuide : MonoBehaviour
     private Vector3 _lastFingertipWorld;
     private bool _hasLastFingertipWorld;
 
+    // [V6] Cờ chống dội: StopGuide được gọi TỪ BÊN TRONG StartGuide (dọn routine cũ) thì
+    // không được nhả quyền / không được bảo TutorialManager bật lại tay tĩnh.
+    private bool _dangDoiGuide;
+
+    /// <summary>[V6] Guide có đang chạy không (chỉ-đọc, cho báo cáo F10).</summary>
+    public bool DangChay => _routine != null;
+
+    /// <summary>[V6] Object tay hành động đang dùng (chỉ-đọc, cho báo cáo F10).</summary>
+    public RectTransform TayHanhDongRT => _hand;
+
     public void Configure(RectTransform hand)
     {
         _hand = hand;
@@ -53,23 +63,67 @@ public class TutorialActionHandGuide : MonoBehaviour
         if (_routine != null) StopCoroutine(_routine);
         _routine = null;
         _hasLastFingertipWorld = false;
-        if (_hand == null) return;
-        _hand.localScale = _baseScale;
-        _hand.gameObject.SetActive(false);
+        if (_hand != null)
+        {
+            _hand.localScale = _baseScale;
+            _hand.gameObject.SetActive(false);
+        }
+
+        if (_dangDoiGuide) return;   // [V6] đang đổi sang guide khác → chưa nhả quyền
+
+        // [V6] Nhả quyền rồi báo TutorialManager xem bước hiện tại có còn cần tay tĩnh không.
+        // Thiếu bước này thì sau khi tắt guide sẽ còn 0 bàn tay — người chơi mất chỉ dẫn.
+        TutorialHandBus.Nha(LoaiTay.TayHanhDong);
+        TutorialManager.Instance?.CapNhatLaiTayTinh();
     }
 
     private void StartGuide(IEnumerator routine)
     {
-        StopGuide();
-        if (_hand != null) _routine = StartCoroutine(routine);
+        // [V6] Dọn routine cũ mà KHÔNG nhả quyền (sẽ giành lại ngay bên dưới).
+        _dangDoiGuide = true;
+        try { StopGuide(); }
+        finally { _dangDoiGuide = false; }
+
+        // Không có object tay thì đừng giành quyền — giành mà không hiện được gì
+        // sẽ chặn luôn tay tĩnh ⇒ bước đó KHÔNG CÒN BÀN TAY NÀO.
+        if (_hand == null)
+        {
+            // [V6] StopGuide() phía trên đã bị cờ _dangDoiGuide chặn không cho nhả quyền.
+            // Thoát ở đây mà không nhả thì trọng tài vẫn ghi TayHanhDong đang giữ ⇒ tay tĩnh
+            // bị câm vĩnh viễn ⇒ 0 bàn tay. Nhả quyền rồi trả lượt lại cho tay tĩnh.
+            TutorialHandBus.Nha(LoaiTay.TayHanhDong);
+            TutorialManager.Instance?.CapNhatLaiTayTinh();
+            return;
+        }
+
+        // [V6] MỘT TAY MỘT LÚC: giành quyền, ẩn tay tĩnh, tắt tay kéo.
+        TutorialHandBus.Nhan(LoaiTay.TayHanhDong);
+        var mgr = TutorialManager.Instance;
+        if (mgr != null)
+        {
+            mgr.AnTayTinh();
+            mgr.DungTayKeo();
+        }
+
+        _routine = StartCoroutine(routine);
     }
 
     private IEnumerator SpeedUpRoutine(string plotTargetId)
     {
         while (true)
         {
-            RectTransform target = FindOpenSpeedButton();
-            if (target == null) target = TutorialManager.GetTargetRect(plotTargetId);
+            RectTransform speedBtn = FindOpenSpeedButton();
+            RectTransform target = speedBtn != null ? speedBtn : TutorialManager.GetTargetRect(plotTargetId);
+
+            var dim = Object.FindAnyObjectByType<UnmaskRaycastFilter>();
+            if (dim != null && dim.gameObject.activeInHierarchy)
+            {
+                if (speedBtn != null)
+                    dim.SetTarget(speedBtn, false, 24f);
+                else if (target != null)
+                    dim.SetTarget(target, false, 80f);
+            }
+
             PointAt(target);
             Pulse();
             yield return null;

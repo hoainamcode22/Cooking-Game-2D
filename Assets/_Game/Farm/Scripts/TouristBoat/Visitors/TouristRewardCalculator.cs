@@ -66,7 +66,7 @@ public static class TouristRewardCalculator
     private const float EpicBonusPerItem = 0.12f;
 
     /// <summary>[QA M-9] Hệ số EXP khách trả dùng khi không lấy được config — bằng default của config.</summary>
-    private const float ExpTouristDefault = 0.4f;
+    private const float ExpTouristDefault = 0.75f;
 
     /// <summary>EXP suy ra khi asset chưa điền rewardExp: round(8 + unlockLevel × 1.5).</summary>
     private const float ExpFallbackBase    = 8f;
@@ -74,8 +74,8 @@ public static class TouristRewardCalculator
 
     // Hệ số EXP theo độ khó — cố ý nhẹ hơn hệ số vàng (EXP đã tự tăng theo level món).
     private const float ExpMultEasy   = 1.00f;
-    private const float ExpMultNormal = 1.10f;
-    private const float ExpMultHard   = 1.25f;
+    private const float ExpMultNormal = 1.25f;
+    private const float ExpMultHard   = 1.50f;
 
     // Chống spam Console: mỗi dishId chỉ cảnh báo fallback 1 lần/phiên.
     private static readonly System.Collections.Generic.HashSet<string> _daCanhBaoVang
@@ -105,7 +105,7 @@ public static class TouristRewardCalculator
         {
             float diff   = HeSoDoKhoVang(dish.difficulty, config);
             float rarity = TinhRarityBonus(dish, config);
-            float chung  = config != null ? Mathf.Max(0.01f, config.touristGoldMultiplier) : 1f;
+            float chung  = config != null ? Mathf.Max(0.01f, config.touristGoldMultiplier) : 1.8f;
 
             return Mathf.Max(1, LamTron(dish.sellPrice * (double)diff * rarity * chung));
         }
@@ -137,14 +137,14 @@ public static class TouristRewardCalculator
         return vang;
     }
 
-    /// <summary>Hệ số vàng theo độ khó món, đọc từ config (null → số thiết kế 1.00/1.15/1.35).</summary>
+    /// <summary>Hệ số vàng theo độ khó món, đọc từ config (null → số thiết kế 1.25/1.50/1.85).</summary>
     private static float HeSoDoKhoVang(DishDifficulty difficulty, TouristBoatConfig config)
     {
         switch (difficulty)
         {
-            case DishDifficulty.Easy:   return config != null ? Mathf.Max(0.01f, config.diffMultEasy)   : 1.00f;
-            case DishDifficulty.Normal: return config != null ? Mathf.Max(0.01f, config.diffMultNormal) : 1.15f;
-            case DishDifficulty.Hard:   return config != null ? Mathf.Max(0.01f, config.diffMultHard)   : 1.35f;
+            case DishDifficulty.Easy:   return config != null ? Mathf.Max(0.01f, config.diffMultEasy)   : 1.25f;
+            case DishDifficulty.Normal: return config != null ? Mathf.Max(0.01f, config.diffMultNormal) : 1.50f;
+            case DishDifficulty.Hard:   return config != null ? Mathf.Max(0.01f, config.diffMultHard)   : 1.85f;
             default:                    return 1f;
         }
     }

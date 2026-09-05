@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_06b_GuideSpeedUp
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: 
+  npcText: "C\xE2y \u0111ang l\u1EDBn r\u1ED3i! D\xF9ng kim c\u01B0\u01A1ng \u0111\u1EC3
+    l\xFAa ch\xEDn ngay l\u1EADp t\u1EE9c nh\xE9."
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 
   useCircleHole: 1
   holePaddingPx: 16
   waitAction: 0
-  showGuideBoard: 1
+  showGuideBoard: 0
   showHandPointer: 0
   handOffset: {x: 0, y: 0}
   dragToTargetId: 

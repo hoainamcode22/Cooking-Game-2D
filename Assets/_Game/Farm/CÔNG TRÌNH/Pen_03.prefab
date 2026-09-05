@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &2590498883799504472
 GameObject:
@@ -328,13 +328,13 @@ MonoBehaviour:
   animalPrefab: {fileID: 7686175365432690585, guid: 7538caeddd7e4f5e9877a851b50b68ed, type: 3}
   legacyChildName: ganam1_0
   spawnedChildName: HappyHarvest_Chicken
-  localPosition: {x: 0, y: 0, z: 0}
+  localPosition: {x: 0, y: 1.85, z: 0}
   localScale: {x: 0.85, y: 0.85, z: 0.85}
   sortingOrderOffset: 50
   animalCount: 3
   horizontalSpacing: 1.1
-  walkBoundsMin: {x: -1.15, y: -0.6}
-  walkBoundsMax: {x: 1.15, y: 0.45}
+  walkBoundsMin: {x: -1.25, y: 1.25}
+  walkBoundsMax: {x: 1.25, y: 2.5}
   soundClips:
   - {fileID: 8300000, guid: 335065204f6c4336b6a334cd9a6c05f1, type: 3}
   - {fileID: 8300000, guid: 56d3c244f28545149b3e3f85d2e0b9c9, type: 3}

@@ -45,8 +45,8 @@ public class MobileEditModeButton : MonoBehaviour
     [SerializeField] private Vector2 leGocDuoiPhai = new Vector2(40f, 220f);
 
     [Header("Nhãn")]
-    [SerializeField] private string nhanKhiTat = "Sửa";
-    [SerializeField] private string nhanKhiBat = "Xong";
+    [SerializeField] private string nhanKhiTat = "";
+    [SerializeField] private string nhanKhiBat = "";
 
     private Button    _nut;
     private TMP_Text  _nhan;

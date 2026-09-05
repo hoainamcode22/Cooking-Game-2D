@@ -728,7 +728,7 @@ public static class TouristBoatSetupTool
                     }
                 }
                 Undo.RecordObject(tt, "Teaser pos");
-                tt.localPosition = new Vector3(0f, -cfg.lockPanelHeight * 0.20f, 0f);
+                tt.localPosition = new Vector3(0f, -cfg.lockPanelHeight * 0.08f, 0f);
                 tt.localScale    = Vector3.one;
             }
 

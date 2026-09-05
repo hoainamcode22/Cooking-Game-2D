@@ -275,18 +275,39 @@ MonoBehaviour:
   m_GameObject: {fileID: 659125330957034646}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 9fc5072e63c723245b24334b00653744, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExportTrainUIPackage.StationWagonSlotUI
-  imgWagon: {fileID: 3428527750066794313}
-  bubbleReq: {fileID: 2435183965765637239}
-  imgBubble: {fileID: 7111157166991162312}
-  imgDisc: {fileID: 6765081211821445428}
-  imgIcon: {fileID: 2740242607187469590}
-  txtAmount: {fileID: 5794018934296201135}
-  checkBadge: {fileID: 5347964136863499834}
-  imgCheckBadge: {fileID: 3884997475729004169}
-  btnSlot: {fileID: 8416197326171549648}
+  canvasComponent: {fileID: 0}
+  imgDimOverlay: {fileID: 0}
+  mainWoodFrame: {fileID: 0}
+  imgWoodFrame: {fileID: 0}
+  imgBackground: {fileID: 0}
+  ribbonBannerImage: {fileID: 0}
+  txtTitle: {fileID: 0}
+  btnClose: {fileID: 0}
+  hintPill: {fileID: 0}
+  imgHintPill: {fileID: 0}
+  txtHint: {fileID: 0}
+  trainContainer: {fileID: 0}
+  imgLocomotive: {fileID: 0}
+  wagonContainers:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  wagonSlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  smokePuffRoot: {fileID: 0}
+  smokePuffs:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  currentState: 1
 --- !u!114 &8416197326171549648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -652,18 +673,39 @@ MonoBehaviour:
   m_GameObject: {fileID: 968086196397388047}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 9fc5072e63c723245b24334b00653744, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExportTrainUIPackage.StationWagonSlotUI
-  imgWagon: {fileID: 2000622955008464020}
-  bubbleReq: {fileID: 2978455963456090055}
-  imgBubble: {fileID: 4489582202544837816}
-  imgDisc: {fileID: 4183323181877124990}
-  imgIcon: {fileID: 868521609185391001}
-  txtAmount: {fileID: 3165399830230150991}
-  checkBadge: {fileID: 8957403377779951723}
-  imgCheckBadge: {fileID: 5021255151189604787}
-  btnSlot: {fileID: 5169153599440702189}
+  canvasComponent: {fileID: 0}
+  imgDimOverlay: {fileID: 0}
+  mainWoodFrame: {fileID: 0}
+  imgWoodFrame: {fileID: 0}
+  imgBackground: {fileID: 0}
+  ribbonBannerImage: {fileID: 0}
+  txtTitle: {fileID: 0}
+  btnClose: {fileID: 0}
+  hintPill: {fileID: 0}
+  imgHintPill: {fileID: 0}
+  txtHint: {fileID: 0}
+  trainContainer: {fileID: 0}
+  imgLocomotive: {fileID: 0}
+  wagonContainers:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  wagonSlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  smokePuffRoot: {fileID: 0}
+  smokePuffs:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  currentState: 1
 --- !u!114 &5169153599440702189
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -978,7 +1020,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4279710556
   m_fontColor: {r: 0.36, g: 0.2, b: 0.09, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -991,7 +1033,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -1302,7 +1344,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 855, y: 30}
+  m_AnchoredPosition: {x: 847.8, y: -31}
   m_SizeDelta: {x: 240, y: 240}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8235183422988259354
@@ -1568,7 +1610,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4279710556
   m_fontColor: {r: 0.36, g: 0.2, b: 0.09, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -1581,7 +1623,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -1802,7 +1844,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &5389189487421498102
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1842,7 +1884,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_VertexColorAlwaysGammaSpace: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 160
@@ -1895,10 +1937,10 @@ MonoBehaviour:
   - {fileID: 1630791949937391685}
   - {fileID: 8356813851177497524}
   wagonSlots:
-  - {fileID: 6699675954752299846}
-  - {fileID: 7746490990097687554}
-  - {fileID: 1511072026557396521}
-  - {fileID: 176758927644746265}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   smokePuffRoot: {fileID: 8397970595482455125}
   smokePuffs:
   - {fileID: 4376879301410352066}
@@ -2362,7 +2404,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -60, y: -145}
+  m_AnchoredPosition: {x: -61, y: -118}
   m_SizeDelta: {x: 1050, y: 300}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &3946494947110111938
@@ -2653,7 +2695,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4279710556
   m_fontColor: {r: 0.36, g: 0.2, b: 0.09, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -2666,7 +2708,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -2903,18 +2945,39 @@ MonoBehaviour:
   m_GameObject: {fileID: 4592633402157235518}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 9fc5072e63c723245b24334b00653744, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExportTrainUIPackage.StationWagonSlotUI
-  imgWagon: {fileID: 596967262171247065}
-  bubbleReq: {fileID: 3946494947110111938}
-  imgBubble: {fileID: 6489718797304861544}
-  imgDisc: {fileID: 1182634018270670146}
-  imgIcon: {fileID: 9187102992598026746}
-  txtAmount: {fileID: 7266753812889411737}
-  checkBadge: {fileID: 926553435909086236}
-  imgCheckBadge: {fileID: 3045970677782377415}
-  btnSlot: {fileID: 1447751889731577552}
+  canvasComponent: {fileID: 0}
+  imgDimOverlay: {fileID: 0}
+  mainWoodFrame: {fileID: 0}
+  imgWoodFrame: {fileID: 0}
+  imgBackground: {fileID: 0}
+  ribbonBannerImage: {fileID: 0}
+  txtTitle: {fileID: 0}
+  btnClose: {fileID: 0}
+  hintPill: {fileID: 0}
+  imgHintPill: {fileID: 0}
+  txtHint: {fileID: 0}
+  trainContainer: {fileID: 0}
+  imgLocomotive: {fileID: 0}
+  wagonContainers:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  wagonSlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  smokePuffRoot: {fileID: 0}
+  smokePuffs:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  currentState: 1
 --- !u!114 &1447751889731577552
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3771,7 +3834,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4279710556
   m_fontColor: {r: 0.36, g: 0.2, b: 0.09, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -3784,7 +3847,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -3959,18 +4022,39 @@ MonoBehaviour:
   m_GameObject: {fileID: 6324739260257805638}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 0}
+  m_Script: {fileID: 11500000, guid: 9fc5072e63c723245b24334b00653744, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ExportTrainUIPackage.StationWagonSlotUI
-  imgWagon: {fileID: 4524013815175719125}
-  bubbleReq: {fileID: 7065173231785899573}
-  imgBubble: {fileID: 5427149278182983536}
-  imgDisc: {fileID: 2802535184650241983}
-  imgIcon: {fileID: 4275856232269803512}
-  txtAmount: {fileID: 5643998448214534525}
-  checkBadge: {fileID: 5802091156665722719}
-  imgCheckBadge: {fileID: 6534027298700997313}
-  btnSlot: {fileID: 7312199191457487716}
+  canvasComponent: {fileID: 0}
+  imgDimOverlay: {fileID: 0}
+  mainWoodFrame: {fileID: 0}
+  imgWoodFrame: {fileID: 0}
+  imgBackground: {fileID: 0}
+  ribbonBannerImage: {fileID: 0}
+  txtTitle: {fileID: 0}
+  btnClose: {fileID: 0}
+  hintPill: {fileID: 0}
+  imgHintPill: {fileID: 0}
+  txtHint: {fileID: 0}
+  trainContainer: {fileID: 0}
+  imgLocomotive: {fileID: 0}
+  wagonContainers:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  wagonSlots:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  smokePuffRoot: {fileID: 0}
+  smokePuffs:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  currentState: 1
 --- !u!114 &7312199191457487716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4089,7 +4173,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4279710556
   m_fontColor: {r: 0.36, g: 0.2, b: 0.09, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -4102,7 +4186,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -4227,7 +4311,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4279710556
   m_fontColor: {r: 0.36, g: 0.2, b: 0.09, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -4240,7 +4324,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2

@@ -261,11 +261,12 @@ public class StallHierarchyBuilderTool : EditorWindow
         title.textWrappingMode = TextWrappingModes.NoWrap;
 
         // 5. NÚT ĐÓNG [X] (btnX.png 90x90)
-        Sprite btnCloseSpr = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/btnX.png");
+        Sprite btnCloseSpr = UIStandardSprites.Close ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/btnX.png");
         RectTransform close = CreateUI("BtnClose", main);
         Center(close, new Vector2(735f, 415f), new Vector2(90f, 90f));
         Image closeImg = close.gameObject.AddComponent<Image>();
         closeImg.sprite = btnCloseSpr ?? StallSpriteFactory.Load("stall_circle");
+        closeImg.type = btnCloseSpr != null ? Image.Type.Sliced : Image.Type.Simple;
         closeImg.preserveAspect = true;
         Button closeBtn = close.gameObject.AddComponent<Button>();
         closeBtn.targetGraphic = closeImg;

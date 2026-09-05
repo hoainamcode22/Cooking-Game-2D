@@ -20,6 +20,9 @@ public class FarmPlotInput : MonoBehaviour
         if (!IsPointerDownThisFrame())
             return;
 
+        if (FarmInputLock.BlockWorldInteraction)
+            return;
+
         // Tuyệt đối không mở Seed Popup / logic trồng trọt khi Edit Mode đang bật
         // hoặc đang kéo/đặt công trình — hai hệ thống này không được dẫm chân nhau.
         if (EditModeManager.IsEditMode || PlacementManager.IsPlacingNewObject)

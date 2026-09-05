@@ -299,7 +299,7 @@ public class TouristBoatUnlockFlow : MonoBehaviour
 
         Vector2 size = cfg != null
             ? new Vector2(cfg.lockPanelWidth, cfg.lockPanelHeight)
-            : new Vector2(520f, 250f);
+            : new Vector2(180f, 90f);
 
         board.localScale = Vector3.one; // chống dồn hệ số giữa các lần chạy
         if (lockBoardSprite.border != Vector4.zero)
@@ -313,6 +313,25 @@ public class TouristBoatUnlockFlow : MonoBehaviour
             Vector2 native = lockBoardSprite.rect.size / Mathf.Max(0.0001f, lockBoardSprite.pixelsPerUnit);
             if (native.x > 0.0001f && native.y > 0.0001f)
                 board.localScale = new Vector3(size.x / native.x, size.y / native.y, 1f);
+        }
+
+        // Định dạng lại chữ teaser cho gọn gàng trong bảng
+        Transform tt = board.Find("TeaserText");
+        if (tt != null)
+        {
+            var tmp = tt.GetComponent<TextMeshPro>();
+            if (tmp != null && cfg != null)
+            {
+                tmp.fontSize = cfg.lockTeaserFontSize;
+                tmp.alignment = TextAlignmentOptions.Center;
+                tmp.textWrappingMode = TextWrappingModes.Normal;
+                var rt = tmp.rectTransform;
+                if (rt != null)
+                {
+                    rt.sizeDelta = new Vector2(cfg.lockPanelWidth * 0.9f, cfg.lockPanelHeight * 0.6f);
+                }
+                tt.localPosition = new Vector3(0f, -cfg.lockPanelHeight * 0.08f, 0f);
+            }
         }
 
         // Icon ổ khóa (nếu Sếp gán art riêng)
@@ -545,7 +564,8 @@ public class TouristBoatUnlockFlow : MonoBehaviour
         trt.offsetMax = new Vector2(-60f, -35f);
 
         _hintText = CreateText("Hint", _panel.transform, 30f,
-            new Color(0.69f, 0.53f, 0.31f), TextAlignmentOptions.MidlineRight);
+            new Color(0.35f, 0.20f, 0.09f), TextAlignmentOptions.MidlineRight);
+        _hintText.fontStyle = FontStyles.Bold;
         RectTransform hrt = _hintText.rectTransform;
         hrt.anchorMin        = new Vector2(1f, 0f);
         hrt.anchorMax        = new Vector2(1f, 0f);

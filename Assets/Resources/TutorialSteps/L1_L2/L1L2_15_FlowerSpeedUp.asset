@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_15_FlowerSpeedUp
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "Mu\u1ED1n hoa n\u1EDF ngay? D\xF9ng kim c\u01B0\u01A1ng nh\xE9!"
+  npcText: "D\xF9ng kim c\u01B0\u01A1ng \u0111\u1EC3 hoa h\u01B0\u1EDBng d\u01B0\u01A1ng
+    n\u1EDF r\u1ED9 ngay l\u1EADp t\u1EE9c!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 

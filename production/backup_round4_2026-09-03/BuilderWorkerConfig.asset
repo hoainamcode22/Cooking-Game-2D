@@ -1,0 +1,59 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fe38d674c502024cb426bd082022a28, type: 3}
+  m_Name: BuilderWorkerConfig
+  m_EditorClassIdentifier: Assembly-CSharp::BuilderWorkerConfig
+  enabled: 1
+  workerPrefabs:
+  - {fileID: 3761741090359277962, guid: 37d81837ccdfc1448ae96951215cca55, type: 3}
+  - {fileID: 401570276217274491, guid: 4922ac2562d47e349a2eac027f265f18, type: 3}
+  - {fileID: 508500832171143850, guid: 3cbd57901af9d504993ea7c2c86743d1, type: 3}
+  hammerFrames:
+  - {fileID: 754725266, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -1706340156, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -1412985738, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: 528226992, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -783265114, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -644479159, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -1657756029, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: 365238876, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: 1771489592, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -1728460664, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: -1459750875, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  - {fileID: 927082795, guid: fd47db89dc3a47008f64c91062583648, type: 3}
+  hammerFps: 10
+  celebrateFrames:
+  - {fileID: 1367048389, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: 1833926937, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -1367899947, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: 1662265106, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -875263117, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -905115526, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -1451853762, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: 1042962414, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: 1579704655, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: 30077009, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -124306592, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  - {fileID: -255972248, guid: dcaf7a7592c63b24ca4a49d36c5eabfd, type: 3}
+  celebrateFps: 12
+  celebrateIdleFrameIndex: 0
+  hammerImpactFrames: 08000000090000000a000000
+  workerWorldHeight: 170
+  placementRadiusPadding: 40
+  minWorkers: 1
+  maxWorkers: 3
+  fadeInSeconds: 0.25
+  fadeOutSeconds: 0.35
+  phaseSpreadSeconds: 0.4
+  dustVfxPrefab: {fileID: 0}
+  hammerSfx: {fileID: 0}
+  hammerSfxVolume: 0.6

@@ -78,17 +78,7 @@ public class PenClickDetector : MonoBehaviour
 
     private void TryOpenPanel(Vector2 screenPos)
     {
-        if (EditModeManager.IsEditMode)
-        {
-            return;
-        }
-
-        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
-        {
-            return;
-        }
-
-        if (FarmInputLock.IsDraggingSeed || FarmInputLock.IsDraggingSickle)
+        if (FarmInputLock.BlockWorldInteraction)
         {
             return;
         }

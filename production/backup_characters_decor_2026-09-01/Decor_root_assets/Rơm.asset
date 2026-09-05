@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: "R\u01A1m"
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 10
+  itemName: "R\u01A1m Hoa"
+  itemIcon: {fileID: -6909388954808590244, guid: b06071b51913db8478921435bc45bed7, type: 3}
+  goldPrice: 0
+  diamondPrice: 20
+  prefabToBuild: {fileID: 1717841208467509849, guid: 468efe77f1ee0274b9c577977ffca829, type: 3}
+  unlockLevel: 1
+  gridSize: {x: 3, y: 3}
+  buildTimeSeconds: 0
+  rushGemCost: 0

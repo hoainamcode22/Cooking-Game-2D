@@ -248,6 +248,7 @@ public class OrderBoardWorldObject : MonoBehaviour
 
     private void TryOpenBoard(Vector2 screenPos)
     {
+        if (FarmInputLock.BlockWorldInteraction) return;
         // Minigame nấu ăn nạp chồng lên scene farm — lúc đó click thuộc về minigame.
         if (SceneManager.GetSceneByName("SampleScene").isLoaded) return;
 

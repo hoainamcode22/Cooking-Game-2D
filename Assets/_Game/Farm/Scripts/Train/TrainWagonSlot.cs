@@ -208,6 +208,8 @@ public class TrainWagonSlot : MonoBehaviour
     // KhÃ´ng cáº§n tá»± kiá»ƒm tra raycast / OverlapPoint ná»¯a.
     private void OnMouseDown()
     {
+        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         if (!enabled || !gameObject.activeInHierarchy) return;
         if (FarmInputLock.BlockMapPan) return;
         if (TrainManager.Instance == null) return;

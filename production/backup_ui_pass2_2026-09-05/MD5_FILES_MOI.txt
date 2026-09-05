@@ -1,0 +1,13 @@
+5db81ba04754748082ee121cd80346f8  ./_Game/Farm/Editor/LevelUpPopupRewireTool.cs
+1232739038138260ec137f17b0d7735c  ./_Game/Farm/Editor/LevelUpPopupTownshipTool.cs
+03e133ca71c264b500085eb4ea924743  ./_Game/Farm/Editor/SetupTutorialL1L2Tool.cs
+af52872dfe35c19fd17d7509a2955cc3  ./_Game/Farm/Editor/TutorialHandLayerTool.cs
+0530fe0ff323da4124eb29f4d520b0ce  ./_Game/Farm/Editor/TutorialV2SetupTool.cs
+1b937a747000bc29e172e40619f5b6cc  ./_Game/Farm/Scripts/Tutorial/AnimalGuideController.cs
+f914672f5af8bcb667cbefc123f26a2c  ./_Game/Farm/Scripts/Tutorial/TutorialDialogueCard.cs
+185b44160ead1a5d5b8daba585132cc3  ./_Game/Farm/Scripts/Tutorial/TutorialManager.cs
+a0e94c4066d4fdec169c457c6eab4364  ./_Game/Farm/Scripts/Tutorial/TutorialPhantomDemoManager.cs
+7d8aca6c432e44eaf2f8cbd2ac3f93e4  ./_Game/Farm/Scripts/UI/HudNavHider.cs
+215e5db0a225c6f596a79e96d973e3d1  ./_Game/Farm/Scripts/UI/LevelUpPopupUI.cs
+ba4f6784fd9753bab84c152c7a0d3e3a  ./_Game/Farm/Scripts/UI/SeedPopupController.cs
+21c10e140fce28f02e9752e12daa7602  ./_Game/Farm/Scripts/UI/UnlockSlotUI.cs

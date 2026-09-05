@@ -78,9 +78,17 @@ public class PopupCaptureReporter : MonoBehaviour
     {
         Directory.CreateDirectory(OutFolder);
 
+        // Mỗi lần F10 lưu THÊM một bản có timestamp (capture_yyyyMMdd_HHmmss.*) để chụp nhiều bước
+        // liên tiếp không mất ảnh cũ; game_view.png / popup_report.txt vẫn là "bản mới nhất".
+        string stamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+
         // Báo cáo viết TRƯỚC (không cần chờ frame)
-        string report = BuildReport();
+        // [V6] Nối thêm mục TRẠNG THÁI TUTORIAL ở NGOÀI BuildReport(): hàm đó có đường
+        // `return` sớm khi không tìm thấy popup, nối bên trong sẽ mất mục này đúng lúc
+        // cần nhất (đứng im mà không có popup nào).
+        string report = BuildReport() + BuildTutorialStateSection();
         File.WriteAllText(Path.Combine(OutFolder, ReportName), report, Encoding.UTF8);
+        File.WriteAllText(Path.Combine(OutFolder, $"capture_{stamp}_report.txt"), report, Encoding.UTF8);
 
         // Ảnh: phải chờ hết frame mới có nội dung đã vẽ
         yield return new WaitForEndOfFrame();
@@ -98,8 +106,16 @@ public class PopupCaptureReporter : MonoBehaviour
             yield return null;
         }
 
+        string pngStamped = Path.Combine(OutFolder, $"capture_{stamp}.png");
+        if (File.Exists(png))
+        {
+            try { File.Copy(png, pngStamped, true); }
+            catch (System.Exception e) { Debug.LogWarning($"[PopupCapture] Không sao chép được bản timestamp: {e.Message}"); }
+        }
+
         Debug.Log($"[PopupCapture] Xong.\n" +
                   $"   • Ảnh    : {png} {(File.Exists(png) ? "✔" : "✘ (chưa ghi được)")}\n" +
+                  $"   • Bản lưu: {pngStamped} {(File.Exists(pngStamped) ? "✔" : "✘")}\n" +
                   $"   • Báo cáo: {Path.Combine(OutFolder, ReportName)} ✔");
 
 #if UNITY_EDITOR
@@ -326,6 +342,153 @@ public class PopupCaptureReporter : MonoBehaviour
             : "✘ Popup CHƯA hiện được. Xem các dòng có dấu ✘ ở trên.");
 
         return sb.ToString();
+    }
+
+    // ════════════════════════════════════════════════════════════════════
+    // [V6] TRẠNG THÁI TUTORIAL — để Lead chẩn đoán chỗ tutorial đứng im
+    // ════════════════════════════════════════════════════════════════════
+    //
+    // TOÀN BỘ mục này nằm trong MỘT try/catch: báo cáo popup cũ đã dùng nhiều vòng,
+    // không được phép hỏng vì một ref tutorial rơi. Hỏng thì in đúng một dòng lỗi.
+
+    /// <summary>Số bước tutorial ĐẦY ĐỦ theo thiết kế (L1+L2). Thiếu ⇒ cảnh báo.</summary>
+    private const int SO_BUOC_DAY_DU = 31;
+
+    private static string BuildTutorialStateSection()
+    {
+        var sb = new StringBuilder();
+        sb.AppendLine();
+        sb.AppendLine("── TRẠNG THÁI TUTORIAL ──");
+
+        try
+        {
+            var tm = TutorialManager.Instance;
+            if (tm == null)
+            {
+                sb.AppendLine("   ✘ Không có TutorialManager trong scene (Instance = null).");
+                string prefXongRoi = TenVaGiaTriPref("TUTORIAL_MAIN_DONE");
+                string prefBuocRoi = TenVaGiaTriPref("TUTORIAL_STEP_INDEX");
+                sb.AppendLine($"   PlayerPrefs      : {prefXongRoi} · {prefBuocRoi}");
+                return sb.ToString();
+            }
+
+            // ── Tổng quan bước ──
+            int tongBuoc = tm.TongSoBuoc;
+            string canhBaoBuoc = tongBuoc < SO_BUOC_DAY_DU
+                ? $" ⚠ (thiếu {SO_BUOC_DAY_DU - tongBuoc} bước so với thiết kế {SO_BUOC_DAY_DU})"
+                : " ✔";
+            sb.AppendLine($"   DangChayTutorial : {tm.DangChayTutorial}" +
+                          $"      _steps: {tongBuoc}/{SO_BUOC_DAY_DU}{canhBaoBuoc}");
+
+            int idx = tm.ChiSoBuocHienTai;
+            var step = tm.LayStepData(idx);
+            string waitCuaBuoc = step != null ? step.waitAction.ToString() : "(không có step data)";
+            sb.AppendLine($"   Bước hiện tại    : [{idx}] {tm.TenBuocHienTai}   waitAction={waitCuaBuoc}");
+
+            // ── Máy trạng thái + hàng đợi ──
+            string hangDoi = "(rỗng)";
+            var dsHangDoi = tm.HangDoiActionHienTai;
+            if (dsHangDoi != null && dsHangDoi.Length > 0)
+                hangDoi = "[" + string.Join(", ", dsHangDoi) + "]";
+            sb.AppendLine($"   Trạng thái       : {tm.TenTrangThai}   |  Đang chờ: {tm.TenActionDangCho}" +
+                          $"   |  Hàng đợi action: {hangDoi}");
+
+            // ── Cổng popup — nghi phạm số 1 khi tutorial đứng im ──
+            bool coPopup = TutorialGate.CoPopupDangMo();
+            sb.AppendLine($"   Cổng popup       : CoPopupDangMo={coPopup}" +
+                          (coPopup
+                            ? $" ({TutorialGate.TenPopupDangMo()})     ← NGHI PHẠM nếu đứng im"
+                            : "     ✔ không popup nào chặn"));
+
+            // ── Bàn tay: mong đợi ĐÚNG MỘT cái đang bật ──
+            bool tayTinh = tm.CoTayTinhDangBat;
+            bool tayKeo  = tm.CoTayKeoDangBat;
+            bool tayHD   = tm.CoTayHanhDongDangBat;
+            bool aoAnh   = tm.CoAoAnhDangChay;
+            sb.AppendLine($"   Tay đang bật     : {tm.TenTayTinh} {Dau(tayTinh)} | " +
+                          $"{tm.TenTayKeo} {Dau(tayKeo)} | " +
+                          $"{tm.TenTayHanhDong} {Dau(tayHD)} | " +
+                          $"Ảo ảnh: {(aoAnh ? "đang chạy" : "tắt")}");
+            int soTay = (tayTinh ? 1 : 0) + (tayKeo ? 1 : 0) + (tayHD ? 1 : 0) + (aoAnh ? 1 : 0);
+            sb.AppendLine($"   Chủ bàn tay      : {tm.TenChuTayHienTai}   (đang bật {soTay} tay)" +
+                          (soTay > 1 ? "  ✘✘ NHIỀU HƠN 1 BÀN TAY!" : "  ✔"));
+
+            // ── Hộp thoại NPC cũ: mong đợi đã bị xoá khỏi scene ──
+            sb.AppendLine($"   Hộp thoại NPC cũ : {(tm.CoHopThoaiNpcCu ? "VẪN CÒN trong scene ⚠ (nên xoá hẳn)" : "đã xoá ✔")}");
+
+            // ── Ô đất / chậu hoa ──
+            sb.AppendLine("   " + MoTaVungO("Ô lúa   ", TutorialStepTriggerBridge.LayODatLua()));
+            sb.AppendLine("   " + MoTaVungO("Chậu hoa", TutorialStepTriggerBridge.LayChauHoa()));
+
+            // ── Kho hạt ──
+            string hatLua = MoTaHat("seed_rice");
+            string hatHoa = MoTaHat("seed_huong_duong");
+            string hatNgo = MoTaHat("seed_ngo");
+            sb.AppendLine($"   Kho hạt          : {hatLua}  {hatHoa}  {hatNgo}");
+
+            // ── PlayerPrefs ──
+            sb.AppendLine($"   PlayerPrefs      : {TenVaGiaTriPref(TutorialManager.KhoaPrefDaXong)} · " +
+                          $"{TenVaGiaTriPref(TutorialManager.KhoaPrefBuoc)}");
+        }
+        catch (System.Exception e)
+        {
+            sb.AppendLine($"   ✘ Lỗi khi đọc trạng thái tutorial: {e.GetType().Name}: {e.Message}");
+        }
+
+        return sb.ToString();
+    }
+
+    private static string Dau(bool bat) => bat ? "✔" : "✘";
+
+    /// <summary>
+    /// Đếm ô theo trạng thái + liệt kê tên ô CÒN VIỆC (trống = chờ trồng, chín = chờ thu hoạch).
+    /// Danh sách vào đây ĐÃ được LayODatLua()/LayChauHoa() lọc bỏ ô khoá, nên "tổng" = số ô đã mở.
+    /// </summary>
+    private static string MoTaVungO(string nhan, System.Collections.Generic.List<PlotController> ds)
+    {
+        if (ds == null || ds.Count == 0)
+            return $"{nhan}         : (không tìm thấy ô nào — scene chưa sẵn sàng?)";
+
+        int trong = 0, dangLon = 0, chin = 0;
+        var conViec = new System.Collections.Generic.List<string>();
+
+        foreach (var o in ds)
+        {
+            if (o == null) continue;
+
+            if (o.IsReady)        { chin++;    conViec.Add(TenO(o)); }
+            else if (o.IsGrowing) { dangLon++; }
+            else                  { trong++;   conViec.Add(TenO(o)); }
+        }
+
+        string ten = conViec.Count == 0
+            ? "(không ô nào còn việc)"
+            : string.Join(", ", conViec.ToArray());
+
+        return $"{nhan}         : tổng {ds.Count} (ô đã mở) · trống {trong} · đang lớn {dangLon} · " +
+               $"chín {chin}        (ô còn việc: {ten})";
+    }
+
+    private static string TenO(PlotController o)
+    {
+        return o != null ? $"{o.gameObject.name}#{o.PlotId}" : "(null)";
+    }
+
+    /// <summary>"seed_rice=0 ⚠" — cảnh báo khi hết hạt (bước trồng sẽ bế tắc).</summary>
+    private static string MoTaHat(string seedId)
+    {
+        var kho = WarehouseManager.Instance;
+        if (kho == null) return $"{seedId}=? (không có WarehouseManager)";
+        int n = kho.GetAmount(seedId);
+        return $"{seedId}={n}{(n <= 0 ? " ⚠" : "")}";
+    }
+
+    private static string TenVaGiaTriPref(string khoa)
+    {
+        if (string.IsNullOrEmpty(khoa)) return "(khoá rỗng)";
+        return PlayerPrefs.HasKey(khoa)
+            ? $"{khoa}={PlayerPrefs.GetInt(khoa, 0)}"
+            : $"{khoa}=(chưa có)";
     }
 
     // ── Tiện ích ─────────────────────────────────────────────────────────

@@ -129,9 +129,28 @@ public static class TownshipHUDBuilderTool
         Debug.Log("[TownshipHUD] Đã cập nhật logic, nối dây thành công và GIỮ NGUYÊN 100% vị trí bạn đã kéo tay!");
     }
 
-    [MenuItem("Tools/Farm/HUD/9. [Tuỳ Chọn] Dựng Lại HUD Toàn Bộ Từ Đầu (Sẽ Reset Vị Trí)")]
+    [MenuItem("Tools/Farm/HUD/9. [Tuỳ Chọn] Dựng Lại HUD Toàn Bộ (GIỮ vị trí kéo tay)")]
     public static void BuildHUD()
     {
+        // 0. Hộp thoại xác nhận trước khi Dựng Lại HUD (tránh bấm nhầm làm mất vị trí kéo tay)
+        int userChoice = EditorUtility.DisplayDialogComplex(
+            "Xác Nhận Dựng Lại HUD",
+            "Lệnh này sẽ DỰNG LẠI toàn bộ HUD.\n\n" +
+            "Vị trí kéo tay (Avatar, EXP Bar, v.v.) sẽ được GIỮ (nếu bật preserve) hoặc RESET.\n\n" +
+            "Tiếp tục?",
+            "Tiếp tục (Giữ vị trí)",
+            "Huỷ",
+            "Reset Sạch (Bỏ vị trí cũ)");
+
+        if (userChoice == 1)
+        {
+            Debug.Log("[TownshipHUD] Đã huỷ thao tác Dựng Lại HUD theo yêu cầu của Sếp. Không có gì thay đổi.");
+            return;
+        }
+
+        bool preserveManualLayout = (userChoice != 2);
+        Dictionary<string, (Vector2 pos, Vector2 size, Vector2 aMin, Vector2 aMax, Vector2 pivot)> savedLayout = null;
+
         // 1. Tự động sinh/cập nhật sprites 9-slice sắc nét
         TownshipHUDSpriteGenerator.GenerateAllSprites();
 
@@ -174,6 +193,29 @@ public static class TownshipHUDBuilderTool
 
         Undo.RegisterFullObjectHierarchyUndo(canvasGO, "Build Township HUD");
 
+        // 2b. LƯU LẠI vị trí kéo tay hiện tại của mọi RectTransform con trong Canvas_HUD
+        //     (Avatar_Button, EXP_Bar_Container, v.v.) TRƯỚC KHI xoá cụm HUD cũ,
+        //     để có thể áp lại đúng vị trí Sếp đã kéo tay sau khi dựng lại xong.
+        if (preserveManualLayout)
+        {
+            savedLayout = new Dictionary<string, (Vector2 pos, Vector2 size, Vector2 aMin, Vector2 aMax, Vector2 pivot)>();
+            RectTransform[] existingRects = canvasGO.GetComponentsInChildren<RectTransform>(true);
+            for (int i = 0; i < existingRects.Length; i++)
+            {
+                RectTransform rtExisting = existingRects[i];
+                if (rtExisting == null || rtExisting.gameObject == canvasGO) continue;
+                if (!savedLayout.ContainsKey(rtExisting.name))
+                {
+                    savedLayout.Add(rtExisting.name, (rtExisting.anchoredPosition, rtExisting.sizeDelta, rtExisting.anchorMin, rtExisting.anchorMax, rtExisting.pivot));
+                }
+            }
+            Debug.Log($"[TownshipHUD] Đã LƯU vị trí kéo tay của {savedLayout.Count} object (Avatar_Button, EXP_Bar_Container, ...) trước khi Dựng Lại HUD.");
+        }
+        else
+        {
+            Debug.Log("[TownshipHUD] Reset Sạch: KHÔNG lưu vị trí cũ, HUD sẽ dùng toạ độ mặc định.");
+        }
+
         // 3. Xoá triệt để tất cả các cụm HUD cũ bị vẽ đỏ / lỗi thời trong Scene
         CleanupLegacyHUDObjects(canvasGO);
 
@@ -197,7 +239,7 @@ public static class TownshipHUDBuilderTool
         Sprite shopIconSpr = LoadSprite(DesignAssetsFolder, "iconmarrket.png") ?? LoadSprite(DesignAssetsFolder, "khung_HatGiong.png");
         Sprite warehouseIconSpr = LoadSprite(DesignAssetsFolder, "khungkho-removebg-preview.png") ?? LoadSprite(DesignAssetsFolder, "khungchuong.png");
         Sprite marketIconSpr = LoadSprite("Assets/Assetsgame/Nhà", "BangdonHang.png") ?? LoadSprite(DesignAssetsFolder, "anh4nguoidan.png") ?? LoadSprite(DesignAssetsFolder, "khung_HatGiong.png") ?? FindSprite("bangdon", "market", "order");
-        Sprite cookingIconSpr = LoadSprite(DesignAssetsFolder, "ngoinhacoooking.png") ?? LoadSprite("Assets/Anh", "ngoinhacoooking.png") ?? LoadSprite("Assets/Assetsgame/AssestCoooking", "nhahang.png") ?? FindSprite("cooking", "cook");
+        Sprite cookingIconSpr = LoadSprite("Assets/_Game/Farm/Art/HUD", "hud_icon_cooking.png") ?? LoadSprite(DesignAssetsFolder, "ngoinhacoooking.png") ?? LoadSprite("Assets/Anh", "ngoinhacoooking.png") ?? LoadSprite("Assets/Assetsgame/AssestCoooking", "nhahang.png") ?? FindSprite("cooking", "cook");
         Sprite missionIconSpr = LoadSprite(DesignAssetsFolder, "KhungLich.png") ?? LoadSprite(DesignAssetsFolder, "icon_lich.png") ?? LoadSprite(DesignAssetsFolder, "lichicon.png") ?? FindSprite("lich", "mission");
 
         // 5. CỤM 1: TOP-LEFT (Avatar độc lập bo góc + EXP Bar với Sao Cấp Độ - Scale x1.5-x2)
@@ -225,14 +267,14 @@ public static class TownshipHUDBuilderTool
         avatarPicImg.preserveAspect = true;
         avatarPicImg.raycastTarget = false;
 
-        // 5b. EXP Bar Capsule (Nằm ngang cạnh Avatar) - Size 390x56
-        RectTransform expBarContainer = CreateRect(topLeftRoot, "EXP_Bar_Container", new Vector2(390f, 56f), new Vector2(350f, -60f));
+        // 5b. EXP Bar Capsule (Nằm ngang cạnh Avatar, giãn cách thoáng) - Size 400x56
+        RectTransform expBarContainer = CreateRect(topLeftRoot, "EXP_Bar_Container", new Vector2(400f, 56f), new Vector2(385f, -60f));
         Image expBgImg = expBarContainer.gameObject.AddComponent<Image>();
         expBgImg.sprite = currencyBaseSpr;
         expBgImg.type = Image.Type.Sliced;
 
         // EXP Fill Bar
-        RectTransform expFillRect = CreateRect(expBarContainer, "EXP_Fill", new Vector2(376f, 44f), new Vector2(0f, 0f));
+        RectTransform expFillRect = CreateRect(expBarContainer, "EXP_Fill", new Vector2(386f, 44f), new Vector2(0f, 0f));
         Image expFillImg = expFillRect.gameObject.AddComponent<Image>();
         expFillImg.sprite = expFillSpr;
         expFillImg.type = Image.Type.Filled;
@@ -247,7 +289,7 @@ public static class TownshipHUDBuilderTool
         txtExp.colorGradient = new VertexGradient(Color.white, Color.white, new Color(0.9f, 0.95f, 1f), new Color(0.9f, 0.95f, 1f));
 
         // Level Star Badge (Nằm đè mép trái của EXP bar) - Size 90x90
-        RectTransform starRect = CreateRect(expBarContainer, "Level_Star_Badge", new Vector2(90f, 90f), new Vector2(-185f, 2f));
+        RectTransform starRect = CreateRect(expBarContainer, "Level_Star_Badge", new Vector2(90f, 90f), new Vector2(-190f, 2f));
         Image starImg = starRect.gameObject.AddComponent<Image>();
         starImg.sprite = levelStarSpr;
         starImg.preserveAspect = true;
@@ -480,6 +522,38 @@ public static class TownshipHUDBuilderTool
 
         EditorUtility.SetDirty(controller);
         EditorUtility.SetDirty(canvasGO);
+
+        // 10. ÁP LẠI vị trí kéo tay đã lưu ở bước 2b (nếu có) cho mọi object cùng tên
+        //     vừa được dựng lại — thay vì để nguyên toạ độ HARD-CODE mặc định.
+        //     Nếu object không có trong dictionary (scene sạch, lần đầu dựng) thì
+        //     GIỮ NGUYÊN toạ độ mặc định vừa dựng — tool vẫn chạy đúng trên scene mới.
+        if (preserveManualLayout && savedLayout != null && savedLayout.Count > 0)
+        {
+            RectTransform[] newRects = canvasGO.GetComponentsInChildren<RectTransform>(true);
+            int restoredCount = 0;
+            for (int i = 0; i < newRects.Length; i++)
+            {
+                RectTransform rtNew = newRects[i];
+                if (rtNew == null || rtNew.gameObject == canvasGO) continue;
+                if (savedLayout.TryGetValue(rtNew.name, out var saved))
+                {
+                    Vector2 oldPos = rtNew.anchoredPosition;
+                    Vector2 oldSize = rtNew.sizeDelta;
+                    rtNew.anchorMin = saved.aMin;
+                    rtNew.anchorMax = saved.aMax;
+                    rtNew.pivot = saved.pivot;
+                    rtNew.anchoredPosition = saved.pos;
+                    rtNew.sizeDelta = saved.size;
+                    restoredCount++;
+                    Debug.Log($"[TownshipHUD] Khôi phục vị trí kéo tay \"{rtNew.name}\": pos {oldPos} → {saved.pos}, size {oldSize} → {saved.size}.");
+                }
+            }
+            Debug.Log($"[TownshipHUD] Hoàn tất khôi phục {restoredCount}/{savedLayout.Count} object về đúng vị trí Sếp đã kéo tay trước đó.");
+        }
+        else
+        {
+            Debug.Log("[TownshipHUD] Không có vị trí kéo tay nào để khôi phục (Reset Sạch hoặc scene chưa từng có HUD) — dùng toạ độ mặc định.");
+        }
 
         Debug.Log("[TownshipHUD] Dựng hoàn tất HUD Township 100% Chuẩn Mockup 2 ảnh: Nút Nhiệm Vụ + Quick Mission Widget + 4 Tab Điều Hướng!");
     }

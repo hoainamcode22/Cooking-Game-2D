@@ -44,19 +44,19 @@ public static class PenAnimalSetupTool
 
         // 1. Setup Pen_01 (Bò thịt)
         ConfigurePenPrefab("Pen_01.prefab", cowBrownPrefab, "bonam1", "HappyHarvest_Cow_Brown",
-            new Vector3(0f, 0f, 0f), new Vector3(0.85f, 0.85f, 0.85f), 2, 1.2f, new Vector2(-1.15f, -0.6f), new Vector2(1.15f, 0.45f), cowSounds);
+            new Vector3(0f, 1.85f, 0f), new Vector3(0.85f, 0.85f, 0.85f), 2, 1.2f, new Vector2(-1.25f, 1.25f), new Vector2(1.25f, 2.50f), cowSounds);
 
         // 2. Setup Pen_02 (Heo)
         ConfigurePenPrefab("Pen_02.prefab", pigPrefab, "heonam1_0", "HappyHarvest_Pig",
-            new Vector3(0f, 0f, 0f), new Vector3(0.85f, 0.85f, 0.85f), 2, 1.2f, new Vector2(-1.15f, -0.6f), new Vector2(1.15f, 0.45f), pigSounds);
+            new Vector3(0f, 1.85f, 0f), new Vector3(0.85f, 0.85f, 0.85f), 2, 1.2f, new Vector2(-1.25f, 1.25f), new Vector2(1.25f, 2.50f), pigSounds);
 
         // 3. Setup Pen_03 (Gà)
         ConfigurePenPrefab("Pen_03.prefab", chickenPrefab, "ganam1_0", "HappyHarvest_Chicken",
-            new Vector3(0f, 0f, 0f), new Vector3(0.85f, 0.85f, 0.85f), 3, 1.1f, new Vector2(-1.15f, -0.6f), new Vector2(1.15f, 0.45f), chickenSounds);
+            new Vector3(0f, 1.85f, 0f), new Vector3(0.85f, 0.85f, 0.85f), 3, 1.1f, new Vector2(-1.25f, 1.25f), new Vector2(1.25f, 2.50f), chickenSounds);
 
         // 4. Setup Pen_04 (Bò sữa)
         ConfigurePenPrefab("Pen_04.prefab", cowDairyPrefab, "ganam1_0", "HappyHarvest_Cow",
-            new Vector3(0f, 0f, 0f), new Vector3(0.85f, 0.85f, 0.85f), 2, 1.2f, new Vector2(-1.15f, -0.6f), new Vector2(1.15f, 0.45f), cowSounds);
+            new Vector3(0f, 1.85f, 0f), new Vector3(0.85f, 0.85f, 0.85f), 2, 1.2f, new Vector2(-1.25f, 1.25f), new Vector2(1.25f, 2.50f), cowSounds);
 
         AssetDatabase.SaveAssets();
 

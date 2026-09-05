@@ -26,19 +26,19 @@ MonoBehaviour:
     amount: 2
   - itemId: sugarcane
     displayName: "M\xEDa"
-    icon: {fileID: 0}
+    icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
     amount: 4
   - itemId: lemon
     displayName: Chanh
-    icon: {fileID: 0}
+    icon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}
     amount: 3
   - itemId: milk
     displayName: "S\u1EEFa"
-    icon: {fileID: 0}
+    icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
     amount: 1
   - itemId: kinh
     displayName: "K\xEDnh"
-    icon: {fileID: 0}
+    icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 1
   unlockEntries:
   - label: "M\xE1y \xC9p M\xEDa \u0111\xE3 m\u1EDF b\xE1n trong Shop"

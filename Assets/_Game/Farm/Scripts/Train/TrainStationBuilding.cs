@@ -128,11 +128,21 @@ public class TrainStationBuilding : MonoBehaviour
     private Canvas FindPopupCanvas()
     {
         var canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        // ⚠️ [VÒNG 13] TRƯỚC ĐÂY: lấy BỪA canvas ĐẦU TIÊN có chữ "Popup" hoặc "UI" trong tên.
+        // FindObjectsByType KHÔNG bảo đảm thứ tự ⇒ thường vớ phải "Canvas_StallPopup" (quầy hàng)
+        // thay vì "Canvas_Popup". Kết quả: 3 popup tàu bị Instantiate vào canvas sai, không ai tắt,
+        // rồi bị auto-save ghi luôn vào scene ⇒ Sếp thấy 3 popup đè nhau + 2 nút X thừa.
+        // Nay: tìm ĐÚNG TÊN trước, hết cách mới dùng đoán mò.
         foreach (var c in canvases)
-        {
-            if (c.name.Contains("Popup") || c.name.Contains("UI"))
-                return c;
-        }
+            if (c.name == "Canvas_Popup") return c;
+
+        foreach (var c in canvases)
+            if (c.name.Contains("Popup") && !c.name.Contains("Stall")) return c;
+
+        foreach (var c in canvases)
+            if (c.name.Contains("Popup") || c.name.Contains("UI")) return c;
+
         return canvases.Length > 0 ? canvases[0] : null;
     }
 
@@ -150,6 +160,7 @@ public class TrainStationBuilding : MonoBehaviour
 
         if (_col == null || !_col.OverlapPoint(worldPos)) return;
 
+        if (FarmInputLock.BlockWorldInteraction) return;
         // Không mở khi Edit Mode đang bật
         if (EditModeManager.IsEditMode) return;
 

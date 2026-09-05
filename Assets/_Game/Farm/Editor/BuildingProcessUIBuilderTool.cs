@@ -138,15 +138,17 @@ public static class BuildingProcessUIBuilderTool
         Button btnSpeedUp = btnRect.gameObject.AddComponent<Button>();
 
         // 7a. Icon Kim Cương Đồng Bộ Trong Game
-        RectTransform diaIconRect = CreateRect(btnRect, "Icon_Diamond", new Vector2(32f, 32f), new Vector2(-16f, 0f));
+        // WP-C3: dời icon sang trái (x=-26) để chừa chỗ cho chữ "MIỄN PHÍ" bên phải
+        RectTransform diaIconRect = CreateRect(btnRect, "Icon_Diamond", new Vector2(32f, 32f), new Vector2(-26f, 0f));
         Image diaIconImg = diaIconRect.gameObject.AddComponent<Image>();
         diaIconImg.sprite = diamondIconSpr;
         diaIconImg.preserveAspect = true;
         diaIconImg.raycastTarget = false;
 
         // 7b. Text Số Lượng Kim Cương Cần Dùng ("1" / "2")
-        RectTransform costRect = CreateRect(btnRect, "Txt_GemCost", new Vector2(36f, 30f), new Vector2(18f, 0f));
-        TMP_Text txtGemCost = CreateText(costRect, "1", 22f, Color.white, fontVo, TextAlignmentOptions.Center, true);
+        // WP-C3: rect 84x56 tại x=+6, không xuống dòng, auto-size 12–22, Ellipsis → "MIỄN PHÍ" vừa nút
+        RectTransform costRect = CreateRect(btnRect, "Txt_GemCost", new Vector2(84f, 56f), new Vector2(6f, 0f));
+        TMP_Text txtGemCost = CreateText(costRect, "1", 22f, Color.white, fontVo, TextAlignmentOptions.Center, true, fitSingleLine: true, autoSizeMin: 12f, autoSizeMax: 22f);
         var costOutline = costRect.gameObject.AddComponent<Outline>();
         costOutline.effectColor = new Color(0.11f, 0.36f, 0.53f, 1f);
         costOutline.effectDistance = new Vector2(1f, -1f);
@@ -233,15 +235,17 @@ public static class BuildingProcessUIBuilderTool
         Button btnSpeedUp = btnRect.gameObject.AddComponent<Button>();
 
         // 7a. Icon Kim Cương Đồng Bộ Trong Game
-        RectTransform diaIconRect = CreateRect(btnRect, "Icon_Diamond", new Vector2(32f, 32f), new Vector2(-16f, 0f));
+        // WP-C3: dời icon sang trái (x=-26) để chừa chỗ cho chữ "MIỄN PHÍ" bên phải
+        RectTransform diaIconRect = CreateRect(btnRect, "Icon_Diamond", new Vector2(32f, 32f), new Vector2(-26f, 0f));
         Image diaIconImg = diaIconRect.gameObject.AddComponent<Image>();
         diaIconImg.sprite = diamondIconSpr;
         diaIconImg.preserveAspect = true;
         diaIconImg.raycastTarget = false;
 
         // 7b. Text Số Lượng Kim Cương Cần Dùng
-        RectTransform costRect = CreateRect(btnRect, "Txt_GemCost", new Vector2(36f, 30f), new Vector2(18f, 0f));
-        TMP_Text txtGemCost = CreateText(costRect, "1", 22f, Color.white, fontVo, TextAlignmentOptions.Center, true);
+        // WP-C3: rect 84x56 tại x=+6, không xuống dòng, auto-size 12–22, Ellipsis → "MIỄN PHÍ" vừa nút
+        RectTransform costRect = CreateRect(btnRect, "Txt_GemCost", new Vector2(84f, 56f), new Vector2(6f, 0f));
+        TMP_Text txtGemCost = CreateText(costRect, "1", 22f, Color.white, fontVo, TextAlignmentOptions.Center, true, fitSingleLine: true, autoSizeMin: 12f, autoSizeMax: 22f);
         var costOutline = costRect.gameObject.AddComponent<Outline>();
         costOutline.effectColor = new Color(0.11f, 0.36f, 0.53f, 1f);
         costOutline.effectDistance = new Vector2(1f, -1f);
@@ -543,7 +547,7 @@ public static class BuildingProcessUIBuilderTool
                 {
                     RectTransform iconRect = iconGemTr.GetComponent<RectTransform>();
                     iconRect.sizeDelta = new Vector2(32f, 32f);
-                    iconRect.anchoredPosition = new Vector2(-16f, 0f);
+                    iconRect.anchoredPosition = new Vector2(-26f, 0f); // WP-C3: đồng bộ với panel cây trồng/tàu
 
                     Image iconImg = iconGemTr.GetComponent<Image>();
                     if (iconImg != null)
@@ -558,9 +562,10 @@ public static class BuildingProcessUIBuilderTool
                 Transform costTr = gemBtnTr.Find("Txt_Cost") ?? gemBtnTr.Find("Txt_GemCost");
                 if (costTr != null)
                 {
+                    // WP-C3: rect 84x56 tại x=+6 + NoWrap/auto-size/Ellipsis để "MIỄN PHÍ" không tràn (đồng bộ panel cây/tàu)
                     RectTransform costRect = costTr.GetComponent<RectTransform>();
-                    costRect.sizeDelta = new Vector2(36f, 30f);
-                    costRect.anchoredPosition = new Vector2(18f, 0f);
+                    costRect.sizeDelta = new Vector2(84f, 56f);
+                    costRect.anchoredPosition = new Vector2(6f, 0f);
 
                     TMP_Text tmpCost = costTr.GetComponent<TMP_Text>();
                     if (tmpCost != null)
@@ -569,6 +574,11 @@ public static class BuildingProcessUIBuilderTool
                         tmpCost.fontSize = 22f;
                         tmpCost.fontStyle = FontStyles.Bold;
                         tmpCost.alignment = TextAlignmentOptions.Center;
+                        tmpCost.textWrappingMode = TextWrappingModes.NoWrap;
+                        tmpCost.overflowMode = TextOverflowModes.Ellipsis;
+                        tmpCost.enableAutoSizing = true;
+                        tmpCost.fontSizeMin = 12f;
+                        tmpCost.fontSizeMax = 22f;
                     }
 
                     Outline costOutline = costTr.GetComponent<Outline>();
@@ -599,7 +609,13 @@ public static class BuildingProcessUIBuilderTool
         return rt;
     }
 
-    private static TMP_Text CreateText(RectTransform parent, string text, float fontSize, Color color, TMP_FontAsset font, TextAlignmentOptions alignment, bool bold)
+    /// <summary>
+    /// Tạo TextMeshProUGUI trên rect cho sẵn. Tham số tuỳ chọn <paramref name="fitSingleLine"/> (WP-C3):
+    /// bật NoWrap + auto-size [autoSizeMin..autoSizeMax] + Ellipsis để chữ dài ("MIỄN PHÍ") không tràn rect.
+    /// Các caller cũ không truyền tham số này → hành vi giữ nguyên.
+    /// </summary>
+    private static TMP_Text CreateText(RectTransform parent, string text, float fontSize, Color color, TMP_FontAsset font, TextAlignmentOptions alignment, bool bold,
+        bool fitSingleLine = false, float autoSizeMin = 12f, float autoSizeMax = 22f)
     {
         TextMeshProUGUI tmp = parent.gameObject.AddComponent<TextMeshProUGUI>();
         tmp.text = text;
@@ -609,6 +625,14 @@ public static class BuildingProcessUIBuilderTool
         tmp.alignment = alignment;
         if (bold) tmp.fontStyle = FontStyles.Bold;
         tmp.raycastTarget = false;
+        if (fitSingleLine)
+        {
+            tmp.textWrappingMode = TextWrappingModes.NoWrap;
+            tmp.overflowMode = TextOverflowModes.Ellipsis;
+            tmp.enableAutoSizing = true;
+            tmp.fontSizeMin = autoSizeMin;
+            tmp.fontSizeMax = autoSizeMax;
+        }
         return tmp;
     }
 

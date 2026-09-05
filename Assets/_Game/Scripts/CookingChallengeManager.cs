@@ -144,7 +144,9 @@ public class CookingChallengeManager : MonoBehaviour
         isCooking = true;
         OnCookStarted?.Invoke(currentDishData);
         if (AudioManager.Instance != null)
-            AudioManager.Instance.PlayCookStart();
+        {
+            AudioManager.Instance.PlayCookingSizzle();
+        }
 
 
         yield return new WaitForSeconds(cookSubmitDelay);

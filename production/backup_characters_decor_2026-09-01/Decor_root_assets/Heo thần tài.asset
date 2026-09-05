@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: "Heo th\u1EA7n t\xE0i"
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 8
+  itemName: "Heo Th\u1EA7n T\xE0i"
+  itemIcon: {fileID: -6028312130155374277, guid: 61c8ab6a63e6b9e4ea49adb28c97950c, type: 3}
+  goldPrice: 0
+  diamondPrice: 300
+  prefabToBuild: {fileID: 4221271425181086335, guid: 052b02f48c2bbc9468aafbd54c8965d0, type: 3}
+  unlockLevel: 1
+  gridSize: {x: 3, y: 3}
+  buildTimeSeconds: 0
+  rushGemCost: 0

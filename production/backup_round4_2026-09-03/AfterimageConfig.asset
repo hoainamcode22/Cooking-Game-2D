@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5ea9b7c0781e9954e9eebc3f93abf32f, type: 3}
+  m_Name: AfterimageConfig
+  m_EditorClassIdentifier: Assembly-CSharp::AfterimageConfig
+  enabled: 1
+  minSpeed: 60
+  spawnInterval: 0.07
+  ghostLife: 0.35
+  startAlpha: 0.45
+  tint: {r: 0.75, g: 0.85, b: 1, a: 1}
+  multiplyTint: 1
+  shrink: 1
+  endScaleMul: 0.92
+  poolCap: 64
+  sortingOrderOffset: -1
+  targetEntries:
+  - typeName: FlowerGirlShipper
+    includeChildRenderers: 0
+    useTintOverride: 0
+    tintOverride: {r: 1, g: 1, b: 1, a: 1}
+  - typeName: BuilderWorker
+    includeChildRenderers: 0
+    useTintOverride: 0
+    tintOverride: {r: 1, g: 1, b: 1, a: 1}
+  - typeName: TouristAgent
+    includeChildRenderers: 0
+    useTintOverride: 0
+    tintOverride: {r: 1, g: 1, b: 1, a: 1}
+  - typeName: DeliveryCharacterMover
+    includeChildRenderers: 0
+    useTintOverride: 0
+    tintOverride: {r: 1, g: 1, b: 1, a: 1}
+  - typeName: TrainPathFollower
+    includeChildRenderers: 1
+    useTintOverride: 1
+    tintOverride: {r: 0.88, g: 0.94, b: 1, a: 1}
+  - typeName: TouristBoatController
+    includeChildRenderers: 1
+    useTintOverride: 1
+    tintOverride: {r: 0.88, g: 0.94, b: 1, a: 1}
+  - typeName: FerryController
+    includeChildRenderers: 1
+    useTintOverride: 1
+    tintOverride: {r: 0.88, g: 0.94, b: 1, a: 1}
+  targetTypeNames: []
+  buildingPulse: 1
+  buildingTypeNames:
+  - DecorGrowthController
+  - HouseGrowthController
+  pulseScaleMul: 1.12
+  pulseLife: 0.45
+  pulseAlpha: 0.5
+  rescanInterval: 2

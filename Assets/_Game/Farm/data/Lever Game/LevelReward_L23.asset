@@ -26,19 +26,19 @@ MonoBehaviour:
     amount: 3
   - itemId: ngo
     displayName: "Ng\xF4"
-    icon: {fileID: 0}
+    icon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
     amount: 5
   - itemId: sugarcane
     displayName: "M\xEDa"
-    icon: {fileID: 0}
+    icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
     amount: 4
   - itemId: beef
     displayName: "Th\u1ECBt B\xF2"
-    icon: {fileID: 0}
+    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
     amount: 2
   - itemId: kinh
     displayName: "K\xEDnh"
-    icon: {fileID: 0}
+    icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 2
   unlockEntries:
   - label: "B\u1EBFn T\xE0u Du L\u1ECBch \u0111\xE3 m\u1EDF"

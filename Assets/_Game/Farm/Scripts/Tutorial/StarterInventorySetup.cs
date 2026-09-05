@@ -7,6 +7,11 @@ public class StarterInventorySetup : MonoBehaviour
 {
     private const string PREF_KEY = "STARTER_ITEMS_GIVEN";
 
+    /// <summary>Số hạt lúa khởi đầu mặc định — bằng số ô đất trong scene (8).</summary>
+    public const int SO_HAT_LUA_KHOI_DAU = 8;
+    /// <summary>Số hạt hướng dương khởi đầu mặc định — bằng số chậu hoa trong scene (6).</summary>
+    public const int SO_HAT_HUONG_DUONG_KHOI_DAU = 6;
+
     [Serializable]
     public class StarterItemEntry
     {
@@ -52,64 +57,87 @@ public class StarterInventorySetup : MonoBehaviour
 
     private void GiveStarterItems()
     {
-        if (WarehouseManager.Instance == null)
+        if (WarehouseManager.Instance == null && FarmInventoryManager.Instance == null)
         {
-            Debug.LogWarning("[StarterInventory] WarehouseManager.Instance chua san sang. Se thu lai sau.");
-            Invoke(nameof(GiveStarterItems), 0.5f);
+            Debug.LogWarning("[StarterInventory] WarehouseManager / FarmInventoryManager chưa sẵn sàng. Sẽ thử lại sau.");
+            Invoke(nameof(GiveStarterItems), 0.2f);
             return;
         }
 
-        // ══════════════════════════════════════════════════════════════════════
-        //  VÌ SAO KHÔNG CÒN CHẶN THEO CẤP ĐỘ
-        // ══════════════════════════════════════════════════════════════════════
-        //  Điều kiện cũ ở đây là `if (CurrentLevel > 1) return;`. Nó gây treo game:
-        //  hồi đó `WarehouseManager` KHÔNG lưu gì cả (kho trống trơn mỗi lần vào scene)
-        //  trong khi CẤP ĐỘ thì có lưu, và TutorialManager chạy lại từ bước 0 mỗi lần Play.
-        //
-        //  Ba điều đó cộng lại thành bẫy chết: thu hoạch 8 ô lúa → lên cấp 2 → thoát
-        //  → vào lại thì cấp = 2, kho = 0 hạt, tutorial lại đòi "trồng hết các ô", mà
-        //  điều kiện trên return sớm ⇒ KHÔNG cấp hạt ⇒ không có gì để trồng ⇒ các bước
-        //  WaitForAllPlots* treo vĩnh viễn (chúng không có timeout). Đây đúng là hiện
-        //  tượng "thu hoạch xong nó đứng im".
-        //
-        //  Kho GIỜ ĐÃ ĐƯỢC LƯU (WarehouseManager.Save/Load), nên mốc đúng để chặn là
-        //  "đã có save kho hay chưa", KHÔNG phải cấp độ:
-        //
-        //    • Chưa có save kho  → lần chơi ĐẦU thật sự → cấp hạt khởi đầu.
-        //    • Đã có save kho    → hạt đã được lưu qua các phiên → KHÔNG cấp thêm.
-        //      Nếu vẫn bù mỗi lần Play thì mỗi phiên lại rót thêm cho đủ 10 hạt ⇒
-        //      hạt vô hạn, phá cân bằng.
-        //
-        //  Trường hợp chơi lại tutorial ở cấp cao mà đã dùng hết hạt thì KHÔNG bù ở đây;
-        //  lưới an toàn là watchdog trong TutorialManager (WatchdogHetHat) — nó nhả bước
-        //  sau 6 giây nếu kho hết sạch hạt dùng được, nên không treo nữa.
-        if (WarehouseManager.DaCoSaveKho)
+        // Kiểm tra xem kho có lúa (hạt cốt lõi để chạy tutorial) chưa
+        int riceAmount = 0;
+        if (FarmInventoryManager.Instance != null) riceAmount = FarmInventoryManager.Instance.GetAmount("seed_rice");
+        else if (WarehouseManager.Instance != null) riceAmount = WarehouseManager.Instance.GetAmount("seed_rice");
+
+        bool daCapStarter = PlayerPrefs.GetInt(PREF_KEY, 0) == 1;
+        bool dangTutorial = TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial;
+        // Nếu đã cấp rồi VÀ trong kho vẫn còn đủ lúa thì không cấp thêm
+        if (daCapStarter && riceAmount >= SO_HAT_LUA_KHOI_DAU && !dangTutorial)
         {
-            Debug.Log("[StarterInventory] Kho đã có save → không cấp lại hạt khởi đầu.");
+            Debug.Log("[StarterInventory] Kho đã có đủ hạt giống → không cấp lại.");
             return;
         }
+
+        // Danh sách quà khởi đầu tiêu chuẩn
+        var defaultStarters = new List<StarterItemEntry>
+        {
+            // WP-A2 (2026-09-05): khớp số ô thật trong scene — 8 ô đất, 6 chậu hoa.
+            // Cấp đúng số thì tutorial "gieo hết" / "thu hết" không dư hạt gây hiểu nhầm.
+            new StarterItemEntry { itemId = "seed_rice", displayName = "Hạt Lúa", amount = SO_HAT_LUA_KHOI_DAU },
+            new StarterItemEntry { itemId = "seed_huong_duong", displayName = "Hạt Hoa Hướng Dương", amount = SO_HAT_HUONG_DUONG_KHOI_DAU },
+            new StarterItemEntry { itemId = "seed_bapcai", displayName = "Hạt Bắp Cải", amount = 5 },
+            new StarterItemEntry { itemId = "seed_cachua", displayName = "Hạt Cà Chua", amount = 5 },
+            new StarterItemEntry { itemId = "seed_carot", displayName = "Hạt Cà Rốt", amount = 5 },
+            new StarterItemEntry { itemId = "ca_rot", displayName = "Hạt Cà Rốt", amount = 5 },
+            new StarterItemEntry { itemId = "seed_ngo", displayName = "Hạt Ngô", amount = 5 }
+        };
+
+        var itemsToGive = (starterItems != null && starterItems.Count > 0) ? starterItems : defaultStarters;
 
         int given = 0;
-        foreach (var entry in starterItems)
+        foreach (var entry in itemsToGive)
         {
             if (string.IsNullOrEmpty(entry.itemId)) continue;
-            int current = WarehouseManager.Instance.GetAmount(entry.itemId);
-            int missing = Mathf.Max(0, entry.amount - current);
+            
+            // Đảm bảo số hạt lúa luôn đúng 8 hạt (khớp 8 ô đất)
+            int targetAmount = entry.amount;
+            if (entry.itemId == "seed_rice" && targetAmount > SO_HAT_LUA_KHOI_DAU)
+                targetAmount = SO_HAT_LUA_KHOI_DAU;
+
+            int current = 0;
+            if (FarmInventoryManager.Instance != null) current = FarmInventoryManager.Instance.GetAmount(entry.itemId);
+            else if (WarehouseManager.Instance != null) current = WarehouseManager.Instance.GetAmount(entry.itemId);
+
+            int missing = Mathf.Max(0, targetAmount - current);
             if (missing <= 0) continue;
 
-            WarehouseManager.Instance.AddItem(entry.itemId, entry.displayName, entry.icon, missing);
+            if (FarmInventoryManager.Instance != null)
+            {
+                FarmInventoryManager.Instance.AddItem(entry.itemId, missing);
+            }
+            else if (WarehouseManager.Instance != null)
+            {
+                WarehouseManager.Instance.AddItem(entry.itemId, entry.displayName, entry.icon, missing);
+            }
             Debug.Log($"[StarterInventory] +{missing}x {entry.displayName} ({entry.itemId})");
             given++;
         }
 
-        // Cắm mốc KỂ CẢ khi given == 0. Key save kho hiện chỉ sinh ra như tác dụng phụ
-        // của AddItem; không cấp món nào thì key không tồn tại và DaCoSaveKho mãi false
-        // ⇒ vòng này lặp lại mỗi phiên.
-        WarehouseManager.Instance.GhiSaveNgay();
+        // Cập nhật lại toàn bộ khay hạt giống dưới đáy màn hình
+        var allSeedDrags = UnityEngine.Object.FindObjectsByType<SeedDragItem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < allSeedDrags.Length; i++)
+        {
+            allSeedDrags[i].RefreshStockDisplay();
+        }
+
+        if (WarehouseManager.Instance != null)
+        {
+            WarehouseManager.Instance.GhiSaveNgay();
+        }
 
         PlayerPrefs.SetInt(PREF_KEY, 1);
-        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
-        Debug.Log($"[StarterInventory] Da cap {given} loai vat pham starter. Flag da set.");
+        LuuGopPrefs.Hen();
+        Debug.Log($"[StarterInventory] Đã cấp {given} loại hạt giống khởi đầu. Flag đã set.");
     }
 
 #if UNITY_EDITOR

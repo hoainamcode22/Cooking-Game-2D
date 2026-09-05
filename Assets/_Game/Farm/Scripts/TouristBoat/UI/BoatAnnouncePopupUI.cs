@@ -1,3 +1,4 @@
+#pragma warning disable CS0414
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -36,6 +37,15 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class BoatAnnouncePopupUI : MonoBehaviour
 {
+    /// <summary>
+    /// Popup báo tàu đang hiện hay không — cờ static cho <see cref="PopupManager"/> và
+    /// <c>TutorialGate</c> đọc. Popup này tự bật theo đồng hồ, không có ô kéo-thả trong
+    /// Inspector, nên thiếu cờ này thì <c>IsAnyPopupOpen()</c> không thấy nó.
+    /// Bật ở <c>HienPopupRoutine</c> (lúc popupRoot.SetActive(true)), tắt ở
+    /// <c>TraTrangThaiVePhongThu</c> — đường đóng DUY NHẤT của popup.
+    /// </summary>
+    public static bool IsActive { get; private set; }
+
     // ─── Tham chiếu UI (tool wire — dựng tay thì kéo vào Inspector) ─────────
 
     [Header("Tham chiếu UI (tool tự wire)")]
@@ -75,8 +85,8 @@ public class BoatAnnouncePopupUI : MonoBehaviour
     [Tooltip("Tốc độ typewriter (giây/ký tự). 0.02 = đúng nhịp typing của TutorialManager.")]
     [SerializeField] private float giaySoiChu = 0.02f;
 
-    [Tooltip("Alpha đích của dim nền (0.6 = đen 60% theo GDD §3.5).")]
-    [SerializeField] private float dimAlpha = 0.6f;
+    [Tooltip("Alpha đích của dim nền (0 = tắt dim theo dạng toast notification).")]
+    [SerializeField] private float dimAlpha = 0f;
 
     [Tooltip("Tên scene bếp (cùng default với FarmUIManager.cookingSceneName) — đang ở bếp thì hoãn popup tới khi về farm (GDD §5 edge 6).")]
     [SerializeField] private string cookingSceneName = "SampleScene";
@@ -115,6 +125,10 @@ public class BoatAnnouncePopupUI : MonoBehaviour
 
     private void Awake()
     {
+        // Enter Play Mode không reload domain thì biến static giữ nguyên giá trị cũ —
+        // trả về false ngay để không chặn tutorial vĩnh viễn.
+        IsActive = false;
+
         // Wire nút runtime (không dựa persistent listener trong scene — tool chỉ tạo object)
         if (confirmButton != null)
             confirmButton.onClick.AddListener(OnClickDaRo);
@@ -212,11 +226,8 @@ public class BoatAnnouncePopupUI : MonoBehaviour
     /// </summary>
     private void TraTrangThaiVePhongThu()
     {
-        if (_dangHien)
-        {
-            FarmInputLock.RegisterPopupClose();
-            _dangHien = false;
-        }
+        _dangHien = false;
+        IsActive  = false;
 
         if (popupRoot != null && popupRoot.activeSelf) popupRoot.SetActive(false);
         if (cardRect != null)     cardRect.localScale = Vector3.one;
@@ -382,40 +393,67 @@ public class BoatAnnouncePopupUI : MonoBehaviour
     {
         _dangHien = true;
 
-        // Đánh dấu đã báo NGAY LÚC HIỆN (không đợi bấm nút) — lỡ crash/thoát giữa
-        // chừng cũng không báo lại chuyến này, đúng luật "mỗi chuyến 1 lần".
+        // Đánh dấu đã báo NGAY LÚC HIỆN
         GhiDaBao(dockIndex, arrivalUtc);
 
-        // Số hiệu tàu = số bến (GDD §3.1) — đọc qua API contract của Dev A
         int soHieu = _manager != null ? _manager.BoatNumber(dockIndex) : dockIndex + 1;
 
         if (titleText != null)
-            titleText.text = $"Tàu số {soHieu:00} sắp cập bến!";
+        {
+            titleText.text = $"⚓ Tàu số {soHieu:00} sắp cập bến!";
+            titleText.color = new Color(1f, 0.95f, 0.82f); // #FFF4D0 Vàng kem sáng
+            titleText.fontSize = 24f;
+        }
         if (bodyText != null)
         {
-            // Câu này đọc tự nhiên với mọi mức gap Dev A đang dùng (1 bến 5' · 2 bến 7'
-            // · 3 bến 10') vì số phút là số thật lấy từ lịch, không phải chuỗi cứng.
-            bodyText.text = $"Tàu số {soHieu:00} sẽ cập bến sau {phut} phút! " +
-                            "Chuẩn bị nguyên liệu, nấu món ngon tiếp đãi khách nhé!";
-
-            // Đặt mốc NGAY ĐÂY (trước khi popupRoot bật) để không kịp lóe cả câu
-            // ở frame đầu. Tắt typewriter → hiện đủ chữ luôn.
-            bodyText.maxVisibleCharacters = hieuUngChuTypewriter ? 0 : KyTuHienHet;
+            bodyText.text = $"Sẽ cập bến sau {phut} phút. Hãy chuẩn bị món ăn đón khách nhé!";
+            bodyText.color = new Color(1f, 0.98f, 0.92f); // Kem sáng rõ ràng
+            bodyText.fontSize = 18f;
+            bodyText.maxVisibleCharacters = KyTuHienHet;
         }
 
-        FarmInputLock.RegisterPopupOpen();
-        FarmInputLock.SetPopupRaycastBlock(popupRoot, true);
+        if (confirmButton != null)
+        {
+            confirmButton.gameObject.SetActive(true);
+        }
+
+        // TẮT dim đen hoàn toàn để không chặn màn hình người chơi
+        if (dimImage != null)
+        {
+            dimImage.raycastTarget = false;
+            dimImage.gameObject.SetActive(false);
+        }
+
+        // Thiết lập anchor góc trên bên phải (Top-Right Toast)
+        if (cardRect != null)
+        {
+            cardRect.anchorMin = cardRect.anchorMax = new Vector2(1f, 1f);
+            cardRect.pivot = new Vector2(1f, 1f);
+            cardRect.sizeDelta = new Vector2(500f, 140f);
+            cardRect.anchoredPosition = new Vector2(400f, -135f); // Bắt đầu ngoài mép phải
+        }
+
         popupRoot.SetActive(true);
+        IsActive = true;
 
         if (_animRoutine != null) StopCoroutine(_animRoutine);
         _animRoutine = StartCoroutine(MoAnimRoutine());
 
-        // Đợi người chơi bấm "Đã rõ" (OnClickDaRo hạ cờ _dangHien)
-        while (_dangHien)
+        // Tự động đóng sau 4.5 giây hoặc khi bấm đóng
+        float timer = 4.5f;
+        while (_dangHien && timer > 0f)
+        {
+            timer -= Time.unscaledDeltaTime;
             yield return null;
+        }
+
+        if (_dangHien)
+        {
+            OnClickDaRo();
+        }
     }
 
-    /// <summary>Nút "Đã rõ" — đóng popup với anim thu nhỏ + fade ngắn.</summary>
+    /// <summary>Nút "Đã rõ" / Click đóng — trượt nhẹ ra ngoài mép màn hình.</summary>
     private void OnClickDaRo()
     {
         if (!_dangHien || popupRoot == null || !popupRoot.activeSelf) return;
@@ -424,49 +462,61 @@ public class BoatAnnouncePopupUI : MonoBehaviour
         _animRoutine = StartCoroutine(DongAnimRoutine());
     }
 
-    /// <summary>Mở: dim fade 0→dimAlpha + card 0.9→1 ease-out-back + chữ fade-in.</summary>
+    /// <summary>Mở: Trượt êm từ mép phải vào góc trên (-30f, -135f) với ease-out-back.</summary>
     private IEnumerator MoAnimRoutine()
     {
-        if (dimImage != null)     SetAlpha(dimImage, 0f);
         if (contentGroup != null) contentGroup.alpha = 0f;
-        if (cardRect != null)     cardRect.localScale = Vector3.one * 0.9f;
+
+        Vector2 startPos = new Vector2(420f, -135f);
+        Vector2 targetPos = new Vector2(-30f, -135f);
 
         float t = 0f;
-        float tong = Mathf.Max(popSeconds, textFadeSeconds) + 0.05f;
-        while (t < tong)
+        float dur = 0.35f;
+        while (t < dur)
         {
             t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / dur);
+            float k = EaseOutBack(p);
 
             if (cardRect != null)
-            {
-                float p = Mathf.Clamp01(t / Mathf.Max(0.01f, popSeconds));
-                cardRect.localScale = Vector3.one * Mathf.LerpUnclamped(0.9f, 1f, EaseOutBack(p));
-            }
-            if (dimImage != null)
-            {
-                float p = Mathf.Clamp01(t / Mathf.Max(0.01f, popSeconds * 0.8f));
-                SetAlpha(dimImage, dimAlpha * p);
-            }
+                cardRect.anchoredPosition = Vector2.LerpUnclamped(startPos, targetPos, k);
+
             if (contentGroup != null)
-            {
-                // Chữ vào trễ nửa nhịp pop cho có tầng lớp
-                float p = Mathf.Clamp01((t - popSeconds * 0.4f) / Mathf.Max(0.01f, textFadeSeconds));
-                contentGroup.alpha = p;
-            }
+                contentGroup.alpha = Mathf.Clamp01(p * 1.5f);
+
             yield return null;
         }
 
-        if (cardRect != null)     cardRect.localScale = Vector3.one;
-        if (dimImage != null)     SetAlpha(dimImage, dimAlpha);
+        if (cardRect != null)     cardRect.anchoredPosition = targetPos;
         if (contentGroup != null) contentGroup.alpha = 1f;
 
-        // Chữ chạy SAU khi card + tiêu đề đã vào chỗ: tiêu đề fade, nội dung
-        // typewriter — 2 hiệu ứng nối tiếp nhau, không chồng lên nhau cho rối.
-        // Nằm trong CHÍNH coroutine này (_animRoutine) nên khi đóng popup /
-        // OnDisable, StopCoroutine hoặc Unity tự dập là chữ cũng dừng theo.
-        if (hieuUngChuTypewriter)
-            yield return ChayChuRoutine();
+        _animRoutine = null;
+    }
 
+    /// <summary>Đóng: Trượt nhẹ sang phải biến mất.</summary>
+    private IEnumerator DongAnimRoutine()
+    {
+        Vector2 curPos = cardRect != null ? cardRect.anchoredPosition : new Vector2(-30f, -135f);
+        Vector2 endPos = new Vector2(420f, -135f);
+
+        float t = 0f;
+        float dur = 0.25f;
+        while (t < dur)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / dur);
+            float smooth = p * p * (3f - 2f * p);
+
+            if (cardRect != null)
+                cardRect.anchoredPosition = Vector2.Lerp(curPos, endPos, smooth);
+
+            if (contentGroup != null)
+                contentGroup.alpha = 1f - smooth;
+
+            yield return null;
+        }
+
+        TraTrangThaiVePhongThu();
         _animRoutine = null;
     }
 
@@ -532,31 +582,6 @@ public class BoatAnnouncePopupUI : MonoBehaviour
         return false;
     }
 
-    /// <summary>Đóng: thu 1→0.92 + fade toàn bộ trong ~0.15s rồi tắt + trả input lock.</summary>
-    private IEnumerator DongAnimRoutine()
-    {
-        const float dur = 0.15f;
-        float t = 0f;
-        while (t < dur)
-        {
-            t += Time.unscaledDeltaTime;
-            float p = Mathf.Clamp01(t / dur);
-
-            if (cardRect != null)     cardRect.localScale = Vector3.one * Mathf.Lerp(1f, 0.92f, p);
-            if (dimImage != null)     SetAlpha(dimImage, dimAlpha * (1f - p));
-            if (contentGroup != null) contentGroup.alpha = 1f - p;
-            yield return null;
-        }
-
-        popupRoot.SetActive(false);
-        if (cardRect != null)     cardRect.localScale = Vector3.one; // trả scale cho lần mở sau
-        if (contentGroup != null) contentGroup.alpha = 1f;
-        if (bodyText != null)     bodyText.maxVisibleCharacters = KyTuHienHet; // chữ không kẹt nửa câu
-
-        FarmInputLock.RegisterPopupClose(); // tự suppress world-click frame này
-        _dangHien    = false;               // DrainRoutine tiếp tục chuyến kế (nếu có)
-        _animRoutine = null;
-    }
 
     // =========================================================================
     //  Persist "đã báo" — PlayerPrefs ticks dạng string (pattern BoatDockManager)

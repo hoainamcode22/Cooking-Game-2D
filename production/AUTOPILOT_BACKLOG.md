@@ -134,6 +134,48 @@
 
 ---
 
+## MILESTONE 7 — Nhân vật & Đồ trang trí 5 stage (thêm 2026-09-01, theo lệnh Sếp)
+
+> Bàn giao: `production/TEAM_NHANVAT_DECOR5_2026-09-01.md` · Đơn art: `production/PROMPT_SPRITE_FORGE_DECOR_FIX_2026-09-01.md`
+> Backup: `production/backup_characters_decor_2026-09-01/` · Toàn gói mặc định TẮT (3 cờ `enabled = false`).
+
+| ID | Task | Loại | Owner | Dep | Acceptance | Status |
+|----|------|------|-------|-----|------------|--------|
+| M7-1 | **Hệ 5 stage đồ trang trí** (`DecorGrowth/`, 5 file): stage1→2 xây, stage4 hộp quà, stage5 pháo hoa, stage3 hoàn thiện; popup tên+progress+nút gem; save theo itemID+slot (không băm toạ độ); sửa 8 bug của hệ nhà cũ | 🤝 | gameplay-programmer | — | Sếp chạy tool + tick `enabled`; mua decor thấy đủ 5 stage; thoát/vào lại giữ tiến độ | REVIEW |
+| M7-2 | **Nhân vật thợ búa** (`Characters/`, 5 file): 3 prefab, ẩn mặc định, đập búa stage1-2, đứng im ở hộp quà, ăn mừng tới hết pháo hoa 3.5s; số thợ theo footprint (1/2/3) | 🤝 | technical-artist | M7-1 | Sếp chạy `★ SETUP thợ búa`; thấy thợ ở decor + chuồng + nhà | REVIEW |
+| M7-3 | **Cô gái giỏ hoa shipper** (`Shipper/`, 6 file): đứng cạnh bảng đơn, giao hàng xong đi tới 1/5 nhà random, đường line convex-hull bao quanh khu nhà, mũi tên chỉ nhà đích, về lệch làn | 🤝 | gameplay-programmer | — | Sếp chạy `★ SETUP cô gái giỏ hoa` + tạo `Shipper_HomeAnchor`; giao 1 đơn thấy cô gái đi | REVIEW |
+| M7-4 | **4 Editor Tool** (slice spritesheet · nạp art 5 stage · setup thợ · setup shipper), DRY-RUN/APPLY, idempotent, có Hoàn tác | 🤝 | tools-programmer | M7-1,2,3 | Menu chạy 2 lần cho kết quả y nhau, 0 lỗi Console | REVIEW |
+| M7-5 | **Art 75 PNG 5 stage** — Lead tự cắt 15 sheet, xoá phông (alpha gốc 0.00%), vá 97 vùng nền kín, căn baseline chung. Viền trắng 0.06% (art cũ tới 78%) | 🤖 | technical-artist | — | 15/15 slug × 5/5 file, canvas đồng nhất, lệch baseline ≤1px | DONE |
+| M7-6 | Kéo **4 DecorData mới** (id 16-19: Chậu Cây Thú, Chú Lùn, Giá Bán Rau, Bình Tưới Hoa) vào `ShopManager.decorList` trong `SCN_Farm` | 🧑 | producer | M7-4 | 4 item hiện trong tab trang trí | BLOCKED (sửa scene — cần Sếp) |
+| M7-7 | Duyệt **giá 4 item mới** (gem 150/200/250/150) | 🧑 | economy-designer | M7-6 | Sếp chốt con số | BLOCKED (kinh tế — cần Sếp) |
+| M7-8 | **Sửa art `Mèo vui vẻ`** (id 9): stage 2 vẽ MÈO nhưng stage 3 vẽ HEO — bộ ảnh tự mâu thuẫn. Đơn art đã viết | 🧑 | art-director | — | stage_3 là MÈO, cùng silhouette/baseline với stage_2 | BLOCKED (chờ đội vẽ) |
+| M7-9 | **4 bộ 5-stage còn thiếu**: Bảng hiệu (3), Ghế Hoa (7), Heo thần tài (8), Vịt vui vẻ (12) — hiện giữ hành vi cũ | 🧑 | art-director | — | 4 slug × 5 PNG đạt nghiệm thu bằng số | BLOCKED (chờ đội vẽ) |
+| M7-10 | **2 spritesheet thợ búa khác** (áo/mũ/dáng khác nhau) — hiện 3 prefab chỉ khác lật ngang + co 6% | 🧑 | art-director | — | worker02/03 hammer+celebrate đúng grid 4×3, 1200×896 | BLOCKED (chờ đội vẽ) |
+| M7-11 | **Art popup tiến độ decor**: copy sprite khung + icon gem vào `Resources/UI/DecorProgress_BG` + `Resources/UI/kimcuong` → bridge tự nhận, không cần sửa code. Hiện đang hiện bằng màu phẳng | 🤝 | ui-programmer | M7-1 | Popup decor nhìn giống popup cây/chuồng | TODO |
+| M7-12 | **Đường line quanh khu nhà chưa tránh vật cản** — cô gái có thể đi xuyên chuồng. Chờ Sếp xem trên máy rồi quyết | 🤖 | gameplay-programmer | M7-3 | Cô gái không đi xuyên công trình nào | TODO |
+| M7-13 | `RestoreAll` khớp vật bằng tên + toạ độ gần nhất → có thể gán chéo giữa 2 vật cùng loại đặt sát nhau. Sửa sạch cần thêm 1 dòng ở `LoadBuildings()` của `PlacementManager` | 🤝 | gameplay-programmer | M7-1 | Dời 2 decor cùng loại rồi restart vẫn đúng vật | TODO |
+
+---
+
+## MILESTONE 8 — UI Pass 3 task (Sếp giao 2026-09-05)
+
+> Plan: `production/PLAN_UI_PASS_2026-09-05.md` · Báo cáo + CẦN BẠN: `production/BAO_CAO_UI_PASS_2026-09-05.md` · Backup: `production/backup_ui_pass_2026-09-05/`
+> Registry sprite chuẩn: `Assets/_Game/Scripts/UI/UIStandardSprites.cs` — mọi popup mới lấy nút đóng/gem/khung từ đây.
+
+| ID | Task | Loại | Owner | Dep | Acceptance | Status |
+|----|------|------|-------|-----|------------|--------|
+| M8-1 | Fix kẹt bàn tay tutorial (tay==gate, kiểm gate ngay khi vào bước, action tới sớm xếp hàng) + lưu `TUTORIAL_STEP_INDEX` | 🤝 | gameplay-programmer | — | Kéo hạt nhanh đủ 8 ô tự qua; thoát/vào resume bước | REVIEW |
+| M8-2 | NPC dùng talk tạm (3 cờ) · hạt 8/6 · CHƠI LẠI xoá save.json · F8 nhảy bước · tool text 6→8 ô | 🤝 | gameplay-programmer | — | Sếp chạy tool text + kiểm hạt | REVIEW |
+| M8-3 | Card hội thoại giãn theo text (VLG+CSF) | 🤝 | ui-programmer | — | Chạy `★ Dựng card V2`, chữ dài không đè nút | REVIEW |
+| M8-4 | Bảng 4 trang: khung/ribbon/dots thật, ĐÃ RÕ + gem có sprite, thẻ không xoay, autosize | 🤝 | ui-programmer | — | `Rebuild Tutorial 4 Popups` | REVIEW |
+| M8-5 | Tool `GemCostTextFixTool` (MIỄN PHÍ) + `SeedPanelFixTool` (panel 230, tên hạt) | 🤝 | ui-programmer | — | DRY→APPLY, F10 kiểm | REVIEW |
+| M8-6 | Popup Lên Cấp: gộp render quà, pháo hoa loop, nhân vật tự hồi, khoá 2 tool phá, nút xanh sprite, `LEVELUP_SEEN_MAX` | 🤝 | ui-programmer | — | `★ Nối lại dây popup` APPLY; lên cấp thấy đủ | REVIEW |
+| M8-7 | `UIStandardSprites` registry + `CloseButtonSyncTool` (copy Resources · DRY · APPLY · gem) + 12 điểm fallback | 🤝 | tools-programmer | — | Mọi popup nút đóng đỏ tròn như Cài đặt | REVIEW |
+| M8-8 | Avatar popup dựng bằng asset thật (Train frames, shop_card, slot_normal, hud_avatar_base) + DecorProgress bridge | 🤝 | ui-programmer | M8-7 | `Build Task 2 Popup`, F10 | REVIEW |
+| M8-9 | Art gói A (NPC 37 file cùng khung hình) + gói B (4 minh hoạ bảng) — `PROMPT_SPRITE_FORGE_UI_PASS_2026-09-05.md` | 🧑 | art-director | — | Về `art-handoff/2026-09-05_UI_PASS/`, QC số, nạp qua tool | BLOCKED (chờ đội vẽ) |
+| M8-10 | Vòng 17 APPLY (sắp lớp UI + 10 bước L2) — chưa bấm theo report 14:15 | 🧑 | producer | — | `Tutorial_Canvas` 250, `_steps` 31 | BLOCKED (Sếp bấm) |
+
+---
 ## Cách autopilot dùng file này (tóm tắt)
 1. Đọc file này từ trên xuống, bỏ qua `DONE`/`BLOCKED`.
 2. Chọn task `TODO` đầu tiên mà mọi **Dep** đã `DONE` và **Loại = 🤖** (hoặc 🤝 phần làm được).

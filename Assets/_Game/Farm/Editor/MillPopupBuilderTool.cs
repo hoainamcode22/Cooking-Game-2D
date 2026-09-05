@@ -2256,6 +2256,9 @@ namespace Farm.EditorTools.Mill
         /// </summary>
         public bool closeCoDauX;
 
+        /// <summary>true khi `btnClose` là sprite đóng CHUẨN (UIStandardSprites.Close, 9-slice) — WP-D2b.</summary>
+        public bool closeChuan;
+
         /// <summary>
         /// true khi `beltBase` là conveyor_base.png (art, ĐÃ BAKE 4 con lăn) ⇒ lớp sọc cuộn
         /// phải dừng TRÊN con lăn. false ⇒ mâm vẽ tay phẳng, sọc phủ gần hết chiều cao.
@@ -2363,8 +2366,19 @@ namespace Farm.EditorTools.Mill
             // btn_close.png 64×64: ĐĨA đỏ ĐÃ CÓ DẤU ✖ trắng ở giữa.
             //  ⚠ KHÔNG 9-slice: hình tròn. 9-slice giữ 4 góc theo texel gốc rồi kéo giữa nên
             //    vẽ ở 104px là méo thành bầu dục có cạnh phẳng. Simple (64 → 104) mới đúng.
-            s.btnClose = MillSpriteFactory.ApSimple(MillSpriteFactory.Tim("btn_close"));
-            s.closeCoDauX = s.btnClose != null;
+            // WP-D2b: ƯU TIÊN nút đóng CHUẨN toàn game (9-slice, CHƯA có dấu ✖ ⇒ Glyph_X vẫn vẽ).
+            Sprite closeChuan = UIStandardSprites.Close;
+            s.closeChuan = closeChuan != null;
+            if (s.closeChuan)
+            {
+                s.btnClose    = closeChuan;
+                s.closeCoDauX = false;
+            }
+            else
+            {
+                s.btnClose = MillSpriteFactory.ApSimple(MillSpriteFactory.Tim("btn_close"));
+                s.closeCoDauX = s.btnClose != null;
+            }
             if (s.btnClose == null)
                 s.btnClose = MillSpriteFactory.VeKhoi("mill_btn_close",
                     MillSpriteFactory.K(40, 40, 12f, 3f,
@@ -3460,6 +3474,7 @@ namespace Farm.EditorTools.Mill
                 MillDesign.CloseSize, MillDesign.CloseSize,
                 MillDesign.CloseOffRight, MillDesign.CloseOffTop);
             Image img = MillUI.Img(rt, sk.btnClose, Color.white, true);
+            if (sk.closeChuan) { img.type = Image.Type.Sliced; img.color = Color.white; } // WP-D2b
             b.btnClose = MillUI.Btn(img);
 
             //  ⚠ CHỈ vẽ dấu ✖ khi nút đóng là bản VẼ TAY. Art btn_close.png của chủ dự án ĐÃ

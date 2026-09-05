@@ -1,0 +1,637 @@
+fileFormatVersion: 2
+guid: 66ca9000d53f84c40880dc520f802e03
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 3371727784991096143
+    second: tut_illu_harvest_0
+  - first:
+      213: -3338455561230033215
+    second: tut_illu_harvest_1
+  - first:
+      213: -5925075687962193594
+    second: tut_illu_harvest_2
+  - first:
+      213: 3196743843254176860
+    second: tut_illu_harvest_3
+  - first:
+      213: 5522743067343778835
+    second: tut_illu_harvest_4
+  - first:
+      213: 7418381735859027895
+    second: tut_illu_harvest_5
+  - first:
+      213: 3444664668769685412
+    second: tut_illu_harvest_6
+  - first:
+      213: -5643166046137844361
+    second: tut_illu_harvest_7
+  - first:
+      213: 7797792028604699137
+    second: tut_illu_harvest_8
+  - first:
+      213: 6614137464643225799
+    second: tut_illu_harvest_9
+  - first:
+      213: -7725294270520110636
+    second: tut_illu_harvest_10
+  - first:
+      213: -9101835660575765276
+    second: tut_illu_harvest_11
+  - first:
+      213: -7265773247683171089
+    second: tut_illu_harvest_12
+  - first:
+      213: -2924350421296090236
+    second: tut_illu_harvest_13
+  - first:
+      213: -5143504760848608996
+    second: tut_illu_harvest_14
+  - first:
+      213: -1283975898359687353
+    second: tut_illu_harvest_15
+  - first:
+      213: -2615881284108937206
+    second: tut_illu_harvest_16
+  - first:
+      213: 1756296572626183396
+    second: tut_illu_harvest_17
+  - first:
+      213: 8575537221389611402
+    second: tut_illu_harvest_18
+  - first:
+      213: -8644664272062983792
+    second: tut_illu_harvest_19
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: tut_illu_harvest_0
+      rect:
+        serializedVersion: 2
+        x: 233
+        y: 463
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f4d75b76e88cace20800000000000000
+      internalID: 3371727784991096143
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_1
+      rect:
+        serializedVersion: 2
+        x: 251
+        y: 469
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1ced47eda5c6ba1d0800000000000000
+      internalID: -3338455561230033215
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_2
+      rect:
+        serializedVersion: 2
+        x: 275
+        y: 465
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 641d5bfdd07e5cda0800000000000000
+      internalID: -5925075687962193594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_3
+      rect:
+        serializedVersion: 2
+        x: 158
+        y: 450
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c5c051f969d1d5c20800000000000000
+      internalID: 3196743843254176860
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_4
+      rect:
+        serializedVersion: 2
+        x: 169
+        y: 442
+        width: 9
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 314f6ca1f89b4ac40800000000000000
+      internalID: 5522743067343778835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_5
+      rect:
+        serializedVersion: 2
+        x: 193
+        y: 447
+        width: 18
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7bf7f1e62e263f660800000000000000
+      internalID: 7418381735859027895
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_6
+      rect:
+        serializedVersion: 2
+        x: 204
+        y: 329
+        width: 87
+        height: 128
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4af0b500448edcf20800000000000000
+      internalID: 3444664668769685412
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_7
+      rect:
+        serializedVersion: 2
+        x: 220
+        y: 417
+        width: 51
+        height: 51
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 77d786b31627fa1b0800000000000000
+      internalID: -5643166046137844361
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_8
+      rect:
+        serializedVersion: 2
+        x: 302
+        y: 452
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1021b591982573c60800000000000000
+      internalID: 7797792028604699137
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_9
+      rect:
+        serializedVersion: 2
+        x: 127
+        y: 443
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7c889ab1bf22acb50800000000000000
+      internalID: 6614137464643225799
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_10
+      rect:
+        serializedVersion: 2
+        x: 138
+        y: 429
+        width: 9
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4d1d9449acd3ac490800000000000000
+      internalID: -7725294270520110636
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_11
+      rect:
+        serializedVersion: 2
+        x: 180
+        y: 432
+        width: 12
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4ec0667b0b8cfa180800000000000000
+      internalID: -9101835660575765276
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_12
+      rect:
+        serializedVersion: 2
+        x: 289
+        y: 435
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: fecee491ab9ca2b90800000000000000
+      internalID: -7265773247683171089
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_13
+      rect:
+        serializedVersion: 2
+        x: 315
+        y: 436
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 483f1e329ce9a67d0800000000000000
+      internalID: -2924350421296090236
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_14
+      rect:
+        serializedVersion: 2
+        x: 84
+        y: 414
+        width: 21
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c119615eba99e98b0800000000000000
+      internalID: -5143504760848608996
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_15
+      rect:
+        serializedVersion: 2
+        x: 91
+        y: 296
+        width: 124
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7479b1629b66e2ee0800000000000000
+      internalID: -1283975898359687353
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_16
+      rect:
+        serializedVersion: 2
+        x: 293
+        y: 420
+        width: 8
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a081816e4d582bbd0800000000000000
+      internalID: -2615881284108937206
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_17
+      rect:
+        serializedVersion: 2
+        x: 66
+        y: 397
+        width: 8
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4e4ae937d6e9f5810800000000000000
+      internalID: 1756296572626183396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_18
+      rect:
+        serializedVersion: 2
+        x: 87
+        y: 399
+        width: 14
+        height: 10
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a81711feaad620770800000000000000
+      internalID: 8575537221389611402
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tut_illu_harvest_19
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 27
+        width: 486
+        height: 370
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 091dc2d55abf70880800000000000000
+      internalID: -8644664272062983792
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      tut_illu_harvest_0: 3371727784991096143
+      tut_illu_harvest_1: -3338455561230033215
+      tut_illu_harvest_10: -7725294270520110636
+      tut_illu_harvest_11: -9101835660575765276
+      tut_illu_harvest_12: -7265773247683171089
+      tut_illu_harvest_13: -2924350421296090236
+      tut_illu_harvest_14: -5143504760848608996
+      tut_illu_harvest_15: -1283975898359687353
+      tut_illu_harvest_16: -2615881284108937206
+      tut_illu_harvest_17: 1756296572626183396
+      tut_illu_harvest_18: 8575537221389611402
+      tut_illu_harvest_19: -8644664272062983792
+      tut_illu_harvest_2: -5925075687962193594
+      tut_illu_harvest_3: 3196743843254176860
+      tut_illu_harvest_4: 5522743067343778835
+      tut_illu_harvest_5: 7418381735859027895
+      tut_illu_harvest_6: 3444664668769685412
+      tut_illu_harvest_7: -5643166046137844361
+      tut_illu_harvest_8: 7797792028604699137
+      tut_illu_harvest_9: 6614137464643225799
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_16_HarvestFirstFlower
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "H\u01B0\u1EDBng d\u01B0\u01A1ng n\u1EDF r\u1EF1c r\u1EE1 r\u1ED3i! Thu
-    ho\u1EA1ch n\xE0o!"
+  npcText: "Hoa \u0111\xE3 n\u1EDF r\u1EF1c r\u1EE1! H\xE3y thu ho\u1EA1ch b\xF4ng
+    hoa \u0111\u1EA7u ti\xEAn n\xE0o!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: tutorial_flower_01

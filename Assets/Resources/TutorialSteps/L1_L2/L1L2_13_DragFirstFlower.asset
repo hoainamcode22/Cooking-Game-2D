@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_13_DragFirstFlower
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "K\xE9o h\u1EA1t h\u01B0\u1EDBng d\u01B0\u01A1ng v\xE0o ch\u1EADu hoa
-    n\xE0o!"
+  npcText: "K\xE9o h\u1EA1t gi\u1ED1ng hoa h\u01B0\u1EDBng d\u01B0\u01A1ng v\xE0o
+    ch\u1EADu \u0111\u1EC3 gieo tr\u1ED3ng n\xE0o!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: seed_huong_duong
@@ -21,6 +21,6 @@ MonoBehaviour:
   holePaddingPx: 16
   waitAction: 2
   showGuideBoard: 0
-  showHandPointer: 1
+  showHandPointer: 0
   handOffset: {x: 40, y: -30}
   dragToTargetId: tutorial_flower_01

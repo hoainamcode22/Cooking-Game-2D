@@ -37,12 +37,32 @@ public class TouristVisitorManager : MonoBehaviour
 {
     public static TouristVisitorManager Instance { get; private set; }
 
+    /// <summary>Bắn khi hàng chờ thay đổi (khách mới đến, nhận món, dồn hàng, hết giờ) để Cooking UI đồng bộ.</summary>
+    public static event System.Action OnQueueOrderChanged;
+
+    /// <summary>Lấy khách du lịch đang đứng đầu hàng chờ và đang đợi nhận món.</summary>
+    public TouristAgent GetFrontWaitingTourist()
+    {
+        if (queue == null) return null;
+        TouristAgent front = queue.Front;
+        if (front != null && front.Dish != null && (front.State == TouristAgent.AgentState.WaitingServe || front.State == TouristAgent.AgentState.WalkingToSlot))
+            return front;
+        return front;
+    }
+
+    /// <summary>Báo cho toàn bộ UI cập nhật đơn khách.</summary>
+    public static void TriggerQueueOrderChanged()
+    {
+        OnQueueOrderChanged?.Invoke();
+    }
+
     // ─── Inspector (tool TouristVisitorSetupTool wire hộ) ───────────────
 
     [Header("Config")]
     [Tooltip("Asset TouristBoatConfig — CÙNG asset mà BoatDockManager dùng. " +
              "Bỏ trống sẽ tự lấy từ BoatDockManager.Instance.Config lúc boot.")]
     [SerializeField] private TouristBoatConfig config;
+    public TouristBoatConfig Config => config;
 
     // [Sếp chốt 2026-08-29] Nhịp mở bubble giữa 2 khách liền nhau.
     // ĐỂ Ở ĐÂY chứ không nhét vào TouristBoatConfig vì file config thuộc gói Dev A —
@@ -460,6 +480,7 @@ public class TouristVisitorManager : MonoBehaviour
 
         int boatNo = BoatDockManager.Instance != null ? BoatDockManager.Instance.BoatNumber(dock) : dock + 1;
         Debug.Log($"[TouristVisitor] Tàu số {boatNo:00} cập bến {dock + 1} — {count} khách xuống bờ.");
+        AudioManager.Instance?.PlayTouristChatter();
 
         trip.DisembarkRoutine = StartCoroutine(DisembarkRoutine(dock));
     }
@@ -827,6 +848,8 @@ public class TouristVisitorManager : MonoBehaviour
             trip.Save.served[agent.VisitorIndex] = true;
             SaveTrip(agent.DockIndex);
         }
+
+        TriggerQueueOrderChanged();
     }
 
     /// <summary>Agent báo hết kiên nhẫn — ghi save rồi cho agent diễn mặt tức giận.</summary>
@@ -841,6 +864,7 @@ public class TouristVisitorManager : MonoBehaviour
             SaveTrip(agent.DockIndex);
         }
         agent.MarkTimedOut();
+        TriggerQueueOrderChanged();
     }
 
     /// <summary>Agent báo vừa mở bubble → lưu mốc kiên nhẫn UTC để offline vẫn đếm.</summary>
@@ -853,6 +877,7 @@ public class TouristVisitorManager : MonoBehaviour
 
         trip.Save.patienceEndUtcTicks[agent.VisitorIndex] = agent.PatienceEndUtcTicks;
         SaveTrip(agent.DockIndex);
+        TriggerQueueOrderChanged();
     }
 
     /// <summary>Agent đã lên tàu xong → despawn, đếm; khách cuối thì báo Dev A cho tàu đi.</summary>

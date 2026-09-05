@@ -54,6 +54,18 @@ public class ShopManager : MonoBehaviour
     private bool popupInputLockHeld;
     private Coroutine toastRoutine;
 
+    // ── Nhớ sortingOrder gốc của Canvas cha khi mở Shop ───────────────────────
+    // OpenShop() phải TẠM nâng/hạ order của Canvas cha (Canvas_Popup) để lớp phủ
+    // hướng dẫn (Tutorial_Canvas) vẽ được ĐÈ LÊN shop trong bước tutorial L2.
+    // Trước đây hàm ghi đè thẳng số 150 và KHÔNG BAO GIỜ trả lại giá trị cũ, nên
+    // sau lần mở shop đầu tiên Canvas_Popup kẹt vĩnh viễn ở 150: mọi popup hệ thống
+    // khác nằm chung Canvas_Popup bị tụt xuống dưới các panel khác cho tới khi
+    // load lại scene. Ba field dưới đây giữ đúng Canvas nào đã bị sửa và giá trị
+    // cũ của nó, để CloseShop() trả lại nguyên trạng.
+    private Canvas canvasDaDoiOrder;      // Canvas cha đã bị đổi order (thường là Canvas_Popup)
+    private int    orderGocCuaCanvasCha;  // giá trị sortingOrder trước khi shop đụng vào
+    private bool   dangGiuOrderShop;      // true = đang mượn order, chưa trả lại
+
     public bool IsOpen => shopPanel != null && shopPanel.activeSelf;
 
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
@@ -115,7 +127,25 @@ public class ShopManager : MonoBehaviour
             shopPanel.SetActive(true);
             Canvas parentCanvas = shopPanel.GetComponentInParent<Canvas>();
             if (parentCanvas != null)
-                parentCanvas.sortingOrder = 150;
+            {
+                // Chỉ ghi nhớ ở LẦN MƯỢN ĐẦU TIÊN. Nếu OpenShop() bị gọi hai lần liên
+                // tiếp mà chưa CloseShop(), lần thứ hai sẽ đọc được 150 (giá trị do
+                // chính ta ghi) và lưu đè lên giá trị gốc — đúng cái bẫy phải tránh.
+                if (!dangGiuOrderShop)
+                {
+                    canvasDaDoiOrder     = parentCanvas;
+                    orderGocCuaCanvasCha = parentCanvas.sortingOrder;
+                    dangGiuOrderShop     = true;
+                }
+
+                // [VÒNG 17] Trước đây hardcode 150. Sau khi UILayerApplyTool nâng các Canvas
+                // nhóm Panel lên 200/210/220, số 150 khiến shop TỤT XUỐNG DƯỚI kho và chợ —
+                // mở shop mà bị kho đè. Nay lấy 230 = mức cao nhất của nhóm Panel:
+                //     Market 220  <  SHOP 230  <  Tutorial 250  <  Popup 300
+                // Vẫn giữ đúng tính chất cũ: shop nằm DƯỚI lớp Tutorial, nên lớp phủ hướng dẫn
+                // của bước L2 (mua Ngô) vẫn vẽ đè lên shop được.
+                parentCanvas.sortingOrder = UILayers.Panel + 3 * UILayers.BuocTrongLop;   // = 230
+            }
         }
         AcquirePopupInputBlock();
         if (searchBar != null) searchBar.text = "";
@@ -127,6 +157,7 @@ public class ShopManager : MonoBehaviour
     public void CloseShop()
     {
         ReleasePopupInputBlock();
+        TraLaiOrderCanvasCha();
         if (shopPanel != null) shopPanel.SetActive(false);
         TutorialManager.Instance?.NotifyCloseShop();
     }
@@ -134,6 +165,26 @@ public class ShopManager : MonoBehaviour
     private void OnDisable()
     {
         ReleasePopupInputBlock();
+        // Lưới an toàn: shopPanel có thể bị tắt bằng đường khác (SetActive trực tiếp,
+        // đổi scene, popup manager đóng hàng loạt) mà không đi qua CloseShop().
+        // Cờ dangGiuOrderShop khiến việc gọi hai lần là vô hại.
+        TraLaiOrderCanvasCha();
+    }
+
+    /// <summary>
+    /// Trả sortingOrder của Canvas cha về đúng giá trị TRƯỚC khi shop mượn.
+    /// Cố ý KHÔNG gán lại một hằng số nào cả: giá trị đúng là giá trị đã đọc được
+    /// lúc mở, vì Canvas_Popup có thể được các hệ thống khác chỉnh trong lúc chơi.
+    /// </summary>
+    private void TraLaiOrderCanvasCha()
+    {
+        if (!dangGiuOrderShop) return;
+
+        if (canvasDaDoiOrder != null)
+            canvasDaDoiOrder.sortingOrder = orderGocCuaCanvasCha;
+
+        canvasDaDoiOrder = null;
+        dangGiuOrderShop = false;
     }
 
     // ── ĐÃ GỠ SetHomeMenuVisible (21/08) ─────────────────────────────────────

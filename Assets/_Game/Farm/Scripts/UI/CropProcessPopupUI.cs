@@ -113,6 +113,11 @@ public class CropProcessPopupUI : MonoBehaviour
             && Input.GetMouseButtonDown(0)
             && !IsPointerOverPopupUI(Input.mousePosition))
         {
+            if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+            {
+                // Không đóng trong tutorial để tránh mất nút kim cương
+                return;
+            }
             ClosePopup();
         }
     }
@@ -366,7 +371,26 @@ public class CropProcessPopupUI : MonoBehaviour
 
             if (txtGemCost != null)
             {
-                txtGemCost.text = CurrentGemCost.ToString();
+                // [VÒNG 15] Giá 0 (đang trong tutorial) thì hiện chữ thay vì số "0" —
+                // người chơi đọc "0" dễ tưởng nút hỏng, đọc "MIỄN PHÍ" là hiểu ngay và bấm.
+                int gia = CurrentGemCost;
+                if (gia <= 0)
+                {
+                    txtGemCost.text = "MIỄN PHÍ";
+                    txtGemCost.enableAutoSizing = true;
+                    txtGemCost.fontSizeMin = 10f;
+                    txtGemCost.fontSizeMax = 18f;
+                    txtGemCost.alignment = TextAlignmentOptions.Center;
+                    if (imgDiamondIcon != null) imgDiamondIcon.gameObject.SetActive(false);
+                }
+                else
+                {
+                    txtGemCost.text = gia.ToString();
+                    txtGemCost.enableAutoSizing = true;
+                    txtGemCost.fontSizeMin = 14f;
+                    txtGemCost.fontSizeMax = 22f;
+                    if (imgDiamondIcon != null) imgDiamondIcon.gameObject.SetActive(true);
+                }
                 txtGemCost.color = Color.white;
             }
 

@@ -12,14 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L2_10_HarvestPen
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: 
+  npcText: "Tr\u1EE9ng g\xE0 t\u01B0\u01A1i ngon \u0111\xE3 s\u1EB5n s\xE0ng! K\xE9o
+    gi\u1ECF thu ho\u1EA1ch tr\u1EE9ng n\xE0o!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
-  targetID: 
+  targetID: tutorial_basket
   useCircleHole: 1
   holePaddingPx: 16
   waitAction: 22
   showGuideBoard: 0
   showHandPointer: 0
-  handOffset: {x: 40, y: -30}
-  dragToTargetId: 
+  handOffset: {x: 0, y: 0}
+  dragToTargetId: tutorial_pen

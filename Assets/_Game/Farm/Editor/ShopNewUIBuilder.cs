@@ -87,7 +87,7 @@ public static class ShopNewUIBuilder
         Sprite tabActiveSpr = LoadSprite(WarehouseSpriteFolder, "tab_active.png");
         Sprite tabInactiveSpr = LoadSprite(WarehouseSpriteFolder, "tab_inactive.png");
         Sprite innerPanelSpr = LoadSprite(WarehouseSpriteFolder, "inner_panel.png");
-        Sprite btnCloseSpr = LoadSprite(DesignAssetsFolder, "btnX.png") ?? LoadSprite(WarehouseSpriteFolder, "btn_close.png");
+        Sprite btnCloseSpr = UIStandardSprites.Close ?? LoadSprite(DesignAssetsFolder, "btnX.png") ?? LoadSprite(WarehouseSpriteFolder, "btn_close.png"); // WP-D2b: nút đóng chuẩn
         Sprite btnMinusSpr = LoadSprite(WarehouseSpriteFolder, "btn_minus.png");
         Sprite btnPlusSpr = LoadSprite(WarehouseSpriteFolder, "btn_plus.png");
 
@@ -180,6 +180,8 @@ public static class ShopNewUIBuilder
         RectTransform closeRect = CreateRect(rootRect, "Btn_Close", new Vector2(90f, 90f), new Vector2(705f, 445f));
         Image closeImg = closeRect.gameObject.AddComponent<Image>();
         closeImg.sprite = btnCloseSpr;
+        closeImg.type = Image.Type.Sliced;
+        closeImg.color = Color.white;
         closeImg.preserveAspect = true;
         Button btnClose = closeRect.gameObject.AddComponent<Button>();
 

@@ -69,12 +69,10 @@ namespace FarmGame.UI
             if (goMissionWidget != null)
                 goMissionWidget.SetActive(false);
 
-            if (goMissionBadge != null)
-                goMissionBadge.SetActive(true);
-
             SetupButtonListeners();
             SubscribeEvents();
             RefreshAllUI();
+            UpdateMissionBadge();
         }
 
         private void OnDestroy()
@@ -152,8 +150,22 @@ namespace FarmGame.UI
                 btnAddDiamond.onClick.AddListener(OnShopClicked);
             }
 
+            if (btnSettings == null)
+            {
+                var allButtons = GetComponentsInChildren<Button>(true);
+                for (int i = 0; i < allButtons.Length; i++)
+                {
+                    if (allButtons[i].name.Contains("Setting") || allButtons[i].name.Contains("CaiDat"))
+                    {
+                        btnSettings = allButtons[i];
+                        break;
+                    }
+                }
+            }
+
             if (btnSettings != null)
             {
+                btnSettings.gameObject.layer = 5; // Layer UI
                 btnSettings.onClick.RemoveAllListeners();
                 btnSettings.onClick.AddListener(OnSettingsClicked);
             }
@@ -180,6 +192,7 @@ namespace FarmGame.UI
             }
 
             AvatarProfilePopupUI.OnAvatarSelected += HandleAvatarChanged;
+            LocalizationManager.OnChanged += HandleLanguageChanged;
         }
 
         private void UnsubscribeEvents()
@@ -201,12 +214,60 @@ namespace FarmGame.UI
             }
 
             AvatarProfilePopupUI.OnAvatarSelected -= HandleAvatarChanged;
+            LocalizationManager.OnChanged -= HandleLanguageChanged;
+        }
+
+        private void HandleLanguageChanged(string lang)
+        {
+            RefreshLocalizedTexts();
+        }
+
+        public void RefreshLocalizedTexts()
+        {
+            SetTabLabel(btnTabShop, Loc.T("CỬA HÀNG"));
+            SetTabLabel(btnTabWarehouse, Loc.T("KHO"));
+            SetTabLabel(btnTabMarket, Loc.T("BẢNG TIN CHỢ"));
+            SetTabLabel(btnTabCooking, Loc.T("NẤU ĂN"));
+        }
+
+        private void SetTabLabel(Button btn, string text)
+        {
+            if (btn == null) return;
+            TMP_Text txt = btn.GetComponentInChildren<TMP_Text>();
+            if (txt != null)
+            {
+                txt.text = text;
+            }
+        }
+
+        private void EnsureCookingIcon()
+        {
+            if (btnTabCooking != null)
+            {
+                Transform iconTr = btnTabCooking.transform.Find("Icon");
+                if (iconTr != null)
+                {
+                    Image img = iconTr.GetComponent<Image>();
+                    if (img != null && (img.sprite == null || img.sprite.name.Contains("ngoinhacoooking") || img.sprite.name.Contains("Missing")))
+                    {
+                        Sprite spr = Resources.Load<Sprite>("HUD/hud_icon_cooking");
+                        if (spr != null)
+                        {
+                            img.sprite = spr;
+                            img.color = Color.white;
+                            img.enabled = true;
+                        }
+                    }
+                }
+            }
         }
 
         // ── Xử lý Cập nhật UI ──────────────────────────────────────────────────
 
         public void RefreshAllUI()
         {
+            EnsureCookingIcon();
+            RefreshLocalizedTexts();
             // 1. Tiền tệ
             if (FarmEconomyManager.Instance != null)
             {
@@ -234,6 +295,16 @@ namespace FarmGame.UI
 
             // 3. Avatar người chơi
             RefreshAvatar();
+
+            // 4. Chấm than đỏ thông báo nhiệm vụ
+            UpdateMissionBadge();
+        }
+
+        public void UpdateMissionBadge()
+        {
+            if (goMissionBadge == null) return;
+            bool hasClaimable = UnifiedTaskPopupUI.HasAnyClaimableTask();
+            goMissionBadge.SetActive(hasClaimable);
         }
 
         public void RefreshAvatar(int index = -1)
@@ -418,7 +489,15 @@ namespace FarmGame.UI
 
         private void OnSettingsClicked()
         {
-            Debug.Log("[TownshipHUD] Mở Cài Đặt...");
+            var settings = SettingsPopupUI.FindOrCreate();
+            if (settings != null)
+            {
+                settings.OpenPopup();
+            }
+            else
+            {
+                Debug.Log("[TownshipHUD] Mở Cài Đặt...");
+            }
         }
     }
 }

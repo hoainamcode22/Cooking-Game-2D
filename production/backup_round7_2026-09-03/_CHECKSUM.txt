@@ -1,0 +1,5 @@
+8728e0b543a0abeb13e95d5795fa1ea1  BuilderWorkerConfig.cs
+aec9c8b52f60146b44ea11de710654f4  BuilderWorkerCrew.cs
+f500f7c43352e5e20394bee3956dfe3d  BuildingProcessPopupUI.cs
+151077438d898f0a3507d3ec4fd3c902  CharacterSheetSliceTool.cs
+da4c057d21a1adaa1e5d66c21729aabc  DecorProgressPopupBridge.cs

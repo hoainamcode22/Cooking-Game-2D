@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: "Gi\u1EBFng"
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 1
+  itemName: "Gi\u1EBFng"
+  itemIcon: {fileID: -6951204403980359669, guid: ae2e34ea793aaf04b8c633d6d3fba616, type: 3}
+  goldPrice: 0
+  diamondPrice: 20
+  prefabToBuild: {fileID: 8921844604226136458, guid: 249797708b7529a4c80021150f7aa408, type: 3}
+  unlockLevel: 1
+  gridSize: {x: 3, y: 3}
+  buildTimeSeconds: 0
+  rushGemCost: 0

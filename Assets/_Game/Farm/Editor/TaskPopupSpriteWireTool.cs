@@ -36,7 +36,7 @@ public static class TaskPopupSpriteWireTool
         ("chestIcon",   "Assets/Assetsgame/AnhBtnNhanQua.png"),
 
         // ── nút đóng & ribbon ───────────────────────────────────────────────
-        ("closeButton", "Assets/Assetsgame/btnX.png"),
+        ("closeButton", UIStandardSprites.PathClose),
         ("ribbon",      "Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_banner_ribbon.png"),
 
         // ── icon 3 tab ──────────────────────────────────────────────────────

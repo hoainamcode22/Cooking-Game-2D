@@ -42,7 +42,7 @@ public class TouristBoatController : MonoBehaviour
 
     [Header("Visual Scale & Motion")]
     [Tooltip("Cỡ mong muốn của tàu trong thế giới (unit world).")]
-    [SerializeField] private float boatWorldWidth = 260f;
+    [SerializeField] private float boatWorldWidth = 680f;
 
     [Tooltip("Góc nghiêng mạn thuyền tối đa khi dập dềnh sóng (độ).")]
     [SerializeField] private float waveRollAngle = 2.4f;
@@ -96,6 +96,7 @@ public class TouristBoatController : MonoBehaviour
     private float     _currentBankZ;
     private Vector3   _lastDirection = Vector3.right;
     private bool      _isInitializedSprites;
+    private BoatState _lastKnownState = BoatState.WaitingNext;
 
     // ─── Unity lifecycle ────────────────────────────────────────────────
 
@@ -113,7 +114,11 @@ public class TouristBoatController : MonoBehaviour
         }
 
         if (visual != null)
+        {
             _visualBaseLocalPos = visual.transform.localPosition;
+            visual.sortingLayerName = "ObjectsFront";
+            visual.sortingOrder = 200;
+        }
 
         EnsureDirectionalSprites();
         SetupCountdown();
@@ -179,12 +184,31 @@ public class TouristBoatController : MonoBehaviour
 
         EnsureDirectionalSprites();
 
+        if (!mgr.IsDockUnlocked(_dockIndex))
+        {
+            SetVisualShown(false);
+            ShowCountdown(false);
+            return;
+        }
+
         BoatPhaseInfo info;
         if (!mgr.TryGetPhaseInfo(_dockIndex, out info))
         {
             SetVisualShown(false);
             ShowCountdown(false);
             return;
+        }
+
+        // [FIX COMPILE 2026-09-03] Khoi am thanh duoc chen o day da lam mat 'return;' + '}'
+        // dong khoi guard ben tren => vo class (16 loi CS0106/CS1513). Da tra lai guard,
+        // giu nguyen logic coi tau, dat SAU guard nen 'info' chac chan hop le.
+        if (_lastKnownState != info.State)
+        {
+            if (info.State == BoatState.Arriving || info.State == BoatState.Docked)
+            {
+                AudioManager.Instance?.PlayBoatHorn();
+            }
+            _lastKnownState = info.State;
         }
 
         switch (info.State)
@@ -341,7 +365,11 @@ public class TouristBoatController : MonoBehaviour
             float nativeWidth = visual.sprite.rect.width / visual.sprite.pixelsPerUnit;
             if (nativeWidth > 0.001f)
             {
-                float targetScale = boatWorldWidth / nativeWidth;
+                float desiredWidth = (BoatDockManager.Instance != null && BoatDockManager.Instance.Config != null && BoatDockManager.Instance.Config.boatVisualWidth > 0.01f)
+                    ? BoatDockManager.Instance.Config.boatVisualWidth
+                    : boatWorldWidth;
+
+                float targetScale = desiredWidth / nativeWidth;
                 visual.transform.localScale = Vector3.one * targetScale;
             }
         }
@@ -531,7 +559,12 @@ public class TouristBoatController : MonoBehaviour
 
             // Nổi lên trên sprite tàu (tàu lửa dùng order 650 — xem TrainPathFollower).
             var mr = go.GetComponent<MeshRenderer>();
-            if (mr != null) mr.sortingOrder = 700;
+            if (mr != null)
+            {
+                // [FIX 2026-09-03] Thiếu sortingLayerName ⇒ rơi về layer "Default" (thấp hơn "Objects" của khách) ⇒ khách đè lên chữ. Ép về cùng layer với thân tàu.
+                mr.sortingLayerName = "ObjectsFront";
+                mr.sortingOrder = 700;
+            }
 
             countdownText = tmp;
         }

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: Chu Lun
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 17
+  itemName: "Ch\xFA L\xF9n S\xE2n V\u01B0\u1EDDn"
+  itemIcon: {fileID: 21300000, guid: 04c1d12a5a1d94e48bb0e3c13a2e4fe6, type: 3}
+  goldPrice: 0
+  diamondPrice: 200
+  prefabToBuild: {fileID: 7133705289239876345, guid: 0eb47c53081897d45980bf51b7532165, type: 3}
+  unlockLevel: 1
+  gridSize: {x: 2, y: 2}
+  buildTimeSeconds: 0
+  rushGemCost: 0

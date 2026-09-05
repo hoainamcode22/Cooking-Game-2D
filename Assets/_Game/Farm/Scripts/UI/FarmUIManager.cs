@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class FarmUIManager : MonoBehaviour
 {
@@ -38,6 +39,7 @@ public class FarmUIManager : MonoBehaviour
     [SerializeField] private Camera farmCamera;
 
     private bool isCookingMode;
+    public bool IsCookingMode => isCookingMode;
 
     public RectTransform SickleTrayRect =>
         sickleToolRoot != null ? sickleToolRoot.GetComponent<RectTransform>() : null;
@@ -188,6 +190,8 @@ public class FarmUIManager : MonoBehaviour
         }
 
         dich.text = message;
+        if (dich.transform.parent != null && dich.transform.parent.name == "Hint_Toast_Fallback")
+            dich.transform.parent.gameObject.SetActive(true);
         dich.gameObject.SetActive(true);
         _hintClearAt = Time.unscaledTime + 2.5f;
     }
@@ -217,20 +221,33 @@ public class FarmUIManager : MonoBehaviour
         }
         if (hud == null) return null;
 
-        var go = new GameObject("Txt_Hint_DuPhong", typeof(RectTransform));
+        var go = new GameObject("Hint_Toast_Fallback", typeof(RectTransform));
         go.transform.SetParent(hud.transform, false);
 
         var rt = (RectTransform)go.transform;
         rt.anchorMin        = new Vector2(0.5f, 0f);
         rt.anchorMax        = new Vector2(0.5f, 0f);
         rt.pivot            = new Vector2(0.5f, 0f);
-        rt.anchoredPosition = new Vector2(0f, 170f);
-        rt.sizeDelta        = new Vector2(900f, 70f);
+        rt.anchoredPosition = new Vector2(0f, 175f);
+        rt.sizeDelta        = new Vector2(900f, 65f);
 
-        _hintFallback                = go.AddComponent<TextMeshProUGUI>();
-        _hintFallback.fontSize       = 34f;
+        var bg = go.AddComponent<Image>();
+        bg.color = new Color(0.18f, 0.11f, 0.05f, 0.92f); // Nền gỗ nâu đậm sang trọng
+        bg.raycastTarget = false;
+
+        var textGo = new GameObject("Text", typeof(RectTransform));
+        textGo.transform.SetParent(go.transform, false);
+        var textRt = (RectTransform)textGo.transform;
+        textRt.anchorMin = Vector2.zero;
+        textRt.anchorMax = Vector2.one;
+        textRt.offsetMin = new Vector2(25f, 5f);
+        textRt.offsetMax = new Vector2(-25f, -5f);
+
+        _hintFallback                = textGo.AddComponent<TextMeshProUGUI>();
+        _hintFallback.fontSize       = 24f;
+        _hintFallback.fontStyle      = FontStyles.Bold;
         _hintFallback.alignment      = TextAlignmentOptions.Center;
-        _hintFallback.color          = Color.white;
+        _hintFallback.color          = new Color(1f, 0.97f, 0.88f); // Kem vàng sáng
         _hintFallback.raycastTarget  = false;   // không được nuốt click của người chơi
         return _hintFallback;
     }
@@ -241,7 +258,12 @@ public class FarmUIManager : MonoBehaviour
         if (_hintClearAt <= 0f || Time.unscaledTime < _hintClearAt) return;
 
         _hintClearAt = 0f;
-        if (_hintFallback != null) _hintFallback.gameObject.SetActive(false);
+        if (_hintFallback != null)
+        {
+            if (_hintFallback.transform.parent != null && _hintFallback.transform.parent.name == "Hint_Toast_Fallback")
+                _hintFallback.transform.parent.gameObject.SetActive(false);
+            _hintFallback.gameObject.SetActive(false);
+        }
         else if (txtHint  != null) txtHint.text = string.Empty;
     }
 
@@ -572,6 +594,8 @@ public class FarmUIManager : MonoBehaviour
 
         HideAllPopups();
         HideSickleTool();
+        HidePenBasketTray();
+        PenSupplyTrayV2.HideIfShowing();
 
         if (canvasHudRoot != null)
             canvasHudRoot.SetActive(false);

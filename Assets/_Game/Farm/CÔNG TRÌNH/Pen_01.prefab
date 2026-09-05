@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &1663442949529134927
 GameObject:
@@ -143,13 +143,13 @@ MonoBehaviour:
   animalPrefab: {fileID: 6625395460638792448, guid: ae8359af6fad488bb8032d045019a30c, type: 3}
   legacyChildName: bonam1
   spawnedChildName: HappyHarvest_Cow_Brown
-  localPosition: {x: 0, y: 0, z: 0}
+  localPosition: {x: 0, y: 1.85, z: 0}
   localScale: {x: 0.85, y: 0.85, z: 0.85}
   sortingOrderOffset: 50
   animalCount: 2
   horizontalSpacing: 1.2
-  walkBoundsMin: {x: -1.15, y: -0.6}
-  walkBoundsMax: {x: 1.15, y: 0.45}
+  walkBoundsMin: {x: -1.25, y: 1.25}
+  walkBoundsMax: {x: 1.25, y: 2.5}
   soundClips:
   - {fileID: 8300000, guid: 26b8396f64fe4dcdb8d42b960bad1fbc, type: 3}
   - {fileID: 8300000, guid: 00adf13314684a9dbc5ad5ef37ecef13, type: 3}

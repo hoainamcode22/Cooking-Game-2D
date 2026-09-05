@@ -21,11 +21,11 @@ public class CoinFlyFX : MonoBehaviour
     [SerializeField] private float flyDuration = 0.65f;
     [SerializeField] private AnimationCurve ease = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
-    private const float CoinSize     = 36f;   // px trên canvas
-    private const float BurstRadius  = 60f;   // bán kính bung ra lúc spawn
-    private const float BurstTime    = 0.12f; // thời gian bung
-    private const float StaggerDelay = 0.05f; // mỗi xu cách nhau
-    private const float EndScale     = 0.45f; // thu nhỏ khi về ví
+    private const float CoinSize     = 82f;   // [V3] px trên canvas (to rõ thỏa mãn)
+    private const float BurstRadius  = 85f;   // bán kính bung ra lúc spawn
+    private const float BurstTime    = 0.22f; // thời gian bung
+    private const float StaggerDelay = 0.045f;// mỗi xu cách nhau
+    private const float EndScale     = 0.65f; // thu nhỏ khi về ví
 
     private static Sprite fallbackSprite;     // đồng xu vẽ runtime, cache dùng chung
     private readonly List<GameObject> liveCoins = new List<GameObject>(8);
@@ -176,10 +176,11 @@ public class CoinFlyFX : MonoBehaviour
             yield return null;
         }
 
-        // Chạm đích: hiệu ứng mẩy mẩy trên Gold_Container
+        // Chạm đích: hiệu ứng mẩy mẩy trên Gold_Container + phát tiếng Ting vàng
         if (targetGoldIcon != null)
         {
             JuicyPulseFX.Play(targetGoldIcon, 1.20f, 0.22f);
+            AudioManager.Instance?.PlayCoinTing();
         }
 
         liveCoins.Remove(coin.gameObject);

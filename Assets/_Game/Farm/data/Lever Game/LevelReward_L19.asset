@@ -26,19 +26,19 @@ MonoBehaviour:
     amount: 2
   - itemId: mushroom
     displayName: "N\u1EA5m"
-    icon: {fileID: 0}
+    icon: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
     amount: 5
   - itemId: sugarcane
     displayName: "M\xEDa"
-    icon: {fileID: 0}
+    icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
     amount: 4
   - itemId: milk
     displayName: "S\u1EEFa"
-    icon: {fileID: 0}
+    icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
     amount: 2
   - itemId: da
     displayName: "\u0110\xE1"
-    icon: {fileID: 0}
+    icon: {fileID: -121973485040521977, guid: a68f6969126f0d648a32160873fda832, type: 3}
     amount: 2
   unlockEntries:
   - label: "Pet \u0111i quanh tr\u1EA1i (nh\u1EB7t xu r\u01A1i)"

@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using FarmGame.UI;
 
 [Serializable]
 public class UnifiedTaskPopupSprites
@@ -296,6 +297,18 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     {
         if (IsOpenStatic)
             _instance.ShowTab(_instance._currentTab);
+        TownshipHUDController.Instance?.UpdateMissionBadge();
+    }
+
+    public static bool HasAnyClaimableTask()
+    {
+        var inst = EnsureInstance();
+        if (inst == null) return false;
+        
+        bool hasMission = inst.CoThuongChoNhan(inst._missionDatabase, false);
+        bool hasAchievement = inst.CoThuongChoNhan(inst._achievementDatabase, true);
+        bool hasDaily = !inst.SyncDailyState().claimedToday;
+        return hasMission || hasAchievement || hasDaily;
     }
 
     public void SetSprites(UnifiedTaskPopupSprites spriteSet)
@@ -582,16 +595,18 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         Button close = CreateTextButton(_board, "Btn_Close", "", TaskPopupDesign.NutDongTam,
             new Vector2(TaskPopupDesign.NutDongKichThuoc, TaskPopupDesign.NutDongKichThuoc),
             new Color32(255, 255, 255, 0), 1);
-        close.image.sprite = sprites.closeButton != null ? sprites.closeButton : GetCircleSprite();
-        close.image.type = Image.Type.Simple;
-        close.image.color = sprites.closeButton != null ? Color.white : new Color32(239, 75, 51, 255);
+        Sprite sprClose = UIStandardSprites.Close ?? sprites.closeButton;
+        bool coArtDong = sprClose != null;
+        close.image.sprite = coArtDong ? sprClose : GetCircleSprite();
+        close.image.type = coArtDong ? Image.Type.Sliced : Image.Type.Simple;
+        close.image.color = coArtDong ? Color.white : new Color32(239, 75, 51, 255);
         close.image.preserveAspect = true;
         close.onClick.AddListener(Close);
         TMP_Text chuX = close.GetComponentInChildren<TMP_Text>();
         if (chuX != null)
         {
             // Nhãn "X" chỉ hiện khi CHƯA có art — có art rồi thì chữ đè lên hình.
-            if (sprites.closeButton != null) chuX.gameObject.SetActive(false);
+            if (coArtDong) chuX.gameObject.SetActive(false);
             else { chuX.text = "X"; chuX.fontSize = 44; }
         }
 
@@ -1914,6 +1929,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         GrantRewards(rewards);
         PlayRewardFly(rewards, src);
         AvatarProfilePopupUI.AddAchievementCount();
+        TownshipHUDController.Instance?.UpdateMissionBadge();
     }
 
     private void ClaimAchievement(MissionData data, RectTransform source)
@@ -1934,6 +1950,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         GrantRewards(rewards);
         PlayRewardFly(rewards, src);
         AvatarProfilePopupUI.AddAchievementCount();
+        TownshipHUDController.Instance?.UpdateMissionBadge();
     }
 
     private void ClaimDailyReward(int day, DailyReward reward, RectTransform source)
@@ -1949,6 +1966,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         GrantRewards(reward.grant);
         PlayRewardFly(reward.grant, src);
         ShowTab(Tab.Daily);
+        TownshipHUDController.Instance?.UpdateMissionBadge();
     }
 
     private static void GrantRewards(RewardBundle rewards)

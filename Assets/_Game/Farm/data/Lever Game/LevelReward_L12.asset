@@ -18,27 +18,27 @@ MonoBehaviour:
   giftItems:
   - itemId: seed_watermelon
     displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 3
   - itemId: seed_pumpkin
     displayName: "H\u1EA1t B\xED \u0110\u1ECF"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
     amount: 2
   - itemId: watermelon
     displayName: "D\u01B0a H\u1EA5u"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 3
   - itemId: mushroom
     displayName: "N\u1EA5m"
-    icon: {fileID: 0}
+    icon: {fileID: 5693180632895198793, guid: 780292260e99550499b36b2850ff0589, type: 3}
     amount: 4
   - itemId: herbs
     displayName: "Rau Th\u01A1m"
-    icon: {fileID: 0}
+    icon: {fileID: -6473379884045465844, guid: 050a1194adf72f046adc525bddd7bb28, type: 3}
     amount: 3
   - itemId: son
     displayName: "S\u01A1n"
-    icon: {fileID: 0}
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 1
   - itemId: seed_ngo
     displayName: "H\u1EA1t Ng\xF4"

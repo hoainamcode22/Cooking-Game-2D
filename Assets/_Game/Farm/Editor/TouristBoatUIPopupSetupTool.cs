@@ -85,7 +85,7 @@ public static class TouristBoatUIPopupSetupTool
     private const string CanvasRiengName = "Canvas_TouristBoatPopup";
 
     // Cỡ thiết kế (reference resolution 1920x1080 — cùng CanvasScaler dự án dùng)
-    private static readonly Vector2 CardAnnounceSize = new Vector2(1100f, 620f);
+    private static readonly Vector2 CardAnnounceSize = new Vector2(500f, 140f);
     private static readonly Vector2 CardPurchaseSize = new Vector2(980f,  680f);
 
     private static readonly Color MauDim      = new Color(0f, 0f, 0f, 0.6f);   // dim đen 60% (GDD §3.5)
@@ -259,9 +259,12 @@ public static class TouristBoatUIPopupSetupTool
         Image card = EnsureImage(rootVisual, "Card", out bool cardMoi);
         if (cardMoi)
         {
-            CanhGiuaMH(card.rectTransform, CardAnnounceSize);
+            card.rectTransform.anchorMin = card.rectTransform.anchorMax = new Vector2(1f, 1f);
+            card.rectTransform.pivot = new Vector2(1f, 1f);
+            card.rectTransform.sizeDelta = CardAnnounceSize;
+            card.rectTransform.anchoredPosition = new Vector2(-30f, -135f);
             ApSpriteKhung(card, khungGo);
-            Ghi($"    + Card (khung gỗ {CardAnnounceSize.x:0}x{CardAnnounceSize.y:0})");
+            Ghi($"    + Card (Toast Báo Tàu {CardAnnounceSize.x:0}x{CardAnnounceSize.y:0})");
         }
         else if (card.sprite == null)
         {
@@ -275,39 +278,56 @@ public static class TouristBoatUIPopupSetupTool
         if (ctMoi) Ghi("      + Content (CanvasGroup — fade-in chữ)");
 
         // Tiêu đề
-        TextMeshProUGUI title = EnsureText(content, "Title", font, 62f, MauChuNau,
-                                           TextAlignmentOptions.Center, out bool tMoi);
+        TextMeshProUGUI title = EnsureText(content, "Title", font, 24f, new Color(1f, 0.95f, 0.82f),
+                                           TextAlignmentOptions.Left, out bool tMoi);
         if (tMoi)
         {
-            NeoTren(title.rectTransform, new Vector2(CardAnnounceSize.x - 140f, 110f), -70f);
+            RectTransform trt = title.rectTransform;
+            trt.anchorMin = new Vector2(0f, 1f);
+            trt.anchorMax = new Vector2(1f, 1f);
+            trt.pivot = new Vector2(0f, 1f);
+            trt.anchoredPosition = new Vector2(25f, -15f);
+            trt.sizeDelta = new Vector2(-50f, 32f);
             title.fontStyle = FontStyles.Bold;
-            title.text      = "Tàu số 01 sắp cập bến!";
-            Ghi("      + Title (TMP — text thật set lúc runtime)");
+            title.text      = "⚓ Tàu Du Lịch Sắp Cập Bến!";
+            Ghi("      + Title (TMP vàng sáng)");
         }
 
         // Nội dung
-        TextMeshProUGUI body = EnsureText(content, "Body", font, 42f, MauChuPhu,
-                                          TextAlignmentOptions.Center, out bool bMoi);
+        TextMeshProUGUI body = EnsureText(content, "Body", font, 18f, new Color(1f, 0.98f, 0.92f),
+                                          TextAlignmentOptions.Left, out bool bMoi);
         if (bMoi)
         {
-            NeoGiua(body.rectTransform, new Vector2(CardAnnounceSize.x - 180f, 240f), 10f);
+            RectTransform brt = body.rectTransform;
+            brt.anchorMin = new Vector2(0f, 0f);
+            brt.anchorMax = new Vector2(1f, 1f);
+            brt.pivot = new Vector2(0f, 0.5f);
+            brt.offsetMin = new Vector2(25f, 12f);
+            brt.offsetMax = new Vector2(-130f, -48f);
             body.textWrappingMode = TextWrappingModes.Normal;
-            body.text = "Tàu số 01 sẽ cập bến sau 5 phút! Chuẩn bị nguyên liệu, " +
-                        "nấu món ngon tiếp đãi khách nhé!";
-            Ghi("      + Body (TMP nhiều dòng)");
+            body.text = "Sẽ cập bến sau 5 phút. Hãy chuẩn bị món ăn đón khách nhé!";
+            Ghi("      + Body (TMP kem sáng)");
         }
 
         // Nút "Đã rõ"
         Button btn = EnsureButton(content, "Btn_DaRo", spriteNut, MauNutXacNhan,
-                                  new Vector2(360f, 110f), out TextMeshProUGUI label, out bool nMoi);
-        if (nMoi)
+                                  new Vector2(100f, 38f), out TextMeshProUGUI label, out bool nMoi);
+        if (nMoi || btn != null)
         {
-            NeoDuoi(btn.GetComponent<RectTransform>(), new Vector2(360f, 110f), 80f);
-            ApFont(label, font);
-            label.text     = "Đã rõ";
-            label.fontSize = 46f;
-            label.color    = Color.white;
-            Ghi("      + Btn_DaRo (+ Label \"Đã rõ\")");
+            RectTransform btnRt = btn.GetComponent<RectTransform>();
+            btnRt.anchorMin = new Vector2(1f, 0f);
+            btnRt.anchorMax = new Vector2(1f, 0f);
+            btnRt.pivot = new Vector2(1f, 0f);
+            btnRt.anchoredPosition = new Vector2(-20f, 18f);
+            btn.gameObject.SetActive(true);
+
+            if (label != null)
+            {
+                label.text = "ĐÃ RÕ";
+                label.fontSize = 16f;
+                label.fontStyle = FontStyles.Bold;
+                label.color = new Color(0.28f, 0.16f, 0.05f); // Nâu đậm trên nền nút vàng/cam
+            }
         }
 
         // ── Wire SerializeField (chỉ điền chỗ trống — không đè chỉnh tay) ───
@@ -462,10 +482,17 @@ public static class TouristBoatUIPopupSetupTool
         }
 
         // Nút X đóng — góc phải trên của Card
-        Button btnDong = EnsureButton(content, "Btn_Close", spriteTron, MauNutDong,
+        Sprite spriteDong = UIStandardSprites.Close;                       // WP-D2b: nút đóng chuẩn (null → Knob + tint cũ)
+        Button btnDong = EnsureButton(content, "Btn_Close", spriteDong ?? spriteTron,
+                                      spriteDong != null ? Color.white : MauNutDong,
                                       new Vector2(84f, 84f), out TextMeshProUGUI labelDong, out bool dMoi);
         if (dMoi)
         {
+            if (spriteDong != null)
+            {
+                var imgDong = btnDong.GetComponent<Image>();
+                if (imgDong != null) { imgDong.type = Image.Type.Sliced; imgDong.color = Color.white; }
+            }
             var rt = btnDong.GetComponent<RectTransform>();
             rt.anchorMin        = new Vector2(1f, 1f);
             rt.anchorMax        = new Vector2(1f, 1f);

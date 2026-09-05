@@ -1277,6 +1277,9 @@ public class PlacementManager : MonoBehaviour
             houseGrowth.Initialize(bData, currentItem.name, bTime);
         }
 
+        // [DECOR-5STAGE] hook cộng thêm — no-op nếu DecorGrowthConfig chưa bật (AUTONOMY §2)
+        DecorGrowthBootstrap.OnDecorPlaced(spawnedObj, currentItem);
+
         // Lưu vào PlayerPrefs kèm plotId + hướng xoay
         placedBuildings.Add(new BuildingEntry
         {
@@ -1506,6 +1509,15 @@ public class PlacementManager : MonoBehaviour
                     plot.SetPlotId(newId);
                     entry.plotId = newId;
                 }
+            }
+
+            // [FIX §7 — 2026-09-03] Khôi phục houseId đúng giá trị đã dùng lúc Initialize() khi đặt mới.
+            // Nếu không, GetSaveKey() tính ra key khác save cũ → PlayerPrefs.HasKey = false
+            // → Start() mặc định state = Completed ⇒ mất tiến độ nhà đang xây / hộp quà chưa mở.
+            var houseGrowth = obj.GetComponent<HouseGrowthController>();
+            if (houseGrowth != null)
+            {
+                houseGrowth.houseId = itemData.name; // PHẢI khớp currentItem.name dùng ở ConfirmPlacement
             }
 
             knownSizes[obj] = SizeForSpawned(itemData, rot, obj);

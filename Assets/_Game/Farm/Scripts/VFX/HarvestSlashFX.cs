@@ -9,6 +9,11 @@ public class HarvestSlashFX : MonoBehaviour
         go.transform.position = position;
 
         ParticleSystem ps = go.AddComponent<ParticleSystem>();
+        // VONG 16 — FIX: AddComponent<ParticleSystem>() tu dong PLAY ngay, ma
+        // Unity khong cho doi main.duration khi he dang chay
+        // ("Setting the duration while system is still playing is not supported").
+        // Dung han lai, cau hinh xong roi Play() lai o cuoi.
+        ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         var main = ps.main;
         main.startColor = new Color(0.4f, 0.9f, 0.3f);
         main.startSize = new ParticleSystem.MinMaxCurve(0.15f, 0.4f);
@@ -35,6 +40,7 @@ public class HarvestSlashFX : MonoBehaviour
         slashGo.transform.SetParent(go.transform);
         slashGo.transform.localPosition = Vector3.zero;
         ParticleSystem slashPs = slashGo.AddComponent<ParticleSystem>();
+        slashPs.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
         var smain = slashPs.main;
         smain.startColor = Color.white;
         smain.startSize = new ParticleSystem.MinMaxCurve(0.5f, 1f);
@@ -48,6 +54,10 @@ public class HarvestSlashFX : MonoBehaviour
         var srenderer = slashPs.GetComponent<ParticleSystemRenderer>();
         srenderer.sortingLayerName = "Crop";
         srenderer.sortingOrder = 51;
+
+        // Cau hinh xong moi cho chay — dung thu tu nay se het canh bao duration.
+        ps.Play(true);
+        slashPs.Play(true);
 
         Destroy(go, 1.5f);
     }

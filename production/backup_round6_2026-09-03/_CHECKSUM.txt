@@ -1,0 +1,3 @@
+1e7e6408b18b41e431e6902cccd3daf0  BoatDockSlot.cs
+e1993cfe3c04854ad1291bb07d66abc5  MarketManager.cs
+d268acf6d9bab76890161acceb6c27dd  TouristBoatController.cs

@@ -1,0 +1,10 @@
+a5fadb2155107dfb7a77b90389c27735 *PopupCaptureReporter.cs
+
+## WP-B (2026-09-05) — trước khi sửa
+c15f974585eba5ec80edb58ff0a315f5 *CelebrationCharacterSlot.cs
+ab3dfca24f1f3480a129a828e9e95868 *LevelRewardIconAutoFixer.cs
+e5712fd9643dfc8bb0db471d1e1f2f83 *LevelUpGiftSlotUI.cs
+946af7bd5e379c1adf1597c1f4a627e0 *LevelUpPopupRewireTool.cs
+e6c9f68090987092ca2bfb331f06bb5e *LevelUpPopupUI.cs
+c0f2c5069366dddb12bc2d65b445c9a2 *MasterTutorialBeautifier.cs
+ccb1dea07f9dcc84605b03eed731abc3 *UnlockSlotUI.cs

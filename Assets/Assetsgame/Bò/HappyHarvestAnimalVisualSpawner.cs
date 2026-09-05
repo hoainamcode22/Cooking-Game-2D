@@ -9,15 +9,15 @@ namespace Assetsgame.Animals
         [SerializeField] private GameObject animalPrefab;
         [SerializeField] private string legacyChildName;
         [SerializeField] private string spawnedChildName = "HappyHarvestAnimal";
-        [SerializeField] private Vector3 localPosition;
+        [SerializeField] private Vector3 localPosition = new Vector3(0f, 1.85f, 0f);
         [SerializeField] private Vector3 localScale = Vector3.one;
         [SerializeField] private int sortingOrderOffset = 50;
         [SerializeField, Min(1)] private int animalCount = 2;
         [SerializeField] private float horizontalSpacing = 1.3f;
 
         [Header("Pen Movement Bounds")]
-        [SerializeField] private Vector2 walkBoundsMin = new Vector2(-1.15f, -0.6f);
-        [SerializeField] private Vector2 walkBoundsMax = new Vector2(1.15f, 0.45f);
+        [SerializeField] private Vector2 walkBoundsMin = new Vector2(-1.25f, 1.25f);
+        [SerializeField] private Vector2 walkBoundsMax = new Vector2(1.25f, 2.50f);
 
         [Header("Audio Clips (Tiếng kêu đói)")]
         [SerializeField] private AudioClip[] soundClips;

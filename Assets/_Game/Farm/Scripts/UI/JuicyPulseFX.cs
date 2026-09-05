@@ -10,6 +10,19 @@ using UnityEngine;
 public class JuicyPulseFX : MonoBehaviour
 {
     private static readonly Dictionary<Transform, Coroutine> ActiveRoutines = new Dictionary<Transform, Coroutine>();
+
+    /// <summary>
+    /// [VÒNG 15] Scale GỐC của từng target, chụp ĐÚNG MỘT LẦN ở nhịp pulse đầu tiên.
+    ///
+    /// VÌ SAO PHẢI CÓ: bản vá vòng 13 cho coroutine tự chụp `target.localScale` mỗi lần chạy.
+    /// Nhưng `StartPulse` DỪNG coroutine cũ GIỮA CHỪNG — đúng lúc scale đang là base×1.22.
+    /// Lượt mới chụp lại con số đang phình đó làm "gốc" ⇒ 1.22 → 1.49 → 1.82… **phình vô hạn**.
+    /// Đó là lý do icon vàng cứ to dần lên sau mỗi lần nhận thưởng (Sếp chụp được).
+    ///
+    /// Bản gốc hard-code Vector3.one thì sai kiểu khác (ép cụm scale 1.2 về 1.0) nhưng KHÔNG
+    /// tích luỹ. Chỉ nhớ scale gốc một lần mới chữa được cả hai.
+    /// </summary>
+    private static readonly Dictionary<Transform, Vector3> BaseScales = new Dictionary<Transform, Vector3>();
     private static JuicyPulseFX _runner;
 
     private static JuicyPulseFX Runner
@@ -40,9 +53,18 @@ public class JuicyPulseFX : MonoBehaviour
 
     private void StartPulse(Transform target, float punchScale, float duration)
     {
+        // Chụp scale gốc ĐÚNG MỘT LẦN, lúc target chắc chắn chưa bị pulse nào đụng vào.
+        if (!BaseScales.ContainsKey(target))
+            BaseScales[target] = target.localScale;
+
         if (ActiveRoutines.TryGetValue(target, out var oldRoutine) && oldRoutine != null)
         {
             StopCoroutine(oldRoutine);
+
+            // BẮT BUỘC trả về gốc ngay: coroutine bị dừng giữa chừng để lại scale đang phình
+            // (base×1.22). Không trả về thì mắt người chơi thấy một cú giật, và mọi phép tính
+            // sau đó đều lệch. Đây là chỗ vòng 13 bỏ sót.
+            target.localScale = BaseScales[target];
         }
 
         ActiveRoutines[target] = StartCoroutine(RoutineJuicyPulse(target, punchScale, duration));
@@ -52,7 +74,13 @@ public class JuicyPulseFX : MonoBehaviour
     {
         if (target == null) yield break;
 
-        Vector3 baseScale = Vector3.one;
+        // [VÒNG 15] Đọc scale gốc từ BaseScales — TUYỆT ĐỐI KHÔNG chụp lại `target.localScale`
+        // ở đây. Chụp lại chính là cái làm icon phình dần vô hạn (xem chú thích ở BaseScales).
+        if (!BaseScales.TryGetValue(target, out Vector3 baseScale))
+        {
+            baseScale = target.localScale;
+            BaseScales[target] = baseScale;
+        }
         float elapsed = 0f;
         duration = Mathf.Max(0.08f, duration);
 
@@ -92,5 +120,14 @@ public class JuicyPulseFX : MonoBehaviour
         }
 
         ActiveRoutines.Remove(target);
+
+        // Dọn rác: target đã bị huỷ (đổi scene, popup đóng) thì bỏ luôn khỏi bảng scale gốc,
+        // nếu không Dictionary giữ tham chiếu chết và lần sau tạo lại object sẽ đọc nhầm.
+        if (target == null)
+        {
+            var chet = new List<Transform>();
+            foreach (var k in BaseScales.Keys) if (k == null) chet.Add(k);
+            foreach (var k in chet) BaseScales.Remove(k);
+        }
     }
 }

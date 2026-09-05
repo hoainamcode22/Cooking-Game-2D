@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &3248171257447125160
 GameObject:
@@ -233,13 +233,13 @@ MonoBehaviour:
   animalPrefab: {fileID: 88036800646919876, guid: 309e3af177dd4cdeb4eab0787381ab83, type: 3}
   legacyChildName: heonam1_0
   spawnedChildName: HappyHarvest_Pig
-  localPosition: {x: 0, y: 0, z: 0}
+  localPosition: {x: 0, y: 1.85, z: 0}
   localScale: {x: 0.85, y: 0.85, z: 0.85}
   sortingOrderOffset: 50
   animalCount: 2
   horizontalSpacing: 1.2
-  walkBoundsMin: {x: -1.15, y: -0.6}
-  walkBoundsMax: {x: 1.15, y: 0.45}
+  walkBoundsMin: {x: -1.25, y: 1.25}
+  walkBoundsMax: {x: 1.25, y: 2.5}
   soundClips:
   - {fileID: 8300000, guid: 481d222bc68d4229a20cb5015a3a646b, type: 3}
   - {fileID: 8300000, guid: 004638a57ec341ffab05626045363bcd, type: 3}

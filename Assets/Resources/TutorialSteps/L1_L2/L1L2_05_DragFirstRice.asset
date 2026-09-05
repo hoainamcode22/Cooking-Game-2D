@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_05_DragFirstRice
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "Tuy\u1EC7t! Gi\u1EDD k\xE9o h\u1EA1t l\xFAa v\xE0o \xF4 \u0111\u1EA5t
-    \u0111\u1EC3 gieo nh\xE9!"
+  npcText: "Khay h\u1EA1t gi\u1ED1ng \u0111\xE3 m\u1EDF! K\xE9o h\u1EA1t l\xFAa v\xE0o
+    \xF4 \u0111\u1EA5t \u0111\u1EC3 gieo h\u1EA1t nh\xE9!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: seed_rice
@@ -21,6 +21,6 @@ MonoBehaviour:
   holePaddingPx: 16
   waitAction: 2
   showGuideBoard: 0
-  showHandPointer: 1
+  showHandPointer: 0
   handOffset: {x: 40, y: -30}
   dragToTargetId: tutorial_plot_01

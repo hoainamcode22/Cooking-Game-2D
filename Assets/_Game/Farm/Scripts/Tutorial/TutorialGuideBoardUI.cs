@@ -33,6 +33,11 @@ public class TutorialGuideBoardUI : MonoBehaviour
     [SerializeField] private Button confirmButton;
     [SerializeField] private ParticleSystem confirmBurstParticles;
 
+    [Header("Stepper Indicator")]
+    [SerializeField] private Image[] stepDots = Array.Empty<Image>();
+    [SerializeField] private Sprite dotOnSprite;
+    [SerializeField] private Sprite dotOffSprite;
+
     [Header("Four Popup Pages")]
     [SerializeField] private PopupPage[] popupPages = Array.Empty<PopupPage>();
 
@@ -111,6 +116,8 @@ public class TutorialGuideBoardUI : MonoBehaviour
         
         if (nextSelected != null)
         {
+            UpdateStepperDots(nextSelected);
+
             if (nextSelected.animatedHand != null && nextSelected.handFrom != null)
                 _handRoutine = StartCoroutine(AnimatePageHand(nextSelected));
                 
@@ -124,6 +131,36 @@ public class TutorialGuideBoardUI : MonoBehaviour
         transform.SetAsLastSibling();
     }
 
+    private void UpdateStepperDots(PopupPage activePage)
+    {
+        if (stepDots == null || stepDots.Length == 0) return;
+        int activeIndex = -1;
+        for (int i = 0; i < popupPages.Length; i++)
+        {
+            if (popupPages[i] == activePage)
+            {
+                activeIndex = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < stepDots.Length; i++)
+        {
+            if (stepDots[i] == null) continue;
+            bool isActive = (i == activeIndex);
+            if (isActive && dotOnSprite != null)
+            {
+                stepDots[i].sprite = dotOnSprite;
+                stepDots[i].transform.localScale = new Vector3(1.15f, 1.15f, 1f);
+            }
+            else if (!isActive && dotOffSprite != null)
+            {
+                stepDots[i].sprite = dotOffSprite;
+                stepDots[i].transform.localScale = Vector3.one;
+            }
+        }
+    }
+
     public void Hide()
     {
         if (_isClosing) return;
@@ -131,7 +168,18 @@ public class TutorialGuideBoardUI : MonoBehaviour
         StopPageAnimation();
         _currentPage = null;
         var target = rootPanel != null ? rootPanel : gameObject;
-        
+
+        // VONG 16 — FIX: neu chinh GameObject nay dang TAT thi Unity khong cho
+        // StartCoroutine (loi "Coroutine couldn't be started because the game
+        // object 'Tutorial_GuideBoard' is inactive!"). Truong hop nay bang da
+        // an san roi, chi can dong ngay khong can animation.
+        if (!isActiveAndEnabled || target == null)
+        {
+            if (target != null) target.SetActive(false);
+            _isClosing = false;
+            return;
+        }
+
         StartCoroutine(BounceOutRoutine(target.transform, () => {
             target.SetActive(false);
             _isClosing = false;
@@ -343,9 +391,21 @@ public class TutorialGuideBoardUI : MonoBehaviour
         
         foreach (var img in images)
         {
-            // Bỏ qua root, background, text parent, và hand cursor
-            if (img.gameObject == page.root || img.gameObject.name.ToLower().Contains("panel") 
-                || img.gameObject.name.ToLower().Contains("bg") || img.GetComponent<Button>() != null
+            // ⚠️ [VÒNG 14] TRƯỚC ĐÂY LỌC THEO TÊN ("panel"/"bg") — SÓT.
+            // `Template_Process_Diamond` là TẤM NỀN VÀNG cỡ 560×300, tên không chứa từ nào
+            // trong danh sách nên bị coi là "icon" ⇒ bị xoay ±5° quanh Z và trôi ±10px
+            // ⇒ nền nghiêng đè lên dòng chữ hướng dẫn (đúng lỗi Sếp chụp ở trang BƯỚC 2).
+            // Nay dùng DANH SÁCH TRẮNG: chỉ thứ ĐÚNG LÀ icon nhỏ mới được float.
+            // [WP-C2] Bỏ "Image" khỏi whitelist: các thẻ trang 4 (nay tên Card_Harvest_Drop / Card_Rice_Collected)
+            // và con "Image" trong Template_* từng bị xoay ±15° + nhấp nhô ⇒ đè lên nhãn. Thẻ/nền KHÔNG BAO GIỜ xoay nữa.
+            string ten = img.gameObject.name;
+            bool laIconThat = ten.StartsWith("Icon")
+                              || ten.StartsWith("Diamond_") || ten.StartsWith("Badge");
+
+            if (!laIconThat
+                || img.gameObject == page.root
+                || ten.StartsWith("Template_")            // tấm nền — TUYỆT ĐỐI không xoay
+                || img.GetComponent<Button>() != null
                 || (page.animatedHand != null && img.transform.IsChildOf(page.animatedHand)))
             {
                 continue;
@@ -366,15 +426,34 @@ public class TutorialGuideBoardUI : MonoBehaviour
                 if (icon == null) continue;
                 
                 // Hiệu ứng "Bay bay" lơ lửng
-                float floatOffset = Mathf.Sin(time + i) * 10f; // Nhấp nhô 10 pixel
+                float floatOffset = Mathf.Sin(time + i) * 8f; // Nhấp nhô 8 pixel
                 
                 // Hiệu ứng "3D" xoay lắc nhẹ
-                float rotY = Mathf.Sin(time * 0.7f + i) * 15f; // Lắc trái phải 15 độ
-                float rotZ = Mathf.Cos(time * 0.5f + i) * 5f;  // Nghiêng nhẹ 5 độ
+                float rotY = Mathf.Sin(time * 0.7f + i) * 12f; // Lắc trái phải 12 độ
+                float rotZ = Mathf.Cos(time * 0.5f + i) * 4f;  // Nghiêng nhẹ 4 độ
+
+                // Hiệu ứng nhịp thở sống động (Breathing / Pulse)
+                float pulse = 1f + Mathf.Sin(time * 1.2f + i) * 0.04f;
 
                 icon.localPosition = startLocalPos[i] + new Vector3(0, floatOffset, 0);
                 icon.localRotation = Quaternion.Euler(0, rotY, rotZ);
+                icon.localScale = Vector3.one * pulse;
             }
+
+            // [JUICE ANIMATION] Xử lý hoạt ảnh chuyển động cho tranh minh hoạ chính của trang
+            var mainIllu = page.root.transform.Find("Illu_Main") ?? page.root.transform.Find("Image_Illustration");
+            if (mainIllu != null)
+            {
+                // Nhịp thở và rung nảy sống động cho tranh
+                float illuPulse = 1f + Mathf.Sin(time * 1.5f) * 0.035f;
+                float illuFloat = Mathf.Sin(time * 1.1f) * 6f;
+                float illuSwing = Mathf.Sin(time * 1.8f) * 3.5f; // Lắc nhẹ góc chém
+
+                mainIllu.localScale = new Vector3(illuPulse, illuPulse, 1f);
+                mainIllu.localPosition = new Vector3(mainIllu.localPosition.x, illuFloat, mainIllu.localPosition.z);
+                mainIllu.localRotation = Quaternion.Euler(0, 0, illuSwing);
+            }
+
             yield return null;
         }
     }

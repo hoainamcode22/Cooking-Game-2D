@@ -75,6 +75,8 @@ public class PenProcessPopupUI : MonoBehaviour
 
     public void Open(PenMiniPanelUI pen)
     {
+        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         if (pen == null || pen.CurrentState != PenMiniPanelUI.PenState.Processing) return;
         _pen = pen;
         _openedAtFrame = Time.frameCount;

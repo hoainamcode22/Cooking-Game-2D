@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_09_HarvestFirstRice
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "L\xFAa ch\xEDn v\xE0ng r\u1ED3i! Thu ho\u1EA1ch th\xF4i!"
+  npcText: "Qu\u1EB9t li\u1EC1m qua \xF4 l\xFAa \u0111\u1EC3 thu ho\u1EA1ch nh\u1EEFng
+    h\u1EA1t l\xFAa v\xE0ng \u01B0\u01A1m!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: tutorial_plot_01

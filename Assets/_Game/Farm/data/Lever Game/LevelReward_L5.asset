@@ -26,19 +26,19 @@ MonoBehaviour:
     amount: 2
   - itemId: khoaitay
     displayName: "Khoai T\xE2y"
-    icon: {fileID: 0}
+    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
     amount: 3
   - itemId: cachua
     displayName: "C\xE0 Chua"
-    icon: {fileID: 0}
+    icon: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
     amount: 3
   - itemId: egg
     displayName: "Tr\u1EE9ng"
-    icon: {fileID: 0}
+    icon: {fileID: -8307804571547316847, guid: 20cfa699d7411b0499297e423fec3d8a, type: 3}
     amount: 2
   - itemId: fishsauce
     displayName: "N\u01B0\u1EDBc M\u1EAFm"
-    icon: {fileID: 0}
+    icon: {fileID: 1949655777808321501, guid: e05efc49d25b1ac4d8fc62cc1760bf9f, type: 3}
     amount: 2
   unlockEntries:
   - label: "M\u1EDE KH\xD3A NH\xC0 B\u1EBEP \u2014 n\u1EA5u \u0103n ngay!"

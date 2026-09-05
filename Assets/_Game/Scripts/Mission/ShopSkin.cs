@@ -144,7 +144,7 @@ public class ShopSkin : MonoBehaviour
         // Nút X: đỏ theo bảng nút chung.
         var dong = transform.Find("BtnClose");
         var nutDong = dong != null ? dong.GetComponent<Button>() : null;
-        if (nutDong != null) SkinKit.MacAoNut(nutDong, SkinKit.NutDo, 18f);
+        if (nutDong != null) SkinVi.NutDong(nutDong);   // WP-D2b: sprite đóng chuẩn (Sliced, trắng) + chữ X dự phòng; null → áo đỏ cũ
 
         // Thanh tìm kiếm: mock là Ô LÕM KEM #f3e2bb viền #d9b478 — ảnh gỗ tối cũ không
         // hợp với giấy sáng mới. Tô lại nền + chữ nâu nhạt, không đụng InputField logic.

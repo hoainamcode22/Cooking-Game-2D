@@ -16,7 +16,7 @@ public static class ChoiLaiTuDauTool
             "Chơi lại từ đầu",
             "Xoá TOÀN BỘ dữ liệu đã lưu, đưa game về đúng trạng thái người chơi mới:\n\n" +
             "  • Cấp 1, EXP 0, vàng/gem về mặc định\n" +
-            "  • Kho trống → được cấp lại 10 hạt lúa + 10 hạt hướng dương\n" +
+            "  • Kho trống → được cấp lại 8 hạt lúa + 6 hạt hướng dương\n" +
             "  • Tutorial chạy lại từ bước đầu\n" +
             "  • Nhiệm vụ, đơn hàng, quầy hàng, chuồng, công trình: xoá sạch\n\n" +
             "KHÔNG THỂ HOÀN TÁC.",
@@ -59,9 +59,20 @@ public static class ChoiLaiTuDauTool
 
     private static void XoaThat()
     {
+        // WP-A2 (2026-09-05): xoá cả save.json (+ .bak/.tmp) của SaveSystem trước — nếu không,
+        // PlayerPrefs sạch nhưng lần Play tới SaveSystem vẫn khôi phục từ file cũ ⇒ "chơi lại" hụt.
+        try
+        {
+            SaveSystem.DeleteSave();
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[ChơiLại] Không xoá được file save của SaveSystem: {e.Message}. Vẫn tiếp tục xoá PlayerPrefs.");
+        }
+
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
-        Debug.Log("[ChơiLại] ✅ ĐÃ XOÁ SẠCH TOÀN BỘ SAVE (PlayerPrefs.DeleteAll). Lần Play tới game sẽ ở trạng thái người chơi mới hoàn toàn!");
+        Debug.Log("[ChơiLại] ✅ ĐÃ XOÁ SẠCH TOÀN BỘ SAVE (SaveSystem.DeleteSave + PlayerPrefs.DeleteAll). Lần Play tới game sẽ ở trạng thái người chơi mới hoàn toàn!");
     }
 
     // ─────────────────────────────────────────────────────────────────────────

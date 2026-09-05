@@ -125,13 +125,32 @@ public class UnmaskRaycastFilter : MonoBehaviour, ICanvasRaycastFilter
     // true  = element chặn raycast (click bị giữ lại ở lớp tối).
     public bool IsRaycastLocationValid(Vector2 screenPoint, Camera eventCamera)
     {
-        // Vùng bao nhiều ô (screen-rect) CHỈ là hiệu ứng tối — KHÔNG chặn click ở đâu cả,
+        // 1. Vùng bao nhiều ô (screen-rect) CHỈ là hiệu ứng tối — KHÔNG chặn click ở đâu cả,
         // để user vẫn click ô + bảng chọn hạt + liềm bình thường khi đang trồng/thu hoạch.
         if (_useScreenRect) return false;
 
+        // 2. Khi khay hạt giống hoặc popup tương tác đang mở — KHÔNG chặn raycast để người chơi kéo thả hạt / liềm
+        if (FarmInputLock.IsSeedPopupOpen) return false;
+
+        // 3. Nếu tutorial manager đang ở các bước kéo hạt, thu hoạch, cho ăn — không chặn click gameplay
+        if (TutorialManager.Instance != null && TutorialManager.Instance.LaBuocGameplayMoKhongKhoaRaycast())
+            return false;
+
         if (_currentTarget == null) return true;
 
-        return !RectTransformUtility.RectangleContainsScreenPoint(
-            _currentTarget, screenPoint, eventCamera);
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            _currentTarget, screenPoint, eventCamera, out Vector2 localPoint))
+            return true;
+
+        Rect rect = _currentTarget.rect;
+        if (_paddingPx > 0f)
+        {
+            rect.xMin -= _paddingPx;
+            rect.xMax += _paddingPx;
+            rect.yMin -= _paddingPx;
+            rect.yMax += _paddingPx;
+        }
+
+        return !rect.Contains(localPoint);
     }
 }

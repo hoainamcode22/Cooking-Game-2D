@@ -24,8 +24,9 @@ MonoBehaviour:
     contents: 'to animate flipbooks you can either use a flipbook player that will
       allow you to control the framerate, or manipulate directly the texture index
       attribute with tex index blocks attributes. '
-    theme: Classic
+    theme: 
     textSize: Small
+    colorTheme: 1
   categories: []
   uiBounds:
     serializedVersion: 2
@@ -105,22 +106,6 @@ MonoBehaviour:
     max: Infinity
     enumValues: []
     descendantCount: 0
-  - name: ImpactColor
-    path: ImpactColor
-    tooltip: 
-    space: -1
-    spaceable: 0
-    sheetType: m_Vector4f
-    realType: Color
-    defaultValue:
-      m_Type:
-        m_SerializableType: UnityEngine.Color, UnityEngine.CoreModule, Version=0.0.0.0,
-          Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"r":0.8565787076950073,"g":1.0,"b":0.7594339847564697,"a":0.729411780834198}'
-    min: -Infinity
-    max: Infinity
-    enumValues: []
-    descendantCount: 0
   - name: Impact
     path: Impact
     tooltip: 
@@ -148,7 +133,7 @@ MonoBehaviour:
       m_Type:
         m_SerializableType: UnityEngine.Vector2, UnityEngine.CoreModule, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
-      m_SerializableObject: '{"x":0.07000000029802323,"y":0.30000001192092898}'
+      m_SerializableObject: '{"x":0.18000000715255738,"y":0.550000011920929}'
     min: -Infinity
     max: Infinity
     enumValues: []
@@ -200,8 +185,24 @@ MonoBehaviour:
     max: Infinity
     enumValues: []
     descendantCount: 0
+  - name: ImpactColor
+    path: ImpactColor
+    tooltip: 
+    space: -1
+    spaceable: 0
+    sheetType: m_Vector4f
+    realType: Color
+    defaultValue:
+      m_Type:
+        m_SerializableType: UnityEngine.Color, UnityEngine.CoreModule, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_SerializableObject: '{"r":0.9300000071525574,"g":0.9700000286102295,"b":1.0,"a":0.8500000238418579}'
+    min: -Infinity
+    max: Infinity
+    enumValues: []
+    descendantCount: 0
   m_ImportDependencies: []
-  m_GraphVersion: 18
+  m_GraphVersion: 19
   m_ResourceVersion: 1
   m_SubgraphDependencies: []
   m_CategoryPath: 
@@ -217,10 +218,6 @@ VisualEffectResource:
     m_RendererSettings:
       motionVectorGenerationMode: 0
       shadowCastingMode: 0
-      rayTracingMode: 0
-      receiveShadows: 0
-      reflectionProbeUsage: 0
-      lightProbeUsage: 0
     m_CullingFlags: 3
     m_UpdateMode: 0
     m_PreWarmDeltaTime: 0.05
@@ -801,6 +798,7 @@ MonoBehaviour:
   m_SubOutputs:
   - {fileID: 8926484042661614590}
   - {fileID: 8926484042661614850}
+  useBaseColorMap: 3
   colorMapping: 0
   uvMode: 0
   flipbookLayout: 0
@@ -3529,6 +3527,7 @@ MonoBehaviour:
   sortingPriority: 0
   m_SubOutputs:
   - {fileID: 8926484042661614854}
+  useBaseColorMap: 3
   colorMapping: 0
   uvMode: 1
   flipbookLayout: 0
@@ -4049,7 +4048,7 @@ MonoBehaviour:
   - {fileID: 8926484042661614779}
   m_ExposedName: Impact
   m_Exposed: 1
-  m_Order: 3
+  m_Order: 2
   m_Category: 
   m_Min:
     m_Type:
@@ -4065,9 +4064,7 @@ MonoBehaviour:
   m_Tooltip: 
   m_Nodes:
   - m_Id: 0
-    linkedSlots:
-    - outputSlot: {fileID: 8926484042661614779}
-      inputSlot: {fileID: 0}
+    linkedSlots: []
     position: {x: 740.6667, y: 951.3334}
     expandedSlots: []
     expanded: 0
@@ -4129,7 +4126,7 @@ MonoBehaviour:
   - {fileID: 8926484042661614781}
   m_ExposedName: Impact Size Range
   m_Exposed: 1
-  m_Order: 4
+  m_Order: 3
   m_Category: 
   m_Min:
     m_Type:
@@ -4282,7 +4279,7 @@ MonoBehaviour:
   - {fileID: 8926484042661614801}
   m_ExposedName: Wind Directio
   m_Exposed: 1
-  m_Order: 5
+  m_Order: 4
   m_Category: 
   m_Min:
     m_Type:
@@ -4501,7 +4498,7 @@ MonoBehaviour:
   - {fileID: 8926484042661614807}
   m_ExposedName: Wind Speed
   m_Exposed: 1
-  m_Order: 6
+  m_Order: 5
   m_Category: 
   m_Min:
     m_Type:
@@ -4582,7 +4579,7 @@ MonoBehaviour:
   - {fileID: 8926484042661614809}
   m_ExposedName: ImpactColor
   m_Exposed: 1
-  m_Order: 2
+  m_Order: 6
   m_Category: 
   m_Min:
     m_Type:

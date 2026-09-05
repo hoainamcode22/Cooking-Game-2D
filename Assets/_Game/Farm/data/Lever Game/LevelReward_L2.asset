@@ -22,23 +22,23 @@ MonoBehaviour:
     amount: 3
   - itemId: seed_rice
     displayName: "H\u1EA1t L\xFAa"
-    icon: {fileID: 0}
+    icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
     amount: 2
   - itemId: seed_bapcai
     displayName: "H\u1EA1t B\u1EAFp C\u1EA3i"
-    icon: {fileID: 0}
+    icon: {fileID: -2398023241171923016, guid: 88f706f4b7de235498ec5a8931fe3396, type: 3}
     amount: 2
   - itemId: ngo
     displayName: "Ng\xF4"
-    icon: {fileID: 0}
+    icon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
     amount: 3
   - itemId: egg
     displayName: "Tr\u1EE9ng"
-    icon: {fileID: 0}
+    icon: {fileID: -8307804571547316847, guid: 20cfa699d7411b0499297e423fec3d8a, type: 3}
     amount: 1
   - itemId: salt
     displayName: "Mu\u1ED1i"
-    icon: {fileID: 0}
+    icon: {fileID: -1162442978445507191, guid: a849ade4905cf98419e62a9cf5b043e5, type: 3}
     amount: 2
   unlockEntries:
   - label: "M\u1EDF kh\xF3a h\u1EA1t Ng\xF4"

@@ -1,0 +1,15 @@
+ebc8d24809bf460f567f0ce13970b9ca *Assets/_Game/Scripts/Mission/UnifiedTaskPopupUI.cs
+1f312798d23f137b9fdfe38fac7e0e82 *Assets/_Game/Farm/Editor/TaskPopupSpriteWireTool.cs
+fdd0d53138cb6057911a4a0a9d683149 *Assets/_Game/Farm/Editor/OrderBoardHierarchyBuilderTool.cs
+86f20816bc1dcc0d8513d96cbf1c31a0 *Assets/_Game/Farm/Editor/StallHierarchyBuilderTool.cs
+753eede4404addc8d3d0156f9b79ce5d *Assets/_Game/Farm/Editor/ShopNewUIBuilder.cs
+a39c41d7f51f092f4446bb2e56282072 *Assets/_Game/Farm/Editor/WarehouseNewUIBuilder.cs
+de43836c305dcc99fdbe0c0c50fe42f6 *Assets/_Game/Farm/Editor/MarketBoardUIBuilder.cs
+4d7c4cb06851f36e542605c37c59d60f *Assets/_Game/Farm/Editor/MillPopupBuilderTool.cs
+92e6c14c8130baf840405eefd6cc473f *Assets/_Game/Farm/Editor/TouristBoatUIPopupSetupTool.cs
+b36da5bb3b8dbfb5c22b67e174e8606c *Assets/Export_Train_UI_Package/Scripts/TrainStationMasterPopupUI.cs
+d0cd6f297666339ac359b339396215df *Assets/Export_Train_UI_Package/Scripts/TrainLoadPopupUI.cs
+57863c79291594c0ebb1fe3e4a0bb7b6 *Assets/Export_Train_UI_Package/Scripts/TrainProcessPopupUI.cs
+ca7e879d51f91c02e37b26003cb332ba *Assets/Export_Train_UI_Package/Editor/TrainPackageBuildTool.cs
+52139897ad1853ab1f40566b469af2c9 *Assets/_Game/Scripts/Mission/ShopSkin.cs
+fc61684d490863e0b170b7cd130562b0 *Assets/_Game/Scripts/Mission/SkinVi.cs

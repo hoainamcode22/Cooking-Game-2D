@@ -201,8 +201,10 @@ public static class MarketBoardUIBuilder
         RectTransform closeRT = NewRect("Btn_Close", board);
         AnchorTopRight(closeRT, new Vector2(86f, 86f), new Vector2(-15f, -15f));
         Image closeImage = closeRT.gameObject.AddComponent<Image>();
-        closeImage.sprite = LoadSprite($"{PerfectSvgDir}/btn_close.png") 
+        closeImage.sprite = UIStandardSprites.Close                      // WP-D2b: nút đóng chuẩn
+                         ?? LoadSprite($"{PerfectSvgDir}/btn_close.png")
                          ?? LoadSprite("Assets/Assetsgame/btnX.png");
+        closeImage.type = Image.Type.Sliced;
         closeImage.preserveAspect = true;
         closeImage.color = Color.white;
         Button closeButton = closeRT.gameObject.AddComponent<Button>();
