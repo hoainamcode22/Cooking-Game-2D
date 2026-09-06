@@ -49,6 +49,24 @@ public class PenSupplyTrayV2 : MonoBehaviour
     // ─────────────────────────────────────────────────────────────────────────
     public static PenSupplyTrayV2 Instance { get; private set; }
 
+    /// <summary>
+    /// KHAY DANG HIEN KHONG. Tutorial can co nay vi PenMiniPanelUI.IsPanelOpen() chi noi ve
+    /// panel world CU (dang TAT khi dung khay V2) => buoc L2_08 / L2_10 tuong khay chua mo.
+    /// </summary>
+    public static bool DangMoKhay => Instance != null && Instance._hienThi;
+
+    /// <summary>
+    /// [FIX 2026-09-06 vong3] KHAY DANG MO CHO DUNG CHUONG NAY KHONG?
+    /// DangMoKhay o tren la co TOAN CUC (bat ky chuong nao cung tra true). Dung co toan cuc
+    /// do trong PenMiniPanelUI.IsPanelOpen() khien MOI chuong trong scene deu tu nhan
+    /// "panel cua toi dang mo" => chuong B goi ClosePanel() va dap khay cua chuong A ngay
+    /// trong frame vua click. Ham nay tra ve theo TUNG chuong nen khong con ro ri cheo.
+    /// </summary>
+    public static bool DangMoKhayCho(PenMiniPanelUI pen)
+    {
+        return pen != null && Instance != null && Instance._hienThi && Instance._pen == pen;
+    }
+
     [Header("Kích thước ô (px màn hình — tự tính)")]
     [Tooltip("Cạnh ô = Screen.height * tỉ lệ này, kẹp trong [cellMinPx, cellMaxPx].")]
     [SerializeField] private float cellHeightRatio = 0.13f;
@@ -78,6 +96,26 @@ public class PenSupplyTrayV2 : MonoBehaviour
     [Header("Sorting")]
     [Tooltip("Dưới ghost kéo rỗ (999) và ghost khay cũ (9999) để item kéo luôn nổi trên khay.")]
     [SerializeField] private int sortingOrder = 800;
+
+    /// <summary>Gia tri MAC DINH cua field <c>sortingOrder</c> o tren — chi dung khi scene
+    /// chua co host khay nao de doc.</summary>
+    private const int OrderKhayMacDinh = 800;
+
+    /// <summary>
+    /// [FIX 2026-09-06 vong4] ORDER THAT cua canvas khay, mo ra cho ben ngoai DOC (khong ghi).
+    /// Tutorial can con so nay de dat lop ban tay len TREN khay, thay vi go mot con so ma vao
+    /// code roi lech nhau khi ai do chinh khay trong Inspector.
+    /// Thu tu doc: instance dang song -> host trong scene (ke ca dang tat) -> hang so mac dinh.
+    /// </summary>
+    public static int OrderKhay
+    {
+        get
+        {
+            PenSupplyTrayV2 inst = Instance;
+            if (inst == null) inst = FindFirstObjectByType<PenSupplyTrayV2>(FindObjectsInactive.Include);
+            return inst != null ? inst.sortingOrder : OrderKhayMacDinh;
+        }
+    }
 
     // ── Runtime refs (dựng một lần) ──────────────────────────────────────────
     private Canvas        _canvas;
@@ -227,6 +265,11 @@ public class PenSupplyTrayV2 : MonoBehaviour
 
         // 6. Bám theo chuồng (camera có thể pan ở chế độ thu hoạch — khay cũ cũng screen-space).
         DatViTriKhayVaSpotlight(false);
+
+        // 7. Giu quyen so huu 2 target tutorial. TutorialRuntimeTargetResolver quet 0,3s/lan va
+        //    co the tro 'tutorial_feed' sang mot DraggableFeedItem cu con active o cho khac
+        //    => tay tutorial chi vao khoang khong. Ham nay thoat sam khi target da dung.
+        DangKyTargetTutorial();
     }
 
     // ═════════════════════════════════════════════════════════════════════════
@@ -275,6 +318,7 @@ public class PenSupplyTrayV2 : MonoBehaviour
 
         _canvasGO.SetActive(true);
         _hienThi      = true;
+        DangKyTargetTutorial();   // 2 o da ACTIVE => TutorialTarget.Awake chay ngay, co RectTransform
         _dangKeoTruoc = false; // xoá trạng thái "đang kéo" cũ khi re-show
         _thoiDiemShow = Time.unscaledTime;
 
@@ -393,6 +437,34 @@ public class PenSupplyTrayV2 : MonoBehaviour
 
         // Kho hết thức ăn → ô mờ (nhưng vẫn nhận drag để handler cũ hiện hint như trước).
         DatTrangThaiSlot(stock);
+    }
+
+    /// <summary>
+    /// GAN 2 O CUA KHAY LAM TARGET TUTORIAL ('tutorial_basket' + 'tutorial_feed').
+    /// VI SAO CAN: TutorialRuntimeTargetResolver.PenScanLoop chi biet 2 nguon CU —
+    /// PenMiniPanelUI.FirstFeedSlotRect/BasketSlotRect (panel world, dang TAT khi dung khay V2)
+    /// va DraggableFeedItem (khay V2 nhung LivestockFeedDragItem, KHAC lop) — nen 'tutorial_feed'
+    /// khong bao gio duoc dang ky ⇒ ban tay buoc L2_08 "khong co gi de chi". Tu gan o day.
+    /// Chi gan khi target CHUA CO / da chet / dang tro sang object khac (tranh dang ky lai
+    /// moi frame). Slot bi Destroy o lan Show sau se tu UnregisterTarget qua OnDestroy/OnDisable,
+    /// va vi UnregisterTarget chi xoa khi current == target nen khong xoa nham slot moi.
+    /// </summary>
+    private void DangKyTargetTutorial()
+    {
+        GanTargetTutorial(_slotBasketGO, "tutorial_basket");
+        GanTargetTutorial(_slotFeedGO,   "tutorial_feed");
+    }
+
+    private static void GanTargetTutorial(GameObject slot, string id)
+    {
+        if (slot == null || string.IsNullOrEmpty(id)) return;
+
+        RectTransform dangCo = TutorialManager.GetTargetRect(id);
+        if (dangCo != null && dangCo.gameObject == slot && slot.activeInHierarchy) return;
+
+        var tt = slot.GetComponent<TutorialTarget>();
+        if (tt == null) tt = slot.AddComponent<TutorialTarget>();
+        tt.SetTargetId(id);
     }
 
     /// <summary>Bật/mờ 2 ô theo trạng thái chuồng + tồn kho.</summary>

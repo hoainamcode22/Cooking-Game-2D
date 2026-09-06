@@ -79,6 +79,7 @@ namespace ExportTrainUIPackage
                 return;
             }
             Instance = this;
+            EnsureCanvasSetup();
             AutoBindComponents();
             if (btnClose != null)
                 btnClose.onClick.AddListener(ClosePopup);
@@ -88,8 +89,19 @@ namespace ExportTrainUIPackage
                 btnRaGa.onClick.AddListener(OnRaGaClicked);
         }
 
+        private void EnsureCanvasSetup()
+        {
+            var c = GetComponent<Canvas>();
+            if (c == null) c = gameObject.AddComponent<Canvas>();
+            c.overrideSorting = true;
+            c.sortingOrder = 420;
+            if (GetComponent<GraphicRaycaster>() == null)
+                gameObject.AddComponent<GraphicRaycaster>();
+        }
+
         private void OnEnable()
         {
+            EnsureCanvasSetup();
             ApplyThemeSprites();
         }
 
@@ -382,8 +394,9 @@ namespace ExportTrainUIPackage
         private void OnRaGaClicked()
         {
             ClosePopup();
-            var masterPopup = TrainStationMasterPopupUI.Instance
-                ?? FindFirstObjectByType<TrainStationMasterPopupUI>(FindObjectsInactive.Include);
+            // [VONG 6 - 06/09] Dung LayPopupThat() de khong bao gio vo phai mot component
+            // MasterPopupUI di lac tren toa tau (nguon goc vu "3 popup de nhau").
+            var masterPopup = TrainStationMasterPopupUI.LayPopupThat();
 
             if (masterPopup != null)
             {

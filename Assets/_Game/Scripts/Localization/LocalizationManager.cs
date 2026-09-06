@@ -64,6 +64,11 @@ public static class LocalizationManager
         _daKhoiTao = true;
         _lang = PlayerPrefs.GetString(PREF_KEY, VI);
         if (_lang != VI && _lang != EN) _lang = VI;
+
+        // [FIX 2026-09-06] Bat bo dich chay nen: dich MOI chu tren man hinh, khong phai boc
+        // Loc.T() cho tung file UI. Dang tieng Viet thi no khong lam gi ca.
+        LocRuntimeInterceptor.KhoiTao();
+        if (_lang == EN) LocRuntimeInterceptor.QuetVaDich();
     }
 
     /// <summary>
@@ -81,7 +86,7 @@ public static class LocalizationManager
         PlayerPrefs.Save();
 
         Debug.Log($"[Loc] Đổi ngôn ngữ → {lang}");
-        OnChanged?.Invoke(lang);
+        OnChanged?.Invoke(lang);   // LocRuntimeInterceptor cung nghe su kien nay va quet lai ngay
     }
 
     /// <summary>

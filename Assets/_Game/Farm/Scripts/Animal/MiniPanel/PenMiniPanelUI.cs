@@ -67,7 +67,14 @@ public class PenMiniPanelUI : MonoBehaviour
 
     public PenState CurrentState { get; private set; } = PenState.Idle;
 
-    private float   processStartUnix;
+    // [FIX 2026-09-06 vong6] TRUOC DAY LA float. Giay Unix bay gio ~1.79e9, vuot xa do
+    // chinh xac cua float (o vung so nay float chi con buoc nhay 128 GIAY) nen moc bat dau
+    // bi lam tron ve boi so cua 128 => dong ho 45 giay chay that su 0..109 giay, va co 20
+    // giay trong moi 128 giay khien remaining = 0 NGAY khi vua cho an ("00:00" + thanh day
+    // + gem 15). Nay dung long GIAY UNIX y het PlotController (cay trong) va
+    // ConstructionManager (cong trinh) — mot cua duy nhat cho ca du an.
+    private long    processStartUnix;
+    private long    processEndUnix;
     private string  activeFoodId;
     private Coroutine timerCoroutine;
     private bool    popupInputLockHeld;
@@ -133,18 +140,57 @@ public class PenMiniPanelUI : MonoBehaviour
         LoadState();
         if (CurrentState == PenState.Processing)
         {
-            float remaining = GetRemainingSeconds();
-            if (remaining <= 0f)
+            // LoadState() da tu chua nhanh "het gio roi ma van con Processing" nen toi day
+            // remaining chac chan > 0. Van giu chot nay cho chac.
+            if (GetRemainingSeconds() <= 0f)
+            {
+                ClearProcessStamps();
                 SetState(PenState.Ready);
+                SaveState();
+            }
             else
-                timerCoroutine = StartCoroutine(ProcessTimerCoroutine(remaining));
+            {
+                timerCoroutine = StartCoroutine(ProcessTimerCoroutine());
+            }
         }
         UpdateReadyBubble();
+
+        { Debug.Log($"[Pen] {(config != null ? config.penId : "?")} NAP_SAVE state={CurrentState} conLai={GetRemainingSeconds():F0}s start={processStartUnix} end={processEndUnix}"); }
+    }
+
+    /// <summary>
+    /// RAO TU CHUA LUC DANG CHOI: coroutine dem gio BI UNITY GIET neu GameObject chuong bi
+    /// SetActive(false) (culling / doi khu vuc), ma Start() thi KHONG chay lai khi bat len.
+    /// Khi do chuong ket cung o Processing va khong bao gio sang Ready duoc. Chot nay chi ra
+    /// tay dung truong hop do (timerCoroutine == null) nen khong dinh gi den luot dem binh thuong.
+    /// </summary>
+    private void TickProcessTimeout()
+    {
+        if (CurrentState != PenState.Processing) return;
+        // CHI hoi DONG HO, khong hoi timerCoroutine: Unity giet coroutine khi GameObject bi
+        // SetActive(false) nhung KHONG xoa bien timerCoroutine, nen bien do con la tham chieu
+        // CHET (khac null) — tin no thi rao se khong bao gio ra tay dung luc can nhat.
+        // Coroutine cung thoat vong lap tai dung moc nay nen hai ben khong da nhau.
+        if (processEndUnix > 0L && GetUnixNow() < processEndUnix) return;
+
+        StopTimerIfRunning();
+        ClearProcessStamps();
+        SetState(PenState.Ready);
+        SaveState();
     }
 
     private void Update()
     {
+        TickProcessTimeout();
+
         if (!IsPanelOpen()) return;
+
+        // [FIX 2026-09-06 vong3] Toan bo doan duoi la logic "cham ra ngoai thi dong" CUA PANEL
+        // CU (panelRoot, world-space). Khay V2 TU LO viec nay trong PenSupplyTrayV2.OnDimPressed()
+        // va con co chot 0.08s de nuot lai chinh cai click vua mo. Neu de doan nay chay cho khay
+        // V2 thi IsPointerOverPanel() se do vao panelRoot DANG TAT => luon tra false => dong khay
+        // ngay trong frame vua mo. Vi vay: chi chay khi panel CU thuc su dang bat.
+        if (panelRoot == null || !panelRoot.activeSelf) return;
 
         if (FarmInputLock.IsDraggingSeed) return;
 
@@ -191,6 +237,17 @@ public class PenMiniPanelUI : MonoBehaviour
     private void OnDisable()
     {
         ReleasePopupInputBlock();
+        // Unity da GIET coroutine dem gio khi GameObject tat. Bo tham chieu chet di, neu
+        // khong OnEnable ben duoi se tuong dong ho van dang chay va khong noi lai.
+        timerCoroutine = null;
+    }
+
+    private void OnEnable()
+    {
+        // Bat lai chuong (culling / doi khu vuc): Start() KHONG chay lai, nen phai tu noi lai
+        // dong ho. Moc thoi gian van con nguyen trong processEndUnix nen luot nuoi khong mat giay nao.
+        if (CurrentState == PenState.Processing && timerCoroutine == null && GetRemainingSeconds() > 0f)
+            timerCoroutine = StartCoroutine(ProcessTimerCoroutine());
     }
 
     [Header("Title")]
@@ -199,9 +256,27 @@ public class PenMiniPanelUI : MonoBehaviour
     [Tooltip("Offset spawn FX")]
     [SerializeField] private float harvestSpawnUpOffset = 280f;
 
+    /// <summary>
+    /// [FIX 2026-09-06] Nguoi choi moi (cap 1-2) duoc TANG TOC CHUONG MIEN PHI.
+    /// Ly do: tang toc chuong ga ~21 kim cuong trong khi nguoi moi chi co ~15-19 ⇒ buoc
+    /// "bam kim cuong" cua tutorial la ngo cut, khong the hoan thanh. Tu CAP 3 tro di tinh
+    /// tien binh thuong. (O dat vốn đã miễn phí trong tutorial — nay chuong dong bo theo.)
+    /// </summary>
+    public const int CAP_BAT_DAU_TINH_GEM_CHUONG = 3;
+
+    /// <summary>Dang trong giai doan mien phi tang toc chuong (cap &lt; 3)?</summary>
+    public static bool TangTocChuongDangMienPhi
+    {
+        get
+        {
+            var pp = PlayerProgressManager.Instance;
+            return pp == null || pp.Level < CAP_BAT_DAU_TINH_GEM_CHUONG;
+        }
+    }
+
     public int SpeedUpGemCost =>
         CurrentState == PenState.Processing
-            ? ConstructionManager.RushCostFor(GetRemainingSeconds())
+            ? (TangTocChuongDangMienPhi ? 0 : ConstructionManager.RushCostFor(GetRemainingSeconds()))
             : 0;
 
     [Header("Sorting")]
@@ -215,7 +290,18 @@ public class PenMiniPanelUI : MonoBehaviour
     [SerializeField] private Vector2 readyBubbleLocalPos = new Vector2(0f, 320f);
     [SerializeField] private int readyBubbleSortingOrder = 1500;
 
-    public bool IsPanelOpen() => panelRoot != null && panelRoot.activeSelf;
+    /// <summary>
+    /// [FIX 2026-09-06] Khay V2 (PenSupplyTrayV2) moi la khay dang dung thuc te; panelRoot doi
+    /// luon TAT nen ham nay tra false du khay DANG mo ⇒ tutorial tuong khay chua mo va cho mai.
+    ///
+    /// [FIX 2026-09-06 vong3] NHUNG phai hoi theo TUNG CHUONG. Ban truoc dung co toan cuc
+    /// PenSupplyTrayV2.DangMoKhay, ma ham nay lai duoc 4 noi goi voi y nghia "cua RIENG chuong
+    /// nay" (Update() ngay duoi, PenClickDetector:112, LivestockAI:412,
+    /// TutorialRuntimeTargetResolver:139). Hau qua: mo khay cho chuong A thi chuong B/C/D cung
+    /// bao "panel cua toi dang mo" va tu dong dong khay => bam chuong khong ra gi.
+    /// </summary>
+    public bool IsPanelOpen() => PenSupplyTrayV2.DangMoKhayCho(this)
+                                 || (panelRoot != null && panelRoot.activeSelf);
     public RectTransform FirstFeedSlotRect => slot1Root != null ? slot1Root.GetComponent<RectTransform>() : null;
     public RectTransform BasketSlotRect => basketRoot != null ? basketRoot.GetComponent<RectTransform>() : null;
     public RectTransform SpeedUpButtonRect
@@ -232,6 +318,11 @@ public class PenMiniPanelUI : MonoBehaviour
     {
         if (config == null) return;
 
+        // [FIX 2026-09-06 vong3] _openedAtTime truoc gio KHONG BAO GIO duoc gan (chi khai bao
+        // = -99f roi thoi), nen chot PanelKeepOpenSeconds trong Update() la CODE CHET. Gan lai
+        // o day de dung y do ban dau: giu panel mo it nhat 1.5s sau khi mo.
+        _openedAtTime = Time.unscaledTime;
+
         NotifyAnimalsVoice();
 
         // 1. Nếu đang nuôi (Processing) -> Mở Process Popup (thanh đếm ngược + Speed-up Gem - GIỮ NGUYÊN)
@@ -246,6 +337,10 @@ public class PenMiniPanelUI : MonoBehaviour
             if (popup != null)
             {
                 popup.Open(this);
+                // [FIX 2026-09-06] Bao cho tutorial: buoc L2_09 (tang toc chuong) cho nguoi choi MO
+                // bang tien trinh. Truoc day chi nhanh Idle bao, nen mo bang luc dang ap thi
+                // tutorial khong biet ⇒ ket cung o buoc 28.
+                TutorialManager.Instance?.NotifyOpenPen();
                 return;
             }
         }
@@ -254,8 +349,14 @@ public class PenMiniPanelUI : MonoBehaviour
         if (CurrentState == PenState.Ready)
         {
             // [V2 ADD] Khay hợp nhất V2 — TryShow false thì rơi về khay rỗ cũ y nguyên.
-            if (useSupplyTrayV2 && PenSupplyTrayV2.TryShow(this)) return; // [V2 ADD]
+            // [FIX 2026-09-06] Nhanh Ready cung phai bao — buoc L2_10 (thu trung) cho MO khay ro.
+            if (useSupplyTrayV2 && PenSupplyTrayV2.TryShow(this))
+            {
+                TutorialManager.Instance?.NotifyOpenPen();
+                return; // [V2 ADD]
+            }
             FarmUIManager.Instance?.ShowPenBasketTray(this);
+            TutorialManager.Instance?.NotifyOpenPen();
             return;
         }
 
@@ -336,12 +437,13 @@ public class PenMiniPanelUI : MonoBehaviour
         AudioManager.Instance?.PlayPlanting();
         NotifyAnimalsVoice();
         activeFoodId = foodItemId;
-        processStartUnix = (float)GetUnixNow();
-        SetState(PenState.Processing);
+        BeginProcessing();   // DAT LAI ca moc bat dau LAN moc ket thuc — moi luot, khong tru luot nao
         SaveState();
 
         StopTimerIfRunning();
-        timerCoroutine = StartCoroutine(ProcessTimerCoroutine(EffectiveFeedSeconds));
+        timerCoroutine = StartCoroutine(ProcessTimerCoroutine());
+
+        { Debug.Log($"[Pen] {config.penId} CHO_AN state={CurrentState} conLai={GetRemainingSeconds():F0}s start={processStartUnix} end={processEndUnix}"); }
 
         // Đóng mini panel (Idle) và mở CropProcessPopupUI (thanh process mới giống ruộng)
         // Xoá flow cũ: progressOverlay hiện ngay → thay bằng popup riêng
@@ -414,6 +516,8 @@ public class PenMiniPanelUI : MonoBehaviour
         }
 
         activeFoodId = null;
+        StopTimerIfRunning();
+        ClearProcessStamps();
         SetState(PenState.Idle);
         SaveState();
         RefreshUI();
@@ -434,6 +538,7 @@ public class PenMiniPanelUI : MonoBehaviour
         if (!FarmEconomyManager.Instance.SpendGems(gemCost)) return false;
 
         StopTimerIfRunning();
+        ClearProcessStamps();
         SetState(PenState.Ready);
         SaveState();
 
@@ -461,6 +566,27 @@ public class PenMiniPanelUI : MonoBehaviour
             && TutorialManager.Instance.CurrentStepName == stepName;
     }
 
+    /// <summary>
+    /// LOI VAO DUY NHAT cua trang thai Processing — DAT LAI moc bat dau VA moc ket thuc.
+    /// Day chinh la cho bug vong 6 nam: tu luot cho an thu 2 tro di, moc cu (da bi float lam
+    /// tron ve boi so cua 128 giay) khien GetRemainingSeconds() tra 0 ngay tu frame dau,
+    /// nen popup dung im o "00:00" suot ca luot.
+    /// </summary>
+    private void BeginProcessing()
+    {
+        long duration    = (long)Mathf.Max(1f, Mathf.Ceil(EffectiveFeedSeconds));
+        processStartUnix = GetUnixNow();
+        processEndUnix   = processStartUnix + duration;
+        SetState(PenState.Processing);
+    }
+
+    /// <summary>Roi khoi Processing — xoa moc de so cu khong con lam nhieu luot sau.</summary>
+    private void ClearProcessStamps()
+    {
+        processStartUnix = 0L;
+        processEndUnix   = 0L;
+    }
+
     private void SetState(PenState newState)
     {
         CurrentState = newState;
@@ -468,23 +594,30 @@ public class PenMiniPanelUI : MonoBehaviour
         UpdateReadyBubble();
     }
 
-    private IEnumerator ProcessTimerCoroutine(float duration)
+    /// <summary>
+    /// Dem gio theo DONG HO THAT (processEndUnix), khong con cong don Time.deltaTime.
+    /// Ly do: deltaTime dung lai khi timeScale = 0 / app bi treo nen dong ho lech dan so voi
+    /// moc da luu; va sau khi tai lai scene, thanh tien do bi ve lai tu 0 du luot da chay noi.
+    /// </summary>
+    private IEnumerator ProcessTimerCoroutine()
     {
-        float elapsed = 0f;
-        while (elapsed < duration)
+        float total = Mathf.Max(1f, EffectiveFeedSeconds);
+        while (true)
         {
-            elapsed += Time.deltaTime;
-            float t = Mathf.Clamp01(elapsed / duration);
-            float remaining = Mathf.Max(0f, duration - elapsed);
+            float remaining = GetRemainingSeconds();
+            if (remaining <= 0f) break;
+            float t = Mathf.Clamp01(1f - remaining / total);
 
             if (progressFill  != null) progressFill.fillAmount = t;
             if (progressLabel != null) progressLabel.text = FormatTime(remaining);
-            if (_gemCostText  != null) _gemCostText.text = "x" + ConstructionManager.RushCostFor(remaining);
+            // [FIX 2026-09-06] Hien dung gia: mien phi thi bao MIEN PHI, khong bao "x21".
+            if (_gemCostText  != null) _gemCostText.text = TangTocChuongDangMienPhi ? "MIỄN PHÍ" : ("x" + ConstructionManager.RushCostFor(remaining));
 
             yield return null;
         }
 
         timerCoroutine = null;
+        ClearProcessStamps();
         SetState(PenState.Ready);
         SaveState();
     }
@@ -539,12 +672,16 @@ public class PenMiniPanelUI : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Giay con lai, do bang DONG HO THAT (UTC) nen song qua tat/mo game va qua tai lai scene.
+    /// Dung processEndUnix (moc KET THUC) thay vi cong lai start + duration moi lan goi: neu
+    /// designer doi feedDurationSeconds giua chung thi luot DANG chay khong bi nhay so.
+    /// </summary>
     public float GetRemainingSeconds()
     {
-        double startUnix = processStartUnix;
-        double nowUnix   = GetUnixNow();
-        float elapsed    = (float)(nowUnix - startUnix);
-        return Mathf.Max(0f, EffectiveFeedSeconds - elapsed);
+        if (CurrentState != PenState.Processing || processEndUnix <= 0L) return 0f;
+        long remain = processEndUnix - GetUnixNow();
+        return remain > 0L ? (float)remain : 0f;
     }
 
     private void RefreshUI()
@@ -721,8 +858,14 @@ public class PenMiniPanelUI : MonoBehaviour
         PlayerPrefs.SetInt(PrefKeyState + id, (int)CurrentState);
         PlayerPrefs.SetString(PrefKeyFood + id, activeFoodId ?? "");
 
+        // [FIX 2026-09-06 vong6] TRUOC: processStartUnix.ToString("R") — KHONG truyen culture,
+        // nen may cai tieng Viet ghi ra "1,7886528E+09"; con LoadState lai doc bang
+        // InvariantCulture (NumberStyles.Float, KHONG co AllowThousands) => parse THAT BAI =>
+        // moc = 0 => "00:00" vinh vien sau moi lan tai lai scene / mo lai game.
+        // GIU NGUYEN ten khoa + kieu string de SaveAdapters / SaveData khong phai sua gi.
         if (CurrentState == PenState.Processing)
-            PlayerPrefs.SetString(PrefKeyStartTime + id, processStartUnix.ToString("R"));
+            PlayerPrefs.SetString(PrefKeyStartTime + id,
+                processStartUnix.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
         LuuGopPrefs.Hen();
     }
@@ -739,10 +882,9 @@ public class PenMiniPanelUI : MonoBehaviour
         CurrentState = (PenState)stateInt;
         activeFoodId = PlayerPrefs.GetString(PrefKeyFood + id, "");
 
-        string startStr = PlayerPrefs.GetString(PrefKeyStartTime + id, "0");
-        double.TryParse(startStr, System.Globalization.NumberStyles.Float,
-            System.Globalization.CultureInfo.InvariantCulture, out double startUnix);
-        processStartUnix = (float)startUnix;
+        processStartUnix = ParseUnixSeconds(PlayerPrefs.GetString(PrefKeyStartTime + id, "0"));
+        long napDuration = (long)Mathf.Max(1f, Mathf.Ceil(EffectiveFeedSeconds));
+        processEndUnix   = processStartUnix > 0L ? processStartUnix + napDuration : 0L;
 
         if (verCu < PenSaveVersion && coSaveCu && CurrentState == PenState.Processing)
         {
@@ -751,7 +893,21 @@ public class PenMiniPanelUI : MonoBehaviour
 
             CurrentState      = PenState.Idle;
             activeFoodId      = "";
-            processStartUnix  = 0f;
+            ClearProcessStamps();
+            SaveState();
+        }
+
+        // ── RAO TU CHUA CHO SAVE CU ─────────────────────────────────────────────────
+        // Save ghi "dang Processing" nhung moc ket thuc DA TROI QUA (dong game qua dem, hoac
+        // save cu bi float lam tron / bi loi parse dau phay nen moc = 0). Truoc day chuong
+        // dung im o "00:00" mai mai vi CHI coroutine moi day duoc sang Ready. Nay chuyen
+        // thang sang Ready VA GHI LAI SAVE — ban cu quen SaveState nen mo game lan sau van
+        // gap lai dung tinh trang do.
+        if (CurrentState == PenState.Processing
+            && (processStartUnix <= 0L || processEndUnix <= GetUnixNow()))
+        {
+            ClearProcessStamps();
+            SetState(PenState.Ready);
             SaveState();
         }
     }
@@ -772,9 +928,30 @@ public class PenMiniPanelUI : MonoBehaviour
         return "CHUỒNG NUÔI";
     }
 
-    private static double GetUnixNow() =>
-        (System.DateTime.UtcNow - new System.DateTime(1970, 1, 1, 0, 0, 0, System.DateTimeKind.Utc))
-        .TotalSeconds;
+    /// <summary>Giay Unix (UTC) — CUNG mot cua voi PlotController / ConstructionManager.</summary>
+    private static long GetUnixNow() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+    /// <summary>
+    /// Doc moc thoi gian tu save. Chap nhan CA BA dang tung duoc ghi ra:
+    ///   "1788652800"    — dang MOI (long, InvariantCulture)
+    ///   "1.7886528E+09" — dang cu (float.ToString("R") tren may locale EN)
+    ///   "1,7886528E+09" — dang cu tren may locale VI (dau phay). Ban cu parse bang
+    ///                      InvariantCulture nen THAT BAI => moc = 0 => ket "00:00" vinh vien.
+    /// </summary>
+    private static long ParseUnixSeconds(string raw)
+    {
+        if (string.IsNullOrEmpty(raw)) return 0L;
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+
+        if (long.TryParse(raw, System.Globalization.NumberStyles.Integer, inv, out long asLong))
+            return asLong;
+
+        if (double.TryParse(raw.Replace(',', '.'), System.Globalization.NumberStyles.Float, inv,
+                            out double asDouble) && asDouble > 0d)
+            return (long)asDouble;
+
+        return 0L;
+    }
 
     private static string FormatTime(float seconds)
     {
@@ -846,7 +1023,7 @@ public class PenMiniPanelUI : MonoBehaviour
         txtRt.sizeDelta = new Vector2(rt.sizeDelta.x * 0.5f, rt.sizeDelta.y * 0.82f);
         txtRt.anchoredPosition = new Vector2(rt.sizeDelta.x * 0.18f, 0f);
         var t = txtGO.AddComponent<TextMeshProUGUI>();
-        t.text = "x" + SpeedUpGemCost;
+        t.text = TangTocChuongDangMienPhi ? "MIỄN PHÍ" : ("x" + SpeedUpGemCost);
         t.color = Color.white;
         t.alignment = TextAlignmentOptions.Center;
         t.fontStyle = FontStyles.Bold;

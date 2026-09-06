@@ -72,10 +72,18 @@ namespace Assetsgame.Animals
         private void ConfigureAnimal(GameObject visual, int index, int totalCount)
         {
             // 1. SortingGroup trên root để gom toàn bộ chi thành 1 khối
+            // [FIX] KHONG con hardcode "CongTrinh" (layer khong ton tai) o day nua - LivestockAI.Awake/
+            // UpdateDynamicSorting da tu giai layer THAT (TouristSortingLayers.Visitor) va ap dung moi
+            // frame cho chinh SortingGroup nay roi, ghi de "CongTrinh" tai day chi lam vo tac dung fix.
             SortingGroup sg = visual.GetComponent<SortingGroup>();
             if (sg == null) sg = visual.AddComponent<SortingGroup>();
-            sg.sortingLayerName = "CongTrinh";
-            sg.sortingOrder = 600 + sortingOrderOffset + index * 5;
+            // [FIX DEV D 2026-09-06] Kep san FenceSortingOrderFloor NGAY tai day. Truoc day dong
+            // nay gan order tho: neu ai do go sortingOrderOffset AM tren Inspector (vi du -200 =>
+            // order 400) thi con vat chim duoi rao (order 500) trong dung frame dau, phai cho
+            // LivestockAI.Update kip kep lai o frame sau => nhap nhay 1 frame. Kep luon cho dut diem.
+            int orderGoc = Mathf.Max(600 + sortingOrderOffset + index * 5,
+                                     LivestockAI.FenceSortingOrderFloor);
+            sg.sortingOrder = orderGoc;
 
             // 2. Gắn và cấu hình LivestockAI
             LivestockAI ai = visual.GetComponent<LivestockAI>();
@@ -83,8 +91,9 @@ namespace Assetsgame.Animals
 
             ai.localBoundsMin = walkBoundsMin;
             ai.localBoundsMax = walkBoundsMax;
-            ai.sortingLayerName = "CongTrinh";
-            ai.baseSortingOrder = 600 + sortingOrderOffset + index * 5;
+            // [FIX] Bo gan cung "CongTrinh" - de LivestockAI.sortingLayerName mac dinh rong ("")
+            // tu giai qua TouristSortingLayers.Visitor (xem LivestockAI.cs).
+            ai.baseSortingOrder = orderGoc;
 
             if (soundClips != null && soundClips.Length > 0)
             {

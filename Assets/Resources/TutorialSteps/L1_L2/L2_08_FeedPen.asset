@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L2_08_FeedPen
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "K\xE9o bao th\xF3c v\xE0o chu\u1ED3ng \u0111\u1EC3 cho c\xE1c ch\xFA
-    g\xE0 \u0103n no nh\xE9!"
+  npcText: "K\xE9o bao c\xE1m v\xE0o chu\u1ED3ng \u0111\u1EC3 \u0111\xE0n g\xE0 \u0103n no nh\xE9!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: tutorial_feed

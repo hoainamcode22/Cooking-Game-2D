@@ -45,6 +45,13 @@ public class UnmaskRaycastFilter : MonoBehaviour, ICanvasRaycastFilter
         if (_matInstance != null) Destroy(_matInstance);
     }
 
+    /// <summary>
+    /// [FIX 2026-09-06] Lop toi CO dang khoet lo khong.
+    /// Lop toi bat ma KHONG co lo = chan 100% click toan man hinh (IsRaycastLocationValid tra true
+    /// khap noi) ⇒ nguoi choi khong bam duoc gi. TutorialManager dung co nay lam luoi an toan.
+    /// </summary>
+    public bool CoLoKhoet => _useScreenRect || _currentTarget != null;
+
     public void SetTarget(RectTransform target, bool useCircle, float paddingPx)
     {
         _useScreenRect = false;

@@ -143,6 +143,16 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     [SerializeField] private MissionDatabase dailyMissionDatabase;
     [SerializeField] private MissionDatabase achievementDatabase;
 
+    [Header("Nút đóng — tôn trọng chỉnh tay trong scene")]
+    [Tooltip("BẬT: tìm thấy nút đóng có sẵn trong scene thì code CHỈ nối sự kiện click, "
+           + "KHÔNG ghi đè sizeDelta / anchoredPosition / localScale / sprite / color. "
+           + "TẮT: code tự dựng nút theo số cứng như bản cũ.")]
+    [SerializeField] private bool giuNutCloseChinhTay = true;
+
+    [Tooltip("Kéo nút đóng đã chỉnh tay vào đây. Để trống = tự tìm theo tên "
+           + "Btn_Close / BtnClose / Close / Btn_X dưới root popup.")]
+    [SerializeField] private Button btnCloseChinhTay;
+
     private RectTransform _root;
     private RectTransform _board;
     private RectTransform _contentRoot;
@@ -161,6 +171,9 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     private Tab _currentTab;
     private bool _built;
     private bool _inputLockHeld;
+    private Button    _nutDongChinhTay;      // nút đóng CÓ SẴN trong scene — giữ nguyên mọi thuộc tính
+    private Transform _nhanhNutDongGiuLai;   // nhánh con của root chứa nút đó — không bị huỷ khi dựng lại
+    private Button    _nutDongTuDung;        // nút đóng do code dựng (đường dự phòng)
 
     // ═════════════════════════════════════════════════════════════════════════
     //  CHIA TRANG THEO MỐC CẤP
@@ -490,9 +503,23 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (_built && _board != null)
             return;
 
+        // Tìm nút đóng CHỈNH TAY TRƯỚC khi dọn cây, rồi chừa nhánh chứa nó lại.
+        // Không làm bước này thì vòng huỷ bên dưới xóa sạch công căn chỉnh trong scene.
+        _nutDongChinhTay     = giuNutCloseChinhTay ? TimNutDongChinhTay() : null;
+        _nhanhNutDongGiuLai  = null;
+        if (_nutDongChinhTay != null && _nutDongChinhTay.transform.IsChildOf(_root))
+        {
+            for (Transform t = _nutDongChinhTay.transform; t != null; t = t.parent)
+            {
+                if (t.parent == _root) { _nhanhNutDongGiuLai = t; break; }
+            }
+        }
+
         for (int i = _root.childCount - 1; i >= 0; i--)
         {
-            GameObject child = _root.GetChild(i).gameObject;
+            Transform con = _root.GetChild(i);
+            if (_nhanhNutDongGiuLai != null && con == _nhanhNutDongGiuLai) continue;   // chừa công chỉnh tay
+            GameObject child = con.gameObject;
             if (Application.isPlaying) Destroy(child); else DestroyImmediate(child);
         }
 
@@ -591,27 +618,104 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         _dailyPanel       = CreateRect(_contentRoot, "Panel_Daily", Vector2.zero, ktGiay);
         _achievementPanel = CreateRect(_contentRoot, "Panel_Achievement", Vector2.zero, ktGiay);
 
-        // ══ NÚT ĐÓNG 100×100 nhô góc trên-phải — art btnX gán qua tool ═════════
-        Button close = CreateTextButton(_board, "Btn_Close", "", TaskPopupDesign.NutDongTam,
-            new Vector2(TaskPopupDesign.NutDongKichThuoc, TaskPopupDesign.NutDongKichThuoc),
-            new Color32(255, 255, 255, 0), 1);
-        Sprite sprClose = UIStandardSprites.Close ?? sprites.closeButton;
-        bool coArtDong = sprClose != null;
-        close.image.sprite = coArtDong ? sprClose : GetCircleSprite();
-        close.image.type = coArtDong ? Image.Type.Sliced : Image.Type.Simple;
-        close.image.color = coArtDong ? Color.white : new Color32(239, 75, 51, 255);
-        close.image.preserveAspect = true;
-        close.onClick.AddListener(Close);
-        TMP_Text chuX = close.GetComponentInChildren<TMP_Text>();
-        if (chuX != null)
+        // ══ NÚT ĐÓNG — LUẬT "TÔN TRỌNG CHỈNH TAY" ════════════════════
+        // Nút đã có sẵn trong scene/prefab ⇒ code CHỈ nối click. Tuyệt đối không ghi
+        // sizeDelta / anchoredPosition / localScale / sprite / color — đó là công chỉnh tay.
+        if (_nutDongChinhTay != null)
         {
-            // Nhãn "X" chỉ hiện khi CHƯA có art — có art rồi thì chữ đè lên hình.
-            if (coArtDong) chuX.gameObject.SetActive(false);
-            else { chuX.text = "X"; chuX.fontSize = 44; }
+            _nutDongChinhTay.onClick.RemoveListener(Close);
+            _nutDongChinhTay.onClick.AddListener(Close);
+
+            // Cây popup vừa dựng lại nằm SAU nhánh được giữ nên phải đẩy nhánh đó lên
+            // trên cùng, không thì ván gỗ che mất nút ⇒ nhìn không thấy và bấm không trúng.
+            // Đây là thứ DUY NHẤT code còn động tới trên nút chỉnh tay (thứ tự vẽ).
+            if (_nhanhNutDongGiuLai != null)
+                _nhanhNutDongGiuLai.SetAsLastSibling();
+
+            {
+                Debug.Log("[NhiemVu] Giu nguyen nut dong chinh tay: " + _nutDongChinhTay.name);
+            }
+        }
+        else
+        {
+            DungNutDongDuPhong();
         }
 
         _built = true;                       // chốt CUỐI: nếu dựng lỗi giữa chừng sẽ thử lại lần sau
         _root.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// Tìm nút đóng ĐÃ CÓ trong scene: ưu tiên ô Inspector <c>btnCloseChinhTay</c>, sau đó
+    /// quét theo TÊN dưới <c>_root</c>. Bỏ qua nút do chính code dựng ở lần trước — nếu không
+    /// nút tự dựng sẽ bị hiểu nhầm là "chỉnh tay" và cả ván gỗ cũ được giữ lại ⇒ nhân đôi popup.
+    /// Trả null ⇒ gọi đường dự phòng <see cref="DungNutDongDuPhong"/>.
+    /// </summary>
+    private Button TimNutDongChinhTay()
+    {
+        if (btnCloseChinhTay != null) return btnCloseChinhTay;
+        if (_root == null) return null;
+
+        Button[] ds = _root.GetComponentsInChildren<Button>(true);
+        for (int i = 0; i < ds.Length; i++)
+        {
+            Button nut = ds[i];
+            if (nut == null) continue;
+            if (_nutDongTuDung != null && nut == _nutDongTuDung) continue;
+            if (_board != null && nut.transform.IsChildOf(_board)) continue;
+
+            string ten = nut.name.Replace("_", string.Empty).ToLowerInvariant();
+            if (ten == "btnclose" || ten == "close" || ten == "btnx" || ten == "btndong")
+                return nut;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// ĐƯỜNG DỰ PHÒNG — CHỈ chạy khi KHÔNG tìm thấy nút đóng nào trong scene.
+    /// Dựng nút theo đúng chuẩn nút đóng chung của game (sprite 9-slice + chữ "X" trắng đậm,
+    /// cỡ <see cref="UIStandardSprites.CloseSize"/>) để đồng bộ với popup Cài đặt / Hồ Sơ / Tàu Chở Hàng.
+    /// Sprite lấy QUA <see cref="UIStandardSprites"/> — cấm AssetDatabase.LoadAssetAtPath trực tiếp
+    /// vì đường đó chết trong bản build.
+    /// </summary>
+    private void DungNutDongDuPhong()
+    {
+        Vector2 kt = UIStandardSprites.CloseSize;
+        if (kt.x < 1f || kt.y < 1f) kt = new Vector2(64f, 64f);
+
+        // Giữ nguyên mép nhô ra góc theo thiết kế (CSS top -34, right -32): tâm nút tính
+        // lại từ KÍCH THƯỚC THẬT thay vì hằng số 100 cũ, nếu không nút lệch hẳn khỏi góc.
+        Vector2 tam = new Vector2(TaskPopupDesign.BangRong * 0.5f + 32f - kt.x * 0.5f,
+                                  TaskPopupDesign.BangCao  * 0.5f + 34f - kt.y * 0.5f);
+
+        Button close = CreateTextButton(_board, "Btn_Close", "X", tam, kt,
+            new Color32(255, 255, 255, 0), (int)UIStandardSprites.CloseGlyphSize);
+
+        Sprite sprClose = UIStandardSprites.Close ?? sprites.closeButton;
+        bool coArtDong = sprClose != null;
+        close.image.sprite = coArtDong ? sprClose : GetCircleSprite();
+        close.image.type   = coArtDong ? Image.Type.Sliced : Image.Type.Simple;
+        close.image.color  = coArtDong ? Color.white : new Color32(239, 75, 51, 255);
+
+        // Image.Type.Sliced BỎ QUA preserveAspect; bật nó chỉ làm nhánh Simple co méo. Tắt hẳn.
+        close.image.preserveAspect = false;
+        close.onClick.AddListener(Close);
+
+        // Chữ "X" LUÔN hiện. Sprite chuẩn btn_red_small là nút đỏ TRƠN không có dấu X sẵn,
+        // bản cũ lại ẩn chữ khi có art nên popup ra khối đỏ không dấu X — đúng lỗi Sếp báo.
+        TMP_Text chuX = close.GetComponentInChildren<TMP_Text>(true);
+        if (chuX != null)
+        {
+            chuX.gameObject.SetActive(true);
+            chuX.text = "X";
+            chuX.fontSize = UIStandardSprites.CloseGlyphSize;
+            chuX.color = Color.white;
+        }
+
+        _nutDongTuDung = close;
+        {
+            Debug.Log("[NhiemVu] Khong thay nut dong trong scene, dung nut du phong " + kt.x + "x" + kt.y);
+        }
     }
 
     private void BuildRibbon()

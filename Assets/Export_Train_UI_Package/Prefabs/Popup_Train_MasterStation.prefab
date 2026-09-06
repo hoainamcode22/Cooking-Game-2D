@@ -234,7 +234,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7989568107740758376}
-  - component: {fileID: 6699675954752299846}
   - component: {fileID: 8416197326171549648}
   m_Layer: 0
   m_Name: Wagon_1
@@ -266,48 +265,6 @@ RectTransform:
   m_AnchoredPosition: {x: 95, y: 0}
   m_SizeDelta: {x: 180, y: 240}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &6699675954752299846
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 659125330957034646}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fc5072e63c723245b24334b00653744, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExportTrainUIPackage.StationWagonSlotUI
-  canvasComponent: {fileID: 0}
-  imgDimOverlay: {fileID: 0}
-  mainWoodFrame: {fileID: 0}
-  imgWoodFrame: {fileID: 0}
-  imgBackground: {fileID: 0}
-  ribbonBannerImage: {fileID: 0}
-  txtTitle: {fileID: 0}
-  btnClose: {fileID: 0}
-  hintPill: {fileID: 0}
-  imgHintPill: {fileID: 0}
-  txtHint: {fileID: 0}
-  trainContainer: {fileID: 0}
-  imgLocomotive: {fileID: 0}
-  wagonContainers:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  wagonSlots:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  smokePuffRoot: {fileID: 0}
-  smokePuffs:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  currentState: 1
 --- !u!114 &8416197326171549648
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -632,7 +589,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1630791949937391685}
-  - component: {fileID: 1511072026557396521}
   - component: {fileID: 5169153599440702189}
   m_Layer: 0
   m_Name: Wagon_3
@@ -664,48 +620,6 @@ RectTransform:
   m_AnchoredPosition: {x: 465, y: 0}
   m_SizeDelta: {x: 180, y: 240}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &1511072026557396521
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 968086196397388047}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fc5072e63c723245b24334b00653744, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExportTrainUIPackage.StationWagonSlotUI
-  canvasComponent: {fileID: 0}
-  imgDimOverlay: {fileID: 0}
-  mainWoodFrame: {fileID: 0}
-  imgWoodFrame: {fileID: 0}
-  imgBackground: {fileID: 0}
-  ribbonBannerImage: {fileID: 0}
-  txtTitle: {fileID: 0}
-  btnClose: {fileID: 0}
-  hintPill: {fileID: 0}
-  imgHintPill: {fileID: 0}
-  txtHint: {fileID: 0}
-  trainContainer: {fileID: 0}
-  imgLocomotive: {fileID: 0}
-  wagonContainers:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  wagonSlots:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  smokePuffRoot: {fileID: 0}
-  smokePuffs:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  currentState: 1
 --- !u!114 &5169153599440702189
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2904,7 +2818,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1623011817491770100}
-  - component: {fileID: 7746490990097687554}
   - component: {fileID: 1447751889731577552}
   m_Layer: 0
   m_Name: Wagon_2
@@ -2936,48 +2849,6 @@ RectTransform:
   m_AnchoredPosition: {x: 280, y: 0}
   m_SizeDelta: {x: 180, y: 240}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &7746490990097687554
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4592633402157235518}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fc5072e63c723245b24334b00653744, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExportTrainUIPackage.StationWagonSlotUI
-  canvasComponent: {fileID: 0}
-  imgDimOverlay: {fileID: 0}
-  mainWoodFrame: {fileID: 0}
-  imgWoodFrame: {fileID: 0}
-  imgBackground: {fileID: 0}
-  ribbonBannerImage: {fileID: 0}
-  txtTitle: {fileID: 0}
-  btnClose: {fileID: 0}
-  hintPill: {fileID: 0}
-  imgHintPill: {fileID: 0}
-  txtHint: {fileID: 0}
-  trainContainer: {fileID: 0}
-  imgLocomotive: {fileID: 0}
-  wagonContainers:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  wagonSlots:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  smokePuffRoot: {fileID: 0}
-  smokePuffs:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  currentState: 1
 --- !u!114 &1447751889731577552
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3981,7 +3852,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8356813851177497524}
-  - component: {fileID: 176758927644746265}
   - component: {fileID: 7312199191457487716}
   m_Layer: 0
   m_Name: Wagon_4
@@ -4013,48 +3883,6 @@ RectTransform:
   m_AnchoredPosition: {x: 650, y: 0}
   m_SizeDelta: {x: 180, y: 240}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &176758927644746265
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6324739260257805638}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9fc5072e63c723245b24334b00653744, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExportTrainUIPackage.StationWagonSlotUI
-  canvasComponent: {fileID: 0}
-  imgDimOverlay: {fileID: 0}
-  mainWoodFrame: {fileID: 0}
-  imgWoodFrame: {fileID: 0}
-  imgBackground: {fileID: 0}
-  ribbonBannerImage: {fileID: 0}
-  txtTitle: {fileID: 0}
-  btnClose: {fileID: 0}
-  hintPill: {fileID: 0}
-  imgHintPill: {fileID: 0}
-  txtHint: {fileID: 0}
-  trainContainer: {fileID: 0}
-  imgLocomotive: {fileID: 0}
-  wagonContainers:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  wagonSlots:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  smokePuffRoot: {fileID: 0}
-  smokePuffs:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  currentState: 1
 --- !u!114 &7312199191457487716
 MonoBehaviour:
   m_ObjectHideFlags: 0

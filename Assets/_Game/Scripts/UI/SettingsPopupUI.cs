@@ -319,7 +319,7 @@ public class SettingsPopupUI : MonoBehaviour
         }
     }
 
-    private void OnResetProgressClicked()
+    public void OnResetProgressClicked()   // [fix] GameProgressionStudioOverlay goi tu ngoai
     {
         AudioManager.Instance?.PlayUIClick();
         Debug.Log("[Settings] Người chơi yêu cầu Xoá dữ liệu / Chơi lại từ đầu (Cấp 1 & Tân thủ).");

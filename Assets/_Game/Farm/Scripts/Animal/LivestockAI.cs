@@ -43,9 +43,37 @@ namespace Assetsgame.Animals
         [Range(0f, 1f)] public float soundVolume = 0.6f;
         [Range(0f, 1f)] public float hungryCryChance = 0.4f;
 
-        [Header("Sorting")]
-        public string sortingLayerName = "CongTrinh";
+        [Header("Sorting (con vat PHAI NOI TREN rao chuong - bug Sep bao 2026-09-06)")]
+        // [BUG Sep bao 2026-09-06] "CongTrinh" KHONG ton tai trong ProjectSettings/TagManager.asset
+        // (chi co Bottom/Default/Objects/ObjectsFront/Foreground - xem TouristSortingLayers.cs).
+        // Rao chuong (BarnSprite, Pen_01..04.prefab) cung dang ket o 1 sorting layer ID da bi xoa
+        // (1669604809) - layer "ma" do rat co the chinh la "CongTrinh" cu. Vi KHONG chac Unity dang
+        // xep rao vao dau (khong mo duoc Unity Editor de kiem tai day), con vat PHAI dung tren 1
+        // sorting layer THAT, KHONG duoc tiep tuc hardcode ten layer khong ton tai nhu ban cu -
+        // giong het bug "CongTrinh" da gap o khach du lich (xem TouristSortingLayers.cs). TAI DUNG
+        // nguyen bo uu tien Visitor cua khach, KHONG bia quy uoc moi. "Objects" o day KHONG phai
+        // "ObjectsFront" vi "ObjectsFront" da danh rieng cho tau khach (TrainPathFollower, order 650).
+        [Tooltip("Sorting layer cua con vat. DE TRONG (mac dinh) = tu giai theo " +
+                 "TouristSortingLayers.Visitor ('Objects', du phong 'Default'). Go ten khac chi khi " +
+                 "layer do CO THAT trong Project Settings > Tags and Layers.")]
+        public string sortingLayerName = "";
+        [Tooltip("Order goc truoc khi cong phan Y-dong (xem UpdateDynamicSorting). Co san kep " +
+                 "FenceSortingOrderFloor ben duoi de khong bao gio tut xuong duoi rao.")]
         public int baseSortingOrder = 600;
+
+        /// <summary>
+        /// San kep sortingOrder - PHAI lon hon order co dinh 500 ma BarnSprite dang dung o CA 4
+        /// prefab Pen_01/02/03/04 (da kiem tra thuc te trong file .prefab). Rao hien chi co DUNG 1
+        /// SpriteRenderer duy nhat (chuongmoigiasuc.png, phu ca 4 canh chuong) nen KHONG THE vua cho
+        /// con vat noi tren rao-truoc vua chim sau rao-sau bang so - san nay CHON luon noi tren toan
+        /// bo rao, chap nhan mat che khuat rao-truoc cho toi khi co art 2 lop (xem spec DEV C).
+        /// </summary>
+        public const int FenceSortingOrderFloor = 512;
+
+        [Header("Chan doan sorting (DEV D 2026-09-06)")]
+        [Tooltip("Bat = in log [Livestock] ra Console: layer + order THAT SU cua con vat va cua " +
+                 "BarnSprite (rao chuong), de doc 1 dong la biet ngay ai dang nam tren ai.")]
+        public bool logSortingDiagnostics = true;
 
         private Vector3 startLocalPos;
         private Vector3 targetLocalPos;
@@ -56,6 +84,7 @@ namespace Assetsgame.Animals
         private AudioSource audioSource;
         private Coroutine roamCoroutine;
         private float originalScaleX;
+        private string _resolvedSortingLayerName;
         private static readonly int SpeedHash = Animator.StringToHash("Speed");
 
         private void Awake()
@@ -65,8 +94,11 @@ namespace Assetsgame.Animals
             if (sortingGroup == null)
                 sortingGroup = gameObject.AddComponent<SortingGroup>();
 
-            sortingGroup.sortingLayerName = sortingLayerName;
-            sortingGroup.sortingOrder = baseSortingOrder;
+            // Giai layer NGAY luc Awake (tai dung TouristSortingLayers - xem comment o [Header]
+            // phia tren): field cu/prefab cu co the con luu "CongTrinh" (khong ton tai).
+            _resolvedSortingLayerName = TouristSortingLayers.ResolveOrOverride(sortingLayerName, TouristSortingLayers.Visitor);
+            sortingGroup.sortingLayerName = _resolvedSortingLayerName;
+            sortingGroup.sortingOrder = Mathf.Max(baseSortingOrder, FenceSortingOrderFloor);
 
             audioSource = GetComponent<AudioSource>();
             if (audioSource == null)
@@ -99,6 +131,9 @@ namespace Assetsgame.Animals
 
             // Thiết lập sorting nội bộ của các chi
             SetupLimbSorting();
+
+            if (logSortingDiagnostics)
+                StartCoroutine(SortingDiagnosticRoutine());
 
             roamCoroutine = StartCoroutine(RoamRoutine());
         }
@@ -197,9 +232,69 @@ namespace Assetsgame.Animals
             if (sortingGroup != null)
             {
                 // Dynamic sorting theo trục Y: con đứng thấp hơn (Y nhỏ hơn) sẽ ở phía trước (Order cao hơn)
-                sortingGroup.sortingLayerName = sortingLayerName;
-                sortingGroup.sortingOrder = baseSortingOrder + Mathf.RoundToInt(-transform.localPosition.y * 50f);
+                sortingGroup.sortingLayerName = _resolvedSortingLayerName;
+                int order = baseSortingOrder + Mathf.RoundToInt(-transform.localPosition.y * 50f);
+                // San kep: KHONG BAO GIO de con vat tut xuong duoi order co dinh cua rao chuong (500).
+                sortingGroup.sortingOrder = Mathf.Max(order, FenceSortingOrderFloor);
             }
+        }
+
+        /// <summary>
+        /// [CHAN DOAN 2026-09-06 - DEV D] In ra Console layer + order THAT SU cua con vat va cua
+        /// BarnSprite (rao chuong), kem ket luan ai nam tren ai. Log 2 moc:
+        ///   - "frame-1": ngay sau khi moi Awake/Start cua scene da chay xong.
+        ///   - "sau-1s" : bat cac script ghi de MUON (vi du PlacementManager.FixBuildingRenderSorting
+        ///                chay luc dat/di doi cong trinh).
+        /// So sanh dung thu tu Unity: layer VALUE truoc, cung layer moi xet den order.
+        /// </summary>
+        private IEnumerator SortingDiagnosticRoutine()
+        {
+            yield return null;
+            LogSortingDiagnostic("frame-1");
+
+            yield return new WaitForSeconds(1f);
+            LogSortingDiagnostic("sau-1s");
+        }
+
+        private void LogSortingDiagnostic(string moc)
+        {
+            if (sortingGroup == null) return;
+
+            string conVatLayer = sortingGroup.sortingLayerName;
+            int    conVatOrder = sortingGroup.sortingOrder;
+            int    conVatValue = SortingLayer.GetLayerValueFromName(conVatLayer);
+            int    conVatId    = sortingGroup.sortingLayerID;
+
+            // Tim "BarnSprite" (rao chuong) o bat ky doi cha nao phia tren.
+            SpriteRenderer barn = null;
+            Transform p = transform.parent;
+            while (p != null && barn == null)
+            {
+                Transform t = p.Find("BarnSprite");
+                if (t != null) barn = t.GetComponent<SpriteRenderer>();
+                p = p.parent;
+            }
+
+            if (barn == null)
+            {
+                Debug.Log($"[Livestock] {name} ({moc}): CON VAT layer='{conVatLayer}' id={conVatId} " +
+                          $"value={conVatValue} order={conVatOrder} || KHONG tim thay 'BarnSprite' o cay cha.", this);
+                return;
+            }
+
+            string raoLayer = barn.sortingLayerName;
+            int    raoOrder = barn.sortingOrder;
+            int    raoValue = SortingLayer.GetLayerValueFromName(raoLayer);
+            int    raoId    = barn.sortingLayerID;
+
+            bool conVatOTren = (conVatValue != raoValue) ? (conVatValue > raoValue)
+                                                         : (conVatOrder > raoOrder);
+
+            Debug.Log($"[Livestock] {name} ({moc}): " +
+                      $"CON VAT layer='{conVatLayer}' id={conVatId} value={conVatValue} order={conVatOrder}  ||  " +
+                      $"RAO 'BarnSprite' layer='{raoLayer}' id={raoId} value={raoValue} order={raoOrder}  =>  " +
+                      (conVatOTren ? "CON VAT VE TREN RAO (dung y do ban va)"
+                                   : "RAO DE LEN CON VAT (SAI - bao Dev D)"), this);
         }
 
         private IEnumerator RoamRoutine()
@@ -368,7 +463,9 @@ namespace Assetsgame.Animals
             {
                 audioSource.pitch = Random.Range(0.92f, 1.08f);
                 float vol = forced ? Mathf.Min(1f, soundVolume * 1.35f) : (soundVolume * 0.40f);
-                audioSource.PlayOneShot(clip, vol);
+                // [FIX 2026-09-06] Nhan he so am luong chung — truoc day tieng gia suc
+                // KHONG theo thanh truot "Am thanh VFX" trong Cai dat.
+                audioSource.PlayOneShot(clip, vol * AudioManager.SfxGain);
             }
         }
 

@@ -327,8 +327,9 @@ public class BuilderWorker : MonoBehaviour
 
         if (_cfg != null && _cfg.hammerSfx != null)
         {
+            // [FIX 2026-09-06] Tieng bua tho xay cung phai theo thanh truot "Am thanh VFX".
             AudioSource.PlayClipAtPoint(_cfg.hammerSfx, transform.position,
-                                        Mathf.Clamp01(_cfg.hammerSfxVolume));
+                                        Mathf.Clamp01(_cfg.hammerSfxVolume) * AudioManager.SfxGain);
         }
         else
         {

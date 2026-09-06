@@ -95,6 +95,10 @@ public class PopupManager : MonoBehaviour
             // thấy → tutorial vẫn chạy đè lên chúng.
             || LevelUpPopupUI.IsActive
             || BoatAnnouncePopupUI.IsActive;
+        // [ROLLBACK 2026-09-06] KHONG dua BuildingProcessPopupUI vao day.
+        // IsAnyPopupOpen() duoc FarmInputLock.BlockMapPan dung => se chan TOAN BO
+        // keo map va click world suot thoi gian popup tien do dang mo. Popup do neo
+        // o world, khong che man hinh, khong can khoa. (Van liet ke o TenPopupDangMo.)
     }
 
     /// <summary>Trả tên popup đang mở (chuỗi rỗng nếu không có). Dùng để ghi log chẩn đoán.</summary>
@@ -127,6 +131,8 @@ public class PopupManager : MonoBehaviour
         if (UnifiedTaskPopupUI.IsOpenStatic) return "UnifiedTask";
         if (LevelUpPopupUI.IsActive)         return "LevelUp";
         if (BoatAnnouncePopupUI.IsActive)    return "BoatAnnounce";
+        // [FIX 2026-09-06 B4]
+        if (BuildingProcessPopupUI.Instance != null && BuildingProcessPopupUI.Instance.IsOpen) return "BuildingProcess";
 
         return string.Empty;
     }

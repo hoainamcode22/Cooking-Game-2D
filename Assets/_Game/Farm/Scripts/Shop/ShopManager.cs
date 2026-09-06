@@ -49,6 +49,24 @@ public class ShopManager : MonoBehaviour
     public List<BaseItemData> buildingList = new List<BaseItemData>();
     public List<BaseItemData> decorList = new List<BaseItemData>();
 
+    // ── [Decor5] AN MON DECOR CHUA CO ART 5 STAGE ─────────────────
+    // 15/19 decor co du bo art 5 stage nen mua ve la co cam giac XAY (vat lieu roi ->
+    // xay nua -> hoan thien -> hop qua -> phao hoa). 4 mon con lai chua duoc ve art,
+    // DecorGrowthConfig.ShouldApply() tra false cho chung nen mua xong no dat THANG ra
+    // world ⇒ trai nghiem lech han so voi 15 mon kia, nguoi choi tuong la loi.
+    //
+    // Co nay chi AN O SHOP. decorList KHONG bi doi: PlacementManager.FindItemById va
+    // ConstructionManager.FindItemById van tra cuu qua chinh list nay khi khoi phuc
+    // do da dat tu PlayerPrefs ⇒ ai lo mua roi thi mon trong world van con nguyen.
+    //
+    // TU PHUC HOI: dieu kien an doc DONG tu DecorGrowthConfig, KHONG hard-code id nao.
+    // Sep nap art xong, chay Tools/Farm/DecorStageArtTool de them stageSet la mon do
+    // TU HIEN LAI, khong phai sua dong code nao.
+    [Header("[Decor5] An mon decor thieu art")]
+    [Tooltip("Bat: an khoi shop nhung decor CHUA co du bo art 5 stage trong DecorGrowthConfig.\n" +
+             "Tat: hien lai toan bo. Dieu kien doc dong tu config nen nap art xong mon tu hien lai.")]
+    public bool anMonThieuArt = true;
+
     private List<BaseItemData> currentActiveList;
     private int currentTabIndex = 0;
     private bool popupInputLockHeld;
@@ -103,6 +121,8 @@ public class ShopManager : MonoBehaviour
             btnTabBuilding.onClick.AddListener(() => ShowTab(1));
         if (btnTabDecor != null)
             btnTabDecor.onClick.AddListener(() => ShowTab(2));
+
+        LogMonBiAn();
     }
 
     private void OnEnable()
@@ -356,6 +376,55 @@ public class ShopManager : MonoBehaviour
         RenderItems(keyword);
     }
 
+    /// <summary>
+    /// Mon decor nay co bi an khoi shop khong.
+    /// Dieu kien soi guong dung nhanh DECOR cua DecorGrowthConfig.ShouldApply():
+    /// he stage BAT + applyToDecor + khong nam trong excludedItemIDs + KHONG co
+    /// stageSet hop le ⇒ an. Moi ve trai deu doc dong tu config.
+    /// </summary>
+    private bool BiAnViThieuArt(BaseItemData item)
+    {
+        if (!anMonThieuArt) return false;
+
+        // Chi xet DecorData. Cong trinh / chuong / may chay WORKER-ONLY, khong can art.
+        DecorData decor = item as DecorData;
+        if (decor == null) return false;
+
+        DecorGrowthConfig cfg = DecorGrowthBootstrap.Config;
+
+        // He 5 stage TAT (chua co asset, hoac Sep bo tick enabled) ⇒ KHONG an gi ca:
+        // luc do MOI mon deu dat thang, khong mon nao bi lech trai nghiem.
+        if (cfg == null || !cfg.enabled) return false;
+        if (!cfg.applyToDecor) return false;
+
+        int id = DecorGrowthConfig.ItemIdOf(decor);
+
+        // Loai tru tuong minh (Dat, Chau Hoa 1..4): dat thang la DUNG thiet ke, dung an.
+        if (cfg.IsExcludedItem(id)) return false;
+
+        DecorStageSet set = cfg.FindSet(id);
+        return set == null || !set.IsValid;
+    }
+
+    /// <summary>Log 1 dong luc khoi dong: da an nhung mon nao khoi shop.</summary>
+    private void LogMonBiAn()
+    {
+        if (decorList == null) return;
+
+        var ten = new List<string>();
+        for (int i = 0; i < decorList.Count; i++)
+        {
+            BaseItemData it = decorList[i];
+            if (it == null) continue;
+            if (BiAnViThieuArt(it)) ten.Add(string.IsNullOrEmpty(it.itemName) ? it.itemID : it.itemName);
+        }
+
+        if (ten.Count > 0)
+        {
+            Debug.Log("[Shop] An " + ten.Count + " mon decor thieu art 5 stage: " + string.Join(", ", ten));
+        }
+    }
+
     private void RenderItems(string keyword)
     {
         if (contentParent == null) return;
@@ -388,6 +457,10 @@ public class ShopManager : MonoBehaviour
                                         .ThenBy(NameKey))
         {
             if (item == null) continue;
+
+            // An mon decor chua co art 5 stage. CHI bo qua o hien thi, KHONG dung
+            // decorList nen do da dat trong world khong he bi anh huong.
+            if (BiAnViThieuArt(item)) continue;
 
             bool match = string.IsNullOrEmpty(keyLower)
                       || (item.itemName != null && item.itemName.ToLower().Contains(keyLower));

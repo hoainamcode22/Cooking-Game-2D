@@ -1,0 +1,11 @@
+0fc3774da42ef10b29013ce61614088e  AudioManager.cs
+57f53b35967e905c0c9bc359c2e274ea  BuilderWorker.cs
+3500fdb6193a383fe5567efc6d3f26bd  FarmUIManager.cs
+00710def8ca59f74070fd539fc484585  LivestockAI.cs
+215fea9abe831e8032f36ece5bb690df  LocStringTable.cs
+102a952fdac340925f0fdb3754726c6c  LocalizationManager.cs
+71f2e50af97c48ea6d46747e8e4dd577  LocalizedText.cs
+39d4e10876f40f401f75d1ec4cc2b1bd  PenMiniPanelUI.cs
+4287839debb386d688a235d1c92e4a97  SettingsPopupUI.cs
+d214b4563c46b422f6ec45c423df5d48  StarterInventorySetup.cs
+1cb8d86f842a7652ef259ae0625a5009  TutorialManager.cs

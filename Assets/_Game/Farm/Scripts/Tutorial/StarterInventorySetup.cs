@@ -12,6 +12,10 @@ public class StarterInventorySetup : MonoBehaviour
     /// <summary>Số hạt hướng dương khởi đầu mặc định — bằng số chậu hoa trong scene (6).</summary>
     public const int SO_HAT_HUONG_DUONG_KHOI_DAU = 6;
 
+    /// <summary>[FIX 2026-09-06] Cam ga tang san dau game — nguoi choi moi khong phai di xay
+    /// o Mill giua chung tutorial moi cho ga an duoc.</summary>
+    public const int SO_CAM_GA_KHOI_DAU = 5;
+
     [Serializable]
     public class StarterItemEntry
     {
@@ -85,6 +89,7 @@ public class StarterInventorySetup : MonoBehaviour
             // Cấp đúng số thì tutorial "gieo hết" / "thu hết" không dư hạt gây hiểu nhầm.
             new StarterItemEntry { itemId = "seed_rice", displayName = "Hạt Lúa", amount = SO_HAT_LUA_KHOI_DAU },
             new StarterItemEntry { itemId = "seed_huong_duong", displayName = "Hạt Hoa Hướng Dương", amount = SO_HAT_HUONG_DUONG_KHOI_DAU },
+            new StarterItemEntry { itemId = "cam_ga", displayName = "Cám Gà", amount = SO_CAM_GA_KHOI_DAU },
             new StarterItemEntry { itemId = "seed_bapcai", displayName = "Hạt Bắp Cải", amount = 5 },
             new StarterItemEntry { itemId = "seed_cachua", displayName = "Hạt Cà Chua", amount = 5 },
             new StarterItemEntry { itemId = "seed_carot", displayName = "Hạt Cà Rốt", amount = 5 },

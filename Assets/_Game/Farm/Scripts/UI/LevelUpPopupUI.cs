@@ -753,6 +753,27 @@ public class LevelUpPopupUI : MonoBehaviour
     private const float MERGED_PAD_Y     = 10f;   // lề trên/dưới
     private const float MERGED_SPACING_X = 16f;   // khoảng cách ngang giữa 2 cell
     private const float MERGED_ROW_GAP   = 10f;   // khoảng cách dọc giữa 2 hàng
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // [V7 — 2026-09-06] CHỪA CHỖ CHO BẢNG CHỮ DƯỚI Ô
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Flow-layout trước nay tính chiều cao một hàng CHỈ bằng chiều cao ô (190), KHÔNG kể
+    //  bảng chữ treo bên dưới. Hậu quả đo được:
+    //
+    //   • Dải trắng Dai_MoKhoa cao STRIP_H = 250 và Viewport có RectMask2D. Ô 190 nằm giữa
+    //     → mép dưới ô ở y = −95, đáy mask ở y = −125, tức CHỈ CÒN 30px cho chữ. Bảng chữ
+    //     cũ cao 26px vừa khít 30px đó (nên chữ hiện được), nhưng chỉ cần cao hơn một chút
+    //     là bị mask XÉN NGANG.
+    //   • Khi dải xuống 2 hàng, chữ hàng trên đâm thẳng vào ô hàng dưới (khe chỉ 10px).
+    //
+    //  Cách sửa: cộng chiều cao bảng chữ vào chiều cao HÀNG (chỉ để tính chỗ, không đụng
+    //  sizeDelta của ô), rồi đẩy ô lên nửa bảng chữ. Thế là cụm được canh giữa theo ĐÚNG
+    //  chiều cao thật (ô + chữ): chữ không bao giờ lọt ra ngoài mask, hai hàng không đụng
+    //  nhau, và nếu chật thì k tự co — thay vì âm thầm xén mất chữ.
+    //
+    //  Phải KHỚP với UnlockSlotUI: CAPTION_GAP_Y(4) + CAPTION_H(52) = 56.
+    // ═════════════════════════════════════════════════════════════════════════
+    private const float MERGED_CAPTION_BAND = 56f;
     private const float MERGED_MIN_SCALE = 0.5f;  // co tối đa còn 50%; lỡ vẫn tràn thì RectMask2D của Viewport cắt gọn
 
     private bool _warnedNoMergeContainer;
@@ -920,6 +941,7 @@ public class LevelUpPopupUI : MonoBehaviour
             var rt = (RectTransform)s.transform;
             Vector2 sz = rt.sizeDelta;
             if (sz.x < 1f || sz.y < 1f) sz = new Vector2(190f, 190f);   // phòng hờ, chuẩn tool = 190
+            sz.y += MERGED_CAPTION_BAND;   // [V7] chừa chỗ bảng chữ, xem chú thích ở hằng số
             rts.Add(rt); sizes.Add(sz); unlockOf.Add(s);
         }
         for (int i = 0; i < _mergedCells.Count; i++)
@@ -929,6 +951,7 @@ public class LevelUpPopupUI : MonoBehaviour
             var rt = (RectTransform)c.transform;
             Vector2 sz = rt.sizeDelta;
             if (sz.x < 1f || sz.y < 1f) sz = new Vector2(190f, 190f);   // chuẩn đồng bộ 190x190
+            sz.y += MERGED_CAPTION_BAND;   // [V7] chừa chỗ bảng chữ, xem chú thích ở hằng số
             rts.Add(rt); sizes.Add(sz); unlockOf.Add(c);   // [B4] ô runtime cũng là UnlockSlotUI → co qua SetBaseScale
         }
         if (rts.Count == 0) return;
@@ -990,7 +1013,9 @@ public class LevelUpPopupUI : MonoBehaviour
                 // HLG cũ từng ghim anchor (0,1) — trả về anchor tâm để toạ độ dễ hiểu.
                 rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
                 rt.pivot = new Vector2(0.5f, 0.5f);
-                rt.anchoredPosition = new Vector2(x + w * 0.5f, centerY);
+                // [V7] Hàng nay cao (ô + bảng chữ); bảng chữ nằm DƯỚI ô nên ô phải lệch
+                // LÊN nửa bảng chữ, chừa đúng phần dưới cho chữ.
+                rt.anchoredPosition = new Vector2(x + w * 0.5f, centerY + MERGED_CAPTION_BAND * 0.5f * k);
 
                 if (unlockOf[i] != null) unlockOf[i].SetBaseScale(k);
                 else rt.localScale = new Vector3(k, k, 1f);

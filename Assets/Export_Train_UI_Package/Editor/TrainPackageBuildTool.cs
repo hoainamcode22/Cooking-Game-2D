@@ -214,10 +214,10 @@ namespace ExportTrainUIPackage
             rootRt.anchoredPosition = Vector2.zero;
             rootRt.sizeDelta = new Vector2(1400f, 820f);
 
-            // Canvas override sorting order 160 để đè lên toàn bộ HUD
+            // Canvas override sorting order 420 để đè lên toàn bộ HUD và Tutorial
             var canvas = GetOrAddComponent<Canvas>(rootGo);
             canvas.overrideSorting = true;
-            canvas.sortingOrder = 160;
+            canvas.sortingOrder = 420;
             if (rootGo.GetComponent<GraphicRaycaster>() == null)
                 rootGo.AddComponent<GraphicRaycaster>();
 
@@ -550,7 +550,7 @@ namespace ExportTrainUIPackage
 
             var canvas = GetOrAddComponent<Canvas>(root);
             canvas.overrideSorting = true;
-            canvas.sortingOrder = 165;
+            canvas.sortingOrder = 425;
             if (root.GetComponent<GraphicRaycaster>() == null)
                 root.AddComponent<GraphicRaycaster>();
 

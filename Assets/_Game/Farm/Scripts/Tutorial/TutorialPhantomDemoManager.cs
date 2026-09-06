@@ -146,7 +146,12 @@ public class TutorialPhantomDemoManager : MonoBehaviour
         Canvas ownCanvas = rootGo.GetComponent<Canvas>();
         if (ownCanvas == null) ownCanvas = rootGo.AddComponent<Canvas>();
         ownCanvas.overrideSorting = true;
-        ownCanvas.sortingOrder    = 450;
+        // [FIX 2026-09-06 vong4] TRUOC DAY go cung 450. Lop ao anh nam duoi Tutorial_Canvas nen
+        // 450 chi du vuot Canvas_Popup (300) — KHONG du vuot khay chuong PenSupplyTrayV2 (800)
+        // hay bang tien trinh chuong (500). Ket qua: buoc L2_08 dien canh keo bao thoc ma tay ao
+        // chim sau khay, nguoi choi khong thay demo. Nay lay so tu TutorialManager (doc THAT tu
+        // order khay roi cong bien an toan), van duoi ghost keo 999 va man chuyen canh 9999.
+        ownCanvas.sortingOrder    = TutorialManager.OrderLopAoAnhCanDung;
 
         // Lớp ảo ảnh KHÔNG được có GraphicRaycaster — nó chỉ để nhìn, không bao giờ nhận click.
         var raycaster = rootGo.GetComponent<GraphicRaycaster>();

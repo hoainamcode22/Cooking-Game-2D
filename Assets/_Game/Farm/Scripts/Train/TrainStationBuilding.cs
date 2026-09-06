@@ -18,11 +18,27 @@ public class TrainStationBuilding : MonoBehaviour
 
     private SpriteRenderer _arrivedBubble;
 
-    private BoxCollider2D _col;
+    private Collider2D _col;
 
     void Awake()
     {
-        _col = GetComponent<BoxCollider2D>();
+        _col = GetComponent<Collider2D>();
+        if (_col == null) _col = GetComponentInChildren<Collider2D>();
+        if (_col == null) _col = gameObject.AddComponent<BoxCollider2D>();
+
+        if (_col is BoxCollider2D boxCol && (boxCol.size.x < 0.2f || boxCol.size.y < 0.2f))
+        {
+            var sr = GetComponent<SpriteRenderer>() ?? GetComponentInChildren<SpriteRenderer>();
+            if (sr != null && sr.sprite != null)
+            {
+                boxCol.size = sr.sprite.bounds.size;
+                boxCol.offset = sr.sprite.bounds.center;
+            }
+            else
+            {
+                boxCol.size = new Vector2(3f, 3f);
+            }
+        }
         EnsurePopupsExist();
     }
 
@@ -104,36 +120,59 @@ public class TrainStationBuilding : MonoBehaviour
 
     private void EnsurePopupsExist()
     {
-        var master = ExportTrainUIPackage.TrainStationMasterPopupUI.Instance 
-            ?? FindFirstObjectByType<ExportTrainUIPackage.TrainStationMasterPopupUI>(FindObjectsInactive.Include);
-
-        if (master == null)
-        {
 #if UNITY_EDITOR
-            var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab");
-            if (prefab != null)
+        // [VONG 6 - 06/09] Phai dung LayPopupThat(): prefab dang co 4 component MasterPopupUI di lac
+        // tren Wagon_1..Wagon_4, neu chi dung Instance/FindFirstObjectByType thi bien 'master' co the
+        // tro vao mot BAN DI LAC (mot toa tau) chu khong phai popup that => tuong "da co roi" va bo qua.
+        var master = ExportTrainUIPackage.TrainStationMasterPopupUI.LayPopupThat();
+
+        var canvas = FindPopupCanvas();
+        if (canvas != null)
+        {
+            if (master == null)
             {
-                var canvas = FindPopupCanvas();
-                if (canvas != null)
+                var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab");
+                if (prefab != null)
                 {
                     var instance = Instantiate(prefab, canvas.transform);
                     instance.name = "Popup_Train_MasterStation";
                     instance.SetActive(false);
                 }
             }
-#endif
+
+            var itemPopup = ExportTrainUIPackage.TrainLoadPopupUI.Instance
+                ?? FindFirstObjectByType<ExportTrainUIPackage.TrainLoadPopupUI>(FindObjectsInactive.Include);
+            if (itemPopup == null)
+            {
+                var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab");
+                if (prefab != null)
+                {
+                    var instance = Instantiate(prefab, canvas.transform);
+                    instance.name = "Popup_item_Train";
+                    instance.SetActive(false);
+                }
+            }
+
+            var procPopup = ExportTrainUIPackage.TrainProcessPopupUI.Instance
+                ?? FindFirstObjectByType<ExportTrainUIPackage.TrainProcessPopupUI>(FindObjectsInactive.Include);
+            if (procPopup == null)
+            {
+                var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab");
+                if (prefab != null)
+                {
+                    var instance = Instantiate(prefab, canvas.transform);
+                    instance.name = "Popup_train";
+                    instance.SetActive(false);
+                }
+            }
         }
+#endif
     }
 
     private Canvas FindPopupCanvas()
     {
         var canvases = FindObjectsByType<Canvas>(FindObjectsInactive.Include, FindObjectsSortMode.None);
 
-        // ⚠️ [VÒNG 13] TRƯỚC ĐÂY: lấy BỪA canvas ĐẦU TIÊN có chữ "Popup" hoặc "UI" trong tên.
-        // FindObjectsByType KHÔNG bảo đảm thứ tự ⇒ thường vớ phải "Canvas_StallPopup" (quầy hàng)
-        // thay vì "Canvas_Popup". Kết quả: 3 popup tàu bị Instantiate vào canvas sai, không ai tắt,
-        // rồi bị auto-save ghi luôn vào scene ⇒ Sếp thấy 3 popup đè nhau + 2 nút X thừa.
-        // Nay: tìm ĐÚNG TÊN trước, hết cách mới dùng đoán mò.
         foreach (var c in canvases)
             if (c.name == "Canvas_Popup") return c;
 
@@ -148,26 +187,59 @@ public class TrainStationBuilding : MonoBehaviour
 
     void Update()
     {
-        bool clicked = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-                    || (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame);
+        bool clicked = InputBridge.IsPointerDownThisFrame
+                    || (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                    || (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+                    || Input.GetMouseButtonDown(0);
         if (!clicked) return;
-        if (FarmInputLock.BlockMapPan) return;
-        if (Camera.main == null) return;
+
+        // Chỉ chặn khi chuột/ngón tay đang bấm trên UI Canvas thực sự
+        if (FarmInputLock.ConTroTrenUiThat()) return;
+        if (FarmInputLock.BlockWorldInteraction) return;
+        if (EditModeManager.IsEditMode) return;
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen()) return;
+
+        var cam = Camera.main;
+        if (cam == null) return;
 
         Vector2 screenPos = InputBridge.PointerPosition;
-        Vector2 worldPos  = Camera.main.ScreenToWorldPoint(
-            new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
+        if (screenPos == Vector2.zero)
+        {
+            if (Mouse.current != null) screenPos = Mouse.current.position.ReadValue();
+            else screenPos = (Vector2)Input.mousePosition;
+        }
 
+        Vector3 world3 = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, cam.nearClipPlane));
+        Vector2 worldPos = new Vector2(world3.x, world3.y);
+
+        if (_col == null) _col = GetComponent<Collider2D>() ?? GetComponentInChildren<Collider2D>();
         if (_col == null || !_col.OverlapPoint(worldPos)) return;
 
-        if (FarmInputLock.BlockWorldInteraction) return;
-        // Không mở khi Edit Mode đang bật
-        if (EditModeManager.IsEditMode) return;
+        HandleClick();
+    }
 
-        // Không mở khi đang có popup khác mở
-        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+    private void OnMouseDown()
+    {
+        // [VONG 3 - 06/09] Log chan doan '[Train]': chi in khi con tro THUC SU cham collider
+        // cua nha ga (OnMouseDown chi no khi do), nen khong spam Console.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup)
+        {
+            Debug.Log($"[Train] Click GA bi chan tai cong BlockWorldClickBySceneOrPopup. Popup dang mo = '{PopupManager.TenPopupDangMo()}'");
             return;
+        }
+        if (!enabled || !gameObject.activeInHierarchy) return;
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+        {
+            Debug.Log($"[Train] Click GA bi chan tai cong IsAnyPopupOpen. Popup dang mo = '{PopupManager.TenPopupDangMo()}'");
+            return;
+        }
+        if (EditModeManager.IsEditMode)
+        {
+            Debug.Log("[Train] Click GA bi chan: dang bat Edit Mode.");
+            return;
+        }
 
+        Debug.Log("[Train] Click GA HOP LE (OnMouseDown) -> goi HandleClick()");
         HandleClick();
     }
 
@@ -178,13 +250,17 @@ public class TrainStationBuilding : MonoBehaviour
         var state = TrainManager.Instance != null ? TrainManager.Instance.State : TrainState.WaitingForLoad;
 
         // 1. Package UI 6-state (Export_Train_UI_Package) — view đọc TrainManager
-        var masterPopup = ExportTrainUIPackage.TrainStationMasterPopupUI.Instance
-            ?? FindFirstObjectByType<ExportTrainUIPackage.TrainStationMasterPopupUI>(FindObjectsInactive.Include);
+        // [VONG 6 - 06/09] LayPopupThat() luon tra ve popup NGOAI CUNG, khong bao gio tra ve mot
+        // component di lac tren toa tau (thu pham cua vu "3 popup de nhau").
+        var masterPopup = ExportTrainUIPackage.TrainStationMasterPopupUI.LayPopupThat();
+
+        Debug.Log($"[Train] HandleClick: TrainState={state} | masterPopup={(masterPopup != null ? masterPopup.name : "NULL (khong tim thay Popup_Train_MasterStation trong scene!)")}");
 
         if (masterPopup != null)
         {
             if (masterPopup.gameObject.activeSelf)
             {
+                Debug.Log("[Train] Popup master DANG MO san -> click nay dong popup lai (toggle).");
                 masterPopup.ClosePopup();
                 return;
             }
@@ -209,6 +285,7 @@ public class TrainStationBuilding : MonoBehaviour
                     break;
 
                 default: // WaitingForLoad, RewardDeparting
+                    Debug.Log("[Train] Nhanh MAC DINH -> mo popup ga tau (WaitingForLoad).");
                     masterPopup.OpenPopup(ExportTrainUIPackage.TrainState.WaitingForLoad);
                     break;
             }

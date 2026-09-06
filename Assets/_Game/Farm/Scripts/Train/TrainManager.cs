@@ -315,8 +315,7 @@ public class TrainManager : MonoBehaviour
         if (slot.IsCargoComplete)                         return 0;
 
         int needed  = slot.requiredAmount - slot.currentAmount;
-        int inStock = FarmInventoryManager.Instance != null
-            ? FarmInventoryManager.Instance.GetAmount(slot.itemId) : 0;
+        int inStock = TrainInventoryAdapter.GetAmount(slot.itemId);
         int toAdd   = Mathf.Min(needed, inStock);
 
         if (toAdd <= 0)

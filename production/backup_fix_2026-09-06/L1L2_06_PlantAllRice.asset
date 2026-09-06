@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
+  m_Name: L1L2_06_PlantAllRice
+  m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
+  npcText: "L\xE0m t\u1ED1t l\u1EAFm! Gieo n\u1ED1t c\xE1c \xF4 \u0111\u1EA5t c\xF2n
+    l\u1EA1i cho ph\u1EE7 k\xEDn ru\u1ED9ng nh\xE9."
+  npcPortrait: {fileID: 0}
+  typingSpeed: 0.02
+  targetID: 
+  useCircleHole: 1
+  holePaddingPx: 16
+  waitAction: 9
+  showGuideBoard: 0
+  showHandPointer: 0
+  handOffset: {x: 0, y: 0}
+  dragToTargetId: 

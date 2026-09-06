@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_10_HarvestAllRice
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "H\xE3y thu ho\u1EA1ch h\u1EBFt c\xE1c \xF4 l\xFAa c\xF2n l\u1EA1i nh\xE9!"
+  npcText: "C\u1EA3 ru\u1ED9ng ch\xEDn v\xE0ng r\u1ED3i! Qu\u1EB9t li\u1EC1m thu ho\u1EA1ch n\u1ED1t nh\u1EEFng \xF4 c\xF2n l\u1EA1i n\xE0o."
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 

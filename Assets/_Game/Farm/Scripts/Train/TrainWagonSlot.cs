@@ -1,20 +1,20 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 
-// â”€â”€â”€ Slot mode enum â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ——— Slot mode enum ———————————————————————————————————————————————
 
 public enum TrainWagonSlotMode
 {
-    Empty,        // Toa trá»‘ng â€” khÃ´ng hiá»‡n gÃ¬
-    CargoRequest, // Chá» náº¡p hÃ ng â€” hiá»‡n icon + currentAmount/requiredAmount
-    Reward        // Chá» thu hoáº¡ch â€” hiá»‡n icon + x(amount)
+    Empty,        // Toa trống — không hiện gì
+    CargoRequest, // Chờ nạp hàng — hiện icon + currentAmount/requiredAmount
+    Reward        // Chờ thu hoạch — hiện icon + x(amount)
 }
 
-// â”€â”€â”€ Runtime slot data â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ——— Runtime slot data —————————————————————————————————————————————
 
 /// <summary>
-/// Runtime data cho 1 toa trong chuyáº¿n hiá»‡n táº¡i.
-/// DÃ¹ng chung cho cáº£ cháº¿ Ä‘á»™ náº¡p hÃ ng (CargoRequest) vÃ  cháº¿ Ä‘á»™ thu reward (Reward).
+/// Runtime data cho 1 toa trong chuyến hiện tại.
+/// Dùng chung cho cả chế độ nạp hàng (CargoRequest) và chế độ thu reward (Reward).
 /// </summary>
 [System.Serializable]
 public class TrainWagonSlotData
@@ -57,24 +57,24 @@ public class TrainWagonSlot : MonoBehaviour
     [Tooltip("Bề rộng icon tối đa = tỉ lệ này x bề rộng vùng click toa (BoxCollider2D). Mọi loại hàng (thịt, lúa, đá, kính...) đều bị co về cùng 1 cỡ. Đặt 0 = giữ size gốc như cũ.")]
     [SerializeField] private float iconFitRatio = 0.45f;
 
-    // â”€â”€â”€ Runtime â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ——— Runtime ——————————————————————————————————————————————————————
     private TrainWagonSlotData _data;
     private BoxCollider2D      _col;
     private Vector3            _iconBaseScale = Vector3.one;
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ——————————————————————————————————————————————————————————————————
 
     void Awake()
     {
         _col = GetComponent<BoxCollider2D>();
         if (iconSprite != null) _iconBaseScale = iconSprite.transform.localScale;
-        // áº¨n cargo icon máº·c Ä‘á»‹nh â€” chá»‰ hiá»‡n sau khi cháº¥t hÃ ng láº§n Ä‘áº§u
+        // Ẩn cargo icon mặc định — chỉ hiện sau khi chất hàng lần đầu
         if (iconSprite != null) iconSprite.enabled = false;
     }
 
-    // â”€â”€â”€ Public API (gá»i tá»« TrainManager) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ——— Public API (gọi từ TrainManager) ————————————————————————————
 
-    /// <summary>Refresh visual tá»« slot data má»›i nháº¥t vÃ  báº­t collider.</summary>
+    /// <summary>Refresh visual từ slot data mới nhất và bật collider.</summary>
     public void Refresh(TrainWagonSlotData data)
     {
         _data = data;
@@ -97,25 +97,25 @@ public class TrainWagonSlot : MonoBehaviour
         }
     }
 
-    /// <summary>áº¨n slot hoÃ n toÃ n vÃ  vÃ´ hiá»‡u hoÃ¡ collider (khi tÃ u Ä‘ang cháº¡y).</summary>
+    /// <summary>Ẩn slot hoàn toàn và vô hiệu hoá collider (khi tàu đang chạy).</summary>
     public void Hide()
     {
         gameObject.SetActive(false);
     }
 
     /// <summary>
-    /// Chá»‰ vÃ´ hiá»‡u collider (ngÄƒn click), GIá»® NGUYÃŠN visual.
-    /// DÃ¹ng khi tÃ u khá»Ÿi hÃ nh â€” cargo image váº«n hiá»ƒn thá»‹ suá»‘t hÃ nh trÃ¬nh.
+    /// Chỉ vô hiệu collider (ngăn click), GIỮ NGUYÊN visual.
+    /// Dùng khi tàu khởi hành — cargo image vẫn hiển thị suốt hành trình.
     /// </summary>
     public void DisableInteraction()
     {
         if (_col != null) _col.enabled = false;
     }
 
-    /// <summary>World-space position cá»§a slot â€” dÃ¹ng lÃ m Ä‘iá»ƒm spawn FX.</summary>
+    /// <summary>World-space position của slot — dùng làm điểm spawn FX.</summary>
     public Vector3 GetWorldPosition() => transform.position;
 
-    // â”€â”€â”€ Display helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ─── Display helpers ────────────────────────────────────────────────────
 
     private void ShowEmpty()
     {
@@ -123,17 +123,17 @@ public class TrainWagonSlot : MonoBehaviour
         if (iconSprite != null) iconSprite.enabled = false;
         SetLabel("");
         if (emptyRoot != null) emptyRoot.SetActive(true);
-        _col.enabled = false; // toa trá»‘ng khÃ´ng thá»ƒ click
+        _col.enabled = false; // toa trống không thể click
     }
 
     private void ShowCargo(TrainWagonSlotData data)
     {
         bool hasItems = data.currentAmount > 0;
 
-        // emptyRoot: hiá»‡n khi chÆ°a cÃ³ hÃ ng, áº©n khi Ä‘Ã£ cÃ³ Ã­t nháº¥t 1 item
+        // emptyRoot: hiện khi chưa có hàng, ẩn khi đã có ít nhất 1 item
         if (emptyRoot != null) emptyRoot.SetActive(!hasItems);
 
-        // iconSprite: áº©n khi currentAmount == 0, hiá»‡n ngay khi currentAmount >= 1
+        // iconSprite: ẩn khi currentAmount == 0, hiện ngay khi currentAmount >= 1
         if (iconSprite != null)
         {
             if (hasItems && data.icon != null)
@@ -150,7 +150,7 @@ public class TrainWagonSlot : MonoBehaviour
         FitIconToWagon();
         SetLabel($"{data.currentAmount}/{data.requiredAmount}");
 
-        // Toa Ä‘áº§y â†’ táº¯t collider (khÃ´ng cho click thÃªm)
+        // Toa đầy → tắt collider (không cho click thêm)
         _col.enabled = !data.IsCargoComplete;
     }
 
@@ -165,10 +165,7 @@ public class TrainWagonSlot : MonoBehaviour
     }
 
     /// <summary>
-    /// Chuẩn hoá icon về CÙNG 1 cỡ nhỏ gọn trên toa — mọi loại hàng bằng nhau,
-    /// không còn icon nguồn to (thịt, món ăn...) lòi ra khỏi toa tàu.
-    /// Dùng BoxCollider2D.size (không phụ thuộc enabled) nên gọi lúc nào cũng đúng;
-    /// reset về scale gốc trước khi đo nên gọi lặp lại không bị nhân dồn.
+    /// Chuẩn hoá icon về CÙNG 1 cỡ nhỏ gọn trên toa — mọi loại hàng bằng nhau.
     /// </summary>
     private void FitIconToWagon()
     {
@@ -196,7 +193,6 @@ public class TrainWagonSlot : MonoBehaviour
             iconSprite.sprite  = sprite;
             iconSprite.enabled = true;
         }
-        // KhÃ´ng áº©n icon khi sprite null â€” giá»¯ nguyÃªn sprite cÅ©
     }
 
     private void SetLabel(string text)
@@ -204,17 +200,47 @@ public class TrainWagonSlot : MonoBehaviour
         if (txtLabel != null) txtLabel.text = text;
     }
 
-    // Unity gá»i OnMouseDown khi collider cá»§a chÃ­nh GO nÃ y Ä‘Æ°á»£c click.
-    // KhÃ´ng cáº§n tá»± kiá»ƒm tra raycast / OverlapPoint ná»¯a.
-    private void OnMouseDown()
+    void Update()
     {
-        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
         if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         if (!enabled || !gameObject.activeInHierarchy) return;
-        if (FarmInputLock.BlockMapPan) return;
+        if (TrainManager.Instance == null) return;
+        if (Camera.main == null) return;
+
+        bool clicked = InputBridge.IsPointerDownThisFrame
+                    || (UnityEngine.InputSystem.Mouse.current != null && UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame)
+                    || (UnityEngine.InputSystem.Touchscreen.current != null && UnityEngine.InputSystem.Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+                    || Input.GetMouseButtonDown(0);
+        if (!clicked) return;
+
+        if (FarmInputLock.ConTroTrenUiThat()) return;
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen()) return;
+
+        Vector2 screenPos = InputBridge.PointerPosition;
+        if (screenPos == Vector2.zero)
+        {
+            if (UnityEngine.InputSystem.Mouse.current != null) screenPos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
+            else screenPos = (Vector2)Input.mousePosition;
+        }
+        Vector3 world3 = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
+        Vector2 worldPos = new Vector2(world3.x, world3.y);
+
+        if (_col == null) _col = GetComponent<BoxCollider2D>();
+        if (_col != null && _col.enabled && _col.OverlapPoint(worldPos))
+        {
+            TrainManager.Instance.OnWagonSlotClicked(this);
+        }
+    }
+
+    // Unity gọi OnMouseDown khi collider của chính GO này được click (legacy fallback).
+    private void OnMouseDown()
+    {
+        // Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
+        if (!enabled || !gameObject.activeInHierarchy) return;
         if (TrainManager.Instance == null) return;
 
-        // KhÃ´ng xá»­ lÃ½ khi Ä‘ang cÃ³ popup má»Ÿ
+        // Không xử lý khi đang có popup mở
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
             return;
 

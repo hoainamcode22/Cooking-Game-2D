@@ -108,9 +108,12 @@ public class AudioManager : MonoBehaviour
         if (fxSource == null) fxSource = CreateChildSource("FX_Source");
         if (waterAmbienceSource == null) waterAmbienceSource = CreateChildSource("Water_Ambience_Source");
 
-        SetupSource(bgmSource, true, bgmVolume);
-        SetupSource(uiSource, false, uiVolume);
-        SetupSource(fxSource, false, fxVolume);
+        // [FIX 2026-09-06] Ap AM LUONG DA LUU ngay tu dau. Truoc day Awake dung gia tri mac
+        // dinh trong Inspector nen thiet lap cua nguoi choi bi bo qua moi lan mo game.
+        bgmVolume = Mathf.Clamp01(PlayerPrefs.GetFloat("SETTING_BGM_VOLUME", bgmVolume));
+        SetupSource(bgmSource, true, PlayerPrefs.GetInt("SETTING_BGM_ENABLED", 1) == 1 ? bgmVolume : 0f);
+        SetupSource(uiSource, false, 1f);   // giam am o buoc phat (SfxGain)
+        SetupSource(fxSource, false, 1f);
         SetupSource(waterAmbienceSource, true, 0f);
 
         LoadDefaultClipsIfMissing();
@@ -428,7 +431,7 @@ public class AudioManager : MonoBehaviour
         if (clip == null || fxSource == null) return;
 
         fxSource.pitch = Random.Range(pitchMin, pitchMax);
-        fxSource.PlayOneShot(clip, fxVolume * volumeScale);
+        fxSource.PlayOneShot(clip, fxVolume * volumeScale * SfxGain);   // [FIX] nhan he so am luong
     }
 
     /// <summary>🔘 Tiếng bấm nút button (button.wav) — tự động áp dụng cho tất cả Button trong game</summary>
@@ -442,7 +445,7 @@ public class AudioManager : MonoBehaviour
         if (uiClick != null && uiSource != null)
         {
             uiSource.pitch = Random.Range(0.99f, 1.01f);
-            uiSource.PlayOneShot(uiClick, uiVolume);
+            uiSource.PlayOneShot(uiClick, uiVolume * SfxGain);           // [FIX] tieng bam nut cung phai theo thanh truot
         }
     }
 
@@ -644,17 +647,46 @@ public class AudioManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// [FIX 2026-09-06] HE SO AM LUONG HIEU LUC cho MOI tieng dong (0..1).
+    /// Moi noi phat tieng — ke ca AudioSource nam ngoai AudioManager (gia suc, tho xay) —
+    /// deu phai nhan voi so nay thi keo thanh truot moi that su nho di.
+    /// Tat SFX => 0.
+    /// </summary>
+    public static float SfxGain
+    {
+        get
+        {
+            if (PlayerPrefs.GetInt("SETTING_SFX_ENABLED", 1) != 1) return 0f;
+            return Mathf.Clamp01(PlayerPrefs.GetFloat("SETTING_SFX_VOLUME", 0.85f));
+        }
+    }
+
+    /// <summary>Ban khi nguoi choi keo thanh truot / bat tat SFX — cho AudioSource ngoai tu chinh lai.</summary>
+    public static event System.Action<float> OnSfxGainChanged;
+
     public float SFXVolume
     {
         get => PlayerPrefs.GetFloat("SETTING_SFX_VOLUME", fxVolume);
         set
         {
-            fxVolume = Mathf.Clamp01(value);
-            uiVolume = Mathf.Clamp01(value * 0.85f);
-            PlayerPrefs.SetFloat("SETTING_SFX_VOLUME", fxVolume);
-            if (fxSource != null) fxSource.volume = IsSFXEnabled ? fxVolume : 0f;
-            if (uiSource != null) uiSource.volume = IsSFXEnabled ? uiVolume : 0f;
+            // [FIX 2026-09-06] Truoc day gan ca fxSource.volume VA nhan them fxVolume luc
+            // PlayOneShot ⇒ am luong bi BINH PHUONG (0.5 nghe ra 0.25). Rieng uiSource con
+            // te hon: uiVolume KHONG he theo thanh truot nen tieng bam nut khong bao gio nho di.
+            // Nay: source.volume = 1, moi thu nhan SfxGain mot lan duy nhat luc phat.
+            float v = Mathf.Clamp01(value);
+            PlayerPrefs.SetFloat("SETTING_SFX_VOLUME", v);
+            PlayerPrefs.Save();
+            ApDungAmLuongSfx();
+            OnSfxGainChanged?.Invoke(SfxGain);
         }
+    }
+
+    /// <summary>Dua 2 nguon SFX ve chuan: volume = 1, viec giam am do SfxGain lo luc phat.</summary>
+    private void ApDungAmLuongSfx()
+    {
+        if (fxSource != null) fxSource.volume = 1f;
+        if (uiSource != null) uiSource.volume = 1f;
     }
 
     public bool IsBGMEnabled
@@ -674,8 +706,9 @@ public class AudioManager : MonoBehaviour
         set
         {
             PlayerPrefs.SetInt("SETTING_SFX_ENABLED", value ? 1 : 0);
-            if (fxSource != null) fxSource.volume = value ? SFXVolume : 0f;
-            if (uiSource != null) uiSource.volume = value ? uiVolume : 0f;
+            PlayerPrefs.Save();
+            ApDungAmLuongSfx();                       // [FIX] volume = 1, SfxGain lo phan con lai
+            OnSfxGainChanged?.Invoke(SfxGain);
         }
     }
 }

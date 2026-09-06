@@ -1,0 +1,1021 @@
+using System;
+using System.Collections;
+using TMPro;
+using UnityEngine;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
+
+public class PenMiniPanelUI : MonoBehaviour
+{
+    public enum PenState { Idle, Processing, Ready }
+
+    private const string PrefKeyState     = "PenState_";
+    private const string PrefKeyFood      = "PenFood_";
+    private const string PrefKeyStartTime = "PenStartTime_";
+
+    private const string PenSaveFamily  = "PEN_STATE";
+    private const int    PenSaveVersion = 1;
+
+    [Header("Config")]
+    [SerializeField] private PenMiniPanelConfig config;
+    public PenMiniPanelConfig Config => config;
+
+    // [V2 ADD] ═══════════════════════════════════════════════════════════════
+    // KHAY VẬT PHẨM V2 (PenSupplyTrayV2) — một khay duy nhất kiểu Hay Day gom
+    // [rỗ thu hoạch] + [bao thức ăn] nổi cạnh chuồng, thay cho 2 UI rời rạc
+    // (PenBasketTrayController + LivestockFeedPopupController).
+    //
+    // BẬT (mặc định): OpenPanel chuyển hướng sang PenSupplyTrayV2.TryShow(this).
+    // TẮT: quay về NGUYÊN TRẠNG 100% — hai UI cũ, không một dòng logic nào bị xoá.
+    // TryShow trả false (thiếu Camera, chuồng đang Processing…) cũng tự rơi về UI cũ.
+    // Toàn bộ callback cho ăn / thu hoạch (TryFeed / TryHarvest) không đổi — khay V2
+    // chỉ là lớp vỏ nhúng lại LivestockFeedDragItem + PenBasketDragItem.
+    // ═════════════════════════════════════════════════════════════════════════
+    [Header("Khay Vật Phẩm V2")] // [V2 ADD]
+    [Tooltip("Bật: mở khay hợp nhất V2 (rỗ + thức ăn cạnh chuồng). Tắt: dùng 2 UI cũ như nguyên trạng.")] // [V2 ADD]
+    [SerializeField] private bool useSupplyTrayV2 = true; // [V2 ADD]
+
+    [Header("Panel Root")]
+    [SerializeField] private GameObject panelRoot;
+
+    [Header("Slot Food 1")]
+    [SerializeField] private GameObject slot1Root;
+    [SerializeField] private Image      slot1Icon;
+    [SerializeField] private TMP_Text   slot1Amount;
+
+    [Header("Slot Food 2")]
+    [SerializeField] private GameObject slot2Root;
+    [SerializeField] private Image      slot2Icon;
+    [SerializeField] private TMP_Text   slot2Amount;
+
+    [Header("Slot Basket")]
+    // Ô THỨC ĂN THỨ 3 — túi cám từ máy xay (thêm 20/08).
+    // TỰ ẨN khi config.premiumFoodItemId trống, nên prefab chuồng chưa có node này vẫn
+    // chạy bình thường (cả 3 field null → mọi nhánh dưới đều no-op).
+    [SerializeField] private GameObject slot3Root;
+    [SerializeField] private Image      slot3Icon;
+    [SerializeField] private TMP_Text   slot3Amount;
+
+    [SerializeField] private GameObject basketRoot;
+    [SerializeField] private Image      basketIcon;
+    [SerializeField] private GameObject basketActiveGlow;
+
+    [Header("Progress Overlay")]
+    [SerializeField] private GameObject progressOverlay;
+    [SerializeField] private Image      progressFill;
+    [SerializeField] private TMP_Text   progressLabel;
+
+    public PenState CurrentState { get; private set; } = PenState.Idle;
+
+    private float   processStartUnix;
+    private string  activeFoodId;
+    private Coroutine timerCoroutine;
+    private bool    popupInputLockHeld;
+
+    // Giữ panel mở đủ lâu để user kéo thức ăn vào (không bị đóng ngay sau khi mở)
+    private const float PanelKeepOpenSeconds = 1.5f;
+    private float _openedAtTime = -99f;
+
+    private void Awake()
+    {
+        if (panelRoot != null) panelRoot.SetActive(false);
+        EnsurePanelLayout();
+    }
+
+    private void EnsurePanelLayout()
+    {
+        // 1. Đảm bảo Canvas luôn Override Sorting ở lớp cao (1500) để nổi lên trên chuồng và cây cối
+        Canvas canvas = GetComponent<Canvas>();
+        if (canvas != null)
+        {
+            canvas.overrideSorting = true;
+            canvas.sortingOrder = 1500;
+        }
+
+        // 2. Định vị Panel chính giữa chuồng, nổi cao ráo trên đỉnh hàng rào
+        RectTransform rt = GetComponent<RectTransform>();
+        if (rt != null)
+        {
+            rt.anchoredPosition = new Vector2(0f, 3.2f);
+            rt.sizeDelta = new Vector2(130f, 130f);
+        }
+
+        // 3. Chuẩn hóa kích thước khung chứa gọn gàng, bo góc đẹp
+        if (panelRoot != null)
+        {
+            RectTransform prRt = panelRoot.GetComponent<RectTransform>();
+            if (prRt != null)
+            {
+                prRt.anchoredPosition = Vector2.zero;
+                prRt.sizeDelta = new Vector2(120f, 120f);
+            }
+
+            Transform bg = panelRoot.transform.Find("Background");
+            if (bg != null)
+            {
+                RectTransform bgRt = bg.GetComponent<RectTransform>();
+                if (bgRt != null)
+                {
+                    bgRt.anchoredPosition = Vector2.zero;
+                    bgRt.sizeDelta = new Vector2(120f, 120f);
+                }
+                Image bgImg = bg.GetComponent<Image>();
+                if (bgImg != null)
+                {
+                    bgImg.color = new Color(1f, 0.98f, 0.94f, 0.96f);
+                }
+            }
+        }
+    }
+
+    private void Start()
+    {
+        LoadState();
+        if (CurrentState == PenState.Processing)
+        {
+            float remaining = GetRemainingSeconds();
+            if (remaining <= 0f)
+                SetState(PenState.Ready);
+            else
+                timerCoroutine = StartCoroutine(ProcessTimerCoroutine(remaining));
+        }
+        UpdateReadyBubble();
+    }
+
+    private void Update()
+    {
+        if (!IsPanelOpen()) return;
+
+        if (FarmInputLock.IsDraggingSeed) return;
+
+        // Giữ panel mở trong PanelKeepOpenSeconds đầu sau khi mở
+        // → user có đủ thời gian nhìn vào khung và bắt đầu kéo thức ăn
+        if (Time.unscaledTime < _openedAtTime + PanelKeepOpenSeconds) return;
+
+        bool clicked = (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+                    || Input.GetMouseButtonDown(0);
+
+        if (!clicked && Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+        {
+            clicked = true;
+        }
+
+        if (!clicked) return;
+
+        Vector2 screenPos;
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
+            screenPos = Touchscreen.current.primaryTouch.position.ReadValue();
+        else if (Mouse.current != null)
+            screenPos = Mouse.current.position.ReadValue();
+        else
+            screenPos = Input.mousePosition;
+
+        if (!IsPointerOverPanel(screenPos))
+            ClosePanel();
+    }
+
+    private void AcquirePopupInputBlock()
+    {
+        if (popupInputLockHeld) return;
+        FarmInputLock.RegisterPopupOpen();
+        popupInputLockHeld = true;
+    }
+
+    private void ReleasePopupInputBlock()
+    {
+        if (!popupInputLockHeld) return;
+        FarmInputLock.RegisterPopupClose();
+        popupInputLockHeld = false;
+    }
+
+    private void OnDisable()
+    {
+        ReleasePopupInputBlock();
+    }
+
+    [Header("Title")]
+    [SerializeField] private TMP_Text txtPenTitle;
+
+    [Tooltip("Offset spawn FX")]
+    [SerializeField] private float harvestSpawnUpOffset = 280f;
+
+    public int SpeedUpGemCost =>
+        CurrentState == PenState.Processing
+            ? ConstructionManager.RushCostFor(GetRemainingSeconds())
+            : 0;
+
+    [Header("Sorting")]
+    [SerializeField] private Canvas processOverlayCanvas;
+    [SerializeField] private int processSortingOrder = 1500;
+
+    [Header("Tutorial")]
+    [SerializeField] private Sprite gemButtonBgSprite;
+    [SerializeField] private Sprite gemIconSprite;
+    [SerializeField] private Sprite readyBubbleBgSprite;
+    [SerializeField] private Vector2 readyBubbleLocalPos = new Vector2(0f, 320f);
+    [SerializeField] private int readyBubbleSortingOrder = 1500;
+
+    public bool IsPanelOpen() => panelRoot != null && panelRoot.activeSelf;
+    public RectTransform FirstFeedSlotRect => slot1Root != null ? slot1Root.GetComponent<RectTransform>() : null;
+    public RectTransform BasketSlotRect => basketRoot != null ? basketRoot.GetComponent<RectTransform>() : null;
+    public RectTransform SpeedUpButtonRect
+    {
+        get
+        {
+            EnsureGemButton();
+            PlaceGemButton();
+            return _gemButtonGO != null ? _gemButtonGO.GetComponent<RectTransform>() : null;
+        }
+    }
+
+    public void OpenPanel()
+    {
+        if (config == null) return;
+
+        NotifyAnimalsVoice();
+
+        // 1. Nếu đang nuôi (Processing) -> Mở Process Popup (thanh đếm ngược + Speed-up Gem - GIỮ NGUYÊN)
+        if (CurrentState == PenState.Processing)
+        {
+            var popup = PenProcessPopupUI.Instance ?? FindFirstObjectByType<PenProcessPopupUI>(FindObjectsInactive.Include);
+            if (popup == null)
+            {
+                var go = new GameObject("PenProcessPopupUI_Host", typeof(PenProcessPopupUI));
+                popup = go.GetComponent<PenProcessPopupUI>();
+            }
+            if (popup != null)
+            {
+                popup.Open(this);
+                // [FIX 2026-09-06] Bao cho tutorial: buoc L2_09 (tang toc chuong) cho nguoi choi MO
+                // bang tien trinh. Truoc day chi nhanh Idle bao, nen mo bang luc dang ap thi
+                // tutorial khong biet ⇒ ket cung o buoc 28.
+                TutorialManager.Instance?.NotifyOpenPen();
+                return;
+            }
+        }
+
+        // 2. Nếu đã sẵn sàng thu hoạch (Ready) -> Mở Khay Cái Rổ (Basket Tray) giống gặt lúa
+        if (CurrentState == PenState.Ready)
+        {
+            // [V2 ADD] Khay hợp nhất V2 — TryShow false thì rơi về khay rỗ cũ y nguyên.
+            // [FIX 2026-09-06] Nhanh Ready cung phai bao — buoc L2_10 (thu trung) cho MO khay ro.
+            if (useSupplyTrayV2 && PenSupplyTrayV2.TryShow(this))
+            {
+                TutorialManager.Instance?.NotifyOpenPen();
+                return; // [V2 ADD]
+            }
+            FarmUIManager.Instance?.ShowPenBasketTray(this);
+            TutorialManager.Instance?.NotifyOpenPen();
+            return;
+        }
+
+        // 3. Nếu đang đói (Idle) -> Mở Screen-Space Feed Popup (giống Seed Popup)
+        if (CurrentState == PenState.Idle)
+        {
+            // [V2 ADD] Khay hợp nhất V2 — giữ đúng thứ tự cũ: mở UI xong mới Notify tutorial.
+            if (useSupplyTrayV2 && PenSupplyTrayV2.TryShow(this)) // [V2 ADD]
+            {                                                     // [V2 ADD]
+                TutorialManager.Instance?.NotifyOpenPen();        // [V2 ADD]
+                return;                                           // [V2 ADD]
+            }                                                     // [V2 ADD]
+            FarmUIManager.Instance?.ShowLivestockFeedPopup(this);
+            TutorialManager.Instance?.NotifyOpenPen();
+            return;
+        }
+    }
+
+    private void NotifyAnimalsVoice()
+    {
+        var ais = GetComponentsInChildren<Assetsgame.Animals.LivestockAI>(true);
+        if (ais != null && ais.Length > 0)
+        {
+            ais[UnityEngine.Random.Range(0, ais.Length)].PlayAnimalSound(true);
+        }
+    }
+
+    public void ClosePanel()
+    {
+        ReleasePopupInputBlock();
+        if (panelRoot != null) panelRoot.SetActive(false);
+        FarmUIManager.Instance?.HideLivestockFeedPopup();
+        FarmUIManager.Instance?.HidePenBasketTray();
+        PenSupplyTrayV2.HideIfShowing(); // [V2 ADD] đóng khay V2 cùng nhịp 2 UI cũ (no-op khi không dùng)
+        FarmInputLock.SuppressWorldClickForCurrentFrame();
+    }
+
+    public void OnSlot1Clicked()
+    {
+        if (config == null || CurrentState != PenState.Idle) return;
+        string feedItemId = !string.IsNullOrEmpty(config.food1ItemId) ? config.food1ItemId : config.premiumFoodItemId;
+        TryFeed(feedItemId, transform.position);
+    }
+
+    public void OnSlot2Clicked()
+    {
+    }
+
+    public void OnSlot3Clicked()
+    {
+        OnSlot1Clicked();
+    }
+
+    public void OnBasketClicked()
+    {
+        if (CurrentState != PenState.Ready) return;
+        TryHarvest(transform.position);
+    }
+
+    public bool TryFeed(string foodItemId, Vector3 vfxWorldPosition)
+    {
+        if (CurrentState != PenState.Idle || config == null) return false;
+
+        string validFeedId = !string.IsNullOrEmpty(config.food1ItemId) ? config.food1ItemId : config.premiumFoodItemId;
+        if (foodItemId != validFeedId && foodItemId != config.food1ItemId && foodItemId != config.premiumFoodItemId)
+            return false;
+
+        int need = FoodNeededFor(foodItemId);
+        if (!FarmInventoryManager.Instance.HasItem(foodItemId, need))
+        {
+            FarmUIManager.Instance?.ShowHint($"Cần {need} bao thức ăn cho một lượt nuôi. Hãy xay tại Máy Xay Thức Ăn!");
+            return false;
+        }
+
+        FarmInventoryManager.Instance.RemoveItem(foodItemId, need);
+        MissionProgressTracker.ReportEvent(MissionEventType.FeedAnimal, foodItemId, need);
+        PlayFeedVFX(foodItemId, vfxWorldPosition);
+        AudioManager.Instance?.PlayPlanting();
+        NotifyAnimalsVoice();
+        activeFoodId = foodItemId;
+        processStartUnix = (float)GetUnixNow();
+        SetState(PenState.Processing);
+        SaveState();
+
+        StopTimerIfRunning();
+        timerCoroutine = StartCoroutine(ProcessTimerCoroutine(EffectiveFeedSeconds));
+
+        // Đóng mini panel (Idle) và mở CropProcessPopupUI (thanh process mới giống ruộng)
+        // Xoá flow cũ: progressOverlay hiện ngay → thay bằng popup riêng
+        ClosePanel();
+        var popup = PenProcessPopupUI.Instance ?? FindFirstObjectByType<PenProcessPopupUI>(FindObjectsInactive.Include);
+        if (popup == null)
+        {
+            var go = new GameObject("PenProcessPopupUI_Host", typeof(PenProcessPopupUI));
+            popup = go.GetComponent<PenProcessPopupUI>();
+        }
+        if (popup != null)
+            popup.Open(this);
+
+        if (IsPenTutorialStep("L2_08_FeedPen"))
+        {
+            // Tutorial đã ClosePanel ở trên rồi, không cần gọi lại
+        }
+
+        TutorialManager.Instance?.NotifyFeed();
+        return true;
+    }
+
+
+    public bool TryHarvest(Vector3 vfxWorldPosition)
+    {
+        if (CurrentState != PenState.Ready) return false;
+
+        var inv = FarmInventoryManager.Instance;
+        if (inv != null)
+        {
+            bool fit = inv.CanAddItem(config.productItemId)
+                    && (string.IsNullOrEmpty(config.secondProductItemId) || inv.CanAddItem(config.secondProductItemId));
+
+            if (!fit)
+            {
+                FarmUIManager.Instance?.ShowHint(
+                    $"Kho đầy ({inv.UsedSlots}/{inv.SlotCapacity} slot) — bán bớt hoặc nâng cấp kho rồi thu hoạch.");
+                return false;
+            }
+        }
+
+        // Chốt cờ cám NGAY ĐÂY: cuối hàm activeFoodId bị xoá về null, đọc sau là mất thưởng.
+        bool anCam = DangNuoiBangCam;
+        int bonus  = anCam ? Mathf.Max(0, config.premiumProductBonus) : 0;
+
+        Vector3 productSpawn = vfxWorldPosition + Vector3.up * harvestSpawnUpOffset;
+        int productAmount = Mathf.Max(1, config.productAmount) + bonus;
+        SpawnHarvestFX(config.productItemId, config.productIcon, productAmount, productSpawn);
+
+        int secondAmount = Mathf.Max(1, config.secondProductAmount) + bonus;
+
+        if (!string.IsNullOrEmpty(config.secondProductItemId))
+            SpawnHarvestFX(config.secondProductItemId, config.secondProductIcon,
+                secondAmount, productSpawn);
+
+        int expThuong = config.expReward + (anCam ? Mathf.Max(0, config.premiumExpBonus) : 0);
+
+        if (HarvestFeedbackSpawner.Instance != null)
+            HarvestFeedbackSpawner.Instance.SpawnExpFly(transform.position + Vector3.up * harvestSpawnUpOffset, expThuong);
+
+        AudioManager.Instance?.PlayHarvest();
+        NotifyAnimalsVoice();
+
+        FarmInventoryManager.Instance.AddItem(config.productItemId, productAmount);
+        MissionProgressTracker.ReportEvent(MissionEventType.CollectAnimalProduct, config.productItemId, productAmount);
+        if (!string.IsNullOrEmpty(config.secondProductItemId))
+        {
+            FarmInventoryManager.Instance.AddItem(config.secondProductItemId, secondAmount);
+            MissionProgressTracker.ReportEvent(MissionEventType.CollectAnimalProduct, config.secondProductItemId, secondAmount);
+        }
+
+        activeFoodId = null;
+        SetState(PenState.Idle);
+        SaveState();
+        RefreshUI();
+        TutorialManager.Instance?.NotifyPenHarvest();
+        return true;
+    }
+
+    public bool TrySpeedUpGem()
+    {
+        if (CurrentState != PenState.Processing) return false;
+        if (FarmEconomyManager.Instance == null) return false;
+        int gemCost = SpeedUpGemCost;
+        if (FarmEconomyManager.Instance.Gems < gemCost)
+        {
+            FarmUIManager.Instance?.ShowHint($"Cần {gemCost} kim cương để hoàn tất ngay.");
+            return false;
+        }
+        if (!FarmEconomyManager.Instance.SpendGems(gemCost)) return false;
+
+        StopTimerIfRunning();
+        SetState(PenState.Ready);
+        SaveState();
+
+        bool penTutorialActive = IsPenTutorialActive();
+        if (penTutorialActive)
+            ClosePanel();
+
+        TutorialManager.Instance?.NotifyPenSpeedUp();
+
+        if (!penTutorialActive)
+            TryHarvest(transform.position);
+
+        return true;
+    }
+
+    private static bool IsPenTutorialActive()
+    {
+        string step = TutorialManager.Instance != null ? TutorialManager.Instance.CurrentStepName : null;
+        return step == "L2_09_PenSpeedUp" || step == "L2_10_HarvestPen";
+    }
+
+    private static bool IsPenTutorialStep(string stepName)
+    {
+        return TutorialManager.Instance != null
+            && TutorialManager.Instance.CurrentStepName == stepName;
+    }
+
+    private void SetState(PenState newState)
+    {
+        CurrentState = newState;
+        RefreshUI();
+        UpdateReadyBubble();
+    }
+
+    private IEnumerator ProcessTimerCoroutine(float duration)
+    {
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            float remaining = Mathf.Max(0f, duration - elapsed);
+
+            if (progressFill  != null) progressFill.fillAmount = t;
+            if (progressLabel != null) progressLabel.text = FormatTime(remaining);
+            if (_gemCostText  != null) _gemCostText.text = "x" + ConstructionManager.RushCostFor(remaining);
+
+            yield return null;
+        }
+
+        timerCoroutine = null;
+        SetState(PenState.Ready);
+        SaveState();
+    }
+
+    private void StopTimerIfRunning()
+    {
+        if (timerCoroutine != null)
+        {
+            StopCoroutine(timerCoroutine);
+            timerCoroutine = null;
+        }
+    }
+
+    /// <summary>TRUE nếu itemId chính là túi cám của chuồng này (và config có khai báo).</summary>
+    private bool LaThucAnCam(string itemId)
+    {
+        if (config == null || string.IsNullOrEmpty(config.premiumFoodItemId)) return false;
+        return itemId == config.premiumFoodItemId;
+    }
+
+    /// <summary>Có đang nuôi bằng túi cám hay không (đọc activeFoodId nên sống qua save).</summary>
+    private bool DangNuoiBangCam => LaThucAnCam(activeFoodId);
+
+    /// <summary>
+    /// Số đơn vị thức ăn cho một lượt, THEO TỪNG LOẠI.
+    /// Túi cám đã cô đặc nhiều nông sản nên dùng số riêng (premiumFoodAmountPerFeed),
+    /// thường = 1 thay vì 2-3 như nông sản thô.
+    /// ⚠ Trước đây chỉ có một `FoodNeeded` dùng chung cho mọi ô ⇒ ô cám sẽ hiện "1/3" SAI,
+    ///   và nhánh hoàn thức ăn lúc load save sẽ hoàn SAI số lượng.
+    /// </summary>
+    private int FoodNeededFor(string itemId)
+    {
+        if (config == null) return 1;
+        return LaThucAnCam(itemId)
+            ? Mathf.Max(1, config.premiumFoodAmountPerFeed)
+            : Mathf.Max(1, config.foodAmountPerFeed);
+    }
+
+    private int FoodNeeded => FoodNeededFor(activeFoodId);
+
+    /// <summary>
+    /// Thời gian nuôi thực tế. Cho ăn túi cám thì CHIA cho premiumSpeedMultiplier
+    /// (2 = nhanh gấp đôi). Đọc activeFoodId nên đóng game mở lại vẫn đúng mốc thời gian.
+    /// </summary>
+    public float EffectiveFeedSeconds
+    {
+        get
+        {
+            if (config == null) return 1f;
+            float giay = config.feedDurationSeconds;
+            return FarmManager.ScaleSeconds(giay);
+        }
+    }
+
+    public float GetRemainingSeconds()
+    {
+        double startUnix = processStartUnix;
+        double nowUnix   = GetUnixNow();
+        float elapsed    = (float)(nowUnix - startUnix);
+        return Mathf.Max(0f, EffectiveFeedSeconds - elapsed);
+    }
+
+    private void RefreshUI()
+    {
+        if (config == null) return;
+
+        bool isIdle       = CurrentState == PenState.Idle;
+        bool isProcessing = CurrentState == PenState.Processing;
+        bool isReady      = CurrentState == PenState.Ready;
+
+        Transform panelContent = panelRoot != null ? (panelRoot.transform.Find("PanelContent") ?? panelRoot.transform.Find("panelContent")) : null;
+        if (panelContent != null)
+        {
+            panelContent.gameObject.SetActive(isIdle);
+            RectTransform pcRect = panelContent.GetComponent<RectTransform>();
+            if (pcRect != null)
+            {
+                // Thu nhỏ khung chứa thức ăn – gọn hơn, không che khuất chuồng
+                pcRect.sizeDelta = new Vector2(110f, 110f);
+            }
+        }
+
+        string feedItemId = !string.IsNullOrEmpty(config.food1ItemId) ? config.food1ItemId : config.premiumFoodItemId;
+        Sprite feedIcon = config.food1Icon != null ? config.food1Icon : config.premiumFoodIcon;
+
+        if (slot1Root != null)
+        {
+            slot1Root.SetActive(isIdle);
+            if (isIdle)
+            {
+                RectTransform r = slot1Root.GetComponent<RectTransform>();
+                if (r != null)
+                {
+                    r.anchoredPosition = Vector2.zero;
+                    // Phóng to túi thức ăn để dễ kéo thả
+                    r.sizeDelta = new Vector2(90f, 90f);
+                }
+
+                // Phóng to icon hình ảnh thức ăn bên trong slot
+                if (slot1Icon != null)
+                {
+                    RectTransform iconRt = slot1Icon.GetComponent<RectTransform>();
+                    if (iconRt != null) iconRt.sizeDelta = new Vector2(72f, 72f);
+                }
+
+                RefreshFoodSlot(slot1Icon, slot1Amount, feedItemId, feedIcon);
+
+                var drag = slot1Root.GetComponent<DraggableFeedItem>();
+                if (drag != null)
+                {
+                    drag.feedItemId = feedItemId;
+                    drag.imgFeedIcon = slot1Icon;
+                }
+            }
+        }
+
+        if (slot2Root != null) slot2Root.SetActive(false);
+        if (slot3Root != null) slot3Root.SetActive(false);
+
+        if (basketRoot != null)
+        {
+            basketRoot.SetActive(isReady);
+            RectTransform br = basketRoot.GetComponent<RectTransform>();
+            if (br != null) br.anchoredPosition = Vector2.zero;
+
+            if (basketActiveGlow != null)
+                basketActiveGlow.SetActive(isReady);
+        }
+
+        if (progressOverlay != null)
+        {
+            progressOverlay.SetActive(isProcessing);
+
+            // FIX LỖI BIẾN SẮC: Reset màu của toàn bộ Image trong overlay về trắng
+            // Lỗi xảy ra do một số Image bị tinted (đổi màu) từ lần trước mà không reset lại
+            if (isProcessing)
+            {
+                foreach (var img in progressOverlay.GetComponentsInChildren<Image>(true))
+                {
+                    // Chỉ reset nếu màu bị lệch khỏi trắng và không phải fillBar
+                    if (img != progressFill && img.color.a > 0.05f)
+                    {
+                        Color c = img.color;
+                        // Chỉ kéo RGB về trắng, giữ nguyên alpha để không làm mất hiệu ứng
+                        img.color = new Color(1f, 1f, 1f, c.a);
+                    }
+                }
+
+                progressOverlay.transform.SetAsLastSibling();
+                if (processOverlayCanvas != null)
+                {
+                    processOverlayCanvas.overrideSorting = true;
+                    processOverlayCanvas.sortingOrder    = processSortingOrder;
+                }
+                float remaining = GetRemainingSeconds();
+                if (progressFill != null)
+                    progressFill.fillAmount = 1f - remaining / Mathf.Max(1f, EffectiveFeedSeconds);
+                if (progressLabel != null)
+                    progressLabel.text = FormatTime(remaining);
+
+                if (txtPenTitle != null && config != null)
+                {
+                    txtPenTitle.text = GetPenDisplayName();
+                    txtPenTitle.color = Color.white;
+                }
+            }
+            else
+            {
+                // Khi tắt overlay đi — reset sortingOrder để không bị sót
+                if (processOverlayCanvas != null)
+                    processOverlayCanvas.overrideSorting = false;
+            }
+        }
+
+        EnsureGemButton();
+        PlaceGemButton();
+        if (_gemButtonGO != null)
+        {
+            _gemButtonGO.SetActive(isProcessing);
+            if (isProcessing)
+            {
+                _gemButtonGO.transform.SetAsLastSibling();
+                if (_gemCostText != null) _gemCostText.text = SpeedUpGemCost.ToString();
+            }
+        }
+    }
+
+    private void RefreshFoodSlot(Image iconImg, TMP_Text amtText, string itemId, Sprite fallbackIcon)
+    {
+        int amount = FarmInventoryManager.Instance != null
+            ? FarmInventoryManager.Instance.GetAmount(itemId)
+            : 0;
+
+        if (iconImg != null && fallbackIcon != null)
+            iconImg.sprite = fallbackIcon;
+
+        if (amtText != null)
+        {
+            int need = FoodNeededFor(itemId);
+            amtText.text = $"{amount}/{need}";
+            amtText.color = amount >= need ? new Color(1f, 0.97f, 0.84f, 1f) : new Color(1f, 0.45f, 0.45f, 1f);
+        }
+    }
+
+    private void PlayFeedVFX(string foodItemId, Vector3 vfxWorldPosition)
+    {
+        if (FarmCropVFXSpawner.Instance == null || config == null) return;
+
+        Sprite feedIcon = config.food1Icon != null ? config.food1Icon : config.premiumFoodIcon;
+        if (feedIcon != null)
+            FarmCropVFXSpawner.Instance.PlayItemDropVFX(feedIcon, vfxWorldPosition, 1);
+    }
+
+    private void SpawnHarvestFX(string itemId, Sprite icon, int amount, Vector3 vfxWorldPosition)
+    {
+        if (icon == null) return;
+        HarvestFeedbackSpawner.Instance?.SpawnHarvestFly(icon, vfxWorldPosition, amount);
+        FarmCropVFXSpawner.Instance?.PlayHarvestAmountVFX(amount, vfxWorldPosition);
+    }
+
+    private bool IsPointerOverPanel(Vector2 screenPos)
+    {
+        RectTransform rt = GetComponent<RectTransform>();
+        if (rt == null) return false;
+        Camera cam = Camera.main;
+        return RectTransformUtility.RectangleContainsScreenPoint(rt, screenPos, cam);
+    }
+
+    private void SaveState()
+    {
+        if (config == null) return;
+        string id = config.penId;
+
+        PlayerPrefs.SetInt(PrefKeyState + id, (int)CurrentState);
+        PlayerPrefs.SetString(PrefKeyFood + id, activeFoodId ?? "");
+
+        if (CurrentState == PenState.Processing)
+            PlayerPrefs.SetString(PrefKeyStartTime + id, processStartUnix.ToString("R"));
+
+        LuuGopPrefs.Hen();
+    }
+
+    private void LoadState()
+    {
+        if (config == null) return;
+        string id = config.penId;
+
+        bool coSaveCu = PlayerPrefs.HasKey(PrefKeyState + id);
+        int verCu = SaveVersionGuard.Ensure(PenSaveFamily, PenSaveVersion, null, coSaveCu);
+
+        int stateInt = PlayerPrefs.GetInt(PrefKeyState + id, (int)PenState.Idle);
+        CurrentState = (PenState)stateInt;
+        activeFoodId = PlayerPrefs.GetString(PrefKeyFood + id, "");
+
+        string startStr = PlayerPrefs.GetString(PrefKeyStartTime + id, "0");
+        double.TryParse(startStr, System.Globalization.NumberStyles.Float,
+            System.Globalization.CultureInfo.InvariantCulture, out double startUnix);
+        processStartUnix = (float)startUnix;
+
+        if (verCu < PenSaveVersion && coSaveCu && CurrentState == PenState.Processing)
+        {
+            if (!string.IsNullOrEmpty(activeFoodId) && FarmInventoryManager.Instance != null)
+                FarmInventoryManager.Instance.AddItem(activeFoodId, FoodNeededFor(activeFoodId));
+
+            CurrentState      = PenState.Idle;
+            activeFoodId      = "";
+            processStartUnix  = 0f;
+            SaveState();
+        }
+    }
+
+    public string GetPenDisplayName()
+    {
+        if (config != null && !string.IsNullOrEmpty(config.penName))
+            return config.penName.ToUpper();
+
+        if (config != null)
+        {
+            if (config.penId == "pen_01" || config.productItemId == "beef") return "CHUỒNG BÒ";
+            if (config.penId == "pen_02" || config.productItemId == "pork") return "CHUỒNG HEO";
+            if (config.penId == "pen_03" || config.productItemId == "chicken_meat" || config.secondProductItemId == "egg") return "CHUỒNG GÀ";
+            if (config.penId == "pen_04" || config.productItemId == "milk") return "CHUỒNG BÒ SỮA";
+        }
+
+        return "CHUỒNG NUÔI";
+    }
+
+    private static double GetUnixNow() =>
+        (System.DateTime.UtcNow - new System.DateTime(1970, 1, 1, 0, 0, 0, System.DateTimeKind.Utc))
+        .TotalSeconds;
+
+    private static string FormatTime(float seconds)
+    {
+        int m = Mathf.FloorToInt(seconds / 60f);
+        int s = Mathf.FloorToInt(seconds % 60f);
+        return $"{m}:{s:D2}";
+    }
+
+    private GameObject _gemButtonGO;
+    private TMP_Text   _gemCostText;
+    private GameObject _readyBubble;
+    private static Sprite _roundSprite;
+    private static Sprite _diamondSprite;
+
+    private void EnsureGemButton()
+    {
+        Transform host = panelRoot != null ? panelRoot.transform : transform;
+        if (host == null) return;
+        if (_gemButtonGO != null)
+        {
+            if (_gemButtonGO.transform.parent != host)
+                _gemButtonGO.transform.SetParent(host, false);
+            return;
+        }
+
+        Transform existing = FindDeepChild(host, "btn_PenGem");
+        if (existing != null)
+        {
+            _gemButtonGO = existing.gameObject;
+            if (_gemButtonGO.transform.parent != host)
+                _gemButtonGO.transform.SetParent(host, false);
+
+            if (_gemCostText == null)
+            {
+                Transform costTf = FindDeepChild(_gemButtonGO.transform, "Txt_Cost");
+                if (costTf != null) _gemCostText = costTf.GetComponent<TMP_Text>();
+            }
+            return;
+        }
+
+        Vector2 refSize = ReferenceSlotSize();
+        var go = new GameObject("btn_PenGem", typeof(RectTransform), typeof(Image), typeof(Button));
+        go.transform.SetParent(host, false);
+        var rt = (RectTransform)go.transform;
+        rt.sizeDelta = new Vector2(refSize.x * 1.25f, refSize.y * 0.72f);
+
+        var img = go.GetComponent<Image>();
+        img.sprite = gemButtonBgSprite != null ? gemButtonBgSprite : GetRoundSprite();
+        img.type = Image.Type.Sliced;
+        img.color = gemButtonBgSprite != null ? Color.white : new Color32(74, 154, 236, 255);
+        var btn = go.GetComponent<Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(() => TrySpeedUpGem());
+
+        var gemGO = new GameObject("Img_Gem", typeof(RectTransform), typeof(Image));
+        gemGO.transform.SetParent(rt, false);
+        var gemRt = (RectTransform)gemGO.transform;
+        gemRt.sizeDelta = new Vector2(rt.sizeDelta.y * 0.7f, rt.sizeDelta.y * 0.7f);
+        gemRt.anchoredPosition = new Vector2(-rt.sizeDelta.x * 0.24f, 0f);
+        var gemImg = gemGO.GetComponent<Image>();
+        gemImg.sprite = gemIconSprite != null ? gemIconSprite : GetDiamondSprite();
+        gemImg.color = gemIconSprite != null ? Color.white : new Color32(150, 228, 255, 255);
+        gemImg.preserveAspect = true;
+        gemImg.raycastTarget = false;
+
+        var txtGO = new GameObject("Txt_Cost", typeof(RectTransform));
+        txtGO.transform.SetParent(rt, false);
+        var txtRt = (RectTransform)txtGO.transform;
+        txtRt.sizeDelta = new Vector2(rt.sizeDelta.x * 0.5f, rt.sizeDelta.y * 0.82f);
+        txtRt.anchoredPosition = new Vector2(rt.sizeDelta.x * 0.18f, 0f);
+        var t = txtGO.AddComponent<TextMeshProUGUI>();
+        t.text = "x" + SpeedUpGemCost;
+        t.color = Color.white;
+        t.alignment = TextAlignmentOptions.Center;
+        t.fontStyle = FontStyles.Bold;
+        t.enableAutoSizing = true; t.fontSizeMin = 8; t.fontSizeMax = 80;
+        t.raycastTarget = false;
+        _gemCostText = t;
+
+        _gemButtonGO = go;
+        PlaceGemButton();
+    }
+
+    private void PlaceGemButton()
+    {
+        if (_gemButtonGO == null) return;
+
+        RectTransform rt = _gemButtonGO.GetComponent<RectTransform>();
+        if (rt == null) return;
+
+        RectTransform basketRt = BasketSlotRect;
+        RectTransform progressRt = progressOverlay != null ? progressOverlay.GetComponent<RectTransform>() : null;
+        Vector2 refSize = ReferenceSlotSize();
+
+        if (basketRt != null)
+            rt.anchoredPosition = basketRt.anchoredPosition;
+        else if (progressRt != null)
+            rt.anchoredPosition = progressRt.anchoredPosition + new Vector2(refSize.x * 0.95f, 0f);
+        else
+            rt.anchoredPosition = new Vector2(refSize.x * 0.95f, 0f);
+
+        rt.sizeDelta = new Vector2(refSize.x * 1.25f, refSize.y * 0.72f);
+    }
+
+    private void UpdateReadyBubble()
+    {
+        if (config == null) return;
+        EnsureReadyBubble();
+        if (_readyBubble != null) _readyBubble.SetActive(CurrentState == PenState.Ready);
+    }
+
+    private void EnsureReadyBubble()
+    {
+        if (_readyBubble != null) return;
+        RectTransform host = GetComponent<RectTransform>();
+        if (host == null) return;
+
+        Vector2 refSize = ReferenceSlotSize();
+        bool two = !string.IsNullOrEmpty(config.secondProductItemId) && config.secondProductIcon != null;
+        float w = refSize.x * (two ? 2.1f : 1.35f);
+        float h = refSize.y * 1.3f;
+
+        var go = new GameObject("PenReadyBubble", typeof(RectTransform), typeof(Image));
+        go.transform.SetParent(host, false);
+        var rt = (RectTransform)go.transform;
+        rt.sizeDelta = new Vector2(w, h);
+        rt.anchoredPosition = readyBubbleLocalPos;
+
+        var canvas = go.AddComponent<Canvas>();
+        canvas.overrideSorting = true;
+        canvas.sortingOrder    = readyBubbleSortingOrder;
+        go.AddComponent<GraphicRaycaster>();
+
+        var img = go.GetComponent<Image>();
+        img.sprite = readyBubbleBgSprite != null ? readyBubbleBgSprite : GetRoundSprite();
+        img.type = Image.Type.Sliced;
+        img.color = readyBubbleBgSprite != null ? Color.white : new Color32(255, 246, 214, 255);
+
+        var btn = go.AddComponent<Button>();
+        btn.targetGraphic = img;
+        btn.onClick.AddListener(() => TryHarvest(transform.position));
+
+        if (config.productIcon != null)
+        {
+            var p1 = new GameObject("Icon_Product1", typeof(RectTransform), typeof(Image));
+            p1.transform.SetParent(rt, false);
+            var p1Rt = (RectTransform)p1.transform;
+            p1Rt.sizeDelta = new Vector2(h * 0.72f, h * 0.72f);
+            p1Rt.anchoredPosition = two ? new Vector2(-w * 0.23f, 0f) : Vector2.zero;
+            var p1Img = p1.GetComponent<Image>();
+            p1Img.sprite = config.productIcon;
+            p1Img.preserveAspect = true;
+            p1Img.raycastTarget = false;
+        }
+
+        if (two)
+        {
+            var p2 = new GameObject("Icon_Product2", typeof(RectTransform), typeof(Image));
+            p2.transform.SetParent(rt, false);
+            var p2Rt = (RectTransform)p2.transform;
+            p2Rt.sizeDelta = new Vector2(h * 0.72f, h * 0.72f);
+            p2Rt.anchoredPosition = new Vector2(w * 0.23f, 0f);
+            var p2Img = p2.GetComponent<Image>();
+            p2Img.sprite = config.secondProductIcon;
+            p2Img.preserveAspect = true;
+            p2Img.raycastTarget = false;
+        }
+
+        _readyBubble = go;
+    }
+
+    private Vector2 ReferenceSlotSize()
+    {
+        if (slot1Root != null)
+        {
+            var rt = slot1Root.GetComponent<RectTransform>();
+            if (rt != null && rt.sizeDelta.sqrMagnitude > 1f) return rt.sizeDelta;
+        }
+        return new Vector2(100f, 100f);
+    }
+
+    private static Transform FindDeepChild(Transform parent, string name)
+    {
+        if (parent == null) return null;
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            Transform child = parent.GetChild(i);
+            if (child.name == name) return child;
+            Transform found = FindDeepChild(child, name);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    private static Sprite GetRoundSprite()
+    {
+        if (_roundSprite != null) return _roundSprite;
+        int size = 32;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        float r = size * 0.5f;
+        Vector2 c = new Vector2(r, r);
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), c);
+                tex.SetPixel(x, y, d <= r ? Color.white : Color.clear);
+            }
+        }
+        tex.Apply();
+        _roundSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100, 0,
+            SpriteMeshType.FullRect, new Vector4(12, 12, 12, 12));
+        return _roundSprite;
+    }
+
+    private static Sprite GetDiamondSprite()
+    {
+        if (_diamondSprite != null) return _diamondSprite;
+        int size = 32;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        float half = size * 0.5f;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float manhattan = Mathf.Abs(x + 0.5f - half) + Mathf.Abs(y + 0.5f - half);
+                tex.SetPixel(x, y, manhattan <= half ? Color.white : Color.clear);
+            }
+        }
+        tex.Apply();
+        _diamondSprite = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f));
+        return _diamondSprite;
+    }
+}

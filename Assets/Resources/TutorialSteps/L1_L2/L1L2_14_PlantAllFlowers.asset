@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc138f45939da9545bf7f13359b17b8b, type: 3}
   m_Name: L1L2_14_PlantAllFlowers
   m_EditorClassIdentifier: Assembly-CSharp::TutorialStepData
-  npcText: "Gieo ti\u1EBFp c\xE1c ch\u1EADu hoa c\xF2n l\u1EA1i \u0111\u1EC3 khu
-    v\u01B0\u1EDDn th\xEAm xinh nh\xE9!"
+  npcText: "Gieo n\u1ED1t h\u1EA1t h\u01B0\u1EDBng d\u01B0\u01A1ng v\xE0o nh\u1EEFng ch\u1EADu c\xF2n tr\u1ED1ng nh\xE9!"
   npcPortrait: {fileID: 0}
   typingSpeed: 0.02
   targetID: 

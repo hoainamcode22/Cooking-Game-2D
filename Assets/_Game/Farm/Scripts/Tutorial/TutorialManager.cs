@@ -201,6 +201,13 @@ public class TutorialManager : MonoBehaviour
     public static readonly string[] TenChuongCanDo =
         { TenChuongTutorial, TenChuongTutorial + "(Clone)" };
 
+    /// <summary>
+    /// [FIX 2026-09-06 vong4] penId trong PenMiniPanelConfig cua CHUONG GA
+    /// (Assets/_Game/Farm/data/PenConfig/Config_Pen03_Ga.asset). Day la duong do DU PHONG
+    /// khi object trong scene bi doi ten — doc thang tu data nen khong the doan sai chuong.
+    /// </summary>
+    public const string PenIdChuongTutorial = "pen_03";
+
     /// <summary>Họ save + phiên bản của MỌI cờ hướng dẫn. Tăng khi đổi ý nghĩa các cờ.</summary>
     private const string TutorialSaveFamily  = "TUTORIAL";
     private const int    TutorialSaveVersion = 1;
@@ -213,6 +220,53 @@ public class TutorialManager : MonoBehaviour
     [Tooltip("Tick để XOÁ HẲN cờ đã-xong ngay khi vào scene → lần Play sau cũng chạy lại " +
              "dù đã bỏ tick ô trên. Dùng khi muốn thử đúng trải nghiệm người chơi MỚI.")]
     [SerializeField] private bool _devClearDoneFlagOnStart = false;
+
+    // =========================================================================
+    //  [FIX 2026-09-06 vong6] HAI O TICK DEV TREN CHI CON HIEU LUC TRONG EDITOR
+    // =========================================================================
+    //  Hai o tick tren duoc SERIALIZE VAO SCENE (SCN_Farm > Tutorial_Manager). Ai tick
+    //  de test roi quen bo tick thi BUILD cung mang theo: moi nguoi choi that mo game
+    //  len deu bi xoa co da-xong va bi dat lai tutorial tu buoc 1. Doc qua hai property
+    //  duoi day nen trong build hai o tick coi nhu khong ton tai, con trong Editor thi
+    //  van test binh thuong.
+    private bool DevXoaCoKhiVaoScene => _devClearDoneFlagOnStart && Application.isEditor;
+    private bool DevChayLaiDuDaXong  => _devForceReplayTutorial && Application.isEditor;
+
+    // =========================================================================
+    //  [FIX 2026-09-06 vong6] CONG THEO CAP NGUOI CHOI
+    // =========================================================================
+    //  YEU CAU: nguoi choi cap cao MA CHUA TUNG co co da-xong (mat save co, cai lai may,
+    //  doi thiet bi, hoac save cu tu truoc khi co PrefKeyDone) thi KHONG duoc dat lai
+    //  huong dan nguoi moi.
+    //
+    //  VI SAO NGUONG LA 3 (bo qua tu cap 4 tro len) — do theo noi dung tutorial that:
+    //    - 30 buoc trong _steps chi phu cap 1 va cap 2: 18 buoc ten L1L2_* (trong lua,
+    //      trong hoa, len cap 2) roi 10 buoc L2_* (mua hat ngo, chuong ga), buoc CUOI la
+    //      L2_10_HarvestPen. KHONG co buoc nao ten L3_* / L4_*.
+    //    - Chuong tutorial la chuong GA Pen_03, mo o CAP 2 (xem TenChuongTutorial). Chuong
+    //      ke tiep (heo) mo o CAP 4 va tutorial khong day.
+    //    ⇒ Cap 3 van con cho "vua xong tutorial" (nguoi choi co the len cap 3 ngay trong
+    //      may buoc chuong ga nho qua/nhiem vu) nen KHONG cat o cap 3 — cat o cap 3 co the
+    //      dap oan mot nguoi dang do buoc L2_08. Tu CAP 4 thi chac chan da di qua toan bo
+    //      noi dung tutorial ⇒ bo qua an toan.
+    //  Doi so nay khi tutorial duoc them buoc cho cap cao hon.
+    public const int CapCuoiTutorialDay = 3;
+
+    /// <summary>Khoa PlayerPrefs cap nguoi choi. Day la BAN GUONG cua
+    /// PlayerProgressManager.Pref_Level ("PLAYER_LEVEL") — ben do khai private const nen
+    /// khong tham chieu truc tiep duoc. Doi ten khoa ben do thi phai doi ca day.</summary>
+    private const string KhoaPrefCapNguoiChoi = "PLAYER_LEVEL";
+
+    /// <summary>
+    /// Cap nguoi choi hien tai. Uu tien PlayerProgressManager (no Load() trong Awake nen
+    /// den luc Start cua tutorial la da co so dung); thieu manager thi doc thang PlayerPrefs.
+    /// </summary>
+    private static int LayCapNguoiChoi()
+    {
+        var tienDo = PlayerProgressManager.Instance;
+        if (tienDo != null) return Mathf.Max(1, tienDo.Level);
+        return Mathf.Max(1, PlayerPrefs.GetInt(KhoaPrefCapNguoiChoi, 1));
+    }
 
     /// <summary>Đã chạy hết tutorial chính chưa (đọc từ PlayerPrefs).</summary>
     public static bool IsTutorialDone => PlayerPrefs.GetInt(PrefKeyDone, 0) == 1;
@@ -230,6 +284,7 @@ public class TutorialManager : MonoBehaviour
     {
         PlayerPrefs.DeleteKey(PrefKeyDone);
         PlayerPrefs.DeleteKey(PrefKeyStep);   // [WP-A1] chơi lại từ đầu ⇒ bỏ luôn bước đã lưu
+        PlayerPrefs.DeleteKey(PrefKeyDaCapThoc);   // [vong4] choi lai tu dau ⇒ duoc cap lai bao thoc
         SaveVersionGuard.Clear(TutorialSaveFamily);
         LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
     }
@@ -248,6 +303,11 @@ public class TutorialManager : MonoBehaviour
     private const int SUC_CHUA_HANG_DOI = 8;
     private bool               _interactionDialogDismissed;
     private bool               _penOpenSubActionReceived;
+
+    // [HOA-GS 2026-09-06] Da mua hat Bap Cai trong tutorial chua. Dat MOT LAN o
+    // NotifyBuySeed; buoc L2_03_BuyCorn doc co nay de KHONG BAO GIO bat mua lan hai
+    // (loi Sep gap: bi bat mua 2 lan x 8 = 16 hat, can sach tien).
+    private bool               _daMuaHatBapCai;
 
     private Vector2 _cloudLeftOrigin;
     private Vector2 _cloudRightOrigin;
@@ -342,13 +402,40 @@ public class TutorialManager : MonoBehaviour
         SaveVersionGuard.Ensure(TutorialSaveFamily, TutorialSaveVersion,
                                 hasExistingSave: coCoTutorialCu);
 
-        if (_devClearDoneFlagOnStart)
+        if (DevXoaCoKhiVaoScene)
         {
             ClearTutorialDoneFlag();
-            Debug.Log("[Tutorial] DEV: đã xoá cờ TUTORIAL_MAIN_DONE → chạy lại như người mới.");
+            { Debug.Log("[Tutorial] DEV: da xoa co TUTORIAL_MAIN_DONE (o _devClearDoneFlagOnStart tren Tutorial_Manager dang TICK) - chay lai nhu nguoi moi."); }
         }
 
-        if (IsTutorialDone && !_devForceReplayTutorial)
+        if (!Application.isEditor && (_devClearDoneFlagOnStart || _devForceReplayTutorial))
+        {
+            { Debug.LogWarning("[Tutorial] Scene con TICK o dev (_devClearDoneFlagOnStart / _devForceReplayTutorial) nhung day la BUILD - BO QUA hai o do, nguoi choi that khong bi dat lai tutorial."); }
+        }
+
+        // ── [FIX 2026-09-06 vong6] CONG THEO CAP: cap cao ma chua tung co co da-xong ──
+        // Doc DA-XONG khong ra thi co the la nguoi choi mat save co / cai lai may, chu
+        // khong phai nguoi moi. Dat ho lai tu buoc 1 la sai (Sep bao: cap 9 van bi dat lai)
+        // va con de treo, vi cac buoc "trong cho het o" / "cho ga an" doi trang thai cua
+        // mot nong trai trong tron.
+        //
+        // DOC LAP voi hai o tick dev: Sep co y tick de test thi hai dieu kien duoi day
+        // false ⇒ cong nay KHONG chen ngang, tutorial van chay lai duoc nhu cu.
+        if (!IsTutorialDone && !DevXoaCoKhiVaoScene && !DevChayLaiDuDaXong)
+        {
+            int capHienTai = LayCapNguoiChoi();
+            if (capHienTai > CapCuoiTutorialDay)
+            {
+                // Doc buoc da luu TRUOC khi MarkTutorialDone() — ham do xoa PrefKeyStep.
+                int buocDaLuuTruoc = PlayerPrefs.GetInt(PrefKeyStep, 0);
+                MarkTutorialDone();
+                { Debug.Log("[Tutorial] Cap " + capHienTai + " > nguong " + CapCuoiTutorialDay + " ma chua co co da-xong (buoc da luu " + buocDaLuuTruoc + ") - dong dau DA XONG va bo qua, khong dat lai huong dan nguoi moi."); }
+                SkipTutorialEntirely();
+                return;
+            }
+        }
+
+        if (IsTutorialDone && !DevChayLaiDuDaXong)
         {
             // KHÔNG chỉ `return`: phải DỌN sạch UI hướng dẫn. Bỏ qua bước dọn thì
             // Tutorial_Canvas còn tàng hình mà `blocksRaycasts` vẫn bật ⇒ nuốt hết click
@@ -358,7 +445,7 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        if (_devForceReplayTutorial && IsTutorialDone)
+        if (DevChayLaiDuDaXong && IsTutorialDone)
             Debug.LogWarning("[Tutorial] DEV: _devForceReplayTutorial đang bật → chạy lại dù đã xong. " +
                              "Nhớ bỏ tick trước khi build.");
 
@@ -455,7 +542,7 @@ public class TutorialManager : MonoBehaviour
         // [WP-A1] RESUME: phiên trước thoát giữa tutorial ⇒ tiếp đúng bước đã lưu.
         // Đặt _currentIndex = saved-1 để AdvanceToNextStep() ++ lên đúng saved.
         int buocDaLuu = PlayerPrefs.GetInt(PrefKeyStep, 0);
-        if (!IsTutorialDone && !_devForceReplayTutorial && buocDaLuu > 0 && buocDaLuu < _steps.Count)
+        if (!IsTutorialDone && !DevChayLaiDuDaXong && buocDaLuu > 0 && buocDaLuu < _steps.Count)
         {
             // [RESUME] Bước "kéo hạt đầu tiên" cần KHAY HẠT đang mở (target seed_* chỉ đăng ký khi
             // khay mở). Mở lại app thì khay đã đóng ⇒ tay không có gì để chỉ. Lùi 1 bước về
@@ -611,10 +698,33 @@ public class TutorialManager : MonoBehaviour
     /// </summary>
     private static bool LaPopupCuaChinhBuoc(TutorialWaitAction action)
     {
-        if (action != TutorialWaitAction.WaitForOpenCropProcess
-            && action != TutorialWaitAction.WaitForSpeedUp)
-            return false;
-        return CropProcessPopupUI.AnyOpen && !LevelUpPopupUI.IsActive;
+        // Popup LEN CAP luon la "khach la" — co no thi hoan het, khong ngoai le.
+        if (LevelUpPopupUI.IsActive) return false;
+
+        // (a) Mini-panel cay/hoa — bai hoc cua chinh buoc 07/08 va 15.
+        if (action == TutorialWaitAction.WaitForOpenCropProcess
+            || action == TutorialWaitAction.WaitForSpeedUp)
+            return CropProcessPopupUI.AnyOpen;
+
+        // (b) [FIX 2026-09-06] CUA HANG — day chinh la bai hoc cua buoc L2_01..L2_04.
+        // Truoc day: nguoi choi mo shop ⇒ PopupManager bao "co popup he thong dang mo" ⇒
+        // NotifyOpenShop bi hoan vao hang doi cho toi khi ĐONG shop ⇒ tutorial dung im o
+        // L2_01, tay van chi vao nut CUA HANG du shop da mo tren man hinh. Mua xong cung bi
+        // hoan not, roi NotifyCloseShop ban khi _pendingWait van con la WaitForBuyItem ⇒ mat luon.
+        // Nay: shop dang mo thi 3 action cua chinh chuoi shop KHONG bi hoan.
+        if (action == TutorialWaitAction.WaitForOpenShop
+            || action == TutorialWaitAction.WaitForBuyItem
+            || action == TutorialWaitAction.WaitForCloseShop)
+            return true;
+
+        // (c) [FIX 2026-09-06] CHUONG GIA SUC — cung mot lop loi, se dinh y het o buoc L2_07..L2_10.
+        if (action == TutorialWaitAction.WaitForOpenPen
+            || action == TutorialWaitAction.WaitForFeed
+            || action == TutorialWaitAction.WaitForPenSpeedUp
+            || action == TutorialWaitAction.WaitForPenHarvest)
+            return true;
+
+        return false;
     }
 
     /// <summary>Bật coroutine canh popup (chỉ 1 bản chạy tại một thời điểm).</summary>
@@ -697,8 +807,12 @@ public class TutorialManager : MonoBehaviour
         // UI shop mặc định số lượng = 1, người chơi bấm mua từng hạt ⇒ điều kiện KHÔNG BAO GIỜ
         // đúng ⇒ bước L2_03_BuyCorn treo vĩnh viễn, không có timeout, phải gỡ app.
         // Nay: chỉ cần ĐÚNG LOẠI HẠT là qua bước. Số lượng do bước sau (trồng đủ ô) tự lo.
-        if (CurrentStepName == "L2_03_BuyCorn" && !IsCornSeed(itemId, cropId))
-            return;
+        if (CurrentStepName == "L2_03_BuyCorn")
+        {
+            if (!IsCornSeed(itemId, cropId)) return;
+            // [HOA-GS 2026-09-06] Dong dau DA MUA: buoc mua se khong bao gio hien lai.
+            _daMuaHatBapCai = true;
+        }
 
         NotifyAction(TutorialWaitAction.WaitForBuyItem);
     }
@@ -750,6 +864,9 @@ public class TutorialManager : MonoBehaviour
     // cướp mất bước học. Đưa cho họ CÁI NÚT, để họ quyết định.
     private const float GIAY_NGHI_KET = 45f;
 
+    /// <summary>[FIX 2026-09-06] So giay man hinh dang bi lop toi phu kin ma khong co loi thoat.</summary>
+    private float _demManToi;
+
     private System.Collections.IEnumerator WatchdogChongKet()
     {
         int buocDangTheoDoi = -1;
@@ -776,16 +893,91 @@ public class TutorialManager : MonoBehaviour
                 continue;
             }
 
+            // ── [FIX 2026-09-06] LUOI AN TOAN: man hinh toi den ma khong co gi de bam ──
+            // Lop toi bat + KHONG khoet lo = chan sach click toan man hinh. Neu dong thoi
+            // khong co ban tay nao va khong co card thoai thi nguoi choi hoan toan be tac
+            // (dung canh Sep gap o phan hoa: man toi thui, khong tay, khong chu).
+            // Giu trang thai do qua 2.5s la chac chan hong ⇒ tu tat lop toi + go mask vung.
+            {
+                bool toiMaKhongLo = _dimBackground != null
+                                    && _dimBackground.gameObject.activeInHierarchy
+                                    && !_dimBackground.CoLoKhoet;
+                bool coTay  = CoTayTinhDangBat || CoTayKeoDangBat || CoTayHanhDongDangBat;
+                bool coChu  = DungCardV2 && _v2Card.DangMo;
+
+                if (toiMaKhongLo && !coTay && !coChu)
+                {
+                    _demManToi += 1f;
+                    if (_demManToi >= 2.5f)
+                    {
+                        Debug.LogWarning($"[Tutorial] ⚠ Bước '{CurrentStepName}': màn hình bị lớp tối "
+                            + "phủ kín mà không có lỗ, không tay, không lời thoại — người chơi không "
+                            + "bấm được gì. Tự gỡ lớp tối để tutorial đi tiếp được.");
+                        _dimBackground.ClearHole();
+                        _dimBackground.gameObject.SetActive(false);
+                        _runtimeTargetResolver?.EnableAreaMask(TutorialAreaKind.None, null);
+                        _demManToi = 0f;
+                    }
+                }
+                else _demManToi = 0f;
+            }
+
             // ── [VÒNG 15] LỐI THOÁT MỀM: chờ cây chín tự nhiên cũng qua bước ──
             // Sếp yêu cầu: "nếu user đợi chín và không cần bấm, chỉ cần lúa chín là qua step
             // luôn, tuỳ ý user". Trước đây bước WaitForSpeedUp CHỈ nhả khi bấm nút kim cương
             // (CropProcessPopupUI.OnGemClick), nên ai kiên nhẫn đợi cây chín sẽ đứng mãi ở đó.
             // Nay: đang chờ tăng tốc mà có ô nào chín rồi ⇒ coi như đạt, đi tiếp.
+            // [FIX 2026-09-06] Mo rong cho ca buoc "cham o de xem bang tien trinh" (L1L2_07).
+            // Nguoi choi tiet kiem kim cuong, doi cay chin tu nhien: luc do cham vao o la THU
+            // HOACH chu khong mo bang tien trinh nua (CropProcessPopupUI doi IsGrowing) ⇒ buoc 07
+            // treo vinh vien. Cay da chin thi bai hoc "tang toc" khong con y nghia — cho qua.
+            if (_pendingWait == TutorialWaitAction.WaitForOpenCropProcess && CoOChinRoi())
+            {
+                Debug.Log($"[Tutorial] ✅ Bước '{CurrentStepName}' — cây đã chín tự nhiên nên không "
+                          + "mở được bảng tiến trình nữa. Cho qua bước.");
+                NotifyAction(TutorialWaitAction.WaitForOpenCropProcess);
+                continue;
+            }
+
             if (_pendingWait == TutorialWaitAction.WaitForSpeedUp && CoOChinRoi())
             {
                 Debug.Log($"[Tutorial] ✅ Bước '{CurrentStepName}' — cây đã chín tự nhiên, " +
                           "người chơi không cần bấm kim cương. Cho qua bước.");
                 NotifyAction(TutorialWaitAction.WaitForSpeedUp);
+                continue;
+            }
+
+            // -- [HOA-GS 2026-09-06] LOI THOAT MEM CHO KHOI HOA & CHUONG GA --
+            // Cung tinh than voi hai loi thoat o tren: nguoi choi khong bam kim cuong ma
+            // cho chin tu nhien thi VAN phai di tiep duoc, khong duoc treo buoc.
+
+            // Buoc thu hoach chau hoa DAU: khong con chau nao chin va cung khong con chau
+            // nao dang lon => nguoi choi da thu het tu truoc => cong khong bao gio dat nua.
+            if (_pendingWait == TutorialWaitAction.WaitForHarvest
+                && CurrentStepName == "L1L2_16_HarvestFirstFlower"
+                && !CoChauHoaChinRoi() && !CoChauHoaDangLon())
+            {
+                Debug.Log("[Tutorial] Buoc L1L2_16_HarvestFirstFlower: khong con chau hoa nao de thu "
+                          + "hoach (nguoi choi da thu tu truoc). Cho qua buoc.");
+                NotifyAction(TutorialWaitAction.WaitForHarvest);
+                continue;
+            }
+
+            // Buoc tang toc CHUONG: dan ga xong tu nhien => nut kim cuong khong con y nghia.
+            if (_pendingWait == TutorialWaitAction.WaitForPenSpeedUp
+                && ChuongOTrangThai(PenMiniPanelUI.PenState.Ready))
+            {
+                Debug.Log("[Tutorial] Dan ga da xong tu nhien - khong can bam kim cuong. Cho qua buoc.");
+                NotifyAction(TutorialWaitAction.WaitForPenSpeedUp);
+                continue;
+            }
+
+            // Buoc thu hoach CHUONG: chuong da ve Idle (da thu trung) => khong con gi de cho.
+            if (_pendingWait == TutorialWaitAction.WaitForPenHarvest
+                && ChuongOTrangThai(PenMiniPanelUI.PenState.Idle))
+            {
+                Debug.Log("[Tutorial] Chuong da ve Idle (trung da thu). Cho qua buoc thu hoach chuong.");
+                NotifyAction(TutorialWaitAction.WaitForPenHarvest);
                 continue;
             }
 
@@ -890,11 +1082,23 @@ public class TutorialManager : MonoBehaviour
 
     private IEnumerator PlayStep(TutorialStepData step)
     {
+        // [FIX 2026-09-06 vong4] Dau MOI buoc: bao dam lop tay ve TREN khay chuong / bang tien trinh.
+        BaoDamLopTayNamTrenKhay();
+
         // ═══ [VÒNG 17] CỔNG POPUP — chạy TRƯỚC MỌI BƯỚC, không phân biệt bước nào ═══
         // Trước đây chỉ đúng bước 'L1L2_11_TransitionFlower' mới chờ popup lên cấp. Lên cấp
         // 3/4/5 hay bất kỳ popup nào khác bật giữa chừng đều bị tutorial vẽ đè lên.
         // Nay mọi bước đều đi qua cổng này: có popup thì ẩn UI tutorial, chờ đóng, rồi hiện lại.
-        yield return TutorialGate.ChoPopupDongHet(AnToanBoUiTutorial, HienLaiUiTutorial);
+        // [HOA-GS 2026-09-06] LOI GOC cua canh 'mo shop xong tutorial dung im':
+        // PopupManager coi CUA HANG (va bang tien trinh) la popup he thong, nen cong nay
+        // AN SACH UI tutorial va cho toi khi nguoi choi DONG shop moi chay tiep. Ket qua:
+        // buoc gioi thieu hat moi chi hien sau khi dong shop, roi bat mo shop lan hai.
+        // Nay: buoc nao CO CHU DICH chay cung popup cua chinh no thi chi nhuong san khau
+        // cho popup LA (len cap / thong bao thuyen), khong nhuong cho popup cua chinh no.
+        if (BuocChayCungPopup(step.name))
+            yield return ChoPopupLaDongHet();
+        else
+            yield return TutorialGate.ChoPopupDongHet(AnToanBoUiTutorial, HienLaiUiTutorial);
 
         // Popup vừa đóng có thể đã kèm theo một action bị hoãn — tiêu thụ ngay khi vào bước.
         // (ConsumeQueuedAction ở cuối mỗi nhánh sẽ lo phần khớp _pendingWait.)
@@ -930,13 +1134,154 @@ public class TutorialManager : MonoBehaviour
                 _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
         }
 
+        // ===== [HOA-GS] BUOC 21 - L2_02_UnlockCorn: card gioi thieu hat moi, SHOP DANG MO =====
+        if (step.name == "L2_02_UnlockCorn")
+        {
+            // Nguoi choi lo bam X truoc khi card kip hien -> mo lai cho khop loi thoai.
+            if (ShopManager.Instance != null && !ShopManager.Instance.IsOpen)
+                ShopManager.Instance.OpenShop();
+            if (ShopManager.Instance != null)
+            {
+                ShopManager.Instance.ScrollItemIntoView("seed_bapcai");
+                ShopManager.Instance.ScrollItemIntoView("seed_ngo");
+            }
+            _runtimeTargetResolver?.RefreshShopTargets();
+        }
+
+        // ===== [HOA-GS] BUOC 25 - L2_06_AnimalIntro: lia camera sang CHUONG GA + tang cam =====
+        if (step.name == "L2_06_AnimalIntro")
+        {
+            if (_cameraFocus != null) _cameraFocus.FocusOnPen(TenChuongTutorial);
+            TangThucAnChuongNeuThieu();   // nguoi choi moi chua xay duoc cam ga o Mill
+        }
+
+        // [HOA-GS] Buoc CHI CO LOI THOAI thi KHONG bat lop toi: lop toi khong khoet lo se
+        // chan sach click toan man hinh (UnmaskRaycastFilter tra true khi khong co target).
         if (_dimBackground != null)
-            _dimBackground.gameObject.SetActive(true);
+        {
+            if (LaBuocThoaiKhongCheMan(step.name))
+            {
+                _dimBackground.ClearHole();
+                _dimBackground.gameObject.SetActive(false);
+            }
+            else
+            {
+                _dimBackground.gameObject.SetActive(true);
+            }
+        }
 
         // ─── GUIDE THÔNG MINH: nền xám bao vùng + tay CHỈ quét ô CÒN VIỆC (theo tiến độ user) ───
         // Ô đất — trồng: L1L2_06_PlantAllRice (chờ kéo đủ hạt vào 6 ô)
+        // ===================================================================
+        // [HOA-GS 2026-09-06] KHOI TRONG HOA - buoc 13/14/16/17
+        // Truoc day 4 buoc nay di duong chung (IsActionOnlyStep) va KHONG dung
+        // bat ky ban tay nao: buoc 16/17 khong nam trong danh sach 'startsGuide',
+        // showHandPointer=0 nen cung khong co tay tinh => Sep thay 'khong co tay'.
+        // Nay moi buoc co guide rieng, va deu CHO TARGET XUAT HIEN roi moi chi tay.
+        // ===================================================================
+
+        // BUOC 13 - L1L2_12_FocusFlowerPots: tay CHI CHAU HOA 1, cho mo khay hat hoa.
+        if (step.name == "L1L2_12_FocusFlowerPots")
+        {
+            DonManChoBuocThaoTac();
+            TatDim();
+            if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
+
+            int buocLuc = _currentIndex;
+            _pendingWait = step.waitAction;   // WaitForSeedPanel
+            _state = TutorialState.WaitingAction;
+
+            // Chau hoa moi mo khoa luc len cap 2 nen proxy 'tutorial_flower_01' co the CHUA CO
+            // ngay luc vao buoc (resolver dang ky bu moi 0,5s). Cho no xuat hien roi moi chi tay.
+            yield return ChoTargetRoiChiTay(
+                new[] { "tutorial_flower_01", "tutorial_flower_02" }, 10f,
+                id =>
+                {
+                    KhoetLoHoacTatDim(GetTargetRect(id), true, 46f, "L1L2_12_FocusFlowerPots");
+                    _actionHandGuide?.GuidePoint(id);
+                });
+            if (_currentIndex != buocLuc) yield break;
+
+            BatWatchdogHetHat(step);
+            ConsumeQueuedAction(); yield break;
+        }
+
+        // BUOC 14 - L1L2_13_DragFirstFlower: ao anh + tay KEO hat huong duong vao chau 1.
+        if (step.name == "L1L2_13_DragFirstFlower")
+        {
+            DonManChoBuocThaoTac();
+            TatDim();   // keo tha can ca man hinh - lop toi khong duoc chan
+            if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
+
+            int buocLuc = _currentIndex;
+            _pendingWait = step.waitAction;   // WaitForPlant
+            _state = TutorialState.WaitingAction;
+            BatWatchdogHetHat(step);
+
+            string chauDau = IdChauHoa(false, 0) ?? "tutorial_flower_01";
+            TutorialPhantomDemoManager.Instance?.PlayPlantPhantom(
+                LayIconHat("seed_huong_duong"), "seed_huong_duong", chauDau);
+
+            // 'seed_huong_duong' chi duoc dang ky KHI khay hat hoa mo ra => phai cho.
+            yield return ChoTargetRoiChiTay(new[] { "seed_huong_duong" }, 12f,
+                id => _dragHintAnimator?.StartDragHint(id, chauDau));
+            if (_currentIndex != buocLuc) yield break;
+
+            ConsumeQueuedAction(); yield break;
+        }
+
+        // BUOC 16 - L1L2_15_FlowerSpeedUp: tay chi chau -> mo bang tien trinh -> chi nut Kim cuong.
+        if (step.name == "L1L2_15_FlowerSpeedUp")
+        {
+            DonManChoBuocThaoTac();
+            TatDim();
+            if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
+
+            int buocLuc = _currentIndex;
+            _pendingWait = step.waitAction;   // WaitForSpeedUp
+            _state = TutorialState.WaitingAction;
+
+            // GuideSpeedUp tu doi target moi frame: chua mo bang thi chi vao CHAU, mo roi thi
+            // nhay sang nut Kim cuong cua CropProcessPopupUI (FindOpenSpeedButton).
+            yield return ChoTargetRoiChiTay(
+                new[] { "tutorial_flower_01", "tutorial_flower_02" }, 10f,
+                id =>
+                {
+                    KhoetLoHoacTatDim(GetTargetRect(id), true, 60f, "L1L2_15_FlowerSpeedUp");
+                    _actionHandGuide?.GuideSpeedUp(id);
+                });
+            if (_currentIndex != buocLuc) yield break;
+
+            // Loi thoat mem da co san trong watchdog: hoa chin tu nhien thi khong bat bam gem.
+            ConsumeQueuedAction(); yield break;
+        }
+
+        // BUOC 17 - L1L2_16_HarvestFirstFlower: tay huong dan QUET LIEM thu hoach chau dau.
+        if (step.name == "L1L2_16_HarvestFirstFlower")
+        {
+            DonManChoBuocThaoTac();
+            TatDim();   // cham chau + keo liem tu khay - khong duoc khoet lo hep
+            if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
+
+            int buocLuc = _currentIndex;
+            _pendingWait = step.waitAction;   // WaitForHarvest
+            _state = TutorialState.WaitingAction;
+
+            string chauChin = IdChauHoa(true, 0) ?? "tutorial_flower_01";
+            yield return ChoTargetRoiChiTay(new[] { chauChin, "tutorial_flower_01" }, 12f,
+                id =>
+                {
+                    _actionHandGuide?.GuideHarvest(id);
+                    TutorialPhantomDemoManager.Instance?.PlayHarvestPhantom(id, IdChauHoa(true, 1));
+                });
+            if (_currentIndex != buocLuc) yield break;
+
+            ConsumeQueuedAction(); yield break;
+        }
+
         if (step.name == "L1L2_06_PlantAllRice")
         {
+            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? step.npcText : "Gieo nốt hạt lúa cho kín cả 8 ô ruộng nhé — bàn tay sẽ chỉ ô còn trống cho bạn!");
             SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: false);
             _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
             if (ThuQuaGateNgay(step)) { ConsumeQueuedAction(); yield break; }   // [WP-A1] đã đủ từ trước → qua luôn
@@ -949,6 +1294,7 @@ public class TutorialManager : MonoBehaviour
         // Ô đất — thu hoạch: tay chỉ vào ô đã chín, chờ thu hoạch hết.
         if (step.name == "L1L2_10_HarvestAllRice")
         {
+            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? step.npcText : "Lúa chín vàng cả ruộng rồi! Quẹt liềm thu hoạch nốt những ô còn lại nào.");
             SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: true);
             _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
             if (ThuQuaGateNgay(step)) { ConsumeQueuedAction(); yield break; }   // [WP-A1] đã đủ từ trước → qua luôn
@@ -961,209 +1307,401 @@ public class TutorialManager : MonoBehaviour
         // Chậu hoa — trồng toàn bộ.
         if (step.name == "L1L2_14_PlantAllFlowers")
         {
+            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? step.npcText : "Gieo not hat huong duong vao nhung chau con trong nhe!");
             if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
-            SetupSmartGuide(TutorialAreaKind.Flower, harvestMode: false);
+            TatDim();   // SetupSmartGuide se bat lai kem mask vung (co lo)
+
+            int buocLuc = _currentIndex;
             _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
-            if (ThuQuaGateNgay(step)) { ConsumeQueuedAction(); yield break; }   // [WP-A1] đã đủ từ trước → qua luôn
+            if (ThuQuaGateNgay(step)) { ConsumeQueuedAction(); yield break; }   // [WP-A1] da du tu truoc
             BatWatchdogHetHat(step);
-            // [PHANTOM] Ảo ảnh kéo hạt hướng dương vào chậu TRỐNG kế tiếp.
+
+            // [HOA-GS] Cho proxy chau hoa xuat hien roi moi dung tay quet, khong 'thu mot lan roi thoi'.
+            yield return ChoTargetRoiChiTay(TaoIdQuetO(TutorialAreaKind.Flower), 10f, null);
+            if (_currentIndex != buocLuc) yield break;
+
+            SetupSmartGuide(TutorialAreaKind.Flower, harvestMode: false);
             TutorialPhantomDemoManager.Instance?.PlayPlantPhantom(LayIconHat("seed_huong_duong"), "seed_huong_duong",
-                TimIdOConViec(TutorialAreaKind.Flower, false, 0) ?? "tutorial_flower_02");
+                IdChauHoa(false, 0) ?? "tutorial_flower_02");
             ConsumeQueuedAction(); yield break;
         }
         // Chậu hoa — thu hoạch.
         if (step.name == "L1L2_17_HarvestAllFlowers")
         {
+            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? step.npcText : "Hoa no ruc ro het roi! Thu hoach not nhung chau con lai thoi nao.");
             if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
-            SetupSmartGuide(TutorialAreaKind.Flower, harvestMode: true);
+            TatDim();
+
+            int buocLuc = _currentIndex;
             _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
-            if (ThuQuaGateNgay(step)) { ConsumeQueuedAction(); yield break; }   // [WP-A1] đã đủ từ trước → qua luôn
-            // [PHANTOM] Ảo ảnh liềm quét chậu chín thứ nhất → thứ hai (null = chỉ 1 chậu, demo bỏ qua ô 2).
+            if (ThuQuaGateNgay(step)) { ConsumeQueuedAction(); yield break; }   // [WP-A1] da du tu truoc
+
+            yield return ChoTargetRoiChiTay(TaoIdQuetO(TutorialAreaKind.Flower), 10f, null);
+            if (_currentIndex != buocLuc) yield break;
+
+            SetupSmartGuide(TutorialAreaKind.Flower, harvestMode: true);
             TutorialPhantomDemoManager.Instance?.PlayHarvestPhantom(
-                TimIdOConViec(TutorialAreaKind.Flower, true, 0) ?? "tutorial_flower_01",
-                TimIdOConViec(TutorialAreaKind.Flower, true, 1));
+                IdChauHoa(true, 0) ?? "tutorial_flower_01", IdChauHoa(true, 1));
             ConsumeQueuedAction(); yield break;
         }
 
         // ═══ TUTORIAL L2 — SHOP & TRỒNG NGÔ (B1–B7) ═══
-        // L2_01: tay chỉ Home→Store (tự nhảy khi menu mở), chờ shop mở.
+        // BUOC 20 - L2_01_GotoShop: tay chi nut CUA HANG, cho shop mo.
         if (step.name == "L2_01_GotoShop")
         {
-            AnHopThoai();
-            _guideBoardUI?.Hide();
-            if (_handPointer != null) _handPointer.gameObject.SetActive(false);
-            _dimBackground?.ClearHole();
-            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
-            _actionHandGuide?.GuidePointFirstActive(new[] { "btn_store", "btn_home" });
+            DonManChoBuocThaoTac();
+            int buocLuc = _currentIndex;
+
+            // Camera dang zoom o vuon hoa (buoc 12-18). Khong lui ra thi nguoi choi khong
+            // thay nut CUA HANG o goc duoi => tuong tutorial dung.
+            _cameraFocus?.RestoreCamera();
+            yield return new WaitForSecondsRealtime(0.45f);
+            if (_currentIndex != buocLuc) yield break;
+
+            // Nguoi choi da tu mo shop truoc khi tutorial kip chi tay => di tiep ngay.
+            if (ShopManager.Instance != null && ShopManager.Instance.IsOpen)
+            {
+                Debug.Log("[Tutorial] L2_01_GotoShop: shop da mo san -> sang buoc gioi thieu hat moi.");
+                AdvanceToNextStep(); yield break;
+            }
+
+            _runtimeTargetResolver?.RefreshShopTargets();
             _pendingWait = step.waitAction;   // WaitForOpenShop
             _state = TutorialState.WaitingAction;
+
+            yield return ChoTargetRoiChiTay(
+                new[] { "hud_shop", "btn_store", "btn_home" }, 8f,
+                id =>
+                {
+                    KhoetLoHoacTatDim(GetTargetRect(id), false, 18f, "L2_01_GotoShop");
+                    _actionHandGuide?.GuidePointFirstActive(new[] { "hud_shop", "btn_store", "btn_home" });
+                });
+            if (_currentIndex != buocLuc) yield break;
+
             ConsumeQueuedAction(); yield break;
         }
-        // L2_03: bao xám quanh item Bắp Cải / Ngô + tay chỉ Bắp Cải/＋, chờ mua.
+        // BUOC 22 - L2_03_BuyCorn: shop DANG MO, cuon toi Bap Cai, tay chi nut + roi nut Mua.
         if (step.name == "L2_03_BuyCorn")
         {
-            AnHopThoai();
-            _guideBoardUI?.Hide();
-            if (_handPointer != null) _handPointer.gameObject.SetActive(false);
-            // TẮT lớp tối TRƯỚC khi chờ. Lớp tối không có lỗ thì chặn 100% click
-            // (UnmaskRaycastFilter trả true khi không có target), nên để nó bật suốt
-            // 0,4 giây này là khoá cứng shop đúng lúc người chơi vừa mở ra.
-            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+            DonManChoBuocThaoTac();
+            TatDim();   // lop toi khong lo = chan sach click => khoa cung shop
 
-            // Cuộn shop để item Bắp Cải / Ngô hiện TRỌN (kèm ＋/－/Mua) rồi mới set vùng sáng + tay.
+            int buocLuc = _currentIndex;
+            int soLuongCan = SoHatBapCaiCan;
+
+            // (c) DA CO DU HAT (mua roi, hoac san co trong kho) => BO QUA buoc mua.
+            //     Day la chot chan 'bat mua 2 lan x 8 = 16 hat' ma Sep gap.
+            if (_daMuaHatBapCai || KhoDuHatBapCai())
+            {
+                Debug.Log("[Tutorial] L2_03_BuyCorn: kho da co " + SoHatBapCaiDangCo()
+                          + "/" + soLuongCan + " hat bap cai (daMua=" + _daMuaHatBapCai
+                          + ") -> BO QUA buoc mua, khong bat mua lan hai.");
+                AdvanceToNextStep(); yield break;
+            }
+
+            // (a) Shop phai DANG MO. Nguoi choi lo dong thi tay chi lai nut CUA HANG va cho.
+            if (ShopManager.Instance == null || !ShopManager.Instance.IsOpen)
+            {
+                _runtimeTargetResolver?.RefreshShopTargets();
+                _actionHandGuide?.GuidePointFirstActive(new[] { "hud_shop", "btn_store", "btn_home" });
+                float choMo = 0f;
+                while (choMo < 30f && (ShopManager.Instance == null || !ShopManager.Instance.IsOpen))
+                {
+                    if (_currentIndex != buocLuc) yield break;
+                    choMo += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+            }
+            if (_currentIndex != buocLuc) yield break;
+
             if (ShopManager.Instance != null)
             {
                 ShopManager.Instance.ScrollItemIntoView("seed_bapcai");
                 ShopManager.Instance.ScrollItemIntoView("seed_ngo");
             }
             yield return new WaitForSecondsRealtime(0.4f);
+            if (_currentIndex != buocLuc) yield break;
 
             _runtimeTargetResolver?.RefreshShopTargets();
-            var cornRect = GetTargetRect("shop_bapcai_plus") ?? GetTargetRect("shop_corn_plus")
-                        ?? GetTargetRect("shop_bapcai") ?? GetTargetRect("shop_corn");
-            if (_dimBackground != null)
-            {
-                // Không tìm được ô Bắp Cải/Ngô thì KHÔNG bật lớp tối. Bật mà không khoét lỗ
-                // sẽ chặn sạch click ⇒ người chơi không bấm mua được, kẹt luôn ở bước này.
-                if (cornRect != null)
-                {
-                    _dimBackground.gameObject.SetActive(true);
-                    _dimBackground.SetTarget(cornRect, false, 18f);
-                }
-                else
-                {
-                    _dimBackground.ClearHole();
-                    _dimBackground.gameObject.SetActive(false);
-                    Debug.LogWarning("[Tutorial] L2_03_BuyCorn: không thấy item Bắp Cải/Ngô trong shop → " +
-                                     "bỏ lớp tối để người chơi vẫn bấm mua được.");
-                }
-            }
-            // Tay chỉ nút ＋ tới khi chọn đủ 8 hạt → nhảy sang nút Mua.
-            string plusTarget = GetTargetRect("shop_bapcai_plus") != null ? "shop_bapcai_plus" : "shop_corn_plus";
-            string buyTarget  = GetTargetRect("shop_bapcai_buy")  != null ? "shop_bapcai_buy"  : "shop_corn_buy";
-            string itemTarget = GetTargetRect("shop_bapcai")      != null ? "shop_bapcai"      : "shop_corn";
-            _actionHandGuide?.GuideShopBuy(plusTarget, buyTarget, itemTarget, 8, _dimBackground);
             _pendingWait = step.waitAction;   // WaitForBuyItem
             _state = TutorialState.WaitingAction;
+
+            yield return ChoTargetRoiChiTay(
+                new[] { "shop_bapcai_plus", "shop_corn_plus", "shop_bapcai", "shop_corn" }, 10f,
+                id =>
+                {
+                    string plusTarget = GetTargetRect("shop_bapcai_plus") != null ? "shop_bapcai_plus" : "shop_corn_plus";
+                    string buyTarget  = GetTargetRect("shop_bapcai_buy")  != null ? "shop_bapcai_buy"  : "shop_corn_buy";
+                    string itemTarget = GetTargetRect("shop_bapcai")      != null ? "shop_bapcai"      : "shop_corn";
+                    KhoetLoHoacTatDim(RectDauTienCo(itemTarget, id), false, 18f, "L2_03_BuyCorn");
+                    _actionHandGuide?.GuideShopBuy(plusTarget, buyTarget, itemTarget, soLuongCan, _dimBackground);
+                });
+            if (_currentIndex != buocLuc) yield break;
+
             ConsumeQueuedAction(); yield break;
         }
-        // L2_04: tay chỉ Btn_Close, chờ đóng shop.
+        // BUOC 23 - L2_04_CloseShop: tay chi nut X dong shop.
         if (step.name == "L2_04_CloseShop")
         {
-            AnHopThoai();
-            _guideBoardUI?.Hide();
-            if (_handPointer != null) _handPointer.gameObject.SetActive(false);
-            _runtimeTargetResolver?.RefreshShopTargets();
-            var closeRect = GetTargetRect("shop_close") ?? GetTargetRect("btn_close");
-            if (_dimBackground != null)
+            DonManChoBuocThaoTac();
+            TatDim();
+
+            int buocLuc = _currentIndex;
+
+            // Shop da dong tu truoc (nguoi choi tu bam X) => khong con gi de day, di tiep.
+            if (ShopManager.Instance == null || !ShopManager.Instance.IsOpen)
             {
-                // Cùng lý do như L2_03: lớp tối KHÔNG có lỗ thì chặn sạch click.
-                // Không tìm được nút đóng mà vẫn bật lớp tối ⇒ không đóng shop được ⇒
-                // bước WaitForCloseShop treo vĩnh viễn.
-                if (closeRect != null)
-                {
-                    _dimBackground.gameObject.SetActive(true);
-                    _dimBackground.SetTarget(closeRect, false, 18f);
-                }
-                else
-                {
-                    _dimBackground.ClearHole();
-                    _dimBackground.gameObject.SetActive(false);
-                    Debug.LogWarning("[Tutorial] L2_04_CloseShop: không thấy nút đóng shop → " +
-                                     "bỏ lớp tối để người chơi vẫn đóng được.");
-                }
+                Debug.Log("[Tutorial] L2_04_CloseShop: shop da dong san -> sang buoc gieo Bap Cai.");
+                AdvanceToNextStep(); yield break;
             }
-            // Ưu tiên nút đóng CỦA SHOP (shop_close, đăng ký scoped trong shopPanel) — tránh trùng "Btn_Close" của popup khác.
-            _actionHandGuide?.GuidePointFirstActive(new[] { "shop_close", "btn_close" });
+
+            _runtimeTargetResolver?.RefreshShopTargets();
             _pendingWait = step.waitAction;   // WaitForCloseShop
             _state = TutorialState.WaitingAction;
+
+            // Uu tien nut dong CUA SHOP (shop_close, dang ky scoped trong shopPanel).
+            yield return ChoTargetRoiChiTay(new[] { "shop_close", "btn_close" }, 8f,
+                id =>
+                {
+                    KhoetLoHoacTatDim(GetTargetRect(id), false, 18f, "L2_04_CloseShop");
+                    _actionHandGuide?.GuidePointFirstActive(new[] { "shop_close", "btn_close" });
+                });
+            if (_currentIndex != buocLuc) yield break;
+
             ConsumeQueuedAction(); yield break;
         }
-        // L2_05: trồng ngô 8 ô (tái dùng 8 ô — reset đếm), tay quét ô trống.
+        // BUOC 24 - L2_05_PlantCorn: camera ve ruong, khay hat mo, tay quet gieo 8 o.
         if (step.name == "L2_05_PlantCorn")
         {
             GetComponent<TutorialStepTriggerBridge>()?.ResetRiceTracking();
             if (_cameraFocus != null) _cameraFocus.FocusOnRice(GetComponent<TutorialStepTriggerBridge>());
-            SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: false);
+            TatDim();
+
+            int buocLuc = _currentIndex;
             _pendingWait = step.waitAction;   // WaitForAllPlotsPlanted
             _state = TutorialState.WaitingAction;
-            if (ThuQuaGateNgay(step)) { ConsumeQueuedAction(); yield break; }   // [WP-A1] ngô đã trồng đủ → qua luôn
+            if (ThuQuaGateNgay(step)) { ConsumeQueuedAction(); yield break; }   // ngo da trong du
             BatWatchdogHetHat(step);
+
+            yield return ChoTargetRoiChiTay(TaoIdQuetO(TutorialAreaKind.Rice), 10f, null);
+            if (_currentIndex != buocLuc) yield break;
+
+            SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: false);
+            MoKhayHatOODauTien();   // Sep yeu cau: 'khay hat mo' ngay khi vao buoc
             ConsumeQueuedAction(); yield break;
         }
 
         // ═══ TUTORIAL L2 — CHĂN NUÔI (B8–B13) ═══
-        // L2_07: zoom chuồng tutorial + tay chỉ giữa chuồng, chờ mở chuồng.
+        // BUOC 26 - L2_07_FocusPen: tay chi giua CHUONG GA, cho mo chuong (khay thuc an hien).
         if (step.name == "L2_07_FocusPen")
         {
             if (_cameraFocus != null) _cameraFocus.FocusOnPen(TenChuongTutorial);
-            AnHopThoai();
-            _guideBoardUI?.Hide();
-            _dragHintAnimator?.StopDragHint();
-            _dimBackground?.ClearHole();
-            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
-            if (_handPointer != null) _handPointer.gameObject.SetActive(false);
-            _actionHandGuide?.GuidePoint("tutorial_pen");
+            DonManChoBuocThaoTac();
+            TatDim();
+            TangThucAnChuongNeuThieu();
+
+            int buocLuc = _currentIndex;
+
+            // Khong tim thay chuong (chua spawn / doi ten) van PHAI co ban tay: proxy
+            // 'tutorial_pen' do resolver dung se xuat hien tre vai nhip, ChoTargetRoiChiTay lo.
+            PenMiniPanelUI chuongMo = LayChuongTutorial();
+            if (chuongMo == null)
+                Debug.LogWarning("[Tutorial][Tay] L2_07_FocusPen: khong tim thay chuong tutorial '"
+                                 + TenChuongTutorial + "' — van cho target 'tutorial_pen' de chi tay.");
+
+            // Nguoi choi da cho an tu truoc => chuong khong con Idle => khong con gi de 'mo'.
+            if (chuongMo != null && chuongMo.CurrentState != PenMiniPanelUI.PenState.Idle)
+            {
+                Debug.Log("[Tutorial] L2_07_FocusPen: chuong khong con Idle -> bo qua buoc mo chuong.");
+                AdvanceToNextStep(); yield break;
+            }
+
             _pendingWait = step.waitAction;   // WaitForOpenPen
             _state = TutorialState.WaitingAction;
+
+            yield return ChoTargetRoiChiTay(new[] { "tutorial_pen" }, 10f,
+                id => _actionHandGuide?.GuidePoint(id));
+            if (_currentIndex != buocLuc) yield break;
+
             ConsumeQueuedAction(); yield break;
         }
-        // L2_08: kéo thức ăn (lúa) vào chuồng — tay drag-guide feed→pen, chờ cho ăn.
+        // BUOC 27 - L2_08_FeedPen: tay demo KEO BAO CAM vao chuong, cho cho an.
         if (step.name == "L2_08_FeedPen")
         {
-            _actionHandGuide?.StopGuide();
-            AnHopThoai();
-            _guideBoardUI?.Hide();
-            _dimBackground?.ClearHole();
-            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
-            _dragHintAnimator?.StartDragHint("tutorial_feed", "tutorial_pen");
+            DonManChoBuocThaoTac();
+            TatDim();
+            TangThucAnChuongNeuThieu();   // nguoi moi khong co cam_ga (phai xay o Mill)
+
+            int buocLuc = _currentIndex;
+
+            if (LayChuongTutorial() != null && !ChuongOTrangThai(PenMiniPanelUI.PenState.Idle))
+            {
+                Debug.Log("[Tutorial] L2_08_FeedPen: chuong da duoc cho an tu truoc -> bo qua buoc.");
+                AdvanceToNextStep(); yield break;
+            }
+
             _pendingWait = step.waitAction;   // WaitForFeed
             _state = TutorialState.WaitingAction;
+
+            // Khay 2 o phai DANG MO thi target 'tutorial_feed' moi ton tai. Nguoi choi bam
+            // ra ngoai giua buoc 26 va 27 la khay dong => tay khong co gi de chi => ket buoc.
+            BaoDamKhayChuongMo(LayChuongTutorial(), "L2_08_FeedPen");
+
+            // AO ANH (tay mo) KEO BAO CAM VAO CHUONG — dung y chang cach day keo hat o ruong.
+            // Goi trong callback: luc do 'tutorial_feed' chac chan da co that, icon lay tu
+            // Config chuong (food1Icon) chu khong de PhantomDemo doan ra icon hat lua.
+            yield return ChoTargetRoiChiTay(new[] { "tutorial_feed" }, 12f,
+                id =>
+                {
+                    TutorialPhantomDemoManager.Instance?.PlayPlantPhantom(
+                        LayIconCamChuong(), id, "tutorial_pen");
+                    _dragHintAnimator?.StartDragHint(id, "tutorial_pen");
+                });
+            if (_currentIndex != buocLuc) yield break;
+
             ConsumeQueuedAction(); yield break;
         }
-        // L2_09: sau khi feed xong, chỉ chuồng -> user click mở process -> chỉ nút Gem.
+        // BUOC 28 - L2_09_PenSpeedUp: tay chi chuong -> mo bang tien trinh -> chi nut Kim cuong.
         if (step.name == "L2_09_PenSpeedUp")
         {
-            _dragHintAnimator?.StopDragHint();
-            AnHopThoai();
-            _guideBoardUI?.Hide();
-            _dimBackground?.ClearHole();
-            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
-            if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+            DonManChoBuocThaoTac();
+            TatDim();
 
+            int buocLuc = _currentIndex;
+            PenMiniPanelUI chuong = LayChuongTutorial();
+            if (chuong == null)
+                Debug.LogWarning("[Tutorial][Tay] L2_09_PenSpeedUp: khong tim thay chuong tutorial '"
+                                 + TenChuongTutorial + "' — van chi tay theo 'tutorial_pen' / 'tutorial_pen_gem'.");
+
+            // Loi thoat mem: nguoi choi cho dan ga xong tu nhien (45s) => khong con gi de tang toc.
+            if (chuong != null && chuong.CurrentState == PenMiniPanelUI.PenState.Ready)
+            {
+                Debug.Log("[Tutorial] L2_09_PenSpeedUp: chuong da san sang thu hoach -> bo qua buoc tang toc.");
+                AdvanceToNextStep(); yield break;
+            }
+
+            // Tang toc chuong ton ~21 gem ma nguoi moi chi co ~15-19 => bu phan thieu,
+            // CHI trong tutorial, khong dung toi kinh te game ngoai tutorial.
+            TangKimCuongTangTocChuongNeuThieu(chuong);
+
+            // Nut Kim cuong that nam trong PenProcessPopupUI (ten 'Btn_SpeedUp'); resolver chi
+            // do 'btn_PenGem' cua mini-panel - ma mini-panel dang TAT khi chuong Processing.
+            // Vong nay dang ky bu lien tuc de bao gio cung co target de chi tay.
+            StartCoroutine(VongDangKyNutGemChuong(buocLuc));
+
+            // Pha 1 - chi giua chuong cho nguoi choi mo bang tien trinh.
             _penOpenSubActionReceived = IsTargetActive("tutorial_pen_gem");
-            _actionHandGuide?.GuidePoint("tutorial_pen");
             _pendingWait = TutorialWaitAction.WaitForOpenPen;
             _state = TutorialState.WaitingAction;
-            yield return new WaitUntil(() =>
-                _penOpenSubActionReceived || IsTargetActive("tutorial_pen_gem"));
 
-            _actionHandGuide?.GuidePoint("tutorial_pen_gem");
+            yield return ChoTargetRoiChiTay(new[] { "tutorial_pen" }, 10f,
+                id => _actionHandGuide?.GuidePoint(id));
+            if (_currentIndex != buocLuc) yield break;
+
+            float choMo = 0f;
+            while (choMo < 60f)
+            {
+                if (_currentIndex != buocLuc) yield break;
+                if (_penOpenSubActionReceived || IsTargetActive("tutorial_pen_gem")) break;
+                if (chuong != null && chuong.CurrentState == PenMiniPanelUI.PenState.Ready) break;
+                choMo += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            if (_currentIndex != buocLuc) yield break;
+
+            if (chuong != null && chuong.CurrentState == PenMiniPanelUI.PenState.Ready)
+            {
+                Debug.Log("[Tutorial] L2_09_PenSpeedUp: dan ga xong trong luc cho -> cho qua buoc.");
+                AdvanceToNextStep(); yield break;
+            }
+
+            if (!_penOpenSubActionReceived && !IsTargetActive("tutorial_pen_gem"))
+                Debug.LogWarning("[Tutorial][Tay] L2_09_PenSpeedUp: cho 60s ma bang tien trinh chuong "
+                                 + "chua mo (chua co 'tutorial_pen_gem') — van chi tay tiep, khong dung buoc.");
+
+            // Pha 2 - chi nut Kim cuong.
+            TangKimCuongTangTocChuongNeuThieu(chuong);
             _pendingWait = step.waitAction;   // WaitForPenSpeedUp
             _state = TutorialState.WaitingAction;
+
+            yield return ChoTargetRoiChiTay(new[] { "tutorial_pen_gem", "tutorial_pen" }, 10f,
+                id => _actionHandGuide?.GuidePoint(id));
+            if (_currentIndex != buocLuc) yield break;
+
             ConsumeQueuedAction(); yield break;
         }
-        // L2_10: bubble Ready hiện -> chỉ giữa chuồng -> user click mở rổ -> drag-guide basket→pen.
+        // BUOC 29 - L2_10_HarvestPen: tay demo KEO GIO vao chuong, cho thu trung -> HET tutorial.
         if (step.name == "L2_10_HarvestPen")
         {
-            _actionHandGuide?.StopGuide();
-            _dragHintAnimator?.StopDragHint();
-            AnHopThoai();
-            _guideBoardUI?.Hide();
-            _dimBackground?.ClearHole();
-            if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+            DonManChoBuocThaoTac();
+            TatDim();
 
-            _penOpenSubActionReceived = IsTargetActive("tutorial_basket");
-            _actionHandGuide?.GuidePoint("tutorial_pen");
+            int buocLuc = _currentIndex;
+            PenMiniPanelUI chuong = LayChuongTutorial();
+
+            // Da thu trung tu truoc (chuong ve Idle) => khong con gi de day.
+            if (chuong != null && chuong.CurrentState == PenMiniPanelUI.PenState.Idle)
+            {
+                Debug.Log("[Tutorial] L2_10_HarvestPen: chuong da ve Idle (da thu trung) -> ket thuc buoc.");
+                AdvanceToNextStep(); yield break;
+            }
+
+            // Chuong con dang ap trung (Processing): buoc 28 da bam tang toc nen thuong Ready
+            // ngay, nhung nguoi choi co the bo qua buoc do => cho co tran roi van di tiep.
+            if (chuong != null && chuong.CurrentState == PenMiniPanelUI.PenState.Processing)
+            {
+                float choChin = 0f;
+                while (choChin < 60f && chuong != null
+                       && chuong.CurrentState == PenMiniPanelUI.PenState.Processing)
+                {
+                    if (_currentIndex != buocLuc) yield break;
+                    choChin += Time.unscaledDeltaTime;
+                    yield return null;
+                }
+                if (_currentIndex != buocLuc) yield break;
+                if (chuong != null && chuong.CurrentState == PenMiniPanelUI.PenState.Processing)
+                    Debug.LogWarning("[Tutorial][Tay] L2_10_HarvestPen: cho 60s ma dan ga chua de trung "
+                                     + "— van chay tiep de buoc khong dung im.");
+            }
+
+            // Pha 1 - tay CHI VAO CHUONG cho nguoi choi mo khay ro.
+            _penOpenSubActionReceived = KhayChuongDangMo();
             _pendingWait = TutorialWaitAction.WaitForOpenPen;
             _state = TutorialState.WaitingAction;
-            yield return new WaitUntil(() =>
-                _penOpenSubActionReceived || IsTargetActive("tutorial_basket"));
+
+            yield return ChoTargetRoiChiTay(new[] { "tutorial_pen" }, 10f,
+                id => _actionHandGuide?.GuidePoint(id));
+            if (_currentIndex != buocLuc) yield break;
+
+            float choRo = 0f;
+            while (choRo < 60f && !_penOpenSubActionReceived && !KhayChuongDangMo())
+            {
+                if (_currentIndex != buocLuc) yield break;
+                choRo += Time.unscaledDeltaTime;
+                yield return null;
+            }
+            if (_currentIndex != buocLuc) yield break;
+
+            if (!_penOpenSubActionReceived && !KhayChuongDangMo())
+                Debug.LogWarning("[Tutorial][Tay] L2_10_HarvestPen: cho 60s ma khay ro chua mo "
+                                 + "(chua co 'tutorial_basket') — tu mo khay de van co cho chi tay.");
 
             _actionHandGuide?.StopGuide();
-            _dragHintAnimator?.StartDragHint("tutorial_basket", "tutorial_pen");
+
+            // Pha 2 - AO ANH KEO ICON RO VAO CHUONG, y het cach day quet liem o ruong.
+            BaoDamKhayChuongMo(chuong, "L2_10_HarvestPen");
             _pendingWait = step.waitAction;   // WaitForPenHarvest
             _state = TutorialState.WaitingAction;
+
+            yield return ChoTargetRoiChiTay(new[] { "tutorial_basket" }, 12f,
+                id =>
+                {
+                    TutorialPhantomDemoManager.Instance?.PlayPlantPhantom(
+                        LayIconRoChuong(), id, "tutorial_pen");
+                    _dragHintAnimator?.StartDragHint(id, "tutorial_pen");
+                });
+            if (_currentIndex != buocLuc) yield break;
+
             ConsumeQueuedAction(); yield break;
         }
 
@@ -1320,13 +1858,24 @@ public class TutorialManager : MonoBehaviour
 
                 if (_v2Vfx != null) _v2Vfx.OnStepEnter();
 
-                // Tham số 4 = "chạm bất kỳ đâu trên card" → LUÔN LUÔN là NextStep.
+                    // [FIX 2026-09-06] Buoc CAN THAO TAC (tang toc / thu hoach): truoc day ban tay
+                // CHI hien khi nguoi choi CHAM vao card (TryDismissInteractionDialog). Ai khong
+                // cham thi khong bao gio thay tay — dung canh Sep gap o phan hoa. Nay tu bung
+                // tay sau 1,2 giay doc chu, khong bat phai cham gi ca.
+                if (IsInteractionStep(step.name)) BatTuHienTayThaoTac();
+
+            // Tham số 4 = "chạm bất kỳ đâu trên card" → LUÔN LUÔN là NextStep.
                 // Khôi phục hành vi bản cũ (cả tấm NPC_Dialog_Popup là Button nối NextStep).
                 // NextStep tự lọc: bước WaitForClick thì advance, bước chờ thao tác thì chỉ
                 // TryDismissInteractionDialog() — nên chạm KHÔNG BAO GIỜ làm người chơi bỏ
                 // qua thao tác cần học.
                 // Thiếu tham số này, bước L1L2_15_FlowerSpeedUp KẸT CỨNG VĨNH VIỄN: không
                 // nút, dim không lỗ nuốt hết click, NotifySpeedUp không bao giờ tới.
+                // [FIX 2026-09-06] KHONG noi khi nguoi choi con dang thao tac.
+                // Truoc day card bung ra ngay giua luc dang keo hat / khay hat con mo,
+                // vua de len khay vua che nut "Tiep tuc". Nay: cho tha tay + dong khay + 1 nhip.
+                yield return ChoThaoTacXongHan();
+
                 _v2Card.Show(step.npcText, ChonClipNpc(step), khiBamTiep, NextStep);
             }
             // [V6] Hộp thoại NPC cũ đã bị khai tử — chỉ dùng card V2.
@@ -1590,6 +2139,108 @@ public class TutorialManager : MonoBehaviour
     }
 
     // =========================================================================
+    // [FIX 2026-09-06 vong4] LOP TAY HUONG DAN PHAI NAM TREN KHAY CHUONG
+    // =========================================================================
+    // BENH Sep bao: "ban tay hand bi nam sau item" — tay chi vao bao thoc / ro thu hoach
+    // nhung bi chinh khay 2 o cua chuong ve de len.
+    //
+    // DO DUOC (khong doan):
+    //   • Canvas_TutorialHand (SCN_Farm) : overrideSorting=1, sortingOrder=440
+    //     — do TutorialHandLayerTool dat, cot chi de vuot Canvas_Popup 300 va
+    //       Canvas_TouristBoatPopup 400. Luc do khay V2 chua ton tai.
+    //   • PenSupplyTrayV2 : tu tao Canvas Overlay RIENG luc runtime, sortingOrder = 800.
+    //   • PenProcessPopupUI (bang tien trinh chuong, co nut kim cuong) : 500.
+    //   ⇒ ca 800 lan 500 deu CAO HON 440 nen tay chim ben duoi. Dung mot loi, hai cho.
+    //
+    // VI SAO CHON "order khay + 50" (= 850 voi so hien tai) CHU KHONG PHAI SO CANG CAO CANG TOT:
+    //   • Phai TREN khay (800) va tren bang tien trinh (500) — cong 50 la du va con cho chen.
+    //   • Phai DUOI 999: ghost mon do nguoi choi dang keo (PenBasketDragItem :39 va
+    //     DraggableFeedItem :41 deu dung Canvas 999) — mon do bam theo ngon tay PHAI ve tren
+    //     ban tay huong dan, khong thi keo ma khong thay minh dang cam gi.
+    //   • Phai DUOI UILayers.ChuyenCanh (9999): man fade chuyen canh khong duoc ho ra.
+    //   ⇒ tran = 950. Va so khay duoc DOC THAT tu PenSupplyTrayV2.OrderKhay, khong go tay.
+    //
+    // KHONG CUOP CLICK: moi Image cua tay deu raycastTarget=false trong scene, va
+    // TutorialActionHandGuide.Configure() con quet lai mot lan nua; proxy cua
+    // TutorialRuntimeTargetResolver khong co Graphic; VFX tutorial cung raycastTarget=false.
+    // Nang order chi doi THU TU VE, khong doi ai an duoc raycast.
+
+    /// <summary>Bien an toan cong them tren order cua khay chuong.</summary>
+    private const int BienAnToanTrenKhay = 50;
+
+    /// <summary>Tran order cua lop tay — phai DUOI ghost keo (999) va man chuyen canh (9999).</summary>
+    private const int TranOrderLopTay = 950;
+
+    /// <summary>Lop ao anh (TutorialPhantomDemoManager) cao hon lop tay that dung mot buoc —
+    /// giu nguyen quan he cu trong scene (450 so voi 440).</summary>
+    private const int BuocGiuaLopTayVaLopAoAnh = 10;
+
+    private Canvas _canvasLopTay;
+    private int    _orderLopTayGoc = int.MinValue;
+
+    /// <summary>Order lop tay CAN DUNG de tay noi tren khay chuong. Doc so THAT cua khay moi lan goi.</summary>
+    public static int OrderLopTayCanDung
+    {
+        get
+        {
+            int orderKhay = PenSupplyTrayV2.OrderKhay;
+            return Mathf.Clamp(orderKhay + BienAnToanTrenKhay, UILayers.PopupCaoCap, TranOrderLopTay);
+        }
+    }
+
+    /// <summary>Order cho lop AO ANH tay (Phantom) — luon tren lop tay that dung mot buoc.</summary>
+    public static int OrderLopAoAnhCanDung =>
+        Mathf.Min(OrderLopTayCanDung + BuocGiuaLopTayVaLopAoAnh, TranOrderLopTay);
+
+    /// <summary>
+    /// Nang Canvas chua ban tay len TREN khay chuong. Goi o dau moi buoc — re vi co cache.
+    ///
+    /// CHI dong vao Canvas LONG NHAU (Canvas_TutorialHand). Neu tay dang nam thang tren
+    /// Tutorial_Canvas (canvas GOC) thi KHONG nang: nang canvas goc se keo Dim_Background len
+    /// tren Canvas_Popup, va lop dim khong khoet lo se nuot sach click cua khay hat — dung cai
+    /// loi ma TutorialHandLayerTool da canh bao trong phan AN TOAN.
+    /// </summary>
+    private void BaoDamLopTayNamTrenKhay()
+    {
+        if (_handPointer == null) return;
+
+        if (_canvasLopTay == null)
+        {
+            // includeInactive=true: object tay thuong dang TAT, ban khong tham so se tra null.
+            _canvasLopTay = _handPointer.GetComponentInParent<Canvas>(true);
+            if (_canvasLopTay == null) return;
+
+            if (_canvasLopTay.isRootCanvas)
+            {
+                Debug.LogWarning("[Tutorial][Tay] Tay dang nam thang tren Canvas GOC '" + _canvasLopTay.name + "' - KHONG nang order (se keo Dim_Background len theo va nuot click). Chay menu Tools/Farm/Tutorial/Lop tay tutorial (440) - APPLY de tao Canvas_TutorialHand roi thu lai.");
+                _canvasLopTay   = null;
+                _orderLopTayGoc = int.MinValue;
+                return;
+            }
+
+            _orderLopTayGoc = _canvasLopTay.sortingOrder;
+        }
+
+        int can = OrderLopTayCanDung;
+        if (_canvasLopTay.sortingOrder >= can) return;
+
+        _canvasLopTay.overrideSorting = true;
+        _canvasLopTay.sortingOrder    = can;
+        Debug.Log("[Tutorial][Tay] Nang '" + _canvasLopTay.name + "' tu " + _orderLopTayGoc + " len " + can + " de tay ve TREN khay chuong (khay dang o " + PenSupplyTrayV2.OrderKhay + ").");
+    }
+
+    /// <summary>Tra lop tay ve order goc khi tutorial ket thuc / bi bo qua — khong de lop tutorial
+    /// treo cao vinh vien sau khi da choi xong.</summary>
+    private void TraLaiLopTayVeGoc()
+    {
+        if (_canvasLopTay == null || _orderLopTayGoc == int.MinValue) return;
+        _canvasLopTay.sortingOrder = _orderLopTayGoc;
+        Debug.Log("[Tutorial][Tay] Tra '" + _canvasLopTay.name + "' ve order goc " + _orderLopTayGoc + ".");
+        _canvasLopTay   = null;
+        _orderLopTayGoc = int.MinValue;
+    }
+
+    // =========================================================================
     // [V6] API CÔNG KHAI CHO TRỌNG TÀI BÀN TAY (TutorialHandBus)
     // =========================================================================
     // Cờ chống dội: đang CHỦ ĐỘNG dọn tay (sang bước mới / ẩn UI cho popup) thì
@@ -1695,6 +2346,7 @@ public class TutorialManager : MonoBehaviour
         if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
         DonSachMoiBanTay();   // [V6] nhả quyền + ẩn cả ba tay thật
         _runtimeTargetResolver?.EnableAreaMask(TutorialAreaKind.None, null);
+        TraLaiLopTayVeGoc();   // [vong4] tra Canvas_TutorialHand ve order goc
 
         // Bắt buộc: Canvas tàng hình mà còn blocksRaycasts thì nuốt sạch click game.
         if (_tutorialCanvasCG != null)
@@ -1717,9 +2369,15 @@ public class TutorialManager : MonoBehaviour
         AnHopThoai();   // [V6] đóng card thoại để nhả HUD (HudNavHider) khi kết thúc tutorial
         TutorialPhantomDemoManager.Instance?.StopDemo();
         _guideBoardUI?.Hide();
+        SetCloudPanelVisible(false);
         _dimBackground?.ClearHole();
+        // [HOA-GS] Ket thuc SACH: ClearHole thoi la CHUA DU — lop toi con BAT ma khong co lo
+        // thi UnmaskRaycastFilter tra true moi diem => chan sach click toan man hinh sau tutorial.
+        if (_dimBackground != null) _dimBackground.gameObject.SetActive(false);
+        _runtimeTargetResolver?.EnableAreaMask(TutorialAreaKind.None, null);   // tat nen xam vung
         _cameraFocus?.RestoreCamera();
         DonSachMoiBanTay();   // [V6] nhả quyền + ẩn cả ba tay thật
+        TraLaiLopTayVeGoc();   // [vong4] tra Canvas_TutorialHand ve order goc
 
         // Táº¯t hoÃ n toÃ n Tutorial_Canvas â€” khÃ´ng Ä‘á»ƒ Canvas tÃ ng hÃ¬nh cháº·n raycast game UI
         if (_tutorialCanvasCG != null)
@@ -2090,6 +2748,38 @@ public class TutorialManager : MonoBehaviour
         if (_handPointer    != null) _handPointer.gameObject.SetActive(false);
     }
 
+    /// <summary>
+    /// [FIX 2026-09-06] Tu dong bung ban tay huong dan cho buoc CAN THAO TAC sau khi nguoi choi
+    /// co ~1,2 giay doc loi thoai — khong con phu thuoc vao viec ho co cham vao card hay khong.
+    /// Dung chung duong voi TryDismissInteractionDialog nen khong nhan doi logic.
+    /// </summary>
+    private void BatTuHienTayThaoTac()
+    {
+        if (_tuHienTayCo != null) StopCoroutine(_tuHienTayCo);
+        _tuHienTayCo = StartCoroutine(TuHienTayThaoTacRoutine());
+    }
+
+    private Coroutine _tuHienTayCo;
+
+    private IEnumerator TuHienTayThaoTacRoutine()
+    {
+        int buocLucGoi = _currentIndex;
+
+        // Cho doc chu (card tu go xong) roi them mot nhip ngan.
+        float t = 0f;
+        while (t < 1.2f)
+        {
+            if (_currentIndex != buocLucGoi) { _tuHienTayCo = null; yield break; }
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (_currentIndex == buocLucGoi && !_interactionDialogDismissed)
+            TryDismissInteractionDialog();
+
+        _tuHienTayCo = null;
+    }
+
     private bool TryDismissInteractionDialog()
     {
         if (_currentIndex < 0 || _currentIndex >= _steps.Count) return false;
@@ -2129,6 +2819,83 @@ public class TutorialManager : MonoBehaviour
 
         ConsumeQueuedAction();
         return true;
+    }
+
+    /// <summary>
+    /// [FIX 2026-09-06] Nhac nhanh: hien card thoai voi 1 cau ngan roi TU AN sau vai giay.
+    /// Dung cho cac buoc "quet" (gieo/thu hoach het o) — truoc day cac buoc nay an sach card
+    /// nen nguoi choi khong biet phai lam gi tiep, cam giac tutorial dung.
+    /// KHONG doi bam, khong chan thao tac: tay van quet binh thuong ben duoi.
+    /// </summary>
+    private void NhacNhanh(string noiDung, float giay = 3.2f)
+    {
+        if (string.IsNullOrWhiteSpace(noiDung)) return;
+        if (!DungCardV2) return;
+        if (_nhacNhanhCo != null) StopCoroutine(_nhacNhanhCo);
+        _nhacNhanhCo = StartCoroutine(NhacNhanhRoutine(noiDung, giay));
+    }
+
+    private Coroutine _nhacNhanhCo;
+
+    private IEnumerator NhacNhanhRoutine(string noiDung, float giay)
+    {
+        // Cho 1 khung hinh: nhanh buoc goi NhacNhanh() xong con chay tiep SetupSmartGuide(),
+        // ma ham do mo dau bang AnHopThoai() — hien card truoc la bi an ngay lap tuc.
+        yield return null;
+
+        int buocLucGoi = _currentIndex;
+
+        // [FIX 2026-09-06] Khong nhac khi nguoi choi dang keo. Neu khay hat dang mo (buoc gieo)
+        // thi CHO khay dong roi moi nhac — khong bao gio de card len khay hat.
+        float cho = 0f;
+        while (cho < 8f && (FarmInputLock.IsDraggingSeed || FarmInputLock.IsDraggingSickle
+                            || FarmInputLock.IsSeedPopupOpen))
+        {
+            if (_currentIndex != buocLucGoi) { _nhacNhanhCo = null; yield break; }
+            cho += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        if (_currentIndex != buocLucGoi) { _nhacNhanhCo = null; yield break; }
+        if (_v2Card == null) { _nhacNhanhCo = null; yield break; }
+
+        _v2Card.Show(Loc.T(noiDung), TutorialNpcClip.Talk);
+        _v2Card.SkipTyping();                       // hien het chu ngay, khong bat cho go
+
+        float t = 0f;
+        while (t < giay)
+        {
+            if (_currentIndex != buocLucGoi) break;   // qua buoc khac roi thi thoi nhac
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (_currentIndex == buocLucGoi) _v2Card.Hide();
+        _nhacNhanhCo = null;
+    }
+
+    /// <summary>
+    /// [FIX 2026-09-06] Cho den khi nguoi choi THAT SU roi tay ra:
+    ///   1) khong con keo hat / keo liem,
+    ///   2) khay hat (va khay hoa) da dong — con mo thi tu dong dong lai,
+    ///   3) nghi mot nhip ngan cho hieu ung dong khay chay xong.
+    /// Nho vay hoi thoai luon xuat hien SAU thao tac, khong bao gio de len khay.
+    /// Co tran thoi gian de khong bao gio treo buoc.
+    /// </summary>
+    private IEnumerator ChoThaoTacXongHan(float tranGiay = 4f)
+    {
+        float t = 0f;
+        while (t < tranGiay)
+        {
+            bool dangKeo = FarmInputLock.IsDraggingSeed || FarmInputLock.IsDraggingSickle;
+            if (!dangKeo) break;
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (FarmInputLock.IsSeedPopupOpen && FarmUIManager.Instance != null)
+            FarmUIManager.Instance.HidePlantSelectPopup();
+
+        yield return new WaitForSecondsRealtime(0.35f);   // nhip nghi cho khay dong xong
     }
 
     private void HideBlockingTutorialUI()
@@ -2279,6 +3046,469 @@ public class TutorialManager : MonoBehaviour
         }
         Debug.LogWarning("[Tutorial][Watchdog] Card thoại đang ẩn — đã bật lại chuỗi cha để nút " +
                          "'Bỏ qua bước này' hiện cho người chơi.");
+    }
+
+    // =========================================================================
+    // [HOA-GS 2026-09-06] BO HELPER DUNG CHUNG CHO KHOI HOA -> CHAN NUOI
+    // Nguyen tac vang: KHONG BUOC NAO THIEU TAY, KHONG BUOC NAO KET.
+    // =========================================================================
+
+    /// <summary>
+    /// CHO TARGET XUAT HIEN ROI MOI CHI TAY.
+    /// Lap toi khi mot trong <paramref name="ids"/> co RectTransform VA dang bat, roi goi
+    /// <paramref name="khiCo"/> voi dung id do. Het tran thi ghi canh bao (kem TEN BUOC va
+    /// danh sach id) roi VAN goi callback voi id dau tien - moi routine chi tay deu doc lai
+    /// target moi frame nen se tu song lai khi target xuat hien muon.
+    /// Tu bo cuoc khi nguoi choi da sang buoc khac (khong ghi de len buoc moi).
+    /// </summary>
+    private IEnumerator ChoTargetRoiChiTay(string[] ids, float tranGiay = 8f, System.Action<string> khiCo = null)
+    {
+        if (ids == null || ids.Length == 0) yield break;
+
+        int    buocLucGoi = _currentIndex;
+        string tenBuoc    = CurrentStepName;
+        float  t          = 0f;
+
+        while (t < tranGiay)
+        {
+            if (_currentIndex != buocLucGoi) yield break;
+
+            for (int i = 0; i < ids.Length; i++)
+            {
+                RectTransform rt = GetTargetRect(ids[i]);
+                if (rt != null && rt.gameObject.activeInHierarchy)
+                {
+                    if (khiCo != null) khiCo(ids[i]);
+                    yield break;
+                }
+            }
+
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (_currentIndex != buocLucGoi) yield break;
+
+        Debug.LogWarning("[Tutorial][Tay] Buoc '" + tenBuoc + "': cho " + tranGiay.ToString("0.#")
+                         + "s ma KHONG target nao trong [" + string.Join(", ", ids)
+                         + "] xuat hien. Van bat chi tay theo id dau de khong mat ban tay.");
+        if (khiCo != null) khiCo(ids[0]);
+    }
+
+    /// <summary>
+    /// Khoet lo cho lop toi. LUAT: khong bao gio de lop toi BAT ma KHONG CO LO - luc do
+    /// UnmaskRaycastFilter tra true cho moi diem => chan sach click toan man hinh.
+    /// Khong tim duoc target thi ClearHole + tat han lop toi va ghi canh bao.
+    /// </summary>
+    private void KhoetLoHoacTatDim(RectTransform rect, bool tron, float dem, string moTaBuoc)
+    {
+        if (_dimBackground == null) return;
+
+        if (rect != null && rect.gameObject.activeInHierarchy)
+        {
+            _dimBackground.gameObject.SetActive(true);
+            _dimBackground.SetTarget(rect, tron, dem);
+            return;
+        }
+
+        _dimBackground.ClearHole();
+        _dimBackground.gameObject.SetActive(false);
+        Debug.LogWarning("[Tutorial] " + moTaBuoc + ": khong thay target de khoet lo -> bo lop toi "
+                         + "de nguoi choi van bam duoc.");
+    }
+
+    /// <summary>Tat han lop toi (buoc keo-tha / thu hoach can ca man hinh).</summary>
+    private void TatDim()
+    {
+        if (_dimBackground == null) return;
+        _dimBackground.ClearHole();
+        _dimBackground.gameObject.SetActive(false);
+    }
+
+    /// <summary>Don card + bang + ca ba ban tay truoc khi buoc dung guide rieng cua no.</summary>
+    private void DonManChoBuocThaoTac()
+    {
+        AnHopThoai();
+        _guideBoardUI?.Hide();
+        TutorialPhantomDemoManager.Instance?.StopDemo();
+        _actionHandGuide?.StopGuide();
+        _dragHintAnimator?.StopDragHint();
+        if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+    }
+
+    /// <summary>RectTransform dau tien dang BAT trong danh sach id. null neu khong co cai nao.</summary>
+    private static RectTransform RectDauTienCo(params string[] ids)
+    {
+        if (ids == null) return null;
+        for (int i = 0; i < ids.Length; i++)
+        {
+            RectTransform rt = GetTargetRect(ids[i]);
+            if (rt != null && rt.gameObject.activeInHierarchy) return rt;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Buoc CHI CO LOI THOAI - khong duoc bat lop toi (lop toi khong lo = chan sach click).
+    /// </summary>
+    private static bool LaBuocThoaiKhongCheMan(string stepName)
+    {
+        return stepName == "L1L2_11_TransitionFlower"
+            || stepName == "L1L2_18_LevelUpCelebration"
+            || stepName == "L2_02_UnlockCorn"
+            || stepName == "L2_06_AnimalIntro";
+    }
+
+    /// <summary>
+    /// Buoc CO CHU DICH chay TRONG LUC popup cua chinh no dang mo (cua hang, bang tien trinh,
+    /// khay chuong). Cong popup chung o dau PlayStep se lam nhung buoc nay dung im cho toi khi
+    /// nguoi choi DONG popup - dung loi Sep gap o buoc mua Bap Cai.
+    /// </summary>
+    private static bool BuocChayCungPopup(string stepName)
+    {
+        return stepName == "L2_02_UnlockCorn"
+            || stepName == "L2_03_BuyCorn"
+            || stepName == "L2_04_CloseShop"
+            || stepName == "L1L2_15_FlowerSpeedUp"
+            || stepName == "L2_07_FocusPen"
+            || stepName == "L2_08_FeedPen"
+            || stepName == "L2_09_PenSpeedUp"
+            || stepName == "L2_10_HarvestPen";
+    }
+
+    /// <summary>
+    /// Cong popup RUT GON: chi nhuong san khau cho popup LA (len cap / thong bao thuyen),
+    /// khong nhuong cho chinh popup ma buoc dang day.
+    /// </summary>
+    private IEnumerator ChoPopupLaDongHet(float tranGiay = 30f)
+    {
+        if (!LevelUpPopupUI.IsActive && !BoatAnnouncePopupUI.IsActive) yield break;
+
+        AnToanBoUiTutorial();
+        float t = 0f;
+        while ((LevelUpPopupUI.IsActive || BoatAnnouncePopupUI.IsActive) && t < tranGiay)
+        {
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+        yield return new WaitForSecondsRealtime(0.25f);
+        HienLaiUiTutorial();
+    }
+
+    // ---- Chau hoa -----------------------------------------------------------
+
+    /// <summary>Id proxy chau hoa con viec (trong = con trong / thu hoach = da chin).</summary>
+    private static string IdChauHoa(bool canChin, int thuTu)
+    {
+        return TimIdOConViec(TutorialAreaKind.Flower, canChin, thuTu);
+    }
+
+    /// <summary>Con chau hoa nao DANG LON (chua chin) khong.</summary>
+    private static bool CoChauHoaDangLon()
+    {
+        var ds = TutorialStepTriggerBridge.LayChauHoa();
+        for (int i = 0; i < ds.Count; i++)
+            if (ds[i] != null && ds[i].IsGrowing) return true;
+        return false;
+    }
+
+    /// <summary>Con chau hoa nao DA CHIN (cho thu hoach) khong.</summary>
+    private static bool CoChauHoaChinRoi()
+    {
+        var ds = TutorialStepTriggerBridge.LayChauHoa();
+        for (int i = 0; i < ds.Count; i++)
+            if (ds[i] != null && ds[i].IsReady) return true;
+        return false;
+    }
+
+    // ---- Hat Bap Cai (buoc mua) ---------------------------------------------
+
+    /// <summary>So hat Bap Cai buoc L2 can - dung bang so o ruong ma gate dem.</summary>
+    private static int SoHatBapCaiCan
+    {
+        get
+        {
+            int n = TutorialStepTriggerBridge.LayODatLua().Count;
+            return n > 0 ? n : 8;
+        }
+    }
+
+    /// <summary>So hat Bap Cai dang co trong kho.</summary>
+    private static int SoHatBapCaiDangCo()
+    {
+        var kho = WarehouseManager.Instance;
+        return kho != null ? kho.GetAmount("seed_bapcai") : 0;
+    }
+
+    /// <summary>Kho da du hat Bap Cai chua - du roi thi KHONG bat mua nua.</summary>
+    private static bool KhoDuHatBapCai()
+    {
+        return SoHatBapCaiDangCo() >= SoHatBapCaiCan;
+    }
+
+    /// <summary>Mo san khay chon hat o o ruong TRONG dau tien (buoc gieo Bap Cai).</summary>
+    private void MoKhayHatOODauTien()
+    {
+        if (FarmUIManager.Instance == null) return;
+        if (FarmInputLock.IsSeedPopupOpen) return;
+
+        var ds = TutorialStepTriggerBridge.LayODatLua();
+        for (int i = 0; i < ds.Count; i++)
+        {
+            if (ds[i] == null || !ds[i].IsEmpty) continue;
+            FarmUIManager.Instance.ShowPlantSelectForPlot(ds[i]);
+            return;
+        }
+    }
+
+    // ---- Chuong ga ----------------------------------------------------------
+
+    /// <summary>
+    /// Chuong ga dung trong tutorial (Pen_03 hoac ban Clone). null neu chua co.
+    ///
+    /// [FIX 2026-09-06 vong4] LOI GOC cua canh "vao buoc cho an ma khay hien 0 bao thoc":
+    /// ban cu so sanh ten cua CHINH GameObject gan PenMiniPanelUI voi {Pen_03, Pen_03(Clone)}.
+    /// Trong prefab Pen_03, script PenMiniPanelUI KHONG nam o goc — no nam o object CON ten
+    /// "PF_PenMiniPanel" (nested prefab, xem Pen_03.prefab: propertyPath m_Name = PF_PenMiniPanel).
+    /// Vi vay ham nay LUON tra null, keo theo TangThucAnChuongNeuThieu() va BaoDamKhayChuongMo()
+    /// thoat som => khong ai cap thoc, khong ai mo khay ho nguoi choi.
+    /// Nay do theo CA CHUOI CHA (bat duoc ca goc prefab), them duong du phong theo penId.
+    /// </summary>
+    private static PenMiniPanelUI LayChuongTutorial()
+    {
+        var all = FindObjectsByType<PenMiniPanelUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        // Duong 1 — theo TEN: chinh object HOAC bat ky doi tuong CHA nao ten Pen_03 / Pen_03(Clone).
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] == null) continue;
+            if (TenNamTrongChuoiCha(all[i].transform, TenChuongCanDo)) return all[i];
+        }
+
+        // Duong 2 — theo penId trong Config (du phong khi object trong scene bi doi ten).
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i] == null || all[i].Config == null) continue;
+            if (string.Equals(all[i].Config.penId, PenIdChuongTutorial,
+                              System.StringComparison.OrdinalIgnoreCase)) return all[i];
+        }
+
+        // CO Y tra null khi khong khop: tra bua mot chuong khac se lam cac buoc 26-29
+        // doc nham trang thai (vd chuong bo dang Ready) roi BO QUA oan buoc cua chuong ga.
+        return null;
+    }
+
+    /// <summary>True neu CHINH <paramref name="t"/> hoac mot doi tuong CHA cua no mang mot trong cac ten.</summary>
+    private static bool TenNamTrongChuoiCha(Transform t, string[] tenCanDo)
+    {
+        if (tenCanDo == null) return false;
+        while (t != null)
+        {
+            for (int k = 0; k < tenCanDo.Length; k++)
+                if (t.name == tenCanDo[k]) return true;
+            t = t.parent;
+        }
+        return false;
+    }
+
+    /// <summary>Chuong tutorial co dang o trang thai nay khong.</summary>
+    private static bool ChuongOTrangThai(PenMiniPanelUI.PenState trangThai)
+    {
+        var pen = LayChuongTutorial();
+        return pen != null && pen.CurrentState == trangThai;
+    }
+
+    /// <summary>
+    /// [FIX 2026-09-06 vong4] So BAO THOC (cam ga) cap san cho nguoi choi de THU cho ga an.
+    /// Sep yeu cau x3: 1 bao cho buoc L2_08 lam that, 2 bao con lai de tre thu lai cho quen tay.
+    /// </summary>
+    public const int SoBaoThocTutorial = 3;
+
+    /// <summary>Co "da cap bao thoc tutorial". Cung ho khoa PlayerPrefs voi PrefKeyDone/PrefKeyStep
+    /// nen ClearTutorialDoneFlag() xoa mot the la sach, choi lai tu dau se duoc cap lai.</summary>
+    private const string PrefKeyDaCapThoc = "TUTORIAL_PEN_FEED_GIVEN";
+
+    /// <summary>
+    /// Bao dam nguoi choi CO BAO THOC de thu cho ga an trong tutorial.
+    ///
+    /// VI SAO CAN: cam ga (cam_ga) chi ra tu MAY XAY (Mill) — nguoi choi cap 2 chua mo may nen
+    /// kho luon 0 bao. StarterInventorySetup co danh sach mac dinh kem cam_ga, NHUNG bang
+    /// starterItems trong scene da duoc dien tay (chi seed_rice + seed_huong_duong) nen nhanh
+    /// mac dinh KHONG BAO GIO chay => khay chuong hien badge do "0" va buoc L2_08 ket cung.
+    ///
+    /// QUY TAC:
+    ///   • CHI khi tutorial dang chay — khong dung toi kinh te cua nguoi choi thuong.
+    ///   • CHONG CONG TRUNG bang co PlayerPrefs: goi lai o L2_06/L2_07/L2_08, load lai game hay
+    ///     mo lai scene deu KHONG cong them lan nua.
+    ///   • CHI BU PHAN THIEU: dang co 2 thi chi cong 1, khong cong mu.
+    ///   • Kho DAY (AddItem tra false) thi KHONG danh dau co, de lan goi sau con co hoi cap lai.
+    /// </summary>
+    private void TangThucAnChuongNeuThieu()
+    {
+        if (!DangChayTutorial) return;
+        if (PlayerPrefs.GetInt(PrefKeyDaCapThoc, 0) == 1) return;   // da cap roi — khong cong nua
+
+        var pen = LayChuongTutorial();
+        if (pen == null || pen.Config == null) return;
+
+        string idCam = !string.IsNullOrEmpty(pen.Config.food1ItemId)
+                       ? pen.Config.food1ItemId
+                       : pen.Config.premiumFoodItemId;
+        if (string.IsNullOrEmpty(idCam)) return;
+
+        var kho = FarmInventoryManager.Instance;
+        if (kho == null) return;
+
+        // Muc tieu: du x3 bao de thu, va khong bao gio it hon MOT luot cho an cua chuong.
+        int can    = Mathf.Max(SoBaoThocTutorial, Mathf.Max(1, pen.Config.foodAmountPerFeed));
+        int dangCo = kho.GetAmount(idCam);
+        if (dangCo >= can)
+        {
+            DanhDauDaCapThoc();   // du roi — dong co lai de khong xet nua
+            return;
+        }
+
+        int them = can - dangCo;
+        if (!kho.AddItem(idCam, them))
+        {
+            Debug.LogWarning("[Tutorial] KHO DAY - khong cap duoc " + them + " x '" + idCam + "' cho buoc cho an. Nguoi choi phai ban bot roi mo lai khay chuong.");
+            return;   // KHONG danh dau: buoc L2_07/L2_08 goi lai van con co hoi cap
+        }
+
+        DanhDauDaCapThoc();
+        Debug.Log("[Tutorial] Cap " + them + " x '" + idCam + "' (tong " + can + ") cho buoc chan nuoi - nguoi choi moi chua xay duoc cam o Mill. Chi cap MOT LAN.");
+    }
+
+    /// <summary>Ghi co "da cap bao thoc" theo dung cach du an luu tien do tutorial (PlayerPrefs + LuuGopPrefs).</summary>
+    private static void DanhDauDaCapThoc()
+    {
+        PlayerPrefs.SetInt(PrefKeyDaCapThoc, 1);
+        LuuGopPrefs.Hen();
+    }
+
+    /// <summary>
+    /// Bu du kim cuong cho DUNG MOT lan tang toc chuong (~21 gem) - nguoi moi chi co ~15-19.
+    /// CHI cong phan THIEU, CHI khi tutorial dang chay.
+    /// </summary>
+    private void TangKimCuongTangTocChuongNeuThieu(PenMiniPanelUI pen)
+    {
+        if (!DangChayTutorial || pen == null) return;
+
+        var vi = FarmEconomyManager.Instance;
+        if (vi == null) return;
+
+        int gia = pen.SpeedUpGemCost;
+        if (gia <= 0 || vi.Gems >= gia) return;
+
+        int bu = gia - vi.Gems;
+        vi.AddGems(bu);
+        Debug.Log("[Tutorial] Bu " + bu + " kim cuong de nguoi choi hoan tat duoc buoc tang toc "
+                  + "chuong (gia " + gia + "). Chi cong trong tutorial.");
+    }
+
+    /// <summary>
+    /// Icon BAO CAM cua chuong tutorial, de dua cho ao anh keo tha (PlayPlantPhantom).
+    /// Uu tien food1Icon -> premiumFoodIcon -> anh trong Resources theo itemId. null thi
+    /// PhantomDemo tu rot ve icon hat lua mac dinh (van co ao anh, chi sai icon).
+    /// </summary>
+    private static Sprite LayIconCamChuong()
+    {
+        var pen = LayChuongTutorial();
+        if (pen == null || pen.Config == null) return null;
+
+        var cfg = pen.Config;
+        if (cfg.food1Icon != null) return cfg.food1Icon;
+        if (cfg.premiumFoodIcon != null) return cfg.premiumFoodIcon;
+
+        string id = !string.IsNullOrEmpty(cfg.food1ItemId) ? cfg.food1ItemId : cfg.premiumFoodItemId;
+        if (string.IsNullOrEmpty(id)) return null;
+        return Resources.Load<Sprite>("Icons/" + id) ?? Resources.Load<Sprite>("Sprites/" + id);
+    }
+
+    /// <summary>Icon RO thu hoach cua chuong tutorial (basketIcon -> productIcon).</summary>
+    private static Sprite LayIconRoChuong()
+    {
+        var pen = LayChuongTutorial();
+        if (pen == null || pen.Config == null) return null;
+        return pen.Config.basketIcon != null ? pen.Config.basketIcon : pen.Config.productIcon;
+    }
+
+    /// <summary>Khay 2 o (ro + bao cam) cua chuong co dang hien khong.</summary>
+    private static bool KhayChuongDangMo()
+    {
+        if (PenSupplyTrayV2.DangMoKhay) return true;
+        var pen = LayChuongTutorial();
+        if (pen != null && pen.IsPanelOpen()) return true;
+        return IsTargetActive("tutorial_basket") || IsTargetActive("tutorial_feed");
+    }
+
+    /// <summary>
+    /// BAO DAM KHAY 2 O DANG MO. Khay dong thi 'tutorial_feed' / 'tutorial_basket' khong ton tai
+    /// => ban tay khong co gi de chi va buoc 27/29 dung im. Chuong dang Processing thi khay
+    /// khong mo duoc (OpenPanel mo bang tien trinh) nen tra false, KHONG goi OpenPanel.
+    /// Goi OpenPanel o day an toan: NotifyOpenPen phat ra se bi bo qua vi _pendingWait
+    /// cua buoc 27/29 pha 2 khong phai WaitForOpenPen (xem NotifyAction).
+    /// </summary>
+    private static bool BaoDamKhayChuongMo(PenMiniPanelUI pen, string moTaBuoc)
+    {
+        if (pen == null) return false;
+        if (pen.CurrentState == PenMiniPanelUI.PenState.Processing) return false;
+        if (KhayChuongDangMo()) return true;
+
+        pen.OpenPanel();
+        Debug.Log("[Tutorial] " + moTaBuoc + ": khay chuong dang dong -> tu mo lai de ban tay "
+                  + "luon co cho de chi.");
+        return KhayChuongDangMo();
+    }
+
+    /// <summary>
+    /// Dang ky nut kim cuong CUA POPUP TIEN TRINH CHUONG ('Btn_SpeedUp' trong PenProcessPopupUI)
+    /// lam target 'tutorial_pen_gem'. TutorialRuntimeTargetResolver chi do 'btn_PenGem' - nut do
+    /// nam trong mini-panel, ma mini-panel dang TAT khi chuong o trang thai Processing, nen
+    /// khong dang ky them o day thi buoc 28 khong bao gio co target de chi tay.
+    /// </summary>
+    private static void DangKyNutGemChuong()
+    {
+        var popup = PenProcessPopupUI.Instance;
+        if (popup == null || !popup.IsOpen) return;
+
+        Transform nut = TimConTheoTen(popup.transform, "Btn_SpeedUp");
+        if (nut == null) return;
+
+        RectTransform rt = nut as RectTransform;
+        if (rt == null) return;
+
+        RectTransform dangCo = GetTargetRect("tutorial_pen_gem");
+        if (dangCo == rt) return;   // da dang ky dung nut nay roi
+
+        var tt = nut.GetComponent<TutorialTarget>();
+        if (tt == null) tt = nut.gameObject.AddComponent<TutorialTarget>();
+        tt.SetTargetId("tutorial_pen_gem");
+        Debug.Log("[Tutorial] Da dang ky nut kim cuong cua bang tien trinh chuong lam 'tutorial_pen_gem'.");
+    }
+
+    /// <summary>Dang ky lai nut kim cuong chuong moi 0,2s trong suot buoc L2_09.</summary>
+    private IEnumerator VongDangKyNutGemChuong(int buocLucGoi)
+    {
+        while (_currentIndex == buocLucGoi && _state != TutorialState.Finished)
+        {
+            DangKyNutGemChuong();
+            yield return new WaitForSecondsRealtime(0.2f);
+        }
+    }
+
+    /// <summary>Tim con chau theo ten (de quy), ke ca object dang tat.</summary>
+    private static Transform TimConTheoTen(Transform goc, string ten)
+    {
+        if (goc == null) return null;
+        for (int i = 0; i < goc.childCount; i++)
+        {
+            Transform con = goc.GetChild(i);
+            if (con.name == ten) return con;
+            Transform sau = TimConTheoTen(con, ten);
+            if (sau != null) return sau;
+        }
+        return null;
     }
 
     private void ConsumeQueuedAction()

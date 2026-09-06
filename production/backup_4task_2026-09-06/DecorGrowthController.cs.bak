@@ -1,0 +1,713 @@
+using System.Collections;
+using UnityEngine;
+using UnityEngine.EventSystems;
+
+/// <summary>
+/// [Decor5] State machine cho ĐỒ TRANG TRÍ / CHUỒNG / CÔNG TRÌNH (CONTRACT §6).
+///
+/// ── CHẾ ĐỘ FULL 5-STAGE (item CÓ bộ art hợp lệ — 15 decor) ──────────────────
+///   [Building]      progress 0 → stage2Threshold : stage 1 (vật liệu rời)
+///                   progress stage2Threshold → 1 : stage 2 (xây nửa vời)
+///                   click → popup tiến độ · nút kim cương → xong ngay
+///   [ReadyToReveal] stage 4 HỘP QUÀ, thở nhẹ; thợ búa đứng im pose celebrate frame 0
+///   [Revealing]     stage 5 hộp bung + pop scale (boxOpenDuration) → pháo hoa 3.5s
+///   [Completed]     stage 3 HOÀN THIỆN, vĩnh viễn
+///
+/// ── CHẾ ĐỘ WORKER-ONLY (chuồng / máy — KHÔNG có art 5 stage, QUYẾT ĐỊNH LEAD #1) ──
+///   [Building]   GIỮ NGUYÊN sprite + collider của prefab từ đầu tới cuối.
+///                Timer chạy, popup tiến độ mở được, thợ búa đập bình thường.
+///                CurrentStage chỉ trả 1 hoặc 2 (cho DEV-B biết nhịp đập búa) — không bao giờ 4/5.
+///   [Revealing]  hết giờ ⇒ BỎ QUA hộp quà, đi thẳng: OnRevealStarted → pháo hoa → chờ đủ 3.5s
+///                (không có pop scale vì không có hộp nào để bung)
+///   [Completed]  xong, sprite chưa bao giờ bị đụng tới.
+///
+/// KHÁC HouseGrowthController: Completed chỉ tới SAU KHI pháo hoa tắt hẳn
+/// (cfg.celebrationSeconds), để thợ búa ăn mừng trọn 3.5s đúng yêu cầu Sếp.
+///
+/// Component này KHÔNG BAO GIỜ được gắn lên nhà village (nhà đã có HouseGrowthController),
+/// cũng không lên ô đất (PlotController). Xem DecorGrowthConfig.ShouldApply.
+///
+/// ── ĐÃ SỬA TOÀN BỘ BUG Ở CONTRACT §7 ────────────────────────────────────────
+///  1. Save key = itemID + slotIndex ổn định, KHÔNG băm toạ độ → di chuyển vật vẫn giữ tiến độ.
+///  2. id là int itemID (một nguồn duy nhất), không phải tên prefab.
+///  3. Không có key ⇒ KHÔNG tự suy diễn Completed; component tự tháo mình ra.
+///  4. Sprite + collider chỉ đổi khi stage index THẬT SỰ đổi (không phải 60 lần/giây).
+///  5. Thiếu FarmEconomyManager ⇒ return false, KHÔNG rush miễn phí.
+///  6. Click phải qua CẢ 3 chốt: EditMode · popup đang mở · điểm click nằm trong collider/sprite.
+///  7. Thời gian lấy từ DecorGrowthBootstrap.NowUnix() (chống vặn giờ máy, cache 1 lần/frame).
+///  8. OnDestroy StopAllCoroutines + ghi state cuối (Revealing ⇒ ghi Completed, không treo).
+///  9. Vào Completed ⇒ XOÁ SẠCH 3 sub-key + trả slotIndex (không để lại key rác — QA A4).
+/// </summary>
+[DisallowMultipleComponent]
+public class DecorGrowthController : MonoBehaviour
+{
+    public enum DecorState
+    {
+        Building,       // đang xây — stage 1 / 2
+        ReadyToReveal,  // xây xong, là HỘP QUÀ — stage 4 (KHÔNG dùng ở WORKER-ONLY)
+        Revealing,      // hộp đang bung + pháo hoa — stage 5
+        Completed       // hoàn thiện vĩnh viễn — stage 3
+    }
+
+    // ── Trạng thái (SerializeField để nhìn được trong Inspector khi debug) ────
+    [SerializeField] private DecorState _state = DecorState.Building;
+    [SerializeField] private int _itemID;
+    [SerializeField] private string _displayName = "";
+    [SerializeField] private long _startUnix;
+    [SerializeField] private float _duration = 60f;
+    [SerializeField] private int _slotIndex = -1;
+
+    private DecorGrowthConfig _cfg;
+    private DecorStageSet _set;
+    private float _stage2Threshold = 0.5f;
+
+    private SpriteRenderer _sr;
+    private BoxCollider2D _box;
+    private Coroutine _revealCo;
+
+    private Vector3 _initialScale = Vector3.one;
+    private float _bobTimer;
+
+    // Chống bug "vẽ lại mỗi frame": chỉ ApplyStage khi khác _lastStage.
+    private int _lastStage = -1;
+    private int _applyStageCallCount;
+
+    // Collider gốc do designer set trên prefab — trả lại nguyên trạng khi Completed
+    // để footprint của vật hoàn thiện không bị hệ xây làm méo.
+    private bool _hasOriginalCollider;
+    private Vector2 _originalColliderSize;
+    private Vector2 _originalColliderOffset;
+
+    private bool _initialized;
+    private bool _released;           // đã xoá key + trả slot (A4) → không ghi save nữa
+    private bool _suspended;          // true khi đang ở Edit Mode → không nhận click
+    private int _lastClickFrame = -99; // chống nhận 2 lần/frame (OnMouseUpAsButton + router)
+
+    // ── Public API (Lead + DEV-B + DEV-D gọi — GIỮ ĐÚNG chữ ký) ──────────────
+
+    public DecorState State => _state;
+    public int ItemID => _itemID;
+
+    public string DisplayName => string.IsNullOrEmpty(_displayName) ? gameObject.name : _displayName;
+
+    /// <summary>
+    /// TRUE = chế độ WORKER-ONLY: không có bộ art 5 stage nên KHÔNG đổi sprite/collider,
+    /// và hết giờ thì bỏ qua hộp quà. Dùng cho chuồng + máy (QUYẾT ĐỊNH LEAD #1).
+    /// DEV-B đọc cờ này để biết chỉ cần cho thợ đập búa, không cần chờ người chơi mở hộp.
+    /// </summary>
+    public bool IsWorkerOnlyMode => _set == null || !_set.IsValid;
+
+    /// <summary>0..1. Ngoài Building luôn là 1.</summary>
+    public float Progress
+    {
+        get
+        {
+            if (_state != DecorState.Building) return 1f;
+            if (_duration <= 0.01f) return 1f;
+            if (_startUnix <= 0) return 0f;
+            float elapsed = Mathf.Max(0f, (float)(DecorGrowthBootstrap.NowUnix() - _startUnix));
+            return Mathf.Clamp01(elapsed / _duration);
+        }
+    }
+
+    /// <summary>Giây còn lại. Ngoài Building luôn là 0.</summary>
+    public float RemainingSeconds
+    {
+        get
+        {
+            if (_state != DecorState.Building) return 0f;
+            if (_startUnix <= 0) return _duration;
+            float elapsed = Mathf.Max(0f, (float)(DecorGrowthBootstrap.NowUnix() - _startUnix));
+            return Mathf.Max(0f, _duration - elapsed);
+        }
+    }
+
+    /// <summary>
+    /// Giá kim cương tăng tốc — CỐ Ý dùng ĐÚNG công thức hệ nhà (CONTRACT §8)
+    /// để người chơi không thấy hai bảng giá khác nhau.
+    /// Ngoài Building trả 0. Còn dưới 0.5s cũng trả 0 (không bán thứ đã xong).
+    /// </summary>
+    public int SpeedUpGemCost
+    {
+        get
+        {
+            if (_state != DecorState.Building) return 0;
+            float rem = RemainingSeconds;
+            if (rem <= 0.5f) return 0;
+            return Mathf.Max(2, Mathf.CeilToInt(rem / 20f));
+        }
+    }
+
+    /// <summary>
+    /// Stage đang hiển thị. FULL 5-STAGE: 1..5.
+    /// WORKER-ONLY: chỉ 1 (progress &lt; ngưỡng) hoặc 2 — KHÔNG BAO GIỜ 4/5.
+    /// </summary>
+    public int CurrentStage => ComputeStage();
+
+    /// <summary>Bounds của SpriteRenderer — DEV-B dùng để đặt thợ búa quanh công trình.</summary>
+    public Bounds VisualBounds
+    {
+        get
+        {
+            if (_sr == null) _sr = ResolveRenderer();
+            if (_sr != null) return _sr.bounds;
+            return new Bounds(transform.position, Vector3.one);
+        }
+    }
+
+    /// <summary>Key PlayerPrefs gốc. 3 sub-key: "" (state) · "_start" (long unix) · "_dur" (float).</summary>
+    public string SaveKey => DecorGrowthBootstrap.SaveKeyFor(_itemID, _slotIndex);
+
+    /// <summary>Số lần ApplyStage đã chạy — chỉ để Lead/QA kiểm chứng "không vẽ lại mỗi frame".</summary>
+    public int ApplyStageCallCount => _applyStageCallCount;
+
+    /// <summary>Bộ art đang dùng (null ở WORKER-ONLY).</summary>
+    public DecorStageSet StageSet => _set;
+
+    /// <summary>Cấu hình đang dùng.</summary>
+    public DecorGrowthConfig Config => _cfg;
+
+    /// <summary>slotIndex đang giữ (-1 = đã trả / chưa Initialize).</summary>
+    public int SlotIndex => _slotIndex;
+
+    public event System.Action<DecorGrowthController, int> OnStageChanged;
+    public event System.Action<DecorGrowthController, DecorState> OnStateChanged;
+    public event System.Action<DecorGrowthController> OnGiftBoxReady;
+    public event System.Action<DecorGrowthController> OnRevealStarted;
+    public event System.Action<DecorGrowthController> OnRevealFinished;
+
+    // ── Vòng đời ─────────────────────────────────────────────────────────────
+
+    private void Awake()
+    {
+        _sr = ResolveRenderer();
+        _initialScale = transform.localScale;
+
+        _box = GetComponent<BoxCollider2D>();
+        if (_box != null)
+        {
+            _hasOriginalCollider = true;
+            _originalColliderSize = _box.size;
+            _originalColliderOffset = _box.offset;
+        }
+    }
+
+    private void OnEnable()
+    {
+        EditModeManager.OnEditModeChanged += HandleEditModeChanged;
+        _suspended = EditModeManager.IsEditMode;
+        DecorGrowthBootstrap.RegisterLive(this);
+    }
+
+    private void OnDisable()
+    {
+        EditModeManager.OnEditModeChanged -= HandleEditModeChanged;
+        DecorGrowthBootstrap.UnregisterLive(this);
+    }
+
+    private void HandleEditModeChanged(bool editMode)
+    {
+        // Vào Edit Mode: tạm dừng nhận click và đóng popup tiến độ nếu đang mở của chính mình.
+        _suspended = editMode;
+        if (editMode && DecorProgressPopupBridge.IsOpenFor(this)) DecorProgressPopupBridge.Close();
+    }
+
+    private void Update()
+    {
+        if (!_initialized) return;
+
+        // Revealing: coroutine đang giữ quyền vẽ (sprite + scale) → Update không chen vào.
+        if (_state == DecorState.Revealing) return;
+
+        if (_state == DecorState.Building && _startUnix > 0 && RemainingSeconds <= 0f)
+        {
+            FinishBuildingNow();
+            return;
+        }
+
+        int stage = ComputeStage();
+        if (stage != _lastStage) ApplyStage(stage);
+
+        if (_state == DecorState.ReadyToReveal) BobGiftBox();
+    }
+
+    private void OnDestroy()
+    {
+        StopAllCoroutines();
+        _revealCo = null;
+
+        if (!_initialized || _slotIndex < 0 || _released) return;
+
+        // Đang bung hộp mà bị Destroy giữa chừng ⇒ coi như XONG, xoá sạch key —
+        // KHÔNG để treo ở ReadyToReveal/Revealing rồi lần sau bắt mở hộp lại (bug cũ),
+        // và cũng không để lại key rác (QA A4).
+        if (_state == DecorState.Revealing || _state == DecorState.Completed)
+        {
+            ReleaseSave();
+        }
+        else
+        {
+            WriteSave(_state.ToString());
+        }
+    }
+
+    // ── Khởi tạo / khôi phục ─────────────────────────────────────────────────
+
+    /// <summary>
+    /// Gọi NGAY sau khi đặt vật xuống world. <paramref name="slotIndex"/> do
+    /// DecorGrowthBootstrap.AllocateSlotIndex cấp và lưu bền — nó chính là thứ thay thế
+    /// toạ độ trong save key, nên di chuyển vật không mất tiến độ.
+    /// <paramref name="set"/> = null ⇒ chế độ WORKER-ONLY (chuồng / máy).
+    /// </summary>
+    public void Initialize(DecorGrowthConfig cfg, DecorStageSet set, int itemID, string displayName,
+                           float buildSeconds, int slotIndex)
+    {
+        _cfg = cfg;
+        _set = set;
+        _itemID = itemID;
+        _displayName = displayName;
+        _slotIndex = slotIndex;
+        _released = false;
+        _stage2Threshold = cfg != null ? Mathf.Clamp01(cfg.stage2Threshold) : 0.5f;
+        _duration = Mathf.Max(0f, buildSeconds);
+        _startUnix = DecorGrowthBootstrap.NowUnix();
+        _initialized = true;
+        _lastStage = -1;
+
+        if (_sr == null) _sr = ResolveRenderer();
+
+        if (_duration <= 0.5f)
+        {
+            // Cấu hình cho ra 0 giây: bỏ hẳn giai đoạn xây.
+            if (IsWorkerOnlyMode) BeginReveal();
+            else SetState(DecorState.ReadyToReveal);
+        }
+        else
+        {
+            SetState(DecorState.Building);
+        }
+    }
+
+    /// <summary>
+    /// Khôi phục từ PlayerPrefs khi load scene. KHÔNG có key ⇒ KHÔNG suy diễn gì cả:
+    /// component tự tháo mình ra và vật giữ nguyên art do designer author (CONTRACT §7).
+    /// </summary>
+    public void RestoreFromSave(DecorGrowthConfig cfg, DecorStageSet set, int itemID, string displayName, int slotIndex)
+    {
+        _cfg = cfg;
+        _set = set;
+        _itemID = itemID;
+        _displayName = displayName;
+        _slotIndex = slotIndex;
+        _released = false;
+        _stage2Threshold = cfg != null ? Mathf.Clamp01(cfg.stage2Threshold) : 0.5f;
+        if (_sr == null) _sr = ResolveRenderer();
+
+        string key = DecorGrowthBootstrap.SaveKeyFor(itemID, slotIndex);
+        if (!PlayerPrefs.HasKey(key))
+        {
+            Debug.LogWarning($"[Decor5] RestoreFromSave: không có key '{key}' → tháo controller, giữ nguyên art gốc.");
+            _initialized = false;
+            _slotIndex = -1;
+            Destroy(this);
+            return;
+        }
+
+        string saved = PlayerPrefs.GetString(key, "");
+        long.TryParse(PlayerPrefs.GetString(key + "_start", "0"), out _startUnix);
+        _duration = PlayerPrefs.GetFloat(key + "_dur", 60f);
+        _initialized = true;
+        _lastStage = -1;
+
+        if (saved == DecorState.Building.ToString())
+        {
+            bool expired = _startUnix > 0 && (DecorGrowthBootstrap.NowUnix() - _startUnix) >= (long)_duration;
+            if (!expired)
+            {
+                SetState(DecorState.Building);
+            }
+            else if (IsWorkerOnlyMode)
+            {
+                // WORKER-ONLY không có hộp quà để chờ click, và pháo hoa đã "diễn" lúc
+                // người chơi không xem ⇒ vào thẳng Completed, xoá key. Không phát lại FX.
+                SetState(DecorState.Completed);
+            }
+            else
+            {
+                SetState(DecorState.ReadyToReveal);
+            }
+        }
+        else if (saved == DecorState.ReadyToReveal.ToString() && !IsWorkerOnlyMode)
+        {
+            SetState(DecorState.ReadyToReveal);
+        }
+        else
+        {
+            // "Completed" / "Revealing" (bị tắt game giữa lúc bung hộp) → coi như xong.
+            SetState(DecorState.Completed);
+        }
+    }
+
+    // ── Hành động ────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Tăng tốc bằng kim cương. Thiếu FarmEconomyManager hoặc thiếu gem ⇒ ShowHint + return false
+    /// và TUYỆT ĐỐI KHÔNG FinishBuildingNow (bug rush miễn phí của hệ nhà).
+    /// </summary>
+    public bool TrySpeedUpWithGem()
+    {
+        if (_state != DecorState.Building) return false;
+
+        int cost = SpeedUpGemCost;
+        if (cost <= 0)
+        {
+            // Đã hết giờ thật sự — không thu tiền, cứ cho xong.
+            FinishBuildingNow();
+            return true;
+        }
+
+        if (FarmEconomyManager.Instance == null)
+        {
+            FarmUIManager.Instance?.ShowHint("Chưa sẵn sàng, thử lại sau giây lát.");
+            Debug.LogWarning("[Decor5] TrySpeedUpWithGem: FarmEconomyManager.Instance NULL → không rush.");
+            return false;
+        }
+
+        if (FarmEconomyManager.Instance.Gems < cost)
+        {
+            FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
+            return false;
+        }
+
+        if (!FarmEconomyManager.Instance.SpendGems(cost))
+        {
+            FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
+            return false;
+        }
+
+        FinishBuildingNow();
+        return true;
+    }
+
+    /// <summary>
+    /// Kết thúc giai đoạn xây ngay. FULL 5-STAGE → HỘP QUÀ (stage 4) chờ click.
+    /// WORKER-ONLY → BỎ QUA hộp quà, ăn mừng luôn. Idempotent.
+    /// </summary>
+    public void FinishBuildingNow()
+    {
+        if (_state != DecorState.Building) return;
+
+        if (DecorProgressPopupBridge.IsOpenFor(this)) DecorProgressPopupBridge.Close();
+
+        if (IsWorkerOnlyMode) BeginReveal();
+        else SetState(DecorState.ReadyToReveal);
+    }
+
+    /// <summary>
+    /// Click vào vật. Building → mở popup tiến độ. ReadyToReveal → bung hộp quà.
+    /// Ba chốt input (EditMode / popup đang mở / trúng collider) đã được kiểm trước khi vào đây:
+    /// chốt 3 do người gọi (OnMouseUpAsButton của Unity hoặc DecorClickRouter) đảm bảo.
+    /// </summary>
+    public void HandleClick()
+    {
+        if (!CanAcceptClick()) return;
+        if (Time.frameCount == _lastClickFrame) return;   // OnMouseUpAsButton + router cùng bắn
+        _lastClickFrame = Time.frameCount;
+
+        if (_state == DecorState.Building)
+        {
+            DecorProgressPopupBridge.OpenFor(this);
+        }
+        else if (_state == DecorState.ReadyToReveal)
+        {
+            BeginReveal();
+        }
+    }
+
+    /// <summary>Chốt 1 + chốt 2 của input guard. Public để DecorClickRouter lọc sớm.</summary>
+    public bool CanAcceptClick()
+    {
+        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return false;
+        if (!_initialized) return false;
+        if (_state != DecorState.Building && _state != DecorState.ReadyToReveal) return false;
+        if (_suspended) return false;
+        if (EditModeManager.IsEditMode) return false;
+
+        // Popup tiến độ của chính hệ này đang mở ⇒ không nhận thêm click world nào
+        // (lớp chặn full-screen trong bridge lo phần UI — xem QA A1).
+        if (DecorProgressPopupBridge.IsOpen) return false;
+
+        // Popup khác của game đang mở → không cướp click.
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen()) return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Chốt 3: điểm world có nằm trong collider (ưu tiên) hoặc bounds sprite hay không.
+    /// DecorClickRouter gọi hàm này thay vì tự đoán.
+    /// </summary>
+    public bool ContainsWorldPoint(Vector3 world)
+    {
+        if (_box == null) _box = GetComponent<BoxCollider2D>();
+        if (_box != null && _box.enabled && _box.OverlapPoint(new Vector2(world.x, world.y))) return true;
+
+        if (_sr == null) _sr = ResolveRenderer();
+        if (_sr != null && _sr.sprite != null)
+        {
+            Bounds b = _sr.bounds;
+            return world.x >= b.min.x && world.x <= b.max.x && world.y >= b.min.y && world.y <= b.max.y;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Đường click chính của Unity cho chuột trên PC. Yêu cầu Collider2D trên CÙNG GameObject —
+    /// prefab decor trong project đã có BoxCollider2D (đã kiểm), và ApplyStage còn tự
+    /// EnsureCollider() thêm nếu thiếu. Trên mobile touch với New Input System hàm này
+    /// KHÔNG chạy → fallback là DecorClickRouter (nested trong DecorGrowthBootstrap).
+    /// </summary>
+    private void OnMouseUpAsButton()
+    {
+        if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+        HandleClick();
+    }
+
+    private void BeginReveal()
+    {
+        // Cho phép: từ hộp quà (FULL 5-STAGE) hoặc thẳng từ Building (WORKER-ONLY).
+        bool ok = _state == DecorState.ReadyToReveal
+               || (_state == DecorState.Building && IsWorkerOnlyMode);
+        if (!ok) return;
+        if (_revealCo != null) return;
+
+        // Đóng mọi popup tiến độ đang che vật.
+        if (DecorProgressPopupBridge.IsOpen) DecorProgressPopupBridge.Close();
+        if (CropProcessPopupUI.Instance != null && CropProcessPopupUI.Instance.IsOpen)
+            CropProcessPopupUI.Instance.ClosePopup();
+
+        SetState(DecorState.Revealing);
+
+        // Bắn NGAY khi bắt đầu — DEV-B cần mốc này để đổi thợ búa sang animation ăn mừng
+        // và cho nó chạy trọn 3.5s cùng pháo hoa.
+        OnRevealStarted?.Invoke(this);
+
+        _revealCo = StartCoroutine(RevealRoutine());
+    }
+
+    private IEnumerator RevealRoutine()
+    {
+        // WORKER-ONLY không có hộp nào để bung → bỏ pop scale, vào pháo hoa ngay.
+        if (!IsWorkerOnlyMode)
+        {
+            float popDur = _cfg != null ? Mathf.Max(0.05f, _cfg.boxOpenDuration) : 0.35f;
+            float popAmt = _cfg != null ? _cfg.boxOpenPopScale : 0.25f;
+
+            float t = 0f;
+            while (t < popDur)
+            {
+                t += Time.unscaledDeltaTime;              // UI/FX dùng unscaled (CONTRACT §0.6)
+                float k = Mathf.Clamp01(t / popDur);
+                float pop = 1f + Mathf.Sin(k * Mathf.PI) * popAmt;
+                transform.localScale = _initialScale * pop;
+                yield return null;
+            }
+            transform.localScale = _initialScale;
+        }
+
+        // Pháo hoa DÙNG CHUNG — không chép 5 đợt hardcode của HouseGrowthController (CONTRACT §3).
+        ConstructionCelebrationFX.Play(transform, _cfg != null ? _cfg.celebrationExpReward : 0);
+
+        float wait = _cfg != null ? Mathf.Max(0f, _cfg.celebrationSeconds) : 3.5f;
+        yield return new WaitForSecondsRealtime(wait);
+
+        _revealCo = null;
+        SetState(DecorState.Completed);
+        OnRevealFinished?.Invoke(this);
+    }
+
+    // ── Stage & visual ───────────────────────────────────────────────────────
+
+    private int ComputeStage()
+    {
+        // WORKER-ONLY: chỉ có nhịp 1/2 để DEV-B biết cho thợ đập búa. Không bao giờ 4/5.
+        if (IsWorkerOnlyMode) return Progress < _stage2Threshold ? 1 : 2;
+
+        switch (_state)
+        {
+            case DecorState.Building:      return Progress < _stage2Threshold ? 1 : 2;
+            case DecorState.ReadyToReveal: return 4;
+            case DecorState.Revealing:     return 5;
+            default:                       return 3;
+        }
+    }
+
+    private void SetState(DecorState next)
+    {
+        _state = next;
+
+        if (next == DecorState.Completed)
+        {
+            // Vật đã hoàn thiện ⇒ không cần lưu gì nữa. Xoá sạch 3 sub-key + trả slotIndex
+            // để mua-bán nhiều lần không sinh key rác (QA A4). RestoreAll không thấy key
+            // thì bỏ qua object — đúng hành vi mong muốn.
+            ReleaseSave();
+        }
+        else
+        {
+            WriteSave(next.ToString());
+        }
+
+        if (next == DecorState.Revealing)
+        {
+            // Stage 5 chỉ sống ~0.35s và cùng cell 512x512 với stage 4 → chỉ đổi sprite,
+            // KHÔNG resize collider (tránh churn vô nghĩa). Vì vậy ApplyStage không được gọi
+            // cho stage 5: chuỗi ApplyStage trong một lần xây đúng 4 lần → 1, 2, 4, 3.
+            ApplyRevealSprite();
+        }
+        else
+        {
+            ApplyStage(ComputeStage());
+        }
+
+        OnStateChanged?.Invoke(this, next);
+
+        if (next == DecorState.ReadyToReveal)
+        {
+            _bobTimer = 0f;
+            OnGiftBoxReady?.Invoke(this);
+        }
+    }
+
+    /// <summary>
+    /// Vẽ lại vật cho stage 1/2/3/4. CHỈ được gọi khi stage index thật sự đổi
+    /// (bug cũ: gán sprite + tính lại collider 60 lần/giây).
+    /// WORKER-ONLY: chỉ ghi nhận stage + bắn event, TUYỆT ĐỐI không đụng sprite/collider/scale.
+    /// </summary>
+    private void ApplyStage(int stage)
+    {
+        _lastStage = stage;
+        _applyStageCallCount++;
+
+        if (IsWorkerOnlyMode)
+        {
+            OnStageChanged?.Invoke(this, stage);
+            return;
+        }
+
+        if (_sr == null) _sr = ResolveRenderer();
+
+        Sprite sp = _set != null ? _set.SpriteForStage(stage) : null;
+        if (sp != null && _sr != null) _sr.sprite = sp;
+
+        transform.localScale = _initialScale;   // xoá dư âm bob / pop
+
+        if (stage == 3) RestoreOriginalCollider();
+        else EnsureCollider();
+
+        OnStageChanged?.Invoke(this, stage);
+    }
+
+    private void ApplyRevealSprite()
+    {
+        if (IsWorkerOnlyMode)
+        {
+            // Không có art hộp bung → giữ nguyên sprite, chỉ ghi nhận nhịp stage hiện tại.
+            _lastStage = ComputeStage();
+            OnStageChanged?.Invoke(this, _lastStage);
+            return;
+        }
+
+        _lastStage = 5;
+        if (_sr == null) _sr = ResolveRenderer();
+
+        Sprite sp = _set != null ? _set.SpriteForStage(5) : null;
+        if (sp != null && _sr != null) _sr.sprite = sp;
+
+        OnStageChanged?.Invoke(this, 5);
+    }
+
+    private void BobGiftBox()
+    {
+        float amp = _cfg != null ? _cfg.giftBoxBobAmplitude : 0.04f;
+        float spd = _cfg != null ? _cfg.giftBoxBobSpeed : 3.5f;
+
+        _bobTimer += Time.deltaTime * spd;
+        float s = Mathf.Sin(_bobTimer);
+        transform.localScale = new Vector3(
+            _initialScale.x * (1f - s * amp * 0.5f),
+            _initialScale.y * (1f + s * amp),
+            _initialScale.z);
+    }
+
+    /// <summary>
+    /// Collider khớp sprite hiện tại. Pivot sprite là bottom-center nên
+    /// offset = (0, size.y * 0.5f) (CONTRACT §2 + yêu cầu 10).
+    /// </summary>
+    private void EnsureCollider()
+    {
+        if (_sr == null) _sr = ResolveRenderer();
+        if (_sr == null || _sr.sprite == null) return;
+
+        if (_box == null) _box = GetComponent<BoxCollider2D>();
+        if (_box == null)
+        {
+            _box = gameObject.AddComponent<BoxCollider2D>();
+            _box.isTrigger = true;
+        }
+
+        Vector2 size = _sr.sprite.bounds.size;
+        if (size.x <= 0.0001f || size.y <= 0.0001f) return;
+
+        _box.size = size;
+        _box.offset = new Vector2(0f, size.y * 0.5f);
+    }
+
+    private void RestoreOriginalCollider()
+    {
+        if (_box == null) _box = GetComponent<BoxCollider2D>();
+        if (_box == null) { EnsureCollider(); return; }
+
+        if (_hasOriginalCollider)
+        {
+            _box.size = _originalColliderSize;
+            _box.offset = _originalColliderOffset;
+        }
+        else
+        {
+            EnsureCollider();
+        }
+    }
+
+    private SpriteRenderer ResolveRenderer()
+    {
+        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+        if (sr != null) return sr;
+        return GetComponentInChildren<SpriteRenderer>(true);
+    }
+
+    // ── Save ─────────────────────────────────────────────────────────────────
+
+    private void WriteSave(string stateName)
+    {
+        if (_slotIndex < 0 || _released) return;
+
+        string key = DecorGrowthBootstrap.SaveKeyFor(_itemID, _slotIndex);
+        PlayerPrefs.SetString(key, stateName);
+        PlayerPrefs.SetString(key + "_start", _startUnix.ToString());
+        PlayerPrefs.SetFloat(key + "_dur", _duration);
+        PlayerPrefs.Save();
+    }
+
+    /// <summary>
+    /// Xoá sạch 3 sub-key + trả slotIndex về bộ đếm (QA A4: không để lại key rác).
+    /// Sau khi gọi, mọi WriteSave đều bị chặn bởi cờ _released.
+    /// </summary>
+    private void ReleaseSave()
+    {
+        if (_released || _slotIndex < 0) return;
+        _released = true;
+        DecorGrowthBootstrap.ReleaseSlotIndex(_itemID, _slotIndex);
+    }
+}

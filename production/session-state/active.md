@@ -1,24 +1,31 @@
-# ACTIVE SESSION — 2026-09-05 (tối)
+# ACTIVE SESSION - 2026-09-06 (VÒNG 3)
 
 <!-- STATUS -->
-Epic: UI Polish Pass 2 (sửa 4 lỗi Sếp báo sau test Pass 1)
-Feature: Tutorial deadlock + Phantom demo 4 bước · Popup Lên Cấp vùng đáy · UI đè (HUD/NPC/toast/lớp tay)
-Task: ✅ IMPLEMENT + REVIEW xong, 13 file đã ghi về máy (MD5 khớp) → chờ Sếp làm CẦN BẠN (production/BAO_CAO_UI_PASS2_2026-09-05.md §3) + F10 test 9 điểm. Plan: production/PLAN_UI_PASS2_2026-09-05.md · Backup: production/backup_ui_pass2_2026-09-05/
+Epic: 4 Task Sếp giao 06/09 (tàu hoả · process xây dựng · decor thiếu stage · gia súc bị rào đè)
+Feature: Vòng 3 - 4 Dev song song, sửa hồi quy panel chuồng + tìm ra nguyên nhân thật của tàu hoả
+Task: Chờ Sếp compile + làm Bước 1 (kéo Popup_Train_MasterStation về Canvas_Popup) rồi test. Xem `production/BAO_CAO_VONG3_2026-09-06.md`
 <!-- /STATUS -->
 
+## Đã đóng vòng này
+- Task 2a (process xây dựng): Sếp xác nhận OK, ĐÓNG.
+- Task 2b (hồi quy click chuồng): tìm ra nguyên nhân thật = `IsPanelOpen()` bị đổi thành cờ TOÀN CỤC ở vòng 2, chuồng này dập khay của chuồng kia trong cùng 1 frame. Đã vá bằng `DangMoKhayCho(pen)` theo từng chuồng. Không đụng scene.
+- Task 1 (tàu hoả): nguyên nhân thật = `Popup_Train_MasterStation` là CON của `Popup_LevelUp_Township` trong SCN_Farm, cha tắt nên activeInHierarchy luôn false. Đã vá code bật tổ tiên, nhưng Sếp phải kéo về đúng cha.
+- Task 4 (gia súc): bản vá cũ đúng về số học (con vật `Objects` value 2 > rào `Default` value 1). Vá thêm lỗ kẹp order ở spawner.
+- Task 3 (decor): art THỰC SỰ chưa có, đã dò 2.852 file ảnh + toàn bộ lịch sử git + ổ ngoài. Không phải thất lạc.
+
 ## Quyết định vòng này
-- Kẹt sau thu hoạch = deadlock hàng đợi action khi popup Lên Cấp mở → thêm coroutine tiêu thụ khi popup đóng (không đổi điều kiện cũ).
-- Phantom demo: ẩn tay thật khi demo → demo xong hiện; lặp 8s ≤3 lần; gọi ở 05/06/07-08/09/10/13/14/17; bỏ 03. Bảng ĐÃ RÕ giữ lại (03/06b/08b/09b, theo tên bước).
-- Popup Lên Cấp vùng đáy: dải −215 · 1 dòng gợi ý −385 · nút −500 · tên ô hiện · bỏ dòng "Mở khoá" · 1 lớp dim.
-- HUD 4 nút: ẩn khi khay hạt/hoa mở, mờ 0.35 khi card thoại mở (trừ L2_01/L2_02). NPC sang góc dưới-phải.
-- Lớp tay riêng `Canvas_TutorialHand` 440 (tool DRY-RUN/APPLY). Dim giữ 250.
-- Không cần asset mới vòng này.
+- Giả thuyết vòng 2 của Lead (DecorGrowthController chặn PenClickDetector) SAI, Dev B bác bằng bằng chứng `CanAcceptClick()` dòng 433. KHÔNG sửa `DecorGrowthController.cs` (md5 không đổi).
+- Giữ nguyên chữ ký public `IsPanelOpen()` để scene/prefab/tutorial không phải đụng.
+- KHÔNG đụng `TagManager.asset` (giữ nguyên quyết định vòng 1).
 
-## Việc còn treo (vòng sau)
-- Phantom cho 15/16 (hoa: tăng tốc / thu hoạch chậu đầu) chưa gắn.
-- MINOR: cổng popup ở bước 08 khi mini-panel còn mở; card "Bỏ qua" 45s có thể đè bảng.
-- Kiểm hướng mặt NPC góc phải (NPC_LAT_X).
-- Prompt đội vẽ Pass 1 (NPC 37 file + 4 minh hoạ) — chờ hàng về để nạp.
+## Việc còn treo
+- CẦN SẾP QUYẾT: món id 3 "Bảng Hiệu" vẽ thành KỆ CÂY (giữ hình cũ) hay BẢNG HIỆU (đổi hình)?
+- Chờ art: 4 slug decor (20 PNG) + rào 2 lớp (2 PNG) - thư mục giao vẫn RỖNG.
+- Khi art về: phải thêm 4 entry vào `BangMap()` của `DecorStageArtTool.cs` TRƯỚC, không thì tool bỏ qua im lặng.
+- Kéo tay `Bảng hiệu.asset` (GUID 78991ab7a7541d54a9dd699fefc8e29b) vào `ShopManager.decorList`.
+- Sếp phải trả lời: "gia súc đi xuyên" là đè lên vạch rào trước (giới hạn art) hay lọt ra ngoài khuôn chuồng (chỉnh bounds)?
+- Nợ kỹ thuật: xem mục 8 của `BAO_CAO_VONG3_2026-09-06.md` (5 mục).
 
-## Files đã ghi (13)
-TutorialManager.cs · TutorialPhantomDemoManager.cs · Editor/SetupTutorialL1L2Tool.cs · LevelUpPopupUI.cs · UnlockSlotUI.cs · Editor/LevelUpPopupTownshipTool.cs · Editor/LevelUpPopupRewireTool.cs · SeedPopupController.cs · AnimalGuideController.cs · TutorialDialogueCard.cs · Editor/TutorialV2SetupTool.cs · UI/HudNavHider.cs (MỚI) · Editor/TutorialHandLayerTool.cs (MỚI)
+## Files đã ghi vòng 3 (7)
+PenClickDetector.cs · PenMiniPanelUI.cs · PenSupplyTrayV2.cs · LivestockAI.cs · HappyHarvestAnimalVisualSpawner.cs · TrainStationMasterPopupUI.cs · TrainStationBuilding.cs
+Backup: `production/backup_vong3_2026-09-06/` (8 .bak)

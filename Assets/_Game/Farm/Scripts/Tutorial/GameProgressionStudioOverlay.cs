@@ -189,7 +189,7 @@ public class GameProgressionStudioOverlay : MonoBehaviour
         if (GUILayout.Button("🔄 RESET VỀ LEVEL 1 TÂN THỦ", GUILayout.Height(30)))
         {
             var settings = FindFirstObjectByType<SettingsPopupUI>();
-            if (settings != null) settings.OnResetProgressClicked();
+            if (settings != null) settings. OnResetProgressClicked();
         }
     }
 }

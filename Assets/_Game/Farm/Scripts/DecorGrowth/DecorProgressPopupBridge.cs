@@ -56,8 +56,19 @@ public static class DecorProgressPopupBridge
 
     private static DecorGrowthController _current;
 
-    /// <summary>Popup đang mở hay không.</summary>
-    public static bool IsOpen => _panel != null && _panel.gameObject.activeSelf && _current != null;
+    /// <summary>
+    /// Popup đang mở hay không.
+    /// [FIX 2026-09-06] KHÔNG dùng `_panel` nữa: `_panel` chỉ được gán bên trong `Build()`,
+    /// và `Build()` KHÔNG có nơi nào gọi (đã grep toàn repo — DEAD CODE, xem ghi chú tại khai
+    /// báo `Build()` bên dưới) ⇒ `_panel` luôn null ⇒ `IsOpen` từng vĩnh viễn `false`, làm hỏng
+    /// mọi guard đóng popup ở DecorGrowthController (dòng 400/486/439 cũ) và
+    /// DecorGrowthBootstrap (dòng 577 cũ). Popup THẬT SỰ đang hiển thị qua
+    /// `BuildingProcessPopupUI` (xem `OpenFor`/`Close` ngay dưới) nên phải đọc trạng thái
+    /// từ đó — `BuildingProcessPopupUI.IsOpen` đã có sẵn (`_root != null && _root.activeSelf`).
+    /// </summary>
+    public static bool IsOpen => _current != null
+        && BuildingProcessPopupUI.Instance != null
+        && BuildingProcessPopupUI.Instance.IsOpen;
 
     /// <summary>Canvas + driver đã được dựng chưa (DEV-D / QA kiểm nhanh).</summary>
     public static bool IsBuilt => _canvas != null && _panel != null && _driver != null && _blocker != null;
@@ -92,6 +103,12 @@ public static class DecorProgressPopupBridge
 
     // ── Dựng UI bằng code ────────────────────────────────────────────────────
 
+    // DEAD CODE — không dùng, giữ để tham chiếu.
+    // [FIX 2026-09-06] Không có nơi nào trong repo gọi Build() (đã grep xác nhận). Vì vậy
+    // _panel/_canvas/_driver/_blocker bên dưới không bao giờ được gán — bản dựng UI thật
+    // đang chạy qua BuildingProcessPopupUI, không phải qua Build() này. KHÔNG xoá hàm này:
+    // nó vẫn còn giá trị tham khảo (bố cục 360x84, màu chuẩn burgundy/gold) — chỉ đừng gọi
+    // nó ở bất kỳ đâu khác.
     private static void Build()
     {
         if (_panel != null) return;

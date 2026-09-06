@@ -82,14 +82,31 @@ public class UiBlockerProbe : MonoBehaviour
             sb.AppendLine("   (không có UI nào — nếu map vẫn không kéo được thì nguyên nhân KHÔNG ở UI, " +
                           "báo Lead để soi ObjectDragHandler/EditMode/inputLock)");
         }
+        // [FIX 2026-09-06] Main Camera co Physics2DRaycaster eventMask=Everything, nen
+        // RaycastAll tra ve CA vat the world (bui cay, nha, decor). Nhung CameraController
+        // va FarmInputLock chi coi hit tu GraphicRaycaster la "UI that". Ban cu in ca hai
+        // ma khong phan biet => do oan cho bui cay/ngoi nha. Nay tach ro 2 nhom.
+        int soUiThat = 0;
         for (int i = 0; i < _hits.Count && i < 8; i++)
         {
             GameObject go = _hits[i].gameObject;
             if (go == null) continue;
+            bool laUiThat = _hits[i].module is UnityEngine.UI.GraphicRaycaster;
+            if (laUiThat) soUiThat++;
             bool laNut = go.GetComponentInParent<UnityEngine.UI.Selectable>() != null;
-            sb.AppendLine($"   {i + 1}. {DuongDan(go)}");
-            sb.AppendLine($"      layer={LayerMask.LayerToName(go.layer)} · nút bấm thật={(laNut ? "CÓ" : "KHÔNG ⇒ nghi lớp phủ mồ côi")}" +
-                          $" · để tắt: chọn object này trong Hierarchy rồi bỏ tick (hoặc bỏ tick Raycast Target trên Image)");
+            sb.AppendLine($"   {i + 1}. {(laUiThat ? "[UI THAT]" : "[world - KHONG chan map]")} {DuongDan(go)}");
+            sb.AppendLine($"      layer={LayerMask.LayerToName(go.layer)} · nút bấm thật={(laNut ? "CÓ" : "KHÔNG")}");
+        }
+        if (soUiThat == 0)
+        {
+            sb.AppendLine("   ⇒ KHONG co UI that nao duoi con tro. Map bi chan boi CO KHOA, khong phai UI:");
+            sb.AppendLine($"      FarmInputLock.BlockMapPan = {FarmInputLock.BlockMapPan}");
+            sb.AppendLine($"      IsPopupOpen(popupLockCount>0) = {FarmInputLock.IsPopupOpen}");
+            sb.AppendLine($"      PopupManager.IsAnyPopupOpen  = {(PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())}"
+                        + $"  → {(PopupManager.Instance != null ? PopupManager.TenPopupDangMo() : "(khong co PopupManager)")}");
+            sb.AppendLine($"      IsDraggingSeed={FarmInputLock.IsDraggingSeed} · IsDraggingSickle={FarmInputLock.IsDraggingSickle}"
+                        + $" · IsSeedPopupOpen={FarmInputLock.IsSeedPopupOpen} · IsMarketPopupOpen={FarmInputLock.IsMarketPopupOpen}"
+                        + $" · IsCookingMode={FarmInputLock.IsCookingMode} · EditMode={EditModeManager.IsEditMode}");
         }
         Debug.Log(sb.ToString());
     }

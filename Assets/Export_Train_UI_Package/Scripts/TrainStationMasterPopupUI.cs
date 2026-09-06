@@ -50,15 +50,90 @@ namespace ExportTrainUIPackage
 
         private void Awake()
         {
+            // [VONG 6 - 06/09] CHONG NHAN BAN POPUP (Sep bao "3 popup de nhau").
+            // Prefab Popup_Train_MasterStation dang mang THEM 4 component TrainStationMasterPopupUI
+            // di lac tren Wagon_1..Wagon_4: m_Script cua chung tro ve fileID 11500000 (= class chinh
+            // cua file, tuc chinh class nay) trong khi y dinh la StationWagonSlotUI. Class nay TU DUNG
+            // toan bo popup trong BuildOrFixHierarchy(), nen moi component di lac lai dung THEM mot
+            // khung go + dong chu hint day du => nhieu popup de nhau.
+            // Quy tac: component nao co TO TIEN cung mang script nay thi KHONG phai popup that.
+            if (LaBanDiLac())
+            {
+                _banDiLac = true;
+                enabled = false; // chan OnEnable => khong bao gio dung popup tren toa tau
+                {
+                    Debug.LogWarning($"[Train] Bo component MasterPopupUI di lac tren '{name}' de tranh nhan ban popup.");
+                }
+                Destroy(this);
+                return;
+            }
+
+            // Singleton THAT: trong scene chi duoc ton tai duy nhat MOT ban popup ga tau.
+            if (Instance != null && Instance != this)
+            {
+                {
+                    Debug.LogWarning($"[Train] Da co popup ga tau '{Instance.name}' - huy ban trung '{name}'.");
+                }
+                Destroy(gameObject);
+                return;
+            }
+
             Instance = this;
             BuildOrFixHierarchy();
-            gameObject.SetActive(false);
+            // Bug 06/09: popup duoc dat SAN o trang thai TAT trong scene, nen Awake() khong
+            // chay luc boot - no chi chay LAN DAU TIEN dung vao luc OpenPopup() goi
+            // SetActive(true) de MO popup. Neu van tu SetActive(false) o day, popup vua mo
+            // se bi tat ngay lap tuc => nguoi choi click ga tau LAN DAU khong thay gi.
+            // Chi tu tat khi day KHONG phai la lan Awake do OpenPopup() kich hoat.
+            if (!_openRequested)
+            {
+                gameObject.SetActive(false);
+            }
         }
 
+        private bool _openRequested;
         private bool _popupInputLockHeld;
+        private bool _banDiLac;
+
+        /// <summary>true = component nay nam TRONG LONG mot popup khac (di lac tren toa tau), khong phai popup that.</summary>
+        private bool LaBanDiLac()
+        {
+            return transform.parent != null
+                && transform.parent.GetComponentInParent<TrainStationMasterPopupUI>(true) != null;
+        }
+
+        /// <summary>Di nguoc len tim component MasterPopupUI NGOAI CUNG - do moi la popup that.</summary>
+        private TrainStationMasterPopupUI TimPopupGoc()
+        {
+            var goc = this;
+            Transform cha = transform.parent;
+            while (cha != null)
+            {
+                var tren = cha.GetComponent<TrainStationMasterPopupUI>();
+                if (tren != null) goc = tren;
+                cha = cha.parent;
+            }
+            return goc;
+        }
+
+        /// <summary>Lay DUY NHAT popup ga tau that trong scene, bo qua moi component di lac tren toa tau.</summary>
+        public static TrainStationMasterPopupUI LayPopupThat()
+        {
+            if (Instance != null) return Instance;
+
+            var tatCa = FindObjectsByType<TrainStationMasterPopupUI>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            for (int i = 0; i < tatCa.Length; i++)
+            {
+                if (tatCa[i] == null) continue;
+                var goc = tatCa[i].TimPopupGoc();
+                if (goc != null) return goc;
+            }
+            return null;
+        }
 
         private void OnEnable()
         {
+            if (_banDiLac) return; // ban di lac dang cho Destroy - khong dung gi ca
             BuildOrFixHierarchy();
             ApplyThemeSprites();
             RefreshUI();
@@ -106,17 +181,67 @@ namespace ExportTrainUIPackage
 
         public void OpenPopup(TrainState state = TrainState.WaitingForLoad)
         {
+            // [VONG 6 - 06/09] Neu bi goi tren mot component di lac (nam trong long popup that),
+            // chuyen huong sang popup that thay vi dung THEM mot popup moi.
+            var popupThat = TimPopupGoc();
+            if (popupThat != this)
+            {
+                {
+                    Debug.LogWarning($"[Train] OpenPopup goi tren ban di lac '{name}' - chuyen huong sang popup that '{popupThat.name}'.");
+                }
+                popupThat.OpenPopup(state);
+                return;
+            }
+
             currentState = SyncStateFromManager(state);
+            _openRequested = true; // Bat co TRUOC khi SetActive(true): neu day la lan dau
+                                    // popup duoc bat, Awake() se biet day la MO popup, khong
+                                    // phai boot, va se KHONG tu SetActive(false) lai.
+
+            // [VONG 3 - 06/09] Bat cac TO TIEN dang tat, dung lai o Canvas gan nhat.
+            // Trong SCN_Farm popup nay KHONG nam truc tiep duoi 'Canvas_Popup' ma nam duoi
+            // 'Popup_LevelUp_Township'. Neu mot to tien bi tat thi SetActive(true) o day chi
+            // doi activeSelf: activeInHierarchy VAN false => khong ve gi len man hinh va ca
+            // Awake()/OnEnable() deu khong chay. Dung dung co che cua TrainLoadPopupUI.OpenForWagon().
+            Transform anc = transform.parent;
+            while (anc != null)
+            {
+                // [VONG 6 - 06/09] Khong duoc bat / vuot qua mot POPUP KHAC: neu khong vong lap nay
+                // se keo ca popup la (vi du Popup_LevelUp_Township) hien theo popup ga tau.
+                if (anc.GetComponent<TrainStationMasterPopupUI>() != null) break;
+
+                if (!anc.gameObject.activeSelf)
+                {
+                    Debug.LogWarning($"[Train] To tien '{anc.name}' dang TAT - da bat lai de popup ga tau hien duoc.");
+                    anc.gameObject.SetActive(true);
+                }
+                if (anc.GetComponent<Canvas>() != null) break;
+                anc = anc.parent;
+            }
+
             gameObject.SetActive(true);
             AcquirePopupInputBlock();
             BuildOrFixHierarchy();
             ApplyThemeSprites();
             RefreshUI();
             StartSmokeAnimation();
+
+            {
+                Debug.Log($"[Train] OpenPopup xong | state={currentState} | activeInHierarchy={gameObject.activeInHierarchy} | cha='{(transform.parent != null ? transform.parent.name : "(khong co cha)")}' | soBanMasterPopupUI={FindObjectsByType<TrainStationMasterPopupUI>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length}");
+            }
         }
 
         public void ClosePopup()
         {
+            // [VONG 6 - 06/09] Neu bi goi tren ban di lac, chuyen huong sang popup that - neu khong
+            // cai "toggle" trong TrainStationBuilding se chi tat mot TOA TAU, popup that khong bao gio mo.
+            var popupThat = TimPopupGoc();
+            if (popupThat != this)
+            {
+                popupThat.ClosePopup();
+                return;
+            }
+
             StopSmokeAnimation();
             ReleasePopupInputBlock();
 
@@ -155,11 +280,11 @@ namespace ExportTrainUIPackage
 
         public void BuildOrFixHierarchy()
         {
-            // 1. Canvas Sorting Order 160 để đè lên toàn bộ HUD
+            // 1. Canvas Sorting Order 420 (PopupCaoCap + 20) để luôn nổi trên Tutorial (250) và HUD
             if (canvasComponent == null) canvasComponent = GetComponent<Canvas>();
             if (canvasComponent == null) canvasComponent = gameObject.AddComponent<Canvas>();
             canvasComponent.overrideSorting = true;
-            canvasComponent.sortingOrder = 160;
+            canvasComponent.sortingOrder = 420;
 
             if (GetComponent<GraphicRaycaster>() == null)
                 gameObject.AddComponent<GraphicRaycaster>();
@@ -777,7 +902,8 @@ namespace ExportTrainUIPackage
         private void StartSmokeAnimation()
         {
             StopSmokeAnimation();
-            smokeRoutine = StartCoroutine(RoutineSmokePuff());
+            if (gameObject.activeInHierarchy)
+                smokeRoutine = StartCoroutine(RoutineSmokePuff());
         }
 
         private void StopSmokeAnimation()
@@ -795,7 +921,7 @@ namespace ExportTrainUIPackage
             {
                 for (int i = 0; i < smokePuffs.Length; i++)
                 {
-                    if (smokePuffs[i] != null)
+                    if (smokePuffs[i] != null && gameObject.activeInHierarchy)
                     {
                         StartCoroutine(AnimateSinglePuff(smokePuffs[i]));
                         yield return new WaitForSeconds(0.35f);
@@ -831,338 +957,6 @@ namespace ExportTrainUIPackage
             }
 
             puff.gameObject.SetActive(false);
-        }
-    }
-
-    public class StationWagonSlotUI : MonoBehaviour
-    {
-        private const string SpritesDir = "Assets/Export_Train_UI_Package/Sprites";
-        private const string ShopSvgDir = "Assets/Assetsgame/popup/ui_shop_svg/generated_sprites";
-
-        public Image imgWagon;
-        public GameObject bubbleReq;
-        public Image imgBubble;
-        public Image imgDisc;
-        public Image imgIcon;
-        public TextMeshProUGUI txtAmount;
-        public GameObject checkBadge;
-        public Image imgCheckBadge;
-        public Button btnSlot;
-
-        private System.Action onClickCallback;
-        private Coroutine bobbingRoutine;
-
-        public void AutoBindComponents() => BuildWagonHierarchy();
-
-        public void BuildWagonHierarchy()
-        {
-            RectTransform rootRt = GetComponent<RectTransform>();
-            if (rootRt == null) rootRt = gameObject.AddComponent<RectTransform>();
-
-            // 1. Wagon Image
-            Transform wTr = transform.Find("Img_Wagon");
-            bool isNewWagon = wTr == null;
-            if (isNewWagon)
-            {
-                GameObject wGo = new GameObject("Img_Wagon", typeof(RectTransform));
-                wGo.transform.SetParent(transform, false);
-                wTr = wGo.transform;
-            }
-            wTr.gameObject.SetActive(true);
-            imgWagon = wTr.GetComponent<Image>() ?? wTr.gameObject.AddComponent<Image>();
-            RectTransform wiRt = wTr.GetComponent<RectTransform>();
-            wiRt.anchorMin = new Vector2(0.5f, 0f);
-            wiRt.anchorMax = new Vector2(0.5f, 0f);
-            wiRt.pivot = new Vector2(0.5f, 0.5f);
-            wiRt.anchoredPosition = new Vector2(0f, 55f);
-            wiRt.sizeDelta = new Vector2(170f, 110f);
-            TrainSpriteLoader.Assign(imgWagon, $"{SpritesDir}/flat_wagon_horizontal.png");
-            imgWagon.preserveAspect = true;
-            imgWagon.color = Color.white;
-            imgWagon.enabled = true;
-
-            // 2. Bubble Req
-            Transform bTr = transform.Find("Bubble_Req");
-            if (bTr == null)
-            {
-                GameObject bGo = new GameObject("Bubble_Req", typeof(RectTransform));
-                bGo.transform.SetParent(transform, false);
-                bTr = bGo.transform;
-            }
-            bubbleReq = bTr.gameObject;
-            imgBubble = bTr.GetComponent<Image>() ?? bTr.gameObject.AddComponent<Image>();
-            TrainSpriteLoader.Assign(imgBubble, $"{ShopSvgDir}/shop_card_outer.png", $"{SpritesDir}/bubble_cargo_req.png");
-            imgBubble.type = Image.Type.Sliced;
-            imgBubble.color = Color.white;
-
-            RectTransform bRt = bTr.GetComponent<RectTransform>();
-            bRt.anchorMin = new Vector2(0.5f, 0f);
-            bRt.anchorMax = new Vector2(0.5f, 0f);
-            bRt.pivot = new Vector2(0.5f, 0.5f);
-            bRt.anchoredPosition = new Vector2(0f, 175f);
-            bRt.sizeDelta = new Vector2(130f, 62f);
-
-            // Icon Disc
-            Transform dTr = bTr.Find("Icon_Disc");
-            if (dTr == null)
-            {
-                GameObject dGo = new GameObject("Icon_Disc", typeof(RectTransform));
-                dGo.transform.SetParent(bTr, false);
-                dTr = dGo.transform;
-            }
-            imgDisc = dTr.GetComponent<Image>() ?? dTr.gameObject.AddComponent<Image>();
-            TrainSpriteLoader.Assign(imgDisc, $"{SpritesDir}/icon_disc_large.png");
-            imgDisc.preserveAspect = true;
-            imgDisc.color = Color.white;
-
-            RectTransform dRt = dTr.GetComponent<RectTransform>();
-            dRt.anchorMin = new Vector2(0f, 0.5f);
-            dRt.anchorMax = new Vector2(0f, 0.5f);
-            dRt.pivot = new Vector2(0.5f, 0.5f);
-            dRt.anchoredPosition = new Vector2(32f, 0f);
-            dRt.sizeDelta = new Vector2(40f, 40f);
-
-            // Icon
-            Transform icTr = dTr.Find("Img_Icon");
-            if (icTr == null)
-            {
-                GameObject icGo = new GameObject("Img_Icon", typeof(RectTransform));
-                icGo.transform.SetParent(dTr, false);
-                icTr = icGo.transform;
-            }
-            imgIcon = icTr.GetComponent<Image>() ?? icTr.gameObject.AddComponent<Image>();
-            imgIcon.preserveAspect = true;
-            RectTransform icRt = icTr.GetComponent<RectTransform>();
-            icRt.anchorMin = Vector2.zero;
-            icRt.anchorMax = Vector2.one;
-            icRt.offsetMin = new Vector2(4f, 4f);
-            icRt.offsetMax = new Vector2(-4f, -4f);
-
-            // Amount Text
-            Transform amTr = bTr.Find("Txt_Amount");
-            bool isNewAm = amTr == null;
-            if (isNewAm)
-            {
-                GameObject amGo = new GameObject("Txt_Amount", typeof(RectTransform));
-                amGo.transform.SetParent(bTr, false);
-                amTr = amGo.transform;
-            }
-            txtAmount = amTr.GetComponent<TextMeshProUGUI>() ?? amTr.gameObject.AddComponent<TextMeshProUGUI>();
-            RectTransform amRt = amTr.GetComponent<RectTransform>();
-            if (isNewAm)
-            {
-                amRt.anchorMin = new Vector2(0.45f, 0f);
-                amRt.anchorMax = new Vector2(1f, 1f);
-                amRt.offsetMin = Vector2.zero;
-                amRt.offsetMax = new Vector2(-4f, 0f);
-                txtAmount.alignment = TextAlignmentOptions.Center;
-                txtAmount.fontSize = 22;
-                txtAmount.fontStyle = FontStyles.Bold;
-                txtAmount.color = new Color(0.36f, 0.20f, 0.09f);
-            }
-
-            // 3. Check Badge
-            Transform chkTr = transform.Find("Check_Badge");
-            bool isNewChk = chkTr == null;
-            if (isNewChk)
-            {
-                GameObject chkGo = new GameObject("Check_Badge", typeof(RectTransform));
-                chkGo.transform.SetParent(transform, false);
-                chkTr = chkGo.transform;
-            }
-            checkBadge = chkTr.gameObject;
-            imgCheckBadge = chkTr.GetComponent<Image>() ?? chkTr.gameObject.AddComponent<Image>();
-            TrainSpriteLoader.Assign(imgCheckBadge, $"{SpritesDir}/check_badge_green.png");
-            imgCheckBadge.preserveAspect = true;
-            imgCheckBadge.color = Color.white;
-
-            RectTransform chkRt = chkTr.GetComponent<RectTransform>();
-            if (isNewChk)
-            {
-                chkRt.anchorMin = new Vector2(1f, 0f);
-                chkRt.anchorMax = new Vector2(1f, 0f);
-                chkRt.pivot = new Vector2(0.5f, 0.5f);
-                chkRt.anchoredPosition = new Vector2(-25f, 55f);
-                chkRt.sizeDelta = new Vector2(38f, 38f);
-            }
-            checkBadge.SetActive(false);
-
-            // Button
-            btnSlot = GetComponent<Button>() ?? gameObject.AddComponent<Button>();
-            btnSlot.onClick.RemoveAllListeners();
-            btnSlot.onClick.AddListener(() => onClickCallback?.Invoke());
-        }
-
-        /// <summary>Toa trống — không yêu cầu hàng, không click được.</summary>
-        public void SetupEmptyMode()
-        {
-            BuildWagonHierarchy();
-            onClickCallback = null;
-            StopBobbingAnimation();
-            if (bubbleReq != null) bubbleReq.SetActive(false);
-            if (checkBadge != null) checkBadge.SetActive(false);
-        }
-
-        /// <summary>Bản Sprite thật (từ TrainCargoData asset) — chạy được cả trong build.</summary>
-        public void SetupCargoMode(string name, Sprite iconSprite, int cur, int target, System.Action onClick)
-        {
-            BuildWagonHierarchy();
-            onClickCallback = onClick;
-
-            if (bubbleReq != null) bubbleReq.SetActive(true);
-
-            if (txtAmount != null)
-            {
-                txtAmount.text = $"{cur}/{target}";
-                txtAmount.color = (cur >= target) ? new Color(0.30f, 0.56f, 0.11f) : new Color(0.36f, 0.20f, 0.09f);
-            }
-
-            if (checkBadge != null)
-                checkBadge.SetActive(cur >= target);
-
-            if (imgIcon != null)
-            {
-                if (iconSprite != null) imgIcon.sprite = iconSprite;
-                imgIcon.enabled = imgIcon.sprite != null;
-                imgIcon.color = Color.white;
-            }
-
-            StartBobbingAnimation();
-        }
-
-        /// <summary>Bản Sprite thật (từ TrainRewardData asset) — chạy được cả trong build.</summary>
-        public void SetupRewardMode(string name, Sprite iconSprite, int count, bool isCollected, System.Action onClick)
-        {
-            BuildWagonHierarchy();
-            onClickCallback = onClick;
-
-            if (checkBadge != null) checkBadge.SetActive(false);
-
-            if (bubbleReq != null) bubbleReq.SetActive(!isCollected);
-
-            if (txtAmount != null)
-            {
-                txtAmount.text = $"x{count}";
-                txtAmount.color = new Color(0.48f, 0.29f, 0.06f);
-            }
-
-            if (imgIcon != null)
-            {
-                if (iconSprite != null) imgIcon.sprite = iconSprite;
-                imgIcon.enabled = imgIcon.sprite != null;
-                imgIcon.color = Color.white;
-            }
-
-            if (!isCollected) StartBobbingAnimation();
-            else StopBobbingAnimation();
-        }
-
-        public void SetupCargoMode(string name, string iconPath, int cur, int target, System.Action onClick)
-        {
-            BuildWagonHierarchy();
-            onClickCallback = onClick;
-
-            if (bubbleReq != null) bubbleReq.SetActive(true);
-
-            if (txtAmount != null)
-            {
-                txtAmount.text = $"{cur}/{target}";
-                txtAmount.color = (cur >= target) ? new Color(0.30f, 0.56f, 0.11f) : new Color(0.36f, 0.20f, 0.09f);
-            }
-
-            if (checkBadge != null)
-                checkBadge.SetActive(cur >= target);
-
-            if (imgIcon != null)
-            {
-                TrainSpriteLoader.Assign(imgIcon, iconPath);
-                imgIcon.color = Color.white;
-                imgIcon.enabled = true;
-            }
-
-            StartBobbingAnimation();
-        }
-
-        public void SetupRewardMode(string name, string iconPath, int count, bool isCollected, System.Action onClick)
-        {
-            BuildWagonHierarchy();
-            onClickCallback = onClick;
-
-            if (checkBadge != null) checkBadge.SetActive(false);
-
-            if (bubbleReq != null)
-            {
-                bubbleReq.SetActive(!isCollected);
-            }
-
-            if (txtAmount != null)
-            {
-                txtAmount.text = $"x{count}";
-                txtAmount.color = new Color(0.48f, 0.29f, 0.06f);
-            }
-
-            if (imgIcon != null)
-            {
-                TrainSpriteLoader.Assign(imgIcon, iconPath);
-                imgIcon.color = Color.white;
-                imgIcon.enabled = true;
-            }
-
-            if (!isCollected) StartBobbingAnimation();
-            else StopBobbingAnimation();
-        }
-
-        public void PlayClaimRewardEffect()
-        {
-            if (bubbleReq != null)
-                StartCoroutine(RoutineClaimBounce());
-        }
-
-        private IEnumerator RoutineClaimBounce()
-        {
-            if (bubbleReq == null) yield break;
-            RectTransform rt = bubbleReq.GetComponent<RectTransform>();
-            Vector2 startPos = rt.anchoredPosition;
-            float el = 0f;
-            while (el < 0.4f)
-            {
-                el += Time.deltaTime;
-                float scale = 1f + Mathf.Sin(el / 0.4f * Mathf.PI) * 0.4f;
-                rt.localScale = Vector3.one * scale;
-                rt.anchoredPosition = startPos + new Vector2(0f, Mathf.Sin(el / 0.4f * Mathf.PI) * 25f);
-                yield return null;
-            }
-            rt.localScale = Vector3.one;
-            bubbleReq.SetActive(false);
-        }
-
-        private void StartBobbingAnimation()
-        {
-            StopBobbingAnimation();
-            bobbingRoutine = StartCoroutine(RoutineBobbing());
-        }
-
-        private void StopBobbingAnimation()
-        {
-            if (bobbingRoutine != null)
-            {
-                StopCoroutine(bobbingRoutine);
-                bobbingRoutine = null;
-            }
-        }
-
-        private IEnumerator RoutineBobbing()
-        {
-            if (bubbleReq == null) yield break;
-            RectTransform rt = bubbleReq.GetComponent<RectTransform>();
-            Vector2 basePos = rt.anchoredPosition;
-            float seed = Random.Range(0f, 10f);
-            while (true)
-            {
-                float dy = Mathf.Sin((Time.time + seed) * 3.5f) * 6f;
-                rt.anchoredPosition = basePos + new Vector2(0f, dy);
-                yield return null;
-            }
         }
     }
 }

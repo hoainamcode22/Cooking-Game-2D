@@ -77,13 +77,25 @@ namespace ExportTrainUIPackage
                 return;
             }
             Instance = this;
+            EnsureCanvasSetup();
             if (btnClose != null) btnClose.onClick.AddListener(ClosePopup);
             if (btnThemHang != null) btnThemHang.onClick.AddListener(OnAddSingleCargo);
             if (btnNapTatCa != null) btnNapTatCa.onClick.AddListener(OnAddAllCargo);
         }
 
+        private void EnsureCanvasSetup()
+        {
+            var c = GetComponent<Canvas>();
+            if (c == null) c = gameObject.AddComponent<Canvas>();
+            c.overrideSorting = true;
+            c.sortingOrder = 425;
+            if (GetComponent<GraphicRaycaster>() == null)
+                gameObject.AddComponent<GraphicRaycaster>();
+        }
+
         private void OnEnable()
         {
+            EnsureCanvasSetup();
             ApplyThemeSprites();
             RefreshUI();
             if (TrainManager.Instance != null)
@@ -256,10 +268,8 @@ namespace ExportTrainUIPackage
 
             int slotCount = (mgr != null && mgr.SlotData != null) ? mgr.SlotData.Length : 4;
 
-            // ĐỌC THẬT TỪ KHO HÀNG (FarmInventoryManager)
-            stockCount = (FarmInventoryManager.Instance != null)
-                ? FarmInventoryManager.Instance.GetAmount(slot.itemId)
-                : 0;
+            // ĐỌC THẬT TỪ KHO HÀNG (FarmInventoryManager qua TrainInventoryAdapter)
+            stockCount = TrainInventoryAdapter.GetAmount(slot.itemId);
 
             bool isDone = slot.IsCargoComplete;
 
