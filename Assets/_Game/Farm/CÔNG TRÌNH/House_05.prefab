@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: -2654810462625673512}
   - component: {fileID: 5788293389315661211}
   - component: {fileID: 1058174904582837479}
+  - component: {fileID: 1280566636469783021}
   m_Layer: 6
   m_Name: House_05
   m_TagString: Untagged
@@ -175,7 +176,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94ff99e12893a5942a224fbde39f9d97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingFootprintKit
-  soO: {x: 4, y: 4}
+  soO: {x: 341, y: 342}
   spriteTham: {fileID: 0}
   spriteNgoac: {fileID: 0}
   spriteVach: {fileID: 0}
@@ -210,3 +211,49 @@ MonoBehaviour:
   startUnix: 0
   duration: 0
   fireworksVfxPrefab: {fileID: 4938095755617958529, guid: b77d3e0a0bc324d45bc08da1f10267da, type: 3}
+--- !u!61 &1280566636469783021
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1582242620454337050}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 171}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0}
+    oldSize: {x: 5.12, y: 4.51}
+    newSize: {x: 3.74, y: 3.85}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 341, y: 342}
+  m_EdgeRadius: 0

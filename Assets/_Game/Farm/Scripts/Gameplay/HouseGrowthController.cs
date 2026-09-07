@@ -295,11 +295,7 @@ public class HouseGrowthController : MonoBehaviour
     {
         if (state == GrowthState.Building)
         {
-            var cropPopup = CropProcessPopupUI.Instance ?? FindFirstObjectByType<CropProcessPopupUI>(FindObjectsInactive.Include);
-            if (cropPopup != null)
-            {
-                cropPopup.OpenForHouse(this);
-            }
+            BuildingProcessPopupUI.GetOrCreate().Open(this);
         }
         else if (state == GrowthState.ReadyToReveal)
         {
@@ -325,7 +321,7 @@ public class HouseGrowthController : MonoBehaviour
         {
             if (FarmEconomyManager.Instance.Gems < cost)
             {
-                FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
+                FarmUIManager.Instance?.ShowHint(Loc.TF("Cần {0} kim cương để tăng tốc.", cost));
                 return false;
             }
 
@@ -347,19 +343,19 @@ public class HouseGrowthController : MonoBehaviour
 
         UpdateVisuals();
 
-        var cropPopup = CropProcessPopupUI.Instance ?? FindFirstObjectByType<CropProcessPopupUI>(FindObjectsInactive.Include);
-        if (cropPopup != null && cropPopup.IsOpen)
+        var buildPopup = BuildingProcessPopupUI.Instance;
+        if (buildPopup != null && buildPopup.IsOpen)
         {
-            cropPopup.ClosePopup();
+            buildPopup.Close();
         }
     }
 
     private IEnumerator RevealCelebrationRoutine()
     {
-        var cropPopup = CropProcessPopupUI.Instance ?? FindFirstObjectByType<CropProcessPopupUI>(FindObjectsInactive.Include);
-        if (cropPopup != null && cropPopup.IsOpen)
+        var buildPopup = BuildingProcessPopupUI.Instance;
+        if (buildPopup != null && buildPopup.IsOpen)
         {
-            cropPopup.ClosePopup();
+            buildPopup.Close();
         }
 
         // 1. Chuyển sang Stage 6: Hộp quà bung mở nắp

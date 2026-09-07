@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -406,6 +406,19 @@ public class ShopManager : MonoBehaviour
         return set == null || !set.IsValid;
     }
 
+    private static bool IsRemovedMachine(BaseItemData item)
+    {
+        if (item == null) return false;
+        string id = item.itemID;
+        if (id == "120" || id == "121" || id == "122") return true;
+
+        string name = (item.itemName ?? "").ToLower();
+        if (name.Contains("máy xay") || name.Contains("máy ép") || name.Contains("máy phô mai"))
+            return true;
+
+        return false;
+    }
+
     /// <summary>Log 1 dong luc khoi dong: da an nhung mon nao khoi shop.</summary>
     private void LogMonBiAn()
     {
@@ -461,6 +474,9 @@ public class ShopManager : MonoBehaviour
             // An mon decor chua co art 5 stage. CHI bo qua o hien thi, KHONG dung
             // decorList nen do da dat trong world khong he bi anh huong.
             if (BiAnViThieuArt(item)) continue;
+
+            // [Yêu cầu người dùng] Xóa máy xay bột, máy ép mía, máy phô mai khỏi Store/Shop
+            if (IsRemovedMachine(item)) continue;
 
             bool match = string.IsNullOrEmpty(keyLower)
                       || (item.itemName != null && item.itemName.ToLower().Contains(keyLower));

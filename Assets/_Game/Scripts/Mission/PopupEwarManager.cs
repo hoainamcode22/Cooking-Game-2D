@@ -42,19 +42,45 @@ public class PopupEwarManager : MonoBehaviour
 
     private void Awake()
     {
-        btnClose.onClick.AddListener(ClosePopup);
+        // NÚT ĐÓNG — LUẬT "TÔN TRỌNG CHỈNH TAY" (cùng mẫu UnifiedTaskPopupUI vòng 6
+        // và TrainLoadPopupUI): ô Inspector là đường DUY NHẤT để nhận nút, code chỉ
+        // nối onClick — KHÔNG đụng sizeDelta / anchoredPosition / localScale / sprite / color.
+        // Bản cũ gọi thẳng btnClose.onClick khi ô Inspector trống ⇒ NullReference NGAY
+        // dòng đầu Awake, cuốn theo cả đăng ký OnProgressChanged bên dưới
+        // ⇒ tiến độ nhiệm vụ hết cập nhật realtime.
+        if (btnClose != null)
+        {
+            btnClose.onClick.RemoveListener(ClosePopup);
+            btnClose.onClick.AddListener(ClosePopup);
+        }
+        else
+        {
+            Debug.LogWarning("[PopupEwar] O btnClose trong Inspector dang trong, bo qua noi su kien dong");
+        }
 
-        // Đảm bảo CanvasGroup chặn click xuyên xuống map
-        if (canvasGroup == null)
-            canvasGroup = popup_Ewar.GetComponent<CanvasGroup>() ?? popup_Ewar.AddComponent<CanvasGroup>();
+        // popup_Ewar cũng có thể trống — rào từng bước để một ô trống không giết cả Awake.
+        if (popup_Ewar != null)
+        {
+            // Đảm bảo CanvasGroup chặn click xuyên xuống map.
+            // Không dùng `??`: toán tử đó BỎ QUA `==` nạp chồng của Unity nên object đã huỷ
+            // (fake-null) bị coi là còn sống — cùng bẫy đã gặp ở UnifiedTaskPopupUI.
+            if (canvasGroup == null)
+            {
+                canvasGroup = popup_Ewar.GetComponent<CanvasGroup>();
+                if (canvasGroup == null) canvasGroup = popup_Ewar.AddComponent<CanvasGroup>();
+            }
 
-        if (popup_Ewar.GetComponent<UIRaycastBlocker>() == null)
-            popup_Ewar.AddComponent<UIRaycastBlocker>();
+            if (popup_Ewar.GetComponent<UIRaycastBlocker>() == null)
+                popup_Ewar.AddComponent<UIRaycastBlocker>();
 
-        canvasGroup.blocksRaycasts = false;
-        canvasGroup.interactable   = false;
+            popup_Ewar.SetActive(false);
+        }
 
-        popup_Ewar.SetActive(false);
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = false;
+            canvasGroup.interactable   = false;
+        }
 
         // UI cập nhật realtime khi tiến độ đổi (hết code chết NotifyProgressChanged)
         MissionProgressTracker.OnProgressChanged += HandleProgressChanged;
@@ -74,10 +100,16 @@ public class PopupEwarManager : MonoBehaviour
     public void ClosePopup()
     {
         ReleasePopupInputBlock();
-        canvasGroup.blocksRaycasts = false;
-        canvasGroup.interactable   = false;
 
-        popup_Ewar.SetActive(false);
+        // Rào null: nút đóng chỉnh tay của Sếp có thể được nối vào đây qua Inspector
+        // trong khi popup_Ewar / canvasGroup chưa gán ⇒ bấm X sẽ nổ NullReference.
+        if (canvasGroup != null)
+        {
+            canvasGroup.blocksRaycasts = false;
+            canvasGroup.interactable   = false;
+        }
+
+        if (popup_Ewar != null) popup_Ewar.SetActive(false);
     }
 
     private void OnDisable()

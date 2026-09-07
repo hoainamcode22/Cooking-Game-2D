@@ -26,6 +26,6 @@ public class CenterCookingPanelUI : MonoBehaviour
     public void SetCookSubmitScore(int score)
     {
         if (txtCookSubmitScore != null)
-            txtCookSubmitScore.text = score + " Điểm";
+            txtCookSubmitScore.text = Loc.TF("{0} Điểm", score);
     }
 }

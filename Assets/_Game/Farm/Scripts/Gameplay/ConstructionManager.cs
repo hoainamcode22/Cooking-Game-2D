@@ -101,6 +101,17 @@ public class ConstructionManager : MonoBehaviour
     [Tooltip("Số công trường được xây cùng lúc. 0 = không giới hạn.")]
     [SerializeField] private int maxConcurrentSites = 0;
 
+    // [V11 ADD] ══════════════════════════════════════════════════════════════
+    // BO CONG TRUONG CHO NHOM "O DAT / CHAU" (yeu cau Sep vong 11).
+    // Sep: "xoa quy trinh xay plot + process bo kit, plot mua dat ra trong duoc luon".
+    // Chi nhom O DAT bi bo; nha dan / chuong / may VAN co cam giac xay dung.
+    [Header("◆ V11 — Ô đất đặt ngay, không qua công trường")]
+    [Tooltip("BẬT (mặc định) = ô đất và chậu hoa bỏ hẳn công trường: bấm ✓ là hiện ô, " +
+             "trồng được ngay, giá luỹ tiến tính đúng ngay lập tức.\n" +
+             "TẮT = trả lại đúng hành vi cũ (ô đất đi công trường 30 giây).\n" +
+             "Nhận biết nhóm ô đất ĐỌC TỪ DATA (DecorGrowthConfig), KHÔNG hard-code itemID.")]
+    [SerializeField] private bool skipConstructionForPlots = true;              // [V11 ADD]
+
     [SerializeField] private bool verboseLog = false;
 
     // ══════════════════════════════════════════════════════════════════════
@@ -407,6 +418,46 @@ public class ConstructionManager : MonoBehaviour
     // API CHÍNH — DEV-1 GỌI VÀO ĐÂY
     // ══════════════════════════════════════════════════════════════════════
 
+    // [V11 ADD] ══════════════════════════════════════════════════════════════
+    /// <summary>
+    /// Món này có thuộc NHÓM BỎ CÔNG TRƯỜNG (ô đất / chậu hoa) hay không.
+    ///
+    /// ⚠ NGUỒN SỰ THẬT — ĐỌC TỪ DATA, KHÔNG HARD-CODE itemID Ở ĐÂY:
+    ///   1. `DecorGrowthConfig.IsPlotObject(prefab)` — prefab có component `PlotController`.
+    ///      Đây là điều kiện MẠNH NHẤT: một ô đất mới do designer thêm sau này cũng tự
+    ///      được nhận ra mà không ai phải sửa danh sách nào.
+    ///   2. `DecorGrowthConfig.IsExcludedItem(itemID)` — danh sách `excludedItemIDs` trong
+    ///      `Resources/DecorGrowthConfig.asset` (hiện 100 · 109 · 110 · 111 · 112 =
+    ///      Đất Trồng + 4 chậu hoa). Sếp sửa được ngay trong Inspector.
+    ///   3. Không có asset cấu hình (Config == null) thì rơi về `PlotPurchasePricing.IsPlotItem`
+    ///      — nguồn ĐÃ CÓ SẴN của hệ giá luỹ tiến ô đất, KHÔNG phải danh sách mới.
+    ///
+    /// VÌ SAO KHÔNG DÙNG `DecorGrowthConfig.ShouldApply`: hàm đó chốt ở cờ `enabled` của
+    /// hệ 5-stage. Nếu Sếp tắt hệ 5-stage thì ShouldApply trả false cho MỌI món ⇒ không
+    /// phân biệt được ô đất với cái máy. Hai hàm dùng ở đây KHÔNG đọc cờ `enabled`.
+    ///
+    /// GIÁ CHI PHÍ: chỉ chạy lúc bấm ✓ và lúc nạp save, KHÔNG chạy mỗi frame — nên
+    /// `GetComponentsInChildren` bên trong `IsPlotObject` là rẻ (khác lý do
+    /// `PlotPurchasePricing` phải khớp theo itemID: bảng giá bị tra lại mỗi frame).
+    /// </summary>
+    private bool SkipsConstruction(PlaceableItemData data)
+    {
+        if (!skipConstructionForPlots) return false;
+        if (data == null) return false;
+
+        DecorGrowthConfig cfg = DecorGrowthBootstrap.Config;
+        if (cfg != null)
+        {
+            if (data.prefabToBuild != null && cfg.IsPlotObject(data.prefabToBuild)) return true;
+            if (cfg.IsExcludedItem(DecorGrowthConfig.ItemIdOf(data))) return true;
+            return false;
+        }
+
+        // Cửa lùi khi thiếu asset cấu hình — dùng lại nguồn của hệ giá ô đất.
+        return PlotPurchasePricing.IsPlotItem(data);
+    }
+    // [V11 ADD] ══════════════════════════════════════════════════════════════
+
     /// <summary>
     /// DEV-1 gọi trong `ConfirmPlacement()`.
     /// Trả <c>true</c> = DEV-2 nhận việc: DEV-1 KHÔNG Instantiate, KHÔNG ghi save,
@@ -429,6 +480,24 @@ public class ConstructionManager : MonoBehaviour
 
         // Hợp đồng §3: 0 giây = hiện ngay, không qua giai đoạn xây.
         if (data.buildTimeSeconds <= 0f) return false;
+
+        // [V11 ADD] ══ Ô ĐẤT / CHẬU: TRẢ false = KHÔNG NHẬN VIỆC ═════════════
+        // Trả false là đường đúng, KHÔNG phải đường tắt: theo hợp đồng §3, DEV-1 sẽ tự
+        // đi TRỌN luồng đặt-ngay trong `PlacementManager.ConfirmPlacement()` —
+        // Instantiate → GetNextPlotId() → SetPlotId() → InitializeAsNew() → ghi
+        // `FARM_PLACED_BUILDINGS` kèm plotId → RefreshOccupancy. Không thiếu bước nào.
+        //
+        // 🔴 BỊT LUÔN MỘT LỖ GIÁ: `PlotPurchasePricing.EffectiveGoldPrice` đếm số ô đã
+        // mua qua `PlacementManager.CountPlacedByItemId`, mà ô ĐANG XÂY chưa có entry
+        // trong `placedBuildings`. Đi công trường 30 giây ⇒ bấm mua liên tục trong 30
+        // giây thì mọi ô đều tính GIÁ CỦA Ô ĐẦU TIÊN, giá luỹ tiến bị vượt. Đặt ngay
+        // thì entry có mặt trong cùng frame ⇒ ô kế tiếp tính đúng bậc giá.
+        if (SkipsConstruction(data))
+        {
+            if (verboseLog) { Debug.Log($"[Construction] V11: '{data.itemName}' thuộc nhóm ô đất — đặt ngay, không dựng công trường."); }
+            return false;
+        }
+        // [V11 ADD] ══════════════════════════════════════════════════════════
 
         if (maxConcurrentSites > 0 && _sites.Count >= maxConcurrentSites)
         {
@@ -525,19 +594,19 @@ public class ConstructionManager : MonoBehaviour
         }
 
         int cost = GetRushCost(site);
-        string coinName = RushUsesGems ? "kim cương" : "vàng";
+        string coinName = Loc.T(RushUsesGems ? "kim cương" : "vàng");
 
         if (!CanAfford(cost))
         {
             int have = RushUsesGems ? eco.Gems : eco.Gold;
-            site.ShowMessage($"Không đủ {coinName}! Cần {cost}, đang có {have}.");
+            site.ShowMessage(Loc.TF("Không đủ {0}! Cần {1}, đang có {2}.", coinName, cost, have));
             return false;
         }
 
         bool paid = RushUsesGems ? eco.SpendGems(cost) : eco.SpendGold(cost);
         if (!paid)
         {
-            site.ShowMessage($"Không đủ {coinName}!");
+            site.ShowMessage(Loc.TF("Không đủ {0}!", coinName));
             return false;
         }
 
@@ -820,6 +889,11 @@ public class ConstructionManager : MonoBehaviour
         long now = NowUnix();
         int restored = 0;
 
+        // [V11 ADD] Công trường ô đất còn TREO trong save của phiên trước — gom lại,
+        // xử lý SAU vòng lặp (không hoàn thành giữa vòng: SpawnFinishedBuilding có gọi
+        // SaveSites() nên sẽ ghi ra một danh sách CÒN DỞ giữa lúc đang nạp).
+        var legacyPlotSites = new List<LegacyPlotSite>();                       // [V11 ADD]
+
         foreach (SiteEntry e in save.list)
         {
             if (e == null) continue;
@@ -836,6 +910,26 @@ public class ConstructionManager : MonoBehaviour
             int        rot    = e.rot & 3;
             Vector2Int size   = PlacementManager.GridSizeOf(data, rot);
 
+            // [V11 ADD] ══ SAVE CŨ CÒN CÔNG TRƯỜNG Ô ĐẤT ═══════════════════════
+            // Sau khi bỏ công trường cho ô đất, entry cũ KHÔNG ĐƯỢC TREO VĨNH VIỄN:
+            // nó vẫn giữ chỗ ô lưới và vẫn dựng giàn giáo — đúng thứ Sếp muốn bỏ.
+            //
+            // CHỌN: HOÀN THÀNH NGAY, KHÔNG HOÀN TIỀN.
+            //   • Người chơi ĐÃ TRẢ TIỀN ở phiên trước ⇒ phải nhận được Ô, không mất ô.
+            //   • Hoàn tiền thì KHÔNG BIẾT TRẢ BAO NHIÊU: `SiteEntry` không lưu giá đã
+            //     trả, mà ô đất là GIÁ LUỸ TIẾN (ô thứ 10 ≈ 740 vàng). Tra lại
+            //     `EffectiveGoldPrice` lúc load sẽ ra giá của Ô KẾ TIẾP, không phải giá
+            //     đã trả ⇒ hoặc tự cấp tiền sai, hoặc trả thiếu. Cả hai đều tệ hơn.
+            //   • Hoàn thành ngay còn đúng ý Sếp: ô đất không đi đường công trường nữa.
+            // Đi qua đúng `SpawnFinishedBuilding` như một công trường xây xong bình thường
+            // ⇒ PlacementManager vẫn cấp plotId, vẫn ghi FARM_PLACED_BUILDINGS, vẫn nhả ô.
+            if (SkipsConstruction(data))
+            {
+                legacyPlotSites.Add(new LegacyPlotSite { data = data, anchor = anchor, rot = rot });
+                continue;
+            }
+            // [V11 ADD] ══════════════════════════════════════════════════════
+
             ConstructionSite site = SpawnSite(data, anchor, rot, e.plotId,
                                               e.startUnix, Mathf.Max(0.1f, e.duration));
             if (site == null) continue;
@@ -850,6 +944,23 @@ public class ConstructionManager : MonoBehaviour
             ConstructionBridge.ReserveCells(site.CenterWorld, size);
         }
 
+        // [V11 ADD] ══ DỌN CÔNG TRƯỜNG Ô ĐẤT TREO TỪ SAVE CŨ ══════════════════
+        // Chạy SAU vòng lặp: lúc này `_sites` đã đủ, SaveSites() bên trong
+        // SpawnFinishedBuilding sẽ ghi ra danh sách ĐÚNG chứ không phải bản còn dở.
+        for (int i = 0; i < legacyPlotSites.Count; i++)
+        {
+            LegacyPlotSite g = legacyPlotSites[i];
+            _lastSpawnedBuildingV2 = null;
+            SpawnFinishedBuilding(null, g.data, g.anchor, g.rot);
+            _lastSpawnedBuildingV2 = null;   // không để rò rỉ sang lần ăn mừng V2 sau
+        }
+
+        if (legacyPlotSites.Count > 0)
+        {
+            Debug.Log($"[Construction] V11: hoàn thành ngay {legacyPlotSites.Count} công trường ô đất treo từ save cũ (giữ nguyên ô, không hoàn tiền).");
+        }
+        // [V11 ADD] ══════════════════════════════════════════════════════════
+
         // Ghi lại ngay sau khi nạp: vừa cập nhật maxSeenUnix, vừa nạp `_lastGoodEntries`
         // để cơ chế chống-ghi-đè-rỗng trong SaveSites() có bản tốt để dựa vào.
         SaveSites();
@@ -859,6 +970,14 @@ public class ConstructionManager : MonoBehaviour
             Debug.Log($"[Construction] Khôi phục {restored} công trường đang xây " +
                       $"(thời gian offline đã được tính, mốc hiện tại = {now}).");
         }
+    }
+
+    // [V11 ADD] Một công trường ô đất treo trong save cũ, chờ hoàn thành ngay lúc load.
+    private class LegacyPlotSite
+    {
+        public PlaceableItemData data;
+        public Vector3           anchor;
+        public int               rot;
     }
 
     /// <summary>Xoá toàn bộ công trường + save (dùng cho nút reset của dev tool).</summary>

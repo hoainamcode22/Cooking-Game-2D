@@ -375,13 +375,13 @@ public class DecorGrowthController : MonoBehaviour
 
         if (FarmEconomyManager.Instance.Gems < cost)
         {
-            FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Cần {0} kim cương để tăng tốc.", cost));
             return false;
         }
 
         if (!FarmEconomyManager.Instance.SpendGems(cost))
         {
-            FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Cần {0} kim cương để tăng tốc.", cost));
             return false;
         }
 

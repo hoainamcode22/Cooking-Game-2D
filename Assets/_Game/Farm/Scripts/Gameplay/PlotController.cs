@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public enum PlotCategory { Normal, Flower }
 
-public class PlotController : MonoBehaviour, IPointerClickHandler
+public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownHandler
 {
     private enum PlotState
     {
@@ -236,6 +236,12 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         RefreshVisual();
     }
 
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        // Cần thiết để EventSystem thiết lập pointerEvent.pointerPress,
+        // cho phép IPointerClickHandler.OnPointerClick kích hoạt khi nhả chuột
+    }
+
     public void OnPointerClick(PointerEventData eventData)
     {
         HandlePlotClick();
@@ -291,8 +297,9 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
 
         if (state == PlotState.Growing)
         {
-            if (processPopup != null)
-                processPopup.OpenForPlot(this);
+            var popup = processPopup != null ? processPopup : (CropProcessPopupUI.Instance ?? FindFirstObjectByType<CropProcessPopupUI>(FindObjectsInactive.Include));
+            if (popup != null)
+                popup.OpenForPlot(this);
             return;
         }
 
@@ -654,8 +661,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
             !FarmInventoryManager.Instance.CanAddItem(harvestItemId))
         {
             FarmUIManager.Instance?.ShowHint(
-                $"Kho đầy ({FarmInventoryManager.Instance.UsedSlots}/{FarmInventoryManager.Instance.SlotCapacity} slot) — " +
-                "bán bớt hoặc nâng cấp kho rồi thu hoạch.");
+                Loc.TF("Kho đầy ({0}/{1} slot) — bán bớt hoặc nâng cấp kho rồi thu hoạch.",
+                       FarmInventoryManager.Instance.UsedSlots, FarmInventoryManager.Instance.SlotCapacity));
             return false;
         }
 
@@ -777,7 +784,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler
         // nhưng vẫn phải chặn ở đây để hiện được thông báo cho người chơi.
         if (FarmEconomyManager.Instance.Gems < cost)
         {
-            FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Cần {0} kim cương để tăng tốc.", cost));
             return;
         }
 

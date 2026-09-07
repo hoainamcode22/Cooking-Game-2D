@@ -265,6 +265,11 @@ public class TrainStationBuilding : MonoBehaviour
                 return;
             }
 
+            // [VONG 8 - 06/09] CONG CAP 3 dat SAU nhanh toggle-dong o tren: neu popup dang mo thi
+            // click nay la de DONG popup, chan cho do se lam popup mo roi khong dong duoc nua.
+            // TrainGateAccess tu hien thong bao "Tau hoa mo o cap 3 nhe!" khi chan.
+            if (!TrainGateAccess.CanOpenOrWarn()) return;
+
             var procPopup = ExportTrainUIPackage.TrainProcessPopupUI.Instance
                 ?? FindFirstObjectByType<ExportTrainUIPackage.TrainProcessPopupUI>(FindObjectsInactive.Include);
 
@@ -302,6 +307,10 @@ public class TrainStationBuilding : MonoBehaviour
                 processPopup.Hide();
             else
             {
+                // [VONG 8 - 06/09] Cong cap 3 cho CA duong fallback popup cu, neu khong nguoi choi
+                // cap 1 van vao duoc tau bang duong nay khi popup package chua co trong scene.
+                if (!TrainGateAccess.CanOpenOrWarn()) return;
+
                 float remaining = TrainManager.Instance != null ? TrainManager.Instance.TripRemainingTime : 0f;
                 processPopup.Show(remaining);
             }

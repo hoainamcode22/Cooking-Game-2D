@@ -54,6 +54,18 @@ public class RewardFlyFX : MonoBehaviour
     [SerializeField] private RectTransform targetGem;      // đích kim cương — Diamond_Container/Icon_Diamond
     [SerializeField] private RectTransform targetExp;      // đích EXP — cụm level/EXP bar top-left
 
+    [Header("Lớp vẽ — nổi TRÊN popup")]
+    [Tooltip("Thứ tự vẽ của lớp icon bay. Đo trong SCN_Farm: Canvas_HUD 100 · Canvas_Popup 300 · " +
+             "Popup_LevelUp_Township 310 · Canvas_TouristBoatPopup 400 · MillPopup_Root 410 · " +
+             "Canvas_TutorialHand 440. Chọn 420 = trên MỌI popup phát thưởng nhưng vẫn DƯỚI bàn tay " +
+             "hướng dẫn (440), khay Pen (800) và màn chuyển cảnh (9999).")]
+    [SerializeField] private int thuTuVeLopFx = 420;
+
+    [Tooltip("Trần số icon được sống cùng lúc. Một lần nhận thưởng nhiều nhất 8 vàng + 5 gem + " +
+             "6 EXP = 19 icon, nên 48 là chừa chỗ cho khoảng hai-ba lần bấm dồn dập mà vẫn không " +
+             "để màn hình biến thành bão icon khi người chơi bấm 'Nhận' liên tục từng dòng.")]
+    [SerializeField] private int tranIconSong = 48;
+
     [Header("Legacy")]
     [Tooltip("TRUE (mặc định): tự tắt CoinFlyFX/GemFlyFX trong scene (enabled = false, KHÔNG destroy) để tránh FX nhân đôi. Revert: bỏ tick rồi bật lại 2 component cũ.")]
     [SerializeField] private bool disableLegacyFx = true;
@@ -91,6 +103,19 @@ public class RewardFlyFX : MonoBehaviour
 
     private readonly List<GameObject> liveIcons = new List<GameObject>(16);
     private bool warnedMissingCanvas;
+
+    /// <summary>
+    /// Lớp con (Canvas overrideSorting) chứa mọi icon bay. Xem <see cref="ResolveOverlay"/>.
+    /// </summary>
+    private RectTransform lopVeTren;
+
+    // ── GỢI Ý ĐIỂM XUẤT PHÁT (dùng cho popup) ──────────────────────────────
+    // Thưởng được cộng qua FarmEconomyManager/PlayerProgressManager, và FX ở đây tự nghe
+    // sự kiện đó. Popup KHÔNG được gọi Fly() thêm lần nữa (sẽ ra hai chùm icon), nên nó chỉ
+    // "ngắm" trước một điểm bắn; handler bên dưới nhặt điểm ấy thay cho vị trí con trỏ.
+    private static bool coGoiYDiem;
+    private static Vector2 goiYDiemScreen;
+    private static float goiYHetHanRealtime;
 
     // ─────────────────────────── VÒNG ĐỜI ───────────────────────────
 
@@ -216,6 +241,38 @@ public class RewardFlyFX : MonoBehaviour
         inst.SpawnFromScreen(kind, amount, screenPos);
     }
 
+    /// <summary>
+    /// NGẮM SẴN ĐIỂM BẮN cho chùm icon sắp bung — dành cho popup (bảng nhiệm vụ, bảng đơn hàng).
+    ///
+    /// VÌ SAO KHÔNG GỌI THẲNG <see cref="FlyFromScreen"/>: vàng/gem/EXP được cộng qua
+    /// FarmEconomyManager / PlayerProgressManager, và chính lớp này đã nghe sẵn ba sự kiện đó.
+    /// Popup mà gọi thêm Fly() nữa thì mỗi phần thưởng bung HAI chùm icon. Ở đây popup chỉ nói
+    /// "lần bung sắp tới hãy xuất phát từ ĐÂY", còn việc bung vẫn do sự kiện cộng thưởng kích —
+    /// đúng một chùm, và tuyệt đối không đụng gì tới số vàng/gem/EXP thật.
+    ///
+    /// CÓ HẠN DÙNG: một lần bấm "Nhận" cộng cả ba loại thưởng nên phải sống qua ba sự kiện liền
+    /// nhau, nhưng KHÔNG được sống mãi — nếu không, lần thu hoạch ngoài đồng kế tiếp sẽ bung ở
+    /// chỗ cái nút popup đã đóng từ đời nào. Mặc định 0.5s theo giờ thực (popup hay chạy lúc
+    /// timeScale = 0 nên không dùng Time.time được).
+    /// </summary>
+    /// <param name="screenPos">Điểm bắn, toạ độ pixel màn hình.</param>
+    /// <param name="thoiHanGiay">Số giây gợi ý còn hiệu lực, tính theo giờ thực.</param>
+    public static void GoiYDiemXuatPhat(Vector2 screenPos, float thoiHanGiay = 0.5f)
+    {
+        coGoiYDiem = true;
+        goiYDiemScreen = screenPos;
+        goiYHetHanRealtime = Time.realtimeSinceStartup + Mathf.Max(0f, thoiHanGiay);
+    }
+
+    /// <summary>
+    /// Bỏ gợi ý điểm bắn — gọi khi thao tác bị huỷ giữa chừng (vd: giao đơn thất bại) để chùm
+    /// icon kế tiếp quay về mặc định thay vì bung ở chỗ cũ.
+    /// </summary>
+    public static void XoaGoiYDiemXuatPhat()
+    {
+        coGoiYDiem = false;
+    }
+
     // ─────────────────────────── NGHE SỰ KIỆN ───────────────────────────
 
     private void HandleGoldAdded(int amount) => SpawnFromPointer(RewardKind.Gold, amount);
@@ -224,14 +281,28 @@ public class RewardFlyFX : MonoBehaviour
 
     private void SpawnFromPointer(RewardKind kind, int amount)
     {
-        Vector2 startScreen;
+        SpawnFromScreen(kind, amount, DiemXuatPhatHienTai());
+    }
+
+    /// <summary>
+    /// Điểm bắn cho FX nghe-sự-kiện: ưu tiên GỢI Ý còn hạn (popup vừa ngắm), rồi tới vị trí
+    /// con trỏ, cuối cùng là giữa-dưới màn hình.
+    /// </summary>
+    private static Vector2 DiemXuatPhatHienTai()
+    {
+        if (coGoiYDiem)
+        {
+            if (Time.realtimeSinceStartup <= goiYHetHanRealtime)
+                return goiYDiemScreen;
+
+            coGoiYDiem = false; // gợi ý quá hạn — coi như không có
+        }
+
         var pointer = Pointer.current;
         if (pointer != null)
-            startScreen = pointer.position.ReadValue();
-        else
-            startScreen = new Vector2(Screen.width * 0.5f, Screen.height / 3f);
+            return pointer.position.ReadValue();
 
-        SpawnFromScreen(kind, amount, startScreen);
+        return new Vector2(Screen.width * 0.5f, Screen.height / 3f);
     }
 
     // ─────────────────────────── LÕI SPAWN ───────────────────────────
@@ -258,6 +329,18 @@ public class RewardFlyFX : MonoBehaviour
         RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, endScreen, uiCam, out Vector2 endLocal);
 
         int count = IconCountFor(kind, amount);
+
+        for (int i = liveIcons.Count - 1; i >= 0; i--)
+        {
+            if (liveIcons[i] == null) liveIcons.RemoveAt(i); // gỡ ô rỗng của icon đã bị huỷ
+        }
+
+        // Bấm "Nhận" dồn dập từng dòng ⇒ đừng để icon xếp thành đống. Bớt icon là chuyện
+        // THUẦN HÌNH ẢNH: vàng/gem/EXP đã được cộng xong ở nơi khác, chặn ở đây không mất thưởng.
+        int conCho = Mathf.Max(0, tranIconSong - liveIcons.Count);
+        if (conCho <= 0) return;
+        count = Mathf.Min(count, conCho);
+
         Sprite sprite = ResolveSprite(kind, target);
         if (sprite == null) return; // thà không có hiệu ứng còn hơn bay ô vuông trắng
 
@@ -299,6 +382,11 @@ public class RewardFlyFX : MonoBehaviour
         RectTransform icon = CreateIcon(kind, sprite);
         if (icon == null) yield break;
 
+        // Giữ SẴN tham chiếu GameObject: khi icon bị huỷ giữa chừng thì `icon.gameObject` ném
+        // lỗi, không lấy ra được nữa — mà vẫn phải gỡ nó khỏi `liveIcons`, nếu không danh sách
+        // đầy dần toàn ô rỗng và `tranIconSong` sẽ chặn oan các chùm icon sau.
+        GameObject goIcon = icon.gameObject;
+
         // Góc xuất phát chia đều vòng tròn + xoay xoắn ốc (Spiral Vortex)
         float baseAngle = (index * 360f / Mathf.Max(1, totalCount)) + Random.Range(-12f, 12f);
         float spinDirection = (index % 2 == 0) ? 1f : -1f;
@@ -317,6 +405,10 @@ public class RewardFlyFX : MonoBehaviour
 
         while (t < dur)
         {
+            // Icon có thể bị huỷ giữa chừng (HUD dựng lại, canvas bị dọn). Thoát NGAY thay vì
+            // đụng vào RectTransform đã chết rồi ném MissingReferenceException mỗi khung hình.
+            if (icon == null) { liveIcons.Remove(goIcon); yield break; }
+
             t += Time.unscaledDeltaTime;
             float raw = Mathf.Clamp01(t / dur);
             float k = FxEase.OutBackRaw(raw, backC1);
@@ -347,6 +439,8 @@ public class RewardFlyFX : MonoBehaviour
         t = 0f;
         while (t < wait)
         {
+            if (icon == null) { liveIcons.Remove(goIcon); yield break; }
+
             t += Time.unscaledDeltaTime;
             if (selfSpin != 0f)
                 icon.Rotate(0f, 0f, selfSpin * 0.4f * Time.unscaledDeltaTime);
@@ -363,6 +457,8 @@ public class RewardFlyFX : MonoBehaviour
         t = 0f;
         while (t < dur)
         {
+            if (icon == null) { liveIcons.Remove(goIcon); yield break; }
+
             t += Time.unscaledDeltaTime;
             float raw = Mathf.Clamp01(t / dur);
             float k = raw * raw * (3f - 2f * raw); // smoothstep gia tốc mượt mà
@@ -383,8 +479,8 @@ public class RewardFlyFX : MonoBehaviour
         if (target != null)
             JuicyPulseFX.Play(target, 1.25f, 0.22f);
 
-        liveIcons.Remove(icon.gameObject);
-        Destroy(icon.gameObject);
+        liveIcons.Remove(goIcon);
+        if (goIcon != null) Destroy(goIcon);
     }
 
     private static Vector2 Bezier(Vector2 a, Vector2 b, Vector2 c, float t)
@@ -401,7 +497,7 @@ public class RewardFlyFX : MonoBehaviour
         go.layer = canvas.gameObject.layer;
 
         var rt = (RectTransform)go.transform;
-        rt.SetParent(canvas.transform, false);
+        rt.SetParent(ResolveOverlay(), false);
         rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
         float size = kind == RewardKind.Gold ? IconSizeGold : kind == RewardKind.Gem ? IconSizeGem : iconSizeExp; // [EXP-DEDUP] size EXP tu field
         rt.sizeDelta = new Vector2(size, size);
@@ -417,6 +513,55 @@ public class RewardFlyFX : MonoBehaviour
     }
 
     // ─────────────────────────── TÌM CANVAS / ĐÍCH ───────────────────────────
+
+    /// <summary>
+    /// LỚP VẼ RIÊNG CHO ICON BAY — vì sao bắt buộc phải có.
+    ///
+    /// Trước đây icon được gắn thẳng vào canvas HUD (SCN_Farm: Canvas_HUD sortingOrder 100).
+    /// Ngoài đồng ruộng thì đẹp, nhưng khi thưởng được cộng TỪ TRONG MỘT POPUP (bảng nhiệm vụ,
+    /// bảng đơn hàng, popup lên cấp) thì popup nằm ở 300–410, che kín 100 ⇒ hiệu ứng vẫn chạy
+    /// đủ nhưng người chơi KHÔNG THẤY GÌ. Đây chính là lỗi "ba tab nhiệm vụ không có animation".
+    ///
+    /// Cách chữa giống hệt MillPopup_Root: một Canvas con bật overrideSorting. Lớp này được kéo
+    /// giãn PHỦ KÍN canvas cha (anchor 0→1, offset 0, pivot giữa) nên hệ toạ độ local của nó
+    /// TRÙNG KHÍT hệ toạ độ canvas cha — mọi phép quy đổi WorldToScreenPoint →
+    /// ScreenPointToLocalPointInRectangle ở trên giữ nguyên, không phải sửa một dòng nào.
+    ///
+    /// KHÔNG gắn GraphicRaycaster: lớp này thuần trang trí, không bao giờ được ăn cú chạm.
+    /// </summary>
+    private RectTransform ResolveOverlay()
+    {
+        // Không cache vĩnh viễn: HUD có thể bị builder tool dựng lại giữa chừng (bài học
+        // MillCollectFlyFX) ⇒ lớp cũ chết theo, phải dựng lại.
+        if (lopVeTren != null)
+            return lopVeTren;
+
+        var go = new GameObject("RewardFlyFX_Overlay", typeof(RectTransform), typeof(Canvas));
+        go.layer = canvas.gameObject.layer;
+
+        var rt = (RectTransform)go.transform;
+        rt.SetParent(canvas.transform, false);
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.localScale = Vector3.one;
+        rt.SetAsLastSibling();
+
+        var cv = go.GetComponent<Canvas>();
+        cv.overrideSorting = true;
+        cv.sortingLayerID = canvas.sortingLayerID; // cùng sorting layer thì so sánh order mới có nghĩa
+        cv.sortingOrder = thuTuVeLopFx;
+
+        lopVeTren = rt;
+
+        {
+            Debug.Log($"[RewardFlyFX] Dựng lớp vẽ RewardFlyFX_Overlay (sortingOrder = {thuTuVeLopFx}) — icon thưởng nay nổi trên popup.", this);
+        }
+
+        return lopVeTren;
+    }
 
     private bool ResolveCanvas()
     {

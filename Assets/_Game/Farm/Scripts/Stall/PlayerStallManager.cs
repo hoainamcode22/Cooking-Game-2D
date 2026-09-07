@@ -315,7 +315,7 @@ public class PlayerStallManager : MonoBehaviour
 
         if (FarmEconomyManager.Instance.Gold < cost)
         {
-            error = $"Không đủ vàng (cần {cost}).";
+            error = Loc.TF("Không đủ vàng (cần {0}).", cost);
             return false;
         }
 
@@ -591,7 +591,7 @@ public class PlayerStallManager : MonoBehaviour
         int available = GetAvailableAmount(itemId);
         if (available < quantity)
         {
-            error = $"Trong kho chỉ còn {available}.";
+            error = Loc.TF("Trong kho chỉ còn {0}.", available);
             return false;
         }
 
@@ -609,7 +609,7 @@ public class PlayerStallManager : MonoBehaviour
 
             if (!FarmEconomyManager.Instance.SpendGold(loaGoldCost))
             {
-                error = $"Không đủ vàng để bật loa (cần {loaGoldCost}).";
+                error = Loc.TF("Không đủ vàng để bật loa (cần {0}).", loaGoldCost);
                 return false;
             }
         }

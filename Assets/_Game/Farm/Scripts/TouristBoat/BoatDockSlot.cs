@@ -276,9 +276,9 @@ public class BoatDockSlot : MonoBehaviour
 
         switch (dockIndex)
         {
-            case 0:  return $"Mở ở Lv{config.unlockLevel}";
-            case 1:  return $"Mở ở Lv{config.dock2Level}\n{FormatVN(config.dock2GoldCost)} vàng";
-            case 2:  return $"Mở ở Lv{config.dock3Level}\n{config.dock3GemCost} Kim Cương";
+            case 0:  return Loc.TF("Mở ở Lv{0}", config.unlockLevel);
+            case 1:  return Loc.TF("Mở ở Lv{0}\n{1} vàng", config.dock2Level, FormatVN(config.dock2GoldCost));
+            case 2:  return Loc.TF("Mở ở Lv{0}\n{1} Kim Cương", config.dock3Level, config.dock3GemCost);
             default: return string.Empty;
         }
     }

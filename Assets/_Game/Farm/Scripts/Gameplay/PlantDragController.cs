@@ -78,7 +78,7 @@ public class PlantDragController : MonoBehaviour
         if (didPlant)
         {
             FarmUIManager.Instance?.HidePlantSelectPopup();
-            FarmUIManager.Instance?.ShowHint($"Đã trồng {count} ô {cropName}");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Đã trồng {0} ô {1}", count, Loc.T(cropName)));
         }
         else
         {

@@ -669,10 +669,10 @@ public class StallPopupUI : MonoBehaviour
         {
             int suggestedTotal = sugg * _quantity;
             textPriceHint.text = _pricePerUnit > sugg
-                ? $"Cao hơn giá gợi ý ({suggestedTotal:N0}) — lâu bán hơn"
+                ? Loc.TF("Cao hơn giá gợi ý ({0:N0}) — lâu bán hơn", suggestedTotal)
                 : _pricePerUnit < sugg
-                    ? $"Thấp hơn giá gợi ý ({suggestedTotal:N0}) — bán nhanh hơn"
-                    : $"Giá gợi ý · {_pricePerUnit:N0}/cái";
+                    ? Loc.TF("Thấp hơn giá gợi ý ({0:N0}) — bán nhanh hơn", suggestedTotal)
+                    : Loc.TF("Giá gợi ý · {0:N0}/cái", _pricePerUnit);
         }
 
         // ── B5: `−` phải XÁM khi chạm giới hạn ───────────────────────────────

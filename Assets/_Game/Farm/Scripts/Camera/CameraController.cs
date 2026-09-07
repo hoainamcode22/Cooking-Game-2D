@@ -210,13 +210,21 @@ public class CameraController : MonoBehaviour
             return;
         }
 
-        // ────── CHECK: Đang giữ vật thể mới từ Shop → block pan ──────
+        // ────── CHECK: Đang giữ vật thể mới từ Shop → chỉ block pan khi kéo ghost ──────
         if (PlacementManager.IsPlacingNewObject)
         {
-            isDragging          = false;
-            pressHeld           = false;
-            pressStartScreenPos = Vector2.zero;
-            return;
+            // Luôn cho zoom khi đang placement
+            ApplyZoomStep(ReadMouseScrollSteps(), mouse.position.ReadValue());
+
+            // Chỉ block pan khi đang giữ chuột (kéo ghost object)
+            if (Input.GetMouseButton(0))
+            {
+                isDragging          = false;
+                pressHeld           = false;
+                pressStartScreenPos = Vector2.zero;
+                return;
+            }
+            // Thả chuột → cho phép pan map tìm chỗ đặt
         }
 
         // ────── CHECK: Popup mở hoặc đang kéo seed/sickle → block pan ──────
@@ -303,13 +311,21 @@ public class CameraController : MonoBehaviour
             return;
         }
 
-        // ────── CHECK: Đang giữ vật thể mới từ Shop → block pan ──────
+        // ────── CHECK: Đang giữ vật thể mới từ Shop → chỉ block pan khi kéo ghost ──────
         if (PlacementManager.IsPlacingNewObject)
         {
-            isDragging          = false;
-            pressHeld           = false;
-            pressStartScreenPos = Vector2.zero;
-            return;
+            // Luôn cho zoom khi đang placement
+            ApplyZoomStep(ReadLegacyScrollSteps(), (Vector2)Input.mousePosition);
+
+            // Chỉ block pan khi đang giữ chuột (kéo ghost object)
+            if (Input.GetMouseButton(0))
+            {
+                isDragging          = false;
+                pressHeld           = false;
+                pressStartScreenPos = Vector2.zero;
+                return;
+            }
+            // Thả chuột → cho phép pan map tìm chỗ đặt
         }
 
         // ────── CHECK: Popup mở hoặc đang kéo seed/sickle → block pan ──────
@@ -388,13 +404,18 @@ public class CameraController : MonoBehaviour
             return;
         }
 
-        // ────── CHECK: Đang giữ vật thể mới từ Shop → block pan ──────
+        // ────── CHECK: Đang giữ vật thể mới từ Shop → chỉ block pan khi đang chạm ──────
         if (PlacementManager.IsPlacingNewObject)
         {
-            isDragging          = false;
-            touchHeld           = false;
-            touchStartScreenPos = Vector2.zero;
-            return;
+            // Chỉ block pan khi có ngón tay đang chạm (kéo ghost object)
+            if (InputTouch.activeTouches.Count > 0)
+            {
+                isDragging          = false;
+                touchHeld           = false;
+                touchStartScreenPos = Vector2.zero;
+                return;
+            }
+            // Không chạm → cho phép pan map tìm chỗ đặt
         }
 
         // ────── CHECK: Popup mở hoặc đang kéo seed/sickle → block pan ──────

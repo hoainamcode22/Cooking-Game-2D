@@ -13,6 +13,21 @@ public class PlacementGhostVisualController : MonoBehaviour
     [Header("Sprites")]
     [SerializeField] private Sprite tileSprite;
 
+    [Header("Lop to kin vung o (V10 - Sep chot TAT)")]
+    // 🔴 V10 — LỚP NHUỘM KÍN.
+    // `Tile_Fill` là một hình thoi phóng đúng bằng hộp bao VÙNG Ô, tô màu mờ
+    // (validFillColor xanh a=0.16 / invalidFillColor ĐỎ a=0.18). Nó nằm ở
+    // sortingLayer "CongTrinh"/"Objects" order 1600 ⇒ VẼ TRÊN mọi công trình, nên khi
+    // vùng ô phình to nó nhuộm kín màn hình và công trình bên dưới chỉ còn mờ mờ —
+    // đúng thứ Sếp thấy trong ảnh. Sếp chốt TẮT để tự vẽ art lưới riêng.
+    // KHÔNG Destroy: renderer vẫn còn nguyên, chỉ `enabled = false`. Tick lại là về như cũ.
+    [Tooltip("Bat = to kin ca vung o bang lop mau mo (xanh khi hop le / DO khi khong). " +
+             "Sep chot TAT vi lop nay nhuom kin man hinh. Tick lai la ve nhu cu, khong Destroy gi.")]
+    [SerializeField] private bool showTileFill = false;
+
+    [Tooltip("Bong mo duoi lop to kin. Di kem showTileFill.")]
+    [SerializeField] private bool showSoftShadow = false;
+
     [Header("Colors")]
     [SerializeField] private Color validFillColor = new Color(0.10f, 0.95f, 0.30f, 0.16f);
     [SerializeField] private Color validEdgeColor = new Color(0.13f, 1f, 0.34f, 0.96f);
@@ -37,21 +52,34 @@ public class PlacementGhostVisualController : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     [Header("V6 — THANH XÁC NHẬN KIỂU TOWNSHIP")]
 
-    [Tooltip("Màu nút HUỶ (✕). Township dùng ĐỎ.")]
-    [SerializeField] private Color cancelButtonColor = new Color(0.93f, 0.26f, 0.24f, 1f);
+    [Tooltip("Màu NHÂN vào nút HUỶ (✗).\n" +
+             "🔴 V11 ĐỂ TRẮNG — nền nút giờ là btn_red_small, ĐÃ BAKE đỏ (221,76,69).\n" +
+             "Giá trị cũ (0.93,0.26,0.24) nhân vào đỏ ⇒ (206,20,17) đỏ tối đục.\n" +
+             "Chỉ đổi field này khi art nút là ảnh TRẮNG/XÁM.")]
+    [SerializeField] private Color cancelButtonColor = Color.white;
 
-    [Tooltip("Màu nút XOAY (↻). Township dùng XANH DƯƠNG — bản cũ của game này để CAM.")]
-    [SerializeField] private Color rotateButtonColor = new Color(0.20f, 0.52f, 0.95f, 1f);
+    [Tooltip("Màu NHÂN vào nút XOAY (↻). V11 ĐỂ TRẮNG — nền là btn_yellow_3d, đã bake\n" +
+             "vàng cam (245,169,59). Nút này đang bị BindGhostButtons SetActive(false) vì\n" +
+             "Sếp đã bỏ tính năng xoay, giữ field để bật lại không phải sửa code.")]
+    [SerializeField] private Color rotateButtonColor = Color.white;
 
-    [Tooltip("Màu nút XÁC NHẬN (✓). Township dùng XANH LÁ.\n" +
-             "Nút này tự XÁM khi không đặt được — do PlacementManager gán " +
-             "btnConfirm.interactable, ColorTint của Button nhân vào màu này. Đừng sửa tay.")]
-    [SerializeField] private Color confirmButtonColor = new Color(0.27f, 0.78f, 0.30f, 1f);
+    [Tooltip("Màu NHÂN vào nút XÁC NHẬN (✓).\n" +
+             "🔴 V11 ĐỂ TRẮNG — ĐÂY LÀ MỘT NỬA LÝ DO NÚT ✓ TRONG ẢNH TRÔNG NHƯ BỊ DISABLE.\n" +
+             "Nền mới là check_badge_green, ĐÃ BAKE xanh (110,195,45). Giá trị cũ\n" +
+             "(0.27,0.78,0.30) nhân vào đó ⇒ (30,152,14) xanh sẫm đục; đứng cạnh nút ✗ đỏ\n" +
+             "TƯƠI thì mắt đọc ra NÚT NÀY ĐANG TẮT. Ở vòng 10 nó còn nhân thêm độ sáng\n" +
+             "0.88 bake trong sprite thủ tục ⇒ tối thêm một tầng nữa.\n" +
+             "Nút VẪN tự đổi màu khi không đặt được — PlacementManager gán\n" +
+             "btnConfirm.interactable, ColorTint nhân mauNutKhiTat vào đây. Đừng sửa tay.")]
+    [SerializeField] private Color confirmButtonColor = Color.white;
 
-    [Tooltip("Màu nút XOÁ (🗑). Đỏ SẪM — cố tình khác đỏ tươi của nút Huỷ để mắt " +
-             "phân biệt được ngay, vì hai nút này nằm cạnh nhau mà hậu quả khác hẳn nhau:\n" +
-             "Huỷ = trả công trình về chỗ cũ · Xoá = mất hẳn công trình.")]
-    [SerializeField] private Color deleteButtonColor = new Color(0.62f, 0.13f, 0.16f, 1f);
+    [Tooltip("Màu NHÂN vào nút XOÁ (🗑). ĐÂY LÀ NÚT DUY NHẤT CÒN TINT.\n" +
+             "Nó DÙNG CHUNG nền btn_red_small với nút ✗ HUỶ, nên bắt buộc phải nhân cho\n" +
+             "đỏ tươi (221,76,69) thành ĐỎ GẠCH SẪM (155,44,40): hai nút nằm cạnh nhau mà\n" +
+             "hậu quả khác hẳn — Huỷ = trả công trình về chỗ cũ · Xoá = MẤT HẲN.\n" +
+             "V11: 0.70/0.58/0.58 (cũ 0.62/0.13/0.16 ⇒ (137,10,11) gần như đen, mất hình nút).\n" +
+             "Nút này CHỈ TỒN TẠI ở Editor / DEVELOPMENT_BUILD.")]
+    [SerializeField] private Color deleteButtonColor = new Color(0.70f, 0.58f, 0.58f, 1f);
 
     [Tooltip("Chữ khi ĐANG DI CHUYỂN vật đã có trên map — không mất tiền.\n" +
              "Township: 'KOSTENLOS PLATZIEREN'. Người chơi biết ngay lần này không bị trừ.")]
@@ -60,6 +88,201 @@ public class PlacementGhostVisualController : MonoBehaviour
     [Tooltip("Chữ khi ĐẶT MỚI (mất tiền). Icon xu/kim cương + số hiện ngay sau chữ này.\n" +
              "Township: 'KAUFEN FÜR 🪙 30'.")]
     [SerializeField] private string buyLabel = "MUA VỚI GIÁ";
+
+    // ══════════════════════════════════════════════════════════════════════
+    [Header("V10 — CARD BO GÓC + NEO VÀO WORLD")]
+
+    [Tooltip("V11 THON GỌN — bề rộng TỐI THIỂU của card, px UI = world unit.\n" +
+             "392 = nút ✗ 128 + khe 44 + nút ✓ 148 + lề 36 mỗi bên (bản phát hành chỉ hiện 2 nút:\n" +
+             "Btn_Rotate bị BindGhostButtons SetActive(false), Btn_Delete chỉ có ở Editor build).\n" +
+             "Card VẪN TỰ NỚI theo chữ VÀ theo bề rộng thật của hàng nút — xem LayoutPriceRow.\n" +
+             "Cũ 560 ⇒ 403 px trên màn 1080 = 21 % bề ngang màn, đúng chỗ Sếp nói to bè.")]
+    [SerializeField] private float theRongToiThieu = 392f;
+
+    [Tooltip("V11 THON GỌN — chiều cao card.\n" +
+             "244 = nút ✓ cao 148 (y ∈ [−74,+74]) + hàng giá cao 60 ở y 112 (y ∈ [82,142]) + lề 14 hai đầu\n" +
+             "⇒ card phủ y ∈ [−88,+156], nhịp 244, tâm lệch +34 (= theTamY).\n" +
+             "Cũ 302 ⇒ 217 px trên màn 1080; mới 244 ⇒ 176 px, thấp hơn 19 %.")]
+    [SerializeField] private float theCao = 244f;
+
+    [Tooltip("Tâm card so với Button_Row. Nút ở tâm y = 0, hàng giá ở TRÊN nên card phải dịch lên.\n" +
+             "V11: 34 = ((−88) + 156) / 2 — suy trực tiếp từ theCao, đừng đặt tay.")]
+    [SerializeField] private float theTamY = 34f;
+
+    [Tooltip("Lề ngang cộng thêm khi card tự nới theo độ dài chữ. V11: 56 vì cỡ chữ đã hạ 64→46.")]
+    [SerializeField] private float theLeNgang = 56f;
+
+    [Tooltip("Khung ngoài lồi ra bao nhiêu px mỗi phía so với nền trong. Đây là 'khung' Sếp yêu cầu.\n" +
+             "V11: 9 (cũ 14). shop_card_outer có vành nâu bake sẵn ~30/160 ⇒ khung đã dày trong art,\n" +
+             "cộng thêm 14 px nữa là viền dày gấp đôi và card phình.")]
+    [SerializeField] private float dayVienThe = 9f;
+
+    [Tooltip("Màu nhân vào KHUNG NGOÀI card.\n" +
+             "🔴 V11 ĐỂ TRẮNG — shop_card_outer ĐÃ BAKE nâu (184,127,67). Giá trị cũ\n" +
+             "(0.42,0.27,0.14) = (107,69,36) nhân vào nâu ⇒ (77,34,9) MÀU BÙN. Đó chính là\n" +
+             "cái Sếp gọi là xấu. Chỉ đổi field này khi art khung là ảnh TRẮNG/XÁM.")]
+    [SerializeField] private Color mauVienThe = Color.white;
+
+    [Tooltip("Màu nhân vào NỀN GIẤY trong card.\n" +
+             "🔴 V11 ĐỂ TRẮNG ĐỤC HẲN — shop_card_inner ĐÃ BAKE kem (254,245,226). Alpha cũ 0.97\n" +
+             "cho dải xanh nhạt của Button_Row hắt qua; giờ Button_Row đã bị ép trong suốt nên\n" +
+             "không cần hở, và đục hẳn thì chữ sẫm đọc rõ hơn.")]
+    [SerializeField] private Color mauNenThe = Color.white;
+
+    [Tooltip("Màu chữ giá. NỀN KEM nên chữ phải SẪM. Muốn card nền TỐI thì đổi mauNenThe về " +
+             "(0.10,0.10,0.12,0.92), field này về trắng, và vienChuTrang về 0.26.")]
+    [SerializeField] private Color mauChuGia = new Color(0.29f, 0.17f, 0.05f, 1f);
+
+    [Tooltip("Độ dày viền chữ. Chữ SẪM trên nền KEM cần viền TRẮNG mảnh (0.18), khác bản cũ " +
+             "là chữ trắng viền nâu dày 0.26.")]
+    [SerializeField] private float vienChuTrang = 0.18f;
+
+    [Tooltip("Cỡ chữ 'MUA VỚI GIÁ'. V11: 46 (cũ 64) ⇒ 33 px trên màn ở MỌI mức zoom VÀ mọi\n" +
+             "chiều cao màn (xem heSoManHinhToiDa). 33 px chữ IN HOA đậm là ngưỡng đọc thoải mái\n" +
+             "cho trẻ; 64 chỉ để bù cho việc bản cũ không có bù DPI.")]
+    [SerializeField] private float coChuNhan = 46f;
+
+    [Tooltip("Cỡ chữ SỐ GIÁ. To hơn nhãn vì đây là thứ mắt phải đọc trước tiên. V11: 56 ⇒ 40 px.")]
+    [SerializeField] private float coChuSo = 56f;
+
+    [Tooltip("Cỡ icon xu / kim cương. Bằng chiều cao số để đọc thành MỘT cụm. V11: 52 ⇒ 37 px.")]
+    [SerializeField] private float coIconTien = 52f;
+
+    [Tooltip("Y của hàng giá — 🔴 SO VỚI TÂM CARD, KHÔNG PHẢI so với Button_Row.\n" +
+             "ĐÂY LÀ MỘT LỖI THẬT CỦA VÒNG 10, đã đo: hàng giá là con của Confirm_Bar_Panel\n" +
+             "(anchorMin = anchorMax = 0.5) nên anchoredPosition tính từ TÂM CARD; còn 3 nút\n" +
+             "là con của Button_Row. Card lại lệch lên theTamY so với Button_Row, nên số này\n" +
+             "bị cộng thêm theTamY một lần nữa.\n" +
+             "Số cũ 132 với theCao 302 / theTamY 49: nửa cao card = 151, hàng giá phủ\n" +
+             "y ∈ [90, 174] trong hệ card ⇒ TRÀN RA NGOÀI ĐỈNH CARD 23 px. Chữ 'ĐẶT MIỄN PHÍ'\n" +
+             "vì thế dính sát mép trên tờ giấy, đúng cái nhìn Sếp gửi.\n" +
+             "\n" +
+             "V11 QUY VỀ MỘT HỆ, tất cả tính trong hệ Button_Row rồi trừ theTamY:\n" +
+             "  nút ✓ 148  → y ∈ [−74, +74]\n" +
+             "  hàng giá 60 → tâm 112, y ∈ [82, 142]      (hở 8 px trên nút)\n" +
+             "  card       → y ∈ [−88, +156] = cao 244, tâm +34 (= theTamY)\n" +
+             "  ⇒ hangGiaY (hệ CARD) = 112 − 34 = 78. Lề 14 px ở CẢ hai đầu card.\n" +
+             "BẤT BIẾN PHẢI GIỮ: hangGiaY + hangGiaCao/2 ≤ theCao/2 − 8\n" +
+             "              VÀ  hangGiaY + theTamY − hangGiaCao/2 > coNutXacNhan/2")]
+    [SerializeField] private float hangGiaY = 78f;
+
+    [Tooltip("Chiều cao ô chữ hàng giá. V11: 60 (cũ 84) — vừa đủ bọc số cỡ 56.")]
+    [SerializeField] private float hangGiaCao = 60f;
+
+    [Tooltip("Khe giữa nhãn / icon / số trong hàng giá. V11: 14 theo cỡ chữ mới.")]
+    [SerializeField] private float kheHangGia = 14f;
+
+    [Tooltip("Cạnh nút ✗ HUỶ (và ↻ XOAY, 🗑 XOÁ). V11: 128.\n" +
+             "SÀN CỨNG 123 — dưới mức đó là dưới 88 px đầu ngón tay trẻ. Suy ra:\n" +
+             "px = S × buZoom × H / (2·ortho); với bù DPI thì buZoom·H/(2·ortho) = 1080/1500 = 0.72\n" +
+             "⇒ S ≥ 88 / 0.72 = 122.3. Chọn 128 ⇒ 92.2 px, chừa 4 px biên.")]
+    [SerializeField] private float coNutHuy = 128f;
+
+    [Tooltip("Đường kính nút ✓ XÁC NHẬN. V11: 148 ⇒ 106.6 px trên màn.\n" +
+             "TO HƠN nút huỷ 15.6 % (148/128) — đây là hành động chính, và cỡ khác nhau là\n" +
+             "KÊNH PHÂN BIỆT THỨ BA sau hình (✓ đĩa TRÒN · ✗ VUÔNG bo góc) và màu.")]
+    [SerializeField] private float coNutXacNhan = 148f;
+
+    [Tooltip("Cỡ glyph ✗ trong nút. V11: 66 = 0.52 × 128, giữ đúng tỉ lệ cũ (84/152 = 0.55).")]
+    [SerializeField] private float coGlyphHuy = 66f;
+
+    [Tooltip("Cỡ glyph ✓ trong nút. V11: 82 = 0.55 × 148 — TO HƠN glyph ✗ (66) để kênh CỠ\n" +
+             "còn đọc được cả khi người chơi chỉ nhìn dấu, không nhìn nền nút.")]
+    [SerializeField] private float coGlyphXacNhan = 82f;
+
+    [Tooltip("Khe giữa 2 nút. V11: 44 ⇒ 31.7 px hở, tâm cách tâm (128+148)/2 + 44 = 182 ⇒ 131 px.\n" +
+             "Vẫn xa gấp 4 lần mức 8 px của hướng dẫn cảm ứng, mà card hẹp đi 28 px.\n" +
+             "GHI ĐÈ m_Spacing = 20 của prefab MỘT LẦN lúc dựng, không ghi mỗi frame.")]
+    [SerializeField] private float kheGiuaHaiNut = 44f;
+
+    [Tooltip("Khe hở giữa MÉP DƯỚI VÙNG Ô và ĐỈNH CARD, world unit ở zoom mốc (1 ô = 300 x 150).\n" +
+             "NHÂN THEO buZoom lúc chạy nên luôn cùng số px trên màn.\n" +
+             "V11: 30 ⇒ 21.6 px. Càng nhỏ card càng BÁM SÁT công trình, và quan trọng hơn:\n" +
+             "khe nhỏ + card thấp ⇒ ngưỡng phải-tránh-mép-màn tụt từ 313 px xuống 280 px,\n" +
+             "tức card ít bị đẩy đi hơn nhiều.")]
+    [SerializeField] private float kheHoDuoiVungO = 30f;
+
+    [Tooltip("Ortho size mốc để bù zoom. Đúng CameraController.defaultSize = 750.")]
+    [SerializeField] private float orthoThamChieu = 750f;
+
+    [Tooltip("Sàn hệ số bù zoom. 0.75 ⇒ zoom sát (ortho 400) card không phình che công trình.")]
+    [SerializeField] private float buZoomMin = 0.75f;
+
+    [Tooltip("Trần hệ số bù zoom. V11: 3.0 (cũ 2.0).\n" +
+             "VÌ SAO PHẢI NỚI: buZoom giờ nhân thêm bù DPI (caoManThamChieu / Screen.height).\n" +
+             "Màn cao 1080 trở lên ⇒ bù DPI = 1 ⇒ buZoom tối đa vẫn đúng 2.0 như cũ,\n" +
+             "KHÔNG ĐỔI GÌ. Chỉ màn 720 mới cần tới 1.5 × 2.0 = 3.0; nếu vẫn kẹp 2.0 thì\n" +
+             "máy 720p zoom hết ra nút chỉ còn 0.48 × cỡ = 61 px, dưới mức 88 px.")]
+    [SerializeField] private float buZoomMax = 3f;
+
+    [Tooltip("Lề an toàn hai bên màn, PIXEL.")]
+    [SerializeField] private float leAnToanNganPx = 40f;
+
+    [Tooltip("Lề an toàn ĐÁY màn, PIXEL. Canvas_HUD là Screen Space nên nó VẼ ĐÈ lên card bất kể " +
+             "sortingOrder — đây là thứ duy nhất giữ nút ✓ khỏi chui xuống dưới nút NẤU ĂN.\n" +
+             "170 = 120 đo thật (4 nút ~100 px, đáy cách đáy màn 20) + 50 biên: bóng đổ 8 px, " +
+             "nút nảy 1.1 lần ≈ 12 px, và 30 px dự phòng cho màn hẹp (CanvasScaler match 0.5).")]
+    [SerializeField] private float leAnToanDuoiPx = 170f;
+
+    [Tooltip("Lề an toàn ĐỈNH màn, PIXEL. 210 = 195 đo thật (avatar cách đỉnh 25.4 + khung cao 168) " +
+             "+ 15 dư. Lề này gần như không dùng tới vì card neo DƯỚI vùng ô.")]
+    [SerializeField] private float leAnToanTrenPx = 210f;
+
+    [Tooltip("BẬT = card LẬT SANG CẠNH khi công trình sát đáy màn.\n" +
+             "🔴 V11 CHỐT TẮT — ĐÂY LÀ THỦ PHẠM CHÍNH của 'không bám sát công trình'.\n" +
+             "Đo trên ô 1x1 (vùng ô 300 x 150): dx = nửa rộng vùng ô 150 + khe 48 + nửa rộng\n" +
+             "card 280 = 478 world = 344 px ⇒ card NHẢY 344 px sang bên, rời hẳn công trình.\n" +
+             "Mà nhánh này nổ RẤT DỄ: nó nổ khi đáy card < 170 px, tức khi mép dưới vùng ô\n" +
+             "chưa cao quá 313 px so với đáy màn — nửa dưới màn hình là vùng đất chính.\n" +
+             "TẮT ⇒ card LUÔN ĐỨNG TRÊN TRỤC X CỦA CÔNG TRÌNH, chỉ TRƯỜN LÊN theo trục Y\n" +
+             "(tối đa tới TÂM vùng ô) khi thiếu chỗ. Trườn lên chỉ phủ phần chân công trình,\n" +
+             "còn nhảy sang cạnh là đứt liên hệ thị giác.")]
+    [SerializeField] private bool luonLatSangCanh = false;
+
+    // ══════════════════════════════════════════════════════════════════════
+    [Header("V11 — BÙ DPI + TRẠNG THÁI TẮT CỦA NÚT ✓")]
+
+    [Tooltip("Chiều cao màn MỐC để bù DPI, PIXEL.\n" +
+             "VÌ SAO CẦN: card nằm trên canvas WORLD SPACE nên cỡ px của nó =\n" +
+             "  px = S × buZoom × Screen.height / (2 × ortho)\n" +
+             "Bản cũ buZoom chỉ tính theo ortho ⇒ px TỈ LỆ THUẬN với Screen.height. Con số\n" +
+             "'nút 152 = 109 px' của vòng 10 CHỈ ĐÚNG trên màn cao 1080; máy 720p thì nó là\n" +
+             "73 px, đã dưới mức 88 px mà không ai biết.\n" +
+             "Nhân buZoom thêm (caoManThamChieu / Screen.height) là px thành HẰNG SỐ:\n" +
+             "  px = S × (ortho/750) × (1080/H) × H / (2·ortho) = S × 1080/1500 = 0.72 × S\n" +
+             "— độc lập cả zoom LẪN chiều cao màn.")]
+    [SerializeField] private float caoManThamChieu = 1080f;
+
+    [Tooltip("TRẦN của riêng hệ số bù DPI. 1.6 ⇒ đỡ được tới màn cao 675 px.\n" +
+             "SÀN LUÔN LÀ 1.0 (kẹp trong code, không mở ra field): màn CAO HƠN 1080 thì\n" +
+             "hệ số < 1 sẽ THU NHỎ card — đúng về px nhưng làm card bé tí so với công trình,\n" +
+             "và trên màn nhiều pixel thì 0.72 × S đã dư sức đọc. Kẹp sàn 1.0 ⇒ máy 1080\n" +
+             "trở lên KHÔNG ĐỔI MỘT PIXEL so với vòng 10.")]
+    [SerializeField] private float heSoManHinhToiDa = 1.6f;
+
+    [Tooltip("Lề trong card cộng thêm quanh CỤM NÚT khi tự nới. Card không được hẹp hơn\n" +
+             "cụm nút, nếu không nút thò ra ngoài giấy.")]
+    [SerializeField] private float leNutTrongThe = 64f;
+
+    [Tooltip("Màu nhân vào NỀN GIẤY card khi vị trí KHÔNG ĐẶT ĐƯỢC. Hồng đất nhạt.\n" +
+             "ĐÂY LÀ KÊNH THỨ BA của trạng thái tắt: nút ✓ nói 'chưa bấm được', còn TỜ GIẤY\n" +
+             "nói 'vì CHỖ NÀY không được'. Không có kênh này thì người chơi chỉ thấy một nút\n" +
+             "mờ và kết luận là UI hỏng — đúng thứ Sếp đọc ra từ ảnh.")]
+    [SerializeField] private Color mauNenTheKhongHopLe = new Color(1f, 0.80f, 0.76f, 1f);
+
+    [Tooltip("Màu TRẠNG THÁI TẮT của nút (Button.colors.disabledColor), ghi lúc dựng.\n" +
+             "🔴 ALPHA PHẢI = 1. Prefab Placement_Ghost đang serialize (0.784,0.784,0.784, α 0.502)\n" +
+             "⇒ đĩa xanh (110,195,45) × cái đó = (68,121,28) MÀ CHỈ ĐỤC 50 % ⇒ nhìn xuyên thấy\n" +
+             "mặt đất qua nút. Mắt đọc ra 'nút bị lỗi/chưa load', không đọc ra 'chưa bấm được'.\n" +
+             "0.58 đục hẳn ⇒ (64,113,26) xanh ô liu sẫm: vẫn là NÚT, chỉ đang ngủ.\n" +
+             "Ghi qua code chứ không sửa prefab: đây là runtime assignment, không phải\n" +
+             "trông chờ giá trị mặc định (giá trị serialize sẵn thì code không đè được).")]
+    [SerializeField] private Color mauNutKhiTat = new Color(0.58f, 0.60f, 0.58f, 1f);
+
+    [Tooltip("Alpha của GLYPH khi nút bị tắt. V11: 0.90 (cũ 0.45).\n" +
+             "0.45 làm dấu ✓ gần như tan biến ⇒ người chơi không còn biết nút đó là nút gì.\n" +
+             "0.90 giữ dấu ✓ rõ nguyên hình, việc 'đang tắt' để cho nền nút nói.")]
+    [SerializeField] private float doMoGlyphKhiTat = 0.90f;
 
     // ══════════════════════════════════════════════════════════════════════
     [Header("V7 — 4 CHEVRON ÔM 4 GÓC VÙNG Ô")]
@@ -82,6 +305,7 @@ public class PlacementGhostVisualController : MonoBehaviour
     private Transform _frameRoot;
     private Transform _arrowRoot;
     private SpriteRenderer _fill;
+    private SpriteRenderer _softShadow;      // V10: giữ tham chiếu để bật/tắt theo showSoftShadow
     private SpriteRenderer[] _edges;
     private SpriteRenderer[] _edgeShadows;
     private SpriteRenderer[] _edgeHighlights;
@@ -117,6 +341,19 @@ public class PlacementGhostVisualController : MonoBehaviour
     private Button[]        _barButtons;    // 0 = ✕, 1 = ↻, 2 = ✓
     private Image[]         _barGlyphs;
     private bool[]          _barGlyphDim;
+
+    // ── V11 ──────────────────────────────────────────────────────────────────
+    private Image           _barNenGiay;    // tờ giấy trong card — nhuộm hồng khi không đặt được
+    private Image           _barRuyBang;    // ruy băng vàng THẬT sau hàng giá
+    private bool            _theDangBaoLoi; // cổng chặn: chỉ ghi màu giấy khi ĐỔI trạng thái
+    private float           _rongCumNutCuoi = -1f;  // ép xếp lại khi số nút hiện thay đổi
+
+    // ── V10: neo card vào world ──────────────────────────────────────────────
+    private RectTransform _uiRoot;                    // Placement_UI, cache một lần
+    private Vector3       _tamVungOLocal;             // ConfigureFromLocalBounds ghi vào
+    private float         _rongVungOLocal = 1.35f;
+    private float         _caoVungOLocal  = 0.95f;
+    private float         _theRongHienTai = 392f;     // LayoutPriceRow ghi vào (V11: theo theRongToiThieu mới)
 
     // ── V7: 4 chevron theo vùng ô ────────────────────────────────────────────
     private Transform        _chevronRoot;
@@ -173,6 +410,7 @@ public class PlacementGhostVisualController : MonoBehaviour
         _fill.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
 
         SpriteRenderer shadow = CreateOrGetRenderer(_frameRoot, "Soft_Shadow", _diamondSprite, BaseOrder);
+        _softShadow = shadow;
         shadow.color = shadowColor;
         shadow.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
         shadow.transform.localPosition = new Vector3(0f, -0.07f, 0f);
@@ -249,6 +487,34 @@ public class PlacementGhostVisualController : MonoBehaviour
 
         EnsureConfirmBar();     // thử lại tới khi Button_Row + Canvas sẵn sàng
         RefreshConfirmBar();
+    }
+
+    /// <summary>
+    /// 🔴 V11 — NEO CARD VÀ 4 CHEVRON CHUYỂN TỪ Update() SANG LateUpdate().
+    ///
+    /// ĐÂY LÀ NGUYÊN NHÂN THỨ HAI của "không bám sát công trình", và là nguyên nhân
+    /// KHÔNG NHÌN RA ĐƯỢC bằng cách đọc riêng file này.
+    ///
+    /// `PlacementManager.Update()` làm HAI việc mỗi frame khi người chơi ĐANG GIỮ chuột:
+    ///     currentGhost.transform.position = GetSnappedMousePos(size);   // dòng ~778
+    ///     currentRect = CurrentRectOf(size);                            // dòng ~785
+    /// Cả vị trí ghost LẪN `CurrentRect` đều được ghi TRONG Update.
+    ///
+    /// ProjectSettings KHÔNG CÓ MonoManager.asset ⇒ project này CHƯA đặt Script Execution
+    /// Order ⇒ thứ tự Update giữa PlacementManager và class này là KHÔNG XÁC ĐỊNH. Nếu
+    /// class này chạy trước, card và 4 chevron đọc vị trí CỦA FRAME TRƯỚC. Mà ghost snap
+    /// theo lưới iso nên mỗi bước nhảy trọn MỘT Ô = 300 x 150 world; trễ một frame là card
+    /// lệch cả một ô suốt thời gian kéo — đúng cảm giác "card trôi theo sau công trình".
+    ///
+    /// LateUpdate LUÔN chạy sau MỌI Update trong cùng frame (bảo đảm của Unity, không phụ
+    /// thuộc thứ tự script) ⇒ hết trễ, và KHÔNG cần sửa PlacementManager hay thêm
+    /// MonoManager.asset (hai thứ đều ngoài phạm vi file này).
+    /// </summary>
+    private void LateUpdate()
+    {
+        if (!_built) return;
+
+        NeoCardVaoWorld();      // V10 — đặt card dưới vùng ô + bù zoom + tránh mép màn
         UpdateChevrons();
     }
 
@@ -307,6 +573,12 @@ public class PlacementGhostVisualController : MonoBehaviour
 
         float width = Mathf.Max(1.35f, localWidth);
         float height = Mathf.Max(0.95f, localHeight);
+
+        // V10: hai số này đang bị tính rồi BỎ ĐI. NeoCardVaoWorld() cần chúng để đặt card
+        // dưới MÉP DƯỚI VÙNG Ô thật, chứ không phải dưới gốc ghost như bản cũ.
+        _tamVungOLocal  = localCenter;
+        _rongVungOLocal = width;
+        _caoVungOLocal  = height;
         float edgeThickness = Mathf.Clamp(Mathf.Min(width, height) * 0.11f, 0.12f, 0.28f);
 
         _frameRoot.localPosition = localCenter;
@@ -384,8 +656,17 @@ public class PlacementGhostVisualController : MonoBehaviour
         Color fill = valid ? validFillColor : invalidFillColor;
         Color edge = valid ? validEdgeColor : invalidEdgeColor;
 
+        // V10: áp cờ MỖI LẦN đổi trạng thái, không chỉ lúc EnsureBuilt.
+        // Ghost được tái sử dụng qua nhiều lượt đặt và ConfigureFromLocalBounds có thể
+        // chạy lại giữa lượt, nên đặt một lần lúc dựng là có ngày bị bật lại lặng lẽ.
         if (_fill != null)
-            _fill.color = fill;
+        {
+            _fill.enabled = showTileFill;
+            _fill.color   = fill;
+        }
+
+        if (_softShadow != null)
+            _softShadow.enabled = showSoftShadow;
 
         if (_edges != null)
             foreach (SpriteRenderer sr in _edges)
@@ -628,10 +909,16 @@ public class PlacementGhostVisualController : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     // V6 — THANH XÁC NHẬN KIỂU TOWNSHIP
     //
-    //   ┌────────────────────────────┐
-    //   │   MUA VỚI GIÁ  🪙 30       │  ← nền tối bo góc, GIÁ Ở HÀNG TRÊN
-    //   │    (✕)     (↻)     (✓)     │  ← 3 nút TRÒN, thứ tự huỷ · xoay · xác nhận
-    //   └────────────────────────────┘
+    //   ┌──────────────────────────────┐  ← shop_card_outer (khung nâu, art thật)
+    //   │ ╔══════════════════════════╗ │  ← shop_card_inner (giấy kem, art thật)
+    //   │ ║ ▓MUA VỚI GIÁ 🪙 30▓      ║ │  ← ribbon_banner_gold (ruy băng vàng, art thật)
+    //   │ ║   [✗]          (✓)       ║ │  ← ✗ VUÔNG đỏ 128 · ✓ ĐĨA xanh 148
+    //   │ ╚══════════════════════════╝ │
+    //   └──────────────────────────────┘
+    //
+    // V11: ✗ VUÔNG BO GÓC (btn_red_small 9-slice) · ✓ ĐĨA TRÒN (check_badge_green).
+    // Nút ↻ XOAY đang bị BindGhostButtons SetActive(false) — Sếp đã bỏ tính năng xoay.
+    // Nút 🗑 XOÁ chỉ tồn tại ở Editor / DEVELOPMENT_BUILD.
     //
     // VÌ SAO XÁC NHẬN Ở BÊN PHẢI: thuận tay phải, và quan trọng hơn — nó ĐỨNG XA nút huỷ
     // nhất. Bản cũ để ✓ ngay cạnh ✕ nên bấm trượt là mất luôn lượt đặt.
@@ -642,14 +929,10 @@ public class PlacementGhostVisualController : MonoBehaviour
     // ĐƠN VỊ: canvas `Placement_UI` có localScale 0.01 nằm dưới root scale 100 ⇒ tích = 1,
     // nên 1 "pixel" UI ở đây đúng bằng 1 world unit. Hàng nút cao 126, tâm ở y = 0
     // (xem PlacementManager.StyleGhostActionBar) ⇒ nút chiếm y ∈ [−63, +63].
-    private const float PanelMinWidth  = 438f;   // 3 nút 120 + 2 khe 20 + lề 19 mỗi bên
-    private const float PanelHeight    = 218f;   // bọc từ dưới nút tới trên hàng giá
-    private const float PanelCenterY   = 35f;    // tâm khối (nút + hàng giá) so với Button_Row
-    private const float PriceRowY      = 100f;   // hàng giá nằm sát TRÊN hàng nút
-    private const float PriceRowHeight = 56f;
-    private const float CoinIconSize   = 44f;
-    private const float PriceGap       = 12f;
-    private const float GlyphSize      = 62f;    // ✕ ↻ ✓ trong nút 120
+    // V10: 8 hằng số cứng cũ đã thành [SerializeField] ở đầu file để Sếp tinh chỉnh được.
+    // Con số cũ (438/218/35/100/56/44/12/62) là thủ phạm "chữ bé xíu, nút bé": ở zoom hết ra
+    // (ortho 1500) chữ 38 chỉ còn 13.7 px và nút 120 chỉ còn 43 px trên máy cao 1080.
+    private const float CanvasScaleGoc = 0.01f;   // localScale gốc của Placement_UI trong prefab
 
     /// <summary>
     /// Dựng NỀN TỐI BO GÓC bọc cả cụm + đổi 3 nút vuông thành 3 nút TRÒN đúng thứ tự.
@@ -699,53 +982,128 @@ public class PlacementGhostVisualController : MonoBehaviour
         _barPanel.anchorMin        = new Vector2(0.5f, 0.5f);
         _barPanel.anchorMax        = new Vector2(0.5f, 0.5f);
         _barPanel.pivot            = new Vector2(0.5f, 0.5f);
-        _barPanel.anchoredPosition = new Vector2(0f, PanelCenterY);
-        _barPanel.sizeDelta        = new Vector2(PanelMinWidth, PanelHeight);
+        _barPanel.anchoredPosition = new Vector2(0f, theTamY);
+        _barPanel.sizeDelta        = new Vector2(theRongToiThieu, theCao);
         _barPanel.SetAsFirstSibling();
 
         var ignore = panelGo.AddComponent<LayoutElement>();
         ignore.ignoreLayout = true;
 
-        // Ô art `PriceBarBg`: chưa gán thì dùng panel vẽ bằng code, tô MÀU NHẬN DẠNG
-        // (đen) để Edric biết chỗ này thả nền thanh giá vào.
-        ConstructionArtKit.ResolveSafe(kit, ConstructionArtKit.Slot.PriceBarBg,
-                                       ConstructionSpriteFactory.Panel(96, 96, 28),
-                                       out Sprite barSpr, out Color barCol);
+        // ── CARD BO GÓC: KHUNG NGOÀI + NỀN TRONG ─────────────────────────────
+        // HAI Image lồng nhau, không phải một: đó là cách duy nhất cho khung và nền HAI MÀU
+        // KHÁC NHAU. Cùng mẫu với popup_frame_wood + popup_panel_paper của popup còn lại.
+        //
+        // V11 — ART THẬT LÀ ĐƯỜNG CHÍNH. Đã kiểm tay từng file:
+        //   shop_card_outer 160x210 border 30/30/30/30 · CÓ trong Resources/UI/Standard
+        //   shop_card_inner 140x170 border 28/28/28/28 · CÓ trong Resources/UI/Standard
+        // Card 392x244 ⇒ cần 60 và 56 px cho hai vành ⇒ Sliced còn dư chỗ, góc bo KHÔNG méo
+        // kể cả khi card tự nới theo chữ.
+        // `PlacementKitSpriteFactory.TheKhungNgoai()` bọc sẵn cả nhánh dự phòng thủ tục
+        // nên ở đây KHÔNG cần `??` nữa — một chỗ quyết định, khỏi lệch giữa hai file.
+        Sprite sprKhung = PlacementKitSpriteFactory.TheKhungNgoai();
 
-        var barBg = panelGo.AddComponent<Image>();
-        barBg.sprite        = barSpr;
-        barBg.type          = Image.Type.Sliced;
-        barBg.color         = barCol;
-        barBg.raycastTarget = false;    // KHÔNG chặn tia chuột tới 3 nút nằm trên nó
+        var khungBg = panelGo.AddComponent<Image>();
+        khungBg.sprite        = sprKhung;
+        khungBg.type          = PlacementKitSpriteFactory.LaSprite9Slice(sprKhung)
+                              ? Image.Type.Sliced : Image.Type.Simple;
+        khungBg.color         = mauVienThe;   // V11 = TRẮNG, xem tooltip của field
+        khungBg.raycastTarget = false;   // KHÔNG chặn tia chuột tới 2 nút nằm trên nó
 
         var shadow = panelGo.AddComponent<Shadow>();
         shadow.effectColor    = new Color(0f, 0f, 0f, 0.34f);
-        shadow.effectDistance = new Vector2(0f, -6f);
+        shadow.effectDistance = new Vector2(0f, -8f);
+
+        // Nền trong: ô art `PriceBarBg` của ArtKit VẪN được tôn trọng nếu Sếp gán đúng một
+        // sprite 9-slice. Trước vòng này nó đang trỏ vào btn_CloseRanking.png (1179x211,
+        // spriteBorder 0/0/0/0) tức NÚT CLOSE của bảng xếp hạng — border 0 làm Sliced tụt
+        // về kéo giãn phẳng, ảnh 1179 bị bóp về 438 nên góc bo bake trong art méo thành GÓC
+        // CỨNG. Đó chính là "hộp nâu chữ nhật trơn, viền cứng".
+        ConstructionArtKit.ResolveSafe(kit, ConstructionArtKit.Slot.PriceBarBg,
+                                       PlacementKitSpriteFactory.TheNenTrong(),
+                                       out Sprite sprNen, out Color boMauNen);
+        // `boMauNen` CỐ Ý không dùng: `mauNenThe` là nguồn sự thật duy nhất cho màu nền
+        // card. Biến out gán mà không đọc thì C# KHÔNG cảnh báo, nên để tên thật cho dễ
+        // đọc thay vì discard `out Color _`.
+
+        // Con ĐẦU TIÊN của _barPanel ⇒ UGUI vẽ nó TRƯỚC 3 node chữ tạo ở bước 2 ⇒ nằm DƯỚI
+        // chữ mà khỏi phải đụng sortingOrder.
+        var nenGo = new GameObject("The_Nen", typeof(RectTransform));
+        nenGo.layer = row.gameObject.layer;
+        var nenRt = (RectTransform)nenGo.transform;
+        nenRt.SetParent(_barPanel, false);
+        nenRt.anchorMin = Vector2.zero;                       // kéo đầy cha rồi thụt vào
+        nenRt.anchorMax = Vector2.one;                        // ⇒ card nới thì nền tự nới theo
+        nenRt.offsetMin = new Vector2( dayVienThe,  dayVienThe);
+        nenRt.offsetMax = new Vector2(-dayVienThe, -dayVienThe);
+
+        var nenBg = nenGo.AddComponent<Image>();
+        nenBg.sprite        = sprNen;
+        nenBg.type          = PlacementKitSpriteFactory.LaSprite9Slice(sprNen)
+                            ? Image.Type.Sliced : Image.Type.Simple;
+        nenBg.color         = mauNenThe;
+        nenBg.raycastTarget = false;
+        _barNenGiay         = nenBg;   // V11: RefreshConfirmBar nhuộm hồng khi không đặt được
 
         if (ConstructionArtKit.WantLabels(kit))
             ConstructionSiteVisuals.AttachSlotLabel(_barPanel,
                                                     ConstructionArtKit.Slot.PriceBarBg, kit);
 
-        // ── 2. HÀNG GIÁ (chữ + icon tiền + số) ───────────────────────────────
-        _barLabel  = MakeBarText(_barPanel, "Text_Nhan", buyLabel, 38f);
-        _barCoin   = MakeBarIcon(_barPanel, "Icon_Tien");
-        _barNumber = MakeBarText(_barPanel, "Text_Gia", "0", 40f);
+        // ── 2. HÀNG GIÁ: RUY BĂNG VÀNG THẬT + chữ + icon tiền + số ───────────
+        // Sếp: "gắn assets đã có vào, đừng chỉ dựng khung nền". Ruy băng là art THẬT
+        // (ribbon_banner_gold 128x48, border 28/14/28/14, CÓ trong Resources/UI/Standard),
+        // dựng TRƯỚC 3 node chữ nên UGUI vẽ nó DƯỚI chữ mà khỏi đụng sortingOrder.
+        // Nó làm ba việc: (1) tách hàng giá khỏi hàng nút thành hai tầng đọc rõ ràng,
+        // (2) cho chữ nâu sẫm một nền vàng tương phản cao, (3) là chi tiết art thật đầu
+        // tiên trên card thay vì thêm một hình chữ nhật vẽ bằng code.
+        Sprite sprRuyBang = PlacementKitSpriteFactory.TheRuyBangGia();
+        _barRuyBang = MakeBarIcon(_barPanel, "Ruy_Bang_Gia");
+        _barRuyBang.sprite         = sprRuyBang;
+        _barRuyBang.type           = PlacementKitSpriteFactory.LaSprite9Slice(sprRuyBang)
+                                   ? Image.Type.Sliced : Image.Type.Simple;
+        _barRuyBang.preserveAspect = false;   // Sliced + preserveAspect là hai thứ đánh nhau
+        _barRuyBang.color          = Color.white;   // ribbon đã bake vàng (255,195,60)
 
-        // ── 3. BA NÚT TRÒN, THỨ TỰ ✕ → ↻ → ✓ ────────────────────────────────
+        _barLabel  = MakeBarText(_barPanel, "Text_Nhan", buyLabel, coChuNhan);
+        _barCoin   = MakeBarIcon(_barPanel, "Icon_Tien");
+        _barNumber = MakeBarText(_barPanel, "Text_Gia", "0", coChuSo);
+
+        // ── 3. BỐN NÚT, THỨ TỰ 🗑 → ✗ → ↻ → ✓ (bản phát hành chỉ hiện ✗ và ✓) ─
         // Nền đang ở index 0 nên nút bắt đầu từ 1. Layout group bỏ qua nền (ignoreLayout)
         // và chỉ xếp 3 nút theo thứ tự tương đối 1 < 2 < 3.
         // Nút XOÁ nằm ở NGOÀI CÙNG BÊN TRÁI — xa nút ✓ nhất có thể.
         // Đây là hành động phá hoại, đặt cạnh xác nhận là mời tai nạn.
         EnsureDeleteButton(row);
 
+        // ✗ và ✓ khác nhau BA kênh ĐỘC LẬP, không chỉ khác màu (trẻ chưa đọc chữ + người mù màu):
+        //   HÌNH : ✗ VUÔNG BO GÓC (btn_red_small 9-slice) · ✓ ĐĨA TRÒN (check_badge_green)
+        //   CỠ   : ✗ 128                                  · ✓ 148 (to hơn 15.6 %)
+        //   MÀU  : ✗ đỏ (221,76,69) bake sẵn              · ✓ xanh (110,195,45) bake sẵn
+        //
+        // 🔴 HÌNH ĐÃ ĐỔI VAI so với vòng 10 (trước: ✗ tròn / ✓ vuông). ART THẬT quyết định:
+        // check_badge_green là ĐĨA border 0 (chỉ đúng khi Simple), btn_red_small là THANH
+        // 256x96 border 28 (chỉ đúng khi Sliced). Ép ngược là đĩa bị kéo méo, thanh bị bóp dẹt.
+        // Đổi vai KHÔNG làm mất kênh nào: vẫn ba kênh, và ✓ tròn xanh là chuẩn Township.
+        //
+        // TINT = TRẮNG cho ✗ / ✓ / ↻ vì art đã bake màu. Chỉ 🗑 XOÁ mới tint (0.70,0.58,0.58)
+        // để đỏ tươi (221,76,69) thành đỏ GẠCH SẪM (155,44,40): hai nút này nằm cạnh nhau mà
+        // hậu quả khác hẳn (huỷ = trả về chỗ cũ · xoá = mất hẳn công trình) nên phải khác màu.
+        // VỊ TRÍ GIỮ NGUYÊN (✗ trái, ✓ phải) để không phá phản xạ tay của người đã chơi.
         StyleRoundButton(row, "Btn_Delete",  deleteButtonColor,  1,
-                         ConstructionSpriteFactory.TrashCan());
+                         PlacementKitSpriteFactory.GlyphXoa(),
+                         PlacementKitSpriteFactory.NenNutHuy(),      coNutHuy,      coGlyphHuy);
         StyleRoundButton(row, "Btn_Cancel",  cancelButtonColor,  2,
-                         ConstructionSpriteFactory.CrossMark());
+                         ConstructionSpriteFactory.CrossMark(),
+                         PlacementKitSpriteFactory.NenNutHuy(),      coNutHuy,      coGlyphHuy);
         StyleRoundButton(row, "Btn_Rotate",  rotateButtonColor,  3,
-                         ConstructionSpriteFactory.RotateArrow());
+                         ConstructionSpriteFactory.RotateArrow(),
+                         PlacementKitSpriteFactory.NenNutXoay(),     coNutHuy,      coGlyphHuy);
         StyleRoundButton(row, "Btn_Confirm", confirmButtonColor, 4,
-                         ConstructionSpriteFactory.CheckMark());
+                         PlacementKitSpriteFactory.GlyphXacNhan(),
+                         PlacementKitSpriteFactory.NenNutXacNhan(),  coNutXacNhan,  coGlyphXacNhan);
+
+        // GHI ĐÈ m_Spacing = 20 của prefab. MỘT LẦN lúc dựng, không ghi mỗi frame.
+        var hlg = row.GetComponent<HorizontalLayoutGroup>();
+        if (hlg != null) hlg.spacing = kheGiuaHaiNut;
 
         // Ghi nhớ cặp (Button, glyph) để RefreshConfirmBar() làm mờ glyph khi nút bị disable.
         _barButtons  = new Button[3];
@@ -797,7 +1155,16 @@ public class PlacementGhostVisualController : MonoBehaviour
             bool nenHien = PlacementManager.Instance != null
                         && PlacementManager.Instance.IsEditingBuilding;
             if (_deleteButton.gameObject.activeSelf != nenHien)
+            {
                 _deleteButton.gameObject.SetActive(nenHien);
+
+                // V11: SỐ NÚT ĐANG HIỆN vừa đổi ⇒ bề rộng cụm nút đổi ⇒ card phải xếp lại,
+                // nếu không nút 🗑 thò ra ngoài tờ giấy. Xoá nhãn cũ là cổng chặn của
+                // RefreshConfirmBar mở ra và LayoutPriceRow chạy ngay frame này.
+                // Chỉ ở Editor / DEVELOPMENT_BUILD mới có nút 🗑 nên đây là đường hiếm,
+                // KHÔNG phải việc mỗi frame.
+                if (_rongCumNutCuoi != RongCumNutHienTai()) _barLastLabel = null;
+            }
         }
 
         // ── LÀM MỜ GLYPH THEO TRẠNG THÁI NÚT ────────────────────────────────
@@ -818,8 +1185,23 @@ public class PlacementGhostVisualController : MonoBehaviour
                 if (dim == _barGlyphDim[i]) continue;   // không đổi → khỏi dirty canvas
 
                 _barGlyphDim[i] = dim;
-                g.color = dim ? new Color(1f, 1f, 1f, 0.45f) : Color.white;
+                // V11: 0.90 chứ không 0.45. Ở 0.45 dấu ✓ gần như tan biến ⇒ người chơi
+                // không còn biết nút đó LÀ nút gì. Việc "đang tắt" đã do NỀN nút nói
+                // (mauNutKhiTat, đục hẳn) và do TỜ GIẤY nói (khối ngay dưới đây).
+                g.color = dim ? new Color(1f, 1f, 1f, doMoGlyphKhiTat) : Color.white;
             }
+        }
+
+        // ── KÊNH THỨ BA CỦA TRẠNG THÁI TẮT: TỜ GIẤY BÁO LÝ DO ───────────────
+        // Nút ✓ mờ chỉ nói "chưa bấm được". Tờ giấy chuyển hồng đất nói "vì CHỖ NÀY".
+        // Không có kênh này thì người chơi (nhất là trẻ) kết luận nút bị hỏng — đúng thứ
+        // Sếp đọc ra từ ảnh. Đọc `_lastValid` (SetValid cấp mỗi frame, cùng nguồn với 4
+        // chevron đỏ) chứ KHÔNG đọc `btnConfirm.interactable`: hai thứ cùng gốc isValidPos
+        // nhưng `_lastValid` không phụ thuộc việc BindGhostButtons đã chạy chưa.
+        if (_barNenGiay != null && _theDangBaoLoi != !_lastValid)
+        {
+            _theDangBaoLoi     = !_lastValid;
+            _barNenGiay.color  = _theDangBaoLoi ? mauNenTheKhongHopLe : mauNenThe;
         }
 
         PlacementManager pm = PlacementManager.Instance;
@@ -868,7 +1250,7 @@ public class PlacementGhostVisualController : MonoBehaviour
 
         _barLabel.text = label;
         float labelW = Mathf.Max(1f, _barLabel.preferredWidth);
-        _barLabel.rectTransform.sizeDelta = new Vector2(labelW + 8f, PriceRowHeight);
+        _barLabel.rectTransform.sizeDelta = new Vector2(labelW + 8f, hangGiaCao);
 
         float numberW = 0f;
         if (_barNumber != null)
@@ -878,7 +1260,7 @@ public class PlacementGhostVisualController : MonoBehaviour
             {
                 _barNumber.text = number;
                 numberW = Mathf.Max(1f, _barNumber.preferredWidth);
-                _barNumber.rectTransform.sizeDelta = new Vector2(numberW + 8f, PriceRowHeight);
+                _barNumber.rectTransform.sizeDelta = new Vector2(numberW + 8f, hangGiaCao);
             }
         }
 
@@ -892,41 +1274,291 @@ public class PlacementGhostVisualController : MonoBehaviour
         }
 
         float total = labelW
-                    + (showMoney ? PriceGap + CoinIconSize + PriceGap * 0.6f + numberW : 0f);
+                    + (showMoney ? kheHangGia + coIconTien + kheHangGia * 0.6f + numberW : 0f);
         float x = -total * 0.5f;
 
-        _barLabel.rectTransform.anchoredPosition = new Vector2(x + labelW * 0.5f, PriceRowY);
+        _barLabel.rectTransform.anchoredPosition = new Vector2(x + labelW * 0.5f, hangGiaY);
         x += labelW;
 
         if (showMoney)
         {
-            x += PriceGap;
+            x += kheHangGia;
             if (_barCoin != null)
                 _barCoin.rectTransform.anchoredPosition =
-                    new Vector2(x + CoinIconSize * 0.5f, PriceRowY);
+                    new Vector2(x + coIconTien * 0.5f, hangGiaY);
 
-            x += CoinIconSize + PriceGap * 0.6f;
+            x += coIconTien + kheHangGia * 0.6f;
             if (_barNumber != null)
                 _barNumber.rectTransform.anchoredPosition =
-                    new Vector2(x + numberW * 0.5f, PriceRowY);
+                    new Vector2(x + numberW * 0.5f, hangGiaY);
         }
 
-        // Nền phải bọc được hàng chữ dài nhất — tiếng Việt dài hơn tiếng Đức của ảnh mẫu.
-        _barPanel.sizeDelta = new Vector2(Mathf.Max(PanelMinWidth, total + 56f), PanelHeight);
+        // ── BỀ RỘNG CARD ─────────────────────────────────────────────────────
+        // Nền phải bọc được HAI thứ, lấy cái rộng hơn:
+        //   (1) hàng chữ dài nhất — tiếng Việt dài hơn tiếng Đức của ảnh mẫu;
+        //   (2) CỤM NÚT THẬT ĐANG HIỆN. (2) là điều vòng 10 bỏ sót: theRongToiThieu là
+        //       một CON SỐ CỨNG, nên hôm nào Sếp bật lại choPhepXoayCongTrinh (3 nút) hoặc
+        //       chạy Editor build (thêm 🗑 = 4 nút) là nút thò ra ngoài tờ giấy. Đo thẳng
+        //       hàng nút thì mọi cấu hình đều tự vừa.
+        // TÍNH TRƯỚC ruy băng: ruy băng cần biết bề rộng card MỚI, không phải của frame cũ.
+        float rongCumNut    = RongCumNutHienTai();
+        _rongCumNutCuoi     = rongCumNut;
+        _theRongHienTai     = Mathf.Max(theRongToiThieu,
+                              Mathf.Max(total + theLeNgang, rongCumNut + leNutTrongThe));
+        _barPanel.sizeDelta = new Vector2(_theRongHienTai, theCao);
+
+        // ── RUY BĂNG VÀNG: bọc đúng hàng giá, KHÔNG kéo đầy card ─────────────
+        // Bọc `total` + lề 26 mỗi bên, nhưng luôn hẹp hơn card 44 px (22 mỗi bên) để mắt
+        // đọc ra HAI TẦNG (giá ở trên · nút ở dưới). Kéo đầy card thì hai tầng dính lại
+        // thành một khối và ruy băng mất tác dụng phân tầng.
+        // Sàn 120 để 9-slice không bị bóp: ribbon_banner_gold border ngang 28 + 28 = 56.
+        if (_barRuyBang != null)
+        {
+            float rongRuyBang = Mathf.Min(total + 52f, Mathf.Max(120f, _theRongHienTai - 44f));
+            _barRuyBang.rectTransform.sizeDelta        = new Vector2(rongRuyBang, hangGiaCao + 6f);
+            _barRuyBang.rectTransform.anchoredPosition = new Vector2(0f, hangGiaY);
+        }
     }
 
     /// <summary>
-    /// Biến một nút VUÔNG của prefab thành nút TRÒN kiểu Township + đặt lại thứ tự.
+    /// Bề rộng THẬT của cụm nút đang hiện trong Button_Row = tổng sizeDelta.x của các con
+    /// ĐANG BẬT (bỏ chính card, vì card mang LayoutElement.ignoreLayout) + khe giữa chúng.
+    ///
+    /// Đúng công thức HorizontalLayoutGroup đang xếp, nên card không bao giờ hẹp hơn nút.
+    /// Vòng qua tối đa 5 con, gọi CHỈ KHI nội dung hàng giá đổi ⇒ không phải việc mỗi frame.
+    /// </summary>
+    private float RongCumNutHienTai()
+    {
+        Transform row = _barPanel != null ? _barPanel.parent : null;
+        if (row == null) return coNutXacNhan + kheGiuaHaiNut + coNutHuy;
+
+        float tong = 0f;
+        int   dem  = 0;
+        for (int i = 0; i < row.childCount; i++)
+        {
+            Transform con = row.GetChild(i);
+            if (con == null || con == (Transform)_barPanel) continue;
+            if (!con.gameObject.activeSelf) continue;
+            if (con is RectTransform rt) { tong += Mathf.Abs(rt.sizeDelta.x); dem++; }
+        }
+
+        // Chưa thấy nút nào (EnsureConfirmBar vừa dựng, layout chưa chạy) → lấy cấu hình
+        // BẢN PHÁT HÀNH (✗ + ✓) làm mức sàn, đừng trả 0 rồi để card co lại một frame.
+        if (dem == 0) return coNutXacNhan + kheGiuaHaiNut + coNutHuy;
+        return tong + kheGiuaHaiNut * (dem - 1);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // V10 — NEO CARD VÀO WORLD
+    //
+    // BA THỨ SAI Ở BẢN CŨ (đo trên SCN_Farm, ô lưới 300 x 150 sau khi Dev U sửa IsoGrid):
+    //  1. `Placement_UI` đứng CỐ ĐỊNH ở localPosition (-0.04, -2.62); root scale 100 nên card
+    //     luôn ở y = -262 world, chiếm y ∈ [-336, -118]. KHÔNG dòng code nào sửa (grep
+    //     "Placement_UI" toàn bộ .cs chỉ ra 1 hit và là comment). Nửa cao vùng ô lại lớn dần
+    //     theo footprint (IsoGrid.FootprintWorldSize, CellHeight 150): 1x1 = 75, 2x2 = 150.
+    //     ⇒ 1x1 hở đúng 43 world (31 px ở zoom mặc định, 15 px khi zoom hết ra — dán vào
+    //     chân nhà), còn 2x2 thì ĐÈ 32 world lên vùng ô. 2x2 là CHUỒNG và MÁY, đúng nhóm
+    //     công trình đắt nhất mà người chơi ngắm lâu nhất. Đây là "che mất công trình".
+    //  2. Canvas world-space có cỡ world CỐ ĐỊNH, camera zoom ortho 400 → 1500
+    //     (CameraController.minSize/maxSize, defaultSize 750). Zoom hết ra là mọi thứ teo một
+    //     nửa ⇒ chữ 38 còn 13.7 px trên máy cao 1080. Đây là "chữ bé xíu". Tăng cỡ chữ KHÔNG
+    //     đủ, phải bù zoom.
+    //  3. Không xử lý mép màn: công trình sát đáy màn là card lọt ra ngoài, hoặc chui xuống
+    //     dưới thanh HUD (Canvas_HUD là Screen Space nên nó vẽ ĐÈ bất kể sortingOrder).
+    //
+    // NEO THEO MÉP DƯỚI VÙNG Ô, KHÔNG NEO GÓC MÀN HÌNH: mắt người chơi đang dán vào công
+    // trình, card phải đi cùng nó; neo góc màn là bắt mắt đi hai nơi. Chọn phía DƯỚI vì sprite
+    // công trình luôn vươn LÊN khỏi footprint (doc DEV-1 §5.1) nên dưới là chỗ chắc trống.
+    // Neo theo `_caoVungOLocal` (vùng ô THẬT) ⇒ việc đè thành BẤT KHẢ THI với mọi cỡ footprint,
+    // kể cả cỡ Dev U thêm sau này, chứ không phải chọn được một offset may mắn.
+    //
+    // Bù zoom scale cả Button_Row và 2 nút nằm trong đó, nên
+    // `PlacementManager.IsMouseOverRect` (đọc trực tiếp RectTransform) tự đúng theo — KHÔNG
+    // cần sửa gì bên PlacementManager. Và nó KHÔNG đụng `AnimateGhostActionBar` (hàm đó scale
+    // Button_Row, đây scale Placement_UI ở trên một bậc, hai thứ nhân vào nhau bình thường).
+    // ══════════════════════════════════════════════════════════════════════
+    private void NeoCardVaoWorld()
+    {
+        if (!_barBuilt) return;
+
+        if (_uiRoot == null)
+            _uiRoot = FindChildDeep(transform, "Placement_UI") as RectTransform;
+        if (_uiRoot == null) return;
+
+        Camera cam = Camera.main;
+        if (cam == null || !cam.orthographic) return;
+
+        // ── 1. BÙ ZOOM + BÙ DPI ──────────────────────────────────────────
+        // Bù DPI kẹp SÀN 1.0 (không kẹp trần bằng field): màn CAO HƠN 1080 thì hệ số < 1
+        // sẽ THU NHỎ card — đúng về px nhưng card bé tí so với công trình, mà trên màn nhiều
+        // pixel thì 0.72 x cỡ đã dư sức đọc. Kẹp sàn 1.0 ⇒ mọi máy 1080 trở lên chạy y
+        // NGUYÊN như vòng 10, KHÔNG lệch một pixel.
+        float heSoManHinh = Mathf.Clamp(caoManThamChieu / Mathf.Max(1f, Screen.height),
+                                        1f, Mathf.Max(1f, heSoManHinhToiDa));
+        float buZoom = Mathf.Clamp(cam.orthographicSize / Mathf.Max(1f, orthoThamChieu) * heSoManHinh,
+                                   buZoomMin, buZoomMax);
+        _uiRoot.localScale = Vector3.one * (CanvasScaleGoc * buZoom);
+
+        float nuaRongCard = _theRongHienTai * 0.5f * buZoom;
+        float nuaCaoCard  = theCao  * 0.5f * buZoom;
+        float buTamKhoi   = theTamY * buZoom;
+
+        // Khe hở PHẢI nhân buZoom cùng card. Để world cố định thì zoom hết ra card to gấp
+        // đôi mà khe teo còn 17 px ⇒ nút cao 121 px cách công trình 17 px, dán chặt.
+        float kheHo       = kheHoDuoiVungO * buZoom;
+
+        // ── 2. VÙNG Ô: ĐỌC LẠI MỖI FRAME TỪ CurrentRect ──────────────────
+        // 🔴 V11 — NGUYÊN NHÂN THỨ BA của "không bám sát", và là nguyên nhân sâu nhất.
+        //
+        // Bản cũ neo theo `_tamVungOLocal` / `_caoVungOLocal`, ba số mà
+        // `ConfigureFromLocalBounds` ghi ĐÚNG MỘT LẦN. Đường gọi duy nhất là
+        // `PlacementManager.SetupFootprint` → chỉ chạy ở StartPlacingNewObject (dòng ~858),
+        // StartEditBuilding (~923) và RotateGhost (~1046) — KHÔNG chạy trong lúc kéo.
+        // Đó là một ẢNH CHỤP, còn 4 chevron thì đọc `pm.CurrentRect` MỖI FRAME. Hai nguồn
+        // sự thật khác nhau ⇒ khung 4 góc ôm đúng công trình mà card thì không.
+        // (Dev V đã ghi đây là mục CHƯA CHẮC của mình — đo ra thì đúng là sai.)
+        //
+        // V11 lấy CÙNG MỘT NGUỒN với 4 chevron và với thảm xanh của PlacementManager:
+        // `PlacementManager.CurrentRect` + `PlacementManager.CellCornerToWorld`.
+        // Ảnh chụp cũ tụt xuống hàng DỰ PHÒNG (khi không có PlacementManager, ví dụ ghost
+        // dùng cho màn xem trước).
+        float nuaCaoVungO, nuaRongVungO;
+        Vector3 tamVungO;
+        if (!LayVungOTheoRect(out tamVungO, out nuaRongVungO, out nuaCaoVungO))
+        {
+            tamVungO     = transform.TransformPoint(_tamVungOLocal);
+            // Bản cũ nhân CẢ HAI trục bằng lossyScale.y — sai trục cho bề rộng. Root ghost
+            // đang scale đều 100 nên chưa lộ, nhưng ai đổi scale không đều là lệch ngay.
+            nuaCaoVungO  = _caoVungOLocal  * 0.5f * Mathf.Max(0.0001f, Mathf.Abs(transform.lossyScale.y));
+            nuaRongVungO = _rongVungOLocal * 0.5f * Mathf.Max(0.0001f, Mathf.Abs(transform.lossyScale.x));
+        }
+
+        // ── 3. VỊ TRÍ LÝ TƯỞNG: ĐỈNH CARD SÁT DƯỚI MÉP DƯỚI VÙNG Ô ───────
+        float yLyTuong = tamVungO.y - nuaCaoVungO - kheHo - buTamKhoi - nuaCaoCard;
+
+        // TRẦN TRƯỜN LÊN: tâm card không được vượt quá TÂM vùng ô. Trườn tới đó thì card
+        // chỉ phủ nửa dưới footprint (phần chân), còn sprite công trình vươn LÊN khỏi
+        // footprint (doc DEV-1 §5.1) nên phần người chơi đang ngắm vẫn hở.
+        float yTranTruonLen = tamVungO.y - buTamKhoi;
+
+        Vector3 pos = new Vector3(tamVungO.x, yLyTuong, _uiRoot.position.z);
+
+        // ── 4. MÉP MÀN: TÍNH THẲNG SANG WORLD, KHÔNG ĐI VÒNG QUA SCREEN ──
+        // Camera orthographic + không xoay ⇒ world ↔ screen là phép tuyến tính, world/pixel
+        // BẰNG NHAU cả hai trục (nửa cao = ortho, nửa rộng = ortho·aspect, aspect =
+        // width/height ⇒ 2·ortho/height cả hai). Tính thẳng thì khỏi 3 lần WorldToScreenPoint
+        // mỗi frame và khỏi lệ thuộc z của canvas.
+        float wpp  = (2f * cam.orthographicSize) / Mathf.Max(1, Screen.height);
+        float camX = cam.transform.position.x;
+        float camY = cam.transform.position.y;
+
+        // Mức world tương ứng hai lề an toàn. leAnToanDuoiPx = 170 là thứ DUY NHẤT giữ nút ✓
+        // khỏi chui xuống dưới thanh HUD (Canvas_HUD là Screen Space nên nó vẽ ĐÈ bất kể
+        // sortingOrder) — bấm trượt ✓ là mất một lượt mua.
+        float yDayManWorld  = camY + (leAnToanDuoiPx - Screen.height * 0.5f) * wpp;
+        float yDinhManWorld = camY + (Screen.height * 0.5f - leAnToanTrenPx) * wpp;
+
+        // Quy về khoảng cho phép của TÂM _uiRoot (tâm card = pos.y + buTamKhoi).
+        float yMin = yDayManWorld  + nuaCaoCard - buTamKhoi;
+        float yMax = yDinhManWorld - nuaCaoCard - buTamKhoi;
+
+        if (yMin < yMax)
+        {
+            // THỨ TỰ ƯU TIÊN, đọc từ trong ra ngoài:
+            //   1. Kẹp trong viewport                      → card không bao giờ ra khỏi màn.
+            //   2. Min với trần trườn lên                  → không leo quá tâm công trình.
+            //   3. Max với yMin                            → lề đáy THẮNG hết: thà phủ công
+            //      trình còn hơn để nút ✓ nằm dưới HUD và không bấm được.
+            float yKep = Mathf.Clamp(yLyTuong, yMin, yMax);
+            pos.y = Mathf.Max(Mathf.Min(yKep, yTranTruonLen), yMin);
+        }
+
+        // ── 5. LẬT SANG CẠNH — MẶC ĐỊNH TẮT (xem tooltip luonLatSangCanh) ─
+        // Chỉ nổ khi Sếp bật lại VÀ đã trườn lên hết mà đáy card vẫn dưới lề.
+        if (luonLatSangCanh && pos.y + buTamKhoi - nuaCaoCard < yDayManWorld - 0.5f)
+        {
+            bool sangPhai = tamVungO.x < camX;
+            float dx = nuaRongVungO + kheHo + nuaRongCard;
+            pos.x = tamVungO.x + (sangPhai ? dx : -dx);
+            pos.y = tamVungO.y - buTamKhoi;
+        }
+
+        // ── 6. KẸP NGANG ─────────────────────────────────────────────────
+        // xMin >= xMax nghĩa là card RỘNG HƠN cả viewport trừ hai lề — kẹp lúc đó sẽ giật.
+        // Bỏ kẹp trục đó, thà card thò ra còn hơn nhảy loạn.
+        float xMin = camX + (leAnToanNganPx - Screen.width * 0.5f) * wpp + nuaRongCard;
+        float xMax = camX + (Screen.width * 0.5f - leAnToanNganPx) * wpp - nuaRongCard;
+        if (xMin < xMax) pos.x = Mathf.Clamp(pos.x, xMin, xMax);
+
+        _uiRoot.position = pos;
+    }
+
+    /// <summary>
+    /// VÙNG Ô THẬT của ghost đang cầm, đọc lại MỖI FRAME.
+    ///
+    /// Nguồn sự thật: HỢP ĐỒNG API §4 — `PlacementManager.CurrentRect` (PlacementManager
+    /// ghi nó trong Update mỗi frame) + `PlacementManager.CellCornerToWorld` (hàm CỦA DEV-1,
+    /// KHÔNG tự nhân CELL ở đây). Đúng hai thứ mà `UpdateChevrons` đang dùng ⇒ card và 4
+    /// chevron KHÔNG THỂ lệch nhau nữa.
+    ///
+    /// HÌNH HỌC ISO — 4 đỉnh kim cương, KHÔNG phải 4 góc chữ nhật:
+    ///   CellCornerToWorld(x,y) = CellFloatToWorld(x−0.5, y−0.5)
+    ///   CellFloatToWorld(c)    = ( o.x + (c.x−c.y)·W/2 , o.y + (c.x+c.y)·H/2 )
+    /// Đặt a = xMin−0.5, b = yMin−0.5, N = width, M = height:
+    ///   NAM   (xMin,yMin) → y THẤP NHẤT   (chân công trình)
+    ///   ĐÔNG  (xMax,yMin) → x LỚN NHẤT
+    ///   BẮC   (xMax,yMax) → y CAO NHẤT
+    ///   TÂY   (xMin,yMax) → x NHỎ NHẤT
+    /// ⇒ cao hộp bao  = BẮC.y − NAM.y = (N+M)·H/2   ≡ IsoGrid.FootprintWorldSize().y
+    ///   rộng hộp bao = ĐÔNG.x − TÂY.x = (N+M)·W/2  ≡ IsoGrid.FootprintWorldSize().x
+    ///   tâm = (NAM + BẮC)/2, khớp CẢ HAI trục với IsoGrid.RectCenterWorld().
+    /// Đã kiểm tay bằng đại số, không phải đoán: 1x1 ⇒ 300 x 150, 2x2 ⇒ 600 x 300.
+    /// </summary>
+    private static bool LayVungOTheoRect(out Vector3 tam, out float nuaRong, out float nuaCao)
+    {
+        tam = Vector3.zero;
+        nuaRong = 0f;
+        nuaCao  = 0f;
+
+        PlacementManager pm = PlacementManager.Instance;
+        if (pm == null) return false;
+
+        RectInt r = pm.CurrentRect;
+        // HỢP ĐỒNG API §4: width == 0 nghĩa là KHÔNG có Ghost nào đang hoạt động.
+        if (r.width <= 0 || r.height <= 0) return false;
+
+        Vector3 nam  = PlacementManager.CellCornerToWorld(r.xMin, r.yMin);
+        Vector3 dong = PlacementManager.CellCornerToWorld(r.xMax, r.yMin);
+        Vector3 bac  = PlacementManager.CellCornerToWorld(r.xMax, r.yMax);
+        Vector3 tay  = PlacementManager.CellCornerToWorld(r.xMin, r.yMax);
+
+        tam     = (nam + bac) * 0.5f;
+        nuaRong = Mathf.Abs(dong.x - tay.x) * 0.5f;
+        nuaCao  = Mathf.Abs(bac.y  - nam.y) * 0.5f;
+
+        // Lưới chưa nạp (CellWidth/Height = 0) thì thà rơi xuống ảnh chụp cũ còn hơn neo
+        // card vào một vùng ô rộng 0.
+        return nuaRong > 0.01f && nuaCao > 0.01f;
+    }
+
+    /// <summary>
+    /// Gắn ART THẬT vào một nút của prefab + đặt lại thứ tự + đặt màu trạng thái TẮT.
+    ///
+    /// V11: tên hàm giữ nguyên (`StyleRoundButton`) để lịch sử git đọc được, nhưng nó KHÔNG
+    /// còn ép nút thành hình tròn — HÌNH DO SPRITE QUYẾT ĐỊNH (xem khối chọn kiểu vẽ bên dưới).
     ///
     /// VÌ SAO GLYPH LÀ SPRITE CHỨ KHÔNG PHẢI KÝ TỰ: prefab có sẵn 3 node "Label" chứa ký tự
     /// Unicode nhưng cả 3 đang TẮT (m_IsActive: 0). Bật lên là đánh cược vào việc font TMP
-    /// mặc định có đủ ✕ ↻ ✓ — thiếu một cái là hiện ô vuông trống. Sprite thủ tục chắc chắn
-    /// hiện, và đi cùng đường với 23 ô art khác (Edric thay sprite thật sau).
+    /// mặc định có đủ ✕ ↻ ✓ — thiếu một cái là hiện ô vuông trống.
     ///
-    /// KHÔNG ĐỤNG `Button.interactable` hay `Button.colors`: PlacementManager gán
-    /// `btnConfirm.interactable = isValidPos` MỖI FRAME, và ColorTint của Button NHÂN vào
-    /// `Image.color` (qua CanvasRenderer) chứ không ghi đè nó — nên ✓ tự xám khi không đặt
-    /// được. Đó là thứ đang chạy đúng, giữ nguyên.
+    /// KHÔNG ĐỤNG `Button.interactable` — PlacementManager gán `btnConfirm.interactable =
+    /// isValidPos` MỖI FRAME, nó là chủ sở hữu duy nhất của cờ đó.
+    ///
+    /// NHƯNG V11 CÓ GHI `Button.colors.disabledColor` MỘT LẦN lúc dựng. Đó KHÔNG phải
+    /// tranh chấp: ColorTint của Button NHÂN màu trạng thái vào `Image.color` (qua
+    /// CanvasRenderer), và màu trạng thái mặc định của prefab có ALPHA 0.502 ⇒ nút ✓ bị tắt
+    /// trở thành nửa trong suốt, nhìn xuyên thấy mặt đất. Đó là "nhìn như hỏng", không phải
+    /// "chưa bấm được". Xem tooltip của `mauNutKhiTat`.
     /// </summary>
     /// <summary>
     /// Tạo nút XOÁ nếu prefab chưa có. Prefab `Placement_Ghost` chỉ có 3 nút
@@ -983,22 +1615,50 @@ public class PlacementGhostVisualController : MonoBehaviour
     }
 
     private void StyleRoundButton(Transform row, string name, Color color,
-                                  int siblingIndex, Sprite glyph)
+                                  int siblingIndex, Sprite glyph,
+                                  Sprite nenNut, float coNut, float coGlyph)
     {
         Transform t = row.Find(name);
         if (t == null) return;
 
         t.SetSiblingIndex(siblingIndex);
 
+        // GHI sizeDelta vì prefab đang cứng 120x120 (chỉ 43 px màn khi zoom hết ra).
+        // VÙNG BẤM RỘNG RA, không hẹp đi ⇒ PlacementManager.IsMouseOverRect(confirmRect)
+        // vẫn đúng. TÊN Btn_Confirm / Btn_Cancel và THỨ TỰ CHA CON KHÔNG ĐỔI ⇒
+        // BindGhostButtons còn nguyên liên kết.
+        var trt = t as RectTransform;
+        if (trt != null) trt.sizeDelta = new Vector2(coNut, coNut);
+
         Image img = t.GetComponent<Image>();
         if (img != null)
         {
-            // Circle() của ConstructionSpriteFactory có khử răng cưa; CreateCircleSprite
-            // trong file này thì cắt cứng theo bán kính → viền nút 120 px sẽ răng cưa.
-            img.sprite         = ConstructionSpriteFactory.Circle(96);
-            img.type           = Image.Type.Simple;
-            img.preserveAspect = true;
+            // V11 — KIỂU VẼ SUY TỪ CHÍNH SPRITE, không gán cứng nữa:
+            //   border ≠ 0 (btn_red_small 28, btn_yellow_3d 16) ⇒ Sliced, preserveAspect TẮT.
+            //     Sliced + preserveAspect là hai thứ đánh nhau: preserveAspect ép cả rect về
+            //     tỉ lệ ảnh gốc (256x96 ⇒ dẹt 2.67:1) rồi Sliced mới chia vành ⇒ nút không
+            //     bao giờ ra vuông.
+            //   border = 0 (check_badge_green 48x48) ⇒ Simple + preserveAspect, đĩa tròn đều.
+            // Nhờ suy từ sprite, Sếp thay art khác border là code tự đúng, khỏi sửa dòng nào.
+            bool chinNhat      = PlacementKitSpriteFactory.LaSprite9Slice(nenNut);
+            img.sprite         = nenNut;
+            img.type           = chinNhat ? Image.Type.Sliced : Image.Type.Simple;
+            img.preserveAspect = !chinNhat;
             img.color          = color;
+        }
+
+        // ── TRẠNG THÁI TẮT: ĐỤC HẲN, KHÔNG TRONG SUỐT ────────────────────────
+        // Prefab serialize m_DisabledColor = (0.784,0.784,0.784, α 0.502). Nút ✓ bị tắt là
+        // đĩa xanh × cái đó ⇒ (68,121,28) MÀ CHỈ ĐỤC 50 % ⇒ nhìn xuyên thấy cỏ qua nút.
+        // Đó là lý do trong ảnh Sếp gửi nút ✓ đọc ra "hỏng" chứ không phải "chưa bấm được".
+        // Ghi Button.colors MỘT LẦN lúc dựng. KHÔNG đụng `Button.interactable` —
+        // PlacementManager gán nó mỗi frame, đó là chủ sở hữu duy nhất của cờ đó.
+        var btnNay = t.GetComponent<Button>();
+        if (btnNay != null)
+        {
+            ColorBlock cb    = btnNay.colors;
+            cb.disabledColor = mauNutKhiTat;
+            btnNay.colors    = cb;
         }
 
         if (glyph == null) return;
@@ -1015,7 +1675,7 @@ public class PlacementGhostVisualController : MonoBehaviour
         grt.anchorMax        = new Vector2(0.5f, 0.5f);
         grt.pivot            = new Vector2(0.5f, 0.5f);
         grt.anchoredPosition = Vector2.zero;
-        grt.sizeDelta        = new Vector2(GlyphSize, GlyphSize);
+        grt.sizeDelta        = new Vector2(coGlyph, coGlyph);
 
         Image gi = go.GetComponent<Image>();
         if (gi == null) gi = go.AddComponent<Image>();
@@ -1036,8 +1696,8 @@ public class PlacementGhostVisualController : MonoBehaviour
         if (g != null) _barGlyphs[index] = g.GetComponent<Image>();
     }
 
-    private static TextMeshProUGUI MakeBarText(RectTransform parent, string name,
-                                               string content, float size)
+    private TextMeshProUGUI MakeBarText(RectTransform parent, string name,
+                                        string content, float size)
     {
         var go = new GameObject(name, typeof(RectTransform));
         go.layer = parent.gameObject.layer;
@@ -1047,7 +1707,7 @@ public class PlacementGhostVisualController : MonoBehaviour
         rt.anchorMin = new Vector2(0.5f, 0.5f);
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot     = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(320f, PriceRowHeight);
+        rt.sizeDelta = new Vector2(320f, hangGiaCao);
 
         var tmp = go.AddComponent<TextMeshProUGUI>();
         if (tmp.font == null && TMP_Settings.defaultFontAsset != null)
@@ -1056,7 +1716,7 @@ public class PlacementGhostVisualController : MonoBehaviour
         tmp.text          = content;
         tmp.fontSize      = size;
         tmp.fontStyle     = FontStyles.Bold;
-        tmp.color         = Color.white;
+        tmp.color         = mauChuGia;
         tmp.alignment     = TextAlignmentOptions.Center;
         tmp.overflowMode  = TextOverflowModes.Overflow;
         tmp.raycastTarget = false;
@@ -1064,14 +1724,16 @@ public class PlacementGhostVisualController : MonoBehaviour
         // Viền đậm giống nhãn Township (cùng cách với LevelUpPopupTownshipTool.AddTextOutline)
         Material mat = tmp.fontMaterial;
         if (mat != null) mat.EnableKeyword(ShaderUtilities.Keyword_Outline);
-        tmp.outlineColor = new Color(0.07f, 0.05f, 0.02f, 1f);
-        tmp.outlineWidth = 0.26f;
+        // ĐẢO so với bản cũ (chữ trắng viền nâu dày): chữ SẪM trên nền KEM cần viền
+        // TRẮNG MẢNH, nếu không chữ biến mất trên card giấy.
+        tmp.outlineColor = new Color(1f, 1f, 1f, 0.92f);
+        tmp.outlineWidth = vienChuTrang;
         tmp.UpdateMeshPadding();
 
         return tmp;
     }
 
-    private static Image MakeBarIcon(RectTransform parent, string name)
+    private Image MakeBarIcon(RectTransform parent, string name)
     {
         var go = new GameObject(name, typeof(RectTransform));
         go.layer = parent.gameObject.layer;
@@ -1081,7 +1743,7 @@ public class PlacementGhostVisualController : MonoBehaviour
         rt.anchorMin = new Vector2(0.5f, 0.5f);
         rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot     = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(CoinIconSize, CoinIconSize);
+        rt.sizeDelta = new Vector2(coIconTien, coIconTien);
 
         var img = go.AddComponent<Image>();
         img.preserveAspect = true;

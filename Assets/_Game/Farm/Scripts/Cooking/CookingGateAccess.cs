@@ -21,7 +21,7 @@ public static class CookingGateAccess
 
     /// <summary>Thông báo hiện cho người chơi khi chưa đủ cấp. Ghép từ <see cref="RequiredLevel"/>
     /// chứ không gõ lại số — đổi cấp một chỗ là câu thông báo đổi theo.</summary>
-    public static readonly string LockedMessage = $"Cần cấp {RequiredLevel} mới vào được Bếp.";
+    public static string LockedMessage => Loc.TF("Cần cấp {0} mới vào được Bếp.", RequiredLevel);
 
     /// <summary>
     /// Cấp người chơi hiện tại. Đọc `PlayerProgressManager` trước, `FarmLevelManager` sau —

@@ -187,6 +187,64 @@ public static class Map45SetupTool
         r.mode = TilemapRenderer.Mode.Individual; // sort tung o theo Y cho iso
     }
 
+    [MenuItem("Tools/Map45/6. Tao Luoi Nen (nhin de ve tile)")]
+    public static void CreateGridOverlay()
+    {
+        var old = Object.FindFirstObjectByType<IsoGridOverlay>();
+        if (old != null)
+        {
+            Selection.activeGameObject = old.gameObject;
+            old.FitToMap();               // tu gian rong phu het ban do
+            EditorUtility.DisplayDialog("Map45",
+                $"Da co Luoi Nen — vua tu gian rong phu het ban do (halfSize = {old.halfSize} o).\n\n" +
+                "Bat 'Always Visible' de luon thay khi choi.", "OK");
+            return;
+        }
+
+        var go = new GameObject("IsoGridOverlay", typeof(MeshFilter), typeof(MeshRenderer));
+        var grid = GameObject.Find(IsoGrid.IsoGridObjectName);
+        if (grid != null) go.transform.SetParent(grid.transform, false);
+        go.transform.position = Vector3.zero;
+
+        var ov = go.AddComponent<IsoGridOverlay>();
+        ov.alwaysVisible = true;   // hien luon de designer ve tile
+        ov.FitToMap();             // tu tinh pham vi phu het ban do
+
+        Selection.activeGameObject = go;
+        EditorUtility.DisplayDialog("Map45",
+            "Da tao Luoi Nen ISO (nho Save Scene).\n\n" +
+            "• Luoi bam DUNG Grid_Iso45 -> ve tile theo khung nay la khop\n" +
+            "• Duong vang dam = moi 5 o cho de dem\n" +
+            "• Phim G bat/tat khi dang choi\n" +
+            "• Tat han: bo tick component IsoGridOverlay", "OK");
+    }
+
+    [MenuItem("Tools/Map45/7. Tao Preview O Chiem (Edit Mode)")]
+    public static void CreatePlacementPreview()
+    {
+        var old = Object.FindFirstObjectByType<IsoPlacementPreview>();
+        if (old != null)
+        {
+            Selection.activeGameObject = old.gameObject;
+            EditorUtility.DisplayDialog("Map45", "Da co Preview O Chiem trong scene.", "OK");
+            return;
+        }
+
+        var go = new GameObject("IsoPlacementPreview", typeof(MeshFilter), typeof(MeshRenderer));
+        var grid = GameObject.Find(IsoGrid.IsoGridObjectName);
+        if (grid != null) go.transform.SetParent(grid.transform, false);
+        go.transform.position = Vector3.zero;
+        go.AddComponent<IsoPlacementPreview>();
+
+        Selection.activeGameObject = go;
+        EditorUtility.DisplayDialog("Map45",
+            "Da tao Preview O Chiem (nho Save Scene).\n\n" +
+            "Khi keo cong trinh, cac o se to mau:\n" +
+            "• XANH = dat duoc\n" +
+            "• DO   = vuong cong trinh khac / ngoai bien\n" +
+            "• VANG = khu dat chua mua", "OK");
+    }
+
     // ================== THUYEN DU LICH ==================
 
     [MenuItem("Tools/Map45/5. Tao Thuyen Du Lich")]

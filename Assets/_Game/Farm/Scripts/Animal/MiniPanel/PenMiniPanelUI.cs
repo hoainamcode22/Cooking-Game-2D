@@ -182,6 +182,7 @@ public class PenMiniPanelUI : MonoBehaviour
     private void Update()
     {
         TickProcessTimeout();
+        TickReadyBubbleBob();
 
         if (!IsPanelOpen()) return;
 
@@ -289,6 +290,71 @@ public class PenMiniPanelUI : MonoBehaviour
     [SerializeField] private Sprite readyBubbleBgSprite;
     [SerializeField] private Vector2 readyBubbleLocalPos = new Vector2(0f, 320f);
     [SerializeField] private int readyBubbleSortingOrder = 1500;
+
+    // ===================================================================================
+    //  [FIX 2026-09-06 vong8 - Sep yeu cau] BONG BONG SAN PHAM: nang cao, noi tren bui co,
+    //  CLICK 1 CAI LA NHAN.
+    //
+    //  VI SAO PHAI DO CHU KHONG GO SO: hai so cu deu la so ma va LECH DON VI.
+    //    * EnsurePanelLayout() dat anchoredPosition = (0, 3.2) - don vi LOCAL cua chuong
+    //      (Pen_0x scale = 100) nen thuc te la 320 world unit.
+    //    * readyBubbleLocalPos.y = 320 - don vi canvas (canvas scale 0.01 x 100 = 1) nen
+    //      cung la 320 world unit.
+    //      Hai so "3.2" va "320" dien ta CUNG mot y do ma lech nhau 100 lan => bang chung
+    //      day la so doan. Nay DO THAT tu bounds cua BarnSprite + cac renderer trang tri
+    //      quanh chuong roi moi cong bien an toan.
+    //
+    //  VI SAO PHAI DOI SORTING LAYER: canvas bong bong duoc tao bang AddComponent<Canvas>()
+    //  va TRUOC GIO KHONG HE duoc gan sortingLayer => nam im tren layer mac dinh
+    //  (id 0 = "Default", chi la layer thu 2 tu duoi trong 5 layer). Trong khi do:
+    //    * Con vat (LivestockAI) nam tren "Objects" - layer CAO HON - order >= 512.
+    //    * Trang tri trong SCN_Farm.unity deu deo sorting layer id 1669604809, id nay
+    //      KHONG co trong ProjectSettings/TagManager.asset - dung cai bay ma
+    //      TouristSortingLayers.cs da ghi lai (layer sai => Unity im lang ha ve Default).
+    //    * Gangplank nam tren "Objects" THAT (id 1471039481) order 900: de len bong bong
+    //      du bong bong co order 1500, vi khac LAYER thi order khong con y nghia.
+    //  Nay gan thang len "Foreground" (layer CAO NHAT co that) qua
+    //  TouristSortingLayers.Overlay nen thang moi vat trang tri, bat ke dangling id kia
+    //  duoc Unity giai ra layer nao. Foreground van NAM DUOI toan bo UI ScreenSpaceOverlay
+    //  (HUD, PenSupplyTrayV2) nen khong the de len UI.
+    // ===================================================================================
+
+    [Header("Bong bong san pham (vong8)")]
+    [Tooltip("DE TRONG = tu giai sang layer cao nhat CO THAT (Foreground) qua " +
+             "TouristSortingLayers.Overlay. Chi go ten khac neu layer do co thuc.")]
+    [SerializeField] private string readyBubbleSortingLayer = "";
+
+    [Tooltip("Khoang ho (WORLD unit) tu dinh cao nhat do duoc (chuong / bui co) len day bong bong.")]
+    [SerializeField] private float readyBubbleWorldClearance = 120f;
+
+    [Tooltip("Noi rong (WORLD unit) vung quet sang hai ben be ngang cua bong bong. Chi vat NAM DE " +
+             "LEN be ngang bong bong moi co the che no, nen quet theo be ngang thay vi ban kinh tron.")]
+    [SerializeField] private float readyBubbleScanPad = 60f;
+
+    [Tooltip("TRAN: nang toi da bao nhieu WORLD unit tinh tu dinh CHUONG. Chan truong hop mot sprite " +
+             "cao bat thuong day bong bong bay ra ngoai khung hinh.")]
+    [SerializeField] private float readyBubbleMaxRaiseWorld = 900f;
+
+    [Tooltip("Bien an toan cong vao order LON NHAT do duoc quanh chuong.")]
+    [SerializeField] private int readyBubbleOrderMargin = 200;
+
+    [Tooltip("Bien do nhap nho len xuong (WORLD unit). Dat 0 = tat animation.")]
+    [SerializeField] private float readyBubbleBobAmplitude = 16f;
+
+    [Tooltip("Chu ky nhap nho (giay). Cang lon cang diu.")]
+    [SerializeField] private float readyBubbleBobPeriod = 2.4f;
+
+    /// <summary>Tran order, khong bao gio vuot gioi han sorting cua Unity.</summary>
+    private const int ReadyBubbleOrderMax = 30000;
+
+    /// <summary>Chong bam 2 lan cong doi san pham (giay, dong ho khong phu thuoc timeScale).</summary>
+    private const float ReadyBubbleClickCooldown = 0.35f;
+
+    /// <summary>
+    /// Renderer rong hon chuong QUA NHIEU lan thi la nen/dat, khong phai bui co - bo qua khi do
+    /// chieu cao, neu khong bong bong se bi day len tan dinh anh nen.
+    /// </summary>
+    private const float ReadyBubbleNenRongGap = 4f;
 
     /// <summary>
     /// [FIX 2026-09-06] Khay V2 (PenSupplyTrayV2) moi la khay dang dung thuc te; panelRoot doi
@@ -962,7 +1028,21 @@ public class PenMiniPanelUI : MonoBehaviour
 
     private GameObject _gemButtonGO;
     private TMP_Text   _gemCostText;
-    private GameObject _readyBubble;
+    private GameObject    _readyBubble;
+    private RectTransform _readyBubbleRt;
+    private Vector2       _readyBubbleBasePos;
+    private float         _readyBubbleBobPhase;
+    private float         _readyBubbleLastClickTime = -99f;
+
+    /// <summary>
+    /// Frame ma nguoi choi VUA nhan san pham bang bong bong. PenClickDetector doc co nay de
+    /// KHONG mo tiep khay trong cung frame do: thu hoach xong state ve Idle, neu khong chan thi
+    /// chinh cu click vua roi se bi hieu la "bam vao chuong dang doi" va mo khay cho an.
+    /// </summary>
+    private static int _bubbleHarvestFrame = -1;
+
+    /// <summary>Vua nhan san pham bang bong bong trong frame nay?</summary>
+    public static bool VuaThuBangBongBong => Time.frameCount <= _bubbleHarvestFrame;
     private static Sprite _roundSprite;
     private static Sprite _diamondSprite;
 
@@ -1060,7 +1140,196 @@ public class PenMiniPanelUI : MonoBehaviour
     {
         if (config == null) return;
         EnsureReadyBubble();
-        if (_readyBubble != null) _readyBubble.SetActive(CurrentState == PenState.Ready);
+        if (_readyBubble == null) return;
+
+        // Chi hien o Ready. Idle / Processing => TAT (yeu cau cua Sep).
+        bool hien = CurrentState == PenState.Ready;
+        _readyBubble.SetActive(hien);
+        if (hien) ApplyReadyBubblePlacement();
+    }
+
+    /// <summary>
+    /// Bao nhieu WORLD unit cho MOT don vi local cua canvas chuong. Canvas nay la World Space
+    /// (RenderMode 2, scale 0.01) nam duoi chuong scale 100 nen thuc te = 1.0. DO bang lossyScale
+    /// chu khong go 1.0, de con dung neu Sep sua scale chuong.
+    /// </summary>
+    private float CanvasWorldUnitPerLocal()
+    {
+        Transform t = transform;
+        float s = t != null ? Mathf.Abs(t.lossyScale.y) : 1f;
+        return s > 0.00001f ? s : 1f;
+    }
+
+    /// <summary>
+    /// Nhap nho nhe cho de thay. Dung unscaledTime vi popup co the dat timeScale = 0; bien do
+    /// doi tu WORLD unit sang don vi canvas nen doi scale chuong khong lam giat.
+    /// </summary>
+    private void TickReadyBubbleBob()
+    {
+        if (_readyBubble == null || !_readyBubble.activeSelf) return;
+        if (_readyBubbleRt == null) return;
+        if (readyBubbleBobAmplitude <= 0.01f || readyBubbleBobPeriod <= 0.01f) return;
+
+        float bienDo = readyBubbleBobAmplitude / CanvasWorldUnitPerLocal();
+        float goc    = Time.unscaledTime * (Mathf.PI * 2f / readyBubbleBobPeriod) + _readyBubbleBobPhase;
+        _readyBubbleRt.anchoredPosition = _readyBubbleBasePos + new Vector2(0f, Mathf.Sin(goc) * bienDo);
+    }
+
+    /// <summary>
+    /// DO THAT roi moi dat: nang bong bong len tren dinh cao nhat quanh chuong, va gan sorting
+    /// layer/order cao hon moi vat trang tri do duoc. KHONG BAO GIO ha thap hon
+    /// readyBubbleLocalPos.y (so Sep da chinh tay trong prefab) - chi NANG len.
+    /// </summary>
+    private void ApplyReadyBubblePlacement()
+    {
+        if (_readyBubble == null || _readyBubbleRt == null) return;
+
+        float donVi = CanvasWorldUnitPerLocal();
+        Canvas canvas = _readyBubble.GetComponent<Canvas>();
+
+        // ---- 1. Layer: cao nhat CO THAT (Foreground), khong bao gio hardcode ten ----
+        if (canvas != null)
+        {
+            canvas.overrideSorting  = true;
+            canvas.sortingLayerName = TouristSortingLayers.ResolveOrOverride(
+                readyBubbleSortingLayer, TouristSortingLayers.Overlay);
+        }
+
+        // ---- 2. Do chieu cao + order THAT cua chuong va trang tri quanh do ----
+        float dinhWorldY;
+        int   orderCaoNhat;
+        bool  doDuoc = DoDinhVaOrderQuanhChuong(out dinhWorldY, out orderCaoNhat);
+
+        // ---- 3. Order = max(so trong Inspector, order do duoc + bien an toan) ----
+        if (canvas != null)
+        {
+            int order = readyBubbleSortingOrder;
+            if (doDuoc) order = Mathf.Max(order, orderCaoNhat + Mathf.Max(0, readyBubbleOrderMargin));
+            canvas.sortingOrder = Mathf.Clamp(order, 0, ReadyBubbleOrderMax);
+        }
+
+        // ---- 4. Vi tri: DAY bong bong cao hon dinh do duoc dung mot khoang ho ----
+        float localY = readyBubbleLocalPos.y;
+        if (doDuoc)
+        {
+            float nuaCao   = _readyBubbleRt.sizeDelta.y * 0.5f * donVi;
+            float tamWorld = dinhWorldY + Mathf.Max(0f, readyBubbleWorldClearance) + nuaCao;
+            float yTheoDo  = (tamWorld - transform.position.y) / donVi;
+            localY = Mathf.Max(localY, yTheoDo);
+        }
+
+        _readyBubbleBasePos            = new Vector2(readyBubbleLocalPos.x, localY);
+        _readyBubbleRt.anchoredPosition = _readyBubbleBasePos;
+
+        { Debug.Log($"[Pen] {(config != null ? config.penId : "?")} BONGBONG_DAT layer={(canvas != null ? canvas.sortingLayerName : "?")} order={(canvas != null ? canvas.sortingOrder : 0)} localY={localY:F0} donVi={donVi:F3} dinhDo={(doDuoc ? dinhWorldY.ToString("F0") : "khongDo")} orderDo={(doDuoc ? orderCaoNhat.ToString() : "khongDo")}"); }
+    }
+
+    /// <summary>
+    /// Do THAT hai con so can de dat bong bong:
+    ///   * <paramref name="dinhWorldY"/> = canh TREN cao nhat co the che bong bong (world unit)
+    ///   * <paramref name="orderCaoNhat"/> = sortingOrder lon nhat trong so do
+    ///
+    /// Cach quet: chi vat nao NAM DE LEN BE NGANG cua bong bong moi che duoc no, nen quet theo
+    /// be ngang bong bong (noi rong <see cref="readyBubbleScanPad"/> moi ben) chu KHONG quet ban
+    /// kinh tron - mot cai cay cach do 400 unit sang ben khong bao gio che bong bong, tinh vao
+    /// chi lam bong bong bay cao vo ich.
+    ///
+    /// Hai chot chong so rac:
+    ///   * bo qua renderer rong hon chuong <see cref="ReadyBubbleNenRongGap"/> lan (nen / mat dat)
+    ///   * ket qua bi kep boi <see cref="readyBubbleMaxRaiseWorld"/> tinh tu dinh chuong
+    /// Tra false khi khong do duoc gi - luc do ben goi giu nguyen so trong Inspector.
+    /// </summary>
+    private bool DoDinhVaOrderQuanhChuong(out float dinhWorldY, out int orderCaoNhat)
+    {
+        dinhWorldY   = 0f;
+        orderCaoNhat = 0;
+        bool coSoLieu = false;
+
+        Transform penRoot = transform.parent != null ? transform.parent : transform;
+
+        // ---- 2a. Renderer CUA CHINH chuong (BarnSprite + con vat): luon tinh, bat ke be ngang ----
+        float rongChuong = 0f;
+        float dinhChuong = 0f;
+        SpriteRenderer[] cuaChuong = penRoot.GetComponentsInChildren<SpriteRenderer>(true);
+        for (int i = 0; i < cuaChuong.Length; i++)
+        {
+            SpriteRenderer sr = cuaChuong[i];
+            if (sr == null || sr.sprite == null) continue;
+            if (!sr.enabled || !sr.gameObject.activeInHierarchy) continue;
+
+            Bounds bd = sr.bounds;
+            if (bd.size.x > rongChuong) rongChuong = bd.size.x;
+            if (!coSoLieu || bd.max.y > dinhWorldY) dinhWorldY = bd.max.y;
+            if (!coSoLieu || sr.sortingOrder > orderCaoNhat) orderCaoNhat = sr.sortingOrder;
+            coSoLieu = true;
+        }
+
+        if (!coSoLieu) return false;
+        dinhChuong = dinhWorldY;
+
+        // ---- 2b. Be ngang cua bong bong, doi ra world ----
+        float donVi   = CanvasWorldUnitPerLocal();
+        float tamBubX = transform.position.x + readyBubbleLocalPos.x * donVi;
+        float nuaRong = (_readyBubbleRt != null ? _readyBubbleRt.sizeDelta.x * 0.5f : 100f) * donVi;
+        float pad     = Mathf.Max(0f, readyBubbleScanPad);
+        float minX    = tamBubX - nuaRong - pad;
+        float maxX    = tamBubX + nuaRong + pad;
+
+        // ---- 2c. Trang tri de len be ngang do (bui co / cay): do THAT tu scene, khong go so ----
+        float ranNen = rongChuong > 0.01f ? rongChuong * ReadyBubbleNenRongGap : float.MaxValue;
+        float tran   = dinhChuong + Mathf.Max(0f, readyBubbleMaxRaiseWorld);
+
+        SpriteRenderer[] tatCa = FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None);
+        for (int i = 0; i < tatCa.Length; i++)
+        {
+            SpriteRenderer sr = tatCa[i];
+            if (sr == null || sr.sprite == null) continue;
+            if (!sr.enabled || !sr.gameObject.activeInHierarchy) continue;
+
+            Bounds bd = sr.bounds;
+            if (bd.size.x > ranNen) continue;                 // nen / mat dat, khong phai bui co
+            if (bd.max.x < minX || bd.min.x > maxX) continue; // khong de len be ngang bong bong
+
+            if (bd.max.y > dinhWorldY) dinhWorldY = Mathf.Min(bd.max.y, tran);
+            if (sr.sortingOrder > orderCaoNhat) orderCaoNhat = sr.sortingOrder;
+        }
+
+        if (dinhWorldY > tran) dinhWorldY = tran;
+        return true;
+    }
+
+    /// <summary>
+    /// CLICK 1 CAI LA NHAN (yeu cau cua Sep). KHONG viet lai logic thu hoach - goi thang
+    /// <see cref="TryHarvest"/> da co.
+    ///
+    /// VI SAO dung BlockWorldClickBySceneOrPopup CHU KHONG dung BlockWorldInteraction:
+    /// BlockWorldInteraction co goi FarmInputLock.ConTroTrenUiThat(), ham nay tra TRUE khi con
+    /// tro nam tren BAT KY graphic co GraphicRaycaster - ma chinh bong bong nay LA mot graphic
+    /// nhu vay. Dung no o day thi bong bong TU CHAN chinh no, bam mai khong an. Cong
+    /// BlockWorldClickBySceneOrPopup duoc viet dung cho tinh huong "con tro dang tren collider
+    /// cua chinh vat do": van chan khi dang o Bep / mo popup / keo hat / keo liem / Edit Mode.
+    /// </summary>
+    private void OnReadyBubbleClicked()
+    {
+        if (CurrentState != PenState.Ready) return;
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
+
+        // Chong bam kep: 2 su kien click trong cung nhip khong the cong doi san pham.
+        if (Time.unscaledTime < _readyBubbleLastClickTime + ReadyBubbleClickCooldown) return;
+        _readyBubbleLastClickTime = Time.unscaledTime;
+
+        // An bong bong NGAY, truoc khi thu hoach: khong con gi de bam lan hai.
+        if (_readyBubble != null) _readyBubble.SetActive(false);
+
+        _bubbleHarvestFrame = Time.frameCount;
+        FarmInputLock.SuppressWorldClickForCurrentFrame();
+
+        bool nhanDuoc = TryHarvest(transform.position);
+
+        // Kho day / thu that bai => tra bong bong lai cho nguoi choi bam lan sau.
+        if (!nhanDuoc) UpdateReadyBubble();
+
+        { Debug.Log($"[Pen] {(config != null ? config.penId : "?")} BONGBONG_CLICK nhan={nhanDuoc} state={CurrentState} frame={Time.frameCount}"); }
     }
 
     private void EnsureReadyBubble()
@@ -1077,12 +1346,21 @@ public class PenMiniPanelUI : MonoBehaviour
         var go = new GameObject("PenReadyBubble", typeof(RectTransform), typeof(Image));
         go.transform.SetParent(host, false);
         var rt = (RectTransform)go.transform;
+
+        // Neo GIUA ro rang: mac dinh cua RectTransform tao bang code la goc duoi-trai, khi do
+        // anchoredPosition KHONG con bang localPosition va phep doi world <-> local ben
+        // ApplyReadyBubblePlacement() se lech nua khung. Chot anchor/pivot = 0.5 cho chac.
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot     = new Vector2(0.5f, 0.5f);
         rt.sizeDelta = new Vector2(w, h);
         rt.anchoredPosition = readyBubbleLocalPos;
 
         var canvas = go.AddComponent<Canvas>();
-        canvas.overrideSorting = true;
-        canvas.sortingOrder    = readyBubbleSortingOrder;
+        canvas.overrideSorting  = true;
+        canvas.sortingLayerName = TouristSortingLayers.ResolveOrOverride(
+            readyBubbleSortingLayer, TouristSortingLayers.Overlay);
+        canvas.sortingOrder     = Mathf.Clamp(readyBubbleSortingOrder, 0, ReadyBubbleOrderMax);
         go.AddComponent<GraphicRaycaster>();
 
         var img = go.GetComponent<Image>();
@@ -1092,7 +1370,7 @@ public class PenMiniPanelUI : MonoBehaviour
 
         var btn = go.AddComponent<Button>();
         btn.targetGraphic = img;
-        btn.onClick.AddListener(() => TryHarvest(transform.position));
+        btn.onClick.AddListener(OnReadyBubbleClicked);
 
         if (config.productIcon != null)
         {
@@ -1120,7 +1398,12 @@ public class PenMiniPanelUI : MonoBehaviour
             p2Img.raycastTarget = false;
         }
 
-        _readyBubble = go;
+        _readyBubble        = go;
+        _readyBubbleRt      = rt;
+        _readyBubbleBasePos = readyBubbleLocalPos;
+
+        // Lech pha theo tung chuong de 4 chuong khong nhap nho dong loat nhu may.
+        _readyBubbleBobPhase = (Mathf.Abs(GetInstanceID()) % 100) * 0.0628f;
     }
 
     private Vector2 ReferenceSlotSize()

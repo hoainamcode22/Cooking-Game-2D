@@ -20,7 +20,7 @@ public class FarmPlotInput : MonoBehaviour
         if (!IsPointerDownThisFrame())
             return;
 
-        if (FarmInputLock.BlockWorldInteraction)
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup)
             return;
 
         // Tuyệt đối không mở Seed Popup / logic trồng trọt khi Edit Mode đang bật
@@ -55,8 +55,11 @@ public class FarmPlotInput : MonoBehaviour
         Vector3 worldPos = mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
         worldPos.z = 0f;
 
-        const float kTouchRadius = 0.08f;
-        Collider2D hit = Physics2D.OverlapCircle(worldPos, kTouchRadius, plotMask);
+        // Thử cả OverlapPoint và OverlapCircle để nhận diện click chính xác
+        Collider2D hit = Physics2D.OverlapPoint(worldPos, plotMask);
+        if (hit == null)
+            hit = Physics2D.OverlapCircle(worldPos, 15f, plotMask);
+
         if (hit == null)
         {
             return;
@@ -71,17 +74,19 @@ public class FarmPlotInput : MonoBehaviour
             return;
         }
 
-
         plot.HandlePlotClick();
     }
 
     // Kiểm tra frame hiện tại có vừa tap/click hay không.
     private bool IsPointerDownThisFrame()
     {
-        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
             return true;
 
-        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+        if (Input.GetMouseButtonDown(0))
+            return true;
+
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame)
             return true;
 
         return false;
@@ -90,33 +95,26 @@ public class FarmPlotInput : MonoBehaviour
     // Lấy tọa độ con trỏ hiện tại theo touch hoặc mouse.
     private Vector2 GetPointerScreenPosition()
     {
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            return Mouse.current.position.ReadValue();
+
+        if (Input.GetMouseButtonDown(0))
+            return Input.mousePosition;
+
         if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.isPressed)
             return Touchscreen.current.primaryTouch.position.ReadValue();
 
         if (Mouse.current != null)
             return Mouse.current.position.ReadValue();
 
-        return Vector2.zero;
+        return Input.mousePosition;
     }
 
-    // Check pointer hiện tại có đang nằm trên UI không.
+    // Check pointer hiện tại có đang nằm trên UI thật (GraphicRaycaster) không.
+    // TUYỆT ĐỐI KHÔNG dùng EventSystem.IsPointerOverGameObject() vì Physics2DRaycaster
+    // trên Main Camera bắt luôn Collider2D của chính ô đất => tự chặn mình.
     private bool IsPointerOverUI()
     {
-        if (EventSystem.current == null)
-            return false;
-
-        if (Touchscreen.current != null)
-        {
-            var touch = Touchscreen.current.primaryTouch;
-            if (touch.press.isPressed)
-            {
-                // EventSystem dùng pointer ID âm cho touch: -(touchId + 1)
-                int pointerId = -(touch.touchId.ReadValue() + 1);
-                return EventSystem.current.IsPointerOverGameObject(pointerId);
-            }
-            return false;
-        }
-
-        return EventSystem.current.IsPointerOverGameObject();
+        return FarmInputLock.ConTroTrenUiThat();
     }
 }

@@ -400,13 +400,13 @@ public class BoatAnnouncePopupUI : MonoBehaviour
 
         if (titleText != null)
         {
-            titleText.text = $"⚓ Tàu số {soHieu:00} sắp cập bến!";
+            titleText.text = Loc.TF("⚓ Tàu số {0:00} sắp cập bến!", soHieu);
             titleText.color = new Color(1f, 0.95f, 0.82f); // #FFF4D0 Vàng kem sáng
             titleText.fontSize = 24f;
         }
         if (bodyText != null)
         {
-            bodyText.text = $"Sẽ cập bến sau {phut} phút. Hãy chuẩn bị món ăn đón khách nhé!";
+            bodyText.text = Loc.TF("Sẽ cập bến sau {0} phút. Hãy chuẩn bị món ăn đón khách nhé!", phut);
             bodyText.color = new Color(1f, 0.98f, 0.92f); // Kem sáng rõ ràng
             bodyText.fontSize = 18f;
             bodyText.maxVisibleCharacters = KyTuHienHet;

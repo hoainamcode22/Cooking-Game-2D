@@ -1,0 +1,701 @@
+using System.Globalization;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace FarmGame.UI
+{
+    /// <summary>
+    /// Điều khiển toàn bộ HUD chính (Township HUD) theo thiết kế mới:
+    /// - Cụm Top-Left: Khung Avatar bo góc độc lập + Thanh EXP Bar (Nền tối + Fill xanh + Ngôi sao cấp độ).
+    /// - Cụm Top-Right: 2 Capsule Vàng & Kim Cương + Nút Cài Đặt.
+    /// - Cụm Bottom-Left: 4 Tab Điều Hướng (CỬA HÀNG, KHO, NHIỆM VỤ, BẢN ĐỒ).
+    /// </summary>
+    public class TownshipHUDController : MonoBehaviour
+    {
+        public static TownshipHUDController Instance { get; private set; }
+
+        [Header("── Top-Left: Avatar ──")]
+        public Button btnAvatar;
+        public Image imgAvatar;
+
+        [Header("── Top-Left: EXP & Level ──")]
+        public Image imgExpFill;
+        public TMP_Text txtExp;
+        public TMP_Text txtLevel;
+
+        [Header("── Top-Right: Currencies ──")]
+        public TMP_Text txtGold;
+        public TMP_Text txtDiamond;
+        public Button btnAddGold;
+        public Button btnAddDiamond;
+
+        [Header("── Top-Right: Settings ──")]
+        public Button btnSettings;
+
+        [Header("── Left Side: Mission Button & Quick Widget (Chấm đỏ) ──")]
+        public Button btnMission;
+        public GameObject goMissionBadge;
+        public GameObject goMissionWidget;
+        public Image imgMissionItem;
+        public TMP_Text txtMissionTitle;
+        public TMP_Text txtMissionDesc;
+        public Image imgMissionProgressFill;
+        public TMP_Text txtMissionProgress;
+        public Button btnMissionGo;
+
+        [Header("── [VÒNG 8] Chống chồng lấn HUD ──")]
+        [Tooltip("TRUE: ẩn 2 nút + trên khung Vàng và khung Kim Cương. Bỏ tick là hiện lại ngay — object KHÔNG bị xoá.")]
+        [SerializeField] private bool anNutCong = true;
+
+        [Tooltip("TRUE: gỡ Ngôi Sao Cấp ra khỏi EXP_Bar_Container (giữ nguyên chỗ đứng trên màn hình) để FX phóng to thanh EXP không kéo sao đè lên khung avatar.")]
+        [SerializeField] private bool tachSaoCapKhoiThanhExp = true;
+
+        [Tooltip("TRUE: chặn trần phóng to của thanh EXP / khung Vàng / khung Kim Cương để FX nảy không đẩy chúng đè vào nhau.")]
+        [SerializeField] private bool chanTranPhongTo = true;
+
+        [Tooltip("Phần khe hở mỗi bên được phép dùng cho cú nảy. 0.45 = 45%, hai bên cùng nảy vẫn còn hở 10%.")]
+        [SerializeField, Range(0.1f, 0.9f)] private float phanKheHoDuocDung = 0.45f;
+
+        [Tooltip("Cỡ chữ nhỏ nhất khi số dài ra (số tự co để không tràn khung). Đặt 0 = tắt tự co.")]
+        [SerializeField] private float coChuNhoNhatKhiSoDai = 20f;
+
+        [Header("── Bottom-Left: Navigation Tabs ──")]
+        public Button btnTabShop;
+        public Button btnTabWarehouse;
+        public Button btnTabMarket;
+        public Button btnTabCooking;
+        [HideInInspector] public Button btnTabMission;
+        [HideInInspector] public Button btnTabMap;
+
+        // [VONG 8] KHONG dung new CultureInfo("vi-VN"): build IL2CPP bat Invariant Globalization
+        // se nem CultureNotFoundException NGAY trong static constructor => chet ca HUD.
+        // Dung NumberFormatInfo tu khai bao, giong BoatDockSlot.cs / DockPurchasePopupUI.cs.
+        // Ky tu phan nhom giu Y NGUYEN nhu dang thay tren may Sep: tien dung ".", EXP dung " ".
+        private static readonly NumberFormatInfo DinhDangTien = new NumberFormatInfo
+        {
+            NumberGroupSeparator   = ".",
+            NumberDecimalSeparator = ",",
+            NumberGroupSizes       = new[] { 3 },
+        };
+
+        private static readonly NumberFormatInfo DinhDangExp = new NumberFormatInfo
+        {
+            NumberGroupSeparator   = " ",
+            NumberDecimalSeparator = ",",
+            NumberGroupSizes       = new[] { 3 },
+        };
+
+        private void Awake()
+        {
+            if (Instance != null && Instance != this)
+            {
+                Destroy(this);
+                return;
+            }
+            Instance = this;
+        }
+
+        private void Start()
+        {
+            if (goMissionWidget != null)
+                goMissionWidget.SetActive(false);
+
+            SetupButtonListeners();
+            ApDungChongDeHUD();
+            SubscribeEvents();
+            RefreshAllUI();
+            UpdateMissionBadge();
+        }
+
+        private void OnDestroy()
+        {
+            UnsubscribeEvents();
+        }
+
+        // ── Gán sự kiện Click ──────────────────────────────────────────────────
+
+        private void SetupButtonListeners()
+        {
+            if (btnAvatar != null)
+            {
+                btnAvatar.onClick.RemoveAllListeners();
+                btnAvatar.onClick.AddListener(OnAvatarClicked);
+            }
+
+            if (btnMission != null)
+            {
+                btnMission.onClick.RemoveAllListeners();
+                btnMission.onClick.AddListener(OnMissionButtonClicked);
+            }
+
+            if (btnMissionGo != null)
+            {
+                btnMissionGo.onClick.RemoveAllListeners();
+                btnMissionGo.onClick.AddListener(OnMissionGoClicked);
+            }
+
+            if (btnTabShop != null)
+            {
+                btnTabShop.onClick.RemoveAllListeners();
+                btnTabShop.onClick.AddListener(OnShopClicked);
+            }
+
+            if (btnTabWarehouse != null)
+            {
+                btnTabWarehouse.onClick.RemoveAllListeners();
+                btnTabWarehouse.onClick.AddListener(OnWarehouseClicked);
+            }
+
+            if (btnTabMarket != null)
+            {
+                btnTabMarket.onClick.RemoveAllListeners();
+                btnTabMarket.onClick.AddListener(OnMarketClicked);
+            }
+
+            if (btnTabCooking != null)
+            {
+                btnTabCooking.onClick.RemoveAllListeners();
+                btnTabCooking.onClick.AddListener(OnCookingClicked);
+            }
+
+            if (btnTabMission != null)
+            {
+                btnTabMission.onClick.RemoveAllListeners();
+                btnTabMission.onClick.AddListener(OnMissionButtonClicked);
+            }
+
+            if (btnTabMap != null)
+            {
+                btnTabMap.onClick.RemoveAllListeners();
+                btnTabMap.onClick.AddListener(OnCookingClicked);
+            }
+
+            if (btnAddGold != null)
+            {
+                btnAddGold.onClick.RemoveAllListeners();
+                btnAddGold.onClick.AddListener(OnShopClicked);
+            }
+
+            if (btnAddDiamond != null)
+            {
+                btnAddDiamond.onClick.RemoveAllListeners();
+                btnAddDiamond.onClick.AddListener(OnShopClicked);
+            }
+
+            if (btnSettings == null)
+            {
+                var allButtons = GetComponentsInChildren<Button>(true);
+                for (int i = 0; i < allButtons.Length; i++)
+                {
+                    if (allButtons[i].name.Contains("Setting") || allButtons[i].name.Contains("CaiDat"))
+                    {
+                        btnSettings = allButtons[i];
+                        break;
+                    }
+                }
+            }
+
+            if (btnSettings != null)
+            {
+                btnSettings.gameObject.layer = 5; // Layer UI
+                btnSettings.onClick.RemoveAllListeners();
+                btnSettings.onClick.AddListener(OnSettingsClicked);
+            }
+        }
+
+        // ── Lắng nghe sự kiện dữ liệu ──────────────────────────────────────────
+
+        private void SubscribeEvents()
+        {
+            if (FarmEconomyManager.Instance != null)
+            {
+                FarmEconomyManager.Instance.OnCurrencyChanged += OnCurrencyChanged;
+            }
+
+            if (PlayerProgressManager.Instance != null)
+            {
+                PlayerProgressManager.Instance.OnExpChanged += OnExpChanged;
+                PlayerProgressManager.Instance.OnLevelChanged += OnLevelChanged;
+            }
+
+            if (FarmLevelManager.Instance != null)
+            {
+                FarmLevelManager.Instance.OnLevelChanged += OnLevelChanged;
+            }
+
+            AvatarProfilePopupUI.OnAvatarSelected += HandleAvatarChanged;
+            LocalizationManager.OnChanged += HandleLanguageChanged;
+        }
+
+        private void UnsubscribeEvents()
+        {
+            if (FarmEconomyManager.Instance != null)
+            {
+                FarmEconomyManager.Instance.OnCurrencyChanged -= OnCurrencyChanged;
+            }
+
+            if (PlayerProgressManager.Instance != null)
+            {
+                PlayerProgressManager.Instance.OnExpChanged -= OnExpChanged;
+                PlayerProgressManager.Instance.OnLevelChanged -= OnLevelChanged;
+            }
+
+            if (FarmLevelManager.Instance != null)
+            {
+                FarmLevelManager.Instance.OnLevelChanged -= OnLevelChanged;
+            }
+
+            AvatarProfilePopupUI.OnAvatarSelected -= HandleAvatarChanged;
+            LocalizationManager.OnChanged -= HandleLanguageChanged;
+        }
+
+        private void HandleLanguageChanged(string lang)
+        {
+            RefreshLocalizedTexts();
+        }
+
+        public void RefreshLocalizedTexts()
+        {
+            SetTabLabel(btnTabShop, Loc.T("CỬA HÀNG"));
+            SetTabLabel(btnTabWarehouse, Loc.T("KHO"));
+            SetTabLabel(btnTabMarket, Loc.T("BẢNG TIN CHỢ"));
+            SetTabLabel(btnTabCooking, Loc.T("NẤU ĂN"));
+        }
+
+        private void SetTabLabel(Button btn, string text)
+        {
+            if (btn == null) return;
+            TMP_Text txt = btn.GetComponentInChildren<TMP_Text>();
+            if (txt != null)
+            {
+                txt.text = text;
+            }
+        }
+
+        private void EnsureCookingIcon()
+        {
+            if (btnTabCooking != null)
+            {
+                Transform iconTr = btnTabCooking.transform.Find("Icon");
+                if (iconTr != null)
+                {
+                    Image img = iconTr.GetComponent<Image>();
+                    if (img != null && (img.sprite == null || img.sprite.name.Contains("ngoinhacoooking") || img.sprite.name.Contains("Missing")))
+                    {
+                        Sprite spr = Resources.Load<Sprite>("HUD/hud_icon_cooking");
+                        if (spr != null)
+                        {
+                            img.sprite = spr;
+                            img.color = Color.white;
+                            img.enabled = true;
+                        }
+                    }
+                }
+            }
+        }
+
+        // ── Xử lý Cập nhật UI ──────────────────────────────────────────────────
+
+        public void RefreshAllUI()
+        {
+            EnsureCookingIcon();
+            RefreshLocalizedTexts();
+            // 1. Tiền tệ
+            if (FarmEconomyManager.Instance != null)
+            {
+                UpdateCurrency(FarmEconomyManager.Instance.Gold, FarmEconomyManager.Instance.Gems);
+            }
+
+            // 2. Cấp độ & EXP
+            int currentLevel = 1;
+            int currentExp = 0;
+            int requiredExp = 100;
+
+            if (PlayerProgressManager.Instance != null)
+            {
+                currentLevel = PlayerProgressManager.Instance.Level;
+                currentExp = PlayerProgressManager.Instance.CurrentExp;
+                requiredExp = PlayerProgressManager.Instance.RequiredExpForLevel(currentLevel);
+            }
+            else if (FarmLevelManager.Instance != null)
+            {
+                currentLevel = FarmLevelManager.Instance.CurrentLevel;
+            }
+
+            UpdateLevel(currentLevel);
+            UpdateExp(currentExp, requiredExp);
+
+            // 3. Avatar người chơi
+            RefreshAvatar();
+
+            // 4. Chấm than đỏ thông báo nhiệm vụ
+            UpdateMissionBadge();
+        }
+
+        public void UpdateMissionBadge()
+        {
+            if (goMissionBadge == null) return;
+            bool hasClaimable = UnifiedTaskPopupUI.HasAnyClaimableTask();
+            goMissionBadge.SetActive(hasClaimable);
+        }
+
+        public void RefreshAvatar(int index = -1)
+        {
+            if (imgAvatar == null) return;
+            if (index < 0) index = PlayerPrefs.GetInt("PLAYER_PROFILE_AVATAR_INDEX", 0);
+            Sprite spr = Resources.Load<Sprite>($"Avatars/avatar_npc_{index}");
+#if UNITY_EDITOR
+            if (spr == null)
+                spr = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Resources/Avatars/avatar_npc_{index}.png");
+#endif
+            if (spr != null) imgAvatar.sprite = spr;
+        }
+
+        private void HandleAvatarChanged(int index)
+        {
+            RefreshAvatar(index);
+        }
+
+        private void OnCurrencyChanged(int gold, int gems)
+        {
+            UpdateCurrency(gold, gems);
+        }
+
+        private void UpdateCurrency(int gold, int gems)
+        {
+            if (txtGold != null)
+                txtGold.text = gold.ToString("N0", DinhDangTien);
+
+            if (txtDiamond != null)
+                txtDiamond.text = gems.ToString("N0", DinhDangTien);
+        }
+
+        private void OnExpChanged(int cur, int req)
+        {
+            UpdateExp(cur, req);
+        }
+
+        private void UpdateExp(int cur, int req)
+        {
+            if (req <= 0) req = 1;
+            float ratio = Mathf.Clamp01((float)cur / req);
+
+            if (imgExpFill != null)
+                imgExpFill.fillAmount = ratio;
+
+            if (txtExp != null)
+                txtExp.text = cur.ToString("N0", DinhDangExp) + " / " + req.ToString("N0", DinhDangExp);
+        }
+
+        private void OnLevelChanged(int level)
+        {
+            UpdateLevel(level);
+        }
+
+        private void UpdateLevel(int level)
+        {
+            if (txtLevel != null)
+                txtLevel.text = level.ToString();
+        }
+
+        // ── [VÒNG 8] CHỐNG CHỒNG LẤN HUD ──────────────────────────────────────
+        //
+        // BA LỖI SẾP CHỤP ĐƯỢC, và nguyên nhân ĐO ĐƯỢC trên SCN_Farm (hệ quy chiếu 1920×1080,
+        // cụm HUD trái/phải đều có localScale 1.2):
+        //
+        //  (1) NGÔI SAO CẤP ĐÈ LÊN KHUNG AVATAR.
+        //      Level_Star_Badge là CON của EXP_Bar_Container, ngồi ở x = −185 nên thò hẳn
+        //      35 px ra ngoài mép trái thanh EXP. Lúc đứng yên mép trái sao (x 181.3) chỉ
+        //      cách mép phải khung avatar (x 180.0) đúng 1.3 px.
+        //      Khi FX gọi JuicyPulseFX phóng EXP_Bar_Container lên 1.22 lần, độ lệch −185
+        //      cũng bị nhân 1.22 ⇒ sao trượt thêm 48.8 px sang trái, mép trái sao về x 120.6
+        //      ⇒ ĐÈ LÊN AVATAR 59.4 px. Nhận EXP càng nhiều thì cú phóng nối nhau càng dày,
+        //      mắt thấy sao "nằm luôn" trên avatar.
+        //      → SỬA GỐC: đưa ngôi sao RA KHỎI object bị phóng to, giữ nguyên chỗ đứng.
+        //        Sao không còn là con của thanh EXP thì cú phóng không thể kéo nó đi đâu nữa.
+        //
+        //  (2) KHUNG VÀNG / KIM CƯƠNG ĐÈ NHAU.
+        //      Mép phải khung Vàng ở x 1468; mép trái icon Kim Cương ở x 1484.6 ⇒ chỉ hở
+        //      16.6 px (icon kim cương vốn thò 16.4 px ra ngoài mép trái capsule của nó —
+        //      đây là chủ ý thiết kế). Mọi cú phóng to đều ăn hết khe hở đó:
+        //        · Diamond_Container phóng 1.20  ⇒ icon kim cương lùi về x 1453 ⇒ đè vào
+        //          khung Vàng 14.9 px.
+        //        · Cả hai khung cùng phóng      ⇒ hai capsule đè nhau 27.6 px.
+        //      → SỬA GỐC: chặn TRẦN phóng to theo khe hở THẬT (xem HudChongDeKhiPhongTo).
+        //
+        //  (3) SỐ DÀI RA. Đã kiểm: KHÔNG có ContentSizeFitter / LayoutGroup / autoSizing nào
+        //      trên cụm HUD, nên khung KHÔNG nở theo số. Nhưng 4 ô chữ đều overflowMode =
+        //      Overflow + không tự co ⇒ số quá dài thì CHỮ tràn ra ngoài khung (khoảng 14 chữ
+        //      số mới với tới ô bên cạnh). Bật tự co trong khoảng HẸP là hết đường tràn.
+        //      KHÔNG tự chế định dạng "12,5K": cả dự án chưa có hàm rút gọn K/M nào, nên
+        //      giữ đúng định dạng nhóm 3 chữ số đang dùng (BoatDockSlot / DockPurchasePopupUI).
+
+        private void ApDungChongDeHUD()
+        {
+            AnHaiNutCong();
+            TachSaoCapRaKhoiThanhExp();
+            KhoaChuKhongTranKhung();
+            GanTranPhongTo();
+        }
+
+        /// <summary>
+        /// Sếp yêu cầu xoá 2 dấu +. Dùng SetActive(false) chứ KHÔNG Destroy: bỏ tick
+        /// <c>anNutCong</c> là hiện lại nguyên vẹn, scene không mất object nào.
+        /// Hai nút này chỉ gắn đúng một việc là OnShopClicked() (mở Shop) — lối mở Shop vẫn
+        /// còn nguyên ở tab CỬA HÀNG góc trái-dưới, nên không mất tính năng nào.
+        /// </summary>
+        private void AnHaiNutCong()
+        {
+            bool hien = !anNutCong;
+            if (btnAddGold != null) btnAddGold.gameObject.SetActive(hien);
+            if (btnAddDiamond != null) btnAddDiamond.gameObject.SetActive(hien);
+
+            if (anNutCong)
+            {
+                Debug.Log("[TownshipHUD/VÒNG 8] Đã ẩn 2 nút + (Btn_Add_Gold, Btn_Add_Diamond) — bỏ tick anNutCong trên TownshipHUDController để hiện lại.");
+            }
+        }
+
+        /// <summary>
+        /// Gỡ Level_Star_Badge khỏi EXP_Bar_Container, treo lên cụm TopLeft, GIỮ NGUYÊN
+        /// vị trí và cỡ trên màn hình (SetParent worldPositionStays = true) và giữ nguyên thứ
+        /// tự vẽ trên cùng (SetAsLastSibling — trước đây sao cũng là con vẽ cuối).
+        /// Chỉ làm khi sao ĐANG còn nằm trong thanh EXP: Sếp sửa hẳn trong scene thì hàm này
+        /// tự thành vô nghĩa, không đụng gì. Không huỷ con, không dựng lại UI.
+        /// </summary>
+        private void TachSaoCapRaKhoiThanhExp()
+        {
+            if (!tachSaoCapKhoiThanhExp) return;
+            if (txtLevel == null || imgExpFill == null) return;
+
+            RectTransform thanhExp = imgExpFill.rectTransform.parent as RectTransform;   // EXP_Bar_Container
+            RectTransform sao      = txtLevel.rectTransform.parent as RectTransform;     // Level_Star_Badge
+            if (thanhExp == null || sao == null) return;
+            if (sao.parent != thanhExp) return;                                          // đã ở ngoài rồi
+
+            RectTransform cumTrai = thanhExp.parent as RectTransform;                    // TopLeft_Township_HUD
+            if (cumTrai == null) return;
+
+            sao.SetParent(cumTrai, true);
+            sao.SetAsLastSibling();
+
+            {
+                Debug.Log("[TownshipHUD/VÒNG 8] Đã gỡ Ngôi Sao Cấp ra khỏi EXP_Bar_Container (giữ nguyên chỗ đứng) — cú phóng to thanh EXP không còn kéo sao đè lên avatar.");
+            }
+        }
+
+        /// <summary>
+        /// Số dài ra thì CHỮ tự co trong khoảng HẸP, khung giữ nguyên bề rộng — theo đúng cách
+        /// dự án đang chống nhãn tràn ở UnlockSlotUI.ApDinhDangCaption(). Cỡ chữ lớn nhất lấy
+        /// đúng cỡ Sếp đang đặt trong scene, nên số ngắn KHÔNG đổi hình dáng gì.
+        /// </summary>
+        private void KhoaChuKhongTranKhung()
+        {
+            if (coChuNhoNhatKhiSoDai <= 0f) return;
+            KhoaMotO(txtGold);
+            KhoaMotO(txtDiamond);
+            KhoaMotO(txtExp);
+            KhoaMotO(txtLevel);
+        }
+
+        private void KhoaMotO(TMP_Text txt)
+        {
+            if (txt == null) return;
+            if (txt.enableAutoSizing) return;                 // ai đó đã bật ⇒ tôn trọng
+            float coDangDat = txt.fontSize;
+            if (coDangDat <= coChuNhoNhatKhiSoDai) return;    // vốn đã nhỏ hơn sàn ⇒ đừng đụng
+
+            txt.enableAutoSizing = true;
+            txt.fontSizeMin      = coChuNhoNhatKhiSoDai;
+            txt.fontSizeMax      = coDangDat;
+            txt.textWrappingMode = TextWrappingModes.NoWrap;
+            txt.overflowMode     = TextOverflowModes.Overflow;
+        }
+
+        /// <summary>
+        /// Cài trần phóng to cho 4 phần tử mà FX hay đụng tới. Trần được ĐO từ khe hở THẬT
+        /// trong scene, nên Sếp kéo cho chúng xa nhau ra là cú nảy tự đầy đặn lại.
+        ///
+        /// Vì sao đủ 4 chỗ: JuicyPulseFX được gọi từ 5 nơi với 3 đích khác nhau —
+        ///   · RewardFlyFX.FindExpTarget() trả về NGÔI SAO CẤP (1.25 lần),
+        ///   · HarvestFeedbackSpawner trả về EXP_Bar_Container (1.22 lần),
+        ///   · CoinFlyFX / GemFlyFX / UnifiedTaskPopupUI trả về Gold_Container /
+        ///     Diamond_Container (1.20–1.22 lần).
+        /// Chặn thiếu một đích là lỗi quay lại theo đường khác.
+        /// </summary>
+        private void GanTranPhongTo()
+        {
+            if (!chanTranPhongTo) return;
+
+            RectTransform thanhExp    = imgExpFill != null ? imgExpFill.rectTransform.parent as RectTransform : null;
+            RectTransform saoCap      = txtLevel   != null ? txtLevel.rectTransform.parent as RectTransform : null;
+            RectTransform khungAvatar = btnAvatar  != null ? btnAvatar.transform as RectTransform : null;
+            RectTransform khungVang   = txtGold    != null ? txtGold.rectTransform.parent as RectTransform : null;
+            RectTransform khungGem    = txtDiamond != null ? txtDiamond.rectTransform.parent as RectTransform : null;
+            RectTransform nutCaiDat   = btnSettings != null ? btnSettings.transform as RectTransform : null;
+
+            // Thanh EXP: tường bên trái là khung avatar.
+            CaiTran(thanhExp, khungAvatar, null);
+
+            // Ngôi sao cấp: tường bên trái cũng là khung avatar. Chỉ ăn khi sao đã được gỡ ra
+            // làm anh em của avatar (tachSaoCapKhoiThanhExp = true) — còn nằm trong thanh EXP
+            // thì khác cha, CaiTran() tự bỏ qua.
+            CaiTran(saoCap, khungAvatar, null);
+
+            // Khung Vàng: tường bên phải là khung Kim Cương (kể cả icon kim cương thò ra ngoài).
+            CaiTran(khungVang, null, khungGem);
+
+            // Khung Kim Cương: trái là khung Vàng, phải là bánh xe cài đặt.
+            CaiTran(khungGem, khungVang, nutCaiDat);
+        }
+
+        private void CaiTran(RectTransform khung, RectTransform trai, RectTransform phai)
+        {
+            if (khung == null) return;
+
+            // Chỉ nhận tường là ANH EM CÙNG CHA — khác cha thì phép đo toạ độ không cùng hệ.
+            if (trai != null && trai.parent != khung.parent) trai = null;
+            if (phai != null && phai.parent != khung.parent) phai = null;
+            if (trai == null && phai == null) return;
+
+            var chan = khung.GetComponent<HudChongDeKhiPhongTo>();
+            if (chan == null) chan = khung.gameObject.AddComponent<HudChongDeKhiPhongTo>();
+            chan.Nap(khung, trai, phai, phanKheHoDuocDung);
+        }
+
+        // ── Xử lý Click Nút ────────────────────────────────────────────────────
+
+        private void OnAvatarClicked()
+        {
+            var avatarPopup = Object.FindFirstObjectByType<AvatarProfilePopupUI>(FindObjectsInactive.Include);
+            if (avatarPopup != null)
+            {
+                avatarPopup.OpenPopup();
+            }
+            else
+            {
+                Debug.Log("[TownshipHUD] Mở Popup Hồ Sơ / Avatar!");
+            }
+        }
+
+        private void OnShopClicked()
+        {
+            if (goMissionWidget != null) goMissionWidget.SetActive(false);
+
+            if (ShopManager.Instance != null)
+            {
+                ShopManager.Instance.OpenShop();
+            }
+            else
+            {
+                var shop = Object.FindFirstObjectByType<ShopManager>(FindObjectsInactive.Include);
+                if (shop != null) shop.OpenShop();
+            }
+        }
+
+        private void OnWarehouseClicked()
+        {
+            if (goMissionWidget != null) goMissionWidget.SetActive(false);
+
+            var wh = Object.FindFirstObjectByType<WarehousePopupUI>(FindObjectsInactive.Include);
+            if (wh != null)
+            {
+                wh.OpenPopup();
+            }
+            else
+            {
+                Debug.LogWarning("[TownshipHUD] Không tìm thấy WarehousePopupUI trong Scene!");
+            }
+        }
+
+        private void OnMarketClicked()
+        {
+            if (goMissionWidget != null) goMissionWidget.SetActive(false);
+
+            // Mở Bảng Tin Chợ (OrderBoard / Stall)
+            var orderBoard = Object.FindFirstObjectByType<OrderBoardPopupUI>(FindObjectsInactive.Include);
+            if (orderBoard != null)
+            {
+                orderBoard.OpenPopup();
+                return;
+            }
+
+            var stall = Object.FindFirstObjectByType<StallPopupUI>(FindObjectsInactive.Include);
+            if (stall != null)
+            {
+                stall.OpenPopup();
+                return;
+            }
+
+            Debug.Log("[TownshipHUD] Mở Bảng Tin Chợ...");
+        }
+
+        private void OnMissionButtonClicked()
+        {
+            if (goMissionWidget != null)
+            {
+                goMissionWidget.SetActive(!goMissionWidget.activeSelf);
+            }
+            else
+            {
+                UnifiedTaskPopupUI.OpenMission();
+            }
+        }
+
+        private void OnMissionGoClicked()
+        {
+            if (goMissionWidget != null)
+                goMissionWidget.SetActive(false);
+
+            UnifiedTaskPopupUI.OpenMission();
+        }
+
+        private void OnMissionClicked()
+        {
+            OnMissionButtonClicked();
+        }
+
+        private void OnCookingClicked()
+        {
+            if (goMissionWidget != null) goMissionWidget.SetActive(false);
+
+            // Chuyển sang Cooking Scene
+            Debug.Log("[TownshipHUD] Chuyển sang Nấu Ăn (Cooking Scene)...");
+            if (FarmUIManager.Instance != null)
+            {
+                FarmUIManager.Instance.OnClick_GoCooking();
+            }
+            else if (SceneTransitionManager.Instance != null)
+            {
+                SceneTransitionManager.Instance.LoadScene("SampleScene", SceneTransitionManager.TransitionType.CloudWipe, UnityEngine.SceneManagement.LoadSceneMode.Additive);
+            }
+            else if (SceneLoader.Instance != null)
+            {
+                SceneLoader.Instance.LoadScene("SampleScene");
+            }
+            else
+            {
+                UnityEngine.SceneManagement.SceneManager.LoadScene("SampleScene");
+            }
+        }
+
+        private void OnMapClicked()
+        {
+            OnCookingClicked();
+        }
+
+        private void OnSettingsClicked()
+        {
+            var settings = SettingsPopupUI.FindOrCreate();
+            if (settings != null)
+            {
+                settings.OpenPopup();
+            }
+            else
+            {
+                Debug.Log("[TownshipHUD] Mở Cài Đặt...");
+            }
+        }
+    }
+}

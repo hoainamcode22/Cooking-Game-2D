@@ -504,9 +504,15 @@ public class OrderBoardPopupUI : MonoBehaviour
         // đã đổi nội dung — nhìn như lỗi.
         _animating = true;
 
+        // Ngắm điểm bắn cho hệ FX dùng chung TRƯỚC khi gọi TryDeliverOrder: vàng và EXP được
+        // cộng NGAY BÊN TRONG hàm đó, và RewardFlyFX nghe sự kiện cộng thưởng để tự bung chùm
+        // icon. Ngắm sau là muộn — chùm icon sẽ bung ở đầu ngón tay thay vì ở phiếu vừa giao.
+        NgamDiemBanFxThuong(_tickets[slot] != null ? _tickets[slot].Rect : null);
+
         if (!board.TryDeliverOrder(order.orderId, out string failReason))
         {
             _animating = false;
+            RewardFlyFX.XoaGoiYDiemXuatPhat();   // giao hỏng: không để gợi ý treo lại lệch chỗ
             ShowMessage(string.IsNullOrEmpty(failReason) ? "Chưa giao được đơn này." : failReason);
             RefreshAll();
             return;
@@ -518,6 +524,31 @@ public class OrderBoardPopupUI : MonoBehaviour
         _tickets[slot].HideForDeliverFx();                       // phiếu biến mất
         if (deliverFx != null) deliverFx.Play(fxPos, rewardExp, rewardGold);  // khói + sao + vàng
         StartReflow(slot);                                       // lưới dồn lại
+    }
+
+    /// <summary>
+    /// Chỉ cho hệ FX dùng chung (`RewardFlyFX`) biết chùm vàng/EXP sắp tới nên bung ra TỪ ĐÂU —
+    /// tức từ chính cái phiếu vừa được giao.
+    ///
+    /// KHÔNG tự bắn FX ở đây, và cũng KHÔNG đụng gì tới phần thưởng: vàng/EXP vẫn do
+    /// `OrderBoardManager.TryDeliverOrder` cộng như cũ, hàm này chỉ đặt trước một toạ độ.
+    /// Nhờ vậy hôm nào đơn hàng có thêm KIM CƯƠNG thì chỉ cần bên đó gọi `AddGems` là chùm gem
+    /// tự bay ra cùng chỗ — không có gem thì không có gì bay, khỏi phải bắn gem giả.
+    ///
+    /// Hiệu ứng khói + sao + vàng cũ (`OrderDeliverFxUI`) GIỮ NGUYÊN, đây là phần cộng thêm.
+    /// </summary>
+    private static void NgamDiemBanFxThuong(RectTransform tuPhieu)
+    {
+        RewardFlyFX heChung = RewardFlyFX.Instance;
+        if (heChung == null || !heChung.isActiveAndEnabled) return;
+        if (tuPhieu == null) return;
+
+        Canvas canvas = tuPhieu.GetComponentInParent<Canvas>();
+        Camera uiCam = (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            ? canvas.worldCamera
+            : null;
+
+        RewardFlyFX.GoiYDiemXuatPhat(RectTransformUtility.WorldToScreenPoint(uiCam, tuPhieu.position));
     }
 
     private void OnClickDiscard()

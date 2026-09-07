@@ -347,12 +347,12 @@ public class MillSlotUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
         {
             // Hai ô riêng — đúng như video (chữ nâu + viên thuốc xám).
             if (txtLockLabel != null) txtLockLabel.text = "Chưa đủ cấp";
-            txtLockLevelValue.text = "Cấp " + capYeuCau;
+            txtLockLevelValue.text = Loc.TF("Cấp {0}", capYeuCau);
         }
         else if (txtLockLabel != null)
         {
             // Dev B chưa wire ô thứ hai ⇒ dồn hai dòng vào một ô để không mất thông tin cấp.
-            txtLockLabel.text = "Chưa đủ cấp\nCấp " + capYeuCau;
+            txtLockLabel.text = Loc.TF("Chưa đủ cấp\nCấp {0}", capYeuCau);
         }
     }
 

@@ -746,13 +746,13 @@ public class MillPopupUI : MonoBehaviour
 
         if (idx >= _soSlotDaMo)
         {
-            HienToast("Slot #" + (idx + 1) + " chưa mở");
+            HienToast(Loc.TF("Slot #{0} chưa mở", idx + 1));
             return;
         }
 
         if (_slotStates[idx].recipe != null)
         {
-            HienToast("Slot #" + (idx + 1) + " đang có hàng");
+            HienToast(Loc.TF("Slot #{0} đang có hàng", idx + 1));
             return;
         }
 
@@ -823,7 +823,7 @@ public class MillPopupUI : MonoBehaviour
         if (fxKhoi != null) fxKhoi.PhunMotNhip();
 
         // idx là chỉ số 0-based, nhãn cho người chơi là 1-based (#1..#5).
-        HienToast("Đã cho " + r.displayName + " vào slot " + (idx + 1));
+        HienToast(Loc.TF("Đã cho {0} vào slot {1}", Loc.T(r.displayName), idx + 1));
         _trangThaiNutDaHien = int.MinValue;
         return true;
     }
@@ -879,7 +879,7 @@ public class MillPopupUI : MonoBehaviour
 
         // KHÔNG gọi slots[idx].BindEmpty() ở đây: Update là nơi DUY NHẤT vẽ slot, và nó
         // dùng hàng rào _modeDaVe. Vẽ ở hai chỗ thì hai chỗ sẽ lệch nhau lúc nào không biết.
-        HienToast("Đã thu " + r.displayName + " vào kho!");
+        HienToast(Loc.TF("Đã thu {0} vào kho!", Loc.T(r.displayName)));
         _trangThaiNutDaHien = int.MinValue;
     }
 
@@ -907,7 +907,7 @@ public class MillPopupUI : MonoBehaviour
         st.endTicksUtc = nowTicks;
         LuuTrangThai();
 
-        HienToast("Đã xay xong " + st.recipe.displayName);
+        HienToast(Loc.TF("Đã xay xong {0}", Loc.T(st.recipe.displayName)));
     }
 
     private void BamMoSlot(int idx)
@@ -926,7 +926,7 @@ public class MillPopupUI : MonoBehaviour
         // Slot cuối cùng khoá theo CẤP, không bán bằng kim cương (video: "Chưa đủ cấp / Cấp 18").
         if (LaSlotCuoi(idx) && !MillInventoryBridge.DatCap(config.levelRequiredLastSlot))
         {
-            HienToast("Cần đạt cấp " + config.levelRequiredLastSlot);
+            HienToast(Loc.TF("Cần đạt cấp {0}", config.levelRequiredLastSlot));
             return;
         }
 
@@ -1020,7 +1020,7 @@ public class MillPopupUI : MonoBehaviour
             {
                 // Định dạng CHỐT: dấu · (middle dot U+00B7), không phải • và không phải "-".
                 txtStatusBadge.text = (soDangXay > 0)
-                    ? ("Đang xay · " + soDangXay + " slot")
+                    ? Loc.TF("Đang xay · {0} slot", soDangXay)
                     : "Máy đang rảnh";
             }
 
@@ -1031,9 +1031,8 @@ public class MillPopupUI : MonoBehaviour
         if (doiTong && txtSlotSummary != null && config != null)
         {
             // "3/5 slot đã mở · 0 đang xay · 2 chờ thu"
-            txtSlotSummary.text = _soSlotDaMo + "/" + config.slotCount + " slot đã mở · "
-                                + soDangXay + " đang xay · "
-                                + soChoThu  + " chờ thu";
+            txtSlotSummary.text = Loc.TF("{0}/{1} slot đã mở · {2} đang xay · {3} chờ thu",
+                                         _soSlotDaMo, config.slotCount, soDangXay, soChoThu);
         }
 
         _soDangXayDaHien = soDangXay;

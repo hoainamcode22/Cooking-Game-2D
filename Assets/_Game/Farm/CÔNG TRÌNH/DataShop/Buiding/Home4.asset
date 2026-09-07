@@ -19,6 +19,6 @@ MonoBehaviour:
   diamondPrice: 0
   prefabToBuild: {fileID: 1582242620454337050, guid: d191c4718e8cc53458a6998072f063d4, type: 3}
   unlockLevel: 1
-  gridSize: {x: 4, y: 4}
+  gridSize: {x: 1, y: 1}
   buildTimeSeconds: 600
   rushGemCost: 0

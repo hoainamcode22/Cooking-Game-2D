@@ -256,7 +256,7 @@ public class CropProcessPopupUI : MonoBehaviour
             int cost = CurrentGemCost;
             if (FarmEconomyManager.Instance.Gems < cost)
             {
-                FarmUIManager.Instance?.ShowHint($"Cần {cost} kim cương để tăng tốc.");
+                FarmUIManager.Instance?.ShowHint(Loc.TF("Cần {0} kim cương để tăng tốc.", cost));
                 return;
             }
 

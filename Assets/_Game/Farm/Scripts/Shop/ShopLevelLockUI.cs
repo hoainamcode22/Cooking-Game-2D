@@ -61,7 +61,7 @@ public class ShopLevelLockUI : MonoBehaviour
         if (isLocked)
         {
             if (lockLevelText != null)
-                lockLevelText.text = $"Mở ở cấp {itemUnlockLevel}";
+                lockLevelText.text = Loc.TF("Mở ở cấp {0}", itemUnlockLevel);
 
             // Vô hiệu hóa các nút mua để tránh bypass qua code
             if (_shopItemUI != null)

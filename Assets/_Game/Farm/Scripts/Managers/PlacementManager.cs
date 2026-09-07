@@ -13,7 +13,10 @@ using UnityEngine.UI;
 ///
 /// ══════════════════════════════════════════════════════════════════════════
 /// TẦNG LƯỚI (DEV-1) — xem §4 production/TEAM_PLACEMENT_CONSTRUCTION.md
-/// • CELL = 100 world unit, ORIGIN = (0,0). Đây là NGUỒN SỰ THẬT DUY NHẤT.
+/// • ⛔ V10: "CELL = 100 world unit" bên dưới là LỊCH SỬ (hệ save v0/v1). Ô THẬT giờ là
+///   300 x 150 world và KHÔNG VUÔNG — nguồn sự thật duy nhất là IsoGrid.CellWidth /
+///   IsoGrid.CellHeight. Mọi công thức nhắc "CELL" trong khối doc dưới đây chỉ còn giá trị
+///   khảo cổ; đọc code thật ở IsoGrid.cs.
 /// • Công trình N×M ô chiếm đúng N×M ô, tâm luôn nằm chính giữa khối ô đó.
 /// • Chồng lấn kiểm tra bằng HÌNH HỌC Ô LƯỚI (HashSet ô đã chiếm),
 ///   KHÔNG dùng Physics2D nữa — layer mask trong scene rỗng nên OverlapBox
@@ -70,42 +73,60 @@ public class PlacementManager : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
 
     /// <summary>
-    /// Cạnh một ô lưới, tính bằng world unit.
+    /// Ô lưới VUÔNG 100 world unit của hệ toạ độ CŨ (save v0 và v1).
     ///
-    /// VÌ SAO CHỐT 100 (không phải 50, không phải 150):
-    ///   • Đo bounds 33 prefab trong CÔNG TRÌNH/: nhỏ nhất ~159×563 (cột đèn),
-    ///     phổ biến 345×461 (decor) và 238–374 × 361–406 (nhà), lớn nhất ~694×446 (chuồng).
-    ///     → Với CELL=100 mọi công trình rơi vào 2×6 … 7×5 ô: đúng dải Township (2×2…5×5).
-    ///   • CELL=50 cho ra 7×10 ô cho một cái nhà → lưới quá mịn, snap gần như tự do,
-    ///     hai công trình vẫn "ghé" sát vào nhau lệch nửa ô, và HashSet ô phình 4 lần.
-    ///   • CELL=150 (bằng scale của Tilemap nền) làm tròn phí tới 45 % diện tích
-    ///     (cột đèn rộng 159 → chiếm 300), và 3 tilemap nền trong SCN_Farm lệch nhau
-    ///     (-290 / 0 / -28) nên KHÔNG tồn tại một lưới nền thống nhất để bám theo.
-    ///   • 100 cũng là giá trị đã serialize sẵn của PlacementManager trong SCN_Farm
-    ///     → đổi ObjectDragHandler (đang 50) về 100 là ít rủi ro nhất.
-    ///   • Prefab dùng root scale = 100 nên "1 unit sprite = 1 ô" — số đo dễ nhẩm.
+    /// ĐÂY LÀ MỘT PHẦN CỦA ĐỊNH DẠNG DỮ LIỆU, KHÔNG PHẢI CỠ Ô HIỆN TẠI.
+    /// Save v0/v1 đã ghi ra đĩa với con số 100 này. Muốn đọc lại đúng những toạ độ đó thì
+    /// phép dịch save BẮT BUỘC phải dùng lại đúng 100 — sửa nó thành 300 là đọc sai mọi
+    /// save cũ. Vì vậy hằng số này KHÔNG BAO GIỜ được "cập nhật theo lưới mới".
+    ///
+    /// NGƯỜI DÙNG DUY NHẤT ĐƯỢC PHÉP: <see cref="MigrateAnchorV0ToV1"/>.
+    /// Mọi chỗ khác phải dùng <see cref="IsoGrid"/>.
     /// </summary>
-    public const float CELL = 100f;
+    public const float LegacyCellV0V1 = 100f;
 
-    /// <summary>Gốc lưới. Ô (0,0) trải từ ORIGIN tới ORIGIN + (CELL, CELL).</summary>
+    /// <summary>
+    /// ⛔ ĐÃ LỖI THỜI TỪ V10 — ĐỪNG DÙNG CHO BẤT KỲ PHÉP TÍNH MỚI NÀO.
+    ///
+    /// VÌ SAO BỎ: ô mặt đất THẬT không vuông và không phải 100. Dev U đã xác minh bằng
+    /// hai nguồn độc lập rằng ô là 300 x 150 world:
+    ///   • Grid_Iso45 scale 150, nhưng 9 tilemap mặt đất con đều có localScale = 2
+    ///     ⇒ 150 x 2 = 300 ngang, 75 x 2 = 150 dọc.
+    ///   • Art Sheet_IsoGrass45.png PPU 128, phần thoi 128 x 64 px = 1.0 x 0.5 unit
+    ///     ⇒ x childScale 2 x gridScale 150 = 300 x 150.
+    /// Lý lẽ "chốt 100" trong bản cũ dựa trên giả định KHÔNG có lưới nền thống nhất; giả
+    /// định đó đã bị chứng minh là sai, nên toàn bộ lý lẽ đó không còn giá trị.
+    ///
+    /// DÙNG GÌ THAY THẾ:
+    ///   • cần cỡ ô theo TỪNG TRỤC  → IsoGrid.CellWidth / IsoGrid.CellHeight
+    ///   • cần HỘP BAO của vùng N x M ô → IsoGrid.FootprintWorldSize(gridSize)
+    ///   • cần suy SỐ Ô từ hộp bao world → IsoGrid.EstimateSizeFromWorldSize(size)
+    ///
+    /// GIỮ LẠI (không xoá) THEO YÊU CẦU LEAD: xoá thẳng thì chỗ nào chưa ai tìm ra sẽ vỡ
+    /// biên dịch hàng loạt và bị "sửa cho hết đỏ" bằng cách nhồi lại một số cứng khác.
+    /// Để [Obsolete] thì Unity in cảnh báo ĐÚNG TÊN FILE + DÒNG cho mọi chỗ còn sót,
+    /// mà game vẫn build và chạy được để test.
+    /// </summary>
+    [System.Obsolete("CELL = 100 la luoi VUONG cua save v0/v1, KHONG phai co o hien tai. " +
+                     "O that = IsoGrid.CellWidth x IsoGrid.CellHeight = 300 x 150 (KHONG vuong). " +
+                     "Dung IsoGrid.CellWidth/CellHeight theo tung truc, " +
+                     "IsoGrid.FootprintWorldSize(gridSize) khi can hop bao, " +
+                     "IsoGrid.EstimateSizeFromWorldSize(size) khi suy so o. " +
+                     "Rieng phep dich save dung PlacementManager.LegacyCellV0V1.")]
+    public const float CELL = LegacyCellV0V1;
+
+    /// <summary>Gốc lưới. V9 trở đi gốc thật lấy từ IsoGrid.Origin (vị trí Grid_Iso45).</summary>
     public static readonly Vector2 GridOrigin = Vector2.zero;
 
     /// <summary>Ô lưới chứa một điểm world.</summary>
-    public static Vector2Int WorldToCell(Vector3 world) => new Vector2Int(
-        Mathf.FloorToInt((world.x - GridOrigin.x) / CELL),
-        Mathf.FloorToInt((world.y - GridOrigin.y) / CELL));
+    public static Vector2Int WorldToCell(Vector3 world) => IsoGrid.WorldToCell(world);
 
     /// <summary>Tâm world của một ô lưới.</summary>
-    public static Vector3 CellCenterToWorld(Vector2Int cell) => new Vector3(
-        GridOrigin.x + (cell.x + 0.5f) * CELL,
-        GridOrigin.y + (cell.y + 0.5f) * CELL,
-        0f);
+    public static Vector3 CellCenterToWorld(Vector2Int cell) => IsoGrid.CellCenterToWorld(cell);
 
     /// <summary>Góc dưới-trái (world) của một ô lưới.</summary>
-    public static Vector3 CellCornerToWorld(int cellX, int cellY) => new Vector3(
-        GridOrigin.x + cellX * CELL,
-        GridOrigin.y + cellY * CELL,
-        0f);
+    public static Vector3 CellCornerToWorld(int cellX, int cellY)
+        => IsoGrid.CellFloatToWorld(new Vector2(cellX - 0.5f, cellY - 0.5f));
 
     /// <summary>
     /// 🔴 V8 — SNAP ĐIỂM NEO (mép dưới + giữa ngang vùng ô). ĐÂY LÀ ĐƯỜNG CHÍNH.
@@ -131,15 +152,7 @@ public class PlacementManager : MonoBehaviour
     /// mốc .5 → nhảy ô không đều khi kéo chậm.
     /// </summary>
     public static Vector3 SnapAnchor(Vector3 world, Vector2Int size)
-    {
-        int n  = Mathf.Max(1, size.x);
-        int ox = Mathf.FloorToInt((world.x - GridOrigin.x) / CELL - n * 0.5f + 0.5f);
-        int oy = Mathf.FloorToInt((world.y - GridOrigin.y) / CELL + 0.5f);
-        return new Vector3(
-            GridOrigin.x + (ox + n * 0.5f) * CELL,
-            GridOrigin.y + oy * CELL,
-            0f);
-    }
+        => IsoGrid.SnapAnchor(world, size);   // 🟢 V9 — chuyển tiếp sang lưới ISO (Grid_Iso45)
 
     /// <summary>
     /// 🔴 V8 — Vùng ô mà công trình N×M chiếm khi ĐIỂM NEO (chân) nằm ở anchorWorld.
@@ -149,19 +162,10 @@ public class PlacementManager : MonoBehaviour
     /// cần cộng bù pivot nữa — pivot chỉ còn dùng cho phép chuyển đổi save cũ (v0 → v1).
     /// </summary>
     public static RectInt RectFromAnchor(Vector3 anchorWorld, Vector2Int size)
-    {
-        int n  = Mathf.Max(1, size.x);
-        int m  = Mathf.Max(1, size.y);
-        int ox = Mathf.FloorToInt((anchorWorld.x - GridOrigin.x) / CELL - n * 0.5f + 0.5f);
-        int oy = Mathf.FloorToInt((anchorWorld.y - GridOrigin.y) / CELL + 0.5f);
-        return new RectInt(ox, oy, n, m);
-    }
+        => IsoGrid.RectFromAnchor(anchorWorld, size);   // 🟢 V9 — lưới ISO
 
     /// <summary>ĐIỂM NEO (mép dưới + giữa ngang) của một vùng ô — chiều ngược của RectFromAnchor.</summary>
-    public static Vector3 RectAnchorWorld(RectInt rect) => new Vector3(
-        GridOrigin.x + (rect.xMin + rect.width * 0.5f) * CELL,
-        GridOrigin.y + rect.yMin * CELL,
-        0f);
+    public static Vector3 RectAnchorWorld(RectInt rect) => IsoGrid.RectAnchorWorld(rect);
 
     /// <summary>Tiện ích: snap NEO trực tiếp từ data + số bước xoay.</summary>
     public static Vector3 SnapAnchorFor(PlaceableItemData data, Vector3 world, int rotationSteps)
@@ -190,16 +194,7 @@ public class PlacementManager : MonoBehaviour
     /// chẵn ở đúng mốc .5 → nhảy ô không đều khi kéo chậm.
     /// </summary>
     public static Vector3 SnapCenter(Vector3 world, Vector2Int size)
-    {
-        int n = Mathf.Max(1, size.x);
-        int m = Mathf.Max(1, size.y);
-        int ox = Mathf.FloorToInt((world.x - GridOrigin.x) / CELL - n * 0.5f + 0.5f);
-        int oy = Mathf.FloorToInt((world.y - GridOrigin.y) / CELL - m * 0.5f + 0.5f);
-        return new Vector3(
-            GridOrigin.x + (ox + n * 0.5f) * CELL,
-            GridOrigin.y + (oy + m * 0.5f) * CELL,
-            0f);
-    }
+        => IsoGrid.SnapCenter(world, size);   // 🟢 V9 — lưới ISO
 
     /// <summary>
     /// Vùng ô mà một công trình N×M chiếm khi TÂM nằm ở centerWorld.
@@ -211,16 +206,14 @@ public class PlacementManager : MonoBehaviour
     {
         int n = Mathf.Max(1, size.x);
         int m = Mathf.Max(1, size.y);
-        int ox = Mathf.FloorToInt((centerWorld.x - GridOrigin.x) / CELL - n * 0.5f + 0.5f);
-        int oy = Mathf.FloorToInt((centerWorld.y - GridOrigin.y) / CELL - m * 0.5f + 0.5f);
+        Vector2 f = IsoGrid.WorldToCellFloat(centerWorld);   // 🟢 V9 — lưới ISO
+        int ox = Mathf.FloorToInt(f.x - (n - 1) * 0.5f + 0.5f);
+        int oy = Mathf.FloorToInt(f.y - (m - 1) * 0.5f + 0.5f);
         return new RectInt(ox, oy, n, m);
     }
 
     /// <summary>Tâm world của một vùng ô.</summary>
-    public static Vector3 RectCenterWorld(RectInt rect) => new Vector3(
-        GridOrigin.x + (rect.xMin + rect.width * 0.5f) * CELL,
-        GridOrigin.y + (rect.yMin + rect.height * 0.5f) * CELL,
-        0f);
+    public static Vector3 RectCenterWorld(RectInt rect) => IsoGrid.RectCenterWorld(rect);
 
     /// <summary>Tiện ích cho DEV-2: snap trực tiếp từ data + số bước xoay.</summary>
     public static Vector3 SnapCenterFor(PlaceableItemData data, Vector3 world, int rotationSteps)
@@ -231,7 +224,7 @@ public class PlacementManager : MonoBehaviour
     ///
     /// CÓ LƯỚI AN TOÀN: nếu asset còn để mặc định 1×1 mà prefab thật to hơn 1 ô,
     /// tự đo bounds prefab rồi Ceil. Nếu không có lưới này thì trước khi Edric chạy
-    /// `Tools/Farm/Suy Kích Thước Ô Công Trình`, giàn giáo của DEV-2 chỉ chiếm 1 ô
+    /// `Tools/Map45/8. Suy Kich Thuoc O`, giàn giáo của DEV-2 chỉ chiếm 1 ô
     /// (thay vì 7×5) và chỉ giữ 1 ô → đặt đè lên công trường đang xây được.
     /// Kết quả được cache để không đo lại mỗi frame.
     /// </summary>
@@ -241,7 +234,16 @@ public class PlacementManager : MonoBehaviour
 
         Vector2Int baseSize = data.gridSize;
 
-        if (baseSize.x <= 1 && baseSize.y <= 1 && data.prefabToBuild != null)
+        // ── V10: HAI kiểu gridSize KHÔNG DÙNG ĐƯỢC, xử lý CHUNG một đường ──────────
+        //   • CHƯA ĐIỀN  (1×1)                     → đo từ prefab (hành vi cũ, giữ nguyên)
+        //   • RÁC        (> gridSizeSanityLimit)   → cũng đo từ prefab
+        // VÌ SAO GỘP: cả hai đều có nghĩa "con số trong asset không đáng tin", và cả hai
+        // đều phải ra CÙNG một kết quả với ConstructionManager/ConstructionSite — ba nơi
+        // đó gọi chung đúng hàm static này, nên sửa ở đây là sửa cho cả ba.
+        bool sizeUnset = baseSize.x <= 1 && baseSize.y <= 1;
+        bool sizeInsane = baseSize.x > _gridSizeSanityLimit || baseSize.y > _gridSizeSanityLimit;
+
+        if ((sizeUnset || sizeInsane) && data.prefabToBuild != null)
         {
             if (!_measuredSizeCache.TryGetValue(data, out Vector2Int measured))
             {
@@ -251,16 +253,24 @@ public class PlacementManager : MonoBehaviour
 
             // V6: dùng CHUNG HashSet với WarnGridSizeMissing — trước đây hai chỗ có hai cổng
             // chặn riêng nên cùng một asset bị kêu hai lần với hai câu chữ khác nhau.
-            if ((measured.x > 1 || measured.y > 1) && _warnedMissingGridSize.Add(data.name))
-                Debug.LogWarning($"[Placement] '{data.itemName}' chưa điền gridSize " +
-                                 $"→ tạm đo từ prefab = {measured.x}×{measured.y} ô. " +
-                                 "Chạy Tools ▸ Farm ▸ Suy Kích Thước Ô Công Trình để chốt.", data);
+            // ⚠ V10: đã BỌC {} — `remove_debug_logs.ps1` xoá dòng Debug.* mà không xoá `if`,
+            // `if` rỗng sẽ nuốt luôn câu `baseSize = measured;` bên dưới (đúng loại lỗi đã
+            // xảy ra thật ở PenClickDetector.cs).
+            if (sizeInsane && _warnedMissingGridSize.Add(data.name))
+                { Debug.LogWarning($"[Place] '{data.itemName}' gridSize = {data.gridSize.x}x{data.gridSize.y} o la VO LY (nguong {_gridSizeSanityLimit}) - day la don vi ART lot vao asset, khong phai so o. Tam do tu prefab = {measured.x}x{measured.y} o. Sua asset bang Tools > Map45 > 8.", data); }
+            else if (sizeUnset && (measured.x > 1 || measured.y > 1) && _warnedMissingGridSize.Add(data.name))
+                { Debug.LogWarning($"[Place] '{data.itemName}' chua dien gridSize -> tam do tu prefab = {measured.x}x{measured.y} o. Chay Tools > Map45 > 8 de chot.", data); }
 
             baseSize = measured;
         }
 
-        baseSize.x = Mathf.Max(1, baseSize.x);
-        baseSize.y = Mathf.Max(1, baseSize.y);
+        // KẸP CUỐI CÙNG — lưới an toàn thật sự.
+        // Phải có kể cả sau khi đo lại từ prefab: prefab nào có root scale bất thường thì
+        // phép đo cũng phình theo. Kẹp ở đây bảo đảm rect KHÔNG BAO GIỜ vượt
+        // gridSizeSanityLimit ô mỗi chiều, nên IsoPlacementPreview không thể tô kín màn
+        // hình và các vòng lặp theo ô không thể nổ thành hàng trăm nghìn lượt mỗi frame.
+        baseSize.x = Mathf.Clamp(baseSize.x, 1, _gridSizeSanityLimit);
+        baseSize.y = Mathf.Clamp(baseSize.y, 1, _gridSizeSanityLimit);
 
         // Bước xoay lẻ (90°, 270°) hoán đổi chiều
         return ((rotationSteps & 1) == 1) ? new Vector2Int(baseSize.y, baseSize.x) : baseSize;
@@ -319,7 +329,7 @@ public class PlacementManager : MonoBehaviour
     /// V8: đây là TOÀN BỘ phần bù giữa hai hệ toạ độ (trục X hai hệ trùng nhau).
     /// </summary>
     private static float HalfDepthWorld(PlaceableItemData data, int rotationSteps)
-        => Mathf.Max(1, GridSizeOf(data, rotationSteps).y) * CELL * 0.5f;
+        => IsoGrid.HalfDepth(GridSizeOf(data, rotationSteps));   // 🟢 V9 — lưới ISO
 
     /// <summary>
     /// Đổi vị trí NEO (mép dưới vùng ô) thành TÂM vùng ô.
@@ -381,9 +391,11 @@ public class PlacementManager : MonoBehaviour
     {
         if (!TryMeasurePrefabVisualBounds(prefab, out Bounds b)) return Vector2Int.one;
 
-        return new Vector2Int(
-            Mathf.Max(1, Mathf.CeilToInt(b.size.x / CELL)),
-            Mathf.Max(1, Mathf.CeilToInt(b.size.y / CELL)));
+        // MỘT lần gọi: EstimateSizeFromWorldSize suy CẢ n và m từ đúng b.size.x, nên gọi
+        // hai lần rồi lấy .x của lần này + .y của lần kia là hoàn toàn tương đương mà tốn
+        // gấp đôi. (Đã kiểm: hàm không đọc worldSize.y ở nhánh nào.)
+        Vector2Int est = IsoGrid.EstimateSizeFromWorldSize(b.size);
+        return new Vector2Int(Mathf.Max(1, est.x), Mathf.Max(1, est.y));
     }
 
     /// <summary>
@@ -413,7 +425,7 @@ public class PlacementManager : MonoBehaviour
     ///       • Với prefab NHIỀU sprite, Encapsulate trộn tâm-local với size-world nên hộp
     ///         bao tổng vô nghĩa → gridSize suy ra cũng sai.
     ///     Giờ cả center lẫn size đều là WORLD UNIT → khớp với BuildingGridSizeTool
-    ///     (Tools ▸ Farm ▸ Suy Kích Thước Ô Công Trình) và khớp với các số trong §0
+    ///     (Tools ▸ Map45 ▸ 8. Suy Kich Thuoc O) và khớp với các số trong §0
     ///     (Home1 = 192, Home3 = 208, Home5 = 194).
     /// Bộ lọc tên dùng chung IsValidSourceVisualRenderer để khớp với Editor tool — hai bên
     /// phải ra CÙNG con số.
@@ -544,7 +556,9 @@ public class PlacementManager : MonoBehaviour
     ///   v1 = hệ V8: anchor = mép dưới vùng ô
     /// LoadBuildings() tự dịch v0 → v1 rồi ghi lại. Xem MigrateAnchorV0ToV1().
     /// </summary>
-    public const int CurrentSaveVersion = 1;
+    /// v2 = hệ V9: toạ độ neo nằm trên LƯỚI ISO (Grid_Iso45, ô kim cương 150×75).
+    ///      Save v1 (lưới vuông CELL=100) được nắn về ô iso gần nhất khi load — 1 lần duy nhất.
+    public const int CurrentSaveVersion = 2;
 
     // ── Inspector ────────────────────────────────────────────────────────────
 
@@ -576,6 +590,33 @@ public class PlacementManager : MonoBehaviour
     [Header("Debug")]
     [Tooltip("In log mỗi lần dò lại biên bản đồ và mỗi lần từ chối vì chồng lấn.")]
     public bool verboseGridLog = false;
+
+    [Header("An toan kich thuoc o (V10)")]
+    // 🔴 V10 — LƯỚI AN TOÀN cho gridSize RÁC.
+    // 33/37 asset trong `_Game/Farm/CÔNG TRÌNH` đang lưu gridSize theo ĐƠN VỊ ART chứ
+    // không phải SỐ Ô: Home1..Home5 = 341×342, Chuồng*/Máy* = 413×413, Khung Hoa =
+    // 1514×1515, decor = 106..326. Một công trình Township thật chỉ 2…7 ô.
+    // Nhận nguyên con số đó thì rect = 341×342 = 116 622 ô, và hậu quả là CẢ HAI
+    // triệu chứng Sếp gặp cùng lúc:
+    //   • IsoPlacementPreview tô MÀU TỪNG Ô của rect ⇒ 116 622 ô ⇒ nhuộm kín màn hình;
+    //   • rect chắc chắn cắt qua khu đất chưa mua + vượt biên bản đồ ⇒ IsRectInsideMap
+    //     = false ⇒ isValidPos = false ⇒ btnConfirm.interactable = false ⇒ KHÔNG ĐẶT ĐƯỢC.
+    // Cờ này KHÔNG sửa asset (không được phép đụng .asset) — nó chặn ở RUNTIME.
+    [Tooltip("So o TOI DA moi chieu cua mot cong trinh. gridSize vuot nguong nay bi coi la RAC " +
+             "(don vi art lot vao asset) -> do lai tu prefab roi kep ve nguong. De 0 = tat luoi an toan.")]
+    [SerializeField] private int gridSizeSanityLimit = 24;
+
+    [Tooltip("Bat = in 1 dong [Place] moi khi trang thai hop le doi, kem TEN dieu kien da chan. " +
+             "Gui log nay cho Lead khi con loi khong dat duoc.")]
+    [SerializeField] private bool logPlacementReason = true;
+
+    /// <summary>
+    /// Bản sao STATIC của <see cref="gridSizeSanityLimit"/>.
+    /// VÌ SAO PHẢI CÓ: <see cref="GridSizeOf"/> là static (ConstructionManager và
+    /// ConstructionSite gọi trực tiếp, không qua Instance) nên không đọc được field
+    /// instance. Awake() nạp giá trị vào đây một lần.
+    /// </summary>
+    private static int _gridSizeSanityLimit = 24;
 
     // ── Runtime state ────────────────────────────────────────────────────────
 
@@ -663,6 +704,11 @@ public class PlacementManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+
+        // 0 = designer chủ động tắt lưới an toàn → dùng int.MaxValue để mọi phép so sánh
+        // "vượt ngưỡng" đều false, thay vì rải thêm một cờ bool nữa đi khắp file.
+        _gridSizeSanityLimit = gridSizeSanityLimit <= 0 ? int.MaxValue
+                                                        : Mathf.Clamp(gridSizeSanityLimit, 1, 512);
     }
 
     private void Start()
@@ -742,8 +788,18 @@ public class PlacementManager : MonoBehaviour
         bool inside  = IsRectInsideMap(rect);
         isValidPos   = free && inside;
 
-        if (verboseGridLog && !isValidPos)
-            Debug.Log($"[Placement] Ô {rect} KHÔNG hợp lệ — chồng lấn:{!free} ngoài biên:{!inside}");
+        // ── V10: LOG CHẨN ĐOÁN 1 DÒNG, in LẠI KHI ĐỔI trạng thái ──────────────────
+        // Log cũ chỉ nói "chồng lấn / ngoài biên" nên không phân biệt được ĐẤT CHƯA MUA
+        // với NGOÀI BIÊN BẢN ĐỒ — hai nguyên nhân hoàn toàn khác nhau đều rơi vào
+        // `inside == false`. Bản này in ĐÚNG TÊN cổng đã chặn + Ô cụ thể gây chặn.
+        // In theo THAY ĐỔI chứ không mỗi frame: giữ chuột kéo ghost là 60 dòng/giây.
+        if (logPlacementReason)
+        {
+            string reason = isValidPos ? "HOP_LE" : DescribeBlockReason(rect, free);
+            if (reason != _lastBlockReason)
+                { Debug.Log($"[Place] o=({rect.xMin},{rect.yMin}) co={rect.width}x{rect.height} isValidPos={isValidPos} lyDo={reason}"); }
+            _lastBlockReason = reason;
+        }
 
         if (ghostVisual != null)
             ghostVisual.SetValid(isValidPos);
@@ -819,6 +875,17 @@ public class PlacementManager : MonoBehaviour
     public void StartEditBuilding(EditableBuilding target)
     {
         if (target == null) return;
+
+        // 🔴 V12 — HÀNG RÀO CÒN THIẾU. Bản sao của ObjectDragHandler.cs:175
+        // (`if (PlacementManager.IsPlacingNewObject) return;` — có từ commit 032a2ab1 với
+        // ghi chú "Nhường input cho PlacementManager khi đang đặt vật thể mới").
+        // `EditableBuilding.cs` KHÔNG bao giờ được thêm hàng rào đó: OnMouseDown của nó nổ
+        // TRƯỚC mọi Update() (thứ tự cứng của Unity), giữ 0.3 s là nó gọi thẳng vào đây
+        // và Destroy ghost đang mở — đúng lúc người chơi đang đợi nút ✓ trên thẻ ăn.
+        // Chặn HẸP: chỉ từ chối khi con trỏ đang NẰM TRÊN nút của ghost. Người chơi
+        // vẫn nhảy sang công trình khác bình thường khi bấm ra chỗ đất trống.
+        if (isPlacing && currentGhost != null && IsMouseOverGhostButtons())
+            { return; }
 
         // Hủy ghost cũ nếu đang có (tránh gọi đè)
         if (currentGhost != null) Destroy(currentGhost);
@@ -1063,8 +1130,9 @@ public class PlacementManager : MonoBehaviour
     {
         if (currentGhost == null) return;
 
-        float targetW = Mathf.Max(1, size.x) * CELL;
-        float targetH = Mathf.Max(1, size.y) * CELL;
+        Vector2 fpWH  = IsoGrid.FootprintWorldSize(size);   // 🟢 V9 — hộp bao vùng ô ISO
+        float targetW = fpWH.x;
+        float targetH = fpWH.y;
 
         // Vùng ô đang được validate — nguồn sự thật cho cả thảm, khung 4 góc lẫn API §4.
         currentRect = CurrentRectOf(size);
@@ -1178,6 +1246,16 @@ public class PlacementManager : MonoBehaviour
     {
         if (!isValidPos)
         {
+            // 🔴 V12 — ĐÂY LÀ ĐƯỜNG RA DUY NHẤT khiến nút ✓ "bấm không ăn".
+            // Đã khớp từng nhánh: hàm này chỉ có MỘT cửa return sớm, chính là dòng trên.
+            // Trước V12 nó IM LẶNG hoàn toàn, nên người chơi thấy nút SÁNG mà bấm không xong
+            // và KHÔNG có cách nào biết vì sao — từ vòng 11 màu trạng thái TẮT đã thành
+            // đục hẳn (mauNutKhiTat α = 1, glyph 0.90) nên nút bị disable KHÔNG còn "mờ" nữa.
+            // Log trong Update() KHÔNG thay được chỗ này: nó chỉ in KHI ĐỔI trạng thái, mà
+            // đúng frame bấm ✓ thì trạng thái không đổi ⇒ không in gì cả.
+            if (logPlacementReason)
+                { Debug.Log($"[Place] BAM NUT XAC NHAN nhung BI TU CHOI: isValidPos=false lyDo={DescribeBlockReason(currentRect, IsAreaFree(currentRect))}"); }
+
             if (ghostVisual != null)
                 ghostVisual.SetValid(false);
             return;
@@ -1263,9 +1341,20 @@ public class PlacementManager : MonoBehaviour
         var plot = spawnedObj.GetComponentInChildren<PlotController>(true);
         if (plot != null)
         {
-            plot.InitializeAsNew();
+            // 🔴 P0 (vòng 11) — THỨ TỰ BẮT BUỘC: cấp plotId TRƯỚC, InitializeAsNew() SAU.
+            //
+            // InitializeAsNew() gọi PlayerPrefs.DeleteKey(SaveKey), mà SaveKey tính theo
+            // plotId ĐANG CÓ trên component. Gọi nó TRƯỚC khi cấp id thì plotId vẫn là SỐ
+            // MẶC ĐỊNH TRONG PREFAB (Plot_01 = 1 · Chauhoa_1 = 21 · Chauhoa_2 = 22 ·
+            // Chauhoa_3 = 23 · Chauhoa_4 = 24) ⇒ xoá ĐÚNG khoá save của một ô đất/chậu CÓ
+            // THẬT trong SCN_Farm: 4 chậu mang plotId 21/22/23/24 đều đang BẬT. Đó chính là
+            // lỗi "mua 1 chậu thì chậu cũ mất sạch cây".
+            //
+            // Cấp id TRƯỚC thì khoá bị xoá là khoá của CHÍNH ô vừa đặt — đúng ý định ban
+            // đầu của InitializeAsNew() ("không còn vết tích cũ" của ô MỚI).
             assignedPlotId = GetNextPlotId();
             plot.SetPlotId(assignedPlotId);
+            plot.InitializeAsNew();
         }
 
         // Khởi tạo tiến trình xây 6 giai đoạn nếu là Nhà
@@ -1392,9 +1481,11 @@ public class PlacementManager : MonoBehaviour
         var plot = spawnedObj.GetComponentInChildren<PlotController>(true);
         if (plot != null)
         {
-            plot.InitializeAsNew();
+            // 🔴 P0 (vòng 11) — cùng lý do như ở ConfirmPlacement(): cấp plotId TRƯỚC,
+            // InitializeAsNew() SAU, nếu không sẽ xoá khoá save của ô đất khác.
             assignedPlotId = GetNextPlotId();
             plot.SetPlotId(assignedPlotId);
+            plot.InitializeAsNew();
         }
 
         placedBuildings.Add(new BuildingEntry
@@ -1477,7 +1568,17 @@ public class PlacementManager : MonoBehaviour
             // và SaveBuildings() ở cuối hàm ghi lại kèm saveVersion = 1 → chỉ dịch MỘT LẦN.
             if (needMigrate)
             {
-                Vector3 migrated = MigrateAnchorV0ToV1(new Vector3(entry.x, entry.y, 0f), itemData, rot);
+                Vector3 migrated = new Vector3(entry.x, entry.y, 0f);
+
+                // v0 → v1: neo cũ (tâm vùng ô − pivot) → mép dưới vùng ô, vẫn trên lưới VUÔNG.
+                if (save.saveVersion < 1)
+                    migrated = MigrateAnchorV0ToV1(migrated, itemData, rot);
+
+                // 🟢 v1 → v2: nắn toạ độ lưới VUÔNG (CELL=100) về ô LƯỚI ISO gần nhất.
+                // Giữ nguyên vị trí trực quan hết mức có thể, chỉ hút vào ô iso hợp lệ.
+                if (save.saveVersion < 2)
+                    migrated = IsoGrid.SnapAnchor(migrated, GridSizeOf(itemData, rot));
+
                 entry.x = migrated.x;
                 entry.y = migrated.y;
                 migratedCount++;
@@ -1529,9 +1630,9 @@ public class PlacementManager : MonoBehaviour
         // công trình bay lên nửa chiều sâu ô — đúng loại bug rất khó truy).
         SaveBuildings();
 
+        // ⚠ BỌC {} (V10): remove_debug_logs.ps1 xoá dòng Debug.* nhưng KHÔNG xoá `if`.
         if (migratedCount > 0)
-            Debug.Log($"[Placement] Đã chuyển {migratedCount} công trình từ save v{save.saveVersion} " +
-                      $"sang v{CurrentSaveVersion} (neo: tâm vùng ô − pivot → mép dưới vùng ô).");
+            { Debug.Log($"[Placement] Đã chuyển {migratedCount} công trình từ save v{save.saveVersion} sang v{CurrentSaveVersion} (nắn về lưới ISO Grid_Iso45)."); }
     }
 
     /// <summary>
@@ -1569,7 +1670,9 @@ public class PlacementManager : MonoBehaviour
 
         Vector3 converted = new Vector3(
             anchorOld.x + pivot.x,
-            anchorOld.y + pivot.y - Mathf.Max(1, size.y) * CELL * 0.5f,
+            // LegacyCellV0V1 (KHÔNG phải IsoGrid.CellHeight): con số 100 nằm SẴN trong dữ
+            // liệu save v0 trên đĩa. Đổi sang cỡ ô mới ở đây là dịch sai mọi save cũ.
+            anchorOld.y + pivot.y - Mathf.Max(1, size.y) * LegacyCellV0V1 * 0.5f,
             0f);
 
         return SnapAnchor(converted, size);
@@ -1604,6 +1707,30 @@ public class PlacementManager : MonoBehaviour
             // Bỏ qua mọi thứ nằm BÊN TRONG object vừa spawn: prefab có thể chứa một con
             // trùng tên với chính nó, tắt nhầm là công trình mới hiện thiếu một mảnh.
             if (skipObj != null && t.IsChildOf(skipObj.transform)) continue;
+
+            // 🔴 P0 (vòng 11) — Ô ĐẤT / CHẬU HOA KHÔNG BAO GIỜ LÀ PLACEHOLDER.
+            //
+            // ĐO TRÊN SCN_Farm THẬT: có hai object đang BẬT mang ĐÚNG tên prefab của món
+            // bán trong Shop —
+            //   • "Plot_01"   (plotId 106) : PrefabInstance ở dòng 456544 của SCN_Farm
+            //   • "Chauhoa_1" (plotId 21 , lấy mặc định prefab) : PrefabInstance dòng 422052
+            // Mà Đất.asset       → prefabToBuild.name = "Plot_01"
+            //    Chậu Hoa1.asset → prefabToBuild.name = "Chauhoa_1"
+            // Nên MỖI LẦN người chơi mua một ô đất / một chậu, hàm này SetActive(false)
+            // ĐÚNG một ô đất THẬT đang chơi ⇒ "mua 1 ô là ô cũ mất đi 1 plot và không
+            // click vào trồng được" — đúng báo cáo của Sếp. Đây là gốc lỗi P0.
+            //
+            // VÌ SAO lọc theo PlotController chứ không theo tên: ô đất là vật ĐẾM ĐƠN VỊ —
+            // nhiều cái cùng tồn tại là BÌNH THƯỜNG, và mỗi cái giữ save riêng
+            // (PLOT_NORMAL_{plotId}). Tắt một cái là mất dữ liệu người chơi, không bao giờ
+            // đúng. Nhà dân thì đúng là có placeholder art cần tắt nên giữ nguyên hành vi.
+            if (go.GetComponentInChildren<PlotController>(true) != null)
+            {
+                // ⚠ BỌC {} (V10): remove_debug_logs.ps1 xoá dòng Debug.* nhưng KHÔNG xoá `if`.
+                if (go.activeSelf)
+                    { Debug.Log($"[Placement] KHONG tat '{go.name}' du trung ten prefab '{prefabName}' - day la O DAT that - P0 vong 11."); }
+                continue;
+            }
 
             go.SetActive(false);
         }
@@ -1682,7 +1809,24 @@ public class PlacementManager : MonoBehaviour
         // RemoveAll với bán kính sẽ xoá oan công trình kề bên nếu chúng sát nhau.
         int removed = 0;
         {
-            float nguongBinhPhuong = (CELL * 0.5f) * (CELL * 0.5f);
+            // ── V10: KẸP LẠI NGƯỠNG, KHÔNG ĐỂ NÓ TỰ NỞ THEO CellWidth ─────────────
+            // Trước khi Dev U sửa hệ ô, CellWidth = 150 nên ngưỡng này = 75 world.
+            // Sau khi CellWidth lên 300, cùng dòng code đó tự nở thành 150 — nới gấp đôi
+            // một ngưỡng "dung sai số thực" mà không ai chủ ý.
+            //
+            // VÌ SAO 150 LÀ QUÁ LỎNG: hai công trình KỀ NHAU có điểm neo cách nhau tối
+            // thiểu |(±W/2, ±H/2)| = sqrt(150² + 75²) = 167.7 world. Ngưỡng 150 chỉ còn
+            // cách mốc đó 17.7 unit (biên 10 %) — một công trình lệch lưới do designer kéo
+            // tay là đủ để hàm này nhặt SAI entry và xoá oan công trình bên cạnh khỏi save.
+            //
+            // VÌ SAO CHỌN CellHeight (trục NGẮN) chứ không CellWidth:
+            //   • CellHeight * 0.5 = 75 → GIỮ NGUYÊN đúng con số đã chạy ổn từ trước, nên
+            //     đây là thay đổi KHÔNG rủi ro hồi quy;
+            //   • 75 nằm dưới mốc 167.7 với biên 2.2 lần, an toàn thật sự;
+            //   • bản chất ngưỡng này là dung sai làm tròn JSON (cỡ 1e-3 world), 75 đã dư
+            //     sức, còn 150 chỉ mua thêm rủi ro mà không mua thêm lợi ích nào.
+            float nguongCach       = IsoGrid.CellHeight * 0.5f;
+            float nguongBinhPhuong = nguongCach * nguongCach;
             int   iGan = -1;
             float dGan  = float.MaxValue;
 
@@ -1704,7 +1848,7 @@ public class PlacementManager : MonoBehaviour
             {
                 Debug.LogWarning($"[Placement] Không có entry nào trong save nằm gần " +
                                  $"({originalEditPosition.x:0},{originalEditPosition.y:0}). " +
-                                 $"Gần nhất cách {Mathf.Sqrt(dGan):0} unit — quá xa nửa ô ({CELL * 0.5f:0}). " +
+                                 $"Gần nhất cách {Mathf.Sqrt(dGan):0} unit — quá xa ngưỡng {nguongCach:0}. " +
                                  "Dùng Tools ▸ Farm ▸ Dọn Dẹp Dữ Liệu Đã Lưu để xoá tay.");
             }
         }
@@ -1730,12 +1874,12 @@ public class PlacementManager : MonoBehaviour
         Cleanup(refund: false);
         RefreshOccupancy();
 
+        // ⚠ BỌC {} (V10): nếu script xoá log gỡ hai dòng này mà để lại `if/else`,
+        // cặp if-else rỗng sẽ nuốt câu lệnh kế tiếp (hoặc vỡ biên dịch).
         if (removed == 0)
-            Debug.LogWarning("[Placement] Đã xoá khỏi map nhưng KHÔNG có entry nào trong save — " +
-                             "đây là vật do designer kéo tay vào scene. Lần Play sau NÓ SẼ QUAY LẠI. " +
-                             "Muốn xoá hẳn thì xoá trong Scene (thoát Play Mode) rồi Ctrl+S.");
+            { Debug.LogWarning("[Placement] Đã xoá khỏi map nhưng KHÔNG có entry nào trong save — đây là vật do designer kéo tay vào scene. Lần Play sau NÓ SẼ QUAY LẠI. Muốn xoá hẳn thì xoá trong Scene (thoát Play Mode) rồi Ctrl+S."); }
         else
-            Debug.Log($"[Placement] Đã XÓA vật thể khỏi map + {removed} entry khỏi save.");
+            { Debug.Log($"[Placement] Đã XÓA vật thể khỏi map + {removed} entry khỏi save."); }
     }
 
     // ── Nội bộ ──────────────────────────────────────────────────────────────
@@ -1798,6 +1942,7 @@ public class PlacementManager : MonoBehaviour
         // API §4: rect rỗng = "không có Ghost nào" → DEV-2 tự ẩn 4 chevron.
         currentRect              = new RectInt(0, 0, 0, 0);
         isValidPos               = false;
+        _lastBlockReason         = "\0";   // V10: lượt đặt kế tiếp luôn in lại 1 dòng [Place] đầu tiên
 
         RefreshOccupancy();
     }
@@ -1933,11 +2078,15 @@ public class PlacementManager : MonoBehaviour
         if (b.size.x <= 0.001f || b.size.y <= 0.001f)
             return new RectInt(0, 0, 0, 0);
 
-        const float eps = 0.01f;
-        int xMin = Mathf.FloorToInt((b.min.x - GridOrigin.x) / CELL + eps);
-        int yMin = Mathf.FloorToInt((b.min.y - GridOrigin.y) / CELL + eps);
-        int xMax = Mathf.CeilToInt ((b.max.x - GridOrigin.x) / CELL - eps);
-        int yMax = Mathf.CeilToInt ((b.max.y - GridOrigin.y) / CELL - eps);
+        // 🟢 V9 — quy 4 góc hộp bao về ô ISO rồi lấy bao đóng
+        Vector2 c0 = IsoGrid.WorldToCellFloat(new Vector3(b.min.x, b.min.y, 0f));
+        Vector2 c1 = IsoGrid.WorldToCellFloat(new Vector3(b.max.x, b.min.y, 0f));
+        Vector2 c2 = IsoGrid.WorldToCellFloat(new Vector3(b.min.x, b.max.y, 0f));
+        Vector2 c3 = IsoGrid.WorldToCellFloat(new Vector3(b.max.x, b.max.y, 0f));
+        int xMin = Mathf.FloorToInt(Mathf.Min(Mathf.Min(c0.x, c1.x), Mathf.Min(c2.x, c3.x)) + 0.5f);
+        int xMax = Mathf.FloorToInt(Mathf.Max(Mathf.Max(c0.x, c1.x), Mathf.Max(c2.x, c3.x)) + 0.5f) + 1;
+        int yMin = Mathf.FloorToInt(Mathf.Min(Mathf.Min(c0.y, c1.y), Mathf.Min(c2.y, c3.y)) + 0.5f);
+        int yMax = Mathf.FloorToInt(Mathf.Max(Mathf.Max(c0.y, c1.y), Mathf.Max(c2.y, c3.y)) + 0.5f) + 1;
         return new RectInt(xMin, yMin, Mathf.Max(1, xMax - xMin), Mathf.Max(1, yMax - yMin));
     }
 
@@ -1956,6 +2105,68 @@ public class PlacementManager : MonoBehaviour
 
     private static bool RectsOverlap(RectInt a, RectInt b)
         => a.xMin < b.xMax && b.xMin < a.xMax && a.yMin < b.yMax && b.yMin < a.yMax;
+
+    // ── V10: CHẨN ĐOÁN LÝ DO CHẶN ────────────────────────────────────────────
+    // Sentinel khác mọi giá trị thật để dòng log ĐẦU TIÊN luôn được in ra.
+    private string _lastBlockReason = "\0";
+
+    /// <summary>
+    /// TÊN CHÍNH XÁC của cổng đang chặn ô hiện tại, kèm ô cụ thể gây chặn.
+    ///
+    /// KHÔNG ĐOÁN: hàm này kiểm lại TỪNG cổng riêng lẻ theo ĐÚNG thứ tự mà
+    /// <see cref="IsRectInsideMap"/> áp dụng, rồi trả về cổng ĐẦU TIÊN thật sự chặn.
+    /// Nhờ vậy log không bao giờ chỉ sai người: `inside == false` có thể là ĐẤT CHƯA MUA
+    /// hoặc NGOÀI BIÊN BẢN ĐỒ, và chỉ chuỗi kiểm lại này phân biệt được hai thứ đó.
+    ///
+    /// Chỉ được gọi khi <c>logPlacementReason</c> bật và ô đang KHÔNG hợp lệ, nên chi phí
+    /// quét theo ô không rơi vào đường chạy bình thường.
+    /// </summary>
+    private string DescribeBlockReason(RectInt rect, bool free)
+    {
+        if (rect.width <= 0 || rect.height <= 0) return "RECT_RONG";
+
+        // Cổng 0 — không thuộc chuỗi validate, nhưng là nguyên nhân GỐC của vòng 10:
+        // gridSize rác làm rect phình ra hàng trăm ô. Nếu còn thấy dòng này thì
+        // gridSizeSanityLimit đang bị tắt (= 0) hoặc asset còn số rác.
+        int lim = _gridSizeSanityLimit;
+        if (rect.width > lim || rect.height > lim)
+            return $"GRIDSIZE_RAC({rect.width}x{rect.height} vuot nguong {lim})";
+
+        // Cổng 1 — đất chưa mua (kiểm TRƯỚC trong IsRectInsideMap).
+        LandExpansionManager land = LandExpansionManager.Instance;
+        if (land != null && !land.IsRectUnlocked(rect))
+        {
+            Vector2Int c = FirstCellFailing(rect, cell => !land.IsCellUnlocked(cell));
+            LandRegionData r = land.RegionAtCell(c);
+            return $"DAT_CHUA_MUA(o {c.x},{c.y} thuoc khu '{(r != null ? r.regionId : "khong-ro")}')";
+        }
+
+        // Cổng 2 — chồng lấn công trình / chỗ giữ của công trường đang xây.
+        if (!free)
+        {
+            Vector2Int c = FirstCellFailing(rect, cell => occupiedCells.Contains(cell));
+            return $"CHONG_LAN(o {c.x},{c.y} da bi chiem)";
+        }
+
+        // Cổng 3 — biên bản đồ. Tới đây cổng 1 đã chắc chắn PASS nên
+        // IsRectInsideMap chỉ còn đúng phép kiểm biên.
+        if (!IsRectInsideMap(rect))
+            return enforceMapBounds ? "NGOAI_BIEN_BAN_DO" : "NGOAI_BIEN_DU_DA_TAT_enforceMapBounds";
+
+        return "KHONG_RO_da_qua_het_cong";
+    }
+
+    /// <summary>Ô ĐẦU TIÊN trong vùng thoả điều kiện lỗi — để log chỉ đúng chỗ chặn.</summary>
+    private static Vector2Int FirstCellFailing(RectInt rect, System.Func<Vector2Int, bool> fail)
+    {
+        for (int x = rect.xMin; x < rect.xMax; x++)
+            for (int y = rect.yMin; y < rect.yMax; y++)
+            {
+                var c = new Vector2Int(x, y);
+                if (fail(c)) return c;
+            }
+        return new Vector2Int(rect.xMin, rect.yMin);
+    }
 
     /// <summary>Vùng ô này còn trống không? (bảng ô đã loại sẵn công trình đang sửa)</summary>
     public bool IsAreaFree(RectInt rect)
@@ -2062,8 +2273,9 @@ public class PlacementManager : MonoBehaviour
             _mapBounds      = b;
             _mapBoundsReady = true;
 
+            // ⚠ BỌC {} (V10) — xem ghi chú remove_debug_logs.ps1 ở đầu file.
             if (verboseGridLog)
-                Debug.Log($"[Placement] Biên bản đồ = ({b.min.x:F0},{b.min.y:F0}) → ({b.max.x:F0},{b.max.y:F0})");
+                { Debug.Log($"[Placement] Biên bản đồ = ({b.min.x:F0},{b.min.y:F0}) → ({b.max.x:F0},{b.max.y:F0})"); }
         }
 
         bounds = b;
@@ -2073,11 +2285,17 @@ public class PlacementManager : MonoBehaviour
     /// <summary>Vùng ô có nằm TRỌN trong biên bản đồ không?</summary>
     public bool IsRectInsideMap(RectInt rect)
     {
+        // 🟢 V9 — chặn đặt ra ngoài phần đất đã mua (hệ mở rộng đất)
+        if (LandExpansionManager.Instance != null &&
+            !LandExpansionManager.Instance.IsRectUnlocked(rect)) return false;
+
         if (!enforceMapBounds) return true;
         if (!TryGetMapBounds(out Bounds b)) return true;   // không đo được → không chặn oan
 
-        Vector3 min = CellCornerToWorld(rect.xMin, rect.yMin);
-        Vector3 max = CellCornerToWorld(rect.xMax, rect.yMax);
+        Vector3 min = IsoGrid.RectCenterWorld(rect) - (Vector3)(IsoGrid.FootprintWorldSize(
+                          new Vector2Int(rect.width, rect.height)) * 0.5f);
+        Vector3 max = IsoGrid.RectCenterWorld(rect) + (Vector3)(IsoGrid.FootprintWorldSize(
+                          new Vector2Int(rect.width, rect.height)) * 0.5f);
         const float eps = 0.5f;
         return min.x >= b.min.x - eps && max.x <= b.max.x + eps &&
                min.y >= b.min.y - eps && max.y <= b.max.y + eps;
@@ -2171,7 +2389,8 @@ public class PlacementManager : MonoBehaviour
         Debug.LogWarning(
             $"[PlacementManager] '{data.name}' còn gridSize = 1×1 nhưng prefab đo ra " +
             $"{measured.x}×{measured.y} ô — đang tạm dùng số đo. " +
-            "Chạy menu Tools/Farm/Suy Kích Thước Ô Công Trình để chốt số ô.", data);
+            "Chạy menu Tools/Map45/8. Suy Kich Thuoc O để chốt số ô " +
+            "(KHÔNG dùng Tools/Farm/... — tool cũ đo theo lưới vuông 100, sinh số rác).", data);
     }
 
     /// <summary>Bind V / X / ↻ (và Delete khi đang sửa). Một chỗ duy nhất cho cả 2 luồng.</summary>
@@ -2222,12 +2441,16 @@ public class PlacementManager : MonoBehaviour
             }
         }
 
+        // 🔴 BỌC {} (V10) — CHỖ NGUY HIỂM NHẤT trong file này.
+        // Trước khi bọc: xoá dòng Debug đầu tiên là `if (btnConfirm == null ...)` NUỐT LUÔN
+        // cả câu `if (choPhepXoayCongTrinh && ...)` bên dưới ⇒ cảnh báo thiếu Btn_Rotate chỉ
+        // còn kêu khi Btn_Confirm CŨNG thiếu. Đúng loại lỗi đã xảy ra thật ở PenClickDetector.cs.
         if (btnConfirm == null || cancelRect == null)
-            Debug.LogWarning("[PlacementManager] Ghost thiếu Btn_Confirm / Btn_Cancel — kiểm tra prefab Placement_Ghost.");
+            { Debug.LogWarning("[PlacementManager] Ghost thiếu Btn_Confirm / Btn_Cancel — kiểm tra prefab Placement_Ghost."); }
         // Chỉ cảnh báo khi tính năng xoay đang BẬT — cờ tắt thì rotateRect null là ĐÚNG Ý,
         // log warning ở đây sẽ thành rác Console mỗi lần đặt công trình.
         if (choPhepXoayCongTrinh && rotateRect == null)
-            Debug.LogWarning("[PlacementManager] Ghost thiếu Btn_Rotate — không xoay được bằng nút (phím R vẫn chạy).");
+            { Debug.LogWarning("[PlacementManager] Ghost thiếu Btn_Rotate — không xoay được bằng nút (phím R vẫn chạy)."); }
     }
 
     /// World Space Canvas cần truyền Camera.main để tính đúng tọa độ screen → rect.
@@ -2235,6 +2458,21 @@ public class PlacementManager : MonoBehaviour
     {
         if (rt == null || !rt.gameObject.activeInHierarchy) return false;
         return RectTransformUtility.RectangleContainsScreenPoint(rt, Input.mousePosition, Camera.main);
+    }
+
+    /// <summary>
+    /// Con trỏ đang nằm trên MỘT trong các nút của Ghost?
+    ///
+    /// Dùng đúng các rect mà Update() đang dùng để bắt click, nên câu trả lời ở đây
+    /// KHÔNG THỂ lệch với vùng bấm thật — một nguồn sự thật duy nhất.
+    /// rect null (ví dụ rotateRect khi tắt tính năng xoay) tự trả false ở IsMouseOverRect.
+    /// </summary>
+    private bool IsMouseOverGhostButtons()
+    {
+        return IsMouseOverRect(confirmRect)
+            || IsMouseOverRect(cancelRect)
+            || IsMouseOverRect(deleteRect)
+            || IsMouseOverRect(rotateRect);
     }
 
     private static string ResolveSortingLayerName(string preferred, string fallback)
@@ -2251,8 +2489,35 @@ public class PlacementManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Tìm plotId lớn nhất đang tồn tại trong scene rồi trả về maxId + 1.
-    /// Đảm bảo mỗi ô đất được đặt mới có ID duy nhất, không trùng với ô scene hoặc ô đã load.
+    /// Bộ đếm BỀN của plotId. Xem <see cref="GetNextPlotId"/>.
+    ///
+    /// Theo ĐÚNG mẫu đã có trong dự án: DecorGrowthBootstrap dùng
+    /// "DecorGrowSlot_{itemID}" làm bộ đếm bền cho slot decor. Không phát minh cơ chế mới.
+    /// </summary>
+    private const string PlotIdCounterKey = "FARM_NEXT_PLOT_ID";
+
+    /// <summary>
+    /// Cấp một plotId DUY NHẤT cho ô đất / chậu vừa đặt.
+    ///
+    /// 🔴 VÌ SAO KHÔNG CÒN CHỈ LÀ max(scene) + 1 (yêu cầu của Sếp, vòng 11):
+    /// max(scene) + 1 chỉ duy nhất Ở THỜI ĐIỂM GỌI. Nó TÁI SỬ DỤNG id ngay khi một ô
+    /// biến mất khỏi scene — xoá ô trong Edit Mode, hoặc một entry trong
+    /// FARM_PLACED_BUILDINGS không load được (FindItemById trả null ⇒ LoadBuildings bỏ
+    /// qua) là id đó rơi lại vào bể cấp phát, trong khi khoá PLOT_NORMAL_{id} của ô cũ
+    /// VẪN CÒN trên đĩa. Hai ô khác nhau ở hai phiên chơi khác nhau dùng chung một khoá
+    /// save — đúng loại lỗi mà LegacyPlotIdMap trong PlotController đã phải đi dọn một lần.
+    ///
+    /// CÁCH LÀM: một bộ đếm SỐ NGUYÊN TĂNG DẦN, lưu bền trong PlayerPrefs, chỉ tiến không
+    /// lùi. Chọn số nguyên chứ không phải GUID vì: (a) khoá save PLOT_NORMAL_{id} và
+    /// SavePlotSnapshot.plotId đang là int — đổi sang string là phá tương thích save cũ của
+    /// mọi người chơi; (b) log/QA đọc "Plot_115" hiểu ngay, còn GUID thì không;
+    /// (c) đánh đổi duy nhất là phải lưu thêm một con đếm, chi phí 1 khoá PlayerPrefs.
+    ///
+    /// `Mathf.Max(stored, maxScene + 1)` là lưới an toàn HAI CHIỀU:
+    ///   • Người chơi đang có save (chưa có khoá đếm) ⇒ tự mồi từ scene, KHÔNG cần chuyển
+    ///     đổi save, KHÔNG cần xoá dữ liệu: ô cũ giữ nguyên id vì LoadBuildings() khôi phục
+    ///     entry.plotId chứ không cấp lại.
+    ///   • Designer thêm ô id cao vào scene sau này ⇒ bộ đếm tự nhảy qua, không trùng.
     /// </summary>
     private int GetNextPlotId()
     {
@@ -2262,7 +2527,14 @@ public class PlacementManager : MonoBehaviour
             if (p.PlotId > maxId)
                 maxId = p.PlotId;
         }
-        return maxId + 1;
+
+        int stored = PlayerPrefs.GetInt(PlotIdCounterKey, 0);
+        int next   = Mathf.Max(stored, maxId + 1);
+
+        PlayerPrefs.SetInt(PlotIdCounterKey, next + 1);
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+
+        return next;
     }
 
     /// <summary>
@@ -2476,7 +2748,11 @@ public class PlacementManager : MonoBehaviour
         RectTransform rect = row as RectTransform;
         if (rect != null)
         {
-            rect.sizeDelta = new Vector2(430f, 126f);
+            // V10 (Dev V, Lead duyet dung 1 dong nay): 430x126 vua du 2 nut 120 + khe 20.
+            // Nut moi 152 + khe 72 + 168 = 392 van lot, NHUNG nut cao 168 tran khoi row 126.
+            // Va neu Sep bat lai choPhepXoayCongTrinh thi 3 nut = 152*2 + 168 + 72*2 = 616 > 430
+            // ⇒ vo layout. 620x180 bao du ca 3 nut.
+            rect.sizeDelta = new Vector2(620f, 180f);
         }
 
         Image bg = row.GetComponent<Image>();

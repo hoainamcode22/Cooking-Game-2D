@@ -74,12 +74,18 @@ public static class UIStandardSprites
     public static Sprite TutDotOff   => Load(PathTutDotOff);
 
     /// <summary>Toàn bộ đường dẫn gốc — tool đồng bộ dùng để copy vào Resources/UI/Standard/.</summary>
+    // [V11] Dau check va thung rac THAT cho nut dat cong trinh (truoc day ve bang code).
+    public const string PathObCheck = "Assets/_Game/Farm/Art/UI_OrderBoard/ob_check.png";
+    public const string PathObTrash = "Assets/_Game/Farm/Art/UI_OrderBoard/ob_trash.png";
+    public static Sprite ObCheck => Load(PathObCheck);
+    public static Sprite ObTrash => Load(PathObTrash);
+
     public static readonly string[] AllPaths =
     {
         PathClose, PathBtnGreen, PathBtnGray, PathBtnPaper, PathBtnGem, PathIconGem, PathIconGold,
         PathFrameWood, PathPanelPaper, PathRibbon, PathRowDark, PathBtnGreen3D, PathBtnYellow3D,
         PathBarTrack, PathBarFill, PathCheckBadge, PathCardOuter, PathCardInner, PathSlotNormal,
-        PathSlotSelected, PathAvatarBase, PathTutFrame, PathTutRibbon, PathTutDotOn, PathTutDotOff,
+        PathSlotSelected, PathAvatarBase, PathTutFrame, PathTutRibbon, PathTutDotOn, PathTutDotOff, PathObCheck, PathObTrash,
     };
 
     /// <summary>

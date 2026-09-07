@@ -371,9 +371,10 @@ public static class PlacementKitInstallerTool
 
         if (!gop.HasValue) return Vector2Int.one;
 
-        return new Vector2Int(
-            Mathf.Max(1, Mathf.CeilToInt(gop.Value.size.x / PlacementManager.CELL)),
-            Mathf.Max(1, Mathf.CeilToInt(gop.Value.size.y / PlacementManager.CELL)));
+        // 🟢 V9 — do theo LUOI ISO (IsoGrid) thay vi Ceil o vuong CELL=100.
+        // Neu van dung cong thuc cu, muc 3 se ghi de ket qua cua
+        // Tools/Farm/Suy Kich Thuoc O theo LUOI ISO va lam ho lai nhu cu.
+        return IsoGrid.EstimateSizeFromWorldSize(gop.Value.size);
     }
 
     private static Transform TimKit(GameObject g)

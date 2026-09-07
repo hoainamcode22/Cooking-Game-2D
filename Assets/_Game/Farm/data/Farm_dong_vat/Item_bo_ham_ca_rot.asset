@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: Item_bo_ham_ca_rot
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: bo_ham_ca_rot
-  displayName: "B\xF2 h\u1EA7m c\xE0 r\xF3t"
+  displayName: "B\xF2 h\u1EA7m c\xE0 r\u1ED1t"
   icon: {fileID: 21300000, guid: 16f2f8a3075d32144a7d080f37d1b683, type: 3}
   cookingData: {fileID: 0}

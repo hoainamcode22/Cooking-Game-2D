@@ -256,13 +256,13 @@ namespace KitchenUIv2
         {
             _ovenBusy = true;
             SetText(_txtOvenState, "LÒ ĐANG CHÁY...");
-            SetText(_txtPrepToast, $"Sơ chế: {(d != null ? d.dishName : "")}");
+            SetText(_txtPrepToast, Loc.TF("Sơ chế: {0}", d != null ? Loc.T(d.dishName) : ""));
         }
 
         private void HandleDishCooked(DishData d, int score)
         {
             _ovenBusy = false;
-            SetText(_txtOvenState, $"XONG! {score}đ");
+            SetText(_txtOvenState, Loc.TF("XONG! {0}đ", score));
             SetText(_txtPrepToast, "Chạm bàn trình bày để cất vào kho →");
         }
 
@@ -271,7 +271,7 @@ namespace KitchenUIv2
             _ovenBusy = false;
             _ovenFakeProgress = 0f;
             if (_imgOvenFill != null) _imgOvenFill.fillAmount = 0f;
-            SetText(_txtOvenState, $"HỎNG... {score}đ");
+            SetText(_txtOvenState, Loc.TF("HỎNG... {0}đ", score));
             SetText(_txtPrepToast, "Chọn lại nguyên liệu rồi nấu tiếp nhé!");
         }
 
@@ -281,7 +281,7 @@ namespace KitchenUIv2
             if (_imgOvenFill != null) _imgOvenFill.fillAmount = 0f;
             int n = PlayerPrefs.GetInt(SentCountKey, 0) + 1;
             PlayerPrefs.SetInt(SentCountKey, n);
-            SetText(_txtSentCount, $"Đã gửi {n} món");
+            SetText(_txtSentCount, Loc.TF("Đã gửi {0} món", n));
             SetText(_txtOvenState, "Lò đã nghỉ");
             SetText(_txtPrepToast, "");
         }
@@ -415,8 +415,8 @@ namespace KitchenUIv2
                 _imgDishIcon.sprite  = dish != null ? dish.dishSprite : null;
                 _imgDishIcon.enabled = _imgDishIcon.sprite != null;
             }
-            SetText(_txtDishMeta, dish != null ? $"{DiffName(dish.difficulty)} · Cấp {dish.unlockLevel}" : "");
-            SetText(_txtRewards, dish != null ? $"+{dish.rewardGold} vàng   +{dish.rewardExp} EXP   Bán {dish.sellPrice}" : "");
+            SetText(_txtDishMeta, dish != null ? Loc.TF("{0} · Cấp {1}", DiffName(dish.difficulty), dish.unlockLevel) : "");
+            SetText(_txtRewards, dish != null ? Loc.TF("+{0} vàng   +{1} EXP   Bán {2}", dish.rewardGold, dish.rewardExp, dish.sellPrice) : "");
 
             // Chip nguyên liệu cần (Xếp vào Grid: tối đa 4 thẻ/hàng, từ 5 thẻ tự động xuống hàng 2)
             if (_needChipsRoot != null && dish != null)
@@ -455,9 +455,9 @@ namespace KitchenUIv2
             var daily = DailySpecialManager.Instance;
             if (daily != null && _txtChalk != null)
             {
-                var sb = new System.Text.StringBuilder("MÓN HÔM NAY (+vàng)\n");
+                var sb = new System.Text.StringBuilder(Loc.T("MÓN HÔM NAY (+vàng)")).Append('\n');
                 foreach (var d in daily.TodayDishes)
-                    if (d != null) sb.Append("· ").Append(d.dishName).Append('\n');
+                    if (d != null) sb.Append("· ").Append(Loc.T(d.dishName)).Append('\n');
                 _txtChalk.text = sb.ToString();
             }
         }
@@ -473,8 +473,8 @@ namespace KitchenUIv2
             int nIng = CountNonNull(selIng);
             int nSea = CountNonNull(selSea);
 
-            SetText(_txtTabIng, $"Nguyên liệu  {nIng}/4");
-            SetText(_txtTabSea, $"Gia vị  {nSea}/3");
+            SetText(_txtTabIng, Loc.TF("Nguyên liệu  {0}/4", nIng));
+            SetText(_txtTabSea, Loc.TF("Gia vị  {0}/3", nSea));
 
             // 5 thanh vị + điểm dự kiến
             if (dish != null)
@@ -493,7 +493,7 @@ namespace KitchenUIv2
                 if (nIng + nSea > 0 && selIng != null && selSea != null)
                 {
                     var result = CookingScoreCalculator.Evaluate(dish, selIng, selSea);
-                    SetText(_txtProjection, $"Điểm dự kiến:  {result.finalScore}đ");
+                    SetText(_txtProjection, Loc.TF("Điểm dự kiến:  {0}đ", result.finalScore));
                 }
                 else SetText(_txtProjection, "Điểm dự kiến:  — đ");
             }
@@ -531,7 +531,7 @@ namespace KitchenUIv2
                     _btnAction.interactable = true;
                     ApplyActionSkin(useSkin, true);
                     SetText(_txtAction, "NẤU!");
-                    SetText(_txtActionSub, $"{nIng} nguyên liệu · {nSea} gia vị");
+                    SetText(_txtActionSub, Loc.TF("{0} nguyên liệu · {1} gia vị", nIng, nSea));
                 }
                 else
                 {
@@ -669,7 +669,7 @@ namespace KitchenUIv2
         // ── Helpers ────────────────────────────────────────────────
 
         private static string DiffName(DishDifficulty d) =>
-            d == DishDifficulty.Easy ? "Dễ" : d == DishDifficulty.Hard ? "Khó" : "Vừa";
+            Loc.T(d == DishDifficulty.Easy ? "Dễ" : d == DishDifficulty.Hard ? "Khó" : "Vừa");
 
         private static int CountNonNull(List<SelectableIngredientCard> list)
         {
@@ -1365,8 +1365,8 @@ namespace KitchenUIv2
                 Anchor(name.rectTransform, 0f, 1f, new Vector2(52f, -4f), new Vector2(210f, 22f), new Vector2(0f, 1f));
 
                 string meta = unlocked
-                    ? $"{DiffName(d.difficulty)} · Cấp {d.unlockLevel} · {d.rewardGold} vàng"
-                    : $"🔒 Mở ở cấp {d.unlockLevel}";
+                    ? Loc.TF("{0} · Cấp {1} · {2} vàng", DiffName(d.difficulty), d.unlockLevel, d.rewardGold)
+                    : Loc.TF("🔒 Mở ở cấp {0}", d.unlockLevel);
                 var sub = MakeText(row.transform, "Txt_Meta", meta, 12, new Color(0.6f, 0.45f, 0.28f));
                 Anchor(sub.rectTransform, 0f, 0f, new Vector2(52f, 4f), new Vector2(220f, 18f), new Vector2(0f, 0f));
             }
@@ -1508,7 +1508,7 @@ namespace KitchenUIv2
             Anchor(whLbl.rectTransform, 0.5f, 1f, new Vector2(0f, -10f), new Vector2(176f, 24f), new Vector2(0.5f, 1f));
             whLbl.alignment = TextAlignmentOptions.Center;
             whLbl.fontStyle = FontStyles.Bold;
-            _txtSentCount = MakeText(wh.transform, "Txt_Sent", $"Đã gửi {PlayerPrefs.GetInt(SentCountKey, 0)} món", 14, new Color(0.99f, 0.96f, 0.88f));
+            _txtSentCount = MakeText(wh.transform, "Txt_Sent", Loc.TF("Đã gửi {0} món", PlayerPrefs.GetInt(SentCountKey, 0)), 14, new Color(0.99f, 0.96f, 0.88f));
             Anchor(_txtSentCount.rectTransform, 0.5f, 0f, new Vector2(0f, 8f), new Vector2(176f, 22f), new Vector2(0.5f, 0f));
             _txtSentCount.alignment = TextAlignmentOptions.Center;
 
@@ -1733,7 +1733,7 @@ namespace KitchenUIv2
             int bought = PlayerPrefs.GetInt(SlotKeyPrefix + "bought_" + tab, 0);
             int cost = slotPackBaseCostGold * (bought + 1);
             var buy = MakeButton((RectTransform)parent, "Btn_BuySlots",
-                $"+ Mở {slotPackSize} ô\n{cost:N0} vàng", new Color(0.30f, 0.55f, 0.90f), () => TryBuySlots(tab));
+                Loc.TF("+ Mở {0} ô\n{1:N0} vàng", slotPackSize, cost), new Color(0.30f, 0.55f, 0.90f), () => TryBuySlots(tab));
             Skin9(buy.gameObject, skin.btnGreen); // Sếp báo khung trống chưa có card bo góc (2026-08-27) — dùng lại art nút xanh đã có
             var bl = buy.GetComponentInChildren<TMP_Text>();
             if (bl != null) { bl.fontSize = 13; bl.fontStyle = FontStyles.Bold; }
@@ -1756,14 +1756,14 @@ namespace KitchenUIv2
             if (eco == null || !eco.SpendGold(cost))
             {
                 if (_txtPrepToast != null)
-                { _txtPrepToast.text = $"Không đủ {cost:N0} vàng để mở ô!"; _txtPrepToast.color = new Color(0.85f, 0.25f, 0.18f); }
+                { _txtPrepToast.text = Loc.TF("Không đủ {0:N0} vàng để mở ô!", cost); _txtPrepToast.color = new Color(0.85f, 0.25f, 0.18f); }
                 return;
             }
             PlayerPrefs.SetInt(SlotKeyPrefix + tab, GetExtraSlots(tab) + slotPackSize);
             PlayerPrefs.SetInt(SlotKeyPrefix + "bought_" + tab, bought + 1);
             PlayerPrefs.Save();
             if (_txtPrepToast != null)
-            { _txtPrepToast.text = $"Đã mở thêm {slotPackSize} ô khay!"; _txtPrepToast.color = new Color(0.30f, 0.55f, 0.15f); }
+            { _txtPrepToast.text = Loc.TF("Đã mở thêm {0} ô khay!", slotPackSize); _txtPrepToast.color = new Color(0.30f, 0.55f, 0.15f); }
             RebuildSlotShop(tab);
         }
 
@@ -1806,7 +1806,7 @@ namespace KitchenUIv2
                 Anchor((RectTransform)lk.transform, 0.5f, 0.5f, new Vector2(0f, 2f), new Vector2(26f, 26f), new Vector2(0.5f, 0.5f));
             }
 
-            var t = MakeText(card.transform, "Txt_Lv", $"Cấp {data.unlockLevel}\n{data.displayName}", 11, new Color(0.45f, 0.40f, 0.34f));
+            var t = MakeText(card.transform, "Txt_Lv", Loc.TF("Cấp {0}\n{1}", data.unlockLevel, Loc.T(data.displayName)), 11, new Color(0.45f, 0.40f, 0.34f));
             Anchor(t.rectTransform, 0.5f, 0f, new Vector2(0f, 4f), new Vector2(106f, 32f), new Vector2(0.5f, 0f));
             t.alignment = TextAlignmentOptions.Center;
         }

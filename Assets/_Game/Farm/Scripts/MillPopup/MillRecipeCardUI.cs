@@ -149,7 +149,7 @@ public class MillRecipeCardUI : MonoBehaviour
         if (!gameObject.activeSelf) gameObject.SetActive(true);
 
         if (txtName != null)     txtName.text     = r.displayName;
-        if (txtBrewTime != null) txtBrewTime.text = "Ủ " + r.BrewTimeLabel;   // "Ủ 2p00"
+        if (txtBrewTime != null) txtBrewTime.text = Loc.TF("Ủ {0}", r.BrewTimeLabel);   // "Ủ 2p00"
         if (txtBadge != null)    txtBadge.text    = r.animalTag;
 
         DatAnh(imgIcon,  r.icon);
@@ -165,7 +165,7 @@ public class MillRecipeCardUI : MonoBehaviour
             lockOverlay.SetActive(!unlocked);
 
         if (!unlocked && txtLockText != null)
-            txtLockText.text = "Mở ở cấp " + r.unlockLevel;
+            txtLockText.text = Loc.TF("Mở ở cấp {0}", r.unlockLevel);
 
         if (btnSelect != null)
             btnSelect.interactable = unlocked;

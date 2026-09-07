@@ -35,6 +35,13 @@ public class EditableBuilding : MonoBehaviour
         if (!EditModeManager.IsEditMode) return;
         if (FarmInputLock.BlockMapPan) return;
 
+        // [V12] Nhuong input cho PlacementManager khi dang dat/sua vat the.
+        // LY DO: Unity goi OnMouseDown TRUOC moi Update(). Giu nut V (cua card dat cong trinh)
+        // qua 0.3s thi Update() duoi day goi StartEditBuilding -> HUY ghost dang ngam,
+        // nen cu bam V khong an. Truoc day chi lo ra o day; ObjectDragHandler da co hang rao
+        // nay tu commit 032a2ab1 (17/05/2026) con file nay thi chua bao gio co.
+        if (PlacementManager.IsPlacingNewObject) return;
+
         isPressing          = true;
         alreadyTriggered    = false;
         holdTimer           = 0f;

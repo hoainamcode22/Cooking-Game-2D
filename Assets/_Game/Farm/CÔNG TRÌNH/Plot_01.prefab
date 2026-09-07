@@ -163,6 +163,7 @@ MonoBehaviour:
   progressLeftToRight: 1
   harvestSpawnPoint: {fileID: 4866194326394941808}
   expSpawnPoint: {fileID: 1200549869816993770}
+  legacyExpOrbsEnabled: 0
   cropVFXRoot: {fileID: 8422209423343239933}
   seedRainPrefab: {fileID: 693414023728450802, guid: 1973cb23ea4cecf4393a92b62efa6bc3, type: 3}
   seedCostTextPrefab: {fileID: 4126937360488268850, guid: 5fbe48d530de4eb4b8d86d2403b18a07, type: 3}
@@ -271,7 +272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94ff99e12893a5942a224fbde39f9d97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingFootprintKit
-  soO: {x: 4, y: 2}
+  soO: {x: 1, y: 1}
   spriteTham: {fileID: 0}
   spriteNgoac: {fileID: 0}
   spriteVach: {fileID: 0}
@@ -582,6 +583,11 @@ MonoBehaviour:
   - {fileID: 1456487578820872533}
   sortingLayerName: CongTrinh
   sortingOrder: 560
+  useIsoLattice: 1
+  groundRef: {fileID: 0}
+  latticeInset: 0.86
+  latticeOffset: {x: 0, y: 0}
+  latticeDepthBias: -0.12
   enableReadySway: 1
   swayAngle: 4.5
   swaySpeed: 1.4

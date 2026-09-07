@@ -792,7 +792,7 @@ public class TouristVisitorManager : MonoBehaviour
 
         if (!kho.HasItem(dish.dishId))
         {
-            FarmUIManager.Instance?.ShowHint($"Chưa có {tenMon} trong kho — vào bếp nấu nhé!");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Chưa có {0} trong kho — vào bếp nấu nhé!", Loc.T(tenMon)));
             return;
         }
 
@@ -825,7 +825,7 @@ public class TouristVisitorManager : MonoBehaviour
         if (!kho.RemoveItem(dish.dishId, 1))
         {
             // Số lượng đổi giữa HasItem và RemoveItem (bán ở quầy cùng lúc…) — KHÔNG thưởng.
-            FarmUIManager.Instance?.ShowHint($"Chưa có {tenMon} trong kho — vào bếp nấu nhé!");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Chưa có {0} trong kho — vào bếp nấu nhé!", Loc.T(tenMon)));
             Debug.LogWarning($"[TouristVisitor] RemoveItem('{dish.dishId}') trả false dù HasItem true — không cộng thưởng.");
             return;
         }

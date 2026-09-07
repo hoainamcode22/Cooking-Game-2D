@@ -136,7 +136,7 @@ public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBegin
             lockOverlayRoot.SetActive(isLocked);
 
         if (lockLevelText != null)
-            lockLevelText.text = $"Mở ở cấp {unlockLvl}";
+            lockLevelText.text = Loc.TF("Mở ở cấp {0}", unlockLvl);
 
         UpdateUI();
     }
@@ -200,7 +200,7 @@ public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBegin
 
         // Hiện Toast mua hàng thành công
         string qtyStr = (currentData is PlaceableItemData) ? "" : $"x{currentQuantity} ";
-        ShopManager.Instance?.ShowToast($"Đã mua {qtyStr}{currentData.itemName}!");
+        ShopManager.Instance?.ShowToast(Loc.TF("Đã mua {0}{1}!", qtyStr, Loc.T(currentData.itemName)));
         ShopManager.Instance?.RefreshCurrencyBalances();
 
         // Reset số lượng về 1 sau khi mua

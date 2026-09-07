@@ -102,11 +102,32 @@ public static class ShopSpriteGenerator
             FillTopRoundedRect(tex, 12, 45, 196, 6, 3, new Color(1.0f, 1.0f, 1.0f, 0.45f));
         });
 
-        // 11. Lock Badge Background (#5B4226 with #8A6A42 border)
-        CreateTexture("shop_lock_badge.png", 64, 64, Vector4.zero, (tex) =>
+        // 11. Lock Badge with Golden Padlock & Keyhole (Chuẩn ổ khóa vàng hoạt hình 2D)
+        CreateTexture("shop_lock_badge.png", 96, 96, Vector4.zero, (tex) =>
         {
-            FillCircle(tex, 32, 32, 30, new Color(0.54f, 0.42f, 0.26f, 1f)); // #8A6A42
-            FillCircle(tex, 32, 32, 26, new Color(0.36f, 0.26f, 0.15f, 1f)); // #5B4226
+            // Background Circle (#4A2D14 border, #351F0D fill)
+            FillCircle(tex, 48, 48, 46, new Color(0.58f, 0.40f, 0.22f, 1f)); // #946638 border
+            FillVerticalGradientCircle(tex, 48, 48, 42, new Color(0.25f, 0.15f, 0.08f, 1f), new Color(0.36f, 0.22f, 0.12f, 1f)); // #402614 -> #5C381E
+
+            // Steel Shackle Loop (U-shape arch at top)
+            FillCircle(tex, 48, 58, 20, new Color(0.20f, 0.15f, 0.10f, 1f)); // dark rim
+            FillCircle(tex, 48, 58, 17, new Color(0.85f, 0.88f, 0.92f, 1f)); // steel arch
+            FillCircle(tex, 48, 58, 11, new Color(0.30f, 0.18f, 0.10f, 1f)); // inner cut
+
+            // Golden Lock Body (x=24..72, y=18..54, radius=8)
+            FillRoundedRect(tex, 24, 18, 48, 36, 8, new Color(0.45f, 0.22f, 0.05f, 1f)); // dark border #73380D
+            FillVerticalGradientRoundedRect(tex, 27, 21, 42, 30, 6, new Color(0.88f, 0.55f, 0.12f, 1f), new Color(1.0f, 0.88f, 0.38f, 1f)); // #E08C1F -> #FFE061
+
+            // Lock Body Top Highlight
+            FillTopRoundedRect(tex, 30, 45, 36, 5, 2, new Color(1.0f, 1.0f, 1.0f, 0.65f));
+
+            // Keyhole (Circle at y=36, triangle/bar at y=26)
+            FillCircle(tex, 48, 37, 5, new Color(0.20f, 0.10f, 0.04f, 1f)); // #331A0A
+            FillRoundedRect(tex, 46, 26, 4, 11, 2, new Color(0.20f, 0.10f, 0.04f, 1f));
+
+            // Small golden rivet studs
+            FillCircle(tex, 32, 25, 2, new Color(1.0f, 0.95f, 0.7f, 0.9f));
+            FillCircle(tex, 64, 25, 2, new Color(1.0f, 0.95f, 0.7f, 0.9f));
         });
 
         // 12. Panel Khung Gỗ 9-Slice (chuẩn 100% shop_panel.svg)

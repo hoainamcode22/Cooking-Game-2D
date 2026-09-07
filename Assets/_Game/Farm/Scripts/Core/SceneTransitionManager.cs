@@ -235,7 +235,7 @@ public class SceneTransitionManager : MonoBehaviour
             if (dotT >= 0.35f)
             {
                 dotT = 0f; dots = (dots + 1) % 4;
-                _loadingText.text = "Đang tải" + new string('.', dots);
+                _loadingText.text = Loc.T("Đang tải") + new string('.', dots);
             }
 
             // thanh tiến độ (LoadSceneAsync dừng ở 0.9 rồi nhảy xong — chia lại cho 0..1)

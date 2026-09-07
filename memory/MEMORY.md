@@ -134,6 +134,41 @@ This directory holds persistent project memory files that survive session compac
     `- component: {fileID: X}` rồi mới xoá block, sau đó kiểm mọi `m_Component` còn lại đều trỏ tới
     block có thật. Có `production/unity_yaml_surgery.py` làm sẵn việc tương tự.
 
+- ⚠️ SỰ THẬT VÒNG 10 (2026-09-06) — HỆ LƯỚI & PLACE, đừng scan lại:
+  · **Ô LƯỚI THẬT LÀ 300 x 150 world**, KHÔNG phải 150 x 75. `Grid_Iso45` scale 150 nhưng **9 tilemap mặt đất
+    con đều localScale 2** (GroundBase_Dirt, Tilemap_IsoGrass/IsoDirt/IsoRock/IsoStone/IsoDirtPatch/IsoSand/
+    IsoDock/IsoFence) ⇒ 150×2 = 300. Xác minh nguồn 2: `Sheet_IsoGrass45.png` PPU 128, thoi 128x64.
+    Ghi chú cũ "scale 300" đúng (ô NHÌN THẤY); 150 là ô CODE dùng. `IsoGrid` đã sửa, tự đo hệ số từ scene.
+  · 🚫 **TUYỆT ĐỐI KHÔNG đổi scale `Grid_Iso45`** — 9 tilemap mặt đất là CON của nó, đổi là phình cả map.
+    Lead đã chặn đề xuất 150→350 ở vòng 10.
+  · **`gridSize` trong PlaceableItemData từng lưu ĐƠN VỊ ART, không phải số ô.** Home1 = 341x342 = 116.622 ô.
+    Đã điền lại 32/37 asset: nhà + 19 decor = **1x1**, 4 chuồng + 3 máy = **2x2**, Chậu Hoa + Đất giữ 1x1.
+    Mốc neo: `Đất` (tile_dirt.png) art 350x172.5 = đúng 1 viên thoi, gridSize 1x1.
+  · **NGUỒN SINH SỐ RÁC (đã bịt cả 3):** `BuildingFootprintKit.cs:334` `Ceil(bounds/CELL)` với CELL=100 —
+    House_01 collider 341x342 ÷ 100 = đúng gridSize rác, VÒNG LẶP TỰ NUÔI. Cộng `Editor/BuildingGridSizeTool`
+    (menu bấm vào là đầu độc lại cả 37 asset) và `FX/ConstructionCelebrationFX.cs:87` (CHÉP hằng 100f nên
+    `[Obsolete]` không bao giờ bắt được).
+  · `PlacementManager.CELL = 100f` là lưới VUÔNG của **save v0/v1**. **ĐỪNG xoá, ĐỪNG đổi thành 300** —
+    `MigrateAnchorV0ToV1` (dòng ~1609) cần đúng số 100 vì nó nằm sẵn trong save trên đĩa. Đã tách
+    `LegacyCellV0V1 = 100f` cho chỗ đó, `CELL` giữ `[Obsolete]` để bắt chỗ còn sót.
+  · **BẪY LOCAL vs WORLD:** `IsoPlacementPreview` từng `InverseTransformPoint` tâm ô ra LOCAL rồi cộng nửa
+    chiều rộng đang là WORLD ⇒ mỗi ô vẽ TO GẤP 150 LẦN (vì nó là con Grid_Iso45 scale 150).
+    Luật: dựng đủ 4 đỉnh trong WORLD rồi mới `InverseTransformPoint` TỪNG đỉnh. `IsoGridOverlay` làm đúng cách này.
+  · `ConstructionArtKit.priceBarBg` từng trỏ vào **`btn_CloseRanking.png`** (nút Close bảng xếp hạng!)
+    1179x211 border 0, Sliced border 0 = kéo giãn phẳng ⇒ góc bo bake trong art méo thành góc cứng.
+    Đã đặt về None. Bài học: kiểm `spriteBorder` trước khi dùng `Image.Type.Sliced`.
+  · `enforceLandBounds` đã TẮT (vòng 10, Sếp yêu cầu): hệ mua đất chưa có biển giá (`signPrefab` null) nên
+    người chơi không có cách nào mua, mà nông trại lại nằm trong `region_2_0` đang khoá.
+  · **HUD: hai cụm cha đã sát rìa 12 px và 14 px, không kéo ra thêm được** — muốn "đừng ra giữa" thì phải thu
+    mép TRONG. Thủ phạm đè nhau là `JuicyPulseFX` phóng 1.20-1.25 từ 5 nơi. 4:3 (iPad, targetDevice 2)
+    từng đè 8.1 px. `RewardFlyFX:604` phóng Icon_Gold (con, đã scale 1.2) thêm 1.25 = NHÂN CHỒNG.
+  · Canvas world-space (card place) phải **bù zoom** theo `orthographicSize / 750`, camera ortho 400-1500,
+    không bù thì zoom hết ra chữ teo một nửa (font 38 còn 13.7 px).
+  · `btn_close.png` KHÔNG có trong `Resources/UI/Standard/` và không trong `UIStandardSprites.AllPaths`
+    ⇒ **build thật trả null**. `UIStandardSprites.CardOuter/CardInner` thì CÓ (border 30 và 28), dùng được.
+  · 3 tool PHÁ HOẠI, ĐỪNG BẤM: `Editor/CloseButtonSyncTool` · `Editor/TownshipHUDBuilderTool` ·
+    `Editor/BuildingGridSizeTool` (đã vá công thức nhưng bản đo vẫn đo cả viền trong suốt).
+
 ## Entries
 
 - [Tutorial L1→L2 Phase](tutorial_l1l2.md) — EXP shortfall 10, tools created, manual steps remaining (LỖI THỜI một phần — xem ROADMAP Sprint 1b)

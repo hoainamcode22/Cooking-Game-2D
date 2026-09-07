@@ -307,7 +307,7 @@ public class FarmManager : MonoBehaviour
         if (plot == null)
             return;
 
-        FarmUIManager.Instance?.ShowHint($"Ô đất {plot.PlotId} chưa mở khóa.");
+        FarmUIManager.Instance?.ShowHint(Loc.TF("Ô đất {0} chưa mở khóa.", plot.PlotId));
     }
 
     public void OnGrowingPlotClicked(PlotController plot)
@@ -336,7 +336,7 @@ public class FarmManager : MonoBehaviour
         selectedPlot = plot;
 
         if (crop != null && plot != null)
-            FarmUIManager.Instance?.ShowHint($"Đã trồng {crop.displayName} ở ô {plot.PlotId}");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Đã trồng {0} ở ô {1}", Loc.T(crop.displayName), plot.PlotId));
 
         OnPlotPlantedEvent?.Invoke(plot);
     }
@@ -346,7 +346,7 @@ public class FarmManager : MonoBehaviour
         selectedPlot = plot;
 
         string finalName = string.IsNullOrEmpty(cropName) ? "Nông sản" : cropName;
-        FarmUIManager.Instance?.ShowHint($"Đã thu hoạch {finalName} ở ô {plot.PlotId}");
+        FarmUIManager.Instance?.ShowHint(Loc.TF("Đã thu hoạch {0} ở ô {1}", Loc.T(finalName), plot.PlotId));
         FarmUIManager.Instance?.HideAllPopups();
 
         OnPlotHarvestedEvent?.Invoke(plot);
@@ -423,7 +423,7 @@ public class FarmManager : MonoBehaviour
 
         if (!plot.CanPlantCrop(crop))
         {
-            FarmUIManager.Instance?.ShowHint($"Không thể trồng {crop.displayName} ở ô {plot.PlotId}");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Không thể trồng {0} ở ô {1}", Loc.T(crop.displayName), plot.PlotId));
             return false;
         }
 
@@ -435,7 +435,7 @@ public class FarmManager : MonoBehaviour
         }
         else
         {
-            FarmUIManager.Instance?.ShowHint($"Không thể trồng {crop.displayName} ở ô {plot.PlotId}");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Không thể trồng {0} ở ô {1}", Loc.T(crop.displayName), plot.PlotId));
         }
 
         return planted;

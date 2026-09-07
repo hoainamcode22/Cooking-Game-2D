@@ -292,8 +292,8 @@ public class OrderBoardManager : OrderBoardManagerBase
             int owned = FarmInventoryManager.Instance.GetAmount(line.itemId);
             if (owned < line.requiredAmount)
             {
-                failReason = $"Còn thiếu {MarketPriceTable.GetDisplayName(line.itemId)} " +
-                             $"({owned}/{line.requiredAmount}).";
+                failReason = Loc.TF("Còn thiếu {0} ({1}/{2}).",
+                             Loc.T(MarketPriceTable.GetDisplayName(line.itemId)), owned, line.requiredAmount);
                 return false;
             }
         }

@@ -196,30 +196,9 @@ public static class ProductionMachineSetupTool
             return false;
         }
 
-        bool changed = false;
-        foreach (var b in buildings)
-        {
-            if (b == null) continue;
-            if (shop.buildingList == null)
-            {
-                log.AppendLine("  ⚠ ShopManager.buildingList null — kiểm tra tay trong Inspector.");
-                return false;
-            }
-            if (!shop.buildingList.Contains(b))
-            {
-                shop.buildingList.Add(b);
-                changed = true;
-                log.AppendLine($"  ✔ thêm '{b.itemName}' vào ShopManager.buildingList");
-            }
-        }
-
-        if (changed)
-        {
-            EditorUtility.SetDirty(shop);
-            EditorSceneManager.MarkSceneDirty(shop.gameObject.scene);
-        }
-        else log.AppendLine("  ✔ ShopManager.buildingList đã đủ 3 máy");
-        return changed;
+        // Người dùng đã yêu cầu gỡ 3 máy khỏi shop, không tự động thêm lại
+        log.AppendLine("  ℹ Bỏ qua thêm vào ShopManager.buildingList (3 máy đã được yêu cầu gỡ khỏi Shop).");
+        return false;
     }
 
     // ── Đăng ký item mới vào WarehousePopupUI.extraItemDatabase (scene) ───────

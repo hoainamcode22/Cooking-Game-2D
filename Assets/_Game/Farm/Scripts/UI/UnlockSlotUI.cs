@@ -327,7 +327,7 @@ public class UnlockSlotUI : MonoBehaviour
         if (iCap >= 0)
         {
             string so = s.Substring(iCap + CUM_SE_MO_O_CAP.Length).Trim();
-            if (so.Length > 0 && so.Length <= 4) tagCap = CUM_NHAN_CAP + so;
+            if (so.Length > 0 && so.Length <= 4) tagCap = Loc.TF(CUM_NHAN_CAP + "{0}", so);   // "Cấp {0}"
             s = s.Substring(0, iCap).Trim();
 
             // "Nhà dân mới" → "Nhà dân" (chữ "mới" đã nằm trong badge rồi)

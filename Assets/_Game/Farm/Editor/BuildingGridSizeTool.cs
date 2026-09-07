@@ -6,7 +6,7 @@ using UnityEngine;
 /// DEV-1 · V2 — Suy kích thước Ô LƯỚI cho toàn bộ PlaceableItemData.
 ///
 /// CÁCH LÀM: đo hộp bao các SpriteRenderer của prefabToBuild (bỏ qua bóng đổ /
-/// thảm footprint / marker), rồi Ceil(size / PlacementManager.CELL).
+/// thảm footprint / marker), rồi IsoGrid.EstimateSizeFromWorldSize() [V10, ô iso 300 x 150].
 /// Có BẢNG XEM TRƯỚC — không bao giờ ghi đè asset khi chưa bấm ÁP DỤNG.
 ///
 /// VÌ SAO PHẢI CÓ TOOL: 33 asset chỉnh tay thì vừa lâu vừa dễ sai, mà sai gridSize
@@ -40,7 +40,10 @@ public class BuildingGridSizeTool : EditorWindow
     private bool includeDecor = true;
     private bool includeBuilding = true;
 
-    [MenuItem("Tools/Farm/Suy Kích Thước Ô Công Trình")]
+    // [V10] CANH BAO: tool nay tung sinh so RAC (Ceil(size/100) tren luoi vuong).
+    // Da va cong thuc, nhung ban do van do CA KHUNG sprite ke ca vien trong suot nen
+    // hoi thua. Tool duoc khuyen dung la Tools/Map45/8. Suy Kich Thuoc O.
+    [MenuItem("Tools/Farm/Suy Kích Thước Ô Công Trình (cu - xem canh bao trong file)")]
     public static void Open()
     {
         var w = GetWindow<BuildingGridSizeTool>(true, "Suy Kích Thước Ô Công Trình");
@@ -86,16 +89,19 @@ public class BuildingGridSizeTool : EditorWindow
                         b.center.x - data.prefabToBuild.transform.position.x,
                         b.center.y - data.prefabToBuild.transform.position.y);
 
-                    row.suggested = new Vector2Int(
-                        Mathf.Max(1, Mathf.CeilToInt(b.size.x / PlacementManager.CELL - 0.02f)),
-                        Mathf.Max(1, Mathf.CeilToInt(b.size.y / PlacementManager.CELL - 0.02f)));
+                    // [V10] TRUOC: Ceil(size / 100) tren luoi VUONG => sinh so RAC.
+                    // Chinh cong thuc nay da de ra gridSize 341x342 cho Home1 (= 116.622 o).
+                    // NAY: dung dung ham cua IsoGrid (o iso 300 x 150) va KEP tran 24 o.
+                    Vector2Int est = IsoGrid.EstimateSizeFromWorldSize(b.size);
+                    row.suggested = new Vector2Int(Mathf.Clamp(est.x, 1, 24),
+                                                   Mathf.Clamp(est.y, 1, 24));
 
                     // GHI CHÚ (KHÔNG PHẢI LỖI) — từ V7 PlacementManager tự bù độ lệch pivot:
                     // PivotOffsetOf() đo đúng con số này, AnchorToFootprintCenter() cộng vào
                     // trước mọi phép tính ô lưới, và thảm xanh cũng được kéo theo.
                     // Pivot ở ĐÁY sprite là ĐÚNG CHUẨN của dự án (chân nhà chạm điểm đặt),
                     // nên tuyệt đối đừng "sửa" pivot art vì thấy dòng này.
-                    float half = PlacementManager.CELL * 0.5f;
+                    float half = IsoGrid.CellWidth * 0.5f;   // [V10] theo o that, khong phai 100
                     if (Mathf.Abs(row.pivotOffset.x) > half || Mathf.Abs(row.pivotOffset.y) > half)
                     {
                         bool bottomPivot = row.pivotOffset.y > 0f && Mathf.Abs(row.pivotOffset.x) <= half;
@@ -178,7 +184,8 @@ public class BuildingGridSizeTool : EditorWindow
     private void OnGUI()
     {
         EditorGUILayout.HelpBox(
-            $"CELL = {PlacementManager.CELL} world unit (PlacementManager.CELL — nguồn sự thật duy nhất).\n" +
+            $"Ô lưới = {IsoGrid.CellWidth} x {IsoGrid.CellHeight} world unit (IsoGrid — nguồn sự thật duy nhất).\n" +
+            $"CELL = {PlacementManager.CELL} là hằng số LỊCH SỬ của save v0/v1, ĐỪNG dùng để suy ô.\n" +
             "Công thức: gridSize = Ceil( kích thước hộp bao prefab / CELL ), tối thiểu 1×1.\n" +
             "Kiểm tra bảng bên dưới rồi mới bấm ÁP DỤNG. Có thể sửa tay cột 'Suy ra' trước khi áp dụng.\n" +
             "Ghi chú XÁM (vd \"pivot ở đáy … — đã tự bù\") là BÌNH THƯỜNG, không phải lỗi: " +
@@ -309,7 +316,7 @@ public class BuildingGridSizeTool : EditorWindow
 
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
-        Debug.Log($"[BuildingGridSizeTool] Đã cập nhật gridSize cho {n} asset (CELL = {PlacementManager.CELL}).");
+        Debug.Log($"[BuildingGridSizeTool] Đã cập nhật gridSize cho {n} asset (ô lưới = {IsoGrid.CellWidth} x {IsoGrid.CellHeight}).");
         Repaint();
     }
 }

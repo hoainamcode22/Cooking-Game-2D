@@ -239,13 +239,13 @@ public class DockPurchasePopupUI : MonoBehaviour
         DockUnlockRequirement req = mgr.Config.GetDockRequirement(_dockIndex);
 
         if (titleText != null)
-            titleText.text = $"Mở bến số {_dockIndex + 1}";
+            titleText.text = Loc.TF("Mở bến số {0}", _dockIndex + 1);
 
         if (levelReqText != null)
         {
             int levelHienTai = FarmLevelManager.Instance != null
                 ? FarmLevelManager.Instance.CurrentLevel : 0;
-            levelReqText.text = $"Yêu cầu: đạt Lv{req.RequiredLevel} (bạn đang Lv{levelHienTai})";
+            levelReqText.text = Loc.TF("Yêu cầu: đạt Lv{0} (bạn đang Lv{1})", req.RequiredLevel, levelHienTai);
         }
 
         // Hàng giá: bến trả vàng → icon vàng; bến trả gem → icon gem.
@@ -306,7 +306,7 @@ public class DockPurchasePopupUI : MonoBehaviour
             DockUnlockRequirement req = mgr.Config.GetDockRequirement(_dockIndex);
             int levelHienTai = FarmLevelManager.Instance != null
                 ? FarmLevelManager.Instance.CurrentLevel : 0;
-            levelReqText.text = $"Yêu cầu: đạt Lv{req.RequiredLevel} (bạn đang Lv{levelHienTai})";
+            levelReqText.text = Loc.TF("Yêu cầu: đạt Lv{0} (bạn đang Lv{1})", req.RequiredLevel, levelHienTai);
         }
     }
 

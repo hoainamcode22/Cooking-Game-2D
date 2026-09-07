@@ -115,9 +115,9 @@ public class FarmUIManager : MonoBehaviour
         // Kèm số ô đang dùng — người chơi cần biết "đầy" là đầy bao nhiêu thì mới biết
         // nên bán bớt hay nâng cấp kho.
         FarmInventoryManager kho = FarmInventoryManager.Instance;
-        string sucChua = kho != null ? $" ({kho.UsedSlots}/{kho.SlotCapacity} ô)" : string.Empty;
+        string sucChua = kho != null ? Loc.TF(" ({0}/{1} ô)", kho.UsedSlots, kho.SlotCapacity) : string.Empty;
 
-        ShowHint($"Kho đầy{sucChua} — chưa nhận được \"{ten}\". Bán bớt hoặc nâng cấp kho.");
+        ShowHint(Loc.TF("Kho đầy{0} — chưa nhận được \"{1}\". Bán bớt hoặc nâng cấp kho.", sucChua, Loc.T(ten)));
     }
 
     private void HandleCurrencyChanged(int gold, int gems)
@@ -372,7 +372,7 @@ public class FarmUIManager : MonoBehaviour
         TutorialManager.Instance?.NotifySeedPanelOpened();
 
         if (plot != null)
-            ShowHint($"Kéo hạt giống để trồng vào ô {plot.PlotId}");
+            ShowHint(Loc.TF("Kéo hạt giống để trồng vào ô {0}", plot.PlotId));
         else
             ShowHint("Kéo hạt giống để trồng.");
     }
@@ -404,7 +404,7 @@ public class FarmUIManager : MonoBehaviour
         TutorialManager.Instance?.NotifySeedPanelOpened();
 
         if (plot != null)
-            ShowHint($"Kéo hạt giống hoa để trồng vào ô {plot.PlotId}");
+            ShowHint(Loc.TF("Kéo hạt giống hoa để trồng vào ô {0}", plot.PlotId));
         else
             ShowHint("Kéo hạt giống hoa để trồng.");
     }

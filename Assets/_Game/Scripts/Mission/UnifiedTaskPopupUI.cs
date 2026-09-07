@@ -2030,8 +2030,12 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
         RewardBundle rewards = GetMissionRewards(data);
         Vector3 src = source != null ? source.position : _root.position;
+
+        // Ngắm điểm bắn TRƯỚC khi cộng thưởng — RewardFlyFX bung icon ngay lúc GrantRewards
+        // gọi AddGold/AddGems/AddExp, ngắm sau là muộn.
+        bool fxDungChung = NgamDiemBanFxChung(src);
         GrantRewards(rewards);
-        PlayRewardFly(rewards, src);
+        if (!fxDungChung) PlayRewardFly(rewards, src);
         AvatarProfilePopupUI.AddAchievementCount();
         TownshipHUDController.Instance?.UpdateMissionBadge();
     }
@@ -2051,8 +2055,10 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
         RewardBundle rewards = GetAchievementRewards(data);
         Vector3 src = source != null ? source.position : _root.position;
+
+        bool fxDungChung = NgamDiemBanFxChung(src);
         GrantRewards(rewards);
-        PlayRewardFly(rewards, src);
+        if (!fxDungChung) PlayRewardFly(rewards, src);
         AvatarProfilePopupUI.AddAchievementCount();
         TownshipHUDController.Instance?.UpdateMissionBadge();
     }
@@ -2067,8 +2073,10 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         LuuGopPrefs.Hen();
 
         Vector3 src = source != null ? source.position : _root.position;
+
+        bool fxDungChung = NgamDiemBanFxChung(src);
         GrantRewards(reward.grant);
-        PlayRewardFly(reward.grant, src);
+        if (!fxDungChung) PlayRewardFly(reward.grant, src);
         ShowTab(Tab.Daily);
         TownshipHUDController.Instance?.UpdateMissionBadge();
     }
@@ -2084,24 +2092,60 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     }
 
     // =========================================================================
-    // Reward Fly FX — Bay mượt về đúng Container HUD, tự hủy an toàn không đơ
+    // Reward Fly FX — dùng CHUNG hệ RewardFlyFX của cả game (giống ngoài world)
     // =========================================================================
 
+    /// <summary>
+    /// NGẮM SẴN ĐIỂM BẮN cho hệ FX dùng chung rồi báo lại "hệ đó có sống không".
+    ///
+    /// VÌ SAO PHẢI LÀM THẾ NÀY THAY VÌ TỰ VẼ FX:
+    /// `RewardFlyFX` đã nghe sẵn ba sự kiện FarmEconomyManager.OnGoldAddedFx /
+    /// OnGemAddedFx / PlayerProgressManager.OnExpAddedFx. Nghĩa là ngay khi
+    /// <see cref="GrantRewards"/> chạy, chùm icon CHUẨN (đúng bộ icon, đúng cỡ, đúng nhịp
+    /// như lúc thu hoạch ngoài đồng) đã tự bung — trước đây nó bị popup che nên Sếp tưởng
+    /// "không có animation". Popup mà gọi thêm Fly() nữa thì thành HAI chùm icon chồng nhau.
+    /// Nên ở đây chỉ đặt trước một điểm bắn; phần bung vẫn do sự kiện cộng thưởng kích.
+    ///
+    /// TRẢ VỀ: true = hệ chung sẵn sàng, KHÔNG cần đường dự phòng. false = scene không có
+    /// component RewardFlyFX (vd: SCN_Home) ⇒ người gọi chạy <see cref="PlayRewardFly"/>.
+    /// </summary>
+    private bool NgamDiemBanFxChung(Vector3 sourceWorld)
+    {
+        RewardFlyFX heChung = RewardFlyFX.Instance;
+        if (heChung == null || !heChung.isActiveAndEnabled)
+            return false;
+
+        Canvas canvas = _root != null ? _root.GetComponentInParent<Canvas>() : null;
+        Camera uiCam = (canvas != null && canvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            ? canvas.worldCamera
+            : null;
+
+        RewardFlyFX.GoiYDiemXuatPhat(RectTransformUtility.WorldToScreenPoint(uiCam, sourceWorld));
+        return true;
+    }
+
+    /// <summary>
+    /// ĐƯỜNG DỰ PHÒNG — chỉ chạy khi scene KHÔNG có `RewardFlyFX`.
+    ///
+    /// Icon ở đây nhỏ (44px) và khác nhịp so với hệ dùng chung, nên đừng dùng nó song song:
+    /// giữ lại chỉ để scene thiếu component vẫn có phản hồi thị giác thay vì im lìm.
+    /// Khác bản cũ một chỗ: VÀNG giờ cũng bay, trước kia chỉ có ô HUD phồng lên.
+    /// </summary>
     private void PlayRewardFly(RewardBundle r, Vector3 sourceWorld)
     {
         RectTransform gemTarget = ResolveGemHud();
         RectTransform expTarget = ResolveExpHud();
         RectTransform coinTarget = ResolveCoinHud();
 
+        if (r.coin > 0)
+            StartCoroutine(CoFlyReward(CoinSprite, new Color32(255, 214, 51, 255),
+                sourceWorld, coinTarget, Mathf.Clamp(r.coin / 15 + 1, 2, 5)));
         if (r.diamond > 0)
             StartCoroutine(CoFlyReward(DiamondSprite, new Color32(120, 205, 255, 255),
                 sourceWorld, gemTarget, Mathf.Clamp(r.diamond, 2, 4)));
         if (r.exp > 0)
             StartCoroutine(CoFlyReward(ExpSprite, new Color32(120, 220, 80, 255),
                 sourceWorld, expTarget, 3));
-
-        if (r.coin > 0 && coinTarget != null)
-            StartCoroutine(CoDapHud(coinTarget, 0.45f));
     }
 
     private static RectTransform ResolveGemHud()

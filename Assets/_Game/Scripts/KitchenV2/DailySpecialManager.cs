@@ -67,7 +67,7 @@ namespace KitchenUIv2
 
             int bonus = Mathf.CeilToInt(baseGold * Mathf.Max(1f, Instance.goldBonusMultiplier));
             if (bonus > baseGold)
-                FarmUIManager.Instance?.ShowHint($"Món hôm nay! +{bonus - baseGold} vàng thưởng thêm.");
+                FarmUIManager.Instance?.ShowHint(Loc.TF("Món hôm nay! +{0} vàng thưởng thêm.", bonus - baseGold));
             return bonus;
         }
 

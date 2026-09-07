@@ -12,7 +12,9 @@ using UnityEngine.UI;
 ///
 /// ĐƠN VỊ: canvas để localScale = 1 nên **1 "pixel" UI = 1 world unit**, giống hệt cách
 /// prefab Placement_Ghost làm (root scale 100 × canvas scale 0.01 = 1). Nhờ vậy mọi con số
-/// dưới đây so sánh trực tiếp được với `PlacementManager.CELL = 100`.
+/// dưới đây so sánh trực tiếp được với CỠ Ô THẬT: 🟢 V10 một ô = IsoGrid.CellWidth x
+/// IsoGrid.CellHeight = 300 x 150 world (KHÔNG còn lưới vuông 100). worldW/worldH mà
+/// ConstructionSite truyền vào giờ là IsoGrid.FootprintWorldSize(gridSize).
 ///
 /// KHÔNG BỊ CÔNG TRÌNH KHÁC CHE: canvas đẩy lên sorting layer cao nhất có trong project
 /// ("Foreground") với sortingOrder rất lớn — công trình chạy ở "Objects"/"CongTrinh" nên
@@ -96,6 +98,15 @@ public class ConstructionSiteUI : MonoBehaviour
 
         // ── 1. NỀN TÊN + TÊN CÔNG TRÌNH ──────────────────────────────────────
         // Nền dựng TRƯỚC chữ: UGUI vẽ theo thứ tự con, con đầu nằm dưới cùng.
+        // V11 — CỐ Ý KHÔNG ĐỔI Ô NÀY. Hai lý do đo được:
+        //  1. Kit chưa gán ô NamePlateBg ⇒ ConstructionArtKit.Resolve trả về MÀU NHẬN DẠNG
+        //     C_NamePlate = TÍM (0.55,0.35,0.85, α 0.85). Gắn art thật vào nhánh dự phòng
+        //     là art bị nhuộm tím, xấu hơn hiện tại.
+        //  2. Tấm nền này ĐANG BỊ ẨN (SetActive ở dưới: namePlateIsArt || showEmptyPlate,
+        //     cả hai đều false khi kit trống) ⇒ đổi sprite dự phòng KHÔNG thay đổi gì trên
+        //     màn. Bật nó lên là đổi THIẾT KẾ (tên đang là chữ trắng viền đậm, đặt lên
+        //     ruy băng vàng thì tương phản tụt) — Sếp không yêu cầu, không tự làm.
+        // Muốn có nền tên bằng art thật thì gán ô NamePlateBg trong ArtKit — xem CẦN SẾP.
         bool namePlateIsArt = ConstructionArtKit.ResolveSafe(_kit, ConstructionArtKit.Slot.NamePlateBg,
             ConstructionSpriteFactory.Panel(96, 64, 26), out Sprite plateSpr, out Color plateCol);
 
@@ -103,6 +114,7 @@ public class ConstructionSiteUI : MonoBehaviour
         Place(_namePlate.rectTransform, new Vector2(0f, 226f),
               new Vector2(Mathf.Max(320f, _rect.sizeDelta.x * 0.86f), 76f));
         _namePlate.type = Image.Type.Sliced;
+        CanhBaoNenKhong9Slice("namePlateBg", plateSpr, Mathf.Max(320f, _rect.sizeDelta.x * 0.86f), 76f);
         _namePlate.raycastTarget = false;
 
         // Ô còn TRỐNG thì theo tooltip của kit là "chỉ có chữ, không nền" → ẩn hẳn,
@@ -121,19 +133,51 @@ public class ConstructionSiteUI : MonoBehaviour
             ConstructionArtKit.Slot.NamePlateBg, _kit);
 
         // ── 2. THANH THỜI GIAN ───────────────────────────────────────────────
-        ConstructionArtKit.ResolveSafe(_kit, ConstructionArtKit.Slot.TimerBarBg,
-            ConstructionSpriteFactory.Panel(96, 64, 26), out Sprite barSpr, out Color barCol);
+        // V11 — ART THẬT: timer_box_dark (96x48, border 16/16/16/16, CÓ bản copy trong
+        // Assets/Resources/UI/Standard ⇒ build KHÔNG null). Đây đúng là "hộp đồng hồ"
+        // của bộ Township mà popup Cài đặt / popup Tàu đang dùng ⇒ thanh giờ ở công trường
+        // hết lạc tông so với phần còn lại của game.
+        //
+        // 🔴 MÀU PHẢI TỰ QUYẾT, KHÔNG DÙNG `barCol`: khi kit chưa gán ô TimerBarBg thì
+        // Resolve trả về MÀU NHẬN DẠNG C_TimerBar = (0.15,0.15,0.18, α 0.85). Nhân nó vào
+        // art đã bake nâu-đen (45,30,18) ⇒ (7,4,3) tức ĐEN ĐẶC, mất hẳn vành nâu
+        // (110,75,40) của art. Đúng cùng một cái bẫy đã làm card đặt công trình ra màu bùn.
+        // ĐÚNG CÁCH: art thật ⇒ TRẮNG; chỉ tôn trọng màu của kit khi kit CÓ gán ô.
+        // (Cùng khuôn với `_rushBaseColor = rushIsArt ? rushCol : Color.white` ở nút rush.)
+        bool timerIsArt = ConstructionArtKit.ResolveSafe(_kit, ConstructionArtKit.Slot.TimerBarBg,
+            UIStandardSprites.RowDark ?? ConstructionSpriteFactory.Panel(96, 64, 26),
+            out Sprite barSpr, out Color barCol);
+        Color barMau = timerIsArt ? barCol : Color.white;
 
-        var bar = NewImage(_rect, "Bar_ThoiGian", barSpr, barCol);
-        Place(bar.rectTransform, new Vector2(0f, 140f), new Vector2(252f, 70f));
+        // 🔴 V11 — SỬA CHỮ ĐÈ (đúng lỗi trong ảnh Sếp gửi: số giờ đè lên "…Sek").
+        //
+        // ĐO BẢN CŨ, gốc toạ độ là TÂM THANH (bar 252 rộng ⇒ x ∈ [−126, +126]):
+        //   icon đồng hồ  48 tại x = −84  ⇒ x ∈ [−108, −60]
+        //   ô chữ giờ    180 tại x = +22  ⇒ x ∈ [ −68, +112]
+        //   ⇒ HAI Ô CHỒNG NHAU 8 px (−68 nằm bên trong [−108,−60]).
+        // Chữ căn GIỮA ô + overflowMode = Overflow nên chuỗi dài tràn ĐỀU HAI BÊN: chuỗi
+        // xấu nhất FormatTime sinh ra là "59M59Sek" (8 ký tự ≈ 176 px ở cỡ 40) tràn 8 px
+        // mỗi bên ⇒ mép trái chữ tới −76, LỌT VÀO icon. Đó là chữ đè.
+        //
+        // BẢN MỚI (bar 288 rộng ⇒ x ∈ [−144, +144]):
+        //   icon đồng hồ  44 tại x = −96  ⇒ x ∈ [−118, −74]   (lề trái 26)
+        //   ô chữ giờ    168 tại x = +30  ⇒ x ∈ [ −54, +114]   (lề phải 30)
+        //   ⇒ HỞ 20 px giữa icon và ô chữ. Chuỗi xấu nhất 176 px tràn 4 px mỗi bên ⇒ mép
+        //     trái chữ tới −58, vẫn còn 16 px cách icon. HẾT ĐÈ ở mọi chuỗi FormatTime.
+        //
+        // Thanh chỉ nới 252 → 288 (+36), vẫn nhỏ hơn CanvasMinWidth 470 nên bảng KHÔNG
+        // to bè thêm; phần còn lại là xếp lại icon/chữ chứ không phải phình bảng.
+        var bar = NewImage(_rect, "Bar_ThoiGian", barSpr, barMau);
+        Place(bar.rectTransform, new Vector2(0f, 140f), new Vector2(288f, 68f));
         bar.type = Image.Type.Sliced;
         bar.raycastTarget = false;
+        CanhBaoNenKhong9Slice("timerBarBg", barSpr, 288f, 68f);
 
         ConstructionArtKit.ResolveSafe(_kit, ConstructionArtKit.Slot.ClockIcon,
             ConstructionSpriteFactory.ClockIcon(), out Sprite clockSpr, out Color clockCol);
 
         var clock = NewImage(bar.rectTransform, "Icon_DongHo", clockSpr, clockCol);
-        PlaceCenter(clock.rectTransform, new Vector2(-84f, 0f), new Vector2(48f, 48f));
+        PlaceCenter(clock.rectTransform, new Vector2(-96f, 0f), new Vector2(44f, 44f));
         clock.raycastTarget = false;
 
         ConstructionSiteVisuals.AttachSlotLabel(bar.rectTransform,
@@ -142,20 +186,42 @@ public class ConstructionSiteUI : MonoBehaviour
             ConstructionArtKit.Slot.ClockIcon, _kit);
 
         _timeText = NewText(bar.rectTransform, "Text_ThoiGian", "", 40f, Color.white);
-        PlaceCenter(_timeText.rectTransform, new Vector2(22f, 0f), new Vector2(180f, 56f));
+        PlaceCenter(_timeText.rectTransform, new Vector2(30f, 0f), new Vector2(168f, 54f));
         _timeText.fontStyle = FontStyles.Bold;
         AddOutline(_timeText, new Color(0f, 0f, 0f, 0.85f), 0.18f);
 
         // ── 3. NÚT RUSH ──────────────────────────────────────────────────────
+        // 🔴 V11 — CÙNG LOẠI LỖI ĐÈ, ĐO ĐƯỢC 9 px, ở ngay nút rush bên dưới.
+        // BẢN CŨ (nút 196 ⇒ x ∈ [−98, +98]):
+        //   icon tiền 46 tại x = −52 ⇒ x ∈ [−75, −29]
+        //   ô chữ giá 120 tại x = +22 ⇒ x ∈ [−38, +82]   ⇒ CHỒNG 9 px.
+        // BẢN MỚI (nút 224 ⇒ x ∈ [−112, +112]):
+        //   icon tiền 44 tại x = −66 ⇒ x ∈ [−88, −44]   (lề trái 24)
+        //   ô chữ giá 112 tại x = +30 ⇒ x ∈ [−26, +86]   (lề phải 26)
+        //   ⇒ HỞ 18 px. Giá 4 chữ số ("1240" ≈ 88 px ở cỡ 40) căn giữa +30 ⇒ x ∈ [−14, +74],
+        //     nằm gọn trong ô, không tràn về phía icon.
         var btnGo = new GameObject("Btn_Rush", typeof(RectTransform));
         btnGo.transform.SetParent(_rect, false);
-        Place((RectTransform)btnGo.transform, new Vector2(0f, 46f), new Vector2(196f, 80f));
+        Place((RectTransform)btnGo.transform, new Vector2(0f, 46f), new Vector2(224f, 84f));
 
         // Nút xanh thủ tục ĐÃ tự có màu xanh trong texture. Nếu tô thêm màu nhận dạng
         // C_RushBtn nữa thì thành xanh đè xanh, tối sì → placeholder giữ trắng, chỉ khi
         // Edric gán art thật (art thường là hình trắng/xám) mới cần tint.
+        // V11 — ART THẬT ĐI TRƯỚC: btn_green_3d (96x48, border 16/16/16/16, CÓ bản copy
+        // trong Assets/Resources/UI/Standard ⇒ build KHÔNG null). Nút thủ tục GreenButton()
+        // tụt xuống hàng dự phòng khi Load trả null.
+        //
+        // VÌ SAO btn_green_3d MÀ KHÔNG PHẢI btn_big_green: nút rush cao 84. btn_big_green
+        // có border 48 ⇒ 48 + 48 = 96 > 84 ⇒ hai vành DỌC chồng lên nhau, Unity bóp góc bo
+        // và art ra méo. btn_green_3d border 16 ⇒ 32 ≤ 84, dư chỗ. ĐÃ KIỂM CẢ HAI TRỤC cho
+        // mọi sprite 9-slice dùng ở vòng này — luật là tổng border mỗi trục phải ≤ cạnh đó.
+        //
+        // btn_green_3d ĐÃ BAKE xanh (108,191,46) nên _rushBaseColor phải là TRẮNG — y hệt
+        // lý do bên card đặt công trình. `rushIsArt` chỉ đúng khi ArtKit của Sếp gán ô riêng.
+        Sprite rushMacDinh = UIStandardSprites.BtnGreen3D
+                          ?? ConstructionSpriteFactory.GreenButton(160, 72, 26);
         bool rushIsArt = ConstructionArtKit.ResolveSafe(_kit, ConstructionArtKit.Slot.RushButtonBg,
-            ConstructionSpriteFactory.GreenButton(160, 72, 26), out Sprite rushSpr, out Color rushCol);
+            rushMacDinh, out Sprite rushSpr, out Color rushCol);
         _rushBaseColor = rushIsArt ? rushCol : Color.white;
 
         _rushBg = btnGo.AddComponent<Image>();
@@ -163,6 +229,7 @@ public class ConstructionSiteUI : MonoBehaviour
         _rushBg.color  = _rushBaseColor;
         _rushBg.type   = Image.Type.Sliced;
         _rushBg.raycastTarget = true;
+        CanhBaoNenKhong9Slice("rushButtonBg", rushSpr, 224f, 84f);
 
         _rushButton = btnGo.AddComponent<Button>();
         _rushButton.targetGraphic = _rushBg;
@@ -174,7 +241,7 @@ public class ConstructionSiteUI : MonoBehaviour
             ConstructionSpriteFactory.CoinIcon(), out Sprite coinSpr, out Color coinCol);
 
         _costIcon = NewImage(_rushBg.rectTransform, "Icon_Tien", coinSpr, coinCol);
-        PlaceCenter(_costIcon.rectTransform, new Vector2(-52f, 0f), new Vector2(46f, 46f));
+        PlaceCenter(_costIcon.rectTransform, new Vector2(-66f, 0f), new Vector2(44f, 44f));
         _costIcon.raycastTarget = false;
 
         ConstructionSiteVisuals.AttachSlotLabel(_rushBg.rectTransform,
@@ -183,7 +250,7 @@ public class ConstructionSiteUI : MonoBehaviour
             ConstructionArtKit.Slot.CoinIcon, _kit);
 
         _costText = NewText(_rushBg.rectTransform, "Text_Gia", "", 40f, Color.white);
-        PlaceCenter(_costText.rectTransform, new Vector2(22f, 2f), new Vector2(120f, 56f));
+        PlaceCenter(_costText.rectTransform, new Vector2(30f, 2f), new Vector2(112f, 54f));
         _costText.fontStyle = FontStyles.Bold;
         AddOutline(_costText, new Color(0.06f, 0.20f, 0.02f, 1f), 0.24f);
 
@@ -408,6 +475,44 @@ public class ConstructionSiteUI : MonoBehaviour
         rt.anchoredPosition = anchoredPos;
         rt.sizeDelta        = size;
         rt.localScale       = Vector3.one;
+    }
+
+    /// <summary>
+    /// 🔴 V11 — LƯỚI CHẶN CHO MỘT LỖI ĐÃ XẢY RA HAI LẦN TRONG DỰ ÁN NÀY.
+    ///
+    /// LUẬT: một sprite có spriteBorder 0/0/0/0 mà bị vẽ bằng `Image.Type.Sliced` thì
+    /// UGUI KHÔNG CHIA VÀNH được, nó tụt về KÉO GIÃN PHẲNG cả ảnh. Ảnh vuông kéo vào ô
+    /// dẹt là méo hẳn, mà KHÔNG có lỗi nào được in ra — chỉ nhìn mới biết.
+    ///
+    /// HAI LẦN ĐÃ XẢY RA (đo được, KHÔNG phải phỏng đoán):
+    ///   1. Vòng 10: ô `priceBarBg` bị gán btn_CloseRanking.png (1179x211, border 0)
+    ///      → Dev V đã ghi lại. Ô đó nay đã trống nên hết lỗi.
+    ///   2. HIỆN TẠI, trong ConstructionArtKit.asset:
+    ///      · namePlateBg  = Sprite_clock_icon.png (94x89,   border 0) ← ICON ĐỒNG HỒ!
+    ///      · timerBarBg   = Sprite_clock_icon.png (94x89,   border 0) ← CÙNG icon đó!
+    ///      · rushButtonBg = vang-removebg-preview_0 (256x256, border 0) ← ĐỐNG TIỀN VÀNG!
+    ///      Ba ô này đang bị kéo giãn thành nền bảng ⇒ nền tên là icon đồng hồ dài 404 px,
+    ///      nút rush là đống tiền bị bóp còn 1/3 chiều cao. KHÔNG SỬA ĐƯỢC TỪ CODE —
+    ///      .asset là file của Sếp, xem mục CẦN SẾP.
+    ///
+    /// Hàm này CHỈ IN CẢNH BÁO trong Editor, không đổi hình gì: mục đích là lần sau ai
+    /// kéo nhầm sprite vào ô 9-slice thì Console nói ngay, khỏi phải chờ Sếp nhìn ra.
+    /// Thân hàm bọc #if UNITY_EDITOR nhưng CHỮ KÝ thì không — để 3 chỗ gọi khỏi phải bọc
+    /// #if theo, và bản build chỉ còn một hàm rỗng bị JIT loại bỏ.
+    /// </summary>
+    private static void CanhBaoNenKhong9Slice(string tenO, Sprite spr, float rongVe, float caoVe)
+    {
+#if UNITY_EDITOR
+        if (spr == null) return;
+        if (spr.border.sqrMagnitude > 0.01f) return;   // có vành ⇒ Sliced chạy đúng
+
+        // Chỉ kêu khi thực sự BỊ MÉO: ảnh gần đúng tỉ lệ ô vẽ thì kéo giãn cũng không sao.
+        float tlAnh = spr.rect.height > 0.5f ? spr.rect.width / spr.rect.height : 1f;
+        float tlOVe = caoVe > 0.5f ? rongVe / caoVe : 1f;
+        if (tlOVe <= tlAnh * 1.35f && tlOVe >= tlAnh * 0.74f) return;
+
+        { Debug.LogWarning($"[ConstructionSiteUI] O art '{tenO}' dang gan sprite '{spr.name}' {spr.rect.width:0}x{spr.rect.height:0} co spriteBorder 0/0/0/0 nhung duoc ve Image.Type.Sliced o {rongVe:0}x{caoVe:0} (ti le anh {tlAnh:0.00} vs o ve {tlOVe:0.00}) -> border 0 lam Sliced TUT VE KEO GIAN PHANG nen anh bi bop meo. Sua trong Assets/_Game/Farm/ScriptableObjects/ConstructionArtKit.asset: xoa o nay (de None) de code dung art du phong, hoac dat spriteBorder trong Import Settings cua sprite."); }
+#endif
     }
 
     /// <summary>

@@ -389,7 +389,7 @@ public class OrderBoardHierarchyBuilderTool : EditorWindow
         Sliced(reward, "ob_btn", OrderBoardSpriteFactory.Hex("#1B2A20"));
 
         r.RewardExp  = BuildRewardRow(reward, "Row_Exp",  -44f, "ob_star",
-                                      OrderBoardSpriteFactory.Hex("#7FB5F0"));
+                                      Color.white);
         r.RewardGold = BuildRewardRow(reward, "Row_Gold", -106f, "ob_coin", Color.white);
 
         // Tên đơn — kho tên 300+ của DEV-A phải có chỗ để hiện, nếu không thì cả mục 5.2
@@ -511,8 +511,7 @@ public class OrderBoardHierarchyBuilderTool : EditorWindow
             // Xen kẽ sao EXP và đồng vàng: hai loại phần thưởng bay lên cùng lúc thì
             // người chơi đọc ra ngay là "được cả hai", không phải đoán.
             bool isStar = (i % 2 == 0);
-            Image img = Simple(f, isStar ? "ob_star" : "ob_coin",
-                               isStar ? OrderBoardSpriteFactory.Hex("#7FB5F0") : Color.white);
+            Image img = Simple(f, isStar ? "ob_star" : "ob_coin", Color.white);
             f.gameObject.SetActive(false);
             flies.Add(img);
         }
@@ -577,7 +576,7 @@ public class OrderBoardHierarchyBuilderTool : EditorWindow
         // ⚠ CHỈ hiện PHẦN THƯỞNG. Không thêm dòng yêu cầu vào đây — xem chú thích đầu
         // file `OrderTicketUI.cs`.
         TextMeshProUGUI expTxt  = BuildTicketRewardRow(filled, "Row_Exp",  26f, "ob_star",
-                                                       OrderBoardSpriteFactory.Hex("#3B82D9"));
+                                                       Color.white);
         TextMeshProUGUI goldTxt = BuildTicketRewardRow(filled, "Row_Gold", -36f, "ob_coin", Color.white);
 
         // Dấu tích to góc trên phải — trạng thái 2

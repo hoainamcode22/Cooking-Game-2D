@@ -220,8 +220,11 @@ public class BuildingFootprintKit : MonoBehaviour
         Vector2Int o = soO;
         if (o.x <= 0 || o.y <= 0) o = SuySoOTuCollider();
 
-        float w = o.x * PlacementManager.CELL;
-        float h = o.y * PlacementManager.CELL;
+        // 🟢 V9 — kích thước thảm nền lấy theo LƯỚI ISO (hộp bao vùng ô kim cương),
+        // không còn nhân thẳng CELL vuông nữa.
+        Vector2 wh = IsoGrid.FootprintWorldSize(o);
+        float w = wh.x;
+        float h = wh.y;
 
         // Vùng ô mọc LÊN từ chân công trình (quy ước "V8" của PlacementManager: điểm neo
         // là mép dưới + giữa ngang). Nên tâm vùng ô nằm cao hơn gốc object đúng h/2.
@@ -302,9 +305,25 @@ public class BuildingFootprintKit : MonoBehaviour
     }
 
     /// <summary>
-    /// Chưa ai điền `soO` thì suy từ collider, làm tròn LÊN theo ô lưới.
-    /// Làm tròn lên chứ không phải xuống: thảm nhỏ hơn công trình trông như đặt lệch,
-    /// còn thảm to hơn một chút thì vẫn đọc được là "vùng của cái này".
+    /// Chưa ai điền `soO` thì suy từ collider (dự phòng, KHÔNG phải đường chính).
+    ///
+    /// 🔴 V10 — ĐÂY LÀ HÀM ĐÃ SINH RA SỐ RÁC. Bản cũ:
+    ///     Ceil(bounds.size.x / PlacementManager.CELL)   // CELL = 100, lưới VUÔNG
+    /// Hai lỗi cộng dồn:
+    ///   1. SAI HỆ: ô thật là 300 x 150 (iso, không vuông), không phải 100 x 100. Chia cho
+    ///      100 cho ra số ô lớn gấp 3 theo trục ngang và gấp 1.5 theo trục dọc.
+    ///   2. LUÔN Ceil, KHÔNG CÓ TRẦN: `bounds` ở đây là bounds WORLD của collider. Prefab
+    ///      trong dự án có root scale 100, nên một BoxCollider2D khai 341 local ra 34 100
+    ///      world ⇒ Ceil(34100/100) = 341 ô. Đúng bằng con số 341x342 nằm trong Home1.asset.
+    ///
+    /// BẢN MỚI: suy qua IsoGrid.EstimateSizeFromWorldSize (làm tròn GẦN NHẤT theo ô iso,
+    /// đúng hàm Dev U đã kiểm chéo ra bảng 1x1 / 2x2) rồi KẸP TRẦN, cùng ngưỡng ý nghĩa với
+    /// PlacementManager.gridSizeSanityLimit.
+    ///
+    /// ⚠ VẪN CÒN GIỚI HẠN, ĐỌC KỸ: collider trong các prefab hiện tại TỰ NÓ đã là số rác
+    /// (nó được PlacementKitInstallerTool suy ra TỪ gridSize rác). Nên hàm này vẫn có thể
+    /// trả về đúng cái trần 24. Đó là lý do phải in cảnh báo: đường đúng là ĐIỀN TAY `soO`
+    /// (hoặc `gridSize` của asset), không phải trông vào phép đo collider.
     /// </summary>
     private Vector2Int SuySoOTuCollider()
     {
@@ -327,10 +346,34 @@ public class BuildingFootprintKit : MonoBehaviour
 
         if (!gop.HasValue) return Vector2Int.one;
 
-        return new Vector2Int(
-            Mathf.Max(1, Mathf.CeilToInt(gop.Value.size.x / PlacementManager.CELL)),
-            Mathf.Max(1, Mathf.CeilToInt(gop.Value.size.y / PlacementManager.CELL)));
+        // Suy số ô theo LƯỚI ISO. EstimateSizeFromWorldSize suy CẢ n và m từ bề rộng hộp
+        // bao (hộp bao vùng N x M ô có rộng = (N+M)*W/2, không tách được N với M riêng),
+        // nên chỉ cần một lần gọi.
+        Vector2Int est = IsoGrid.EstimateSizeFromWorldSize(gop.Value.size);
+
+        int nx = Mathf.Clamp(est.x, 1, TranSoO);
+        int ny = Mathf.Clamp(est.y, 1, TranSoO);
+
+        // 1 dòng, bọc {} riêng: remove_debug_logs.ps1 xoá dòng Debug.* mà để lại `if`.
+        if ((est.x > TranSoO || est.y > TranSoO) && _daCanhBaoTran.Add(name))
+            { Debug.LogWarning($"[Footprint] '{name}': collider do ra {est.x}x{est.y} o (hop bao world {gop.Value.size.x:0}x{gop.Value.size.y:0}) - VUOT tran {TranSoO}, da kep lai. Collider cua prefab nay dang la SO RAC; hay dien tay truong 'soO' (hoac gridSize cua asset).", this); }
+
+        return new Vector2Int(nx, ny);
     }
+
+    /// <summary>
+    /// TRẦN số ô mỗi chiều. Cùng ý nghĩa với `PlacementManager.gridSizeSanityLimit` (24):
+    /// công trình Township thật chỉ 1…7 ô, nên bất cứ số nào lớn hơn 24 chắc chắn là đơn vị
+    /// art / pixel lọt vào chứ không phải số ô. Có trần thì một collider rác chỉ làm thảm
+    /// nền to quá cỡ, chứ không thể phình ra 341 ô phủ kín màn hình như trước.
+    /// Để `const` chứ không `[SerializeField]`: đây là lưới an toàn, không phải tham số
+    /// designer nên chỉnh.
+    /// </summary>
+    private const int TranSoO = 24;
+
+    /// <summary>Cảnh báo MỘT LẦN cho mỗi object, nếu không sẽ spam Console mỗi lần dựng lại.</summary>
+    private static readonly System.Collections.Generic.HashSet<string> _daCanhBaoTran =
+        new System.Collections.Generic.HashSet<string>();
 
     private static Bounds Gop(Bounds a, Bounds b) { a.Encapsulate(b); return a; }
 
@@ -406,7 +449,11 @@ public class BuildingFootprintKit : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Vector2Int o = soO.x > 0 && soO.y > 0 ? soO : Vector2Int.one;
-        float w = o.x * PlacementManager.CELL, h = o.y * PlacementManager.CELL;
+        // 🟢 V10 — gizmo phải vẽ ĐÚNG cái mà CapNhatKichThuoc() dựng ra, nếu không thì
+        // designer canh theo gizmo rồi chạy game lại thấy thảm nằm chỗ khác. Cả hai giờ
+        // gọi chung IsoGrid.FootprintWorldSize thay vì mỗi bên một công thức.
+        Vector2 fpWH = IsoGrid.FootprintWorldSize(o);
+        float w = fpWH.x, h = fpWH.y;
 
         Gizmos.color = new Color(0.37f, 0.85f, 0.66f, 0.9f);
         Vector3 tam = transform.position + new Vector3(0f, h * 0.5f, 0f);

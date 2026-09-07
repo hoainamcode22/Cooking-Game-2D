@@ -69,9 +69,13 @@ public class ConstructionCompleteFX : MonoBehaviour
                                 GameObject reusableVfxPrefab, float reusableVfxScale,
                                 System.Action onReveal)
     {
-        float cell = PlacementManager.CELL;
-        float w = Mathf.Max(1, gridSize.x) * cell;
-        float h = Mathf.Max(1, gridSize.y) * cell;
+        // 🟢 V10 — hộp bao vùng ô ISO thay cho lưới vuông CELL = 100.
+        // VFX phải phủ đúng vùng công trường vừa biến mất; ConstructionSiteVisuals dựng
+        // giàn giáo bằng CHÍNH hàm này, nên hai bên khớp nhau tuyệt đối.
+        Vector2 fpWH = IsoGrid.FootprintWorldSize(
+                           new Vector2Int(Mathf.Max(1, gridSize.x), Mathf.Max(1, gridSize.y)));
+        float w = fpWH.x;
+        float h = fpWH.y;
 
         // ── VFX có sẵn trong project (Confetti / Flash của Lana Studio) ──────
         // Chỉ dùng nếu Edric đã gán prefab; không có thì hiệu ứng tự vẽ vẫn đủ.

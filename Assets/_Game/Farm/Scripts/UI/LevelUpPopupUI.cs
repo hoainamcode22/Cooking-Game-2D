@@ -668,7 +668,7 @@ public class LevelUpPopupUI : MonoBehaviour
 
             string chu = cfg != null ? cfg.hintText : null;
             if (string.IsNullOrWhiteSpace(chu))
-                chu = $"Lên cấp {level}! Quà mới đã vào kho của bạn.";
+                chu = Loc.TF("Lên cấp {0}! Quà mới đã vào kho của bạn.", level);
             if (hint.text != chu) hint.text = chu;
 
             if (!hint.gameObject.activeSelf) hint.gameObject.SetActive(true);

@@ -12,9 +12,16 @@ using UnityEngine;
 /// Kit được phép null (chưa ai kéo asset vào ConstructionManager) — khi đó tất cả là
 /// placeholder có màu, game vẫn chạy y như trước.
 ///
-/// ĐƠN VỊ: mọi con số ở đây là WORLD UNIT, với `PlacementManager.CELL = 100`.
-/// Giàn giáo LUÔN phủ đúng `gridSize.x * CELL  ×  gridSize.y * CELL` (yêu cầu §3.5 doc đội)
-/// — cùng con số Ghost dùng cho thảm xanh, nên giàn giáo khít đúng vùng vừa đặt.
+/// ĐƠN VỊ: mọi con số ở đây là WORLD UNIT.
+/// 🟢 V10 — giàn giáo phủ đúng `IsoGrid.FootprintWorldSize(gridSize)`, KHÔNG còn
+/// `gridSize.x * CELL × gridSize.y * CELL` (lưới vuông 100 đã lỗi thời: ô thật 300 × 150).
+/// Vẫn giữ đúng tinh thần §3.5 doc đội "cùng con số Ghost dùng cho thảm nền" — chỉ là giờ
+/// con số đó đến từ IsoGrid thay vì từ hằng CELL, nên giàn giáo lại khít vùng vừa đặt.
+///
+/// ⚠ CÁC HẰNG SỐ BỀ DÀY BÊN DƯỚI (PostWidth 16, RailHeight 14, LabelFontSize 22) được
+/// canh mắt khi một ô = 100. Ô giờ rộng 300 nên chúng TRỞ NÊN MẢNH đi tương đối. Không
+/// tự nhân 3 ở đây vì đó là quyết định art, không phải quyết định toán học — xem báo cáo
+/// vòng 10 mục "CẦN SẾP".
 /// </summary>
 public static class ConstructionSiteVisuals
 {
@@ -46,9 +53,12 @@ public static class ConstructionSiteVisuals
     public static Handle Build(Transform parent, Vector2Int gridSize, Sprite legacyWorkerSprite,
                                string sortingLayer, int baseOrder, ConstructionArtKit kit = null)
     {
-        float cell = PlacementManager.CELL;
-        float w = Mathf.Max(1, gridSize.x) * cell;
-        float h = Mathf.Max(1, gridSize.y) * cell;
+        // 🟢 V10 — hộp bao vùng ô ISO (300 x 150 / ô), thay cho lưới vuông CELL = 100.
+        // Dùng CHÍNH hàm mà Ghost dùng cho thảm nền để giàn giáo trùng khít thảm.
+        Vector2 fpWH = IsoGrid.FootprintWorldSize(
+                           new Vector2Int(Mathf.Max(1, gridSize.x), Mathf.Max(1, gridSize.y)));
+        float w = fpWH.x;
+        float h = fpWH.y;
 
         var handle = new Handle { GroundY = -h * 0.5f };
 

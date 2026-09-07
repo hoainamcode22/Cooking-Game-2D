@@ -77,7 +77,7 @@ public class LivestockFeedDragItem : MonoBehaviour,
         int stock = FarmInventoryManager.Instance != null ? FarmInventoryManager.Instance.GetAmount(_foodItemId) : 0;
         if (stock <= 0)
         {
-            FarmUIManager.Instance?.ShowHint($"Chưa có {_displayName} trong kho. Hãy chế biến tại Máy Xay Thức Ăn hoặc thu hoạch nông sản!");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Chưa có {0} trong kho. Hãy chế biến tại Máy Xay Thức Ăn hoặc thu hoạch nông sản!", Loc.T(_displayName)));
             return;
         }
 

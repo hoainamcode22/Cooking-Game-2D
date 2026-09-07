@@ -453,11 +453,11 @@ public class WarehousePopupUI : MonoBehaviour
             if (warehouseLevel < WarehouseMaxLevel)
             {
                 int nextCap = FarmInventoryManager.CapacityForLevel(warehouseLevel + 1);
-                txtUpgradeInfo.text = $"Cấp {warehouseLevel} · Sức chứa: {slotCapacity} Slot (Nâng cấp: +25 Slot)";
+                txtUpgradeInfo.text = Loc.TF("Cấp {0} · Sức chứa: {1} Slot (Nâng cấp: +25 Slot)", warehouseLevel, slotCapacity);
             }
             else
             {
-                txtUpgradeInfo.text = $"Cấp Tối Đa ({warehouseLevel}) · Sức chứa: {slotCapacity} Slot";
+                txtUpgradeInfo.text = Loc.TF("Cấp Tối Đa ({0}) · Sức chứa: {1} Slot", warehouseLevel, slotCapacity);
             }
         }
 
@@ -786,7 +786,7 @@ public class WarehousePopupUI : MonoBehaviour
         if (cropLookup.TryGetValue(key, out CropData crop) && crop != null)
         {
             int sellGold = crop.sellGold > 0 ? crop.sellGold : 12;
-            return $"Nguyên liệu nông sản tươi ngon. Dùng để nấu ăn tại bếp hoặc bán tại quầy. Giá tham khảo {sellGold} vàng/cái.";
+            return Loc.TF("Nguyên liệu nông sản tươi ngon. Dùng để nấu ăn tại bếp hoặc bán tại quầy. Giá tham khảo {0} vàng/cái.", sellGold);
         }
 
         if (AnimalItemIds.Contains(key))

@@ -84,7 +84,9 @@ public class ConstructionCelebrationFX : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
 
     private const float TotalLife = 3.5f;   // chốt tự huỷ tuyệt đối
-    private const float Cell      = 100f;   // = PlacementManager.CELL, chép hằng để file FX đứng độc lập
+    // [V10] Bo hang so Cell = 100f. Do la luoi VUONG cua save v0/v1, KHONG phai o hien tai.
+    // O that la 300 x 150 (iso): Grid_Iso45 scale 150 x childScale 2 cua 9 tilemap mat dat.
+    // Nay dung IsoGrid.FootprintWorldSize() de tu dong theo, khong chep hang nua.
 
     // Sorting fallback khi công trình không có SpriteRenderer nào (spec V2).
     private const string FallbackLayer = "Default";
@@ -162,7 +164,8 @@ public class ConstructionCelebrationFX : MonoBehaviour
             // Không có sprite nào (prefab lồng particle? object trống?) → hộp 4×4 ô
             // quanh vị trí, sorting fallback theo spec.
             Vector3 c = building != null ? building.position : transform.position;
-            _bounds    = new Bounds(new Vector3(c.x, c.y, 0f), new Vector3(4f * Cell, 4f * Cell, 0f));
+            Vector2 fp = IsoGrid.FootprintWorldSize(new Vector2Int(2, 2)); // ~4 o quanh vi tri
+            _bounds    = new Bounds(new Vector3(c.x, c.y, 0f), new Vector3(fp.x, fp.y, 0f));
             _layerName = FallbackLayer;
             _order     = FallbackOrder;
             return;

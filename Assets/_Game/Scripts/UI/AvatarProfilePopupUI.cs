@@ -306,7 +306,17 @@ public class AvatarProfilePopupUI : MonoBehaviour
         }
 
         // 2. Điểm nấu ăn
-        int cookCount = PlayerPrefs.GetInt("COOKING_CHALLENGE_TOTAL_DISHES", 0);
+        // Nguồn THẬT: MissionProgressTracker, khoá "CookDish:*" — CookingChallengeManager và
+        // TouristVisitorManager đều ReportEvent(MissionEventType.CookDish, …) vào đó, dữ liệu nằm
+        // trong PlayerPrefs "MISSION_PROGRESS_V1" nên reset đúng cùng "Chơi lại từ đầu".
+        // Hai khoá cũ bên dưới KHÔNG có chỗ nào ghi trong dự án (đã grep toàn Assets/_Game) —
+        // giữ lại làm fallback cho save cũ, không xoá để không phá dữ liệu người chơi.
+        int cookCount = 0;
+        if (MissionProgressTracker.Instance != null)
+        {
+            cookCount = MissionProgressTracker.Instance.GetProgress($"{MissionEventType.CookDish}:*");
+        }
+        if (cookCount <= 0) cookCount = PlayerPrefs.GetInt("COOKING_CHALLENGE_TOTAL_DISHES", 0);
         if (cookCount <= 0) cookCount = PlayerPrefs.GetInt("COOKING_TOTAL_DISHES_MADE", 0);
         if (txtCookingScore != null) 
         {
@@ -585,10 +595,15 @@ public class AvatarProfilePopupUI : MonoBehaviour
         txtLevelRange = FindChildComponent<TMP_Text>(board, "Txt_LevelRange");
         txtExpValue = FindChildComponent<TMP_Text>(board, "Txt_ExpValue");
         expFill = FindChildComponent<Image>(board, "Img_ExpFill");
-        txtWarehouseLevel = FindChildComponent<TMP_Text>(board, "Txt_WarehouseVal");
-        txtCookingScore = FindChildComponent<TMP_Text>(board, "Txt_CookingVal");
-        txtGoldEarned = FindChildComponent<TMP_Text>(board, "Txt_GoldVal");
-        txtAchievementCount = FindChildComponent<TMP_Text>(board, "Txt_AchievementVal");
+        // [FIX 2026-09-06] Hierarchy đã dựng trong SCN_Farm đặt tên node giá trị của CẢ 4 thẻ
+        // thống kê là "Txt_Value" (mặc định của CreateStatCard), KHÔNG phải "Txt_WarehouseVal"…
+        // Tìm theo tên riêng nên trả null → RefreshStats bỏ qua cả 4 → số mockup lúc dựng
+        // ("120 ô", "35 món", "1 520", "18 đã xong") đứng yên vĩnh viễn, nhìn y như dữ liệu
+        // cũ không chịu reset. Fallback: lấy "Txt_Value" BÊN TRONG đúng thẻ tương ứng.
+        txtWarehouseLevel   = FindStatValueText(board, "Txt_WarehouseVal",   "Card_Warehouse");
+        txtCookingScore     = FindStatValueText(board, "Txt_CookingVal",     "Card_Cooking");
+        txtGoldEarned       = FindStatValueText(board, "Txt_GoldVal",        "Card_Gold");
+        txtAchievementCount = FindStatValueText(board, "Txt_AchievementVal", "Card_Achievement");
         btnSaveProfile = FindChildComponent<Button>(board, "Btn_SaveProfile");
 
         Transform grid = FindDeepChild(board, "Grid_AvatarChoices");
@@ -620,6 +635,30 @@ public class AvatarProfilePopupUI : MonoBehaviour
                 }
             }
         }
+
+        if (txtWarehouseLevel == null || txtCookingScore == null || txtGoldEarned == null || txtAchievementCount == null)
+        {
+            Debug.LogWarning("[AvatarProfile] Thiếu ô chữ giá trị của thẻ thống kê — số trên thẻ sẽ đứng yên. Kiểm Board_Wooden > Panel_Parchment > Col_Right > Grid_Cards > Card_* > Fill > Txt_Value.");
+        }
+    }
+
+    /// <summary>
+    /// Lấy ô CHỮ GIÁ TRỊ của một thẻ thống kê, chịu được cả hai kiểu đặt tên:
+    ///  • mới — node tên riêng: "Txt_WarehouseVal" / "Txt_CookingVal" / …
+    ///  • cũ  — node tên chung "Txt_Value" nằm TRONG thẻ (mặc định của CreateStatCard).
+    /// Phải giới hạn tìm "Txt_Value" TRONG đúng thẻ, vì cả 4 thẻ đều có node trùng tên này.
+    /// CHỈ ĐỌC hierarchy — không tạo, không xoá, không đổi tên node nào.
+    /// </summary>
+    private static TMP_Text FindStatValueText(Transform board, string valueNodeName, string cardName)
+    {
+        TMP_Text direct = FindChildComponent<TMP_Text>(board, valueNodeName);
+        if (direct != null) return direct;
+
+        Transform card = FindDeepChild(board, cardName);
+        if (card == null) return null;
+
+        Transform legacy = FindDeepChild(card, "Txt_Value");
+        return legacy != null ? legacy.GetComponent<TMP_Text>() : null;
     }
 
     public static AvatarProfilePopupUI CreateHierarchy(Transform parent)

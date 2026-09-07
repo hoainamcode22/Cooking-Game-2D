@@ -99,9 +99,52 @@ public static class LocalizationManager
         KhoiTao();
         if (_lang == VI) return cauTiengViet;
 
-        return LocStringTable.EN.TryGetValue(cauTiengViet, out string en) && !string.IsNullOrEmpty(en)
-            ? en
-            : cauTiengViet;
+        if (LocStringTable.EN.TryGetValue(cauTiengViet, out string en) && !string.IsNullOrEmpty(en))
+            return en;
+
+        // [FIX 06/09/2026] Bảng gõ Kiểu Tên Riêng ("Cà Rốt", "Phở Bò Tái") nhưng asset và code
+        // lại viết thường ("Cà rốt", "Phở bò tái") ⇒ tra khớp từng ký tự là TRƯỢT, người chơi
+        // bấm English vẫn thấy tiếng Việt. Tra lại lần hai, bỏ qua hoa/thường, rồi chỉnh kiểu
+        // chữ của bản dịch cho khớp câu gốc (câu gốc IN HOA thì bản dịch cũng IN HOA).
+        if (BangBoQuaHoaThuong.TryGetValue(cauTiengViet, out string en2) && !string.IsNullOrEmpty(en2))
+            return KhopKieuChu(cauTiengViet, en2);
+
+        return cauTiengViet;
+    }
+
+    private static Dictionary<string, string> _bangBoQuaHoaThuong;
+
+    /// <summary>Bản sao của bảng dịch, tra KHÔNG phân biệt hoa/thường. Dựng một lần lúc cần.</summary>
+    private static Dictionary<string, string> BangBoQuaHoaThuong
+    {
+        get
+        {
+            if (_bangBoQuaHoaThuong == null)
+            {
+                _bangBoQuaHoaThuong = new Dictionary<string, string>(
+                    LocStringTable.EN.Count, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var cap in LocStringTable.EN)
+                {
+                    // Khoá chỉ khác nhau hoa/thường ⇒ giữ cái GẶP TRƯỚC, không ghi đè.
+                    if (!_bangBoQuaHoaThuong.ContainsKey(cap.Key))
+                        _bangBoQuaHoaThuong[cap.Key] = cap.Value;
+                }
+            }
+            return _bangBoQuaHoaThuong;
+        }
+    }
+
+    /// <summary>Câu gốc IN HOA HẾT ⇒ trả bản dịch IN HOA. Còn lại giữ nguyên bản dịch.</summary>
+    private static string KhopKieuChu(string goc, string en)
+    {
+        bool coChuCai = false;
+        for (int i = 0; i < goc.Length; i++)
+        {
+            if (char.IsLower(goc[i])) return en;
+            if (char.IsUpper(goc[i])) coChuCai = true;
+        }
+        return coChuCai ? en.ToUpperInvariant() : en;
     }
 
     /// <summary>Dịch rồi ghép tham số, ví dụ: `Loc.TF("Còn {0} phút", 5)`.</summary>
@@ -117,7 +160,8 @@ public static class LocalizationManager
     /// </summary>
     public static bool DaCoBanDich(string cauTiengViet)
     {
-        return !string.IsNullOrEmpty(cauTiengViet) && LocStringTable.EN.ContainsKey(cauTiengViet);
+        return !string.IsNullOrEmpty(cauTiengViet)
+            && (LocStringTable.EN.ContainsKey(cauTiengViet) || BangBoQuaHoaThuong.ContainsKey(cauTiengViet));
     }
 
     public static int SoCauDaDich => LocStringTable.EN.Count;

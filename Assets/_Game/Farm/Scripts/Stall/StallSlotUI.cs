@@ -168,6 +168,6 @@ public class StallSlotUI : MonoBehaviour
 
         if (hours > 0) return $"{hours}g {mins:00}p";
         if (mins  > 0) return $"{mins}p";
-        return $"{total} giây";
+        return Loc.TF("{0} giây", total);
     }
 }

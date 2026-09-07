@@ -1,0 +1,185 @@
+using UnityEngine;
+
+namespace FarmGame.UI
+{
+    /// <summary>
+    /// CHẶN TRẦN PHÓNG TO CHO MỘT PHẦN TỬ HUD — để cú "nảy mẩy mẩy" không đè sang phần tử bên cạnh.
+    /// ══════════════════════════════════════════════════════════════════════════════
+    ///
+    /// VÌ SAO CẦN (số đo thật trên SCN_Farm, hệ quy chiếu 1920×1080; cụm HUD localScale 1.2):
+    ///   • `JuicyPulseFX.Play(...)` phóng localScale của phần tử HUD lên 1.20–1.25 lần rồi trả
+    ///     về gốc. Nó được gọi từ NĂM chỗ, không chỗ nào là file của Dev UI:
+    ///     RewardFlyFX.cs:384 · HarvestFeedbackSpawner.cs:269 · CoinFlyFX.cs:182 ·
+    ///     GemFlyFX.cs:192 · UnifiedTaskPopupUI.cs:2220.
+    ///   • Cụm HUD lại xếp sát đến mức KHÔNG còn chỗ cho cú phóng to đó:
+    ///       – Mép phải khung Vàng (x 1468) ↔ mép trái icon Kim Cương (x 1484.6): hở 16.6 px.
+    ///       – Mép phải khung avatar (x 180) ↔ mép trái thanh EXP (x 223.3): hở 43.3 px,
+    ///         mà thanh EXP phóng 1.22 lần cần tới 51.5 px.
+    ///     ⇒ MỖI lần nhận thưởng là một lần chồng lấn. Nhận dồn dập thì các cú phóng nối
+    ///       nhau, mắt thấy chúng "tự đè vào nhau" gần như liên tục — đúng như Sếp mô tả.
+    ///
+    /// CÁCH LÀM — chỉ CHẶN TRẦN. Không dựng lại layout, không dời vị trí, không huỷ con:
+    ///   1. Ở nhịp LateUpdate đầu tiên (lúc HUD còn ĐỨNG YÊN) đo khe hở THẬT bằng
+    ///      `GetWorldCorners` + `InverseTransformPoint`, quét cả các con đang bật — vì icon
+    ///      vàng/kim cương thò 16.8 px ra ngoài mép capsule, bỏ sót là tính sai khe hở.
+    ///   2. Suy ra scale lớn nhất phần tử được phép đạt: mỗi bên chỉ được ăn
+    ///      `phanKheHoDuocDung` (mặc định 45%) của khe hở ⇒ hai bên cùng phóng vẫn còn hở 10%.
+    ///   3. Các nhịp sau chỉ làm MỘT việc: localScale vượt trần thì kéo về trần. KHÔNG vượt
+    ///      thì KHÔNG ghi gì cả — chỉnh tay của Sếp trong scene không hề bị đụng tới.
+    ///
+    /// TỰ THÍCH NGHI: khe hở do Sếp kéo trong scene quyết định trần. Kéo hai khung xa nhau ra
+    /// là trần tự nới, cú nảy tự đầy đặn lại — không phải sửa lại code.
+    ///
+    /// KHÔNG dùng cho: phần tử mà chính nó cần phóng to tự do (popup, card thưởng).
+    /// </summary>
+    [DisallowMultipleComponent]
+    public class HudChongDeKhiPhongTo : MonoBehaviour
+    {
+        [Tooltip("Phần tử được canh giữ (thường chính là object mang script này).")]
+        [SerializeField] private RectTransform khungCanhGiu;
+
+        [Tooltip("Phần tử bên TRÁI không được đè vào. Để trống nếu bên trái trống.")]
+        [SerializeField] private RectTransform tuongTrai;
+
+        [Tooltip("Phần tử bên PHẢI không được đè vào. Để trống nếu bên phải trống.")]
+        [SerializeField] private RectTransform tuongPhai;
+
+        [Tooltip("Phần khe hở mỗi bên được phép dùng cho cú phóng to. 0.45 = 45%; hai bên cùng phóng vẫn còn hở 10%.")]
+        [SerializeField, Range(0.1f, 0.9f)] private float phanKheHoDuocDung = 0.45f;
+
+        [Tooltip("Trần cứng — chặn trường hợp khe hở đo được quá rộng làm cú nảy thành phi lý.")]
+        [SerializeField] private float tranCung = 1.30f;
+
+        private float _scaleToiDa = -1f;   // < 0 = chưa đo được
+        private float _scaleLucGan = 1f;   // scale lúc cài đặt — dùng để biết phần tử đang đứng yên
+        private int   _soNhipDaThu;
+        private bool  _daBoQua;
+
+        private const int SO_NHIP_THU_TOI_DA = 300;   // ~5 giây ở 60fps rồi thôi, không quay vòng vô ích
+
+        // Đệm 4 góc dùng chung — phép đo chỉ chạy vài nhịp đầu nên không sinh rác về sau.
+        private static readonly Vector3[] GocBuf = new Vector3[4];
+
+        /// <summary>Cài đặt từ code (TownshipHUDController gọi). Gọi lại được — sẽ đo lại từ đầu.</summary>
+        public void Nap(RectTransform khung, RectTransform trai, RectTransform phai, float phanKheHo)
+        {
+            khungCanhGiu = khung;
+            tuongTrai = trai;
+            tuongPhai = phai;
+            if (phanKheHo > 0f) phanKheHoDuocDung = Mathf.Clamp(phanKheHo, 0.1f, 0.9f);
+
+            _scaleLucGan = khungCanhGiu != null ? khungCanhGiu.localScale.x : 1f;
+            _scaleToiDa = -1f;
+            _soNhipDaThu = 0;
+            _daBoQua = false;
+            enabled = true;
+        }
+
+        private void Awake()
+        {
+            if (khungCanhGiu == null) khungCanhGiu = transform as RectTransform;
+            _scaleLucGan = khungCanhGiu != null ? khungCanhGiu.localScale.x : 1f;
+        }
+
+        private void LateUpdate()
+        {
+            if (_daBoQua || khungCanhGiu == null) return;
+
+            if (_scaleToiDa < 0f)
+            {
+                if (!Do()) return;
+            }
+
+            Vector3 s = khungCanhGiu.localScale;
+            if (s.x <= _scaleToiDa && s.y <= _scaleToiDa) return;   // đứng yên / còn trong trần ⇒ KHÔNG ghi gì
+
+            khungCanhGiu.localScale = new Vector3(
+                Mathf.Min(s.x, _scaleToiDa),
+                Mathf.Min(s.y, _scaleToiDa),
+                s.z);
+        }
+
+        /// <summary>
+        /// Đo khe hở thật rồi suy ra trần. Chỉ nhận kết quả khi phần tử ĐANG ĐỨNG YÊN
+        /// (scale bằng lúc cài đặt): đo đúng lúc đang phình sẽ ra khe hở nhỏ giả và trần
+        /// quá chặt, nên gặp trường hợp đó thì đợi nhịp sau.
+        /// </summary>
+        private bool Do()
+        {
+            _soNhipDaThu++;
+            if (_soNhipDaThu > SO_NHIP_THU_TOI_DA)
+            {
+                _daBoQua = true;
+                {
+                    Debug.LogWarning($"[HudChongDeKhiPhongTo] Không đo được khe hở cho '{name}' sau {SO_NHIP_THU_TOI_DA} nhịp — bỏ qua, HUD chạy như cũ.", this);
+                }
+                return false;
+            }
+
+            Transform cha = khungCanhGiu.parent;
+            if (cha == null) return false;
+            if (!Mathf.Approximately(khungCanhGiu.localScale.x, _scaleLucGan)) return false;
+
+            float taMin, taMax;
+            if (!DoKhoangX(cha, khungCanhGiu, out taMin, out taMax)) return false;
+
+            float truc = khungCanhGiu.localPosition.x;   // cú phóng to lấy đúng điểm này làm tâm
+            float he = float.MaxValue;
+
+            if (tuongPhai != null && tuongPhai.parent == cha)
+            {
+                float pMin, pMax;
+                if (DoKhoangX(cha, tuongPhai, out pMin, out pMax))
+                {
+                    float voi = taMax - truc;                     // tầm với sang phải, đã gồm con thò ra
+                    float kheHo = pMin - taMax;
+                    if (voi > 1f) he = Mathf.Min(he, 1f + Mathf.Max(0f, kheHo) * phanKheHoDuocDung / voi);
+                }
+            }
+
+            if (tuongTrai != null && tuongTrai.parent == cha)
+            {
+                float tMin, tMax;
+                if (DoKhoangX(cha, tuongTrai, out tMin, out tMax))
+                {
+                    float voi = truc - taMin;                     // tầm với sang trái
+                    float kheHo = taMin - tMax;
+                    if (voi > 1f) he = Mathf.Min(he, 1f + Mathf.Max(0f, kheHo) * phanKheHoDuocDung / voi);
+                }
+            }
+
+            if (he == float.MaxValue) return false;               // chưa đo được tường nào ⇒ thử lại nhịp sau
+            he = Mathf.Clamp(he, 1f, Mathf.Max(1f, tranCung));
+
+            _scaleToiDa = Mathf.Max(0.01f, _scaleLucGan) * he;
+            return true;
+        }
+
+        /// <summary>
+        /// Khoảng X (min, max) của <paramref name="rt"/> và mọi con ĐANG BẬT, đo trong hệ toạ độ
+        /// local của <paramref name="hqc"/>. Con đang tắt bị bỏ qua — đúng ý: 2 nút + đã ẩn thì
+        /// không được tính vào bề rộng khung nữa.
+        /// </summary>
+        private static bool DoKhoangX(Transform hqc, RectTransform rt, out float minX, out float maxX)
+        {
+            minX = float.MaxValue;
+            maxX = float.MinValue;
+            if (hqc == null || rt == null) return false;
+
+            RectTransform[] ds = rt.GetComponentsInChildren<RectTransform>(false);
+            for (int i = 0; i < ds.Length; i++)
+            {
+                if (ds[i] == null) continue;
+                ds[i].GetWorldCorners(GocBuf);
+                for (int g = 0; g < 4; g++)
+                {
+                    float x = hqc.InverseTransformPoint(GocBuf[g]).x;
+                    if (x < minX) minX = x;
+                    if (x > maxX) maxX = x;
+                }
+            }
+
+            return maxX - minX > 1f;
+        }
+    }
+}

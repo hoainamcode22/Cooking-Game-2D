@@ -514,21 +514,38 @@ public static class OrderBoardSpriteFactory
     /// <summary>Ngôi sao 5 cánh — dấu hiệu EXP. Vẽ bằng đa giác thay vì ký tự ★ (font thiếu là ra ô vuông).</summary>
     private static Color IconStar(float u, float v, int w, int h)
     {
-        var verts = new Vector2[10];
+        // Đồng bộ 100% với hud_level_star.png: viền vàng (#FFC107), thân xanh dương (#03A9F4), vệt sáng trên (#81D4FA)
+        var vertsOuter = new Vector2[10];
+        var vertsInner = new Vector2[10];
         for (int i = 0; i < 10; i++)
         {
-            float r  = (i % 2 == 0) ? 0.92f : 0.40f;
-            float th = Mathf.PI * 0.5f + i * Mathf.PI / 5f;
-            verts[i] = new Vector2(Mathf.Cos(th) * r, Mathf.Sin(th) * r);
+            float rOut = (i % 2 == 0) ? 0.90f : 0.42f;
+            float rIn  = (i % 2 == 0) ? 0.78f : 0.35f;
+            float th   = Mathf.PI * 0.5f + i * Mathf.PI / 5f;
+            vertsOuter[i] = new Vector2(Mathf.Cos(th) * rOut, Mathf.Sin(th) * rOut);
+            vertsInner[i] = new Vector2(Mathf.Cos(th) * rIn,  Mathf.Sin(th) * rIn);
         }
 
-        float sd = SdPolygon(new Vector2(u, v), verts);
-        float a  = Mathf.Clamp01(0.5f - sd / (2f / w * 2.0f));
-        if (a <= 0.001f) return Color.clear;
+        Vector2 p = new Vector2(u, v);
+        float sdOut = SdPolygon(p, vertsOuter);
+        float aOut  = Mathf.Clamp01(0.5f - sdOut / (2f / w * 2.0f));
+        if (aOut <= 0.001f) return Color.clear;
 
-        // Sáng ở trên, đậm dần xuống dưới cho có khối
-        Color c = Color.Lerp(Color.white, new Color(0.78f, 0.86f, 0.98f), Mathf.InverseLerp(1f, -1f, v));
-        return WithA(c, a);
+        float sdIn = SdPolygon(p, vertsInner);
+        float aIn  = Mathf.Clamp01(0.5f - sdIn / (2f / w * 2.0f));
+
+        // Màu viền vàng #FFC107
+        Color borderCol = new Color(1.0f, 0.76f, 0.03f, 1f);
+        // Màu ruột xanh dương #03A9F4
+        Color bodyCol   = new Color(0.01f, 0.66f, 0.96f, 1f);
+        // Vệt sáng trên #81D4FA
+        if (v > 0.05f && u < 0.15f)
+        {
+            bodyCol = Color.Lerp(bodyCol, new Color(0.51f, 0.83f, 0.98f, 1f), Mathf.Clamp01((v - 0.05f) / 0.6f));
+        }
+
+        Color finalCol = Color.Lerp(borderCol, bodyCol, aIn);
+        return WithA(finalCol, aOut);
     }
 
     /// <summary>Đồng xu vàng: vành ngoài đậm, ruột sáng, vệt sáng chéo.</summary>

@@ -93,9 +93,18 @@ public class PenClickDetector : MonoBehaviour
 
         if (!hit) return;
 
-        if (FarmInputLock.BlockWorldInteraction)
+        // [FIX 2026-09-06 vong8] Nguoi choi vua NHAN san pham bang bong bong trong frame nay.
+        // Thu hoach xong state ve Idle ngay, nen neu khong chan thi CHINH cu click do se bi
+        // hieu la "bam vao chuong dang doi" va mo tiep khay cho an - dung 1 cu bam ra 2 viec.
+        if (PenMiniPanelUI.VuaThuBangBongBong)
         {
-            Debug.Log("[PenClick] '" + name + "': trung chuong nhung BI CHAN. cooking=" + FarmInputLock.IsCookingMode + " popupLock=" + FarmInputLock.IsPopupOpen + " keoHat=" + FarmInputLock.IsDraggingSeed + " keoLiem=" + FarmInputLock.IsDraggingSickle + " seedPopup=" + FarmInputLock.IsSeedPopupOpen + " market=" + FarmInputLock.IsMarketPopupOpen + " editMode=" + EditModeManager.IsEditMode + " conTroTrenUI=" + FarmInputLock.ConTroTrenUiThat());
+            Debug.Log("[PenClick] '" + name + "': bo qua, vua nhan san pham bang bong bong frame nay.");
+            return;
+        }
+
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup)
+        {
+            Debug.Log("[PenClick] '" + name + "': trung chuong nhung BI CHAN (BySceneOrPopup). cooking=" + FarmInputLock.IsCookingMode + " popupLock=" + FarmInputLock.IsPopupOpen + " keoHat=" + FarmInputLock.IsDraggingSeed + " keoLiem=" + FarmInputLock.IsDraggingSickle + " seedPopup=" + FarmInputLock.IsSeedPopupOpen + " market=" + FarmInputLock.IsMarketPopupOpen + " editMode=" + EditModeManager.IsEditMode);
             return;
         }
 

@@ -15,6 +15,27 @@ namespace ExportTrainUIPackage
         private const string MillSvgDir = "Assets/Assetsgame/popup/ui_mill_assets/generated_sprites";
         private const string PerfectSvgDir = "Assets/Assetsgame/popup/ui_svg_perfect/generated_sprites";
 
+        // [VONG 8 - 06/09] HINH HOC DOAN TAU trong Train_Container (1050x300, anchor 0 / 0.5).
+        // SUA SO O DAY, KHONG sua prefab: BuildOrFixHierarchy() chay trong Awake() + OnEnable()
+        // + OpenPopup() va GHI DE thang vao RectTransform, nen moi so chinh tay tren prefab deu
+        // bi xoa ngay khi popup mo.
+        // Do bang pixel 06/09 (2 sprite deu preserveAspect = true, nen ANH BI CO LAI trong o):
+        //   toa : flat_wagon_horizontal.png 1175x646 trong o 170x110 -> ve 170 x 93.46
+        //         o Img_Wagon tam Y = -65 => day anh Y = -111.73; day banh xe nam cach day anh
+        //         37.5px anh * (93.46/646) = 5.42 => VACH RAY Y = -106.31
+        //   dau tau: flat_locomotive_horizontal.png 1204x772 trong o 240x240 -> ve 240 x 153.89
+        //         banh xe cham day anh (chi cach 3.5px anh = 0.70 don vi)
+        //         => Y tam = -106.31 + 153.89/2 - 0.70 = -30.07  =>  lam tron -30
+        // Truoc vong 8 dat +30 nen dau tau bi treo cao hon 4 toa 60 don vi, banh khong cham ray
+        // va chong len nha "GA HANG" trong anh nen.
+        private const float WagonPitchX  = 185f;                      // khoang cach tam 2 toa lien nhau
+        private const float WagonFirstX  = 95f;                       // tam toa 1
+        private const float LocoX        = 4f * WagonPitchX + 130f;   // 870 - ho 15 sau toa 4, dung nhip toa-toa
+        private const float LocoY        = -30f;                      // banh dau tau trung banh 4 toa
+        private const float LocoSize     = 240f;
+        private const float SmokeOffsetX = 47f;                       // tam ong khoi lech +47 so voi tam dau tau
+        private const float SmokeOffsetY = 115f;                      // mieng ong khoi + khoang khoi bay len
+
         [Header("Canvas & Dimming")]
         public Canvas canvasComponent;
         public Image imgDimOverlay;
@@ -190,6 +211,15 @@ namespace ExportTrainUIPackage
                     Debug.LogWarning($"[Train] OpenPopup goi tren ban di lac '{name}' - chuyen huong sang popup that '{popupThat.name}'.");
                 }
                 popupThat.OpenPopup(state);
+                return;
+            }
+
+            // [VONG 8 - 06/09] CONG CAP 3 dat NGAY TAI CUA popup: moi duong mo (click nha ga,
+            // popup 'Dang van chuyen' ban giao sang popup nhan thuong, tutorial/deeplink goi tay)
+            // deu di qua ham nay, chan o day thi khong con duong lach nao.
+            // TrainGateAccess tu hien thong bao khi chan, khong bao gio chan im lang.
+            if (!global::TrainGateAccess.CanOpenOrWarn())
+            {
                 return;
             }
 
@@ -414,7 +444,7 @@ namespace ExportTrainUIPackage
                 wagonContainers[i].anchorMin = new Vector2(0f, 0.5f);
                 wagonContainers[i].anchorMax = new Vector2(0f, 0.5f);
                 wagonContainers[i].pivot = new Vector2(0.5f, 0.5f);
-                wagonContainers[i].anchoredPosition = new Vector2(i * 185f + 95f, 0f);
+                wagonContainers[i].anchoredPosition = new Vector2(i * WagonPitchX + WagonFirstX, 0f);
                 wagonContainers[i].sizeDelta = new Vector2(180f, 240f);
 
                 wagonSlots[i] = wTr.GetComponent<StationWagonSlotUI>() ?? wTr.gameObject.AddComponent<StationWagonSlotUI>();
@@ -435,16 +465,15 @@ namespace ExportTrainUIPackage
             lRt.anchorMin = new Vector2(0f, 0.5f);
             lRt.anchorMax = new Vector2(0f, 0.5f);
             lRt.pivot = new Vector2(0.5f, 0.5f);
-            lRt.anchoredPosition = new Vector2(4 * 185f + 115f, 30f);
-            lRt.sizeDelta = new Vector2(240f, 240f);
+            lRt.anchoredPosition = new Vector2(LocoX, LocoY);
+            lRt.sizeDelta = new Vector2(LocoSize, LocoSize);
             TrainSpriteLoader.Assign(imgLocomotive, $"{SpritesDir}/flat_locomotive_horizontal.png");
             imgLocomotive.preserveAspect = true;
             imgLocomotive.color = Color.white;
 
             // Smoke Puff Root (Nằm trên Train_Container, SetAsLastSibling để vẽ đè lên miệng ống khói)
             Transform smkTr = trainContainer.Find("Smoke_Puff_Root");
-            bool isNewSmk = smkTr == null;
-            if (isNewSmk)
+            if (smkTr == null)
             {
                 GameObject smkGo = new GameObject("Smoke_Puff_Root", typeof(RectTransform));
                 smkGo.transform.SetParent(trainContainer, false);
@@ -453,14 +482,14 @@ namespace ExportTrainUIPackage
             smkTr.SetAsLastSibling();
 
             smokePuffRoot = smkTr.GetComponent<RectTransform>();
-            if (isNewSmk)
-            {
-                smokePuffRoot.anchorMin = new Vector2(0f, 0.5f);
-                smokePuffRoot.anchorMax = new Vector2(0f, 0.5f);
-                smokePuffRoot.pivot = new Vector2(0.5f, 0.5f);
-                smokePuffRoot.anchoredPosition = new Vector2(4 * 185f + 115f + 55f, 145f); // Ngay đỉnh miệng ống khói đầu tàu
-                smokePuffRoot.sizeDelta = new Vector2(60f, 60f);
-            }
+            // [VONG 8 - 06/09] LUON dat lai theo dau tau, KHONG con "chi dat khi moi tao":
+            // prefab dang giu (910, 145) - so cu ung voi dau tau o Y = +30. Ha dau tau xuong
+            // Y = -30 ma khong ha ong khoi theo thi khoi bay ra ngoai mieng ong, treo lo lung.
+            smokePuffRoot.anchorMin = new Vector2(0f, 0.5f);
+            smokePuffRoot.anchorMax = new Vector2(0f, 0.5f);
+            smokePuffRoot.pivot = new Vector2(0.5f, 0.5f);
+            smokePuffRoot.anchoredPosition = new Vector2(LocoX + SmokeOffsetX, LocoY + SmokeOffsetY);
+            smokePuffRoot.sizeDelta = new Vector2(60f, 60f);
 
             Sprite puffSp = TrainSpriteLoader.GetSprite($"{MillSvgDir}/mill_smoke_puff.png")
                          ?? TrainSpriteLoader.GetSprite($"{SpritesDir}/train_smoke_puff.png")

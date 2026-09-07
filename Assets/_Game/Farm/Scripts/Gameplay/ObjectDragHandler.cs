@@ -25,12 +25,35 @@ public class ObjectDragHandler : MonoBehaviour
     // GRID SNAP: KHÔNG còn field gridSize riêng.
     // Trước đây script này snap theo 50 còn PlacementManager snap theo 100 → hai hệ lưới
     // lệch nhau, kéo lại một công trình đã đặt là nó rơi vào mốc nửa ô (lỗi L4 §1).
-    // Giờ cả hai dùng chung hằng số PlacementManager.CELL.
+    // 🟢 V10 — giờ cả hai dùng chung IsoGrid (ô 300 x 150), không còn hằng CELL vuông.
 
     [Header("Placement Validation (dự phòng khi thiếu PlacementManager)")]
-    [Tooltip("Chỉ dùng khi scene không có PlacementManager. Đường chính là kiểm tra ô lưới.")]
-    [SerializeField] private Vector2    collisionCheckSize    = new Vector2(PlacementManager.CELL, PlacementManager.CELL);
+    // ⚠ VÌ SAO KHÔNG ĐỂ `= new Vector2(IsoGrid.CellWidth, IsoGrid.CellHeight)` Ở ĐÂY:
+    //   1. Field initializer chạy lúc DỰNG component, trước Awake. IsoGrid.CellWidth phải
+    //      GameObject.Find("Grid_Iso45") → gọi Find trong constructor là vừa đắt vừa có thể
+    //      chạy khi scene chưa nạp xong, ra thẳng số fallback mà không ai biết.
+    //   2. Quan trọng hơn: `collisionCheckSize` là [SerializeField]. Mọi prefab/scene ĐÃ
+    //      serialize sẵn (100, 100), nên đổi initializer KHÔNG sửa được component cũ —
+    //      Unity ghi đè bằng giá trị YAML. Sửa initializer là sửa một thứ không ai đọc.
+    // CÁCH LÀM: thêm cờ MỚI. Field mới chưa có trong YAML của prefab/scene nào nên Unity
+    // dùng default `true` ⇒ mọi component cũ tự động lấy cỡ ô từ IsoGrid, KHÔNG cần Sếp mở
+    // prefab sửa tay. Ai muốn số cứng thì bỏ tick, giá trị dưới mới được dùng.
+    [Tooltip("Bat (mac dinh) = lay co hop kiem = IsoGrid.CellWidth x IsoGrid.CellHeight " +
+             "luc chay, BO QUA so duoi. Tat = dung dung so duoi.")]
+    [SerializeField] private bool       autoCollisionSizeFromIsoGrid = true;
+    [Tooltip("Chi dung khi scene khong co PlacementManager VA da bo tick auto o tren. " +
+             "Duong chinh la kiem tra o luoi.")]
+    [SerializeField] private Vector2    collisionCheckSize    = new Vector2(300f, 150f);
     [SerializeField] private LayerMask  obstacleLayerMask;
+
+    /// <summary>
+    /// Cỡ hộp kiểm va chạm dự phòng. Đọc IsoGrid LÚC CHẠY (không cache) vì
+    /// Grid_Iso45 có thể đổi scale giữa phiên và IsoGrid tự dò lại.
+    /// </summary>
+    private Vector2 CollisionCheckSize
+        => autoCollisionSizeFromIsoGrid
+               ? new Vector2(IsoGrid.CellWidth, IsoGrid.CellHeight)
+               : collisionCheckSize;
 
     [Header("Visual Feedback")]
     [SerializeField] private SpriteRenderer placementIndicator;
@@ -380,12 +403,12 @@ public class ObjectDragHandler : MonoBehaviour
 
     /// <summary>
     /// 🔴 V8 — Snap CHÂN VẬT vào lưới, dùng chung đúng một công thức với PlacementManager
-    /// (PlacementManager.SnapAnchor, CELL = 100).
+    /// (PlacementManager.SnapAnchor → IsoGrid.SnapAnchor, ô 300 × 150 từ V10).
     ///
     /// VÌ SAO SNAP CHÂN CHỨ KHÔNG SNAP TÂM: nếu snap tâm thì chân rơi vào
     /// (đường kẻ − nửa chiều cao sprite) — mỗi vật một con số khác nhau vì sprite cao thấp
     /// khác nhau → kéo hai công trình cạnh nhau là chân lệch nhau, đúng lỗi "méo méo
-    /// không đều" mà V8 sinh ra để sửa. Snap chân thì chân LUÔN là bội số của CELL.
+    /// không đều" mà V8 sinh ra để sửa. Snap chân thì chân LUÔN nằm trên lưới ô iso.
     ///
     /// Quy trình: neo → chân (cộng offset đo được) → snap chân → trả về neo (trừ lại).
     /// Với pivot ở đáy (mọi công trình của dự án) hai offset đều 0 nên đây đúng bằng
@@ -419,7 +442,7 @@ public class ObjectDragHandler : MonoBehaviour
         }
 
         // Dự phòng (scene test không có PlacementManager): giữ lại phép kiểm tra vật cản cũ.
-        Collider2D[] overlaps = Physics2D.OverlapBoxAll(pos, collisionCheckSize, 0f, obstacleLayerMask);
+        Collider2D[] overlaps = Physics2D.OverlapBoxAll(pos, CollisionCheckSize, 0f, obstacleLayerMask);
         foreach (var c in overlaps)
             if (c.gameObject != gameObject) return false;
         return true;

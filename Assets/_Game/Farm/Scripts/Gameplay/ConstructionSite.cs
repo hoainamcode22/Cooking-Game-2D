@@ -75,8 +75,15 @@ public class ConstructionSite : MonoBehaviour
         // đây (thay vì thêm tham số) để mọi nơi dùng site đều thấy cùng một cặp số.
         AnchorWorld = PlacementManager.FootprintCenterToAnchor(transform.position, data, RotationSteps);
 
-        float worldW = GridSize.x * PlacementManager.CELL;
-        float worldH = GridSize.y * PlacementManager.CELL;
+        // 🟢 V10 — HỘP BAO VÙNG Ô LẤY TỪ IsoGrid, KHÔNG nhân CELL vuông nữa.
+        // Ô thật là 300 x 150 (không vuông) nên `N*CELL x M*CELL` sai CẢ HAI trục:
+        // công trường 1x1 ra 100x100 thay vì 300x150, nhỏ 3 lần theo chiều ngang.
+        // FootprintWorldSize là ĐÚNG hàm mà Ghost dùng cho thảm nền
+        // (PlacementManager.SetupFootprint), nên bảng UI công trường khít đúng vùng
+        // vừa đặt — cùng một nguồn số, không còn hai công thức song song.
+        Vector2 fpWH = IsoGrid.FootprintWorldSize(GridSize);
+        float worldW = fpWH.x;
+        float worldH = fpWH.y;
 
         _visuals = ConstructionSiteVisuals.Build(transform, GridSize, workerSprite,
                                                  sortingLayer, baseOrder, artKit);
