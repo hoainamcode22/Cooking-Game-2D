@@ -55,19 +55,20 @@ public class FarmPlotInput : MonoBehaviour
         Vector3 worldPos = mainCamera.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
         worldPos.z = 0f;
 
-        // Thử cả OverlapPoint và OverlapCircle để nhận diện click chính xác
-        Collider2D hit = Physics2D.OverlapPoint(worldPos, plotMask);
-        if (hit == null)
-            hit = Physics2D.OverlapCircle(worldPos, 15f, plotMask);
-
-        if (hit == null)
+        // Quét tất cả collider tại điểm bấm để tìm PlotController,
+        // tránh bị các collider khác (nhà, nhân vật, cây cối) đè lên nuốt mất click
+        PlotController plot = null;
+        Collider2D[] hits = Physics2D.OverlapCircleAll(worldPos, 25f, plotMask);
+        for (int i = 0; i < hits.Length; i++)
         {
-            return;
+            if (hits[i] == null) continue;
+            var p = hits[i].GetComponent<PlotController>() ?? hits[i].GetComponentInParent<PlotController>();
+            if (p != null)
+            {
+                plot = p;
+                break;
+            }
         }
-
-        PlotController plot = hit.GetComponent<PlotController>();
-        if (plot == null)
-            plot = hit.GetComponentInParent<PlotController>();
 
         if (plot == null)
         {
