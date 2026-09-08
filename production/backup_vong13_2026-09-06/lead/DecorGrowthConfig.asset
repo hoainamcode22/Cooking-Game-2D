@@ -1,0 +1,176 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b03858aede869bd44afd6a960e014e65, type: 3}
+  m_Name: DecorGrowthConfig
+  m_EditorClassIdentifier: Assembly-CSharp::DecorGrowthConfig
+  enabled: 1
+  applyToDecor: 1
+  applyToPens: 1
+  applyToHouses: 1
+  applyToMachines: 1
+  stageSets:
+  - itemID: 1
+    displayName: "Gi\u1EBFng"
+    stage1Parts: {fileID: 21300000, guid: 51965ea4e164c614cb06632defcc1c57, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 9e55365ab3b1cd648b83f75d1f1c590d, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 276347629a8058842931c8e55575cb53, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: ce3eb59570a588748a527cb146a48d39, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 3103cbe09a32d544c95056cf1bbc4fa3, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 2
+    displayName: "B\xF9 nh\xECn"
+    stage1Parts: {fileID: 21300000, guid: ed51913883a57a948b279f12c172afbd, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 01a8233908b996d4d9fe78ae08e557ca, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 9b0508cf1adc0b049b9c2b865fbc169c, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: 3e3ef762a214754449b3459bf067d88d, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 56f5d3a55a026cf42a91384dd6ce2f26, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 4
+    displayName: "Ch\xE2n Hoa"
+    stage1Parts: {fileID: 21300000, guid: d36b7ad37a527a944bd161a51a5c4e90, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: e83a61d01ebac3f4db56135845d61838, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 53a3e15e72d059c4bb22a638c0b5484a, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: 2233b305c268aa64b8922e7518691f7d, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 91df1e4aa19a3d245b0a3f17998a2605, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 5
+    displayName: "C\u1ED1i Xoay Gi\xF3"
+    stage1Parts: {fileID: 21300000, guid: ba17987be1806284b96a317893d660f2, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 7ca283d5c2db40a41a7ce7202257b9d5, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 26f92215cc2fac445b6606e1a82ecd1d, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: cc78726fb48af1240a3c89a190dd47cb, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: bb2f48f7b79940d47833555b6bc51f8e, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 6
+    displayName: "C\u1ED9t \u0110\xE8n"
+    stage1Parts: {fileID: 21300000, guid: 11b5acea95be3d54b90c9e4be5f0c9b9, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 9f3315ff4d3aff04f922fceaa8221387, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 10491c47f04021043af152dbb5502dc5, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: ca6368435b896e845aef622f897dea5b, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 76e117c8c501baa489a914fc658bbb64, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 9
+    displayName: "Heo Vui V\u1EBB"
+    stage1Parts: {fileID: 21300000, guid: 677efc2f1a43741499ebdc08b6495e9b, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 6f2ae2cd97e77b9469ebb7eea9ab3cc4, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 8c4e3f04129033149b7254e7e6fc44e4, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: 0d7ced7fd7cf047428969144db927b68, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: d02e5d99e61d8e747ad3b6e1064709e1, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 10
+    displayName: "R\u01A1m Hoa"
+    stage1Parts: {fileID: 21300000, guid: 5514ac175f6755441a182ad9484edcf0, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: ff6ff29ae7723ad4a9ec956ae85dfb28, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 89a072652b2225745b5ea89748e5b158, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: 1ee5987579a05f74bb5dd7ef6078ef6a, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: fc70426e4ab5ba64aa16a2ed353304e3, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 11
+    displayName: "V\xF2ng Hoa"
+    stage1Parts: {fileID: 21300000, guid: 1a392d85dcc9a004583080978ffb7863, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 8efdb42afce793f43a06701cc576896d, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 97e8e5ab4f7f1054997aba73d2bc65a6, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: 32121688548fa3b41a98c22e7fcce524, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 97f741c85851f0e42a9e52c7ce7ca94b, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 13
+    displayName: Xe Hoa
+    stage1Parts: {fileID: 21300000, guid: bc2b3e55924e1604595c3f6396c92fcf, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 27187693aff1ec4468acc3f160710208, type: 3}
+    stage3Complete: {fileID: 21300000, guid: e573f22c84c9a0c409a96b0b22cdf287, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: e8ea0d3b5d296d04eaa757a12e6c1d6c, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 543cd0753b429ca4a888ab7f020ec5fc, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 14
+    displayName: "\u0110\xE0i N\u01B0\u1EDBc"
+    stage1Parts: {fileID: 21300000, guid: 3c0ebc8b839d29a49bff33005db736fd, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: cb91253e40ce2e0408e96fa049185d1c, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 82f2cbefddfc72d4d978c9f1d0ca153c, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: c31a9b7661600e042ae3846c448f325f, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 051df2995b8dc9e43864377ddf43e324, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 15
+    displayName: "H\u1ED3 \u0110\xE1"
+    stage1Parts: {fileID: 21300000, guid: 91350e851c9ee0f43b2f29d950f9d3b7, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 1ba140d6733142b49965c4dcacc94662, type: 3}
+    stage3Complete: {fileID: 21300000, guid: e0d52451a44f93a49bba40d453d2efa5, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: f04c08ad479ac6d4b982017cc13b127e, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 75ee62e7ea0393c4493fd7266beff336, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 16
+    displayName: "Ch\u1EADu C\xE2y Th\xFA"
+    stage1Parts: {fileID: 21300000, guid: 294cb1838c996d349b450a5afb9c8691, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 3021b5a0a9649eb43a1991824280f36e, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 7571992d1efffc54ead9759c9d6991e5, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: d1c48d14fd042dd42b87a7397493f1b1, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: b55a37f1b48b9564398656d5e94c5c31, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 17
+    displayName: "Ch\xFA L\xF9n S\xE2n V\u01B0\u1EDDn"
+    stage1Parts: {fileID: 21300000, guid: 1a79615dfe4ceae47a472f5e2ba0ba57, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: b3ee61260079fcd4fb933a89c8e6beb7, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 04c1d12a5a1d94e48bb0e3c13a2e4fe6, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: 39ab1afc9abdb564c9fb1d4474a64368, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 4fa297a0dace50e4f92349fb2b74ea43, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 18
+    displayName: "Gi\xE1 B\xE1n Rau"
+    stage1Parts: {fileID: 21300000, guid: 918136d23c17345419d4e86fb9407c5c, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 3126ae4276baec94690305cc594d6822, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 45ed0c95f3a54f541bbc87634cdf93d8, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: 5767c513900cc8145a8a852518c2dd80, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 5dd69a4f312199a4cb0a691610980d00, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  - itemID: 19
+    displayName: "B\xECnh T\u01B0\u1EDBi Hoa"
+    stage1Parts: {fileID: 21300000, guid: ad13ae6d87d19b340b408ce7ecb8259c, type: 3}
+    stage2HalfBuilt: {fileID: 21300000, guid: 24dc1dc8f099de041a26a30fe01fc6ac, type: 3}
+    stage3Complete: {fileID: 21300000, guid: 175904fde57b73c49a81dbd140684f27, type: 3}
+    stage4GiftBox: {fileID: 21300000, guid: 094e72e4f1f24e541b51e2083557bf24, type: 3}
+    stage5BoxOpen: {fileID: 21300000, guid: 024a2a08d239cf547bd3cd09db568e82, type: 3}
+    buildSecondsOverride: 0
+    workerCount: 0
+  excludedItemIDs: 640000006d0000006e0000006f00000070000000
+  stage2Threshold: 0.5
+  giftBoxBobAmplitude: 0.04
+  giftBoxBobSpeed: 3.5
+  boxOpenDuration: 0.35
+  boxOpenPopScale: 0.25
+  celebrationSeconds: 3.5
+  celebrationExpReward: 0
+  decorGemToSeconds: 0.6
+  minBuildSeconds: 20
+  maxBuildSeconds: 240
+  penBuildTable:
+  - gold: 100
+    seconds: 45
+  - gold: 600
+    seconds: 90
+  - gold: 950
+    seconds: 120
+  - gold: 2000
+    seconds: 180
+  penGoldToSeconds: 0.075

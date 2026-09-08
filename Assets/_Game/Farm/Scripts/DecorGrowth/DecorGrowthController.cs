@@ -647,8 +647,23 @@ public class DecorGrowthController : MonoBehaviour
     }
 
     /// <summary>
-    /// Collider khớp sprite hiện tại. Pivot sprite là bottom-center nên
-    /// offset = (0, size.y * 0.5f) (CONTRACT §2 + yêu cầu 10).
+    /// Collider khớp sprite hiện tại.
+    ///
+    /// 🔴 V13e — VIẾT LẠI. Bản cũ:
+    ///     Vector2 size = _sr.sprite.bounds.size;
+    ///     _box.size = size;  _box.offset = new Vector2(0f, size.y * 0.5f);
+    /// Nó cắm CHẾT hai giả định:
+    ///   (1) SpriteRenderer nằm ĐÚNG trên cùng GameObject với BoxCollider2D — nên
+    ///       `sprite.bounds.size` (đơn vị SPRITE) mới trùng đơn vị local của collider;
+    ///   (2) pivot sprite là bottom-center VÀ art bắt đầu ngay tại gốc — nên offset
+    ///       mới đúng bằng nửa chiều cao.
+    /// Vòng 13e bọc art của 19 decor vào một con tên "Visual" (để neo được vào TÂM Ô
+    /// thay vì mũi ô) ⇒ CẢ HAI giả định vỡ: con có scale và độ dịch riêng, art không
+    /// còn bắt đầu ở gốc. Giữ nguyên code cũ thì hộp bấm sai tỉ lệ VÀ lệch 75 world.
+    ///
+    /// BẢN MỚI không giả định gì: đo hộp bao WORLD thật của renderer rồi quy về hệ toạ
+    /// độ của chính collider. Đúng cho cả hai trường hợp — SR trên root hay SR trên con,
+    /// pivot đáy hay pivot giữa, con có scale hay không.
     /// </summary>
     private void EnsureCollider()
     {
@@ -662,11 +677,15 @@ public class DecorGrowthController : MonoBehaviour
             _box.isTrigger = true;
         }
 
-        Vector2 size = _sr.sprite.bounds.size;
-        if (size.x <= 0.0001f || size.y <= 0.0001f) return;
+        Bounds wb = _sr.bounds;                       // hộp bao WORLD của art ĐANG vẽ
+        Vector3 ls = _box.transform.lossyScale;
+        float sx = Mathf.Abs(ls.x), sy = Mathf.Abs(ls.y);
+        if (sx < 0.0001f || sy < 0.0001f) return;
+        if (wb.size.x <= 0.0001f || wb.size.y <= 0.0001f) return;
 
-        _box.size = size;
-        _box.offset = new Vector2(0f, size.y * 0.5f);
+        Vector3 tam = _box.transform.InverseTransformPoint(wb.center);
+        _box.size   = new Vector2(wb.size.x / sx, wb.size.y / sy);
+        _box.offset = new Vector2(tam.x, tam.y);
     }
 
     private void RestoreOriginalCollider()

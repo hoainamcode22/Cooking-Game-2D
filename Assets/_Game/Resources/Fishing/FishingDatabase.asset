@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99323c3fd9d9a0841b39c178e47864bc, type: 3}
+  m_Name: FishingDatabase
+  m_EditorClassIdentifier: Assembly-CSharp::FarmGame.Fishing.FishingDatabase
+  config: {fileID: 11400000, guid: d066bc6e38636c146904cf4148c590f6, type: 2}
+  fishes:
+  - {fileID: 11400000, guid: d99db2d5b8eab484784eb74e2545fd7f, type: 2}
+  - {fileID: 11400000, guid: 5b18c16f07e05e64387d949d1c4d82d4, type: 2}
+  - {fileID: 11400000, guid: 3003893e1fa8bda468fae19104b44132, type: 2}
+  - {fileID: 11400000, guid: a2b29f62d69a67d4ea86a5ea311706c5, type: 2}
+  - {fileID: 11400000, guid: ae8028e2fb8ac0c4b9a810d76028a3d5, type: 2}
+  - {fileID: 11400000, guid: b9da476eda1432a4e8d52057fbba665d, type: 2}
+  - {fileID: 11400000, guid: 55873cb6762425e4685261c10029beb4, type: 2}
+  - {fileID: 11400000, guid: 8584dc28cf9d0134b863ca35b08ff0e9, type: 2}
+  - {fileID: 11400000, guid: 91808a765b0794940b2aa9c35cd65cc1, type: 2}
+  - {fileID: 11400000, guid: 6b390e0f92d1c884187c924e02e81cbb, type: 2}
+  rods:
+  - {fileID: 11400000, guid: de161b21a577f4643b290b00edf84fcf, type: 2}
+  - {fileID: 11400000, guid: 445c1149bcc385f4cb0c482a8ac89f9c, type: 2}
+  - {fileID: 11400000, guid: bea3e749fdd87074ba872f189127d9b7, type: 2}
+  - {fileID: 11400000, guid: 8841eceae3c44a744b07f3b793e511a9, type: 2}
+  characters:
+  - characterId: PlayerF
+    displayName: "C\xF4 g\xE1i"
+    prefab: {fileID: 4988132859357895074, guid: 9d3d9b7d25c287841be3cd2cfb407009, type: 3}
+    previewSprite: {fileID: 21300000, guid: 63e22d973cbaca049b63ab1232a21c19, type: 3}
+  - characterId: PlayerM
+    displayName: "C\u1EADu b\xE9"
+    prefab: {fileID: 1962267171141616780, guid: 3e627e7c30cf2c14a93f9dfa38eee5a1, type: 3}
+    previewSprite: {fileID: 21300000, guid: 627e5dfc575450449a498d875eb5d5b2, type: 3}

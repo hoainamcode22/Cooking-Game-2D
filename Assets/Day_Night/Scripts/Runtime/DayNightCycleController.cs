@@ -66,6 +66,9 @@ namespace Day_Night
         private ScheduledRain dayRain;
         private ScheduledRain nightRain;
         private bool automaticWeatherInitialized;
+        // Task #35: chan khong cho lop mua/giong lam toi qua muc so voi lop ngay/dem.
+        // Toi da giam 12% do sang (>= 0.88x), khong nhan don them voi curve ngay/dem.
+        private const float MinWeatherLightMultiplier = 0.88f;
 
         private struct ScheduledRain
         {
@@ -419,12 +422,12 @@ namespace Day_Night
 
             if (WeatherSystem.CurrentWeather == DayNightWeatherType.Thunder)
             {
-                return ThunderLightMultiplier;
+                return Mathf.Max(MinWeatherLightMultiplier, ThunderLightMultiplier);
             }
 
             if (WeatherSystem.CurrentWeather == DayNightWeatherType.Rain)
             {
-                return RainLightMultiplier;
+                return Mathf.Max(MinWeatherLightMultiplier, RainLightMultiplier);
             }
 
             return 1f;

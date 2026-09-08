@@ -50,6 +50,51 @@ public class PlacementGhostVisualController : MonoBehaviour
     [SerializeField] private bool cornerBracketsOnly = true;
 
     // ══════════════════════════════════════════════════════════════════════
+    // ╔══════════════════════════════════════════════════════════════════╗
+    // ║ V13 — THU NHỎ CARD LẦN 2 (Sếp: "tab V X và thùng rác to quá")    ║
+    // ╚══════════════════════════════════════════════════════════════════╝
+    // Đây là lần thu nhỏ THỨ HAI. Vòng 11 đã hạ 560x302 -> 392x244; Sếp test lại
+    // vẫn thấy to, nên vòng 13 hạ tiếp -> 312x204. Ghi lại TOÀN BỘ phép tính ở
+    // một chỗ để lần sau khỏi phải suy lại từ đầu:
+    //
+    //   HỆ SỐ QUY ĐỔI world -> pixel (đã bù cả zoom LẪN DPI, xem caoManThamChieu):
+    //     px = S x 1080/1500 = 0.72 x S      — HẰNG SỐ, độc lập zoom và chiều cao màn.
+    //
+    //   CỤM NÚT (hàng ngang, con của Button_Row, tâm y = 0):
+    //     nút ✗ / 🗑 : 106  -> 76.3 px       (cũ 128 -> 92.2)
+    //     nút ✓      : 126  -> 90.7 px       (cũ 148 -> 106.6)  ⚠ GIỮ TRÊN SÀN 88 px
+    //     khe        : 26   -> 18.7 px hở    (cũ 44 -> 31.7)
+    //     bề rộng cụm = 106 + 26 + 126 = 258
+    //
+    //   TẠI SAO ✓ DỪNG Ở 126 CHỨ KHÔNG NHỎ HƠN: 88 px là sàn đầu ngón tay.
+    //     S_min = 88 / 0.72 = 122.3  ⇒ 126 chừa 3.7 px biên. Hạ tiếp là ĐI DƯỚI SÀN,
+    //     và nút ✓ vừa mới được vòng 12 sửa cho bấm được (guard trong EditableBuilding)
+    //     — làm nó khó bấm lại là tự phá bản fix đó. Nút ✗ và 🗑 hạ sâu hơn được vì
+    //     bấm trượt chúng chỉ mất một lần thao tác, không mất tiền.
+    //
+    //   CHIỀU CAO (tính hết trong hệ Button_Row rồi trừ theTamY):
+    //     nút ✓ 126   -> y thuộc [-63, +63]
+    //     hàng giá 48 -> tâm 93, y thuộc [69, 117]      (hở 6 trên nút)
+    //     card        -> y thuộc [-75, +129] = cao 204, tâm +27 (= theTamY)
+    //     ⇒ hangGiaY (hệ CARD) = 93 - 27 = 66. Lề 12 px hai đầu card.
+    //
+    //   BỀ RỘNG: 258 (cụm nút) + 2 x 27 lề = 312. Vẫn tự nới theo chữ (LayoutPriceRow),
+    //     và leNutTrongThe 44 bảo đảm card không bao giờ hẹp hơn cụm nút + lề.
+    //
+    //   HAI BẤT BIẾN PHẢI GIỮ (đã kiểm lại với số mới):
+    //     (1) hangGiaY + hangGiaCao/2 <= theCao/2 - 8   ->  66 + 24 = 90 <= 94  ✓
+    //     (2) hangGiaY + theTamY - hangGiaCao/2 > coNutXacNhan/2 -> 69 > 63     ✓
+    //
+    //   KẾT QUẢ TRÊN MÀN: card 225 x 147 px (cũ 282 x 176) — nhỏ hơn 20 % mỗi chiều,
+    //   diện tích còn 69 %. kheHoDuoiVungO 30 -> 24 (21.6 -> 17.3 px) để card BÁM
+    //   SÁT xuống dưới chân công trình đúng như Sếp yêu cầu, mà card thấp đi 29 world
+    //   nên ngưỡng phải-trườn-lên cũng tụt theo ⇒ card ít bị đẩy che công trình hơn.
+    //
+    //   ⚠ Placement_Ghost.prefab KHÔNG serialize field nào của script này (đã kiểm:
+    //   block 1010101010101010101 chỉ có m_Script) nên mọi giá trị ở đây là giá trị
+    //   THẬT lúc chạy. Sửa ở đây là ăn ngay, không cần chỉnh prefab.
+    // ══════════════════════════════════════════════════════════════════════
+
     [Header("V6 — THANH XÁC NHẬN KIỂU TOWNSHIP")]
 
     [Tooltip("Màu NHÂN vào nút HUỶ (✗).\n" +
@@ -97,25 +142,25 @@ public class PlacementGhostVisualController : MonoBehaviour
              "Btn_Rotate bị BindGhostButtons SetActive(false), Btn_Delete chỉ có ở Editor build).\n" +
              "Card VẪN TỰ NỚI theo chữ VÀ theo bề rộng thật của hàng nút — xem LayoutPriceRow.\n" +
              "Cũ 560 ⇒ 403 px trên màn 1080 = 21 % bề ngang màn, đúng chỗ Sếp nói to bè.")]
-    [SerializeField] private float theRongToiThieu = 392f;
+    [SerializeField] private float theRongToiThieu = 296f;
 
     [Tooltip("V11 THON GỌN — chiều cao card.\n" +
              "244 = nút ✓ cao 148 (y ∈ [−74,+74]) + hàng giá cao 60 ở y 112 (y ∈ [82,142]) + lề 14 hai đầu\n" +
              "⇒ card phủ y ∈ [−88,+156], nhịp 244, tâm lệch +34 (= theTamY).\n" +
              "Cũ 302 ⇒ 217 px trên màn 1080; mới 244 ⇒ 176 px, thấp hơn 19 %.")]
-    [SerializeField] private float theCao = 244f;
+    [SerializeField] private float theCao = 200f;
 
     [Tooltip("Tâm card so với Button_Row. Nút ở tâm y = 0, hàng giá ở TRÊN nên card phải dịch lên.\n" +
              "V11: 34 = ((−88) + 156) / 2 — suy trực tiếp từ theCao, đừng đặt tay.")]
-    [SerializeField] private float theTamY = 34f;
+    [SerializeField] private float theTamY = 25f;
 
     [Tooltip("Lề ngang cộng thêm khi card tự nới theo độ dài chữ. V11: 56 vì cỡ chữ đã hạ 64→46.")]
-    [SerializeField] private float theLeNgang = 56f;
+    [SerializeField] private float theLeNgang = 30f;
 
     [Tooltip("Khung ngoài lồi ra bao nhiêu px mỗi phía so với nền trong. Đây là 'khung' Sếp yêu cầu.\n" +
              "V11: 9 (cũ 14). shop_card_outer có vành nâu bake sẵn ~30/160 ⇒ khung đã dày trong art,\n" +
              "cộng thêm 14 px nữa là viền dày gấp đôi và card phình.")]
-    [SerializeField] private float dayVienThe = 9f;
+    [SerializeField] private float dayVienThe = 6f;
 
     [Tooltip("Màu nhân vào KHUNG NGOÀI card.\n" +
              "🔴 V11 ĐỂ TRẮNG — shop_card_outer ĐÃ BAKE nâu (184,127,67). Giá trị cũ\n" +
@@ -140,13 +185,13 @@ public class PlacementGhostVisualController : MonoBehaviour
     [Tooltip("Cỡ chữ 'MUA VỚI GIÁ'. V11: 46 (cũ 64) ⇒ 33 px trên màn ở MỌI mức zoom VÀ mọi\n" +
              "chiều cao màn (xem heSoManHinhToiDa). 33 px chữ IN HOA đậm là ngưỡng đọc thoải mái\n" +
              "cho trẻ; 64 chỉ để bù cho việc bản cũ không có bù DPI.")]
-    [SerializeField] private float coChuNhan = 46f;
+    [SerializeField] private float coChuNhan = 34f;
 
     [Tooltip("Cỡ chữ SỐ GIÁ. To hơn nhãn vì đây là thứ mắt phải đọc trước tiên. V11: 56 ⇒ 40 px.")]
-    [SerializeField] private float coChuSo = 56f;
+    [SerializeField] private float coChuSo = 42f;
 
     [Tooltip("Cỡ icon xu / kim cương. Bằng chiều cao số để đọc thành MỘT cụm. V11: 52 ⇒ 37 px.")]
-    [SerializeField] private float coIconTien = 52f;
+    [SerializeField] private float coIconTien = 38f;
 
     [Tooltip("Y của hàng giá — 🔴 SO VỚI TÂM CARD, KHÔNG PHẢI so với Button_Row.\n" +
              "ĐÂY LÀ MỘT LỖI THẬT CỦA VÒNG 10, đã đo: hàng giá là con của Confirm_Bar_Panel\n" +
@@ -164,43 +209,43 @@ public class PlacementGhostVisualController : MonoBehaviour
              "  ⇒ hangGiaY (hệ CARD) = 112 − 34 = 78. Lề 14 px ở CẢ hai đầu card.\n" +
              "BẤT BIẾN PHẢI GIỮ: hangGiaY + hangGiaCao/2 ≤ theCao/2 − 8\n" +
              "              VÀ  hangGiaY + theTamY − hangGiaCao/2 > coNutXacNhan/2")]
-    [SerializeField] private float hangGiaY = 78f;
+    [SerializeField] private float hangGiaY = 66f;
 
     [Tooltip("Chiều cao ô chữ hàng giá. V11: 60 (cũ 84) — vừa đủ bọc số cỡ 56.")]
-    [SerializeField] private float hangGiaCao = 60f;
+    [SerializeField] private float hangGiaCao = 44f;
 
     [Tooltip("Khe giữa nhãn / icon / số trong hàng giá. V11: 14 theo cỡ chữ mới.")]
-    [SerializeField] private float kheHangGia = 14f;
+    [SerializeField] private float kheHangGia = 10f;
 
     [Tooltip("Cạnh nút ✗ HUỶ (và ↻ XOAY, 🗑 XOÁ). V11: 128.\n" +
              "SÀN CỨNG 123 — dưới mức đó là dưới 88 px đầu ngón tay trẻ. Suy ra:\n" +
              "px = S × buZoom × H / (2·ortho); với bù DPI thì buZoom·H/(2·ortho) = 1080/1500 = 0.72\n" +
              "⇒ S ≥ 88 / 0.72 = 122.3. Chọn 128 ⇒ 92.2 px, chừa 4 px biên.")]
-    [SerializeField] private float coNutHuy = 128f;
+    [SerializeField] private float coNutHuy = 106f;
 
     [Tooltip("Đường kính nút ✓ XÁC NHẬN. V11: 148 ⇒ 106.6 px trên màn.\n" +
              "TO HƠN nút huỷ 15.6 % (148/128) — đây là hành động chính, và cỡ khác nhau là\n" +
              "KÊNH PHÂN BIỆT THỨ BA sau hình (✓ đĩa TRÒN · ✗ VUÔNG bo góc) và màu.")]
-    [SerializeField] private float coNutXacNhan = 148f;
+    [SerializeField] private float coNutXacNhan = 126f;
 
     [Tooltip("Cỡ glyph ✗ trong nút. V11: 66 = 0.52 × 128, giữ đúng tỉ lệ cũ (84/152 = 0.55).")]
-    [SerializeField] private float coGlyphHuy = 66f;
+    [SerializeField] private float coGlyphHuy = 56f;
 
     [Tooltip("Cỡ glyph ✓ trong nút. V11: 82 = 0.55 × 148 — TO HƠN glyph ✗ (66) để kênh CỠ\n" +
              "còn đọc được cả khi người chơi chỉ nhìn dấu, không nhìn nền nút.")]
-    [SerializeField] private float coGlyphXacNhan = 82f;
+    [SerializeField] private float coGlyphXacNhan = 70f;
 
     [Tooltip("Khe giữa 2 nút. V11: 44 ⇒ 31.7 px hở, tâm cách tâm (128+148)/2 + 44 = 182 ⇒ 131 px.\n" +
              "Vẫn xa gấp 4 lần mức 8 px của hướng dẫn cảm ứng, mà card hẹp đi 28 px.\n" +
              "GHI ĐÈ m_Spacing = 20 của prefab MỘT LẦN lúc dựng, không ghi mỗi frame.")]
-    [SerializeField] private float kheGiuaHaiNut = 44f;
+    [SerializeField] private float kheGiuaHaiNut = 26f;
 
     [Tooltip("Khe hở giữa MÉP DƯỚI VÙNG Ô và ĐỈNH CARD, world unit ở zoom mốc (1 ô = 300 x 150).\n" +
              "NHÂN THEO buZoom lúc chạy nên luôn cùng số px trên màn.\n" +
              "V11: 30 ⇒ 21.6 px. Càng nhỏ card càng BÁM SÁT công trình, và quan trọng hơn:\n" +
              "khe nhỏ + card thấp ⇒ ngưỡng phải-tránh-mép-màn tụt từ 313 px xuống 280 px,\n" +
              "tức card ít bị đẩy đi hơn nhiều.")]
-    [SerializeField] private float kheHoDuoiVungO = 30f;
+    [SerializeField] private float kheHoDuoiVungO = 20f;
 
     [Tooltip("Ortho size mốc để bù zoom. Đúng CameraController.defaultSize = 750.")]
     [SerializeField] private float orthoThamChieu = 750f;
@@ -239,6 +284,28 @@ public class PlacementGhostVisualController : MonoBehaviour
              "còn nhảy sang cạnh là đứt liên hệ thị giác.")]
     [SerializeField] private bool luonLatSangCanh = false;
 
+    // ╔══════════════════════════════════════════════════════════════════════╗
+    // ║ V13c — "dung de cai UI do che cong trinh va khung luoi" (Sep yeu cau)║
+    // ╚══════════════════════════════════════════════════════════════════════╝
+    // NGUYEN NHAN THAT: khoi "TRAN TRUON LEN" trong NeoCardVaoWorld. Khi day card
+    // tut xuong duoi le HUD (leAnToanDuoiPx = 170) thi code cu KEO CARD LEN — toi
+    // tan TAM vung o. Nghia la o nua duoi man hinh (chinh la vung dat hay dat nhat)
+    // card LUON bo len de len chan cong trinh va khung luoi. Dung thu Sep thay.
+    //
+    // V13c doi thanh BA BAC, khong bac nao de len cong trinh:
+    //   1. DUOI vung o   — vi tri ly tuong, gan nhu luc nao cung dung duoc.
+    //   2. SANG CANH     — khi day card chui duoi HUD. Card ra ben canh, ngang tam
+    //      vung o, cach mep vung o dung kheHoDuoiVungO. Luon hat VE PHIA GIUA MAN
+    //      (tamVungO.x < camX -> sang phai) nen khong bi day nguoc vao cong trinh.
+    //   3. TRUON LEN     — CHI khi card rong hon ca viewport. Voi card 296 x 200
+    //      thuc te khong bao gio cham toi bac nay.
+    //
+    // Tat = tra ve hanh vi cu. Dung FIELD MOI chu khong sua `luonLatSangCanh` vi
+    // field do co y nghia khac (lat VO DIEU KIEN) va dang duoc giu de bat lai.
+    [Tooltip("BAT = card KHONG BAO GIO de len cong trinh: thieu cho duoi thi LAT SANG CANH " +
+             "chu khong truon len. Tat = hanh vi cu (truon len, che chan cong trinh).")]
+    [SerializeField] private bool khongDeCardChePhuCongTrinh = true;
+
     // ══════════════════════════════════════════════════════════════════════
     [Header("V11 — BÙ DPI + TRẠNG THÁI TẮT CỦA NÚT ✓")]
 
@@ -262,7 +329,7 @@ public class PlacementGhostVisualController : MonoBehaviour
 
     [Tooltip("Lề trong card cộng thêm quanh CỤM NÚT khi tự nới. Card không được hẹp hơn\n" +
              "cụm nút, nếu không nút thò ra ngoài giấy.")]
-    [SerializeField] private float leNutTrongThe = 64f;
+    [SerializeField] private float leNutTrongThe = 34f;
 
     [Tooltip("Màu nhân vào NỀN GIẤY card khi vị trí KHÔNG ĐẶT ĐƯỢC. Hồng đất nhạt.\n" +
              "ĐÂY LÀ KÊNH THỨ BA của trạng thái tắt: nút ✓ nói 'chưa bấm được', còn TỜ GIẤY\n" +
@@ -1462,20 +1529,48 @@ public class PlacementGhostVisualController : MonoBehaviour
         float yMin = yDayManWorld  + nuaCaoCard - buTamKhoi;
         float yMax = yDinhManWorld - nuaCaoCard - buTamKhoi;
 
-        if (yMin < yMax)
+        // ── V13c — BA BẬC, KHÔNG BẬC NÀO ĐÈ LÊN CÔNG TRÌNH ────────────────
+        // (khối giải thích nằm ở field khongDeCardChePhuCongTrinh)
+        bool daLatSangCanh = false;
+        if (khongDeCardChePhuCongTrinh)
         {
-            // THỨ TỰ ƯU TIÊN, đọc từ trong ra ngoài:
-            //   1. Kẹp trong viewport                      → card không bao giờ ra khỏi màn.
-            //   2. Min với trần trườn lên                  → không leo quá tâm công trình.
-            //   3. Max với yMin                            → lề đáy THẮNG hết: thà phủ công
-            //      trình còn hơn để nút ✓ nằm dưới HUD và không bấm được.
+            // Bậc 1 — DƯỚI vùng ô. Đủ chỗ khi đáy card còn nằm trên lề HUD.
+            bool duChoDuoi = (yLyTuong + buTamKhoi - nuaCaoCard) >= yDayManWorld - 0.5f;
+
+            // Bậc 2 — SANG CẠNH. Chỉ làm được khi hai bên còn đủ bề ngang cho card.
+            float dxCanh    = nuaRongVungO + kheHo + nuaRongCard;
+            float xTraiNhat = camX + (leAnToanNganPx - Screen.width * 0.5f) * wpp + nuaRongCard;
+            float xPhaiNhat = camX + (Screen.width * 0.5f - leAnToanNganPx) * wpp - nuaRongCard;
+
+            if (duChoDuoi)
+            {
+                pos.y = yMin < yMax ? Mathf.Clamp(yLyTuong, yMin, yMax) : yLyTuong;
+            }
+            else if (xTraiNhat < xPhaiNhat)
+            {
+                bool sangPhai = tamVungO.x < camX;      // luôn hất VÀO GIỮA màn hình
+                pos.x = tamVungO.x + (sangPhai ? dxCanh : -dxCanh);
+                pos.y = yMin < yMax
+                      ? Mathf.Clamp(tamVungO.y - buTamKhoi, yMin, yMax)
+                      : tamVungO.y - buTamKhoi;
+                daLatSangCanh = true;
+            }
+            else if (yMin < yMax)
+            {
+                // Bậc 3 — hết đường mới trườn lên (card rộng hơn cả viewport).
+                pos.y = Mathf.Max(Mathf.Min(Mathf.Clamp(yLyTuong, yMin, yMax), yTranTruonLen), yMin);
+            }
+        }
+        else if (yMin < yMax)
+        {
+            // Hành vi CŨ — giữ nguyên để bật lại được bằng một ô tick.
             float yKep = Mathf.Clamp(yLyTuong, yMin, yMax);
             pos.y = Mathf.Max(Mathf.Min(yKep, yTranTruonLen), yMin);
         }
 
         // ── 5. LẬT SANG CẠNH — MẶC ĐỊNH TẮT (xem tooltip luonLatSangCanh) ─
         // Chỉ nổ khi Sếp bật lại VÀ đã trườn lên hết mà đáy card vẫn dưới lề.
-        if (luonLatSangCanh && pos.y + buTamKhoi - nuaCaoCard < yDayManWorld - 0.5f)
+        if (!daLatSangCanh && luonLatSangCanh && pos.y + buTamKhoi - nuaCaoCard < yDayManWorld - 0.5f)
         {
             bool sangPhai = tamVungO.x < camX;
             float dx = nuaRongVungO + kheHo + nuaRongCard;
@@ -1488,7 +1583,9 @@ public class PlacementGhostVisualController : MonoBehaviour
         // Bỏ kẹp trục đó, thà card thò ra còn hơn nhảy loạn.
         float xMin = camX + (leAnToanNganPx - Screen.width * 0.5f) * wpp + nuaRongCard;
         float xMax = camX + (Screen.width * 0.5f - leAnToanNganPx) * wpp - nuaRongCard;
-        if (xMin < xMax) pos.x = Mathf.Clamp(pos.x, xMin, xMax);
+        // V13c: ĐÃ lật sang cạnh thì KHÔNG kẹp ngang nữa — kẹp sẽ kéo card ngược trở lại
+        // đúng chỗ vừa tránh, tức là đè lên công trình. Thà card thò ra mép màn một chút.
+        if (!daLatSangCanh && xMin < xMax) pos.x = Mathf.Clamp(pos.x, xMin, xMax);
 
         _uiRoot.position = pos;
     }

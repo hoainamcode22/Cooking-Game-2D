@@ -426,6 +426,7 @@ public static class SaveAdapters
             "PLAYER_PROFILE_NAME",       // AvatarProfilePopupUI
             "MARKET_TIMER_NEXT_UTC_TICKS", "MARKET_REFRESH_PAID_DATE",     // MarketRefreshTimer
             "UNIFIED_TASK_DAILY_LAST_SEEN", "UNIFIED_TASK_DAILY_CLAIMED_DATE",
+            "FISH_BASKET_SAVE", "FISHING_GEAR_SAVE", "FISHING_PROFILE_SAVE",   // Hồ Câu (FarmGame.Fishing, vòng 12)
         };
 
         public static void Capture(FarmSaveData d)

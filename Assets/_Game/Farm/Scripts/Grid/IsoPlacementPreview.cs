@@ -49,6 +49,26 @@ public class IsoPlacementPreview : MonoBehaviour
     [Tooltip("Thu nho moi o mot chut cho de nhin ranh gioi (0 = kin).")]
     [Range(0f, 0.25f)] public float cellInset = 0.06f;
 
+    // ╔══════════════════════════════════════════════════════════════════════╗
+    // ║ V13 — "cho cac o luoi KHIT them mot chut nua" (yeu cau cua Sep)      ║
+    // ╚══════════════════════════════════════════════════════════════════════╝
+    // NGUYEN NHAN THAT cua khe ho giua cac o luoi: `cellInset = 0.06` thu MOI
+    // o lai 6 % quanh TAM o. Voi o 300 x 150 thi moi o mat 18 world be ngang va
+    // 9 world be cao, nen giua hai o ke nhau HO 18 world (~13 px o zoom moc).
+    // Do la khe ho Sep nhin thay — khong phai loi snap, khong phai loi gridSize.
+    //
+    // `cellInset` la field PUBLIC nen scene DA SERIALIZE 0.06; ha gia tri mac dinh
+    // trong code KHONG an. Nen phai them MOT FIELD MOI: scene khong co entry cho
+    // no => Unity lay gia tri mac dinh trong code (dung dung thu thuat da dung cho
+    // fillCells / masterEnable / showTileFill o cac vong truoc).
+    //
+    // Bat = ep inset ve 0 => 4 dinh o kim cuong dung DUNG mep o, hai o ke nhau
+    // dung chung canh diem-doi-diem, khong con khe ho nao.
+    // Tat = tra lai hanh vi cu (dung `cellInset` trong scene).
+    [Tooltip("V13: BAT = bo hoan toan khe ho giua cac o luoi (ep cellInset = 0). " +
+             "Tat = dung lai gia tri cellInset dang nam trong scene (0.06 = ho 18 world).")]
+    [SerializeField] private bool epKhitVienO = true;
+
     /// <summary>
     /// RAO AN TOAN — so o TOI DA duoc dung mesh preview.
     /// gridSize rac (don vi ART lot vao asset, vd 341x342) tung sinh rect 116.622 o =>
@@ -161,7 +181,8 @@ public class IsoPlacementPreview : MonoBehaviour
             : outlineColor;
         Color vertCol = fillCells ? fill : lineCol;
 
-        float k = 1f - Mathf.Clamp01(cellInset);
+        // V13: epKhitVienO ep inset ve 0 (xem khoi giai thich o phan field).
+        float k = epKhitVienO ? 1f : (1f - Mathf.Clamp01(cellInset));
 
         for (int x = rect.xMin; x < rect.xMax; x++)
         {

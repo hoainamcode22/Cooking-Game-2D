@@ -9,7 +9,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6691379171656446829}
-  - component: {fileID: 5189082384997494060}
   - component: {fileID: 4163670871915544222}
   - component: {fileID: 3231451704845403523}
   - component: {fileID: 1996213400290097700}
@@ -30,9 +29,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -1342, y: -1514, z: 0}
-  m_LocalScale: {x: 100, y: 100, z: 100}
+  m_LocalScale: {x: 75.2688, y: 75.2688, z: 75.2688}
   m_ConstrainProportionsScale: 1
-  m_Children: []
+  m_Children:
+  - {fileID: 4331252328503088533}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &5189082384997494060
@@ -42,7 +42,7 @@ SpriteRenderer:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 64768211315726929}
+  m_GameObject: {fileID: 3186818338645597265}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -128,7 +128,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 124}
+  m_Offset: {x: 0, y: 2.761429}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -138,7 +138,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 248, y: 248}
+  m_Size: {x: 3.72, y: 3.53}
   m_EdgeRadius: 0
 --- !u!114 &3231451704845403523
 MonoBehaviour:
@@ -165,7 +165,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 94ff99e12893a5942a224fbde39f9d97, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildingFootprintKit
-  soO: {x: 248, y: 248}
+  soO: {x: 1, y: 1}
   spriteTham: {fileID: 0}
   spriteNgoac: {fileID: 0}
   spriteVach: {fileID: 0}
@@ -175,3 +175,35 @@ MonoBehaviour:
   mauChip: {r: 1, g: 0.98, b: 0.86, a: 0.92}
   caoChip: 46
   nhipTho: 1
+--- !u!1 &3186818338645597265
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4331252328503088533}
+  - component: {fileID: 5189082384997494060}
+  m_Layer: 6
+  m_Name: Visual
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4331252328503088533
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3186818338645597265}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.996429, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 6691379171656446829}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

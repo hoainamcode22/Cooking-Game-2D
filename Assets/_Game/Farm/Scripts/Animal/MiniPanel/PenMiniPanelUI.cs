@@ -344,6 +344,40 @@ public class PenMiniPanelUI : MonoBehaviour
     [Tooltip("Chu ky nhap nho (giay). Cang lon cang diu.")]
     [SerializeField] private float readyBubbleBobPeriod = 2.4f;
 
+    // ╔══════════════════════════════════════════════════════════════════════╗
+    // ║ V13e — "cho no nam CAO TREN MAT CHUONG, dang bubble / popup" (Sep)   ║
+    // ╚══════════════════════════════════════════════════════════════════════╝
+    // TRIEU CHUNG: bong bong san pham nam THAP, doc ra nhu dang nam duoi dat.
+    //
+    // NGUYEN NHAN: `readyBubbleLocalPos.y` DA BI SERIALIZE = 320 trong ca 4 prefab
+    // chuong (khoi PrefabInstance, propertyPath readyBubbleLocalPos.y) nen gia tri
+    // mac dinh trong code khong bao gio duoc dung. Ma than chuong (BarnSprite,
+    // 4.13 x 2.98 unit, scale 150, pivot DAY) phu y thuoc [0, 447] world
+    // => bong bong o 320 nam LOT GIUA than chuong, khong phai tren dinh.
+    //
+    // Bản cu co doan "tu do dinh chuong roi nang len", nhung no quy ket qua ve
+    // `anchoredPosition` bang phep chia thu cong `(tamWorld - transform.position.y) / donVi`
+    // — phep nay chi dung khi RectTransform cha nam DUNG tai goc chuong. Chi can panel
+    // duoc dat lech mot chut la sai, va no lai bi `Mathf.Max` voi so 320 serialize nen
+    // khong bao gio tut xuong duoi 320 nhung cung khong chac len dung cho.
+    //
+    // V13e: dat THANG bang WORLD POSITION. RectTransform nhan `.position` binh thuong,
+    // Unity tu quy ve anchoredPosition — khong con phep chia tay nao de sai.
+    // Ba field duoi deu la FIELD MOI (scene/prefab chua serialize) nen gia tri trong
+    // code CHINH LA gia tri that luc chay.
+
+    [Tooltip("V13e BAT = dat bong bong bang WORLD position (chuan, khong phu thuoc cay cha). " +
+             "Tat = tra ve phep tinh anchoredPosition cu.")]
+    [SerializeField] private bool datBongBongTheoWorld = true;
+
+    [Tooltip("Nang THEM bao nhieu WORLD unit tren dinh do duoc, ngoai readyBubbleWorldClearance. " +
+             "1 o luoi sau 150 world; 80 = hon nua o, du de doc ra 'dang bay tren mai'.")]
+    [SerializeField] private float bongBongCaoThemWorld = 80f;
+
+    [Tooltip("Du phong khi KHONG do duoc dinh chuong: dat bong bong cao bay nhieu WORLD unit " +
+             "tinh tu GOC chuong. Than chuong cao 447 world nen 640 la trên mai, khong dinh art.")]
+    [SerializeField] private float bongBongCaoDuPhongWorld = 640f;
+
     /// <summary>Tran order, khong bao gio vuot gioi han sorting cua Unity.</summary>
     private const int ReadyBubbleOrderMax = 30000;
 
@@ -1180,6 +1214,22 @@ public class PenMiniPanelUI : MonoBehaviour
     /// layer/order cao hon moi vat trang tri do duoc. KHONG BAO GIO ha thap hon
     /// readyBubbleLocalPos.y (so Sep da chinh tay trong prefab) - chi NANG len.
     /// </summary>
+    /// <summary>
+    /// GOC cua chuong (object mang BuildingFootprintKit / PenClickDetector). Panel co the
+    /// nam sau vai tang Canvas nen `transform.parent` khong chac la goc — di nguoc len tim.
+    /// </summary>
+    private Transform LayGocChuong()
+    {
+        Transform t = transform;
+        while (t != null)
+        {
+            if (t.GetComponent<BuildingFootprintKit>() != null || t.GetComponent<PenClickDetector>() != null)
+                return t;
+            t = t.parent;
+        }
+        return transform.root != null ? transform.root : transform;
+    }
+
     private void ApplyReadyBubblePlacement()
     {
         if (_readyBubble == null || _readyBubbleRt == null) return;
@@ -1208,20 +1258,41 @@ public class PenMiniPanelUI : MonoBehaviour
             canvas.sortingOrder = Mathf.Clamp(order, 0, ReadyBubbleOrderMax);
         }
 
-        // ---- 4. Vi tri: DAY bong bong cao hon dinh do duoc dung mot khoang ho ----
-        float localY = readyBubbleLocalPos.y;
-        if (doDuoc)
+        // ---- 4. Vi tri ----
+        float nuaCaoWorld = _readyBubbleRt.sizeDelta.y * 0.5f * donVi;
+
+        if (datBongBongTheoWorld)
         {
-            float nuaCao   = _readyBubbleRt.sizeDelta.y * 0.5f * donVi;
-            float tamWorld = dinhWorldY + Mathf.Max(0f, readyBubbleWorldClearance) + nuaCao;
-            float yTheoDo  = (tamWorld - transform.position.y) / donVi;
-            localY = Mathf.Max(localY, yTheoDo);
+            // V13e — DAT THANG BANG WORLD POSITION (xem khoi giai thich o phan field).
+            Transform goc = LayGocChuong();
+            float tamWorldY = doDuoc
+                ? dinhWorldY + Mathf.Max(0f, readyBubbleWorldClearance)
+                              + Mathf.Max(0f, bongBongCaoThemWorld) + nuaCaoWorld
+                : goc.position.y + Mathf.Max(0f, bongBongCaoDuPhongWorld);
+
+            // Tran: khong bao gio bay qua readyBubbleMaxRaiseWorld tinh tu goc chuong.
+            float tranY = goc.position.y + Mathf.Max(0f, readyBubbleMaxRaiseWorld) + nuaCaoWorld;
+            if (tamWorldY > tranY) tamWorldY = tranY;
+
+            Vector3 wp = _readyBubbleRt.position;
+            _readyBubbleRt.position = new Vector3(goc.position.x, tamWorldY, wp.z);
+            _readyBubbleBasePos = _readyBubbleRt.anchoredPosition;   // bob nhun tiep tu day
+        }
+        else
+        {
+            // Duong CU, giu lai de bat nguoc bang mot o tick.
+            float localY = readyBubbleLocalPos.y;
+            if (doDuoc)
+            {
+                float tamWorld = dinhWorldY + Mathf.Max(0f, readyBubbleWorldClearance) + nuaCaoWorld;
+                float yTheoDo  = (tamWorld - transform.position.y) / donVi;
+                localY = Mathf.Max(localY, yTheoDo);
+            }
+            _readyBubbleBasePos             = new Vector2(readyBubbleLocalPos.x, localY);
+            _readyBubbleRt.anchoredPosition = _readyBubbleBasePos;
         }
 
-        _readyBubbleBasePos            = new Vector2(readyBubbleLocalPos.x, localY);
-        _readyBubbleRt.anchoredPosition = _readyBubbleBasePos;
-
-        { Debug.Log($"[Pen] {(config != null ? config.penId : "?")} BONGBONG_DAT layer={(canvas != null ? canvas.sortingLayerName : "?")} order={(canvas != null ? canvas.sortingOrder : 0)} localY={localY:F0} donVi={donVi:F3} dinhDo={(doDuoc ? dinhWorldY.ToString("F0") : "khongDo")} orderDo={(doDuoc ? orderCaoNhat.ToString() : "khongDo")}"); }
+        { Debug.Log($"[Pen] {(config != null ? config.penId : "?")} BONGBONG_DAT layer={(canvas != null ? canvas.sortingLayerName : "?")} order={(canvas != null ? canvas.sortingOrder : 0)} yWorld={_readyBubbleRt.position.y:F0} donVi={donVi:F3} dinhDo={(doDuoc ? dinhWorldY.ToString("F0") : "khongDo")} orderDo={(doDuoc ? orderCaoNhat.ToString() : "khongDo")}"); }
     }
 
     /// <summary>

@@ -406,15 +406,34 @@ public class ShopManager : MonoBehaviour
         return set == null || !set.IsValid;
     }
 
+    /// <summary>
+    /// MON DA BO KHOI SHOP (theo yeu cau cua Sep). Chi AN O SHOP, KHONG xoa khoi
+    /// `buildingList` / `decorList`.
+    ///
+    /// 🔴 VI SAO KHONG XOA THAT ASSET: hai list nay VUA la nguon hien thi shop VUA la
+    /// bang tra cuu de khoi phuc world. `PlacementManager.FindItemById` doc thang tu day
+    /// khi nap save. Xoa entry ⇒ moi vat cua mon do da dat tren map se KHONG spawn lai
+    /// duoc nua (mat do cua nguoi choi, khong the hoan). An o cho hien thi la cach "xoa"
+    /// duy nhat an toan.
+    ///
+    /// Danh sach hien tai:
+    ///   • 120 / 121 / 122 — May Xay Bot, May Ep Mia, May Pho Mai   [Sep, vong 11]
+    ///   • 105            — Khung Hoa                              [Sep, vong 13]
+    ///     (Khung Hoa cung la mon co `soO` rac nang nhat tung thay: 1514 x 1515 o,
+    ///      collider 151.400 world. Vong 13 da nan lai truoc khi an, de neu Sep bat lai
+    ///      thi no khong con pha click nua.)
+    /// </summary>
     private static bool IsRemovedMachine(BaseItemData item)
     {
         if (item == null) return false;
         string id = item.itemID;
         if (id == "120" || id == "121" || id == "122") return true;
+        if (id == "105") return true;                      // Khung Hoa — Sep bo vong 13
 
         string name = (item.itemName ?? "").ToLower();
         if (name.Contains("máy xay") || name.Contains("máy ép") || name.Contains("máy phô mai"))
             return true;
+        if (name.Contains("khung hoa")) return true;       // chan them theo TEN, phong khi id doi
 
         return false;
     }
@@ -475,7 +494,8 @@ public class ShopManager : MonoBehaviour
             // decorList nen do da dat trong world khong he bi anh huong.
             if (BiAnViThieuArt(item)) continue;
 
-            // [Yêu cầu người dùng] Xóa máy xay bột, máy ép mía, máy phô mai khỏi Store/Shop
+            // [Yêu cầu Sếp] Ẩn khỏi Store/Shop: 3 máy (vòng 11) + Khung Hoa (vòng 13).
+            // Xem chú thích của IsRemovedMachine để biết vì sao ẩn chứ không xoá asset.
             if (IsRemovedMachine(item)) continue;
 
             bool match = string.IsNullOrEmpty(keyLower)

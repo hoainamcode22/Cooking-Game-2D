@@ -94,7 +94,10 @@ public class PopupManager : MonoBehaviour
             // đồng hồ, không có ô kéo-thả trong Inspector nên IsAnyPopupOpen() không
             // thấy → tutorial vẫn chạy đè lên chúng.
             || LevelUpPopupUI.IsActive
-            || BoatAnnouncePopupUI.IsActive;
+            || BoatAnnouncePopupUI.IsActive
+            // [Hồ Câu, vòng 12] 2 popup của module FarmGame.Fishing (cờ static, không cần kéo Inspector).
+            || FarmGame.Fishing.FishingEntryPopupUI.AnyOpen
+            || FarmGame.Fishing.FishCounterPopupUI.AnyOpen;
         // [ROLLBACK 2026-09-06] KHONG dua BuildingProcessPopupUI vao day.
         // IsAnyPopupOpen() duoc FarmInputLock.BlockMapPan dung => se chan TOAN BO
         // keo map va click world suot thoi gian popup tien do dang mo. Popup do neo

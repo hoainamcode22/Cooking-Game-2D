@@ -172,3 +172,195 @@ This directory holds persistent project memory files that survive session compac
 ## Entries
 
 - [Tutorial L1→L2 Phase](tutorial_l1l2.md) — EXP shortfall 10, tools created, manual steps remaining (LỖI THỜI một phần — xem ROADMAP Sprint 1b)
+
+- ⚠️ SỰ THẬT VÒNG 12 (2026-09-07) — HỒ CÂU (SCN_Fishing), đừng scan lại:
+  · Module tự chứa `Assets/_Game/Fishing/` (69 .cs, namespace FarmGame.Fishing), scene `Assets/_Game/Scenes/SCN_Fishing.unity` do tool ★
+    `Tools/Farm Game/Hồ Câu/★ SETUP TẤT CẢ (1 nút)` tạo và LƯU (scene tool sở hữu). Gắn vào SCN_Farm = menu 5 riêng, KHÔNG tự save.
+  · World scene câu = **1 unit chuẩn** (1 ô iso 1×0.5, PPU 100, nhân vật cao 0.6), KHÔNG chép hệ ×150 farm. Farm → câu = Single load qua
+    SceneTransitionManager, `SaveSystem.Save("fishing-enter")` trước. Về farm = LoadScene("SCN_Farm") như từ SCN_Home.
+  · Kế hoạch `production/PLAN_HO_CAU_2026-09-07.md`, hợp đồng API `production/FISHING_DEV_INTERFACES.md`, facts `production/FISHING_DEV_FACTS.md`.
+  · Id cá PHẢI tiền tố `fish_` ("ca" nằm trong DeadItemIds của KitchenTransferManager và DeadKeySubstrings của MissionProgressTracker).
+  · `PopupManager.IsAnyPopupOpen()` đã cộng `FishingEntryPopupUI.AnyOpen || FishCounterPopupUI.AnyOpen` — BẮT BUỘC vì PopupManager.LateUpdate
+    gọi `FarmInputLock.ResetAll()` mỗi frame khi không thấy popup nào mở (popup mới không đăng ký = click xuyên popup). Popup Hồ Câu nào
+    thêm sau cũng phải cộng vào đây.
+  · Save: khoá `FISH_BASKET_SAVE`, `FISHING_GEAR_SAVE`, `FISHING_PROFILE_SAVE` đã vào `SaveAdapters.StringKeys`; họ `FISHING` vào
+    `SaveVersionGuard.AllFamilies`. `FISHING_FRIENDS_LOCAL` là khoá offline tạm, không mirror.
+  · Nhân vật PlayerF/PlayerM: 24 PNG `Assets/_Game/Fishing/Art/Characters/{Char}/{Char}_{down|left|right|up}_{1..3}.png`.
+    **Idle down/up = frame 1, left/right = frame 2** (đo thật). Animator param `DirX/DirY/IsMoving/IsFishing` (KHÔNG MoveX/MoveY).
+    Prefab dùng chung local/remote: `FishingPlayerController` tự tắt khi là con của `RemotePlayerView`.
+  · Tầng mạng: UI chỉ gọi `FishingNetHub.Room/Chat/Friends` (interface). Offline = Local* (bot theo `cfg.offlineBotCount`).
+    Online Firebase: project `possible-jetty-436317-c2`, DTO `PlayerNetState` map thẳng `rooms/{roomId}/players/{uid}`.
+  · Cần hết độ bền: lần quăng cuối VẪN câu được, báo "Cần đã hỏng" khi về Idle. `TryBuy` không gọi PlayBuySell (SpendGold đã kêu).
+  · Backup 3 file cũ vòng 12: `production/backup_vong12_2026-09-07/lead/*.bak`. Xoá `Assets/_Game/Fishing` + hoàn 3 file = về nguyên trạng.
+
+## VÒNG 13 (07/09/2026) — HÌNH HỌC Ô LƯỚI, ANCHOR ART, COLLIDER
+- **LỚP LỖI "SỐ ART LỌT VÀO Ô LOCAL" ĐÃ NỔ LẦN THỨ 4-5.** Vòng 13 tìm thêm **23 prefab** có
+  `BoxCollider2D` từ **10.600 → 151.400 world** (`khungtrongchauhoa_0` = 505×1010 ô) và `May_01..03`
+  vẫn còn **41.300** (vòng 12 chỉ sửa 4 chuồng). Đã nắn hết. **Quy tắc: mọi số trong `m_Size`/`m_Offset`/
+  `soO` của prefab công trình mà > 50 đều là số rác** — root scale 100 nên local 413 ⇒ 41.300 world.
+- **`BuildingFootprintKit` dòng 220 dùng `soO` KHÔNG KẸP TRẦN.** Trần `TranSoO = 24` CHỈ áp khi `soO`
+  để trống (0,0). `soO` điền sai số to là thảm nền vẽ phủ hàng trăm ô. Đừng tin vào trần đó.
+- **`m_Size` của SpriteRenderer là CACHE, thường ĐÃ CŨ.** Muốn biết cỡ art thật phải đọc
+  `spriteSheet.sprites[].rect` trong `.png.meta` và khớp `internalID` với `m_Sprite: {fileID: ...}`
+  của prefab. `fileID 21300000` = sprite đơn (dùng cả texture); số lớn = sub-sprite trong sheet.
+  Ví dụ Pen_03 cache `28.58 x 14.72` (⇒ 4287 world, báo động giả) nhưng sub-sprite thật là
+  `4.13 x 2.98` ⇒ **619,5 x 447 world** — chuồng KHÔNG hề to.
+- **QUY ƯỚC PIVOT CỦA DỰ ÁN = ĐÁY SPRITE** (`PlacementManager.cs:284,408`;
+  `DecorGrowthController.cs:650` cũng đã giả định vậy). Nhà + chuồng + máy tuân thủ.
+  **19 decor + Chauhoa_1..4 + Khung Hoa đang pivot GIỮA ⇒ art bị vẽ tụt nửa chiều cao của nó**
+  (Rơm 202, Vòng hoa 301, Khung Hoa 378 world; 1 ô sâu chỉ 150). Vòng 13 đã sửa 75 meta stage
+  (`spritePivot → (0.5, 0)`) + 16 sprite bake (`alignment 0 → 6`). **Chauhoa_1..4 CHƯA sửa** vì
+  sprite dùng chung 23+2 chỗ và phải dịch cả cụm hoa. Hoàn tác: `Tools/Farm Game/Hoan tac neo art decor`
+  hoặc copy lại `production/backup_vong13_2026-09-06/lead/meta/`.
+- **`RectFromWorldBounds` PHÌNH 1 Ô THÀNH 3x3.** Chiếu 4 góc hộp bao VUÔNG sang không gian ISO:
+  hộp bao của 1 ô kim cương (300x150) chạm 9 ô ⇒ mọi vật đi qua nhánh cuối `ComputeRectFor`
+  chặn cả 8 ô quanh nó. Đã đổi nhánh cuối sang `RectFromAnchor(transform.position, SoO)`.
+  **Đừng dùng `RectFromWorldBounds` để suy footprint nữa.**
+- **PLOT ĐẤT:** `tile_dirt.png` 724x345 px PPU 100, scale tích luỹ 50 ⇒ 362 x 172,5 world, to hơn ô
+  (300x150) 20,7 %; pivot GIỮA + localPosition 0 ⇒ tụt 75. Đã sửa `GroundSprite` scale
+  `82.8729 / 86.9565` + localPosition `(0,150)` (root 0.5 ⇒ world +75) + collider `(0,150) 600x300`.
+  Kiểm chéo: 12 `CropPoint` là lưới 3 cột x 4 hàng, tâm (−0,45 · 82,1) ≈ tâm ô (0 · 75).
+  **`CropPoint_1` là RectTransform, đọc `m_AnchoredPosition (−113, 467.7)` KHÔNG phải `m_LocalPosition (0,0)`** — đừng "sửa" nó.
+- **KHE HỞ GIỮA CÁC Ô LƯỚI** = `IsoPlacementPreview.cellInset = 0.06` (thu mỗi ô 6 % ⇒ hở 18 world).
+  Field public đã serialize trong scene ⇒ phải thêm field MỚI: `epKhitVienO = true`.
+- **`Placement_Ghost.prefab` KHÔNG serialize field nào của `PlacementGhostVisualController`**
+  (block `1010101010101010101` chỉ có `m_Script`) ⇒ sửa mặc định trong code là ăn ngay.
+  Vòng 13: nút ✓ 148→126 (90,7 px), ✗/🗑 128→106, card 392x244 → **312x204**. **SÀN nút ✓ = 126**
+  (px = 0,72 × S; 88 px đầu ngón tay ⇒ S ≥ 122,3). Không hạ tiếp.
+- **`AssetDatabase` trong code RUNTIME = hiệu ứng không bao giờ chạy trên bản build.**
+  `RainSplashManager` cũ nạp sprite bằng `AssetDatabase` bọc `#if UNITY_EDITOR` ⇒ build iPhone rỗng.
+  Đã đổi sang `Resources.Load` + `Sprite.Create`. `RainSplashFlipbook.png` = **lưới 3x2, 6 khung 128x128**
+  (đã mở ảnh ra đo bằng alpha channel), pivot dùng `(0.5, 0.28)` = chỗ vũng nước.
+  Component tự cài bằng `[RuntimeInitializeOnLoadMethod]` — không cần sửa scene. Tắt: `RainSplashManager.TuCaiDat = false`.
+- **NGÀY ĐÊM:** `Assets/Day_Night/Prefabs/DayNightWeatherSetup.prefab` → `AmbientLightIntensityCurve`.
+  Đêm/ngày cũ 0,38/1,45 = 26 %. Vòng 13: 4 key đêm → 0.95 / 1.02 / 1.03 / 0.95 (= 65,5 %).
+  **Phải nâng CẢ 4 key**, nâng riêng 2 đầu là nửa đêm sáng hơn rạng đông. `ThunderLightMultiplier`
+  0.85 → 0.88 + khoá cứng `MinWeatherLightMultiplier = 0.88f` trong `DayNightCycleController`.
+- **ID ĐỊNH DANH — trạng thái thật:** plot ✅ (`plotId` + `FARM_NEXT_PLOT_ID`); nhà/công trình ❌
+  (`BuildingEntry` chỉ có `itemId,x,y,plotId,rot`); chuồng ❌ (`PenState_{penId}`, penId từ
+  ScriptableObject ⇒ **mua chuồng thứ 2 cùng loại là dùng chung save**); máy ❌ (`MILL_S{i}_*` TOÀN CỤC);
+  nhà đang xây ⚠️ (`HouseSave_{houseId}_{x}_{y}` nhúng toạ độ ⇒ kéo nhà đang xây là xây xong miễn phí).
+
+## VÒNG 13b (08/09/2026) — SỬA LỖI CỦA CHÍNH VÒNG 13 + BỘ DECOR THIÊN NHIÊN
+- 🔴 **BẢNG `SpriteAlignment` CỦA UNITY — GHI RA ĐÂY VÌ ĐÃ NHỚ SAI MỘT LẦN VÀ SUÝT PHÁ ART:**
+  `0=Center · 1=TopLeft · 2=TopCenter · 3=TopRight · 4=LeftCenter · 5=RightCenter ·
+   6=BottomLeft · 7=BottomCenter · 8=BottomRight · 9=Custom`.
+  **7 = BottomCenter, KHÔNG phải Custom. 6 = BottomLeft, KHÔNG phải BottomCenter.**
+  Kiểm chứng bằng chính dữ liệu dự án: `Sprite_Street_lamp` align=9 kèm `spritePivot (0.740, 0.042)`
+  (giá trị custom thật ⇒ 9=Custom); `Sprite_RockMedium` align=7 kèm `spritePivot (0.5, 0)` (khớp
+  BottomCenter). Khi `alignment != 9`, Unity **BỎ QUA** `spritePivot` — sửa `spritePivot` mà không
+  đổi `alignment` là VÔ TÁC DỤNG.
+- Hệ quả đã sửa ở vòng 13b: (1) `tile_dirt` align=7 nên art plot VỐN ĐÃ neo ở chân ô — phép dịch
+  `+150` local của vòng 13 là SAI, đã trả `GroundSprite.localPosition` về `(0,0,0)`; chỉ giữ đổi
+  scale `82.8729 / 86.9565` (⇒ đúng 300×150 world = 1 ô). (2) 16 meta decor bị đặt nhầm
+  `alignment: 6` (BottomLeft) → đã sửa thành **7**. (3) 75 meta `Assets/Art/Decor/Stages/*` vốn đã
+  `alignment: 7` ⇒ art stage decor **CHƯA BAO GIỜ lệch**; phép sửa `spritePivot` ở vòng 13 là no-op.
+- Pivot đúng của các nhóm: nhà (stage_4) **7**; `BarnSprite` chuồng+máy (`chuongmoigiasuc.png`,
+  413×298 px, scale 1.5×100=150 ⇒ **619,5 × 447 world**, y ∈ [0,447]) **7** ⇒ collider vòng 13
+  `(0, 2.235)` cỡ `6.195 × 4.47` là ĐÚNG; `tile_dirt` **7**; 19 decor gốc **0 (Center)** — đây mới
+  là nhóm thật sự lệch; `Chauhoa` GroundSprite **0** — CHƯA sửa (sprite dùng chung 25 nơi + phải
+  dịch cả cụm chậu + hoa).
+- **BỘ DECOR THIÊN NHIÊN MỚI (25 món, itemID 200–224)** ở
+  `Assets/_Game/Farm/CÔNG TRÌNH/DecorThienNhien/` — sinh bằng script từ art Happy Harvest
+  (`Assets/maptitle/Design_Map/HappyHarvest_NatureDecor/Art/...`) + sheet
+  `Assets/maptitle/decor/Gemini_...preview.png` (PPU 16, 33 miếng). Cấu trúc mỗi prefab:
+  root scale 100 giữ BoxCollider2D + EditableBuilding + BuildingFootprintKit(soO 1×1),
+  **SpriteRenderer nằm trên con tên `Visual`** — nhờ vậy chỉnh neo bằng transform, KHÔNG phải
+  đụng pivot của art dùng chung. Công thức đặt con: `scale = k/100`,
+  `localPosition = ((pivotX − 0.5) · W / 100, pivotY · H / 100)` với `k = W_target / w_unit`,
+  trần chiều cao 420 world. Đã thêm 25 guid vào `ShopManager.decorList` trong scene (19 → 44 mục)
+  và 25 id vào `DecorGrowthConfig.excludedItemIDs` (**bắt buộc**, nếu không `BiAnViThieuArt` ẩn hết
+  vì decor mới không có bộ 5 stage).
+- `Assets/maptitle/decor/` + `Assets/maptitle/Design_Map/HappyHarvest_NatureDecor/Art/Environment/`
+  là KHO ART TRANG TRÍ CHƯA DÙNG của dự án: Barrel · Bush · Flowers(đỏ/trắng/vàng) · Grass ×2 ·
+  Lamps(street/lantern/house) · Log · Pinetree · Rocks(big/med/small) · Signs · WaterLilly ·
+  Interior/Fireplace(logpile) · Interior/Plant. `bocaycoi.png` = 16 CÂY (thông, sồi, tre, liễu,
+  táo, anh đào, dừa…), scene mới dùng 6.
+- ⚠️ `device_stage_files` KHÔNG stage được file sâu quá 7 cấp thư mục. Art Happy Harvest sâu 8–10
+  cấp ⇒ phải render QC **ngay trên máy Sếp** (PIL 12.3 có sẵn trong device VM) rồi stage ảnh kết quả.
+
+## VÒNG 13c (08/09/2026) — CỠ DECOR + MẬT ĐỘ MƯA
+- **MƯA:** `splashScale` 210 → **68** (269 → 87 world = 0,29 ô), `splashesPerSecond` 14 → **48**,
+  thêm `daoDongCo (0.72–1.34)` cho mỗi hạt một cỡ. **Bài học riêng:** `spawnArea` số CỐ ĐỊNH
+  2600×1400 chỉ đúng ở ortho 750; Sếp test ở ortho 1500 (khung nhìn 6333×3000) nên mưa chỉ rơi
+  giữa màn. Đã thêm `tuTinhVungSinh = true` → đo `2·ortho × aspect` mỗi lần sinh.
+  **Quy tắc chung: mọi vùng/khoảng tính bằng world trong VFX phải suy từ `cam.orthographicSize`,
+  đừng bao giờ hard-code cho một mức zoom.**
+- **CỠ DECOR — mốc đo lấy TỪ MAP CỦA SẾP** (đo trên ảnh play mode: dev overlay ghi
+  `Viewport 6333x3000` trên màn 1562 px ⇒ 4,05 world/px): decor có sẵn trong world là bụi cây
+  ~223 world, cây thông ~304, đèn lồng ~121, hoa nhỏ ~100. **Dải đúng cho decor = 29 %–63 % bề
+  ngang một ô (86–190 world). Nhà là 171 % — decor phải NHỎ HƠN công trình.**
+- 24 decor mới: bề rộng × 0,72, trần cao 420 → 300 ⇒ 86–173 world. Sửa bằng cách patch
+  `Visual.localScale/localPosition` + collider, **giữ nguyên guid** nên không phá tham chiếu scene.
+- 19 decor CŨ (trước đó 327–490 rộng = 109–163 % ô, cao tới 602): thu nhỏ bằng **`m_LocalScale`
+  của ROOT** (100 → 38–57). Đúng vì: `Instantiate(prefab,pos,rot)` KHÔNG ghi đè scale;
+  `BoxCollider2D.m_Size/m_Offset` là đơn vị LOCAL nên tự co theo, hộp bấm không lệch; `soO` là số
+  ô nên không đổi; `DecorGrowthController` chụp `_initialScale = transform.localScale` ở dòng 184
+  rồi mọi pop/bob nhân tương đối vào đó nên KHÔNG đè mất giá trị mới.
+- Đã xoá theo yêu cầu: món **201 Lò Sưởi Đá** (4 file + guid trong decorList + id trong
+  excludedItemIDs) ⇒ còn **24 món: id 200 + 202–224**. Xoá 2 ảnh QC sheet_33 và bocaycoi_16cay,
+  giữ duy nhất `production/_qc_vong13_decor_moi.jpg`.
+- ⚠️ `SCN_Farm.unity` bị Unity ghi lại giữa vòng 13b và 13c (591.486 → 646.443 dòng) khi Sếp mở
+  Play Mode. Bản chèn decorList vẫn còn. **Luôn nhắc Sếp đóng Unity trước khi sửa file trên đĩa.**
+- Xoá file trên máy Sếp cần `device_request_delete_permission` một lần cho gốc project
+  (`E:\Game2\Cooking-Game-2D`); sau đó `rm` chạy được cả session.
+
+## VÒNG 13d (08/09/2026) — NEO TÂM Ô · LÀM ĐẦY KHUNG · CARD KHÔNG ĐÈ CÔNG TRÌNH
+- **NEO:** trước 13d mọi thứ neo ở ĐỈNH NAM ô (mũi trước hình thoi) — đúng cho nhà/chuồng, nhưng
+  decor nhỏ trông như treo hẫng. 24 decor mới nay neo vào **TÂM Ô (0, 75)**, chia 2 kiểu theo
+  tỉ lệ art `cao/rộng`: **< 0,62 = DẸT → TÂM art = tâm ô**; còn lại **ĐỨNG → CHÂN art = tâm ô**.
+- **19 decor CŨ KHÔNG neo tâm được nếu chưa sửa `DecorGrowthController`** — SR nằm trên ROOT, mà
+  `transform.position` của root chính là điểm neo `PlacementManager` ghi + `RefreshOccupancy` đọc.
+  Ba đường đều vướng `EnsureCollider()` (dòng ~653) đang cứng `offset = (0, size.y*0.5f)`:
+  (1) pivot.y âm — sạch cho 5 món ngoài growth, nhưng 14 món còn lại bị đổi sprite sang
+  `Assets/Art/Decor/Stages/` lúc chạy ⇒ phải sửa thêm 75 file; (2) bọc con `Visual` —
+  `ResolveRenderer()` có `GetComponentInChildren` (dòng 688) nên growth vẫn thấy, NHƯNG
+  `EnsureCollider` lấy `sprite.bounds.size` không nhân scale con ⇒ collider sai tỉ lệ;
+  (3) `Sprite.Create` pivot mới lúc chạy. **Bản đúng nhất = (2) + vá `EnsureCollider` nhân lossyScale.**
+- **CỠ DECOR (chốt lại lần cuối):** bề rộng art = **93 % bề ngang ô (280/300)**, trần cao **300**
+  (2 chiều sâu ô), VÀ trần **3,4 × số pixel art** — trần cuối này bắt buộc: art gốc bé (Hoa Đỏ 43 px,
+  Bụi Cỏ Nhỏ 45 px) kéo lên 280 world thì vỡ hình và lố so với cây thông 734 px. Kết quả 43 món:
+  **85–280 world (28–93 % ô), cao ≤ 300**.
+- **CARD ✓/✗/🗑 ĐÈ CÔNG TRÌNH — nguyên nhân là khối "TRẦN TRƯỜN LÊN" trong `NeoCardVaoWorld()`,
+  KHÔNG phải do card to.** Khi đáy card tụt dưới `leAnToanDuoiPx = 170`, code cũ kéo card lên tới
+  TÂM vùng ô; nhánh đó nổ ở cả nửa dưới màn hình nên card gần như luôn bò lên che chân công trình.
+  Sửa bằng field mới `khongDeCardChePhuCongTrinh = true` → **3 bậc: DƯỚI → SANG CẠNH → (chỉ khi
+  card rộng hơn viewport) TRƯỜN LÊN**. Bậc sang cạnh phải **tắt phép kẹp ngang**, nếu không kẹp
+  kéo card về đúng chỗ vừa tránh. Card 312×204 → **296×200**; nút ✓ giữ 126 (= 90,7 px, sàn 88 px).
+
+## VÒNG 13e (08/09/2026) — 19 DECOR CŨ NEO TÂM Ô · BONG BÓNG CHUỒNG
+- **Bọc SpriteRenderer của 19 decor cũ vào con `Visual`** (root giữ Transform + BoxCollider2D +
+  EditableBuilding + BuildingFootprintKit). Con: `localScale (1,1,1)`, `localPosition (0, 75/k, 0)`
+  ⇒ chân art = TÂM Ô. Collider: `offset (0, 75/k + h_unit/2)`, `size (w_unit, h_unit)`.
+  Prefab 177 → 209 dòng. **43/43 decor giờ đồng bộ neo tâm ô.**
+- **BẮT BUỘC vá kèm `DecorGrowthController.EnsureCollider()`**: bản cũ cắm chết 2 giả định
+  (SR cùng GameObject với BoxCollider2D; art bắt đầu tại gốc) nên bọc con làm vỡ cả hai.
+  Bản mới: `wb = _sr.bounds` (world) → `size = wb.size / |box.transform.lossyScale|`,
+  `offset = box.transform.InverseTransformPoint(wb.center)`. Đúng cho mọi cấu hình SR/pivot/scale.
+  **Mẫu này dùng lại được cho bất kỳ chỗ nào tự tính collider từ sprite.**
+- **BONG BÓNG SẢN PHẨM CHUỒNG nằm thấp:** `readyBubbleLocalPos.y` **đã serialize = 320 trong cả 4
+  prefab chuồng** (khối PrefabInstance, propertyPath) ⇒ mặc định code vô hiệu. Thân chuồng phủ
+  y ∈ [0, 447] world nên 320 = lọt giữa thân. Bản cũ có tự đo đỉnh nhưng quy về anchoredPosition
+  bằng phép chia tay `(tamWorld - transform.position.y)/donVi` — sai khi cha không nằm ở gốc chuồng.
+  **Sửa: đặt thẳng bằng `RectTransform.position` (world).** Field MỚI: `datBongBongTheoWorld=true`,
+  `bongBongCaoThemWorld=80`, `bongBongCaoDuPhongWorld=640`. Thêm `LayGocChuong()` đi ngược cây cha
+  tìm `BuildingFootprintKit`/`PenClickDetector` thay vì tin `transform.parent`.
+- **QUY TẮC RÚT RA (lặp lại lần thứ 4 trong dự án): trước khi sửa giá trị mặc định của một
+  `[SerializeField]`, LUÔN grep `propertyPath: <tên field>` trong prefab/scene trước.** Nếu đã bị
+  serialize thì đổi code KHÔNG ăn — phải thêm FIELD MỚI hoặc sửa thẳng giá trị serialize.
+
+## GHI CHÚ ĐỌC LOG (08/09/2026)
+- `[IsoGrid] He so o mat dat do tu scene = 2 (8 tilemap con) -> o placement = 300 x 150 world`
+  là **LOG THÔNG TIN, KHÔNG PHẢI LỖI** — và 300×150 là con số ĐÚNG. `Grid_Iso45` có 12 con,
+  trong đó **9 con scale 2**: `GroundBase_Dirt` (SpriteRenderer) + **8 Tilemap_Iso\*** (Dirt,
+  DirtPatch, Dock, Fence, Grass, Rock, Sand, Stone). IsoGrid chỉ đếm **TilemapRenderer** nên ra 8.
+  (Sửa lại ghi chú cũ "9 ground tilemap": đúng là **8 tilemap + 1 sprite nền**.)
+- `MissingComponentException: There is no 'VisualEffect' attached to "P_VFX_Moths 1 (2)"` là
+  **lỗi CHỈ CÓ TRONG EDITOR, sinh từ package `com.unity.visualeffectgraph`**, không phải code dự án.
+  Stack toàn bộ nằm trong `AdvancedVisualEffectEditor.AutoAttachToSelection` → `VFXViewWindow.AttachTo`.
+  `P_VFX_Moths 1` (13 thể hiện trong scene, prefab guid 357f9b0391…) là **ParticleSystem**
+  (class 198/199/210), KHÔNG có component VisualEffect. Hai object VFX Graph THẬT duy nhất trong
+  scene là `VFX_WaterLines` và `VFX_WaterLinesStorm` (class 73398921 = VFXRenderer).
+  **Cách hết: đóng cửa sổ Window ▸ Visual Effects ▸ Visual Effect Graph.** Không ảnh hưởng bản build.
+- ⚠️ `Tilemap_IsoFence` renderer đã **BẬT LẠI** (`m_Enabled: 1`) — vòng 11 từng tắt theo yêu cầu Sếp.
+  Nhiều khả năng mất khi Unity ghi lại scene. Hỏi Sếp trước khi tắt lại.

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 97ac99867ab85144aaaa1ea146272d35, type: 3}
+  m_Name: Fish_fish_tai_tuong
+  m_EditorClassIdentifier: Assembly-CSharp::FarmGame.Fishing.FishData
+  fishId: fish_tai_tuong
+  displayName: "C\xE1 tai t\u01B0\u1EE3ng"
+  icon: {fileID: 0}
+  sellPrice: 320
+  rarity: 2
+  minRodTier: 3
+  spawnWeight: 4
+  unlockLevel: 9
+  weightKgRange: {x: 0.2, y: 1.5}

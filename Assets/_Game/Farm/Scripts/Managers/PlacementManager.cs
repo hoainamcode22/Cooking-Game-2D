@@ -2065,8 +2065,38 @@ public class PlacementManager : MonoBehaviour
             return GetFootprintRect(center, size);
         }
 
-        // Nhánh cuối đã đo thẳng hộp bao world → KHÔNG dính pivot, giữ nguyên.
-        return RectFromWorldBounds(MeasureWorldBounds(go));
+        // ══════════════════════════════════════════════════════════════════
+        // 🔴 V13 — NHÁNH CUỐI ĐÃ BỊ VIẾT LẠI. ĐÂY LÀ MỘT LỖI THẬT, ĐÃ ĐO.
+        // ══════════════════════════════════════════════════════════════════
+        // Bản cũ: RectFromWorldBounds(MeasureWorldBounds(go)).
+        // RectFromWorldBounds chiếu 4 GÓC CỦA HỘP BAO VUÔNG sang không gian ô rồi
+        // lấy bao đóng. Với lưới ISO, hộp bao vuông của MỘT ô kim cương (300 x 150)
+        // chạm vào 3 x 3 = 9 Ô, không phải 1. Kiểm lại bằng số:
+        //   nửa hộp = (150, 75) → dx = ±0.5, dy = ±0.5
+        //   cx = dx + dy ∈ [−1, +1] ; cy = dy − dx ∈ [−1, +1]
+        //   xMin = Floor(−1 + 0.5) = −1 ; xMax = Floor(1 + 0.5) + 1 = 2 → width 3
+        // ⇒ MỌI vật đi qua nhánh này chiếm 9 ô và CHẶN CẢ 8 Ô XUNG QUANH.
+        // Đó chính là lớp lỗi "đặt cạnh nhau không được" mà Sếp gặp: nhà do ta đặt
+        // nằm trong knownSizes (nhánh 1, chính xác tuyệt đối) nên đặt sát nhau được,
+        // còn vật nào rơi xuống nhánh này thì tự chặn hết vùng quanh nó.
+        //
+        // BẢN MỚI — dùng DỮ LIỆU THẬT thay vì đo hộp bao:
+        //   • Số ô: đọc `BuildingFootprintKit.SoO` (vòng 13 đã nắn 20 prefab từ số rác
+        //     kiểu 266x266 / 1514x1515 về đúng 1x1 / 2x2), kẹp trần gridSizeSanityLimit.
+        //   • Vị trí: `transform.position` — ĐÚNG quy ước V8 (điểm neo = đỉnh NAM vùng ô)
+        //     cho cả vật designer kéo tay, vì gốc prefab CHÍNH LÀ điểm neo mà art được
+        //     dựng quanh. Bản cũ tránh dùng neo vì sợ pivot sprite nằm giữa, nhưng pivot
+        //     sprite KHÔNG dịch transform.position — nó chỉ dịch chỗ VẼ.
+        // Không đo được gì thì 1x1: thà thiếu chỗ giữ một ô còn hơn chặn oan 8 ô.
+        Vector2Int soO = Vector2Int.one;
+        var kit = go.GetComponent<BuildingFootprintKit>();
+        if (kit != null && kit.SoO.x > 0 && kit.SoO.y > 0)
+        {
+            soO = new Vector2Int(
+                Mathf.Clamp(kit.SoO.x, 1, _gridSizeSanityLimit),
+                Mathf.Clamp(kit.SoO.y, 1, _gridSizeSanityLimit));
+        }
+        return RectFromAnchor(go.transform.position, soO);
     }
 
     /// <summary>

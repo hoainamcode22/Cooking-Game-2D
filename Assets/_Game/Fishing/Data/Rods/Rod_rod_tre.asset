@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 18758c0ee0e0ac64a9def7aec8664691, type: 3}
+  m_Name: Rod_rod_tre
+  m_EditorClassIdentifier: Assembly-CSharp::FarmGame.Fishing.RodData
+  itemID: rod_tre
+  itemName: "C\u1EA7n tre"
+  itemIcon: {fileID: 0}
+  goldPrice: 300
+  diamondPrice: 0
+  tier: 1
+  unlockLevel: 3
+  durabilityCasts: 20
+  catchChanceBonus: 0
+  biteWaitMultiplier: 1
+  rareWeightMultiplier: 1
+  biteWindowBonusSeconds: 0

@@ -127,6 +127,14 @@ public static class Map45SetupTool
         if (sand != null) tm.SetTile(new Vector3Int(5, 0, 0), sand);   // o 6: bai cat/bien
         if (dock != null) tm.SetTile(new Vector3Int(6, 0, 0), dock);   // o 7: ben tau go
         if (fence != null) tm.SetTile(new Vector3Int(7, 0, 0), fence); // o 8: hang rao go
+
+        // ── 3 vien DA de xep nui (o 9, 10, 11) ──────────────────────────
+        var rockBig = AssetDatabase.LoadAssetAtPath<TileBase>(IsoRoot + "Rocks/Tile_IsoRockBig.asset");
+        var rockMed = AssetDatabase.LoadAssetAtPath<TileBase>(IsoRoot + "Rocks/Tile_IsoRockMedium.asset");
+        var rockSml = AssetDatabase.LoadAssetAtPath<TileBase>(IsoRoot + "Rocks/Tile_IsoRockSmall.asset");
+        if (rockBig != null) tm.SetTile(new Vector3Int(0, 1, 0), rockBig); // o 9 : da lon
+        if (rockMed != null) tm.SetTile(new Vector3Int(1, 1, 0), rockMed); // o 10: da vua
+        if (rockSml != null) tm.SetTile(new Vector3Int(2, 1, 0), rockSml); // o 11: da nho
         layer.GetComponent<TilemapRenderer>().enabled = false;
 
         string path = IsoRoot + "Palette_Iso45.prefab";
@@ -164,6 +172,7 @@ public static class Map45SetupTool
         MakeIsoLayer(grid, "Tilemap_IsoGrass", 1);  // ve co (co mep day + bong)
         MakeIsoLayer(grid, "Tilemap_IsoDirt", 2);   // ve duong dat len tren co
         MakeIsoLayer(grid, "Tilemap_IsoRock", 5);   // ve nui/vach da tren cung
+        MakeIsoLayer(grid, "Tilemap_IsoDecor", 7);  // ve da tang / decor le tren cung
 
         var cam = Camera.main;
         if (cam != null)

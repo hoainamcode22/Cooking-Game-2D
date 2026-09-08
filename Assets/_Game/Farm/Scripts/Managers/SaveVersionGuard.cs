@@ -102,5 +102,6 @@ public static class SaveVersionGuard
                                // GUIDE_COOKING_DONE
         "MISSION",             // MISSION_PROGRESS_V1, MISSION_CLAIMED_*, ACHIEVEMENT_CLAIMED_*,
                                // UNIFIED_TASK_DAILY_*
+        "FISHING",             // FISH_BASKET_SAVE, FISHING_GEAR_SAVE, FISHING_PROFILE_SAVE (Hồ Câu, vòng 12)
     };
 }

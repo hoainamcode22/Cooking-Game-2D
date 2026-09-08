@@ -133,7 +133,7 @@ TextureImporter:
         y: 86
         width: 364
         height: 426
-      alignment: 0
+      alignment: 7
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 

@@ -7332,7 +7332,7 @@ MonoBehaviour:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0.38
+      value: 0.95
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -7341,7 +7341,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 0.24
-      value: 0.55
+      value: 1.02
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -7377,7 +7377,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 0.82
-      value: 0.58
+      value: 1.03
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -7386,7 +7386,7 @@ MonoBehaviour:
       outWeight: 0
     - serializedVersion: 3
       time: 1
-      value: 0.38
+      value: 0.95
       inSlope: 0
       outSlope: 0
       tangentMode: 0
@@ -7597,7 +7597,7 @@ MonoBehaviour:
   MaxRainDurationSeconds: 12
   ThunderChance: 0.08
   RainLightMultiplier: 1
-  ThunderLightMultiplier: 0.85
+  ThunderLightMultiplier: 0.88
   DayAmbience: {fileID: 5291702909218813742}
   NightAmbience: {fileID: 2730502342514494825}
   RainAmbience: {fileID: 9095204523923551711}
