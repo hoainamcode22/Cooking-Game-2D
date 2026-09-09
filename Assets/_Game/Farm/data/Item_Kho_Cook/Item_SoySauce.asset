@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: soysauce
   displayName: "N\u01B0\u1EDBc t\u01B0\u01A1ng"
-  icon: {fileID: -6838146847458198126, guid: 0d8b9e5342fcc9e4ba5df2a11bf75d31, type: 3}
+  icon: {fileID: 6635270834017547936, guid: 7f753037e083e334d99a2d5aaf2d51ee, type: 3}
   cookingData: {fileID: 11400000, guid: 7f96869f08d4e0a4687f826acd150dfc, type: 2}

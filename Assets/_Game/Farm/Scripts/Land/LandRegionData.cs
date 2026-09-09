@@ -34,6 +34,20 @@ public class LandRegionData : ScriptableObject
     [Tooltip("Gia kim cuong (neu > 0 se cho phep mua bang kim cuong).")]
     public int gemPrice = 0;
 
+    [Header("Nguyen lieu can (lay tu tau lua)")]
+    [Tooltip("Vd: 12 Go, 8 Da, 4 Kinh, 6 Dinh. De trong = khong can nguyen lieu.")]
+    public List<BuildMaterialCost> materialCosts = new List<BuildMaterialCost>();
+
+    [Header("Don dep o dat (sau khi mua)")]
+    [Tooltip("Thoi gian cong nhan don dep o dat, tinh bang giay. 0 = mo ngay.")]
+    public int clearSeconds = 300;
+
+    [Tooltip("So kim cuong de hoan thanh ngay. 0 = tu tinh theo thoi gian con lai.")]
+    public int rushGemCost = 0;
+
+    [Tooltip("So cong nhan xuat hien trong lo dat khi dang don.")]
+    [Range(1, 6)] public int workerCount = 4;
+
     [Tooltip("Cac khu phai mo truoc khu nay (regionId). De trong = khong can.")]
     public List<string> requiredRegionIds = new List<string>();
 
@@ -92,6 +106,15 @@ public class LandRegionData : ScriptableObject
             if (border) yield return c;
         }
     }
+
+    /// <summary>Dien tich khu (so o) — dung de tinh gia theo dien tich.</summary>
+    public int AreaCells => CellCount;
+
+    /// <summary>
+    /// Gia vang tinh theo DIEN TICH neu goldPrice = 0 va co pricePerCell &gt; 0.
+    /// Giu goldPrice lam gia chot; ham nay chi de tool sinh du lieu dung.
+    /// </summary>
+    public static int PriceByArea(int cells, int pricePerCell) => Mathf.Max(0, cells * pricePerCell);
 
     /// <summary>Tam khu (world) — dat bien bao / nut mua.</summary>
     public Vector3 CenterWorld()

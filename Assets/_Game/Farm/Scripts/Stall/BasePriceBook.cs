@@ -106,6 +106,14 @@ public static class BasePriceBook
             return true;
         }
 
+        // 3b · [Vòng 16] Kho NGOÀI (giỏ cá…) — khi StallItemCatalog không có trong scene thì bậc 3
+        //      không chạy được, hỏi thẳng cổng cắm để cá không bị bán với giá mặc định 10.
+        if (StallExternalStores.TryFindOwner(key, out _, out _, out StallExternalItemInfo ngoai) && ngoai.baseSellGold > 0)
+        {
+            basePrice = ngoai.baseSellGold;
+            return true;
+        }
+
         // 4 · Bảng dự phòng
         if (Fallback.TryGetValue(key, out int fromTable) && fromTable > 0)
         {

@@ -1,0 +1,14 @@
+{
+    "name": "Nam695472.Comunityburst.Editor.Tests",
+    "references": [
+        "Nam695472.Comunityburst.Editor",
+        "Nam695472.Comunityburst"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

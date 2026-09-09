@@ -9,6 +9,8 @@ namespace FarmGame.Fishing
     /// Thẻ nhỏ góc phải-trên FARM: "A đang mời bạn vào câu cá" + nút "Tới" (→ FishingEntryPopupUI.OpenForInvite) + X.
     /// Nghe FishingNetHub.Friends.OnInviteReceived (đăng ký OnEnable/huỷ OnDisable). Tự ẩn sau HideAfterSeconds.
     /// Component nằm trên "FishingInviteHint" (dưới Canvas_FishingPopup) luôn active; con "Root" bật/tắt.
+    /// Là THẺ BÁO không chặn thao tác (không modal): không có nền mờ, KHÔNG tham gia FishingPopupStack (Escape phải dành cho popup thật đang mở);
+    /// đóng bằng X, "Tới" hoặc tự ẩn.
     /// </summary>
     public class FishingInviteHintUI : MonoBehaviour
     {

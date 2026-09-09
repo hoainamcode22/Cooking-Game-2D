@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryItemData
   itemId: herbs
   displayName: "Rau th\u01A1m"
-  icon: {fileID: -6473379884045465844, guid: 050a1194adf72f046adc525bddd7bb28, type: 3}
+  icon: {fileID: -3646459492204416586, guid: 723831738d420e4438ca1a92b3776672, type: 3}
   cookingData: {fileID: 11400000, guid: 54600d8ef95133f42851e241ccf43cee, type: 2}

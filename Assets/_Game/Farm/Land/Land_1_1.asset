@@ -22,5 +22,9 @@ MonoBehaviour:
   unlockLevel: 0
   goldPrice: 0
   gemPrice: 0
+  materialCosts: []
+  clearSeconds: 300
+  rushGemCost: 0
+  workerCount: 4
   requiredRegionIds: []
   unlockedByDefault: 1

@@ -125,9 +125,16 @@ public class WarehouseManager : MonoBehaviour
         PlayerPrefs.Save();
     }
 
+    /// <summary>
+    /// VONG 15 — FX: ban khi cong vat pham CO ICON (popup len cap, bang don...) de RewardFlyFX bay
+    /// icon ve nut KHO. Mirror OnGoldAddedFx: event tinh, chi phuc vu hieu ung, khong mang logic.
+    /// </summary>
+    public static event Action<Sprite, int> OnItemAddedFx;
+
     public void AddItem(string itemId, string displayName, Sprite icon, int amount)
     {
         AddItem(itemId, amount);
+        if (icon != null && amount > 0) { OnItemAddedFx?.Invoke(icon, amount); }
     }
 
     public void AddItem(string itemId, int amount)

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: salt
   displayName: Salt
-  icon: {fileID: -1162442978445507191, guid: a849ade4905cf98419e62a9cf5b043e5, type: 3}
+  icon: {fileID: -129843895585617143, guid: 0bb5baf921d91104c8081c1556e675d2, type: 3}
   kind: 1
   tier: 1
   vector:

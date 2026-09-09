@@ -1,0 +1,396 @@
+using UnityEngine;
+
+/// <summary>
+/// ============================================================================
+/// BIEN CHI DUONG O GIUA LO DAT CHUA MUA
+/// ============================================================================
+///
+/// VONG 15 — SUA LOI "KHONG THAY BANG, BAM KHONG AN".
+/// ---------------------------------------------------------------------------
+/// Nguyen nhan goc (da do trong scene):
+///   • Prefab_Sprite_Sign_right co sprite 126x214 px, PPU 100 => chi 1.26 x 2.14
+///     WORLD UNIT. Nhung luoi iso cua du an co MOT O = 300 x 150 world unit
+///     (Grid_Iso45 scale 150, tilemap con scale 2). Tuc la tam bien chi bang
+///     0.4% chieu rong mot o dat -> mat thuong khong the thay duoc.
+///     Chu van hien vi TextMesh duoc sinh bang code voi characterSize 12,
+///     to gap ~10 lan ca tam bien.
+///   • BoxCollider2D mac dinh 1x1 unit. Code cu chi resize khi size < 1, ma
+///     (1,1) co sqrMagnitude = 2 nen KHONG BAO GIO resize -> vung bam nho hon
+///     mot pixel -> bam kieu gi cung truot.
+///
+/// Cach chua o day:
+///   1. TU DO sprite roi SCALE cho chieu cao bang = boardHeightInCells x
+///      IsoGrid.CellHeight. Khong hard-code con so nao — doi art khac van dung.
+///   2. Collider LUON duoc tinh lai tu bounds THAT cua sprite (khong con dieu
+///      kien "chi khi nho"), cong them 10% cho de bam.
+///   3. Sorting layer day len "ObjectsFront" de bang khong bi tile nen de len.
+///   4. Bam vao co hieu ung nhun + sang len de nguoi choi thay ro la bam trung.
+///
+/// Neu khong co prefab, script tu ve mot tam bien go bang code — van bam duoc.
+/// </summary>
+[RequireComponent(typeof(BoxCollider2D))]
+public class LandRegionSignBoard : MonoBehaviour
+{
+    [Header("Tham chieu (tu dong tim neu de trong)")]
+    public SpriteRenderer boardSprite;
+    public TextMesh label;
+
+    [Header("Kich thuoc — tinh theo O LUOI, khong theo pixel")]
+    [Tooltip("Chieu cao tam bien = bao nhieu lan chieu cao MOT O luoi (150 unit).")]
+    public float boardHeightInCells = 1.45f;
+
+    [Tooltip("Chu nam o do cao bao nhieu % chieu cao tam bien (0 = chan, 1 = dinh).")]
+    [Range(0f, 1f)] public float labelHeightRatio = 0.66f;
+
+    [Tooltip("Noi rong vung bam so voi tam bien (1.1 = rong hon 10%).")]
+    public float clickPadding = 1.15f;
+
+    [Header("Hien thi")]
+    [Tooltip("Sorting layer cua bien. De trong = giu nguyen cua prefab.")]
+    public string sortingLayerName = "ObjectsFront";
+    [Tooltip("Sorting order cua bien — de cao hon tile nen.")]
+    public int sortingOrder = 900;
+    public Color colorReady   = Color.white;
+    public Color colorLocked  = new Color(0.82f, 0.82f, 0.82f);
+
+    [Header("Chu")]
+    public float characterSize = 12f;
+    public int   fontSize      = 46;
+
+    private LandRegionData _region;
+    private LandExpansionManager _manager;
+    private Transform _art;              // transform mang sprite (duoc scale)
+    private float _nextRefresh;
+    private string _lastText;
+    private Vector3 _artBaseScale = Vector3.one;
+    private float _punch;                // hieu ung nhun khi bam
+
+    // ─────────────────────────────────────────────────────────────────────
+    public LandRegionData Region => _region;
+
+    public void Bind(LandRegionData region, LandExpansionManager manager)
+    {
+        _region = region;
+        _manager = manager;
+        EnsureVisual();
+        Refresh();
+    }
+
+    private void OnEnable()  { LandExpansionManager.OnRegionUnlocked += HandleUnlocked; }
+    private void OnDisable() { LandExpansionManager.OnRegionUnlocked -= HandleUnlocked; }
+    private void HandleUnlocked(LandRegionData r) { if (r == _region) Destroy(gameObject); }
+
+    private void Update()
+    {
+        // hieu ung nhun sau khi bam
+        if (_punch > 0f)
+        {
+            _punch = Mathf.Max(0f, _punch - Time.unscaledDeltaTime * 4f);
+            if (_art != null)
+                _art.localScale = _artBaseScale * (1f + 0.12f * Mathf.Sin(_punch * Mathf.PI));
+        }
+
+        if (Time.time < _nextRefresh) return;
+        _nextRefresh = Time.time + 0.5f;
+        Refresh();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // DUNG HINH
+    // ─────────────────────────────────────────────────────────────────────
+    private void EnsureVisual()
+    {
+        // ── 1. Tim (hoac tu tao) tam bien ────────────────────────────────
+        if (boardSprite == null) boardSprite = GetComponentInChildren<SpriteRenderer>(true);
+        if (boardSprite == null) boardSprite = BuildFallbackBoard();
+        if (boardSprite == null) return;
+
+        _art = boardSprite.transform;
+
+        // ── 2. Scale cho vua MOT O LUOI ──────────────────────────────────
+        // Do chieu cao that cua sprite trong don vi LOCAL (chua nhan scale).
+        float rawH = boardSprite.sprite != null ? boardSprite.sprite.bounds.size.y : 1f;
+        if (rawH < 0.0001f) rawH = 1f;
+
+        float targetH = IsoGrid.CellHeight * Mathf.Max(0.1f, boardHeightInCells);
+        float k = targetH / rawH;
+
+        // neu sprite nam duoi mot cha da bi scale san thi phai chia lai
+        Transform p = _art.parent;
+        if (p != null && p != transform)
+        {
+            float pk = Mathf.Abs(p.lossyScale.y / Mathf.Max(0.0001f, transform.lossyScale.y));
+            if (pk > 0.0001f) k /= pk;
+        }
+
+        _art.localScale = new Vector3(k, k, 1f);
+        _artBaseScale = _art.localScale;
+
+        // ── 3. Sorting — dua bien len tren tile nen ──────────────────────
+        ApplySorting(boardSprite);
+
+        // ── 4. Chu ───────────────────────────────────────────────────────
+        if (label == null) label = GetComponentInChildren<TextMesh>(true);
+        if (label == null)
+        {
+            var go = new GameObject("Label");
+            go.transform.SetParent(transform, false);
+            label = go.AddComponent<TextMesh>();
+        }
+        label.characterSize = characterSize;
+        label.fontSize      = fontSize;
+        label.anchor        = TextAnchor.MiddleCenter;
+        label.alignment     = TextAlignment.Center;
+        label.color         = new Color(0.28f, 0.17f, 0.07f);
+
+        var lmr = label.GetComponent<MeshRenderer>();
+        if (lmr != null)
+        {
+            if (!string.IsNullOrEmpty(sortingLayerName) && LayerExists(sortingLayerName))
+                lmr.sortingLayerName = sortingLayerName;
+            else
+                lmr.sortingLayerID = boardSprite.sortingLayerID;
+            lmr.sortingOrder = sortingOrder + 2;
+        }
+
+        // ── 5. Dat chu len MAT BANG + bo vung bam om tron tam bien ───────
+        PlaceLabelAndCollider();
+    }
+
+    /// <summary>Dat chu dung mat bang va bo lai BoxCollider2D theo bounds that.</summary>
+    private void PlaceLabelAndCollider()
+    {
+        if (boardSprite == null) return;
+
+        // bounds THE GIOI that su sau khi da scale.
+        // Tinh TAY tu sprite thay vi doc Renderer.bounds — Renderer.bounds co the
+        // con la gia tri cu trong cung frame vua doi transform.
+        Bounds wb = ComputeBoardBounds();
+
+        // — chu —
+        if (label != null)
+        {
+            Vector3 world = new Vector3(
+                wb.center.x,
+                wb.min.y + wb.size.y * labelHeightRatio,
+                transform.position.z);
+            label.transform.position = world;
+            var lp = label.transform.localPosition;
+            label.transform.localPosition = new Vector3(lp.x, lp.y, -1f); // nhich ve phia camera
+            label.transform.localScale = Vector3.one;   // chu khong an theo scale tam bien
+        }
+
+        // — vung bam —
+        var col = GetComponent<BoxCollider2D>();
+        if (col == null) return;
+
+        Vector3 ls = transform.lossyScale;
+        float sx = Mathf.Abs(ls.x) < 0.0001f ? 1f : Mathf.Abs(ls.x);
+        float sy = Mathf.Abs(ls.y) < 0.0001f ? 1f : Mathf.Abs(ls.y);
+
+        col.size = new Vector2(wb.size.x / sx, wb.size.y / sy) * Mathf.Max(1f, clickPadding);
+        Vector3 localCenter = transform.InverseTransformPoint(wb.center);
+        col.offset = new Vector2(localCenter.x, localCenter.y);
+        col.isTrigger = false;
+    }
+
+    /// <summary>
+    /// Co chu tu dieu chinh cho vua BE NGANG tam bien.
+    /// Khong tinh truoc duoc be rong TextMesh (phu thuoc font + noi dung), nen do
+    /// bounds that roi chinh dan — sau 1-2 frame la khop, va tu chinh lai moi khi
+    /// noi dung doi (vd tu "Lo 5 / 13.110 vang" sang "DANG DON DEP / 4m 20s").
+    /// </summary>
+    private void LateUpdate()
+    {
+        if (label == null || boardSprite == null) return;
+        var mr = label.GetComponent<MeshRenderer>();
+        if (mr == null) return;
+
+        float w = mr.bounds.size.x;
+        if (w <= 0.0001f) return;
+
+        float target = ComputeBoardBounds().size.x * 0.80f;
+        float f = target / w;
+        if (f > 0.97f && f < 1.03f) return;              // da vua roi
+
+        f = Mathf.Clamp(f, 0.2f, 5f);
+        label.transform.localScale *= f;
+    }
+
+    /// <summary>Hop bao tam bien trong toa do THE GIOI, tinh truc tiep tu sprite.</summary>
+    private Bounds ComputeBoardBounds()
+    {
+        var t = boardSprite.transform;
+        if (boardSprite.sprite == null) return boardSprite.bounds;
+
+        Bounds lb = boardSprite.sprite.bounds;             // local (chua scale)
+        Vector3 s = t.lossyScale;
+        Vector3 center = t.TransformPoint(lb.center);
+        Vector3 size = new Vector3(lb.size.x * Mathf.Abs(s.x),
+                                   lb.size.y * Mathf.Abs(s.y),
+                                   1f);
+        return new Bounds(center, size);
+    }
+
+    private void ApplySorting(SpriteRenderer sr)
+    {
+        if (sr == null) return;
+        if (!string.IsNullOrEmpty(sortingLayerName) && LayerExists(sortingLayerName))
+            sr.sortingLayerName = sortingLayerName;
+        sr.sortingOrder = sortingOrder;
+
+        // cac sprite con (neu prefab nhieu manh) di theo luon
+        foreach (var child in sr.GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (child == sr) continue;
+            if (!string.IsNullOrEmpty(sortingLayerName) && LayerExists(sortingLayerName))
+                child.sortingLayerName = sortingLayerName;
+            child.sortingOrder = sortingOrder + 1;
+        }
+    }
+
+    private static bool LayerExists(string name)
+    {
+        foreach (var l in SortingLayer.layers) if (l.name == name) return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Khong co prefab -> tu ve tam bien go bang MOT sprite duy nhat (cot + bang
+    /// nam chung mot texture). De mot sprite thi phep do / scale / collider phia
+    /// tren dung y het truong hop dung prefab that.
+    /// </summary>
+    private SpriteRenderer BuildFallbackBoard()
+    {
+        var go = new GameObject("BoardFallback");
+        go.transform.SetParent(transform, false);
+        var sr = go.AddComponent<SpriteRenderer>();
+        sr.sprite = FallbackSignSprite();
+        return sr;
+    }
+
+    private static Sprite _fallbackSprite;
+    private static Sprite FallbackSignSprite()
+    {
+        if (_fallbackSprite != null) return _fallbackSprite;
+
+        const int W = 64, H = 96;
+        var tex = new Texture2D(W, H, TextureFormat.RGBA32, false) { filterMode = FilterMode.Bilinear };
+
+        var clear  = new Color(0, 0, 0, 0);
+        var wood   = new Color(0.45f, 0.29f, 0.15f);
+        var plank  = new Color(0.80f, 0.60f, 0.35f);
+        var border = new Color(0.38f, 0.24f, 0.12f);
+
+        for (int y = 0; y < H; y++)
+        for (int x = 0; x < W; x++)
+        {
+            Color c = clear;
+
+            // cot go: giua, tu day len 60% chieu cao
+            if (x >= W / 2 - 4 && x <= W / 2 + 3 && y < H * 0.60f) c = wood;
+
+            // tam bang: phan tren
+            if (y >= H * 0.52f && y < H * 0.95f && x >= 3 && x < W - 3)
+            {
+                bool edge = y <= H * 0.54f || y >= H * 0.93f || x <= 5 || x >= W - 6;
+                c = edge ? border : plank;
+            }
+
+            tex.SetPixel(x, y, c);
+        }
+        tex.Apply();
+
+        // pivot day-giua: chan cot cham dung tam o dat
+        _fallbackSprite = Sprite.Create(tex, new Rect(0, 0, W, H), new Vector2(0.5f, 0.02f), 64f);
+        return _fallbackSprite;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // NOI DUNG CHU
+    // ─────────────────────────────────────────────────────────────────────
+
+    /// <summary>Cap nhat chu + mau theo trang thai hien tai.</summary>
+    public void Refresh()
+    {
+        if (_region == null || _manager == null || label == null) return;
+
+        string text;
+        Color   textColor;
+
+        // dang don dep -> hien dong ho dem nguoc
+        var site = _manager.ClearingSiteOf(_region.regionId);
+        int pending = site != null ? site.RemainingSeconds
+                                   : LandClearingSite.PendingRemaining(_region.regionId);
+        if (pending > 0)
+        {
+            text = $"DANG DON DEP\n{FormatTime(pending)}";
+            textColor = new Color(0.20f, 0.42f, 0.72f);
+            if (boardSprite != null) boardSprite.color = colorReady;
+        }
+        else
+        {
+            bool ok = _manager.CanBuy(_region, out string reason);
+            bool lockedByLevel = !ok && !string.IsNullOrEmpty(reason) && reason.StartsWith("Mo o cap");
+
+            if (lockedByLevel)
+            {
+                text = $"O dat se mo\no cap do {_region.unlockLevel}";
+                textColor = new Color(0.55f, 0.35f, 0.15f);
+            }
+            else if (_region.goldPrice > 0)
+            {
+                text = $"{_region.displayName}\n{_region.goldPrice:n0} vang";
+                textColor = new Color(0.28f, 0.17f, 0.07f);
+            }
+            else
+            {
+                text = _region.displayName;
+                textColor = new Color(0.28f, 0.17f, 0.07f);
+            }
+
+            if (boardSprite != null) boardSprite.color = ok ? colorReady : colorLocked;
+        }
+
+        label.color = textColor;
+        if (text != _lastText)
+        {
+            label.text = text;
+            _lastText = text;
+        }
+    }
+
+    private static string FormatTime(int sec)
+    {
+        if (sec >= 3600) return $"{sec / 3600}h {(sec % 3600) / 60:00}m";
+        if (sec >= 60)   return $"{sec / 60}m {sec % 60:00}s";
+        return $"{sec}s";
+    }
+
+    // ─────────────────────────────────────────────────────────────────────
+    // TUONG TAC
+    // ─────────────────────────────────────────────────────────────────────
+    private void OnMouseEnter()
+    {
+        if (_art != null && _punch <= 0f) _art.localScale = _artBaseScale * 1.06f;
+    }
+
+    private void OnMouseExit()
+    {
+        if (_art != null && _punch <= 0f) _art.localScale = _artBaseScale;
+    }
+
+    private void OnMouseUpAsButton()
+    {
+        if (_region == null || _manager == null) return;
+        if (EditModeManager.IsEditMode) return;
+        if (PlacementManager.IsPlacingNewObject) return;
+
+        _punch = 1f;                                   // dau hieu da bam trung
+
+        // dang don dep -> khong mo popup mua nua
+        if (_manager.IsClearing(_region)) return;
+
+        LandPurchasePopupUI.Show(_region, _manager);
+    }
+}

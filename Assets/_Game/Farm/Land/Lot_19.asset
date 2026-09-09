@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99ce6d69278eb5c4aae466e01a79cde2, type: 3}
+  m_Name: Lot_19
+  m_EditorClassIdentifier: Assembly-CSharp::LandRegionData
+  regionId: lot_19
+  displayName: "L\xF4 19"
+  cellRects:
+  - x: 62
+    y: -18
+    width: 1
+    height: 12
+  - x: 63
+    y: -17
+    width: 1
+    height: 11
+  - x: 64
+    y: -16
+    width: 1
+    height: 10
+  - x: 65
+    y: -15
+    width: 1
+    height: 9
+  - x: 66
+    y: -14
+    width: 1
+    height: 8
+  - x: 67
+    y: -13
+    width: 1
+    height: 7
+  - x: 68
+    y: -12
+    width: 1
+    height: 6
+  - x: 69
+    y: -11
+    width: 1
+    height: 5
+  - x: 70
+    y: -10
+    width: 2
+    height: 4
+  - x: 72
+    y: -9
+    width: 1
+    height: 3
+  - x: 73
+    y: -8
+    width: 1
+    height: 2
+  - x: 75
+    y: -8
+    width: 1
+    height: 2
+  - x: 74
+    y: -7
+    width: 1
+    height: 1
+  - x: 76
+    y: -7
+    width: 2
+    height: 1
+  unlockLevel: 43
+  goldPrice: 222350
+  gemPrice: 0
+  materialCosts:
+  - itemId: go
+    amount: 63
+  - itemId: da
+    amount: 42
+  - itemId: dinh
+    amount: 40
+  - itemId: kinh
+    amount: 21
+  clearSeconds: 300
+  rushGemCost: 0
+  workerCount: 4
+  requiredRegionIds: []
+  unlockedByDefault: 0

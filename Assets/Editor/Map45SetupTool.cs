@@ -14,7 +14,7 @@ public static class Map45SetupTool
 {
     const string Root = "Assets/maptitle/Map45/";
 
-    [MenuItem("Tools/Map45/1. Tao Palette_45")]
+    [MenuItem("Tools/Map45/1. Tao Palette_45", false, 1)]
     public static void CreatePalette()
     {
         var grass = AssetDatabase.LoadAssetAtPath<TileBase>(Root + "RuleTile_Grass45.asset");
@@ -49,7 +49,7 @@ public static class Map45SetupTool
             "Da tao " + path + "\n\nMo Window > 2D > Tile Palette, chon Palette_45:\n- O trai: co (RuleTile_Grass45)\n- O phai: dat (RuleTile_Dirt45)", "OK");
     }
 
-    [MenuItem("Tools/Map45/2. Tao Grid_45 vao Scene")]
+    [MenuItem("Tools/Map45/2. Tao Grid_45 vao Scene", false, 2)]
     public static void CreateGridInScene()
     {
         var grid = new GameObject("Grid_45", typeof(Grid));
@@ -91,7 +91,7 @@ public static class Map45SetupTool
     // ================== BO ISOMETRIC (kieu Township/Hay Day) ==================
     const string IsoRoot = "Assets/maptitle/Map45Iso/";
 
-    [MenuItem("Tools/Map45/3. Tao Palette_Iso45")]
+    [MenuItem("Tools/Map45/3. Tao Palette_Iso45", false, 3)]
     public static void CreateIsoPalette()
     {
         var grass = AssetDatabase.LoadAssetAtPath<TileBase>(IsoRoot + "RuleTile_IsoGrass45.asset");
@@ -152,7 +152,7 @@ public static class Map45SetupTool
             "Da tao " + path + "\n\nMo Window > 2D > Tile Palette, chon Palette_Iso45:\n- O trai: co iso\n- O phai: dat iso", "OK");
     }
 
-    [MenuItem("Tools/Map45/4. Tao Grid_Iso45 vao Scene")]
+    [MenuItem("Tools/Map45/4. Tao Grid_Iso45 vao Scene", false, 4)]
     public static void CreateIsoGridInScene()
     {
         var grid = new GameObject("Grid_Iso45", typeof(Grid));
@@ -196,7 +196,7 @@ public static class Map45SetupTool
         r.mode = TilemapRenderer.Mode.Individual; // sort tung o theo Y cho iso
     }
 
-    [MenuItem("Tools/Map45/6. Tao Luoi Nen (nhin de ve tile)")]
+    [MenuItem("Tools/Map45/6. Tao Luoi Nen (nhin de ve tile)", false, 6)]
     public static void CreateGridOverlay()
     {
         var old = Object.FindFirstObjectByType<IsoGridOverlay>();
@@ -228,7 +228,7 @@ public static class Map45SetupTool
             "• Tat han: bo tick component IsoGridOverlay", "OK");
     }
 
-    [MenuItem("Tools/Map45/7. Tao Preview O Chiem (Edit Mode)")]
+    [MenuItem("Tools/Map45/7. Tao Preview O Chiem (Edit Mode)", false, 7)]
     public static void CreatePlacementPreview()
     {
         var old = Object.FindFirstObjectByType<IsoPlacementPreview>();
@@ -256,7 +256,7 @@ public static class Map45SetupTool
 
     // ================== THUYEN DU LICH ==================
 
-    [MenuItem("Tools/Map45/5. Tao Thuyen Du Lich")]
+    [MenuItem("Tools/Map45/5. Tao Thuyen Du Lich", false, 5)]
     public static void CreateTouristFerry()
     {
         var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(IsoRoot + "Boats/Boat_Ferry_AI.png");

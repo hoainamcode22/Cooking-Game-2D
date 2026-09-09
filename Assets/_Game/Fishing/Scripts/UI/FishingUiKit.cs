@@ -22,6 +22,8 @@ namespace FarmGame.Fishing
         public static readonly Color FrameFallback = new Color32(140, 95, 50, 255);
         public static readonly Color ButtonFallback = new Color32(90, 170, 80, 255);
         public static readonly Color DimColor = new Color(0f, 0f, 0f, 0.6f);
+        /// <summary>Dim nhạt hơn cho panel bên trong HUD scene câu (vẫn thấy hồ phía sau).</summary>
+        public static readonly Color DimLight = new Color(0f, 0f, 0f, 0.35f);
         public static readonly Color DisabledTint = new Color(0.62f, 0.62f, 0.62f, 0.9f);
         public static readonly Color OnlineGreen = new Color32(80, 200, 90, 255);
         public static readonly Color OfflineGray = new Color32(150, 150, 150, 255);
@@ -298,6 +300,23 @@ namespace FarmGame.Fishing
             if (created) { Stretch(rt); }
             Image img = GetOrAdd<Image>(rt.gameObject);
             if (created) { img.sprite = null; img.color = DimColor; img.raycastTarget = true; }
+            Button btn = GetOrAdd<Button>(rt.gameObject);
+            if (created) { btn.transition = Selectable.Transition.None; }
+            if (onClick != null) { btn.onClick.AddListener(onClick); }
+            return btn;
+        }
+
+        /// <summary>
+        /// Nền mờ chắn CẢ MÀN HÌNH nằm SAU nội dung của một panel KHÔNG full-screen (Panel_Basket / Panel_Friends / Panel_Chat trong HUD):
+        /// con "Img_Dim" cỡ 6000 px neo giữa panel (phủ hết canvas dù panel nằm lệch), đưa xuống sibling đầu để vẽ dưới khung.
+        /// Có Button (transition None) để chạm ra ngoài panel = đóng. Chỉ SetAsFirstSibling khi vừa tạo (không đảo thứ tự Sếp đã xếp).
+        /// </summary>
+        public static Button DimBehindPanel(Transform panel, UnityAction onClick = null, Color? color = null)
+        {
+            bool created;
+            RectTransform rt = Child(panel, "Img_Dim", new Vector2(6000f, 6000f), Vector2.zero, out created);
+            Image img = GetOrAdd<Image>(rt.gameObject);
+            if (created) { img.sprite = null; img.color = color ?? DimLight; img.raycastTarget = true; rt.SetAsFirstSibling(); }
             Button btn = GetOrAdd<Button>(rt.gameObject);
             if (created) { btn.transition = Selectable.Transition.None; }
             if (onClick != null) { btn.onClick.AddListener(onClick); }

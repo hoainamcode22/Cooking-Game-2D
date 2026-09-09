@@ -4,18 +4,24 @@ using UnityEditor;
 using UnityEngine;
 
 /// <summary>
-/// Tools/Farm/Suy Kich Thuoc O theo LUOI ISO.
+/// Tools/Map45/8. Suy Kich Thuoc O — het ho / het chong de giua cong trinh.
 ///
-/// VI SAO CAN
-/// ----------
-/// Tool cu (BuildingGridSizeTool) do bounds roi Ceil theo o VUONG 100 =>
-/// LUON LAM TRON LEN => cong trinh chiem nhieu o hon art that => dat canh nhau
-/// bi ho gan mot o. Vi du House_01 art rong 312 world nhung an 4 o = 400 => ho 88.
+/// ┌── VI SAO PHAI SUA LAI (V12) ────────────────────────────────────────────┐
+/// │ Ban truoc do bounds bang cach lay sprite.bounds * transform.lossyScale, │
+/// │ nhung lossyScale cua PREFAB ASSET (chua instantiate) KHONG tinh duoc     │
+/// │ day du chuoi cha-con => nha Home_01 do ra sai, tool de xuat 1x1 trong    │
+/// │ khi art rong 512 world (o iso chi 300) => hai nha dat canh nhau CHONG DE.│
+/// │                                                                          │
+/// │ Ban nay:                                                                 │
+/// │   • Tu dung cay Transform tu file prefab, nhan scale don tu ROOT xuong.  │
+/// │   • Lay be rong o THAT tu IsoGrid.CellWidth (300) chu khong hardcode 150.│
+/// │   • Hop bao cua vung o N x M tren luoi iso: rong = (N+M) * CellWidth/2   │
+/// │     => N + M = round(artWidth / (CellWidth/2)).                          │
+/// │   • Chia N,M theo TI LE art thay vi luon chia doi, nen nha cao thi an     │
+/// │     nhieu o theo chieu sau, chuong dai thi an nhieu o theo chieu ngang.  │
+/// └──────────────────────────────────────────────────────────────────────────┘
 ///
-/// Tool nay do lai theo O ISO (150 x 75 world) va LAM TRON GAN NHAT (Round) thay vi
-/// Ceil, nen vung o bam sat art => hai cong trinh dat canh nhau se DINH VAO NHAU.
-///
-/// Luon xem bang de xuat truoc, chinh tay cot "Moi" neu can, roi moi bam Ap dung.
+/// Luon xem bang de xuat truoc, sua tay cot "Moi" neu can, roi moi Ap dung.
 /// </summary>
 public class IsoGridSizeTool : EditorWindow
 {
@@ -24,70 +30,109 @@ public class IsoGridSizeTool : EditorWindow
         public PlaceableItemData data;
         public Vector2Int oldSize;
         public Vector2Int newSize;
-        public Vector2 worldSize;
+        public Vector2 artSize;      // world unit
         public bool apply = true;
     }
 
-    /// <summary>Tran so o moi chieu — trung nguong sanity cua PlacementManager.</summary>
-    public const int MaxCellsPerAxis = 24;
-
     private readonly List<Row> rows = new List<Row>();
     private Vector2 scroll;
-    private float cellW = IsoGrid.FallbackCellWidth;
-    private float cellH = IsoGrid.FallbackCellHeight;
-    private bool  squareBias = true;
+    private float cellW = 300f;
+    private bool squareBias = false;   // mac dinh: chia theo ti le art
+    private bool onlyChanged = false;   // Sep muon thay HET, ke ca dong khong doi
 
     [MenuItem("Tools/Map45/8. Suy Kich Thuoc O — het ho giua cong trinh", false, 8)]
-    public static void Open() => GetWindow<IsoGridSizeTool>("Kich Thuoc O ISO");
+    public static void Open()
+    {
+        var w = GetWindow<IsoGridSizeTool>("Kich Thuoc O ISO");
+        w.cellW = Mathf.Max(1f, IsoGrid.CellWidth);
+    }
 
     private void OnGUI()
     {
         EditorGUILayout.HelpBox(
-            "Do lai footprint moi cong trinh theo O ISO va lam tron GAN NHAT " +
-            "(khong lam tron len nhu tool cu) => cong trinh dat sat nhau khong con ho.",
+            "Do lai footprint theo O ISO THAT (mac dinh 300 x 150 world).\n" +
+            "Muc tieu: vung o OM SAT art — dat canh nhau khong ho, khong chong de.",
             MessageType.Info);
 
         EditorGUILayout.Space();
-        cellW = EditorGUILayout.FloatField("Chieu rong o (world)", cellW);
-        cellH = EditorGUILayout.FloatField("Chieu cao o (world)", cellH);
-        squareBias = EditorGUILayout.Toggle(
-            new GUIContent("Uu tien o vuong", "Chia deu N va M thay vi doan theo chieu cao art"),
+        EditorGUILayout.BeginHorizontal();
+        cellW = EditorGUILayout.FloatField("Be rong o (world)", cellW);
+        if (GUILayout.Button("Lay tu scene", GUILayout.Width(110)))
+            cellW = Mathf.Max(1f, IsoGrid.CellWidth);
+        EditorGUILayout.EndHorizontal();
+
+        squareBias  = EditorGUILayout.Toggle(
+            new GUIContent("Ep o vuong", "Bat = luon chia deu N=M. Tat = chia theo ti le art (khuyen dung)."),
             squareBias);
+        onlyChanged = EditorGUILayout.Toggle(
+            new GUIContent("Chi hien dong doi", "An bot cac cong trinh von da dung kich thuoc"),
+            onlyChanged);
 
         EditorGUILayout.Space();
-        if (GUILayout.Button("Quet toan bo PlaceableItemData", GUILayout.Height(28))) Scan();
-
+        if (GUILayout.Button("Quet toan bo cong trinh", GUILayout.Height(28))) Scan();
         if (rows.Count == 0) return;
 
         EditorGUILayout.Space();
-        scroll = EditorGUILayout.BeginScrollView(scroll);
-        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
-        GUILayout.Label("Ap", GUILayout.Width(24));
-        GUILayout.Label("Cong trinh", GUILayout.Width(150));
-        GUILayout.Label("Art (world)", GUILayout.Width(110));
-        GUILayout.Label("Cu", GUILayout.Width(60));
-        GUILayout.Label("Moi", GUILayout.Width(110));
-        EditorGUILayout.EndHorizontal();
 
+        // bo dem: bao nhieu dong dang hien / tong so quet duoc
+        int changed = 0, tiny = 0;
         foreach (var r in rows)
         {
+            if (r.oldSize != r.newSize) changed++;
+            if (r.artSize.x < cellW * 0.25f) tiny++;
+        }
+        EditorGUILayout.LabelField(
+            $"Quet duoc {rows.Count} cong trinh + decor  ·  {changed} dong se doi" +
+            (onlyChanged ? "  ·  (dang AN cac dong khong doi)" : ""),
+            EditorStyles.boldLabel);
+        if (tiny > 0)
+            EditorGUILayout.HelpBox(
+                $"{tiny} prefab do ra RAT NHO (< 1/4 o). Thuong do prefab de scale o " +
+                "GameObject con — hay kiem tra lai truoc khi Ap dung.", MessageType.Warning);
+
+        EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+        GUILayout.Label("Ap", GUILayout.Width(24));
+        GUILayout.Label("Cong trinh", GUILayout.Width(160));
+        GUILayout.Label("Art (world)", GUILayout.Width(120));
+        GUILayout.Label("Cu", GUILayout.Width(50));
+        GUILayout.Label("Moi", GUILayout.Width(110));
+        GUILayout.Label("Sai lech");
+        EditorGUILayout.EndHorizontal();
+
+        scroll = EditorGUILayout.BeginScrollView(scroll);
+        foreach (var r in rows)
+        {
+            if (onlyChanged && r.oldSize == r.newSize) continue;
+
             EditorGUILayout.BeginHorizontal();
             r.apply = EditorGUILayout.Toggle(r.apply, GUILayout.Width(24));
-            EditorGUILayout.ObjectField(r.data, typeof(PlaceableItemData), false, GUILayout.Width(150));
-            GUILayout.Label($"{r.worldSize.x:0} x {r.worldSize.y:0}", GUILayout.Width(110));
-            var old = GUI.color;
-            GUI.color = (r.oldSize != r.newSize) ? new Color(1f, 0.8f, 0.4f) : old;
-            GUILayout.Label($"{r.oldSize.x}x{r.oldSize.y}", GUILayout.Width(60));
-            GUI.color = old;
+            EditorGUILayout.ObjectField(r.data, typeof(PlaceableItemData), false, GUILayout.Width(160));
+            var cArt = GUI.color;
+            if (r.artSize.x < cellW * 0.25f) GUI.color = new Color(1f, 0.55f, 0.45f);
+            GUILayout.Label($"{r.artSize.x:0} x {r.artSize.y:0}", GUILayout.Width(120));
+            GUI.color = cArt;
+
+            var prev = GUI.color;
+            GUI.color = (r.oldSize != r.newSize) ? new Color(1f, 0.75f, 0.35f) : prev;
+            GUILayout.Label($"{r.oldSize.x}x{r.oldSize.y}", GUILayout.Width(50));
+            GUI.color = prev;
+
             r.newSize = EditorGUILayout.Vector2IntField("", r.newSize, GUILayout.Width(110));
+
+            float box = (r.newSize.x + r.newSize.y) * cellW * 0.5f;
+            float diff = r.artSize.x - box;
+            GUI.color = Mathf.Abs(diff) <= cellW * 0.25f ? new Color(0.55f, 1f, 0.55f)
+                                                         : new Color(1f, 0.6f, 0.5f);
+            GUILayout.Label($"{diff:+0;-0;0} world");
+            GUI.color = prev;
             EditorGUILayout.EndHorizontal();
         }
         EditorGUILayout.EndScrollView();
 
         EditorGUILayout.Space();
         EditorGUILayout.BeginHorizontal();
-        if (GUILayout.Button("Chon het"))  foreach (var r in rows) r.apply = true;
-        if (GUILayout.Button("Bo het"))    foreach (var r in rows) r.apply = false;
+        if (GUILayout.Button("Chon het")) foreach (var r in rows) r.apply = true;
+        if (GUILayout.Button("Bo het"))   foreach (var r in rows) r.apply = false;
         EditorGUILayout.EndHorizontal();
 
         GUI.backgroundColor = new Color(0.6f, 1f, 0.6f);
@@ -111,74 +156,96 @@ public class IsoGridSizeTool : EditorWindow
             var data = AssetDatabase.LoadAssetAtPath<PlaceableItemData>(path);
             if (data == null || data.prefabToBuild == null) continue;
 
-            Vector2 world = MeasurePrefabWorldSize(data.prefabToBuild);
-            if (world.sqrMagnitude <= 0.01f) continue;
+            Vector2 art = MeasurePrefab(data.prefabToBuild);
+            // KHONG loai prefab nho nua — van liet ke de Sep thay va tu quyet dinh.
+            // (ban truoc loai o day nen decor / plot bien mat khoi bang.)
+            if (art.x <= 0.001f) continue;
 
             rows.Add(new Row
             {
                 data = data,
                 oldSize = data.gridSize,
-                newSize = Estimate(world),
-                worldSize = world
+                newSize = Estimate(art),
+                artSize = art
             });
         }
-        rows.Sort((a, b) => string.Compare(a.data.name, b.data.name, System.StringComparison.Ordinal));
-        Debug.Log($"[IsoGridSize] Quet duoc {rows.Count} cong trinh.");
+        rows.Sort((a, b) => b.artSize.x.CompareTo(a.artSize.x));
+        Debug.Log($"[IsoGridSize] Quet {rows.Count} cong trinh (o = {cellW:0} world).");
     }
 
     /// <summary>
-    /// Suy so o tu be rong art. Hop bao cua N x M o iso: rong = (N+M) * W/2.
-    /// => tong = N + M = round(rong / (W/2)). Chia deu cho N va M (uu tien o vuong).
+    /// Hop bao cua N x M o iso: rong = (N+M) * W/2.
+    /// => tong = N + M. Chia theo TI LE art (cao/rong) de giu dang cong trinh.
     /// </summary>
-    private Vector2Int Estimate(Vector2 worldSize)
+    private Vector2Int Estimate(Vector2 art)
     {
         float half = Mathf.Max(1f, cellW * 0.5f);
-        // Kep tong so o: mot don vi ART lot vao (vd 31200 world) khong bao gio duoc
-        // bien thanh 208x208 o nua. Cung nguong voi PlacementManager.gridSizeSanityLimit.
-        int total = Mathf.Clamp(Mathf.RoundToInt(worldSize.x / half), 2, 2 * MaxCellsPerAxis);
+        int total = Mathf.Clamp(Mathf.RoundToInt(art.x / half), 2, 14);
+
         if (squareBias)
         {
-            int n = Mathf.Clamp(total / 2, 1, MaxCellsPerAxis);
-            return new Vector2Int(n, Mathf.Clamp(total - n, 1, MaxCellsPerAxis));
+            int a = Mathf.Max(1, total / 2);
+            return new Vector2Int(a, Mathf.Max(1, total - a));
         }
-        // doan theo ti le art: cao/rong
-        float ratio = Mathf.Clamp(worldSize.y / Mathf.Max(1f, worldSize.x), 0.4f, 2.5f);
-        int m = Mathf.Clamp(Mathf.RoundToInt(total * ratio / (1f + ratio)), 1, MaxCellsPerAxis);
-        return new Vector2Int(Mathf.Clamp(total - m, 1, MaxCellsPerAxis), m);
+
+        // art cao (nha) -> nhieu o theo chieu SAU (M); art be ngang (chuong dai) -> nhieu N
+        float ratio = Mathf.Clamp(art.y / Mathf.Max(1f, art.x), 0.35f, 2.5f);
+        int m = Mathf.Clamp(Mathf.RoundToInt(total * ratio / (1f + ratio)), 1, total - 1);
+        int n = Mathf.Max(1, total - m);
+        return new Vector2Int(n, m);
     }
 
+    // ─────────────────────────────────────────────────────────────────────
     /// <summary>
-    /// 🔴 SUA V10 — BUG NHAN DOI SCALE ROOT.
-    ///
-    /// Ban cu lam 2 viec sai:
-    ///   (1) nhan `r.transform.lossyScale` (DA gom san scale cua prefab root) roi nhan
-    ///       THEM `prefab.transform.localScale` mot lan nua => scale 100 bi nhan 2 lan.
-    ///       House_01: sprite 5.12 x 4.77 unit -> 512 world (dung) -> 51200 world (sai)
-    ///       => Estimate ra 208 x 208 o, rac y het gridSize cu trong asset.
-    ///   (2) dung `r.transform.localPosition` (toa do so voi CHA truc tiep) de
-    ///       Encapsulate nhieu renderer => tron lan he toa do, hop bao sai voi prefab
-    ///       co con long nhau (Pen_*/May_* co 2 SpriteRenderer).
-    ///       Nay dung `r.transform.position` — cung MOT he cho moi renderer.
+    /// Do kich thuoc art THAT cua prefab (world unit), co nhan scale don tu root.
+    /// Duyet cay bang Transform.parent nen dung ca khi sprite nam sau nhieu cap.
     /// </summary>
-    private static Vector2 MeasurePrefabWorldSize(GameObject prefab)
+    private static Vector2 MeasurePrefab(GameObject prefab)
     {
+        if (prefab == null) return Vector2.zero;
+
         var renderers = prefab.GetComponentsInChildren<SpriteRenderer>(true);
         if (renderers.Length == 0) return Vector2.zero;
 
-        bool has = false;
-        Bounds b = default;
+        float bestArea = 0f;
+        Vector2 best = Vector2.zero;
+
         foreach (var r in renderers)
         {
-            if (r.sprite == null) continue;
-            // lossyScale = scale tich luy tu prefab root xuong => KHONG nhan root them nua.
-            Vector3 size = r.sprite.bounds.size;
-            Vector3 ls = r.transform.lossyScale;
-            Bounds wb = new Bounds(r.transform.position,
-                                   new Vector3(size.x * ls.x, size.y * ls.y, 0f));
-            if (!has) { b = wb; has = true; } else b.Encapsulate(wb);
+            if (r == null || r.sprite == null) continue;
+            if (IsHelperVisual(r.transform)) continue;   // bo tham nen / khung kit
+
+            // scale don tu chinh no len den root cua prefab
+            Vector2 scale = Vector2.one;
+            var t = r.transform;
+            int guard = 0;
+            while (t != null && guard++ < 32)
+            {
+                scale.x *= Mathf.Abs(t.localScale.x);
+                scale.y *= Mathf.Abs(t.localScale.y);
+                if (t == prefab.transform) break;
+                t = t.parent;
+            }
+
+            Vector3 s = r.sprite.bounds.size;   // da chia PPU san
+            float w = s.x * scale.x;
+            float h = s.y * scale.y;
+            float area = w * h;
+            if (area > bestArea) { bestArea = area; best = new Vector2(w, h); }
         }
-        if (!has) return Vector2.zero;
-        return new Vector2(Mathf.Abs(b.size.x), Mathf.Abs(b.size.y));
+        return best;
+    }
+
+    /// <summary>Bo qua cac sprite phu tro do bo kit sinh ra (tham nen, ngoac goc, chip keo).</summary>
+    private static bool IsHelperVisual(Transform t)
+    {
+        for (var p = t; p != null; p = p.parent)
+        {
+            string n = p.name;
+            if (n.StartsWith("Kit_") || n.Contains("Footprint") || n.Contains("Grid_") ||
+                n.Contains("Marker") || n.Contains("Shadow")) return true;
+        }
+        return false;
     }
 
     private void Apply()
@@ -196,8 +263,10 @@ public class IsoGridSizeTool : EditorWindow
         AssetDatabase.SaveAssets();
         Debug.Log($"[IsoGridSize] Da cap nhat {n} asset.");
         EditorUtility.DisplayDialog("Kich Thuoc O ISO",
-            $"Da cap nhat {n} cong trinh.\n\nNho chay lai Tools/Farm/Bo Kit Dat Cong Trinh " +
-            "de collider + tham nen khop kich thuoc moi.", "OK");
+            $"Da cap nhat {n} cong trinh.\n\n" +
+            "Buoc tiep: chay Tools/Farm/Bo Kit Dat Cong Trinh > muc 2 " +
+            "de collider + tham nen khop kich thuoc moi.\n" +
+            "⛔ DUNG bam muc 3 cua bo kit (no do theo cong thuc khac).", "OK");
     }
 }
 #endif

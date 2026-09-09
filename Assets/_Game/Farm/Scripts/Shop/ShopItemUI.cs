@@ -123,7 +123,9 @@ public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBegin
             imgCurrencyIcon.sprite = isDiamondItem ? iconDiamond : iconGold;
 
         // Công trình & Trang trí: ẩn stepper, hiện "Mua 1 cái / lần"
-        bool isPlaceable = data is PlaceableItemData;
+        // [Hồ Câu vòng 14] Cần câu cũng là món 1 cái/lần (có độ bền riêng, GrantRod chỉ cấp 1 cần)
+        // nên dùng chung đường ẩn stepper — tránh Sếp bấm +5 rồi bị trừ tiền 5 lần mà chỉ nhận 1 cần.
+        bool isPlaceable = data is PlaceableItemData || data is FarmGame.Fishing.RodData;
         if (stepperRoot != null) stepperRoot.SetActive(!isPlaceable);
         if (placeableNote != null) placeableNote.SetActive(isPlaceable);
 
@@ -162,9 +164,32 @@ public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBegin
 
         int totalCost = GetTotalCost();
 
+        // [Hồ Câu vòng 14] Null-check hệ tiền: scene lạ (hoặc Play thẳng scene con) không có FarmEconomyManager
+        // thì đường cũ ném NullReference ngay dòng này.
+        FarmEconomyManager kinhTe = FarmEconomyManager.Instance;
+        if (kinhTe == null)
+        {
+            Debug.LogWarning("[Shop] Không có FarmEconomyManager — bỏ qua lệnh mua.");
+            ShopManager.Instance?.ShowToast("Chưa sẵn sàng!");
+            return;
+        }
+
+        // 🟢 V11 — CÔNG TRÌNH ĐÒI NGUYÊN LIỆU (gỗ/đá/kính/đinh do tàu lửa mang về).
+        // Kiểm tra TRƯỚC khi trừ tiền để không bao giờ mất tiền mà không được hàng.
+        var placeableCheck = currentData as PlaceableItemData;
+        if (placeableCheck != null && placeableCheck.RequiresMaterials)
+        {
+            if (!BuildMaterials.HasAll(placeableCheck.materialCosts))
+            {
+                string thieu = BuildMaterials.Describe(placeableCheck.materialCosts, true);
+                ShopManager.Instance?.ShowToast($"Thiếu nguyên liệu: {thieu}");
+                return;
+            }
+        }
+
         bool success = isDiamondItem
-            ? FarmEconomyManager.Instance.SpendGems(totalCost)
-            : FarmEconomyManager.Instance.SpendGold(totalCost);
+            ? kinhTe.SpendGems(totalCost)
+            : kinhTe.SpendGold(totalCost);
 
         if (!success)
         {
@@ -172,11 +197,55 @@ public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBegin
             return;
         }
 
+        // Tiền đã trừ xong -> trừ nguyên liệu. Nếu hụt (do đổi giữa chừng) thì hoàn tiền.
+        if (placeableCheck != null && placeableCheck.RequiresMaterials)
+        {
+            if (!BuildMaterials.TrySpend(placeableCheck.materialCosts))
+            {
+                if (isDiamondItem) kinhTe.AddGems(totalCost); else kinhTe.AddGold(totalCost);
+                ShopManager.Instance?.ShowToast("Thiếu nguyên liệu!");
+                return;
+            }
+        }
+
         // Báo cáo tiến độ nhiệm vụ
         int boughtQty = GetChargedQuantity();
         MissionProgressTracker.ReportEvent(MissionEventType.BuyShopItem, currentData.itemID, boughtQty);
         if (currentData is CropData)
             MissionProgressTracker.ReportEvent(MissionEventType.BuySeed, currentData.itemID, boughtQty);
+
+        // [Hồ Câu vòng 14] Cần câu KHÔNG vào kho hạt giống — vào FishingGearState (có độ bền, cần đang cầm).
+        // Tiền ĐÃ bị trừ ở đầu hàm này, nên phải gọi GrantRod (KHÔNG trừ tiền).
+        // TUYỆT ĐỐI không gọi FishingGearState.TryBuy ở đây: TryBuy tự trừ tiền lần nữa ⇒ mất tiền 2 lần.
+        // TryBuy vẫn giữ nguyên cho Quầy Cá (FishCounterPopupUI) — bên đó tự lo tiền.
+        if (currentData is FarmGame.Fishing.RodData rod)
+        {
+            FarmGame.Fishing.FishingGearState gear = FarmGame.Fishing.FishingGearState.Instance;
+            string lyDo = string.Empty;
+            bool ok = gear != null && gear.GrantRod(rod, out lyDo);
+
+            if (!ok)
+            {
+                // Hoàn đúng số vừa trừ — không để người chơi mất tiền vì data hỏng.
+                if (FarmEconomyManager.Instance != null)
+                {
+                    if (isDiamondItem) { FarmEconomyManager.Instance.AddGems(totalCost); }
+                    else { FarmEconomyManager.Instance.AddGold(totalCost); }
+                }
+                Debug.Log("[Fishing] Shop: cấp cần " + currentData.itemID + " thất bại (" + lyDo + ") — đã hoàn tiền.");
+                ShopManager.Instance?.ShowToast(string.IsNullOrEmpty(lyDo) ? Loc.T("Mua cần thất bại") : Loc.T(lyDo));
+                ShopManager.Instance?.RefreshCurrencyBalances();
+                return;
+            }
+
+            // lyDo rỗng = cần mới; có chữ = đã sở hữu, GrantRod trả "Đã thay cần mới".
+            string thongBao = string.IsNullOrEmpty(lyDo)
+                ? Loc.TF("Đã mua {0}!", Loc.T(currentData.itemName))
+                : Loc.T(lyDo);
+            ShopManager.Instance?.ShowToast(thongBao);
+            ShopManager.Instance?.RefreshCurrencyBalances();
+            return;
+        }
 
         // Công trình / Trang trí -> Chuyển sang chế độ đặt
         if (currentData is PlaceableItemData placeable && placeable.prefabToBuild != null)
@@ -246,7 +315,9 @@ public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBegin
     private int GetChargedQuantity()
     {
         bool placeable = currentData is PlaceableItemData p && p.prefabToBuild != null;
-        return placeable ? 1 : Mathf.Max(1, currentQuantity);
+        // [Hồ Câu vòng 14] Cần câu luôn tính đúng 1 cái/lần (GrantRod chỉ cấp 1 cần).
+        bool isRod = currentData is FarmGame.Fishing.RodData;
+        return (placeable || isRod) ? 1 : Mathf.Max(1, currentQuantity);
     }
 
     private static int GetUnlockLevel(BaseItemData item)

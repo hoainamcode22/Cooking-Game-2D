@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L16
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 16
+  giftGold: 1100
+  giftGems: 6
+  giftItems:
+  - itemId: seed_cachua
+    displayName: "H\u1EA1t C\xE0 Chua"
+    icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
+    amount: 3
+  - itemId: ca_rot
+    displayName: "H\u1EA1t C\xE0 R\u1ED1t"
+    icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
+    amount: 3
+  - itemId: carot
+    displayName: "C\xE0 R\u1ED1t"
+    icon: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
+    amount: 4
+  - itemId: egg
+    displayName: "Tr\u1EE9ng"
+    icon: {fileID: -8307804571547316847, guid: 20cfa699d7411b0499297e423fec3d8a, type: 3}
+    amount: 2
+  - itemId: salt
+    displayName: "Mu\u1ED1i"
+    icon: {fileID: -1162442978445507191, guid: a849ade4905cf98419e62a9cf5b043e5, type: 3}
+    amount: 3
+  - itemId: dinh
+    displayName: "\u0110inh"
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 1
+  unlockEntries:
+  - label: "H\u1ED3 C\xE1 \u0111\xE3 m\u1EDF \u2014 b\u1EAFt \u0111\u1EA7u c\xE2u
+      c\xE1"
+    icon: {fileID: -9187160836234905985, guid: 9a5fbc91c7cb4524e95f96d915118be2, type: 3}
+  - label: "M\u1EDF kh\xF3a c\xE1c m\xF3n c\xE1"
+    icon: {fileID: 7005514672714901730, guid: d197209a165418540bf98d74d7fca7a2, type: 3}
+  unlockDescriptions:
+  - "H\u1ED3 C\xE1 \u0111\xE3 m\u1EDF \u2014 b\u1EAFt \u0111\u1EA7u c\xE2u c\xE1"
+  - "M\u1EDF kh\xF3a c\xE1c m\xF3n c\xE1"
+  hintText: "H\u1ED3 C\xE1 \u0111\xE3 m\u1EDF! Th\u1EA3 c\u1EA7n c\xE2u \u0111\u1EC3
+    b\u1EAFt c\xE1 cho c\xE1c m\xF3n m\u1EDBi."

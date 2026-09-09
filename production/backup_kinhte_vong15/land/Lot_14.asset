@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99ce6d69278eb5c4aae466e01a79cde2, type: 3}
+  m_Name: Lot_14
+  m_EditorClassIdentifier: Assembly-CSharp::LandRegionData
+  regionId: lot_14
+  displayName: Lo 14
+  cellRects:
+  - x: -27
+    y: -4
+    width: 8
+    height: 14
+  unlockLevel: 44
+  goldPrice: 900720
+  gemPrice: 0
+  materialCosts:
+  - itemId: go
+    amount: 48
+  - itemId: da
+    amount: 32
+  - itemId: dinh
+    amount: 30
+  - itemId: kinh
+    amount: 16
+  clearSeconds: 300
+  rushGemCost: 0
+  workerCount: 4
+  requiredRegionIds:
+  - lot_13
+  unlockedByDefault: 0

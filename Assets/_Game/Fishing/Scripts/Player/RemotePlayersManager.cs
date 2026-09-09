@@ -180,8 +180,17 @@ namespace FarmGame.Fishing
             var box = go != null ? go.GetComponent<BoxCollider2D>() : null;
             if (box != null)
             {
+                // [Lead, vòng 13] CameraBounds giờ 40x26 (map lớn) → bot đi lang thang ngoài tầm nhìn. Kẹp vùng đi lại của bot
+                // quanh điểm spawn tối đa 14x9 unit (hơn khung nhìn 11x6.4 một chút) để Sếp luôn thấy bot khi test.
                 Bounds b = box.bounds;
-                return new Rect(b.min.x, b.min.y, b.size.x, b.size.y);
+                Vector2 center = b.center;
+                var spawnGo = GameObject.Find(FishingIds.SpawnPointName);
+                if (spawnGo != null) { center = spawnGo.transform.position; }
+                float w = Mathf.Min(b.size.x, 14f);
+                float h = Mathf.Min(b.size.y, 9f);
+                float x = Mathf.Clamp(center.x - w * 0.5f, b.min.x, b.max.x - w);
+                float y = Mathf.Clamp(center.y - h * 0.5f, b.min.y, b.max.y - h);
+                return new Rect(x, y, w, h);
             }
             Vector2 c = Vector2.zero;
             if (FishingPlayerController.Local != null) { c = FishingPlayerController.Local.Position; }

@@ -831,10 +831,14 @@ public class TrainManager : MonoBehaviour
         {
             slots = new TrainRewardItem[]
             {
-                new TrainRewardItem { itemId = "da",   displayName = "Đá",   rewardAmount = 2 },
-                new TrainRewardItem { itemId = "gach", displayName = "Gạch", rewardAmount = 1 },
-                new TrainRewardItem { itemId = "dinh", displayName = "Đinh", rewardAmount = 3 },
-                new TrainRewardItem { itemId = "kim",  displayName = "Kim",  rewardAmount = 1 },
+                // 🔴 VÒNG 14c — TRƯỚC ĐÂY dùng "gach" và "kim": CẢ HAI ĐỀU KHÔNG CÓ ASSET
+                // InventoryItemData nào. Rơi vào nhánh dự phòng này là kho nhận vật phẩm
+                // không tên, không icon, và không tiêu được ở đâu. Bộ nguyên liệu thật của
+                // game đúng 4 món: gỗ, đá, đinh, kính (khớp WarehouseUpgradeCostTable).
+                new TrainRewardItem { itemId = "go",   displayName = "Gỗ",   rewardAmount = 3 },
+                new TrainRewardItem { itemId = "da",   displayName = "Đá",   rewardAmount = 3 },
+                new TrainRewardItem { itemId = "dinh", displayName = "Đinh", rewardAmount = 2 },
+                new TrainRewardItem { itemId = "kinh", displayName = "Kính", rewardAmount = 2 },
             }
         };
     }

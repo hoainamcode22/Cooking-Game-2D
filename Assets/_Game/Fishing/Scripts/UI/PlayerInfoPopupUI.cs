@@ -9,6 +9,7 @@ namespace FarmGame.Fishing
     /// Popup thông tin người chơi khác (con "Popup_PlayerInfo" của Canvas_FishingHUD, mở khi chạm RemotePlayerView):
     /// avatar, tên, Lv, trạng thái · "Kết bạn"/"Huỷ bạn" · hàng "Kết nối": Bạn bè (xanh) · Chị em (vàng) · Hẹn hò (đỏ) chỉ bật khi đã là bạn
     /// · "Tặng cá" (chọn loại từ giỏ, số lượng 1) · "Tặng gem" (bậc 1/5/10 kẹp cfg.giftGemMin..Max) · "Mời vào phòng". Đóng bằng X hoặc chạm nền mờ.
+    /// Escape/Back qua FishingPopupStack (Push OnEnable / Remove OnDisable): sub-panel tặng đang mở → đóng sub-panel trước, không thì đóng popup.
     /// </summary>
     public class PlayerInfoPopupUI : MonoBehaviour
     {
@@ -55,18 +56,32 @@ namespace FarmGame.Fishing
             Wire();
         }
 
-        private void OnDestroy() { if (Instance == this) { Instance = null; } }
+        private void OnDestroy() { FishingPopupStack.Remove(this); if (Instance == this) { Instance = null; } }
 
         private void OnEnable()
         {
             IFriendService fs = FishingNetHub.Friends;
             if (fs != null) { fs.OnFriendsChanged -= Refresh; fs.OnFriendsChanged += Refresh; }
+            FishingPopupStack.Push(this);
         }
 
         private void OnDisable()
         {
             IFriendService fs = FishingNetHub.Friends;
             if (fs != null) { fs.OnFriendsChanged -= Refresh; }
+            // Bị tắt từ ngoài (SetActive(false) trực tiếp) cũng dọn như Close(): bỏ mục tiêu, rời stack Escape, ẩn sub-panel.
+            _target = null;
+            HideSubPanels();
+            FishingPopupStack.Remove(this);
+        }
+
+        private void Update()
+        {
+            // Escape / Back Android: chỉ khi ở đỉnh FishingPopupStack, 1 lần mỗi frame. Sub-panel tặng đang mở → đóng nó trước.
+            if (!FishingPopupStack.ConsumeEscape(this)) { return; }
+            bool subOpen = (subGiftFish != null && subGiftFish.gameObject.activeSelf) || (subGiftGem != null && subGiftGem.gameObject.activeSelf);
+            if (subOpen) { HideSubPanels(); return; }
+            Close();
         }
 
         private void Wire()
@@ -102,6 +117,7 @@ namespace FarmGame.Fishing
             FishingUiKit.ActivateUpToCanvas(inst.transform);
             inst.gameObject.SetActive(true);
             inst.transform.SetAsLastSibling();
+            FishingPopupStack.Push(inst);   // đang mở sẵn (chạm người khác) thì OnEnable không chạy → đưa lên đỉnh lại
             inst.HideSubPanels();
             inst.Refresh();
             if (inst.frame != null) { JuicyPulseFX.Play(inst.frame, 1.08f, 0.22f); }

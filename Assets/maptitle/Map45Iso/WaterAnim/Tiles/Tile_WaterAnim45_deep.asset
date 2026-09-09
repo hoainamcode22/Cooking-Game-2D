@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 13b75c95f34a00d4e8c04f76b73312e6, type: 3}
+  m_Name: Tile_WaterAnim45_deep
+  m_EditorClassIdentifier: Unity.2D.Tilemap.Extras::UnityEngine.Tilemaps.AnimatedTile
+  m_AnimatedSprites:
+  - {fileID: 356423304, guid: 6f31c8f5722685f4995e26b76f1d92ae, type: 3}
+  - {fileID: -340206351, guid: 6f31c8f5722685f4995e26b76f1d92ae, type: 3}
+  - {fileID: -1898754427, guid: 6f31c8f5722685f4995e26b76f1d92ae, type: 3}
+  - {fileID: -993250317, guid: 6f31c8f5722685f4995e26b76f1d92ae, type: 3}
+  - {fileID: 529726632, guid: 6f31c8f5722685f4995e26b76f1d92ae, type: 3}
+  - {fileID: 2011670183, guid: 6f31c8f5722685f4995e26b76f1d92ae, type: 3}
+  - {fileID: -1864435136, guid: 6f31c8f5722685f4995e26b76f1d92ae, type: 3}
+  - {fileID: -1523117044, guid: 6f31c8f5722685f4995e26b76f1d92ae, type: 3}
+  m_MinSpeed: 5.7
+  m_MaxSpeed: 5.7
+  m_AnimationStartTime: 0
+  m_AnimationStartFrame: 0
+  m_TileColliderType: 0
+  m_TileAnimationFlags: 0

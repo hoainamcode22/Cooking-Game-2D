@@ -13,40 +13,36 @@ MonoBehaviour:
   m_Name: LevelReward_L26
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 26
-  giftGold: 2300
-  giftGems: 8
+  giftGold: 1425
+  giftGems: 2
   giftItems:
-  - itemId: seed_pepper
-    displayName: "H\u1EA1t Ti\xEAu"
-    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
+  - itemId: seed_watermelon
+    displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 3
-  - itemId: seed_pumpkin
-    displayName: "H\u1EA1t B\xED \u0110\u1ECF"
-    icon: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
-    amount: 3
-  - itemId: pumpkin
-    displayName: "B\xED \u0110\u1ECF"
-    icon: {fileID: 21300000, guid: 2544efb06ecab8a9ce85f5268edde610, type: 3}
-    amount: 5
-  - itemId: rice
-    displayName: "L\xFAa"
-    icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
-    amount: 5
-  - itemId: milk
-    displayName: "S\u1EEFa"
-    icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
-    amount: 2
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 22
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 12
   - itemId: dinh
     displayName: "\u0110inh"
     icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
-    amount: 2
+    amount: 10
+  - itemId: kinh
+    displayName: "K\xEDnh"
+    icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 5
+  - itemId: bo_ham_bi_do_kem
+    displayName: "B\xF2 h\u1EA7m b\xED \u0111\u1ECF s\u1ED1t kem"
+    icon: {fileID: 21300000, guid: 21b213af320c044c0f1706fb7cc28e54, type: 3}
+    amount: 1
   unlockEntries:
-  - label: "C\xF4ng th\u1EE9c cao c\u1EA5p"
-    icon: {fileID: -8761267228683204362, guid: f9dc232488c93e14eb290d9028afcb23, type: 3}
-  - label: "Trang tr\xED theo m\xF9a"
-    icon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}
+  - label: "C\u00f4ng th\u1ee9c cao c\u1ea5p"
+    icon: {fileID: 0}
   unlockDescriptions:
-  - "C\xF4ng th\u1EE9c cao c\u1EA5p"
-  - "Trang tr\xED theo m\xF9a"
-  hintText: "C\xE1c c\xF4ng th\u1EE9c n\u1EA5u cao c\u1EA5p \u0111\xE3 m\u1EDF \u2014
-    th\u1EED m\xF3n m\u1EDBi nh\xE9!"
+  - "C\u00f4ng th\u1ee9c cao c\u1ea5p"
+  hintText: "L\u00ean c\u1ea5p 26! M\u1edf shop xem th\u1ee9 m\u1edbi."

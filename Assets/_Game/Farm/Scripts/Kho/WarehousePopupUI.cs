@@ -165,6 +165,12 @@ public class WarehousePopupUI : MonoBehaviour
             if (!extraItemLookup.ContainsKey(item.itemId))
                 extraItemLookup.Add(item.itemId, item);
         }
+
+        // 🟢 VONG 14b — nap danh muc cho BuildMaterials.IconOf().
+        // 5 asset nguyen lieu khong nam trong Resources/ nen IconOf() von tra null,
+        // moi khung nguyen lieu deu ve o trong. extraItemDatabase o day da chua du
+        // ca 5 asset nen nap thang vao, khoi phai di chuyen file.
+        BuildMaterials.NapDanhMuc(extraItemDatabase);
     }
 
     private void Update()
@@ -453,7 +459,9 @@ public class WarehousePopupUI : MonoBehaviour
             if (warehouseLevel < WarehouseMaxLevel)
             {
                 int nextCap = FarmInventoryManager.CapacityForLevel(warehouseLevel + 1);
-                txtUpgradeInfo.text = Loc.TF("Cấp {0} · Sức chứa: {1} Slot (Nâng cấp: +25 Slot)", warehouseLevel, slotCapacity);
+                // 🟢 V11 — hiện luôn chi phí nâng cấp (vàng + nguyên liệu) để người chơi biết cần gom gì
+                txtUpgradeInfo.text = Loc.TF("Cấp {0} · Sức chứa: {1} Slot (+25)", warehouseLevel, slotCapacity)
+                                      + "\n" + WarehouseUpgradeCostTable.Describe(warehouseLevel);
             }
             else
             {
@@ -461,6 +469,9 @@ public class WarehousePopupUI : MonoBehaviour
             }
         }
 
+        // 🟢 VONG 14b — KHONG disable nut khi thieu nguyen lieu nua.
+        // Truoc day thieu do la nut xam, bam khong ra gi, nguoi choi khong biet thieu cai gi.
+        // Gio luon bam duoc (tru khi da max cap) de con mo khung xem con thieu gi.
         if (btnUpgrade != null)
             btnUpgrade.interactable = warehouseLevel < WarehouseMaxLevel;
     }
@@ -562,12 +573,55 @@ public class WarehousePopupUI : MonoBehaviour
     {
         if (warehouseLevel >= WarehouseMaxLevel) return;
 
-        // Perform warehouse level upgrade
+        // 🟢 VONG 14b — MO KHUNG NGUYEN LIEU thay vi bao loi bang mot dong chu.
+        // Truoc day: thieu do -> ShowUpgradeBlockedMessage() roi RefreshUI() ngay dong
+        // sau -> RefreshUpgradeBox() ghi de text trong CUNG MOT FRAME -> nguoi choi chi
+        // thay chu nhap nhay. Va nut con bi disable nen bam khong ra gi.
+        // Gio bam la hien khung: can gi, dang co bao nhieu, thieu cai nao.
+        var khung = WarehouseUpgradeReqUI.LayHoacTao(transform, txtUpgradeInfo != null ? txtUpgradeInfo.font : null);
+        if (khung != null)
+        {
+            khung.Mo(warehouseLevel, ThucHienNangCap);
+            return;
+        }
+
+        ThucHienNangCap();
+    }
+
+    /// <summary>Nang cap that su. Tach ra de khung nguyen lieu goi lai duoc.</summary>
+    private void ThucHienNangCap()
+    {
+        if (warehouseLevel >= WarehouseMaxLevel) return;
+
+        // 🟢 V11 — nâng cấp kho giờ TỐN VÀNG + NGUYÊN LIỆU tàu lửa mang về.
+        // Trước đây nâng miễn phí nên gỗ/đá/kính/đinh không có chỗ tiêu.
+        if (!WarehouseUpgradeCostTable.CanAfford(warehouseLevel, out string reason))
+        {
+            Debug.Log($"[WarehousePopupUI] Chưa nâng cấp được: {reason}");
+            ShowUpgradeBlockedMessage(reason);
+            RefreshUI();
+            return;
+        }
+
+        if (!WarehouseUpgradeCostTable.TryPay(warehouseLevel))
+        {
+            Debug.LogWarning("[WarehousePopupUI] Trừ chi phí nâng cấp thất bại — huỷ nâng cấp.");
+            RefreshUI();
+            return;
+        }
+
         warehouseLevel++;
         SaveWarehouseProgress();
-        Debug.Log($"[WarehousePopupUI] Nâng cấp kho lên Cấp {warehouseLevel} (Sức chứa: {slotCapacity} Slot)!");
+        Debug.Log($"[WarehousePopupUI] Nâng cấp kho lên Cấp {warehouseLevel} " +
+                  $"(Sức chứa: {slotCapacity} Slot). Chi phí đã trừ.");
 
         RefreshUI();
+    }
+
+    /// <summary>Hiện lý do chưa nâng cấp được lên nhãn thông tin (nếu có).</summary>
+    private void ShowUpgradeBlockedMessage(string reason)
+    {
+        if (txtUpgradeInfo != null) txtUpgradeInfo.text = reason;
     }
 
     // ── Item Classification & Data Helpers ────────────────────────────────────

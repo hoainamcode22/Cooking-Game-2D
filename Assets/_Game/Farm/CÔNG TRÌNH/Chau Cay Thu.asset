@@ -22,3 +22,4 @@ MonoBehaviour:
   gridSize: {x: 1, y: 1}
   buildTimeSeconds: 0
   rushGemCost: 0
+  materialCosts: []

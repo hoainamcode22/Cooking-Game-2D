@@ -183,6 +183,23 @@ namespace FarmGame.Fishing
             SetAnimBool(HashIsMoving, moving);
         }
 
+        /// <summary>
+        /// [Lead vòng 14] Độ cao bậc hiện tại (unit) do ElevationStepZone điều khiển.
+        /// PHẢI đẩy cả Rigidbody2D.position: Physics2D.autoSyncTransforms mặc định false nên nếu chỉ sửa
+        /// transform thì FixedUpdate sau đó MovePosition từ _rb.position CŨ, kéo nhân vật tụt khỏi bậc ngay khi bước đi.
+        /// </summary>
+        public float ElevationOffset { get { return _elevationOffset; } }
+        private float _elevationOffset;
+
+        /// <summary>Cộng thêm delta độ cao bậc (dương = lên). ElevationStepZone gọi mỗi frame khi đang nâng/hạ.</summary>
+        public void AddElevationOffset(float delta)
+        {
+            if (Mathf.Approximately(delta, 0f)) { return; }
+            _elevationOffset += delta;
+            if (_rb != null) { _rb.position = _rb.position + new Vector2(0f, delta); }
+            else { transform.position += new Vector3(0f, delta, 0f); }
+        }
+
         private void FixedUpdate()
         {
             if (_rb == null) { return; }

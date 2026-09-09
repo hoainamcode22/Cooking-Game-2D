@@ -13,47 +13,35 @@ MonoBehaviour:
   m_Name: LevelReward_L25
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 25
-  giftGold: 2200
-  giftGems: 15
+  giftGold: 1330
+  giftGems: 10
   giftItems:
-  - itemId: seed_pepper
-    displayName: "H\u1EA1t Ti\xEAu"
-    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
+  - itemId: seed_watermelon
+    displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 3
-  - itemId: khoai_tay
-    displayName: "H\u1EA1t Khoai T\xE2y"
-    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
-    amount: 3
-  - itemId: pepper
-    displayName: "Ti\xEAu"
-    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
-    amount: 4
-  - itemId: khoaitay
-    displayName: "Khoai T\xE2y"
-    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
-    amount: 5
-  - itemId: milk
-    displayName: "S\u1EEFa"
-    icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
-    amount: 2
-  - itemId: beef
-    displayName: "Th\u1ECBt B\xF2"
-    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-    amount: 2
   - itemId: go
     displayName: "G\u1ED7"
     icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
-    amount: 2
+    amount: 21
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 11
+  - itemId: dinh
+    displayName: "\u0110inh"
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 9
+  - itemId: kinh
+    displayName: "K\xEDnh"
+    icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 4
   unlockEntries:
-  - label: "Trang tr\xED c\u1EA5p 3"
-    icon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}
-  - label: "\u0110\u01A1n combo 3 m\xF3n"
-    icon: {fileID: -6116058755252793876, guid: 6fa3ebb28106006499981cca0d210947, type: 3}
-  - label: "\U0001F3C5 Danh hi\u1EC7u \"\xD4ng/B\xE0 ch\u1EE7 l\u1EDBn\""
-    icon: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}
+  - label: "Decor cao c\u1ea5p b\u1eadc 2"
+    icon: {fileID: 0}
+  - label: "\u0110\u01a1n combo 3 m\u00f3n"
+    icon: {fileID: 0}
   unlockDescriptions:
-  - "Trang tr\xED c\u1EA5p 3"
-  - "\u0110\u01A1n combo 3 m\xF3n"
-  - "\U0001F3C5 Danh hi\u1EC7u \"\xD4ng/B\xE0 ch\u1EE7 l\u1EDBn\""
-  hintText: "C\u1EA5p 25! Combo 3 m\xF3n v\xE0 trang tr\xED c\u1EA5p 3 \u0111\xE3
-    m\u1EDF kh\xF3a."
+  - "Decor cao c\u1ea5p b\u1eadc 2"
+  - "\u0110\u01a1n combo 3 m\u00f3n"
+  hintText: "L\u00ean c\u1ea5p 25! M\u1edf shop xem th\u1ee9 m\u1edbi."

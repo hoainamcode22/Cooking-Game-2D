@@ -165,8 +165,12 @@ public class ObjectDragHandler : MonoBehaviour
         _pivotOffsetX = b.center.x - transform.position.x;
         _footOffsetY  = b.min.y    - transform.position.y;
 
-        RectInt r = PlacementManager.RectFromWorldBounds(b);
-        return new Vector2Int(Mathf.Max(1, r.width), Mathf.Max(1, r.height));
+        // 🔴 V14 — cùng lỗi đã chữa ở PlacementManager.MeasuredCellsOf:
+        // RectFromWorldBounds bao 4 góc hộp VUÔNG sang lưới ISO nên một ô kim cương
+        // 300×150 ra 3×3 ô → vật kéo tay tự chặn 8 ô quanh mình, không đặt sát được.
+        // EstimateSizeFromWorldSize mới là phép nghịch đảo đúng của FootprintWorldSize.
+        Vector2Int e = IsoGrid.EstimateSizeFromWorldSize(b.size);
+        return new Vector2Int(Mathf.Max(1, e.x), Mathf.Max(1, e.y));
     }
 
     private void Update()

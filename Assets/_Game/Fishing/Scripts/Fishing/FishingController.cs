@@ -9,6 +9,8 @@ namespace FarmGame.Fishing
     /// Nối: FishingStateMachine (nhịp pha) · FishingCatchResolver (random → cá) · FishingGearState (độ bền cần) · FishBasket (giỏ)
     /// · FishingBobber/FishingRodVisual/FishingSplashPool/FishingAudio (hình + tiếng) · FishingPlayerController.Local (khoá đi, báo pha).
     /// Mọi số gameplay đọc từ FishingDatabase.ConfigOrDefault và RodData. Mọi event bắn đúng 1 lần mỗi lượt.
+    /// Lực quăng: Dev C (HUD) chạy thanh đo rồi gọi Cast(power01); Cast() = không thanh đo. Hoàn hảo (≥ perfectCastThreshold):
+    /// IsPerfectCast / OnPerfectCast / LastCastPower01 — bonus xác suất + cá hiếm, phao bay cao hơn, splash to hơn.
     /// </summary>
     public class FishingController : MonoBehaviour
     {
@@ -16,6 +18,11 @@ namespace FarmGame.Fishing
         private const string RodVisualChildName = "RodVisual";
         // Phao phải rơi hẳn vào nước, không nằm đúng mép: đẩy thêm khoảng này (unit) từ mép vào — số hình ảnh, không phải gameplay.
         private const float WaterInset = 0.4f;
+        // Bước lùi (unit) khi điểm rơi theo lực quăng vượt ra ngoài vùng nước — số hình học, không phải gameplay.
+        private const float ReachBackStep = 0.1f;
+        // Quăng hoàn hảo: phao bay cao hơn / splash to hơn (thuần hình ảnh).
+        private const float PerfectArcMultiplier = 1.4f;
+        private const float PerfectSplashScale = 1.3f;
 
         public static FishingController Local { get; private set; }
 
@@ -48,12 +55,26 @@ namespace FarmGame.Fishing
         public string BlockReasonVi { get; private set; } = string.Empty;
         public float BiteWindowRemaining01 { get { return _sm != null ? _sm.BiteWindowRemaining01 : 0f; } }
 
+        /// <summary>
+        /// Lực của lần quăng gần nhất (0..1) khi quăng qua thanh đo (Cast(power01)); -1 = quăng không qua thanh đo (Cast()).
+        /// Giữ nguyên qua cả lượt (kể cả sau khi về Idle) để HUD hiện "lần trước".
+        /// </summary>
+        public float LastCastPower01 { get; private set; } = -1f;
+
+        /// <summary>
+        /// Lượt ĐANG câu là quăng hoàn hảo (power01 ≥ cfg.perfectCastThreshold): cộng cfg.perfectCatchBonus vào xác suất bắt,
+        /// nhân cfg.perfectRareMultiplier vào trọng số cá hiếm. Đặt lúc Cast, về false khi lượt kết thúc (Idle).
+        /// </summary>
+        public bool IsPerfectCast { get; private set; }
+
         public event Action<FishingPhase> OnPhaseChanged;
         public event Action<FishData, float> OnCatch;
         public event Action OnEscape;
         public event Action OnNothing;
         public event Action OnRodBroken;
         public event Action<string> OnBlocked;
+        /// <summary>Bắn ngay trong Cast(power01) khi power01 ≥ cfg.perfectCastThreshold, sau OnPhaseChanged(Casting) cùng frame. HUD hiện "HOÀN HẢO!".</summary>
+        public event Action OnPerfectCast;
 
         private void Awake()
         {
@@ -81,8 +102,20 @@ namespace FarmGame.Fishing
 
         // ── Public API ──────────────────────────────────────────────────────────
 
-        /// <summary>Bấm QUĂNG. Không đủ điều kiện → OnBlocked(BlockReasonVi) + tiếng fail, không đổi pha.</summary>
+        /// <summary>Bấm QUĂNG không qua thanh đo (khoảng cách cfg.castDistance, không bao giờ "hoàn hảo"). = Cast(-1f).</summary>
         public void Cast()
+        {
+            Cast(-1f);
+        }
+
+        /// <summary>
+        /// Bấm QUĂNG với lực từ thanh đo (Dev C tự chạy con trượt rồi gọi hàm này lúc thả nút).
+        /// power01 trong [0,1] → khoảng cách = Lerp(cfg.castDistanceMin, cfg.castDistanceMax, power01), điểm rơi luôn kẹp vào trong FishingZone;
+        /// power01 ≥ cfg.perfectCastThreshold → IsPerfectCast = true, OnPerfectCast bắn ngay, phao bay cao hơn, splash to hơn, roll bắt được
+        /// cộng cfg.perfectCatchBonus, cá hiếm × cfg.perfectRareMultiplier. power01 &lt; 0 → như Cast() cũ (cfg.castDistance).
+        /// Không đủ điều kiện (CanCast == false) → OnBlocked(BlockReasonVi) + tiếng fail, không đổi pha.
+        /// </summary>
+        public void Cast(float power01)
         {
             RefreshCanCast();
             if (!CanCast)
@@ -91,6 +124,10 @@ namespace FarmGame.Fishing
                 FishingAudio.PlayFail();
                 return;
             }
+
+            bool useMeter = power01 >= 0f;
+            float power = useMeter ? Mathf.Clamp01(power01) : -1f;
+            bool perfect = useMeter && power >= _cfg.perfectCastThreshold;
 
             FishingGearState gear = FishingGearState.Instance;
             RodData rod = gear.EquippedRod;
@@ -105,16 +142,24 @@ namespace FarmGame.Fishing
             _pendingExp = 0;
             _sm.SetRodModifiers(rod.biteWaitMultiplier, rod.biteWindowBonusSeconds);
 
-            Vector2 target = ComputeBobberTarget();
-            if (!_sm.TryCast(UnityEngine.Random.value)) { return; }
+            float reach = useMeter ? Mathf.Lerp(_cfg.castDistanceMin, _cfg.castDistanceMax, power) : _cfg.castDistance;
+            Vector2 target = ComputeBobberTarget(reach);
+            // Đặt TRƯỚC TryCast để HUD đọc được ngay trong OnPhaseChanged(Casting). CanCast đã bảo đảm Idle nên TryCast không thất bại.
+            LastCastPower01 = power;
+            IsPerfectCast = perfect;
+            if (!_sm.TryCast(UnityEngine.Random.value)) { IsPerfectCast = false; return; }
 
             SetMovementLocked(true);
             FishingPlayerController p = FishingPlayerController.Local;
             Vector2 from = p != null && p.HandAnchor != null ? (Vector2)p.HandAnchor.position : (p != null ? p.Position : target);
-            if (_bobber != null) { _bobber.FlyTo(from, target, _cfg.castDurationSeconds); }
             if (_rodVisual != null) { _rodVisual.SetVisible(true); }
+            if (_bobber != null)
+            {
+                _bobber.FlyTo(from, target, _cfg.castDurationSeconds, perfect ? PerfectArcMultiplier : 1f, perfect ? PerfectSplashScale : 1f);
+            }
             FishingAudio.PlayCast();
-            Debug.Log(FishingIds.LogTag + " Quăng: cần=" + rod.itemID + " chờ=" + _sm.BiteWaitTarget.ToString("0.0", CultureInfo.InvariantCulture) + "s còn " + gear.EquippedDurabilityLeft + " lần");
+            if (perfect) { OnPerfectCast?.Invoke(); }
+            Debug.Log(FishingIds.LogTag + " Quăng: cần=" + rod.itemID + " lực=" + (useMeter ? power.ToString("0.00", CultureInfo.InvariantCulture) : "mặc định") + (perfect ? " HOÀN HẢO" : "") + " xa=" + reach.ToString("0.00", CultureInfo.InvariantCulture) + " chờ=" + _sm.BiteWaitTarget.ToString("0.0", CultureInfo.InvariantCulture) + "s còn " + gear.EquippedDurabilityLeft + " lần");
         }
 
         /// <summary>Bấm THU. Waiting → thu không (OnNothing ở Result); Bite → roll bắt; pha khác bỏ qua.</summary>
@@ -158,7 +203,8 @@ namespace FarmGame.Fishing
         private void ResolveBiteReel()
         {
             RodData rod = _activeRod;
-            float bonus = rod != null ? rod.catchChanceBonus : 0f;
+            // Quăng hoàn hảo: cộng xác suất + nhân trọng số cá hiếm (số từ FishingConfig).
+            float bonus = (rod != null ? rod.catchChanceBonus : 0f) + (IsPerfectCast ? _cfg.perfectCatchBonus : 0f);
             bool caught = FishingCatchResolver.RollCatch(_cfg.baseCatchChance, bonus, UnityEngine.Random.value);
 
             FishData fish = null;
@@ -166,7 +212,7 @@ namespace FarmGame.Fishing
             {
                 FishingDatabase db = FishingDatabase.Instance;
                 int tier = rod != null ? rod.tier : 1;
-                float rareMult = rod != null ? rod.rareWeightMultiplier : 1f;
+                float rareMult = (rod != null ? rod.rareWeightMultiplier : 1f) * (IsPerfectCast ? _cfg.perfectRareMultiplier : 1f);
                 int level = PlayerProgressManager.Instance != null ? PlayerProgressManager.Instance.Level : 1;
                 fish = db != null ? FishingCatchResolver.PickFish(db.fishes, tier, level, rareMult, UnityEngine.Random.value) : null;
                 if (fish == null)
@@ -201,20 +247,17 @@ namespace FarmGame.Fishing
         {
             FishingPlayerController p = FishingPlayerController.Local;
             if (p != null) { p.SetFishingPhase(next); }
+            if (_rodVisual != null) { _rodVisual.SetPhase(next); }
 
             switch (next)
             {
                 case FishingPhase.Waiting:
-                    // Phao vừa chạm nước (thời gian bay = castDuration).
-                    if (_bobber != null)
-                    {
-                        _bobber.Bob(false);
-                        FishingSplashPool.Shared.Play(_bobber.WaterPoint, _bobber.Renderer, 1f);
-                    }
-                    FishingAudio.PlaySplash();
+                    // Splash to + tiếng "tủm" do FishingBobber tự phát đúng lúc hết FlyTo (thời gian bay = castDuration).
+                    if (_bobber != null) { _bobber.Bob(false); }
                     break;
 
                 case FishingPhase.Bite:
+                    // Phao tự giật xuống + ring nhỏ lặp 0.4 s trong Bob(true).
                     if (_bobber != null) { _bobber.Bob(true); }
                     FishingAudio.PlayBite();
                     VibrateIfAllowed();
@@ -224,7 +267,8 @@ namespace FarmGame.Fishing
                     FishingAudio.PlayReel();
                     if (_bobber != null)
                     {
-                        FishingSplashPool.Shared.Play(_bobber.WaterPoint, _bobber.Renderer, 1.3f);
+                        // Thu: splash nhỏ (1 ring + 4 giọt).
+                        FishingSplashPool.Shared.PlaySmall(_bobber.WaterPoint, _bobber.Renderer, 1f);
                         _bobber.Hide();
                     }
                     break;
@@ -233,7 +277,7 @@ namespace FarmGame.Fishing
                     if (prev == FishingPhase.Waiting && _bobber != null)
                     {
                         // Thu sớm: Waiting → Result thẳng, chưa có splash thu.
-                        FishingSplashPool.Shared.Play(_bobber.WaterPoint, _bobber.Renderer, 0.8f);
+                        FishingSplashPool.Shared.PlaySmall(_bobber.WaterPoint, _bobber.Renderer, 0.8f);
                         FishingAudio.PlayReel();
                     }
                     if (_bobber != null) { _bobber.Hide(); }
@@ -244,6 +288,7 @@ namespace FarmGame.Fishing
                     if (_rodVisual != null) { _rodVisual.SetVisible(false); }
                     if (_bobber != null) { _bobber.Hide(); }
                     SetMovementLocked(false);
+                    IsPerfectCast = false;
                     _activeRod = null;
                     _pendingFish = null;
                     if (_rodBrokeThisCast)
@@ -314,10 +359,11 @@ namespace FarmGame.Fishing
         }
 
         /// <summary>
-        /// Điểm phao rơi: từ người theo hướng ra mép nước gần nhất, xa ít nhất cfg.castDistance và lọt hẳn vào nước (WaterInset).
-        /// Không lọt → mép + inset; vẫn không → điểm ngẫu nhiên trong vùng.
+        /// Điểm phao rơi: từ người theo hướng ra mép nước gần nhất, xa desiredReach (kẹp sàn = mép + WaterInset để lọt hẳn vào nước).
+        /// Vượt mép xa của vùng → lùi dần ReachBackStep tới khi Contains (tối thiểu mép + inset); vẫn không → điểm gần nhất trên vùng
+        /// (ClosestPoint) đẩy vào trong 1 inset; vẫn không → điểm ngẫu nhiên trong vùng.
         /// </summary>
-        private Vector2 ComputeBobberTarget()
+        private Vector2 ComputeBobberTarget(float desiredReach)
         {
             FishingPlayerController p = FishingPlayerController.Local;
             Vector2 pos = p != null ? p.Position : (Vector2)transform.position;
@@ -331,8 +377,25 @@ namespace FarmGame.Fishing
             }
             dir.Normalize();
 
-            float reach = Mathf.Max(_cfg.castDistance, _nearDist + WaterInset);
+            float minReach = _nearDist + WaterInset;
+            float reach = Mathf.Max(desiredReach, minReach);
             Vector2 target = pos + dir * reach;
+            if (_nearZone.Contains(target)) { return target; }
+
+            // Quá xa (bay qua bờ bên kia / ra ngoài góc): lùi dần về phía người tới khi lọt vùng.
+            int steps = Mathf.CeilToInt((reach - minReach) / ReachBackStep);
+            for (int i = 1; i <= steps; i++)
+            {
+                float r = Mathf.Max(minReach, reach - ReachBackStep * i);
+                target = pos + dir * r;
+                if (_nearZone.Contains(target)) { return target; }
+            }
+
+            // Kẹp về điểm gần nhất trên vùng rồi đẩy vào trong theo hướng quăng.
+            Vector2 cp = _nearZone.ClosestPoint(pos + dir * reach);
+            target = cp + dir * WaterInset;
+            if (_nearZone.Contains(target)) { return target; }
+            target = cp - dir * WaterInset;   // mép xa: đẩy ngược về phía người
             if (_nearZone.Contains(target)) { return target; }
 
             target = _nearPoint + dir * WaterInset;

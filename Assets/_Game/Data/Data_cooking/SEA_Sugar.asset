@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: sugar
   displayName: Sugar
-  icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
+  icon: {fileID: 4753285142331481805, guid: 78fd964358474ac3b75fd49205470955, type: 3}
   kind: 1
   tier: 1
   vector:

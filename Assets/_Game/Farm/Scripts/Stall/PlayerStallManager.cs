@@ -460,6 +460,13 @@ public class PlayerStallManager : MonoBehaviour
         if (catalog != null && catalog.Contains(itemId))
             return catalog.GetSourceStore(itemId);
 
+        // [Vòng 16] Kho NGOÀI (giỏ cá…) cắm qua StallExternalStores. Hỏi trước bước "kho nào đang
+        // giữ" vì kho ngoài trả lời ổn định kể cả khi số lượng = 0; không có kho ngoài → bỏ qua.
+        if (StallExternalStores.TryFindOwner(itemId, out StallSourceStore ngoai, out _, out _))
+        {
+            return ngoai;
+        }
+
         // Không có sổ tra → suy từ kho nào đang thực sự giữ món này. Chỉ đúng khi trong
         // kho còn hàng, nên đây là đường CUỐI CÙNG, không phải đường chính.
         if (WarehouseManager.Instance != null && WarehouseManager.Instance.GetAmount(itemId) > 0)
@@ -472,7 +479,14 @@ public class PlayerStallManager : MonoBehaviour
     {
         if (string.IsNullOrEmpty(itemId)) return 0;
 
-        return GetSourceStore(itemId) == StallSourceStore.SeedWarehouse
+        // [Vòng 16] Kho ngoài — TryGet chỉ true cho store đã đăng ký (không bao giờ là 2 kho farm gốc).
+        StallSourceStore src = GetSourceStore(itemId);
+        if (StallExternalStores.TryGet(src, out IStallExternalStore khoNgoai))
+        {
+            return Mathf.Max(0, khoNgoai.GetAvailable(itemId));
+        }
+
+        return src == StallSourceStore.SeedWarehouse
             ? (WarehouseManager.Instance != null ? WarehouseManager.Instance.GetAmount(itemId) : 0)
             : (FarmInventoryManager.Instance != null ? FarmInventoryManager.Instance.GetAmount(itemId) : 0);
     }
@@ -516,11 +530,23 @@ public class PlayerStallManager : MonoBehaviour
             }
         }
 
+        // [Vòng 16] Kho ngoài (giỏ cá…). Không có kho nào đăng ký → không thêm gì.
+        StallExternalStores.EnumerateSellable(result);
+
         return result;
     }
 
     private bool TryTakeFromStore(string itemId, int amount, StallSourceStore store)
     {
+        // [Vòng 16] Kho ngoài. Store lạ (không phải 2 kho farm) mà chưa đăng ký → false, KHÔNG rơi
+        // xuống FarmInventory: trừ nhầm kho nông sản một món nó không có sẽ trả false vô nghĩa,
+        // còn nếu trùng id thì hàng người chơi bị trừ sai kho.
+        if (!StallExternalStores.IsBuiltIn(store))
+        {
+            return StallExternalStores.TryGet(store, out IStallExternalStore khoNgoai)
+                   && khoNgoai.TryTake(itemId, amount);
+        }
+
         if (store == StallSourceStore.SeedWarehouse)
             return WarehouseManager.Instance != null && WarehouseManager.Instance.RemoveItem(itemId, amount);
 
@@ -534,6 +560,15 @@ public class PlayerStallManager : MonoBehaviour
     private bool TryGiveBackToStore(string itemId, int amount, StallSourceStore store)
     {
         if (string.IsNullOrEmpty(itemId) || amount <= 0) return true;   // không có gì để trả
+
+        // [Vòng 16] Kho ngoài. Chưa đăng ký (module tắt / chưa nạp) → false để bên gọi giữ
+        // refundPending và thử lại — KHÔNG được rơi xuống nhánh FarmInventory bên dưới, vì
+        // nhét cá vào kho nông sản là mất hàng theo đúng nghĩa B8 (không lấy ra được).
+        if (!StallExternalStores.IsBuiltIn(store))
+        {
+            return StallExternalStores.TryGet(store, out IStallExternalStore khoNgoai)
+                   && khoNgoai.GiveBack(itemId, amount);
+        }
 
         if (store == StallSourceStore.SeedWarehouse)
         {

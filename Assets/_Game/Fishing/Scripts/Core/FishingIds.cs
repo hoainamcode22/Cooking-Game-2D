@@ -55,6 +55,8 @@ namespace FarmGame.Fishing
         public const string FarmPopupCanvasName = "Canvas_FishingPopup";
         public const string FarmHudTabName = "Tab_Fishing";
         public const string FarmCounterName = "FishCounter";
+        /// <summary>[Dev E thêm 08/09] Bến Hồ Câu ở farm — công trình bấm vào là vào thẳng scene câu.</summary>
+        public const string FarmDockName = "FishingDock";
         public const int FarmPopupCanvasOrder = 410;
 
         // ── Log ──

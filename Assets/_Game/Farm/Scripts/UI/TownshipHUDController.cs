@@ -83,6 +83,7 @@ namespace FarmGame.UI
         public Button btnTabWarehouse;
         public Button btnTabMarket;
         public Button btnTabCooking;
+        public Button btnTabFishing;
         [HideInInspector] public Button btnTabMission;
         [HideInInspector] public Button btnTabMap;
 
@@ -206,6 +207,22 @@ namespace FarmGame.UI
                 btnTabCooking.onClick.AddListener(OnCookingClicked);
             }
 
+            if (btnTabFishing == null)
+            {
+                Transform nav = btnTabCooking != null ? btnTabCooking.transform.parent : transform.Find("BottomLeft_Nav_Group");
+                if (nav != null)
+                {
+                    Transform tr = nav.Find("Tab_Fishing");
+                    if (tr != null) btnTabFishing = tr.GetComponent<Button>();
+                }
+            }
+
+            if (btnTabFishing != null)
+            {
+                btnTabFishing.onClick.RemoveAllListeners();
+                btnTabFishing.onClick.AddListener(OnFishingClicked);
+            }
+
             if (btnTabMission != null)
             {
                 btnTabMission.onClick.RemoveAllListeners();
@@ -308,6 +325,7 @@ namespace FarmGame.UI
             SetTabLabel(btnTabWarehouse, Loc.T("KHO"));
             SetTabLabel(btnTabMarket, Loc.T("BẢNG TIN CHỢ"));
             SetTabLabel(btnTabCooking, Loc.T("NẤU ĂN"));
+            SetTabLabel(btnTabFishing, Loc.T("CÂU CÁ"));
         }
 
         private void SetTabLabel(Button btn, string text)
@@ -337,6 +355,27 @@ namespace FarmGame.UI
                             img.color = Color.white;
                             img.enabled = true;
                         }
+                    }
+                }
+            }
+
+            if (btnTabFishing != null)
+            {
+                Transform iconTr = btnTabFishing.transform.Find("Icon");
+                if (iconTr != null)
+                {
+                    Image img = iconTr.GetComponent<Image>();
+                    if (img != null && (img.sprite == null || img.sprite.name.Contains("ngoinhacoooking") || img.sprite.name.Contains("Missing")))
+                    {
+#if UNITY_EDITOR
+                        Sprite spr = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Fishing/Art/UI/icon_tab_fishing_hub.png");
+                        if (spr != null)
+                        {
+                            img.sprite = spr;
+                            img.color = Color.white;
+                            img.enabled = true;
+                        }
+#endif
                     }
                 }
             }
@@ -893,6 +932,12 @@ namespace FarmGame.UI
             {
                 UnityEngine.SceneManagement.SceneManager.LoadScene("SampleScene");
             }
+        }
+
+        private void OnFishingClicked()
+        {
+            if (goMissionWidget != null) goMissionWidget.SetActive(false);
+            FarmGame.Fishing.FishingEntryPopupUI.Open();
         }
 
         private void OnMapClicked()

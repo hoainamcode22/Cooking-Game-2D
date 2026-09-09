@@ -13,37 +13,32 @@ MonoBehaviour:
   m_Name: LevelReward_L23
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 23
-  giftGold: 1950
-  giftGems: 7
+  giftGold: 1140
+  giftGems: 2
   giftItems:
-  - itemId: seed_sugarcane
-    displayName: "H\u1EA1t M\xEDa"
-    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
+  - itemId: seed_watermelon
+    displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 3
-  - itemId: seed_ngo
-    displayName: "H\u1EA1t Ng\xF4"
-    icon: {fileID: 1730057366333945802, guid: 9df60862d1abc864c965ccce2cd03229, type: 3}
-    amount: 3
-  - itemId: ngo
-    displayName: "Ng\xF4"
-    icon: {fileID: -7042192715283187022, guid: 7052130bafa12124e87e8448046bae07, type: 3}
-    amount: 5
-  - itemId: sugarcane
-    displayName: "M\xEDa"
-    icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
-    amount: 4
-  - itemId: beef
-    displayName: "Th\u1ECBt B\xF2"
-    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-    amount: 2
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 19
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 10
+  - itemId: dinh
+    displayName: "\u0110inh"
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 8
   - itemId: kinh
     displayName: "K\xEDnh"
     icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
-    amount: 2
+    amount: 3
   unlockEntries:
-  - label: "B\u1EBFn T\xE0u Du L\u1ECBch \u0111\xE3 m\u1EDF"
-    icon: {fileID: 4560433487954533715, guid: f79850f38b909e246a3f676d91e415e9, type: 3}
+  - label: "B\u1ebfn T\u00e0u Du L\u1ecbch \u0111\u00e3 m\u1edf"
+    icon: {fileID: 0}
   unlockDescriptions:
-  - "B\u1EBFn T\xE0u Du L\u1ECBch \u0111\xE3 m\u1EDF"
-  hintText: "B\u1EBFn T\xE0u Du L\u1ECBch \u0111\xE3 m\u1EDF \u2014 ph\u1EE5c v\u1EE5
-    kh\xE1ch du l\u1ECBch \u0111\u1EC3 ki\u1EBFm l\u1EDBn!"
+  - "B\u1ebfn T\u00e0u Du L\u1ecbch \u0111\u00e3 m\u1edf"
+  hintText: "L\u00ean c\u1ea5p 23! M\u1edf shop xem th\u1ee9 m\u1edbi."

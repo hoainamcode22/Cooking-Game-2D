@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -45,6 +46,35 @@ public class PlaceableItemData : BaseItemData
 
     [Tooltip("Giá tăng tốc cố định. 0 = ConstructionManager tự tính theo thời gian còn lại.")]
     public int rushGemCost = 0;
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 🟢 V11 — NGUYÊN LIỆU XÂY DỰNG (gỗ / đá / kính / đinh do tàu lửa mang về)
+    //
+    // Trước đây tàu lửa mang nguyên liệu về nhưng chỉ để BÁN — không có chỗ tiêu.
+    // Từ bản này, công trình đắt tiền đòi thêm nguyên liệu; người chơi buộc phải
+    // chạy chuyến tàu để gom đủ mới xây được.
+    //
+    // Gợi ý cân bằng theo giá vàng (dùng Tools/Map45/10 để điền tự động):
+    //     <  500 vàng : không cần nguyên liệu
+    //     <  1500     : 6 gỗ, 4 đá
+    //     <  3000     : 12 gỗ, 8 đá, 4 đinh
+    //     >= 3000     : 20 gỗ, 14 đá, 8 đinh, 6 kính
+    // ─────────────────────────────────────────────────────────────────────────
+    [Header("Nguyên liệu cần để xây (lấy từ tàu lửa)")]
+    [Tooltip("Để trống = chỉ tốn vàng. Mã hợp lệ: go, da, kinh, dinh, son.")]
+    public List<BuildMaterialCost> materialCosts = new List<BuildMaterialCost>();
+
+    /// <summary>Công trình này có đòi nguyên liệu không.</summary>
+    public bool RequiresMaterials
+    {
+        get
+        {
+            if (materialCosts == null) return false;
+            for (int i = 0; i < materialCosts.Count; i++)
+                if (materialCosts[i].IsValid) return true;
+            return false;
+        }
+    }
 
     /// <summary>
     /// Kích thước ô sau khi xoay <paramref name="rotationSteps"/> lần 90°.

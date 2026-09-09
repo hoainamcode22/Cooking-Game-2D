@@ -1,0 +1,325 @@
+using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
+using UnityEngine.UI;
+
+/// <summary>
+/// VONG 14b — Khung "Nang cap Kho": hien ro CAN gi, DANG CO bao nhieu, THIEU cai nao.
+///
+/// VI SAO CO FILE NAY: backend nguyen lieu da chay day du tu vong 11
+/// (tau lua -> FarmInventoryManager -> WarehouseUpgradeCostTable.TryPay), nhung
+/// UI thi chi co DUY NHAT mot dong chu trong Upgrade_Box. Te hon: bam Nang cap khi
+/// thieu do thi WarehousePopupUI goi ShowUpgradeBlockedMessage() roi goi RefreshUI()
+/// NGAY DONG SAU -> RefreshUpgradeBox() ghi de lai text trong CUNG MOT FRAME, nen
+/// nguoi choi chi thay chu nhap nhay roi mat. Va nut con bi disable khi thieu do
+/// nen bam khong ra gi ca.
+///
+/// CACH LAM: dung TOAN BO khung bang code luc chay, khong dung prefab, khong can
+/// keo tham chieu trong Inspector. Ly do: Popup_WarehouseUpgrade dung san trong scene
+/// dang CHET (khong script nao wire, con text placeholder "Warehouse"), noi lai no
+/// se ton 12+ thao tac keo tay va de sai.
+///
+/// Khung tu dong bam theo Canvas cua WarehousePopup nen thua huong dung sorting order.
+/// </summary>
+public class WarehouseUpgradeReqUI : MonoBehaviour
+{
+    private const int MAX_O = 6;
+
+    private static readonly Color MAU_NEN_TOI   = new Color(0f, 0f, 0f, 0.62f);
+    private static readonly Color MAU_BANG      = new Color(0.99f, 0.95f, 0.86f, 1f);
+    private static readonly Color MAU_VIEN      = new Color(0.55f, 0.38f, 0.20f, 1f);
+    private static readonly Color MAU_CHU       = new Color(0.42f, 0.30f, 0.16f, 1f);
+    private static readonly Color MAU_DU        = new Color(0.20f, 0.55f, 0.20f, 1f);
+    private static readonly Color MAU_THIEU     = new Color(0.82f, 0.24f, 0.20f, 1f);
+    private static readonly Color MAU_O_DU      = new Color(0.90f, 0.97f, 0.88f, 1f);
+    private static readonly Color MAU_O_THIEU   = new Color(1.00f, 0.92f, 0.90f, 1f);
+    private static readonly Color MAU_NUT_BAT   = new Color(0.36f, 0.72f, 0.30f, 1f);
+    private static readonly Color MAU_NUT_TAT   = new Color(0.62f, 0.62f, 0.62f, 1f);
+
+    private TMP_FontAsset _font;
+    private int _capHienTai = -1;
+
+    private RectTransform _bang;
+    private TMP_Text _tieuDe;
+    private TMP_Text _dongVang;
+    private RectTransform _hangO;
+    private Button _nutXacNhan;
+    private TMP_Text _chuNutXacNhan;
+    private TMP_Text _dongCanhBao;
+
+    private readonly List<ONguyenLieu> _oList = new List<ONguyenLieu>();
+    private System.Action _khiXacNhan;
+
+    private class ONguyenLieu
+    {
+        public GameObject root;
+        public Image nen;
+        public Image icon;
+        public TMP_Text ten;
+        public TMP_Text soLuong;
+        public string itemId;
+    }
+
+    // ── Sprite bo goc tu sinh (khong phu thuoc asset nao) ────────────────
+    private static Sprite _spriteBoGoc;
+    private static Sprite SpriteBoGoc()
+    {
+        if (_spriteBoGoc != null) { return _spriteBoGoc; }
+        const int N = 32, R = 10;
+        Texture2D tex = new Texture2D(N, N, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        tex.filterMode = FilterMode.Bilinear;
+        for (int y = 0; y < N; y++)
+        {
+            for (int x = 0; x < N; x++)
+            {
+                float dx = Mathf.Max(Mathf.Max(R - 1 - x, x - (N - R)), 0f);
+                float dy = Mathf.Max(Mathf.Max(R - 1 - y, y - (N - R)), 0f);
+                float d = Mathf.Sqrt(dx * dx + dy * dy);
+                float a = Mathf.Clamp01(R - d);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+        }
+        tex.Apply();
+        _spriteBoGoc = Sprite.Create(tex, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f),
+                                     100f, 0, SpriteMeshType.FullRect,
+                                     new Vector4(R, R, R, R));
+        return _spriteBoGoc;
+    }
+
+    // ── Tao / lay khung ──────────────────────────────────────────────────
+    public static WarehouseUpgradeReqUI LayHoacTao(Transform trongPopup, TMP_FontAsset font)
+    {
+        if (trongPopup == null) { return null; }
+        Canvas canvas = trongPopup.GetComponentInParent<Canvas>();
+        Transform cha = canvas != null ? canvas.transform : trongPopup.root;
+
+        Transform cu = cha.Find("KhungNangCapKho");
+        if (cu != null) { return cu.GetComponent<WarehouseUpgradeReqUI>(); }
+
+        GameObject go = new GameObject("KhungNangCapKho", typeof(RectTransform));
+        go.transform.SetParent(cha, false);
+        WarehouseUpgradeReqUI ui = go.AddComponent<WarehouseUpgradeReqUI>();
+        ui._font = font;
+        ui.Dung();
+        go.SetActive(false);
+        return ui;
+    }
+
+    public void Mo(int capHienTai, System.Action khiXacNhan)
+    {
+        _capHienTai = capHienTai;
+        _khiXacNhan = khiXacNhan;
+        gameObject.SetActive(true);
+        transform.SetAsLastSibling();
+        VeLai();
+    }
+
+    public void Dong() { gameObject.SetActive(false); }
+
+    private void OnEnable() { InvokeRepeating(nameof(VeLai), 0.5f, 0.5f); }
+    private void OnDisable() { CancelInvoke(nameof(VeLai)); }
+
+    // ── Dung khung ───────────────────────────────────────────────────────
+    private void Dung()
+    {
+        RectTransform me = (RectTransform)transform;
+        PhuKin(me);
+
+        Image nenToi = gameObject.AddComponent<Image>();
+        nenToi.color = MAU_NEN_TOI;
+        Button chanClick = gameObject.AddComponent<Button>();
+        chanClick.transition = Selectable.Transition.None;
+        chanClick.onClick.AddListener(Dong);
+
+        _bang = TaoAnh(me, "Bang", MAU_BANG, SpriteBoGoc()).rectTransform;
+        _bang.anchorMin = _bang.anchorMax = new Vector2(0.5f, 0.5f);
+        _bang.pivot = new Vector2(0.5f, 0.5f);
+        _bang.anchoredPosition = Vector2.zero;
+        _bang.sizeDelta = new Vector2(760f, 470f);
+        Button chanXuyen = _bang.gameObject.AddComponent<Button>();
+        chanXuyen.transition = Selectable.Transition.None;   // nuot click, khoi dong nham
+
+        Image vien = TaoAnh(_bang, "Vien", MAU_VIEN, SpriteBoGoc());
+        PhuKin(vien.rectTransform, -5f);
+        vien.rectTransform.SetAsFirstSibling();
+
+        _tieuDe = TaoChu(_bang, "TieuDe", "Nang cap Kho", 34, MAU_CHU, TextAlignmentOptions.Center);
+        Neo(_tieuDe.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -42f), new Vector2(640f, 46f));
+        _tieuDe.fontStyle = FontStyles.Bold;
+
+        _dongVang = TaoChu(_bang, "DongVang", "", 26, MAU_CHU, TextAlignmentOptions.Center);
+        Neo(_dongVang.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -88f), new Vector2(640f, 36f));
+
+        GameObject hang = new GameObject("HangO", typeof(RectTransform));
+        hang.transform.SetParent(_bang, false);
+        _hangO = (RectTransform)hang.transform;
+        Neo(_hangO, new Vector2(0.5f, 1f), new Vector2(0f, -230f), new Vector2(700f, 190f));
+        HorizontalLayoutGroup hlg = hang.AddComponent<HorizontalLayoutGroup>();
+        hlg.spacing = 14f;
+        hlg.childAlignment = TextAnchor.MiddleCenter;
+        hlg.childForceExpandWidth = false;
+        hlg.childForceExpandHeight = false;
+
+        for (int i = 0; i < MAX_O; i++) { _oList.Add(TaoO(_hangO)); }
+
+        _dongCanhBao = TaoChu(_bang, "CanhBao", "", 22, MAU_THIEU, TextAlignmentOptions.Center);
+        Neo(_dongCanhBao.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 118f), new Vector2(700f, 34f));
+
+        Image nutNen = TaoAnh(_bang, "NutXacNhan", MAU_NUT_BAT, SpriteBoGoc());
+        Neo(nutNen.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 62f), new Vector2(320f, 66f));
+        _nutXacNhan = nutNen.gameObject.AddComponent<Button>();
+        _nutXacNhan.targetGraphic = nutNen;
+        _nutXacNhan.onClick.AddListener(BamXacNhan);
+        _chuNutXacNhan = TaoChu(nutNen.rectTransform, "Chu", "NANG CAP", 28, Color.white, TextAlignmentOptions.Center);
+        PhuKin(_chuNutXacNhan.rectTransform);
+        _chuNutXacNhan.fontStyle = FontStyles.Bold;
+
+        Image nutX = TaoAnh(_bang, "NutDong", new Color(0.85f, 0.30f, 0.26f, 1f), SpriteBoGoc());
+        Neo(nutX.rectTransform, new Vector2(1f, 1f), new Vector2(-30f, -30f), new Vector2(54f, 54f));
+        Button bX = nutX.gameObject.AddComponent<Button>();
+        bX.targetGraphic = nutX;
+        bX.onClick.AddListener(Dong);
+        TMP_Text chuX = TaoChu(nutX.rectTransform, "Chu", "X", 30, Color.white, TextAlignmentOptions.Center);
+        PhuKin(chuX.rectTransform);
+        chuX.fontStyle = FontStyles.Bold;
+    }
+
+    private ONguyenLieu TaoO(Transform cha)
+    {
+        ONguyenLieu o = new ONguyenLieu();
+        Image nen = TaoAnh(cha, "O", MAU_O_THIEU, SpriteBoGoc());
+        o.root = nen.gameObject;
+        o.nen = nen;
+        LayoutElement le = nen.gameObject.AddComponent<LayoutElement>();
+        le.preferredWidth = 106f;
+        le.preferredHeight = 170f;
+
+        o.icon = TaoAnh(nen.rectTransform, "Icon", Color.white, null);
+        Neo(o.icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -14f), new Vector2(72f, 72f));
+        o.icon.preserveAspect = true;
+
+        o.ten = TaoChu(nen.rectTransform, "Ten", "", 19, MAU_CHU, TextAlignmentOptions.Center);
+        Neo(o.ten.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -96f), new Vector2(100f, 28f));
+
+        o.soLuong = TaoChu(nen.rectTransform, "SoLuong", "", 24, MAU_THIEU, TextAlignmentOptions.Center);
+        Neo(o.soLuong.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 22f), new Vector2(100f, 32f));
+        o.soLuong.fontStyle = FontStyles.Bold;
+        return o;
+    }
+
+    // ── Cap nhat noi dung ────────────────────────────────────────────────
+    public void VeLai()
+    {
+        if (_bang == null || _capHienTai < 0) { return; }
+
+        if (!WarehouseUpgradeCostTable.CanUpgradeFurther(_capHienTai))
+        {
+            _tieuDe.text = "Kho da o cap toi da";
+            _dongVang.text = "";
+            _dongCanhBao.text = "";
+            foreach (ONguyenLieu o in _oList) { o.root.SetActive(false); }
+            _nutXacNhan.gameObject.SetActive(false);
+            return;
+        }
+
+        WarehouseUpgradeCostTable.Entry e = WarehouseUpgradeCostTable.CostFor(_capHienTai);
+        _tieuDe.text = $"Nang cap Kho  ·  Cap {_capHienTai} → {_capHienTai + 1}";
+
+        FarmEconomyManager eco = FarmEconomyManager.Instance;
+        int vangDangCo = eco != null ? eco.Gold : 0;
+        bool duVang = e.gold <= 0 || vangDangCo >= e.gold;
+        _dongVang.text = $"Vang: <color=#{(duVang ? "338A33" : "D13D33")}>{vangDangCo:n0}</color> / {e.gold:n0}";
+
+        bool duHet = duVang;
+        int n = e.materials != null ? e.materials.Count : 0;
+        for (int i = 0; i < _oList.Count; i++)
+        {
+            ONguyenLieu o = _oList[i];
+            if (i >= n)
+            {
+                o.root.SetActive(false);
+                continue;
+            }
+            o.root.SetActive(true);
+            BuildMaterialCost c = e.materials[i];
+            o.itemId = c.itemId;
+
+            int dangCo = BuildMaterials.Owned(c.itemId);
+            bool du = dangCo >= c.amount;
+            duHet &= du;
+
+            Sprite icon = BuildMaterials.IconOf(c.itemId);
+            o.icon.sprite = icon;
+            o.icon.enabled = true;
+            o.icon.color = icon != null ? Color.white : new Color(0.78f, 0.68f, 0.52f, 1f);
+
+            o.ten.text = BuildMaterials.DisplayNameOf(c.itemId);
+            o.soLuong.text = du ? $"{dangCo}/{c.amount}  ✓" : $"{dangCo}/{c.amount}";
+            o.soLuong.color = du ? MAU_DU : MAU_THIEU;
+            o.nen.color = du ? MAU_O_DU : MAU_O_THIEU;
+        }
+
+        _nutXacNhan.gameObject.SetActive(true);
+        _nutXacNhan.interactable = duHet;
+        Image img = _nutXacNhan.targetGraphic as Image;
+        if (img != null) { img.color = duHet ? MAU_NUT_BAT : MAU_NUT_TAT; }
+        _chuNutXacNhan.text = duHet ? "NANG CAP" : "CHUA DU";
+        _dongCanhBao.text = duHet ? "" : "Con thieu do — gom them tu tau lua roi quay lai.";
+    }
+
+    private void BamXacNhan()
+    {
+        if (_khiXacNhan != null) { _khiXacNhan.Invoke(); }
+        VeLai();
+    }
+
+    // ── Tien ich UI ──────────────────────────────────────────────────────
+    private static void PhuKin(RectTransform rt, float noiRong = 0f)
+    {
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.offsetMin = new Vector2(noiRong, noiRong);
+        rt.offsetMax = new Vector2(-noiRong, -noiRong);
+    }
+
+    private static void Neo(RectTransform rt, Vector2 neo, Vector2 viTri, Vector2 co)
+    {
+        rt.anchorMin = rt.anchorMax = neo;
+        rt.pivot = new Vector2(0.5f, neo.y >= 0.999f ? 1f : (neo.y <= 0.001f ? 0f : 0.5f));
+        rt.anchoredPosition = viTri;
+        rt.sizeDelta = co;
+    }
+
+    private static Image TaoAnh(Transform cha, string ten, Color mau, Sprite sprite)
+    {
+        GameObject go = new GameObject(ten, typeof(RectTransform));
+        go.transform.SetParent(cha, false);
+        Image img = go.AddComponent<Image>();
+        img.color = mau;
+        if (sprite != null)
+        {
+            img.sprite = sprite;
+            img.type = Image.Type.Sliced;
+        }
+        return img;
+    }
+
+    private TMP_Text TaoChu(Transform cha, string ten, string noiDung, float co, Color mau,
+                            TextAlignmentOptions canLe)
+    {
+        GameObject go = new GameObject(ten, typeof(RectTransform));
+        go.transform.SetParent(cha, false);
+        TextMeshProUGUI t = go.AddComponent<TextMeshProUGUI>();
+        if (_font != null) { t.font = _font; }
+        t.text = noiDung;
+        t.fontSize = co;
+        t.color = mau;
+        t.alignment = canLe;
+        t.raycastTarget = false;
+        t.enableWordWrapping = false;
+        t.overflowMode = TextOverflowModes.Overflow;
+        return t;
+    }
+}

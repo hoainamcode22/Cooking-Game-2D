@@ -57,7 +57,7 @@ public class LandRegionSign : MonoBehaviour
 
         if (label != null)
         {
-            if (!ok && !string.IsNullOrEmpty(reason) && reason.StartsWith("Mo o cap"))
+            if (!ok && !string.IsNullOrEmpty(reason) && reason.StartsWith("Mở ở cấp"))
                 label.text = reason.ToUpperInvariant();                  // "MO O CAP 40"
             else if (_region.goldPrice > 0)
                 label.text = $"{_region.displayName}\n{_region.goldPrice:n0} vang";

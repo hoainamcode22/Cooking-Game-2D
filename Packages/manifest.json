@@ -8,6 +8,7 @@
     "com.unity.2d.tilemap": "1.0.0",
     "com.unity.2d.tilemap.extras": "6.0.1",
     "com.unity.2d.tooling": "1.0.2",
+    "com.unity.burst": "1.8.30",
     "com.unity.cinemachine": "3.1.2",
     "com.unity.collab-proxy": "2.11.3",
     "com.unity.feature.2d": "2.0.2",

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmGame.Fishing.RodData
   itemID: rod_tre
   itemName: "C\u1EA7n tre"
-  itemIcon: {fileID: 0}
+  itemIcon: {fileID: 21300000, guid: 3d6cacf55519c576a11b70669e788797, type: 3}
   goldPrice: 300
   diamondPrice: 0
   tier: 1

@@ -13,43 +13,39 @@ MonoBehaviour:
   m_Name: LevelReward_L9
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 9
-  giftGold: 500
-  giftGems: 5
+  giftGold: 345
+  giftGems: 2
   giftItems:
   - itemId: seed_chili
     displayName: "H\u1EA1t \u1EDAt"
     icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
-    amount: 2
+    amount: 4
+  - itemId: seed_hoa_cuc_van_tho
+    displayName: "H\u1EA1t Hoa C\xFAc V\u1EA1n Th\u1ECD"
+    icon: {fileID: 21300000, guid: e74f1aff79be4785b5651151e6ba0f82, type: 3}
+    amount: 4
   - itemId: seed_tulip
     displayName: "H\u1EA1t Tulip"
     icon: {fileID: 0}
-    amount: 2
-  - itemId: tulip
-    displayName: Tulip
-    icon: {fileID: 0}
-    amount: 3
-  - itemId: chili
-    displayName: "\u1EDAt"
-    icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
-    amount: 3
-  - itemId: egg
-    displayName: "Tr\u1EE9ng"
-    icon: {fileID: -8307804571547316847, guid: 20cfa699d7411b0499297e423fec3d8a, type: 3}
-    amount: 2
+    amount: 4
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 6
   - itemId: da
     displayName: "\u0110\xE1"
-    icon: {fileID: -121973485040521977, guid: a68f6969126f0d648a32160873fda832, type: 3}
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 4
+  - itemId: pho_bo_tai
+    displayName: "Ph\u1EDF b\xF2 t\xE1i"
+    icon: {fileID: 21300000, guid: f29f7ee17ae5e7f448949506935154aa, type: 3}
     amount: 1
   unlockEntries:
-  - label: "M\u1EDF kh\xF3a \u1EDAt"
-    icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
-  - label: "M\u1EDF kh\xF3a Tulip, C\xFAc v\u1EA1n th\u1ECD"
-    icon: {fileID: -9055938408451778832, guid: ee879aad837187b4aa8c50051bbdae2a, type: 3}
-  - label: "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
-    icon: {fileID: 950524911477112507, guid: 0772edf2be2709a42bc3f4e453c8fec2, type: 3}
+  - label: "M\u1edf kh\u00f3a \u1edat, Tulip, C\u00fac v\u1ea1n th\u1ecd"
+    icon: {fileID: 21300000, guid: 152f970f6621487081a875ea9f14e19e, type: 3}
+  - label: "Decor b\u1eadc 2 (\u0111\u00e8n t\u01b0\u1eddng, th\u00f9ng g\u1ed7, \u0111\u00e1 l\u1edbn)"
+    icon: {fileID: 0}
   unlockDescriptions:
-  - "M\u1EDF kh\xF3a \u1EDAt"
-  - "M\u1EDF kh\xF3a Tulip, C\xFAc v\u1EA1n th\u1ECD"
-  - "Th\xEAm 1 nh\xE0 d\xE2n nh\u1EADn \u0111\u01A1n h\xE0ng"
-  hintText: "\u1EDAt \u0111\xE3 s\u1EB5n s\xE0ng \u0111\u1EC3 tr\u1ED3ng. Tulip v\xE0
-    C\xFAc v\u1EA1n th\u1ECD s\u1EBD t\xF4 \u0111i\u1EC3m cho n\xF4ng tr\u1EA1i."
+  - "M\u1edf kh\u00f3a \u1edat, Tulip, C\u00fac v\u1ea1n th\u1ecd"
+  - "Decor b\u1eadc 2 (\u0111\u00e8n t\u01b0\u1eddng, th\u00f9ng g\u1ed7, \u0111\u00e1 l\u1edbn)"
+  hintText: "L\u00ean c\u1ea5p 9! M\u1edf shop xem th\u1ee9 m\u1edbi."

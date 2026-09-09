@@ -19,6 +19,14 @@ public enum StallSourceStore
 
     /// <summary>WarehouseManager — CHỈ hạt giống.</summary>
     SeedWarehouse = 1,
+
+    /// <summary>
+    /// [Vòng 16 · Hồ Câu] Giỏ cá (FarmGame.Fishing.FishBasket) — kho NGOÀI, quầy hàng không
+    /// tham chiếu trực tiếp mà đi qua cổng cắm <see cref="StallExternalStores"/>. Không có
+    /// store nào đăng ký cho giá trị này thì quầy coi như không biết cá (hành vi y cũ).
+    /// Thêm ở CUỐI vì listing lưu <c>sourceStoreRaw</c> dạng số.
+    /// </summary>
+    FishBasket = 2,
 }
 
 /// <summary>

@@ -7,10 +7,12 @@ namespace FarmGame.Fishing
     /// Pool splash — plain C# (không MonoBehaviour), kiểu MillFxPool: giữ GameObject đã tạo, SetActive thay Instantiate/Destroy.
     /// Object con nằm dưới root "FishingSplashPool" trong scene; đổi scene root chết → phần tử thành fake-null nên mọi chỗ
     /// so `== null` TƯỜNG MINH (?. / ?? không hiểu fake-null của Unity).
+    /// 3 cỡ: Play (rơi nước: 3 ring + 9 giọt + bọt) · PlaySmall (thu dây: 1 ring + 4 giọt) · PlayRing (cắn: 1 ring nhỏ).
     /// </summary>
     public sealed class FishingSplashPool
     {
-        private const int MaxPooled = 8;   // đủ cho quăng + thu + bot; vượt thì tái dùng cái cũ nhất
+        private const int MaxPooled = 8;   // đủ cho quăng + thu + ring cắn lặp + bot; vượt thì tái dùng cái cũ nhất
+        private const int OrderAboveRef = 1;   // FX vẽ ngay trên phao (order phao + 1)
 
         private static FishingSplashPool _shared;
 
@@ -30,10 +32,28 @@ namespace FarmGame.Fishing
         private Transform _root;
 
         /// <summary>
-        /// Phát splash tại worldPos. sortingRef = SpriteRenderer của phao → vẽ cùng layer, order +100 (luôn TRƯỚC phao/người).
+        /// Splash TO (phao rơi nước) tại worldPos. sortingRef = SpriteRenderer của phao → vẽ cùng layer, order +1.
         /// sortingRef null → layer theo TouristSortingLayers.Visitor, order 100.
         /// </summary>
         public void Play(Vector2 worldPos, SpriteRenderer sortingRef, float scale = 1f)
+        {
+            PlayCustom(worldPos, sortingRef, scale, 3, 9, 5);
+        }
+
+        /// <summary>Splash NHỎ (thu dây / thu sớm): 1 ring + 4 giọt, không bọt.</summary>
+        public void PlaySmall(Vector2 worldPos, SpriteRenderer sortingRef, float scale = 1f)
+        {
+            PlayCustom(worldPos, sortingRef, scale, 1, 4, 0);
+        }
+
+        /// <summary>Chỉ 1 vòng loang nhỏ (phao giật khi cá cắn).</summary>
+        public void PlayRing(Vector2 worldPos, SpriteRenderer sortingRef, float scale = 0.6f)
+        {
+            PlayCustom(worldPos, sortingRef, scale, 1, 0, 0);
+        }
+
+        /// <summary>Splash tuỳ biến số ring (0..3) / giọt (0..10) / bọt (0..5).</summary>
+        public void PlayCustom(Vector2 worldPos, SpriteRenderer sortingRef, float scale, int ringCount, int dropCount, int foamCount)
         {
             if (!Application.isPlaying) { return; }
             string layer;
@@ -41,7 +61,7 @@ namespace FarmGame.Fishing
             if (sortingRef != null)
             {
                 layer = sortingRef.sortingLayerName;
-                order = sortingRef.sortingOrder + 100;
+                order = sortingRef.sortingOrder + OrderAboveRef;
             }
             else
             {
@@ -51,7 +71,7 @@ namespace FarmGame.Fishing
 
             FishingSplashFX fx = Acquire();
             if (fx == null) { return; }
-            fx.Play(worldPos, layer, order, scale);
+            fx.Play(worldPos, layer, order, scale, ringCount, dropCount, foamCount);
         }
 
         /// <summary>Tắt hết splash đang chạy (đổi scene / huỷ controller).</summary>

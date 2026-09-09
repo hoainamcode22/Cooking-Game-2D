@@ -13,40 +13,32 @@ MonoBehaviour:
   m_Name: LevelReward_L13
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 13
-  giftGold: 820
-  giftGems: 5
+  giftGold: 510
+  giftGems: 2
   giftItems:
-  - itemId: seed_sugarcane
-    displayName: "H\u1EA1t M\xEDa"
-    icon: {fileID: 5557485166511092206, guid: 7b46c59d47ad5cb46a7c518167ca8f70, type: 3}
+  - itemId: seed_watermelon
+    displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 3
-  - itemId: seed_lemon
-    displayName: "H\u1EA1t Chanh"
-    icon: {fileID: -220115001068552899, guid: 8ded64fe1c012f84e8c9b9893a7df7ba, type: 3}
-    amount: 2
-  - itemId: sugarcane
-    displayName: "M\xEDa"
-    icon: {fileID: -3956822562075418596, guid: e6c12ff2d0ad38b45af17c41ab41112e, type: 3}
-    amount: 4
-  - itemId: lemon
-    displayName: Chanh
-    icon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 9
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 5
+  - itemId: dinh
+    displayName: "\u0110inh"
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 3
-  - itemId: milk
-    displayName: "S\u1EEFa"
-    icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
-    amount: 1
-  - itemId: kinh
-    displayName: "K\xEDnh"
-    icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
+  - itemId: salad_dua_hau_muoi_ot
+    displayName: "D\u01B0a h\u1EA5u tr\u1ED9n mu\u1ED1i \u1EDBt"
+    icon: {fileID: 21300000, guid: 7e927716e8a5659d8f4668b8ba76494f, type: 3}
     amount: 1
   unlockEntries:
-  - label: "M\xE1y \xC9p M\xEDa \u0111\xE3 m\u1EDF b\xE1n trong Shop"
-    icon: {fileID: -5178242575216520492, guid: bfc7fe251655c4146a2c2dafad2c57d3, type: 3}
-  - label: "M\u1EDF kh\xF3a n\u01B0\u1EDBc m\xEDa"
-    icon: {fileID: 6062651183374977786, guid: fcbf07e621aaf0f4d86841f67367c8be, type: 3}
+  - label: "N\u00e2ng c\u1ea5p kho l\u1ea7n 1"
+    icon: {fileID: 0}
   unlockDescriptions:
-  - "M\xE1y \xC9p M\xEDa \u0111\xE3 m\u1EDF b\xE1n trong Shop"
-  - "M\u1EDF kh\xF3a n\u01B0\u1EDBc m\xEDa"
-  hintText: "M\xE1y \xC9p M\xEDa \u0111\xE3 c\xF3 trong Shop \u2014 \xE9p m\xEDa
-    th\xE0nh n\u01B0\u1EDBc m\xEDa gi\u1EA3i kh\xE1t!"
+  - "N\u00e2ng c\u1ea5p kho l\u1ea7n 1"
+  hintText: "L\u00ean c\u1ea5p 13! M\u1edf shop xem th\u1ee9 m\u1edbi."

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -49,6 +49,17 @@ public class ShopManager : MonoBehaviour
     public List<BaseItemData> buildingList = new List<BaseItemData>();
     public List<BaseItemData> decorList = new List<BaseItemData>();
 
+    // ── [Hồ Câu vòng 14] TAB THỨ 4: CÔNG CỤ ───────────────────────────────────
+    // Bán 4 cần câu (RodData, namespace FarmGame.Fishing) + 1 cái rìu (ToolData).
+    // CHỈ CỘNG THÊM field mới — 3 tab cũ giữ nguyên tên/thứ tự nên tham chiếu đã
+    // kéo sẵn trong scene KHÔNG bị mất. Tool "7. Thêm tab CÔNG CỤ vào Shop" tự
+    // nhân bản nút Decor và gán 3 ô dưới đây khi chúng còn trống.
+    [Header("Tab 4 — Công cụ (Hồ Câu, vòng 14)")]
+    public Button btnTabTool;
+    public Image imgTabTool;
+    public TMP_Text txtTabTool;
+    public List<BaseItemData> toolList = new List<BaseItemData>();
+
     // ── [Decor5] AN MON DECOR CHUA CO ART 5 STAGE ─────────────────
     // 15/19 decor co du bo art 5 stage nen mua ve la co cam giac XAY (vat lieu roi ->
     // xay nua -> hoan thien -> hop qua -> phao hoa). 4 mon con lai chua duoc ve art,
@@ -86,6 +97,9 @@ public class ShopManager : MonoBehaviour
 
     public bool IsOpen => shopPanel != null && shopPanel.activeSelf;
 
+    /// <summary>[Hồ Câu vòng 14] Tab CÔNG CỤ đã được dựng và có hàng để bán chưa.</summary>
+    public bool HasToolTab => btnTabTool != null && toolList != null && toolList.Count > 0;
+
     // ── Vòng đời Unity ───────────────────────────────────────────────────────
 
     private void Awake()
@@ -121,6 +135,8 @@ public class ShopManager : MonoBehaviour
             btnTabBuilding.onClick.AddListener(() => ShowTab(1));
         if (btnTabDecor != null)
             btnTabDecor.onClick.AddListener(() => ShowTab(2));
+        // [Hồ Câu vòng 14] Tab CÔNG CỤ — nút có thể chưa tồn tại ở scene cũ nên luôn null-check.
+        if (btnTabTool != null) { btnTabTool.onClick.AddListener(() => ShowTab(3)); }
 
         LogMonBiAn();
     }
@@ -254,6 +270,7 @@ public class ShopManager : MonoBehaviour
             case 0: currentActiveList = seedList;     break;
             case 1: currentActiveList = buildingList; break;
             case 2: currentActiveList = decorList;    break;
+            case 3: currentActiveList = toolList;     break;   // [Hồ Câu vòng 14] Công cụ
             default:
                 return;
         }
@@ -273,6 +290,8 @@ public class ShopManager : MonoBehaviour
         UpdateSingleTab(imgTabBuilding, txtTabBuilding, currentTabIndex == 1, activeTextColor, inactiveTextColor);
         // Tab 2: Decor
         UpdateSingleTab(imgTabDecor, txtTabDecor, currentTabIndex == 2, activeTextColor, inactiveTextColor);
+        // Tab 3: Tool — [Hồ Câu vòng 14]; UpdateSingleTab đã tự bỏ qua khi tham chiếu null.
+        UpdateSingleTab(imgTabTool, txtTabTool, currentTabIndex == 3, activeTextColor, inactiveTextColor);
     }
 
     private void UpdateSingleTab(Image imgTab, TMP_Text txtTab, bool isActive, Color activeCol, Color inactiveCol)
@@ -406,38 +425,6 @@ public class ShopManager : MonoBehaviour
         return set == null || !set.IsValid;
     }
 
-    /// <summary>
-    /// MON DA BO KHOI SHOP (theo yeu cau cua Sep). Chi AN O SHOP, KHONG xoa khoi
-    /// `buildingList` / `decorList`.
-    ///
-    /// 🔴 VI SAO KHONG XOA THAT ASSET: hai list nay VUA la nguon hien thi shop VUA la
-    /// bang tra cuu de khoi phuc world. `PlacementManager.FindItemById` doc thang tu day
-    /// khi nap save. Xoa entry ⇒ moi vat cua mon do da dat tren map se KHONG spawn lai
-    /// duoc nua (mat do cua nguoi choi, khong the hoan). An o cho hien thi la cach "xoa"
-    /// duy nhat an toan.
-    ///
-    /// Danh sach hien tai:
-    ///   • 120 / 121 / 122 — May Xay Bot, May Ep Mia, May Pho Mai   [Sep, vong 11]
-    ///   • 105            — Khung Hoa                              [Sep, vong 13]
-    ///     (Khung Hoa cung la mon co `soO` rac nang nhat tung thay: 1514 x 1515 o,
-    ///      collider 151.400 world. Vong 13 da nan lai truoc khi an, de neu Sep bat lai
-    ///      thi no khong con pha click nua.)
-    /// </summary>
-    private static bool IsRemovedMachine(BaseItemData item)
-    {
-        if (item == null) return false;
-        string id = item.itemID;
-        if (id == "120" || id == "121" || id == "122") return true;
-        if (id == "105") return true;                      // Khung Hoa — Sep bo vong 13
-
-        string name = (item.itemName ?? "").ToLower();
-        if (name.Contains("máy xay") || name.Contains("máy ép") || name.Contains("máy phô mai"))
-            return true;
-        if (name.Contains("khung hoa")) return true;       // chan them theo TEN, phong khi id doi
-
-        return false;
-    }
-
     /// <summary>Log 1 dong luc khoi dong: da an nhung mon nao khoi shop.</summary>
     private void LogMonBiAn()
     {
@@ -493,10 +480,6 @@ public class ShopManager : MonoBehaviour
             // An mon decor chua co art 5 stage. CHI bo qua o hien thi, KHONG dung
             // decorList nen do da dat trong world khong he bi anh huong.
             if (BiAnViThieuArt(item)) continue;
-
-            // [Yêu cầu Sếp] Ẩn khỏi Store/Shop: 3 máy (vòng 11) + Khung Hoa (vòng 13).
-            // Xem chú thích của IsRemovedMachine để biết vì sao ẩn chứ không xoá asset.
-            if (IsRemovedMachine(item)) continue;
 
             bool match = string.IsNullOrEmpty(keyLower)
                       || (item.itemName != null && item.itemName.ToLower().Contains(keyLower));

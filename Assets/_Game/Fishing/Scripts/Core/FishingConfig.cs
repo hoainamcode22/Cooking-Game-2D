@@ -23,8 +23,21 @@ namespace FarmGame.Fishing
         [Range(0.05f, 0.5f)] public float joystickDeadZone = 0.15f;
 
         [Header("Camera")]
-        [Min(0.5f)] public float cameraOrthoSize = 3.2f;
+        [Tooltip("Nửa chiều cao khung nhìn (unit). 6 = thấy ~20x12 unit ≈ 20 ô ngang (tile iso 1x0.5) — 3.2 cũ chỉ thấy ~11 ô nên tile trông quá to.")]
+        [Min(0.5f)] public float cameraOrthoSize = 6.0f;
         [Range(0.01f, 0.5f)] public float cameraSmoothTime = 0.12f;
+
+        [Header("Zoom camera (pinch 2 ngón / cuộn chuột / 2 nút +−)")]
+        [Tooltip("Zoom vào tối đa (ortho nhỏ nhất).")]
+        [Min(1f)] public float cameraZoomMin = 3.5f;
+        [Tooltip("Zoom xa tối đa (ortho lớn nhất).")]
+        [Min(2f)] public float cameraZoomMax = 11f;
+        [Tooltip("Hiện 2 nút + − trên HUD (cột phải, trên nhóm tab).")]
+        public bool zoomButtonsEnabled = true;
+        [Tooltip("Bước mỗi lần bấm nút, theo tỉ lệ: ortho × (1 + zoomStep) khi zoom xa.")]
+        [Range(0.05f, 1f)] public float zoomStep = 0.25f;
+        [Tooltip("Bù nhân vật khi zoom xa: 0 = giữ nguyên, 1 = phóng nhân vật cùng tỉ lệ zoom")]
+        [Range(0f, 1f)] public float playerScaleZoomCompensation = 0f;
 
         [Header("Nhịp câu (giây)")]
         [Min(0.1f)] public float castDurationSeconds = 0.8f;
@@ -37,8 +50,41 @@ namespace FarmGame.Fishing
         [Range(0f, 1f)] public float baseCatchChance = 0.7f;
         [Tooltip("Khoảng cách tối đa từ người chơi tới mép FishingZone để được quăng (unit).")]
         [Min(0.1f)] public float castRangeFromZone = 1.2f;
-        [Tooltip("Phao bay xa bao nhiêu unit theo hướng nhìn.")]
+        [Tooltip("Phao bay xa bao nhiêu unit theo hướng nhìn (dùng khi quăng KHÔNG qua thanh đo).")]
         [Min(0.2f)] public float castDistance = 1.3f;
+
+        [Header("Thanh đo lực quăng (giữ nút QUĂNG rồi thả)")]
+        [Tooltip("Xa nhất khi thả ở đầu thanh (unit).")]
+        [Min(0.3f)] public float castDistanceMin = 0.9f;
+        [Tooltip("Xa nhất khi thả ở cuối thanh (unit).")]
+        [Min(0.5f)] public float castDistanceMax = 2.4f;
+        [Tooltip("Tốc độ con trượt chạy qua lại (lượt/giây).")]
+        [Range(0.3f, 4f)] public float castChargeSpeed = 1.4f;
+        [Tooltip("Từ mốc này (0..1) trở lên là vùng HOÀN HẢO.")]
+        [Range(0.5f, 0.99f)] public float perfectCastThreshold = 0.88f;
+        [Tooltip("Cộng thêm xác suất bắt khi quăng hoàn hảo.")]
+        [Range(0f, 0.5f)] public float perfectCatchBonus = 0.15f;
+        [Tooltip("Nhân trọng số cá hiếm khi quăng hoàn hảo.")]
+        [Range(1f, 4f)] public float perfectRareMultiplier = 1.5f;
+        [Tooltip("Ranh giới 3 vùng Gần / Vừa / Xa trên thanh (0..1).")]
+        [Range(0.1f, 0.6f)] public float castZoneNearEnd = 0.35f;
+        [Range(0.4f, 0.95f)] public float castZoneMidEnd = 0.7f;
+
+        [Header("Ánh sáng scene câu (prefab ngày-đêm chép nguyên từ farm)")]
+        [Tooltip("Nhân vào cường độ MỌI Light2D trong prefab ngày-đêm, sau khi DayNightCycleController đã tính (LateUpdate). " +
+                 "1 = y farm. Đo 09/09: farm bắn Day 1.57 + Ambient 0.8 (~2.4x) và 3 đèn Point bán kính 43.59 unit — ở farm (world ×150) là vệt nhỏ, " +
+                 "sang scene câu (world 1 unit) phủ nguyên map ⇒ nền đất cháy trắng. 0.5 ⇒ đỉnh trưa ~1.2x, vừa nắng vừa còn thấy màu.")]
+        [Range(0.1f, 1.5f)] public float sceneLightMultiplier = 0.5f;
+        [Tooltip("Sàn cường độ cho đèn Ambient (đèn nền) sau khi nhân — để ban đêm không đen kịt nhân vật. 0 = không sàn.")]
+        [Range(0f, 1f)] public float sceneAmbientFloor = 0.25f;
+        [Tooltip("Áp cả trong Edit Mode (Scene view) để Sếp thấy đúng độ sáng lúc vẽ map. Tắt nếu muốn Scene view sáng như farm.")]
+        public bool sceneLightApplyInEditMode = true;
+
+        [Header("Đèn theo người chơi")]
+        public bool playerLanternEnabled = true;
+        [Min(0.2f)] public float playerLanternRadius = 2.4f;
+        [Range(0f, 3f)] public float playerLanternIntensity = 0.8f;
+        public Color playerLanternColor = new Color(1f, 0.93f, 0.78f, 1f);
         [Tooltip("Rung máy khi cá cắn (mobile).")]
         public bool vibrateOnBite = true;
 
@@ -79,6 +125,13 @@ namespace FarmGame.Fishing
         [Header("Tặng quà")]
         [Min(1)] public int giftGemMin = 1;
         [Min(1)] public int giftGemMax = 20;
+
+        [Header("HUD")]
+        [Tooltip("Hiện khối hồ sơ (avatar + tên + Lv) góc trái-trên HUD scene câu. Mặc định TẮT vì tên đã có PlayerNameTag trên đầu nhân vật; object vẫn được dựng, chỉ ẩn.")]
+        public bool hudShowProfileBlock = false;
+        [Tooltip("Chạm ra ngoài Giỏ / Bạn bè / Chat (nền mờ) thì đóng panel. TẮT mặc định: nền mờ phủ cả cột tab HUD, bấm tab khác phải bấm 2 lần; " +
+                 "panel vẫn đóng bằng X và Escape/Back. Popup toàn màn (chọn nhân vật, Quầy Cá) luôn có nền mờ, không theo cờ này.")]
+        public bool hudPanelTapOutsideCloses = false;
 
         /// <summary>Màu line theo loại kết nối; None = trong suốt.</summary>
         public Color LineColorFor(RelationshipKind kind)

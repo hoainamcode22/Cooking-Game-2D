@@ -13,5 +13,5 @@ MonoBehaviour:
   m_Name: RewardIconLibrary
   m_EditorClassIdentifier: Assembly-CSharp::RewardIconLibrary
   goldSprite: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
-  gemSprite: {fileID: 0}
-  expSprite: {fileID: 0}
+  gemSprite: {fileID: -5564238710932881115, guid: 63b103dfe32bee843a5c100fa9a0968d, type: 3}
+  expSprite: {fileID: 3892462966697499858, guid: b49a0a2e6fc00a44ba1221df39d6701b, type: 3}

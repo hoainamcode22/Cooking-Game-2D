@@ -21,7 +21,7 @@ public static class UIStandardSprites
     public const string PathBtnPaper   = "Assets/Export_Kitchen_UI_Package/Sprites/btn_paper_small.png";
     public const string PathBtnGem     = "Assets/Assetsgame/popup/ui_building_svg/generated_sprites/proc_btn_blue.png"; // nền nút kim cương
     public const string PathIconGem    = "Assets/Assetsgame/kimcuong-removebg-preview.png";                  // icon kim cương
-    public const string PathIconGold   = "Assets/Export_Kitchen_UI_Package/Sprites/icon_gold.png";
+    public const string PathIconGold   = "Assets/Art/UI/Currency/icon_gold.png";                             // icon vàng bông lúa chuẩn
     public const string PathFrameWood  = "Assets/Export_Train_UI_Package/Sprites/popup_frame_wood.png";      // khung gỗ ngoài popup
     public const string PathPanelPaper = "Assets/Export_Train_UI_Package/Sprites/popup_panel_paper.png";     // giấy kem bên trong
     public const string PathRibbon     = "Assets/Export_Train_UI_Package/Sprites/ribbon_banner_gold.png";    // ribbon tiêu đề

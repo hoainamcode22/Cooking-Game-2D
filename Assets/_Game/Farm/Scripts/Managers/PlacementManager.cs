@@ -1107,9 +1107,14 @@ public class PlacementManager : MonoBehaviour
         // từ ĐIỂM NEO, nên độ lệch pivot của bản clone không còn ý nghĩa gì. Giữ lại sẽ là
         // code chết và mời gọi người sau cộng bù hai lần.
 
-        RectInt r = RectFromWorldBounds(b);
-        if (r.width > 0 && r.height > 0)
-            fallbackGridSize = new Vector2Int(r.width, r.height);
+        // 🔴 V14 — trước đây: RectFromWorldBounds(b) → hộp bao VUÔNG chiếu sang lưới ISO
+        // luôn phình thêm một vành ô (1 ô → 3×3). Ghost của vật không tra được data vì
+        // thế tự cho mình 9 ô, tô đỏ hết vùng quanh và không đặt cạnh vật khác được.
+        Vector2Int e = IsoGrid.EstimateSizeFromWorldSize(b.size);
+        if (e.x > 0 && e.y > 0)
+            fallbackGridSize = new Vector2Int(
+                Mathf.Clamp(e.x, 1, _gridSizeSanityLimit),
+                Mathf.Clamp(e.y, 1, _gridSizeSanityLimit));
     }
 
     // ── Footprint / khung xanh ────────────────────────────────────────────────
@@ -1732,6 +1737,22 @@ public class PlacementManager : MonoBehaviour
                 continue;
             }
 
+            // 🔴 P0 VÒNG 14b — CHUỒNG GIA SÚC CŨNG KHÔNG BAO GIỜ LÀ PLACEHOLDER.
+            // Bản vá vòng 11 chỉ chừa PlotController, QUÊN chuồng. Hậu quả đo được:
+            // "Chuồng Gà.asset".prefabToBuild = Pen_03. Scene có 2 object tên "Pen_03":
+            // một cái m_IsActive:1 (chuồng THẬT người chơi đang nuôi) và một placeholder
+            // m_IsActive:0. Mua chuồng gà -> clone tên "Pen_03(Clone)" nên tự nó thoát,
+            // nhưng chuồng THẬT bị SetActive(false) -> map vẫn đúng 1 chuồng, tiền đã trừ.
+            // LoadBuildings() gọi lại hàm này mỗi lần mở game nên chuồng cũ tắt vĩnh viễn.
+            // Chuồng là vật ĐẾM ĐƠN VỊ giống ô đất: nhiều cái cùng tồn tại là bình thường.
+            if (go.GetComponentInChildren<PenMiniPanelUI>(true) != null)
+            {
+                // ⚠ BỌC {} (V10): remove_debug_logs.ps1 xoá dòng Debug.* nhưng KHÔNG xoá `if`.
+                if (go.activeSelf)
+                    { Debug.Log($"[Placement] KHONG tat '{go.name}' du trung ten prefab '{prefabName}' - day la CHUONG that - P0 vong 14b."); }
+                continue;
+            }
+
             go.SetActive(false);
         }
     }
@@ -1765,11 +1786,31 @@ public class PlacementManager : MonoBehaviour
     /// Dùng để biết kích thước ô của một công trình có sẵn trong scene mà ta
     /// không tự Instantiate — quy ước tên này đã được DisablePlaceholderInScene dùng sẵn.
     /// </summary>
+    /// <summary>
+    /// Bóc hậu tố " (n)" mà Unity tự gắn cho bản sao. "Plot_01 (3)" → "Plot_01".
+    /// Không dùng Regex để khỏi thêm using vào file này.
+    /// </summary>
+    private static string BocHauToSoThuTu(string ten)
+    {
+        if (string.IsNullOrEmpty(ten) || ten[ten.Length - 1] != ')') { return ten; }
+        int mo = ten.LastIndexOf('(');
+        if (mo <= 0 || ten[mo - 1] != ' ') { return ten; }
+        for (int i = mo + 1; i < ten.Length - 1; i++)
+        {
+            if (ten[i] < '0' || ten[i] > '9') { return ten; }
+        }
+        if (mo + 1 >= ten.Length - 1) { return ten; }
+        return ten.Substring(0, mo).Trim();
+    }
+
     private PlaceableItemData FindItemByPrefabName(string objectName)
     {
         if (ShopManager.Instance == null || string.IsNullOrEmpty(objectName)) return null;
 
+        // VÒNG 14: Unity tự thêm hậu tố " (1)", " (2)"... cho bản sao trong scene.
+        // Không bóc thì "Plot_01 (1)" tra không ra "Plot_01" → mất data → rơi vào fallback.
         string clean = objectName.Replace("(Clone)", "").Trim();
+        clean = BocHauToSoThuTu(clean);
 
         PlaceableItemData Match(List<BaseItemData> list)
         {
@@ -2349,6 +2390,26 @@ public class PlacementManager : MonoBehaviour
             return GridSizeOf(data, rotationSteps);
         }
 
+        // VÒNG 14 — SỬA LỖI "co=3x4".
+        // Vật đã nằm sẵn trong scene bị Unity đặt tên "Plot_01 (1)".. nên FindItemByPrefabName
+        // tra không ra data → rơi xuống fallbackGridSize. Mà fallbackGridSize lại đo bounds
+        // GHOST CLONE (đã nhân 1.03) qua RectFromWorldBounds — chính hàm chiếu 4 góc AABB
+        // vuông sang iso làm 1 ô phình thành 3x3 / 3x4. Hậu quả: preview thừa ô, không đặt
+        // sát nhau được, và khung lệch tâm (RectFromAnchor đẩy tâm theo HalfDepth).
+        // Cách chữa: đọc thẳng BuildingFootprintKit.SoO của vật đang sửa — đúng nguồn sự thật
+        // mà ComputeRectFor đã dùng, nên hai bên khớp nhau.
+        if (currentlyEditingBuilding != null)
+        {
+            var kitDangSua = currentlyEditingBuilding.GetComponent<BuildingFootprintKit>();
+            if (kitDangSua != null && kitDangSua.SoO.x > 0 && kitDangSua.SoO.y > 0)
+            {
+                Vector2Int soO = new Vector2Int(
+                    Mathf.Clamp(kitDangSua.SoO.x, 1, _gridSizeSanityLimit),
+                    Mathf.Clamp(kitDangSua.SoO.y, 1, _gridSizeSanityLimit));
+                return ((rotationSteps & 1) == 1) ? new Vector2Int(soO.y, soO.x) : soO;
+            }
+        }
+
         // KHÔNG có data (vật do scene tự đặt, không tra ngược được) → đành đo bounds
         // của ghost clone. fallbackGridSize đo LÚC CHƯA XOAY → phải hoán đổi theo bước xoay.
         return ((rotationSteps & 1) == 1)
@@ -2368,17 +2429,76 @@ public class PlacementManager : MonoBehaviour
     /// </summary>
     private static Vector2Int SizeForSpawned(PlaceableItemData data, int rotSteps, GameObject go)
     {
-        if (data != null && (data.gridSize.x > 1 || data.gridSize.y > 1))
-            return data.GetGridSize(rotSteps);
+        // ══════════════════════════════════════════════════════════════════
+        // 🔴 V14 — ĐÂY LÀ LỖI "PLOT VÀ DECOR KHÔNG ĐẶT SÁT NHAU ĐƯỢC".
+        // ══════════════════════════════════════════════════════════════════
+        // Bản cũ:  if (data != null && (data.gridSize.x > 1 || data.gridSize.y > 1))
+        //              return data.GetGridSize(rotSteps);
+        //          return MeasuredCellsOf(go);          // ← rơi vào đây
+        //
+        // Điều kiện `> 1` gộp nhầm HAI chuyện khác hẳn nhau:
+        //     "gridSize chưa ai điền"   và   "gridSize ĐÚNG BẰNG 1×1".
+        // Đồ 1×1 THẬT (ô đất `Đất` → Plot_01, và ~50 decor) rơi xuống nhánh đo,
+        // mà nhánh đo dùng RectFromWorldBounds — hàm chiếu 4 GÓC HỘP BAO VUÔNG
+        // sang lưới ISO. Đã kiểm lại bằng số, ô lưới 300 × 150:
+        //     góc (−150,−75) → ô (−1, 0)      xMin = ⌊−1+0.5⌋ = −1
+        //     góc (+150,−75) → ô ( 0,−1)      xMax = ⌊ 1+0.5⌋+1 = 2  ⇒ rộng 3
+        //     góc (−150,+75) → ô ( 0,+1)      yMin = −1
+        //     góc (+150,+75) → ô (+1, 0)      yMax = 2               ⇒ cao 3
+        // ⇒ MỌI plot / decor đăng ký chiếm 3×3 = 9 Ô và CHẶN CẢ 8 Ô XUNG QUANH.
+        //
+        // Vì sao nhà lại đặt sát được: Home* có gridSize 2×1, chuồng/máy 2×2 —
+        // đều > 1 nên đi nhánh trên, đúng số ô. Đúng y triệu chứng Edric mô tả:
+        // "nhà đặt sát gần nhau được nhưng plot vẫn chưa khít".
+        //
+        // (V13 đã chữa đúng lớp lỗi này nhưng chỉ ở nhánh CUỐI của ComputeRectFor
+        //  — nhánh "không tra được data". Nhánh 2 gọi vào đây thì vẫn còn nguyên.)
+        //
+        // BẢN MỚI: có data thì LUÔN đi qua GridSizeOf — hàm đó đã tự lo hết:
+        //   • gridSize chưa điền / rác  → đo PREFAB bằng IsoGrid.EstimateSizeFromWorldSize
+        //     (phép chiếu ISO ĐÚNG, không phải bao hình vuông)
+        //   • kẹp trần gridSizeSanityLimit
+        //   • hoán chiều theo bước xoay
+        // Quan trọng nhất: ghost lúc ngắm cũng gọi GridSizeOf. Trước đây ghost
+        // tính 1 ô còn vật đặt xong đăng ký 9 ô — hai con số lệch nhau chính là
+        // gốc của mọi chuyện. Giờ CHUNG một nguồn nên không thể lệch nữa.
+        if (data != null) return GridSizeOf(data, rotSteps);
 
-        if (data != null) WarnGridSizeMissing(data);
+        // Không có data (vật designer kéo tay vào scene) → ưu tiên số ô đã nắn
+        // sẵn trong BuildingFootprintKit, giống hệt nhánh cuối của ComputeRectFor.
+        var kit = go != null ? go.GetComponent<BuildingFootprintKit>() : null;
+        if (kit != null && kit.SoO.x > 0 && kit.SoO.y > 0)
+        {
+            var k = new Vector2Int(
+                Mathf.Clamp(kit.SoO.x, 1, _gridSizeSanityLimit),
+                Mathf.Clamp(kit.SoO.y, 1, _gridSizeSanityLimit));
+            return ((rotSteps & 1) == 1) ? new Vector2Int(k.y, k.x) : k;
+        }
+
         return MeasuredCellsOf(go);
     }
 
+    /// <summary>
+    /// Suy số ô từ hộp bao world của một object ĐANG ĐỨNG trên map.
+    ///
+    /// 🔴 V14 — ĐỔI TỪ RectFromWorldBounds SANG EstimateSizeFromWorldSize.
+    /// RectFromWorldBounds trả về VÙNG Ô (có vị trí) bằng cách bao 4 góc hộp vuông,
+    /// nên với lưới ISO nó luôn phình thêm một vành ô (1 ô → 3×3, xem giải thích dài
+    /// ở SizeForSpawned). Ở đây ta chỉ cần KÍCH THƯỚC, và IsoGrid đã có sẵn phép
+    /// nghịch đảo đúng của FootprintWorldSize:
+    ///     hộp bao của N×M ô rộng (N+M)·W/2  ⇒  N+M = rộng / (W/2)
+    /// Dùng đúng hàm đó thì 300 world → 1×1, 600 → 2×2, khớp với cách tool
+    /// Tools/Map45/8 đang tính, nên ba nơi ra cùng một con số.
+    /// </summary>
     private static Vector2Int MeasuredCellsOf(GameObject go)
     {
-        RectInt r = RectFromWorldBounds(MeasureWorldBounds(go));
-        return new Vector2Int(Mathf.Max(1, r.width), Mathf.Max(1, r.height));
+        Bounds b = MeasureWorldBounds(go);
+        if (b.size.x <= 0.001f) return Vector2Int.one;
+
+        Vector2Int e = IsoGrid.EstimateSizeFromWorldSize(b.size);
+        return new Vector2Int(
+            Mathf.Clamp(e.x, 1, _gridSizeSanityLimit),
+            Mathf.Clamp(e.y, 1, _gridSizeSanityLimit));
     }
 
     // Cảnh báo MỘT LẦN cho mỗi asset — nếu không sẽ spam log mỗi frame.

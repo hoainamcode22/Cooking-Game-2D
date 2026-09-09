@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 /// <summary>Loại thưởng mà RewardFlyFX biết bay: vàng, kim cương, EXP (sao xanh).</summary>
 public enum RewardKind
@@ -31,7 +33,7 @@ public enum RewardKind
 ///
 /// SPRITE: lấy từ RewardIconLibrary (Resources/RewardIconLibrary.asset — CẢ GAME dùng
 /// chung 1 bộ icon); thiếu library thì mượn sprite icon HUD đích; vẫn thiếu thì vẽ
-/// fallback runtime (xu vàng tròn / lục giác tím / ngôi sao 5 cánh xanh lá).
+/// fallback runtime (xu vàng tròn / lục giác tím / ngôi sao 5 cánh xanh dương).
 ///
 /// THỜI GIAN: dùng Time.unscaledDeltaTime — thưởng có thể được cộng từ popup đang
 /// pause game (bài học từ MillCollectFlyFX: CoinFlyFX dùng deltaTime nên đứng hình khi
@@ -144,12 +146,14 @@ public class RewardFlyFX : MonoBehaviour
         FarmEconomyManager.OnGoldAddedFx += HandleGoldAdded;
         FarmEconomyManager.OnGemAddedFx += HandleGemAdded;
         PlayerProgressManager.OnExpAddedFx += HandleExpAdded;
+        WarehouseManager.OnItemAddedFx += HandleItemAdded;   // vong 15: vat pham bay ve KHO
     }
 
     private void OnDisable()
     {
         FarmEconomyManager.OnGoldAddedFx -= HandleGoldAdded;
         FarmEconomyManager.OnGemAddedFx -= HandleGemAdded;
+        WarehouseManager.OnItemAddedFx -= HandleItemAdded;
         PlayerProgressManager.OnExpAddedFx -= HandleExpAdded;
 
         for (int i = 0; i < liveIcons.Count; i++)
@@ -306,6 +310,55 @@ public class RewardFlyFX : MonoBehaviour
     }
 
     // ─────────────────────────── LÕI SPAWN ───────────────────────────
+
+    // ─────────────── VONG 15: VAT PHAM BAY VE NUT KHO ───────────────
+    // Vi sao khong them RewardKind.Item: kind chay qua ~8 switch (size, so icon, dich, sprite...),
+    // sua mu de vo thu dang chay. Duong rieng nay TAI DUNG FlyOneIcon (da nhan sprite + target
+    // tuong minh) nen chi them code, khong doi dong cu nao.
+    private RectTransform targetKho;
+
+    private void HandleItemAdded(Sprite icon, int amount)
+    {
+        if (icon == null || amount <= 0) return;
+        SpawnItemFromScreen(icon, amount, DiemXuatPhatHienTai());
+    }
+
+    // (Bản DiemXuatPhatHienTai() thứ hai đã xoá — trùng tên với bản static ở trên
+    //  gây CS0111; bản static đã bao gồm cả logic con trỏ + fallback giữa màn.)
+
+    private RectTransform ResolveKhoTarget()
+    {
+        if (targetKho != null) return targetKho;
+        var hud = FarmGame.UI.TownshipHUDController.Instance;
+        if (hud != null && hud.btnTabWarehouse != null)
+            targetKho = hud.btnTabWarehouse.transform as RectTransform;
+        if (targetKho == null)
+            targetKho = FindByNames("Btn_Tab_Warehouse", "Btn_Warehouse", "Btn_Kho", "Tab_Warehouse", "Warehouse_Button");
+        return targetKho;
+    }
+
+    private void SpawnItemFromScreen(Sprite icon, int amount, Vector2 startScreen)
+    {
+        if (!isActiveAndEnabled || !ResolveCanvas()) return;
+        RectTransform target = ResolveKhoTarget();
+        if (target == null) return;   // khong co nut Kho tren HUD -> bo qua, khong bay lung tung
+
+        Camera uiCam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+        Vector2 endScreen = RectTransformUtility.WorldToScreenPoint(uiCam, target.position);
+        var canvasRect = canvas.transform as RectTransform;
+        if (canvasRect == null) return;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, startScreen, uiCam, out Vector2 startLocal);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, endScreen, uiCam, out Vector2 endLocal);
+
+        for (int i = liveIcons.Count - 1; i >= 0; i--) { if (liveIcons[i] == null) liveIcons.RemoveAt(i); }
+        int count = Mathf.Clamp(amount, 1, 4);   // vat pham: toi da 4 icon moi loai, du thay ro
+        int conCho = Mathf.Max(0, tranIconSong - liveIcons.Count);
+        if (conCho <= 0) return;
+        count = Mathf.Min(count, conCho);
+        if (backC1 < 0f) backC1 = FxEase.BackConstantFor(Mathf.Max(0f, burstOvershoot));
+        for (int i = 0; i < count; i++)
+            StartCoroutine(FlyOneIcon(RewardKind.Gold, icon, target, startLocal, endLocal, i, count));
+    }
 
     private void SpawnFromScreen(RewardKind kind, int amount, Vector2 startScreen)
     {
@@ -664,11 +717,20 @@ public class RewardFlyFX : MonoBehaviour
             if (s != null) return s;
         }
 
-        // 2) Mượn sprite của chính icon HUD đích (pattern GemFlyFX)
+        // 2) Mượn sprite của icon HUD đích (pattern GemFlyFX)
+        //
+        // 🔴 VÒNG 15 — VÌ SAO KHÔNG DÙNG GetComponentInChildren<Image>() NỮA:
+        // targetGem = Diamond_Container, mà GetComponentInChildren trả về Image của CHÍNH
+        // container trước — sprite là hud_currency_base.png = cái NỀN PILL ĐEN XÁM của HUD.
+        // Vì gemSprite trong RewardIconLibrary từng để null nên mọi lần nhận kim cương game
+        // bay bản sao cái pill đen lên HUD — đúng thứ Sếp thấy "khung nền đen xám bay".
+        // EXP cũng dính: Badge_EXP_Star_Placeholder có Image built-in nên bay ô vuông trắng.
+        // Giờ chỉ mượn Image của CON (không lấy chính target), ưu tiên tên có "Icon", và
+        // bỏ qua mọi sprite tên gợi nền/khung (base, bg, background, pill, capsule, frame).
         if (target != null)
         {
-            var img = target.GetComponentInChildren<Image>();
-            if (img != null && img.sprite != null) return img.sprite;
+            Sprite muon = MuonIconCon(target);
+            if (muon != null) return muon;
         }
 
         // 3) Fallback vẽ runtime
@@ -678,6 +740,43 @@ public class RewardFlyFX : MonoBehaviour
             case RewardKind.Gem:  return GetFallbackGem();
             default:              return GetFallbackExp();
         }
+    }
+
+    /// <summary>
+    /// Tìm sprite icon trong các CON của target (bỏ qua chính target). Ưu tiên object tên có
+    /// "Icon"; loại mọi sprite tên gợi nền/khung. Không có thì trả null để rơi về sprite vẽ tay.
+    /// </summary>
+    private static Sprite MuonIconCon(RectTransform target)
+    {
+        Image tot = null;
+        var all = target.GetComponentsInChildren<Image>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            var img = all[i];
+            if (img == null || img.sprite == null) continue;
+            if (img.transform == target) continue;                       // không lấy nền của chính container
+            if (LaSpriteNen(img.sprite.name) || LaSpriteNen(img.gameObject.name)) continue;
+            if (img.gameObject.name.IndexOf("Icon", StringComparison.OrdinalIgnoreCase) >= 0) return img.sprite;
+            if (tot == null) tot = img;
+        }
+        if (tot != null) return tot.sprite;
+
+        // Nếu target không có icon con (ví dụ target chính là Level_Star_Badge),
+        // mượn trực tiếp sprite của target nếu không phải nền/khung
+        var selfImg = target.GetComponent<Image>();
+        if (selfImg != null && selfImg.sprite != null && !LaSpriteNen(selfImg.sprite.name) && !LaSpriteNen(selfImg.gameObject.name))
+            return selfImg.sprite;
+
+        return null;
+    }
+
+    private static bool LaSpriteNen(string ten)
+    {
+        if (string.IsNullOrEmpty(ten)) return false;
+        string t = ten.ToLowerInvariant();
+        return t.Contains("base") || t.Contains("_bg") || t.StartsWith("bg") || t.Contains("background")
+            || t.Contains("pill") || t.Contains("capsule") || t.Contains("frame") || t.Contains("container")
+            || t.Contains("placeholder") || t.Contains("uisprite") || t.Contains("knob");
     }
 
     private static Sprite GetFallbackGold()
@@ -720,9 +819,9 @@ public class RewardFlyFX : MonoBehaviour
     {
         if (fallbackExp != null) return fallbackExp;
 
-        // Ngôi sao 5 cánh xanh lá #7FD64F, viền xanh đậm
-        var fill = new Color(0.498f, 0.839f, 0.310f, 1f); // #7FD64F
-        var rim  = new Color(0.24f, 0.55f, 0.13f, 1f);
+        // Ngôi sao 5 cánh xanh dương / cyan #2EB3FF (Township Blue Star), viền xanh biển đậm
+        var fill = new Color(0.18f, 0.70f, 1.0f, 1f); // #2EB3FF
+        var rim  = new Color(0.08f, 0.45f, 0.85f, 1f); // #1473D9
         fallbackExp = MakePolygonSprite(BuildStar(5, 0.5f, 90f), fill, rim);
         return fallbackExp;
     }

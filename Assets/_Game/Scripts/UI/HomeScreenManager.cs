@@ -30,6 +30,11 @@ public class HomeScreenManager : MonoBehaviour
     [SerializeField] private float frameRate = 8f;
     [SerializeField] private RectTransform foodDecorRect;
 
+    [Header("── Dynamic Atmosphere & FX ──")]
+    [SerializeField] private RectTransform shimmerRect;
+    [SerializeField] private RectTransform[] floatingClouds;
+    [SerializeField] private RectTransform[] floatingSparkles;
+
     [Header("── UI Fun Tips ──")]
     [SerializeField] private TMP_Text txtTipTitle;
     [SerializeField] private TMP_Text txtFunTip;
@@ -43,19 +48,23 @@ public class HomeScreenManager : MonoBehaviour
     [Header("── Danh sách Tip vui nhộn ──")]
     [SerializeField] private List<string> funTips = new List<string>
     {
-        "Grow crops, cook delicious dishes, and build your dream farm!",
-        "Trồng trọt, nấu những món ăn thơm ngon và xây dựng nông trại trong mơ!",
-        "Tưới nước mỗi ngày để hoa màu nhanh lớn và bội thu nhé! 🥕",
-        "Nấu ăn tại Bếp Nông Trại để phục vụ du khách trên những chuyến tàu! 🍲",
-        "Nâng cấp nhà kho để chứa được nhiều nông sản và nguyên liệu quý hơn! 🌾",
-        "Bến tàu du lịch mang tới rất nhiều vị khách phương xa thân thiện! 🚢",
-        "Thu hoạch lúa và ngô để làm bột bánh mì nóng hổi giòn rụm! 🍞"
+        "Bắt đầu ngày mới bằng việc gieo trồng các luống lúa và rau tươi xanh!",
+        "Thử nghiệm nhiều công thức nấu ăn độc đáo tại Nhà Bếp Nông Trại!",
+        "Hoàn thành các đơn hàng tại Bảng Đơn để thu thập EXP và Vàng nâng cấp!",
+        "Nâng cấp Nhà Kho thường xuyên để chứa được nhiều nông sản và nguyên liệu quý hơn!",
+        "Chăm sóc vật nuôi và thu hoạch nông sản tươi mỗi ngày nhé!",
+        "Đón chào những vị khách du lịch thân thiện cập bến để nhận thưởng lớn!"
     };
 
     private float currentProgress = 0f;
     private int currentTipIndex = 0;
     private Coroutine tipCoroutine;
     private Coroutine charAnimCoroutine;
+
+    private Vector2 initialCharacterPos;
+    private Vector2 initialFoodPos;
+    private Vector2[] initialCloudPos;
+    private Vector2[] initialSparklePos;
 
     private void Awake()
     {
@@ -71,7 +80,28 @@ public class HomeScreenManager : MonoBehaviour
     {
         if (imgProgressFill != null) imgProgressFill.fillAmount = 0f;
         if (txtProgressPercent != null) txtProgressPercent.text = "0%";
-        if (txtTipTitle != null) txtTipTitle.text = "🌱 Tip:";
+        if (txtTipTitle != null) txtTipTitle.text = "Mẹo Hay:";
+
+        if (characterRect != null) initialCharacterPos = characterRect.anchoredPosition;
+        if (foodDecorRect != null) initialFoodPos = foodDecorRect.anchoredPosition;
+
+        if (floatingClouds != null && floatingClouds.Length > 0)
+        {
+            initialCloudPos = new Vector2[floatingClouds.Length];
+            for (int i = 0; i < floatingClouds.Length; i++)
+            {
+                if (floatingClouds[i] != null) initialCloudPos[i] = floatingClouds[i].anchoredPosition;
+            }
+        }
+
+        if (floatingSparkles != null && floatingSparkles.Length > 0)
+        {
+            initialSparklePos = new Vector2[floatingSparkles.Length];
+            for (int i = 0; i < floatingSparkles.Length; i++)
+            {
+                if (floatingSparkles[i] != null) initialSparklePos[i] = floatingSparkles[i].anchoredPosition;
+            }
+        }
 
         ShuffleTips();
         tipCoroutine = StartCoroutine(RotateTipsRoutine());
@@ -81,21 +111,72 @@ public class HomeScreenManager : MonoBehaviour
 
     private void Update()
     {
-        // Hiệu ứng thở nhẹ và nhún nhảy của nhân vật & dĩa món ăn
         float time = Time.unscaledTime;
+
+        // 1. Cô bé Tutorial nhún nhảy có hồn + squish thở + nghiêng nhẹ
         if (characterRect != null)
         {
-            float bounceY = Mathf.Sin(time * 3.5f) * 6f;
+            float bounceY = Mathf.Sin(time * 3.5f) * 6.5f;
+            float tiltZ = Mathf.Sin(time * 1.8f) * 2f;
             float squishX = 1f + Mathf.Sin(time * 3.5f) * 0.035f;
             float squishY = 1f - Mathf.Sin(time * 3.5f) * 0.035f;
+            characterRect.anchoredPosition = initialCharacterPos + new Vector2(0f, bounceY);
             characterRect.localScale = new Vector3(squishX, squishY, 1f);
+            characterRect.localEulerAngles = new Vector3(0f, 0f, tiltZ);
         }
 
+        // 2. Dĩa món ăn bồng bềnh lơ lửng + lượn sóng
         if (foodDecorRect != null)
         {
-            float floatY = Mathf.Sin(time * 2.8f + 1f) * 4.5f;
-            float rotZ = Mathf.Sin(time * 2.2f) * 2.5f;
+            float floatY = Mathf.Sin(time * 2.8f + 1f) * 6f;
+            float rotZ = Mathf.Sin(time * 2.2f) * 3f;
+            foodDecorRect.anchoredPosition = initialFoodPos + new Vector2(0f, floatY);
             foodDecorRect.localEulerAngles = new Vector3(0f, 0f, rotZ);
+        }
+
+        // 3. Vệt sáng Shimmer Gleam trượt dọc thanh loading
+        if (shimmerRect != null && imgProgressFill != null)
+        {
+            float totalWidth = 474f;
+            float curWidth = totalWidth * imgProgressFill.fillAmount;
+            if (curWidth > 15f)
+            {
+                if (!shimmerRect.gameObject.activeSelf) shimmerRect.gameObject.SetActive(true);
+                float speed = 280f;
+                float shimmerX = Mathf.Repeat(time * speed, curWidth);
+                shimmerRect.anchoredPosition = new Vector2(shimmerX - (totalWidth * 0.5f) + 15f, 0f);
+            }
+            else
+            {
+                if (shimmerRect.gameObject.activeSelf) shimmerRect.gameObject.SetActive(false);
+            }
+        }
+
+        // 4. Mây trôi lững lờ trên bầu trời nông trại
+        if (floatingClouds != null && initialCloudPos != null)
+        {
+            for (int i = 0; i < floatingClouds.Length; i++)
+            {
+                if (floatingClouds[i] == null || i >= initialCloudPos.Length) continue;
+                float speed = 16f + i * 10f;
+                float driftX = (time * speed) % 2400f;
+                floatingClouds[i].anchoredPosition = new Vector2(-1200f + driftX, initialCloudPos[i].y + Mathf.Sin(time * 1.2f + i) * 6f);
+            }
+        }
+
+        // 5. Hạt sáng lấp lánh lung linh
+        if (floatingSparkles != null && initialSparklePos != null)
+        {
+            for (int i = 0; i < floatingSparkles.Length; i++)
+            {
+                if (floatingSparkles[i] == null || i >= initialSparklePos.Length) continue;
+                float pulse = 0.8f + Mathf.Sin(time * 4f + i * 1.5f) * 0.35f;
+                floatingSparkles[i].localScale = new Vector3(pulse, pulse, 1f);
+                floatingSparkles[i].anchoredPosition = initialSparklePos[i] + new Vector2(
+                    Mathf.Sin(time * 1.5f + i) * 8f,
+                    Mathf.Cos(time * 2.0f + i) * 8f
+                );
+            }
         }
     }
 
@@ -202,7 +283,22 @@ public class HomeScreenManager : MonoBehaviour
         currentProgress = 1f;
         UpdateProgressVisual(1f);
 
-        yield return new WaitForSecondsRealtime(0.25f);
+        // Hiệu ứng nảy punch 100% trước khi chuyển cảnh
+        if (txtProgressPercent != null)
+        {
+            Vector3 origScale = txtProgressPercent.transform.localScale;
+            float pTimer = 0f;
+            while (pTimer < 0.35f)
+            {
+                pTimer += Time.unscaledDeltaTime;
+                float s = 1f + Mathf.Sin((pTimer / 0.35f) * Mathf.PI) * 0.25f;
+                txtProgressPercent.transform.localScale = origScale * s;
+                yield return null;
+            }
+            txtProgressPercent.transform.localScale = origScale;
+        }
+
+        yield return new WaitForSecondsRealtime(0.15f);
 
         if (tipCoroutine != null) StopCoroutine(tipCoroutine);
         if (charAnimCoroutine != null) StopCoroutine(charAnimCoroutine);

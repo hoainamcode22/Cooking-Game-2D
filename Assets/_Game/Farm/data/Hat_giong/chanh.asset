@@ -47,7 +47,7 @@ MonoBehaviour:
   sellGold: 52
   harvestAmount: 4
   plantCost: 1
-  expReward: 38
+  expReward: 46
   sweet: 0
   spicy: 0
   sour: 0

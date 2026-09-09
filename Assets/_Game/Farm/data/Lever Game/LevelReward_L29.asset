@@ -13,40 +13,32 @@ MonoBehaviour:
   m_Name: LevelReward_L29
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 29
-  giftGold: 2550
-  giftGems: 8
+  giftGold: 1710
+  giftGems: 2
   giftItems:
-  - itemId: seed_pepper
-    displayName: "H\u1EA1t Ti\xEAu"
-    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
+  - itemId: seed_watermelon
+    displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
     amount: 3
-  - itemId: seed_cachua
-    displayName: "H\u1EA1t C\xE0 Chua"
-    icon: {fileID: 842159095332149779, guid: 15f6ce835537bf84c9fed09bd7bba1af, type: 3}
-    amount: 3
-  - itemId: cachua
-    displayName: "C\xE0 Chua"
-    icon: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
-    amount: 5
-  - itemId: pepper
-    displayName: "Ti\xEAu"
-    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
-    amount: 4
-  - itemId: milk
-    displayName: "S\u1EEFa"
-    icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
-    amount: 2
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 25
   - itemId: da
     displayName: "\u0110\xE1"
-    icon: {fileID: -121973485040521977, guid: a68f6969126f0d648a32160873fda832, type: 3}
-    amount: 2
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 13
+  - itemId: dinh
+    displayName: "\u0110inh"
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 11
+  - itemId: kinh
+    displayName: "K\xEDnh"
+    icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 6
   unlockEntries:
-  - label: "M\u1EDF to\xE0n b\u1ED9 pool n\u1ED9i dung"
-    icon: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}
-  - label: "Trang tr\xED top"
-    icon: {fileID: 8900534822178026413, guid: 91b8262d1e93b624ab3c18527558d542, type: 3}
+  - label: "M\u1edf to\u00e0n b\u1ed9 pool n\u1ed9i dung"
+    icon: {fileID: 0}
   unlockDescriptions:
-  - "M\u1EDF to\xE0n b\u1ED9 pool n\u1ED9i dung"
-  - "Trang tr\xED top"
-  hintText: "G\u1EA7n t\u1EDBi \u0111\u1EC9nh cao! To\xE0n b\u1ED9 n\u1ED9i dung
-    s\u1EAFp trong t\u1EA7m tay."
+  - "M\u1edf to\u00e0n b\u1ed9 pool n\u1ed9i dung"
+  hintText: "L\u00ean c\u1ea5p 29! M\u1edf shop xem th\u1ee9 m\u1edbi."

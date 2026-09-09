@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5d3a12925fd6efb44ac58fad341d2d6e, type: 3}
+  m_Name: LevelReward_L45
+  m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
+  levelReached: 45
+  giftGold: 4060
+  giftGems: 10
+  giftItems:
+  - itemId: seed_watermelon
+    displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
+    amount: 3
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 56
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 29
+  - itemId: dinh
+    displayName: "\u0110inh"
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 27
+  - itemId: kinh
+    displayName: "K\xEDnh"
+    icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 22
+  unlockEntries:
+  - label: "M\u1edf b\u00e1n L\u00f4 \u0111\u1ea5t 18 (279.600 v\u00e0ng)"
+    icon: {fileID: 21300000, guid: c1d278193612f0d4a95620fb6c62090d, type: 3}
+  - label: "M\u1ed1c 45: qu\u00e0 kim c\u01b0\u01a1ng l\u1edbn"
+    icon: {fileID: 0}
+  unlockDescriptions:
+  - "M\u1edf b\u00e1n L\u00f4 \u0111\u1ea5t 18 (279.600 v\u00e0ng)"
+  - "M\u1ed1c 45: qu\u00e0 kim c\u01b0\u01a1ng l\u1edbn"
+  hintText: "L\u00ean c\u1ea5p 45! M\u1edf shop xem th\u1ee9 m\u1edbi."

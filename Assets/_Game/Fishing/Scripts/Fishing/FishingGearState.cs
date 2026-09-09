@@ -115,6 +115,45 @@ namespace FarmGame.Fishing
             return true;
         }
 
+        /// <summary>
+        /// [Hồ Câu vòng 14] CỘNG CẦN MÀ KHÔNG TRỪ TIỀN — dành cho Shop farm (tab CÔNG CỤ).
+        /// ShopItemUI.BuyItem() đã trừ tiền TRƯỚC khi gọi vào đây, nếu gọi TryBuy thì người chơi
+        /// bị trừ hai lần. TryBuy giữ nguyên cho Quầy Cá (FishCounterPopupUI) — nơi tự lo tiền.
+        ///
+        /// Khác TryBuy: KHÔNG kiểm cấp (khoá cấp do ShopItemUI/ShopLevelLockUI lo bằng unlockLevel),
+        /// KHÔNG trừ tiền, và cần đã sở hữu thì CỘNG DỒN độ bền (giống TryBuy — trả tiền phải nhận đủ hàng),
+        /// chỉ tự trang bị khi trong tay chưa có cần nào dùng được.
+        /// </summary>
+        public bool GrantRod(RodData rod, out string reasonVi)
+        {
+            reasonVi = string.Empty;
+            if (rod == null || string.IsNullOrEmpty(rod.itemID)) { reasonVi = "Cần câu không hợp lệ"; return false; }
+
+            int casts = Mathf.Max(1, rod.durabilityCasts);
+            bool daCo = false;
+            OwnedRod existing = FindOwned(rod.itemID);
+            if (existing != null)
+            {
+                daCo = existing.durabilityLeft > 0;
+                // [Lead vòng 14] CỘNG DỒN, không Mathf.Max: mua lại cần đang còn đầy độ bền mà chỉ giữ số lớn hơn
+                // là người chơi trả tiền không nhận được gì. TryBuy (Quầy Cá) cũng cộng dồn — hai cửa hàng phải giống nhau.
+                existing.durabilityLeft += casts;
+            }
+            else
+            {
+                _owned.Add(new OwnedRod { rodItemId = rod.itemID, durabilityLeft = casts });
+            }
+
+            // Chỉ tự cầm khi đang tay không (hoặc cần đang cầm đã hỏng) — không giật cần xịn khỏi tay Sếp.
+            if (!HasUsableRod) { _equippedId = rod.itemID; }
+
+            reasonVi = daCo ? "Đã cộng thêm độ bền cho cần " + rod.itemName : string.Empty;
+            Debug.Log(FishingIds.LogTag + " Shop cấp cần " + rod.itemID + " (tier " + rod.tier.ToString(CultureInfo.InvariantCulture) + ", độ bền " + casts.ToString(CultureInfo.InvariantCulture) + " lần quăng)" + (daCo ? " — cộng dồn vào cần đã có" : "") + ", KHÔNG trừ tiền ở đây.");
+            Save();
+            OnChanged?.Invoke();
+            return true;
+        }
+
         /// <summary>Cầm cần khác đang sở hữu và còn độ bền.</summary>
         public bool Equip(string rodItemId)
         {

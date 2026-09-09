@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmGame.Fishing.FishData
   fishId: fish_lang
   displayName: "C\xE1 l\u0103ng"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: d9484ed073c60b6f11c176e5ba9ba754, type: 3}
   sellPrice: 220
   rarity: 2
   minRodTier: 3

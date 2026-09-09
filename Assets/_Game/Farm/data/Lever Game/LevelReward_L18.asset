@@ -13,37 +13,28 @@ MonoBehaviour:
   m_Name: LevelReward_L18
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 18
-  giftGold: 1300
-  giftGems: 6
+  giftGold: 785
+  giftGems: 2
   giftItems:
-  - itemId: seed_pepper
-    displayName: "H\u1EA1t Ti\xEAu"
-    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
-    amount: 3
-  - itemId: khoai_tay
-    displayName: "H\u1EA1t Khoai T\xE2y"
-    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
-    amount: 3
   - itemId: seed_watermelon
     displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
     icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
-    amount: 2
-  - itemId: khoaitay
-    displayName: "Khoai T\xE2y"
-    icon: {fileID: 3180391472809286451, guid: c0014274ce5b13e48b90062dd2280b80, type: 3}
-    amount: 4
-  - itemId: beef
-    displayName: "Th\u1ECBt B\xF2"
-    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-    amount: 1
-  - itemId: kinh
-    displayName: "K\xEDnh"
-    icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
-    amount: 2
+    amount: 3
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 14
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 8
+  - itemId: dinh
+    displayName: "\u0110inh"
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 6
   unlockEntries:
-  - label: "M\u1EDF r\u1ED9ng \u0111\u1EA5t khu 2 (\xF4 9\u201314)"
-    icon: {fileID: 21300000, guid: c1d278193612f0d4a95620fb6c62090d, type: 3}
+  - label: "M\u1edf r\u1ed9ng \u0111\u1ea5t khu 2"
+    icon: {fileID: 0}
   unlockDescriptions:
-  - "M\u1EDF r\u1ED9ng \u0111\u1EA5t khu 2 (\xF4 9\u201314)"
-  hintText: "\u0110\xE3 m\u1EDF r\u1ED9ng \u0111\u1EA5t khu 2 \u2014 th\xEAm nhi\u1EC1u
-    \xF4 \u0111\u1EC3 tr\u1ED3ng tr\u1ECDt!"
+  - "M\u1edf r\u1ed9ng \u0111\u1ea5t khu 2"
+  hintText: "L\u00ean c\u1ea5p 18! M\u1edf shop xem th\u1ee9 m\u1edbi."

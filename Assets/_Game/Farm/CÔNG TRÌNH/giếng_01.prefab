@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &8921844604226136458
+--- !u!1 &1059319978018151443
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,32 +8,29 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2208381650326515835}
-  - component: {fileID: 6279115794342069699}
-  - component: {fileID: 2246674400471328899}
-  - component: {fileID: 8561649070742283955}
+  - component: {fileID: 5104831766968321829}
+  - component: {fileID: 7605976631361438192}
   m_Layer: 6
-  m_Name: "gi\u1EBFng_01"
+  m_Name: Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2208381650326515835
+--- !u!4 &5104831766968321829
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8921844604226136458}
+  m_GameObject: {fileID: 1059319978018151443}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -113, y: -325, z: 0}
-  m_LocalScale: {x: 65.0759, y: 65.0759, z: 65.0759}
-  m_ConstrainProportionsScale: 1
-  m_Children:
-  - {fileID: 5104831766968321829}
-  m_Father: {fileID: 0}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.1525, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2208381650326515835}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &7605976631361438192
 SpriteRenderer:
@@ -94,6 +91,41 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
+--- !u!1 &8921844604226136458
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2208381650326515835}
+  - component: {fileID: 6279115794342069699}
+  - component: {fileID: 2246674400471328899}
+  - component: {fileID: 8561649070742283955}
+  m_Layer: 6
+  m_Name: "gi\u1EBFng_01"
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2208381650326515835
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8921844604226136458}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -113, y: -325, z: 0}
+  m_LocalScale: {x: 65.0759, y: 65.0759, z: 65.0759}
+  m_ConstrainProportionsScale: 1
+  m_Children:
+  - {fileID: 5104831766968321829}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!61 &6279115794342069699
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -128,7 +160,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 3.4575}
+  m_Offset: {x: 0, y: 0.7683336}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -138,7 +170,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 3.45, y: 4.61}
+  m_Size: {x: 1.5366672, y: 1.5366672}
   m_EdgeRadius: 0
 --- !u!114 &2246674400471328899
 MonoBehaviour:
@@ -175,35 +207,3 @@ MonoBehaviour:
   mauChip: {r: 1, g: 0.98, b: 0.86, a: 0.92}
   caoChip: 46
   nhipTho: 1
---- !u!1 &1059319978018151443
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 5104831766968321829}
-  - component: {fileID: 7605976631361438192}
-  m_Layer: 6
-  m_Name: Visual
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &5104831766968321829
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1059319978018151443}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1.1525, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2208381650326515835}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -40,7 +40,8 @@ public static class RewardFxSetupTool
     // Bộ icon chính thức đội art bàn giao
     private const string ArtGoldPath = "Assets/Art/UI/Currency/icon_gold.png";
     private const string ArtGemPath  = "Assets/Art/UI/Currency/icon_gem.png";
-    private const string ArtExpPath  = "Assets/Art/UI/Currency/icon_exp_star.png";
+    private const string ArtExpPath  = "Assets/_Game/Farm/Art/UI_OrderBoard/ob_star.png";
+    private const string FallbackExpPath = "Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/exp.png";
 
     /// <summary>
     /// TÊN các sprite VÀNG CŨ cần thay bằng icon chuẩn — SO KHỚP CHÍNH XÁC (phân biệt
@@ -93,7 +94,7 @@ public static class RewardFxSetupTool
         bool libDoi = false;
         libDoi |= GanSpriteNeuTrong(report, ref lib.goldSprite, ArtGoldPath, "goldSprite");
         libDoi |= GanSpriteNeuTrong(report, ref lib.gemSprite,  ArtGemPath,  "gemSprite");
-        libDoi |= GanSpriteNeuTrong(report, ref lib.expSprite,  ArtExpPath,  "expSprite");
+        libDoi |= GanSpriteNeuTrong(report, ref lib.expSprite,  ArtExpPath,  "expSprite", FallbackExpPath);
         if (libDoi)
         {
             EditorUtility.SetDirty(lib);
@@ -134,7 +135,7 @@ public static class RewardFxSetupTool
     [MenuItem(MENU_SETUP, true)]
     private static bool ValidateSetup() => !EditorApplication.isPlaying;
 
-    private static bool GanSpriteNeuTrong(StringBuilder report, ref Sprite field, string path, string tenField)
+    private static bool GanSpriteNeuTrong(StringBuilder report, ref Sprite field, string path, string tenField, string fallbackPath = null)
     {
         if (field != null)
         {
@@ -143,10 +144,13 @@ public static class RewardFxSetupTool
         }
 
         var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        if (sprite == null && !string.IsNullOrEmpty(fallbackPath))
+            sprite = AssetDatabase.LoadAssetAtPath<Sprite>(fallbackPath);
+
         if (sprite != null)
         {
             field = sprite;
-            report.AppendLine($"• Đã gán {tenField} ← {path}");
+            report.AppendLine($"• Đã gán {tenField} ← {sprite.name}");
             return true;
         }
 

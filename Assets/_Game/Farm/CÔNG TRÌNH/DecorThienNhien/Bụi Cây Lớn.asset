@@ -18,7 +18,12 @@ MonoBehaviour:
   goldPrice: 500
   diamondPrice: 0
   prefabToBuild: {fileID: 5088042812807487216, guid: 75182a5b374486c11123a5e8836609a7, type: 3}
-  unlockLevel: 1
+  unlockLevel: 16
   gridSize: {x: 1, y: 1}
   buildTimeSeconds: 0
   rushGemCost: 0
+  materialCosts:
+  - itemId: go
+    amount: 6
+  - itemId: da
+    amount: 4

@@ -4,28 +4,56 @@ using System.IO;
 using System.Text;
 using UnityEditor;
 using UnityEditor.Animations;
+using UnityEditor.U2D.Sprites;
 using UnityEngine;
 
 namespace FarmGame.Fishing
 {
     /// <summary>
-    /// Tool 2: nhân vật người chơi (PlayerF / PlayerM) — importer + 8 clip + AnimatorController + prefab. CHỦ FILE: Dev D.
-    /// Nguồn: Assets/_Game/Fishing/Art/Characters/{Char}/{Char}_{down|left|right|up}_{1..3}.png (canvas F 294x590, M 314x568).
+    /// Tool 2: nhân vật người chơi (PlayerF / PlayerM) — importer + 8 clip + AnimatorController + prefab. CHỦ FILE: Dev D (Dev B thêm khung "cầm cần" 09/09).
+    /// Nguồn đi bộ: Assets/_Game/Fishing/Art/Characters/{Char}/{Char}_{down|left|right|up}_{1..3}.png (canvas F 294x590, M 314x568).
     /// Idle theo hướng: down/up = frame 1, left/right = frame 2. Walk = 4 khoá [bướcA, idle, bướcB, idle] + khoá chốt, 8 fps, loop.
     /// Controller: param DirX/DirY (float), IsMoving/IsFishing (bool); AnyState transitions, IsFishing=true → Idle hướng đó (ưu tiên trước Walk).
     /// Prefab Player_{Char}: SpriteRenderer, Animator, Rigidbody2D, CapsuleCollider2D chân, FishingPlayerController, FishingYSort, con HeadAnchor/HandAnchor.
+    ///
+    /// [Dev B 09/09] KHUNG ANIMATION "CẦM CẦN" (art chưa có — tool bỏ qua êm, animator giữ y cũ 8 state):
+    ///   Nếu tồn tại Assets/_Game/Fishing/Art/Characters/{Char}/Sheet_Fishing.png thì cắt theo lưới 4 hàng × 3 cột:
+    ///     hàng = hướng theo ĐÚNG thứ tự Directions[] (down, left, right, up — khớp FacingDir 0..3 và tên file đi bộ), hàng 0 ở TRÊN CÙNG ảnh;
+    ///     cột 0 = giơ cần chuẩn bị · cột 1 = quăng · cột 2 = giữ cần chờ cá.
+    ///   Kích thước 1 ô = ĐÚNG canvas frame đi bộ của nhân vật đó (đọc từ header PNG {Char}_down_1.png, KHÔNG hard-code):
+    ///     F 294x590 → sheet 882x2360 · M 314x568 → sheet 942x2272. Sheet sai cỡ → báo lỗi, KHÔNG cắt, animator giữ y cũ.
+    ///   Clip Fishing_{dir}: 2 frame đầu chạy 1 lần (0 → 0.175 s cột 0, 0.175 → 0.35 s cột 1) rồi giữ cột 2 (không loop, Animator kẹp frame cuối).
+    ///   Controller: khi có clip, AnyState → Fishing_{dir} thay cho AnyState → Idle_{dir} ở nhánh IsFishing==true; về Idle khi IsFishing==false
+    ///   (transition !IsFishing && !IsMoving → Idle đã có sẵn). Tên tham số animator KHÔNG đổi (FishingIds đã chốt). State count 8 hoặc 12.
+    ///
     /// Idempotent: clip/controller là artifact (ghi đè), prefab cập nhật tại chỗ (chỉ bổ sung thiếu). Wire database.characters nếu trống.
-    /// Bẫy đã tránh: SetTextureSettings ghi đè spriteMode (DecorStageArtTool 589-599); StartAssetEditing bao controller (NPCAnimationSetupTool).
+    /// Sheet đã cắt đúng (12 sprite đúng tên/rect/pivot) thì KHÔNG reimport lại; spriteID giữ theo tên để clip không Missing.
+    /// Bẫy đã tránh: SetTextureSettings ghi đè spriteMode (DecorStageArtTool 589-599); StartAssetEditing bao controller (NPCAnimationSetupTool);
+    /// đọc kích thước sheet từ header PNG vì Texture2D.width là cỡ SAU import (maxTextureSize 2048 mặc định sẽ co sheet 2360 px xuống).
     /// </summary>
     public static class FishingPlayerAnimSetupTool
     {
         private const string MenuRoot = "Tools/Farm Game/Hồ Câu/";
-        private const string MenuSetup = MenuRoot + "2. Nhân vật: importer + anim + prefab";
+        private const string MenuSetup = MenuRoot + "2. Nhân vật: importer + anim + prefab (+ cầm cần nếu có sheet)";
 
         private const float PixelsPerUnit = 100f;
         private const float WalkFps = 8f;
         private const int MinMaxTextureSize = 1024;
+        /// <summary>4 Idle + 4 Walk (chưa có sheet cầm cần).</summary>
         public const int ExpectedStateCount = 8;
+        /// <summary>4 Idle + 4 Walk + 4 Fishing (đã có Sheet_Fishing.png).</summary>
+        public const int ExpectedStateCountWithFishing = 12;
+
+        // ── [Dev B 09/09] Sheet cầm cần ──
+        public const string FishingSheetFileName = "Sheet_Fishing.png";
+        private const int FishingSheetCols = 3;
+        private const int FishingSheetRows = 4;
+        /// <summary>frameRate clip cầm cần: 40 để các mốc 0.175 / 0.35 / 0.5 s rơi đúng bội số 1/40 (7, 14, 20 frame).</summary>
+        private const float FishingClipFps = 40f;
+        private const float FishingCastKeyTime = 0.175f;   // cột 1 (quăng) bắt đầu hiện
+        private const float FishingHoldKeyTime = 0.35f;    // cột 2 (giữ cần) bắt đầu hiện — 2 frame đầu tổng ~0.35 s
+        private const float FishingClipEndTime = 0.5f;     // khoá chốt độ dài clip (vẫn cột 2, Animator kẹp frame cuối)
+        private static readonly string[] FishingColNames = { "raise", "cast", "hold" };
 
         private static readonly string[] Characters = { FishingIds.CharacterF, FishingIds.CharacterM };
         private static readonly string[] Directions = { "down", "left", "right", "up" };   // khớp FacingDir 0..3
@@ -94,7 +122,7 @@ namespace FarmGame.Fishing
             }
             report.AppendLine("Ảnh đặt lại import setting: " + reimported.ToString(CultureInfo.InvariantCulture) + " file.");
 
-            // ── GIAI ĐOẠN B: clip · controller · prefab (ngoài khối đóng băng) ──
+            // ── GIAI ĐOẠN B: (sheet cầm cần) · clip · controller · prefab (ngoài khối đóng băng) ──
             var db = AssetDatabase.LoadAssetAtPath<FishingDatabase>(FishingDataSetupTool.DatabasePath);
             int ok = 0;
             for (int i = 0; i < hopLe.Count; i++)
@@ -168,7 +196,7 @@ namespace FarmGame.Fishing
                 {
                     new ObjectReferenceKeyframe { time = 0f, value = idleSprite },
                     new ObjectReferenceKeyframe { time = 1f / WalkFps, value = idleSprite },
-                }, true);
+                }, true, WalkFps);
 
                 float s = 1f / WalkFps;
                 walk[d] = WriteClip(animFolder + "/Walk_" + Directions[d] + ".anim", new[]
@@ -178,12 +206,30 @@ namespace FarmGame.Fishing
                     new ObjectReferenceKeyframe { time = s * 2f, value = steps[1] },
                     new ObjectReferenceKeyframe { time = s * 3f, value = idleSprite },
                     new ObjectReferenceKeyframe { time = s * 4f, value = steps[0] },   // khoá chốt độ dài + nối vòng lặp
-                }, true);
+                }, true, WalkFps);
+            }
+
+            // [Dev B 09/09] Clip cầm cần — chỉ khi có Sheet_Fishing.png đúng cỡ; không có thì fishing = null, animator giữ y cũ.
+            AnimationClip[] fishing = null;
+            Sprite[,] fishFrames = BuildFishingFrames(ch, frames[0, 0], report);
+            if (fishFrames != null)
+            {
+                fishing = new AnimationClip[4];
+                for (int d = 0; d < Directions.Length; d++)
+                {
+                    fishing[d] = WriteClip(animFolder + "/Fishing_" + Directions[d] + ".anim", new[]
+                    {
+                        new ObjectReferenceKeyframe { time = 0f, value = fishFrames[d, 0] },                    // giơ cần chuẩn bị
+                        new ObjectReferenceKeyframe { time = FishingCastKeyTime, value = fishFrames[d, 1] },    // quăng
+                        new ObjectReferenceKeyframe { time = FishingHoldKeyTime, value = fishFrames[d, 2] },    // giữ cần chờ cá
+                        new ObjectReferenceKeyframe { time = FishingClipEndTime, value = fishFrames[d, 2] },    // khoá chốt: giữ cột 2 tới hết (không loop)
+                    }, false, FishingClipFps);
+                }
             }
 
             // Controller
             string ctrlPath = animFolder + "/" + ch + ".controller";
-            AnimatorController ctrl = BuildController(ctrlPath, idle, walk);
+            AnimatorController ctrl = BuildController(ctrlPath, idle, walk, fishing);
             AssetDatabase.SaveAssets();
             string loiCtrl;
             if (!ControllerHopLe(ctrlPath, out loiCtrl))
@@ -211,12 +257,13 @@ namespace FarmGame.Fishing
             }
             else { report.AppendLine("  ! Chưa có FishingDatabase — chạy menu 1 (Data) rồi chạy lại menu 2 để wire prefab."); }
 
-            report.AppendLine("✔ " + ch + ": 4 Idle + 4 Walk + controller (4 param, " + ExpectedStateCount + " state) · prefab " + (prefabNew ? "TẠO MỚI" : "cập nhật tại chỗ") + ".");
+            int stateCount = fishing != null ? ExpectedStateCountWithFishing : ExpectedStateCount;
+            report.AppendLine("✔ " + ch + ": 4 Idle + 4 Walk" + (fishing != null ? " + 4 Fishing (cầm cần)" : "") + " + controller (4 param, " + stateCount.ToString(CultureInfo.InvariantCulture) + " state) · prefab " + (prefabNew ? "TẠO MỚI" : "cập nhật tại chỗ") + ".");
             return true;
         }
 
         // ─────────────────────────────────────────────────────────────────
-        //  Importer
+        //  Importer (frame đi bộ rời)
         // ─────────────────────────────────────────────────────────────────
 
         /// <summary>Single · BottomCenter · PPU 100 · no mip · Bilinear · alphaIsTransparency · maxTextureSize ≥ 1024. Trả true nếu có thay đổi.</summary>
@@ -262,12 +309,282 @@ namespace FarmGame.Fishing
         }
 
         // ─────────────────────────────────────────────────────────────────
+        //  [Dev B 09/09] Sheet cầm cần: đọc cỡ → cắt 4x3 → nạp 12 sprite
+        // ─────────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// Trả [4 hướng, 3 cột] sprite cầm cần, hoặc null nếu CHƯA có sheet (chờ art) / sheet sai cỡ / cắt lỗi.
+        /// Kích thước ô = canvas frame đi bộ (đọc header PNG {Char}_down_1.png; hỏng thì lấy rect sprite đi bộ).
+        /// </summary>
+        private static Sprite[,] BuildFishingFrames(string ch, Sprite walkDown1, StringBuilder report)
+        {
+            string sheet = SheetPath(ch);
+            if (!File.Exists(sheet))
+            {
+                report.AppendLine("  · " + ch + ": chưa có " + FishingSheetFileName + " — CHỜ ART (đội vẽ giao theo prompt V4), animator giữ " + ExpectedStateCount.ToString(CultureInfo.InvariantCulture) + " state như cũ.");
+                return null;
+            }
+
+            int frameW, frameH;
+            if (!ReadPngSize(PngPath(ch, Directions[0], 1), out frameW, out frameH))
+            {
+                frameW = Mathf.RoundToInt(walkDown1.rect.width);
+                frameH = Mathf.RoundToInt(walkDown1.rect.height);
+            }
+            int needW = FishingSheetCols * frameW;
+            int needH = FishingSheetRows * frameH;
+
+            int sheetW, sheetH;
+            if (!ReadPngSize(sheet, out sheetW, out sheetH))
+            {
+                report.AppendLine("  ✖ " + ch + ": không đọc được kích thước " + FishingSheetFileName + " (không phải PNG hợp lệ?) — bỏ qua cầm cần, animator giữ y cũ.");
+                return null;
+            }
+            if (sheetW != needW || sheetH != needH)
+            {
+                report.AppendLine("  ✖ " + ch + ": " + FishingSheetFileName + " " + Kich(sheetW, sheetH) + " SAI CỠ — cần đúng " + Kich(needW, needH) + " (3 cột × 4 hàng, mỗi ô " + Kich(frameW, frameH) + " = canvas frame đi bộ). Trả đội vẽ. Animator giữ y cũ.");
+                return null;
+            }
+
+            if (SheetDaCatDung(sheet, ch, frameW, frameH))
+            {
+                report.AppendLine("  · " + ch + ": " + FishingSheetFileName + " đã cắt đúng 12 ô " + Kich(frameW, frameH) + " — không reimport.");
+            }
+            else
+            {
+                if (!SliceFishingSheet(sheet, ch, frameW, frameH, sheetW, sheetH, report)) { return null; }
+                AssetDatabase.Refresh();   // PHẢI Refresh trước khi LoadAllAssetsAtPath lấy sprite con
+            }
+
+            var byName = new Dictionary<string, Sprite>(System.StringComparer.Ordinal);
+            Object[] all = AssetDatabase.LoadAllAssetsAtPath(sheet);
+            for (int i = 0; i < all.Length; i++)
+            {
+                var sp = all[i] as Sprite;
+                if (sp != null && !byName.ContainsKey(sp.name)) { byName[sp.name] = sp; }
+            }
+
+            var result = new Sprite[Directions.Length, FishingSheetCols];
+            var thieu = new List<string>();
+            for (int d = 0; d < Directions.Length; d++)
+            {
+                for (int c = 0; c < FishingSheetCols; c++)
+                {
+                    string n = FishingSpriteName(ch, d, c);
+                    Sprite sp;
+                    if (byName.TryGetValue(n, out sp)) { result[d, c] = sp; }
+                    else { thieu.Add(n); }
+                }
+            }
+            if (thieu.Count > 0)
+            {
+                report.AppendLine("  ✖ " + ch + ": sau khi cắt thiếu " + thieu.Count.ToString(CultureInfo.InvariantCulture) + " sprite con (" + string.Join(", ", thieu) + ") — import có thể chưa xong, chạy lại menu 2. Animator giữ y cũ.");
+                return null;
+            }
+
+            report.AppendLine("  ✓ " + ch + ": " + FishingSheetFileName + " " + Kich(sheetW, sheetH) + " → 12 ô " + Kich(frameW, frameH) + " (hàng down/left/right/up · cột giơ/quăng/giữ).");
+            return result;
+        }
+
+        /// <summary>Sheet đã ở chế độ Multiple với đúng 12 sprite (tên, cỡ ô, pivot BottomCenter) chưa? Đúng thì khỏi reimport.</summary>
+        private static bool SheetDaCatDung(string sheet, string ch, int frameW, int frameH)
+        {
+            var importer = AssetImporter.GetAtPath(sheet) as TextureImporter;
+            if (importer == null || importer.spriteImportMode != SpriteImportMode.Multiple) { return false; }
+            if (!Mathf.Approximately(importer.spritePixelsPerUnit, PixelsPerUnit)) { return false; }
+
+            var byName = new Dictionary<string, Sprite>(System.StringComparer.Ordinal);
+            Object[] all = AssetDatabase.LoadAllAssetsAtPath(sheet);
+            int soSprite = 0;
+            for (int i = 0; i < all.Length; i++)
+            {
+                var sp = all[i] as Sprite;
+                if (sp == null) { continue; }
+                soSprite++;
+                if (!byName.ContainsKey(sp.name)) { byName[sp.name] = sp; }
+            }
+            if (soSprite != FishingSheetRows * FishingSheetCols) { return false; }
+
+            for (int d = 0; d < FishingSheetRows; d++)
+            {
+                for (int c = 0; c < FishingSheetCols; c++)
+                {
+                    Sprite sp;
+                    if (!byName.TryGetValue(FishingSpriteName(ch, d, c), out sp)) { return false; }
+                    Rect muon = FishingCellRect(d, c, frameW, frameH);
+                    if (Mathf.RoundToInt(sp.rect.x) != Mathf.RoundToInt(muon.x) || Mathf.RoundToInt(sp.rect.y) != Mathf.RoundToInt(muon.y)) { return false; }
+                    if (Mathf.RoundToInt(sp.rect.width) != frameW || Mathf.RoundToInt(sp.rect.height) != frameH) { return false; }
+                    // pivot của Sprite tính bằng pixel so với rect: BottomCenter = (W/2, 0)
+                    if (Mathf.Abs(sp.pivot.x - frameW * 0.5f) > 0.51f || Mathf.Abs(sp.pivot.y) > 0.51f) { return false; }
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Cắt sheet 4 hàng × 3 cột (chép chuẩn hàm SliceSheet trong FishingWaterAnimSetupTool / CharacterSheetSliceTool):
+        /// sửa importer → ReadTextureSettings → SetTextureSettings → SaveAndReimport → lấy LẠI importer → SpriteRect qua ISpriteEditorDataProvider.
+        /// Hàng 0 (down) nằm TRÊN CÙNG ảnh; gốc toạ độ rect của Unity ở góc dưới-trái nên y = (Rows-1-hàng) × frameH.
+        /// </summary>
+        private static bool SliceFishingSheet(string sheet, string ch, int frameW, int frameH, int sheetW, int sheetH, StringBuilder report)
+        {
+            var importer = AssetImporter.GetAtPath(sheet) as TextureImporter;
+            if (importer == null)
+            {
+                // PNG vừa chép vào Assets/ mà chưa có .meta thì GetAtPath trả null — ép import rồi thử lại.
+                AssetDatabase.ImportAsset(sheet, ImportAssetOptions.ForceSynchronousImport);
+                importer = AssetImporter.GetAtPath(sheet) as TextureImporter;
+            }
+            if (importer == null) { report.AppendLine("  ✖ " + ch + ": không đọc được importer của " + FishingSheetFileName); return false; }
+
+            // THỨ TỰ SỐNG CÒN: sửa importer TRƯỚC → mới ReadTextureSettings → chỉ sửa phần riêng của sprite → SetTextureSettings.
+            importer.textureType = TextureImporterType.Sprite;
+            importer.spriteImportMode = SpriteImportMode.Multiple;
+            importer.spritePixelsPerUnit = PixelsPerUnit;
+            importer.alphaIsTransparency = true;
+            importer.mipmapEnabled = false;
+            importer.filterMode = FilterMode.Bilinear;
+            importer.sRGBTexture = true;
+            importer.npotScale = TextureImporterNPOTScale.None;
+            // maxTextureSize phải >= cạnh lớn nhất (sheet F cao 2360 > 2048 mặc định), không thì Unity co ảnh và rect cắt bị lệch.
+            importer.maxTextureSize = Mathf.Clamp(Mathf.NextPowerOfTwo(Mathf.Max(sheetW, sheetH)), MinMaxTextureSize, 8192);
+
+            var ts = new TextureImporterSettings();
+            importer.ReadTextureSettings(ts);
+            ts.textureType = TextureImporterType.Sprite;
+            ts.spriteMode = (int)SpriteImportMode.Multiple;
+            ts.spriteAlignment = (int)SpriteAlignment.BottomCenter;
+            ts.spriteMeshType = SpriteMeshType.FullRect;
+            ts.spritePixelsPerUnit = PixelsPerUnit;
+            importer.SetTextureSettings(ts);
+            importer.SaveAndReimport();
+
+            // Lấy LẠI importer sau reimport: provider gắn vào instance cũ thì reimport nuốt mất SpriteRect.
+            importer = AssetImporter.GetAtPath(sheet) as TextureImporter;
+            if (importer == null) { report.AppendLine("  ✖ " + ch + ": importer biến mất sau reimport: " + sheet); return false; }
+
+            var factory = new SpriteDataProviderFactories();
+            factory.Init();
+            ISpriteEditorDataProvider provider = factory.GetSpriteEditorDataProviderFromObject(importer);
+            if (provider == null)
+            {
+                report.AppendLine("  ✖ Thiếu package '2D Sprite' (com.unity.2d.sprite) — không lấy được ISpriteEditorDataProvider: " + sheet);
+                return false;
+            }
+            provider.InitSpriteEditorDataProvider();
+
+            // GIỮ NGUYÊN spriteID theo tên: GUID.Generate() vô điều kiện làm clip Fishing_* đứt tham chiếu mỗi lần chạy lại.
+            var oldIds = new Dictionary<string, GUID>(System.StringComparer.Ordinal);
+            SpriteRect[] existing = provider.GetSpriteRects();
+            if (existing != null)
+            {
+                for (int i = 0; i < existing.Length; i++)
+                {
+                    if (existing[i] == null || string.IsNullOrEmpty(existing[i].name)) { continue; }
+                    if (!oldIds.ContainsKey(existing[i].name)) { oldIds[existing[i].name] = existing[i].spriteID; }
+                }
+            }
+
+            int total = FishingSheetRows * FishingSheetCols;
+            var rects = new List<SpriteRect>(total);
+            var pairs = new List<SpriteNameFileIdPair>(total);
+            int giuLai = 0;
+            for (int d = 0; d < FishingSheetRows; d++)
+            {
+                for (int c = 0; c < FishingSheetCols; c++)
+                {
+                    string spriteName = FishingSpriteName(ch, d, c);
+                    GUID id;
+                    if (!oldIds.TryGetValue(spriteName, out id) || id.Empty()) { id = GUID.Generate(); }
+                    else { giuLai++; }
+                    rects.Add(new SpriteRect
+                    {
+                        name = spriteName,
+                        rect = FishingCellRect(d, c, frameW, frameH),
+                        alignment = SpriteAlignment.BottomCenter,
+                        pivot = new Vector2(0.5f, 0f),
+                        border = Vector4.zero,
+                        spriteID = id,
+                    });
+                    pairs.Add(new SpriteNameFileIdPair(spriteName, id));
+                }
+            }
+
+            // Unity 6: SpriteRect đi qua SpriteDataProvider, KHÔNG dùng importer.spritesheet (đã lỗi thời).
+            // Phải đặt CẢ bảng tên↔fileID, không thì lần cắt sau internalID đổi ⇒ clip thành Missing.
+            provider.SetSpriteRects(rects.ToArray());
+            var nameProv = provider.GetDataProvider<ISpriteNameFileIdDataProvider>();
+            if (nameProv != null) { nameProv.SetNameFileIdPairs(pairs); }
+            provider.Apply();
+
+            var applied = provider.targetObject as AssetImporter;
+            if (applied != null) { applied.SaveAndReimport(); }
+            else { importer.SaveAndReimport(); }
+
+            report.AppendLine("  ✓ Cắt " + ch + "/" + FishingSheetFileName + ": " + total.ToString(CultureInfo.InvariantCulture) + " ô " + Kich(frameW, frameH) + " (ảnh " + Kich(sheetW, sheetH) + "), pivot BottomCenter, PPU " + PixelsPerUnit.ToString("0", CultureInfo.InvariantCulture) + ", giữ lại " + giuLai.ToString(CultureInfo.InvariantCulture) + " spriteID cũ.");
+            return true;
+        }
+
+        /// <summary>Rect ô (hàng d, cột c) trong toạ độ Unity (gốc dưới-trái). Hàng 0 ở trên cùng ảnh.</summary>
+        private static Rect FishingCellRect(int d, int c, int frameW, int frameH)
+        {
+            return new Rect(c * frameW, (FishingSheetRows - 1 - d) * frameH, frameW, frameH);
+        }
+
+        /// <summary>Tên sprite con: {Char}_fishing_{dir}_{raise|cast|hold}.</summary>
+        private static string FishingSpriteName(string ch, int d, int c)
+        {
+            return ch + "_fishing_" + Directions[d] + "_" + FishingColNames[c];
+        }
+
+        /// <summary>
+        /// Đọc width/height từ header PNG (IHDR, big-endian ở byte 16..23) — KHÔNG phụ thuộc import setting.
+        /// Texture2D.width/height là cỡ SAU import: sheet cao 2360 px với maxTextureSize 2048 mặc định sẽ bị co, kiểm cỡ bằng texture là sai.
+        /// </summary>
+        private static bool ReadPngSize(string path, out int w, out int h)
+        {
+            w = 0; h = 0;
+            try
+            {
+                if (!File.Exists(path)) { return false; }
+                byte[] b;
+                using (var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    b = new byte[24];
+                    int read = 0;
+                    while (read < b.Length)
+                    {
+                        int n = fs.Read(b, read, b.Length - read);
+                        if (n <= 0) { break; }
+                        read += n;
+                    }
+                    if (read < 24) { return false; }
+                }
+                // Chữ ký PNG: 89 50 4E 47 0D 0A 1A 0A; chunk đầu phải là IHDR ("IHDR" ở byte 12..15).
+                if (b[0] != 0x89 || b[1] != 0x50 || b[2] != 0x4E || b[3] != 0x47) { return false; }
+                if (b[12] != (byte)'I' || b[13] != (byte)'H' || b[14] != (byte)'D' || b[15] != (byte)'R') { return false; }
+                w = (b[16] << 24) | (b[17] << 16) | (b[18] << 8) | b[19];
+                h = (b[20] << 24) | (b[21] << 16) | (b[22] << 8) | b[23];
+                return w > 0 && h > 0;
+            }
+            catch (System.Exception)
+            {
+                return false;
+            }
+        }
+
+        private static string Kich(int w, int h)
+        {
+            return w.ToString(CultureInfo.InvariantCulture) + "x" + h.ToString(CultureInfo.InvariantCulture);
+        }
+
+        // ─────────────────────────────────────────────────────────────────
         //  Clip
         // ─────────────────────────────────────────────────────────────────
 
-        private static AnimationClip WriteClip(string path, ObjectReferenceKeyframe[] keys, bool loop)
+        private static AnimationClip WriteClip(string path, ObjectReferenceKeyframe[] keys, bool loop, float fps)
         {
-            var clip = new AnimationClip { frameRate = WalkFps };
+            var clip = new AnimationClip { frameRate = fps };
             var binding = EditorCurveBinding.PPtrCurve(string.Empty, typeof(SpriteRenderer), "m_Sprite");
             AnimationUtility.SetObjectReferenceCurve(clip, binding, keys);
             AnimationClipSettings s = AnimationUtility.GetAnimationClipSettings(clip);
@@ -291,8 +608,12 @@ namespace FarmGame.Fishing
         //  Controller
         // ─────────────────────────────────────────────────────────────────
 
-        /// <summary>Controller là artifact: có sẵn thì XOÁ rồi tạo lại (khỏi dồn state trùng); prefab gán lại ngay sau.</summary>
-        private static AnimatorController BuildController(string path, AnimationClip[] idle, AnimationClip[] walk)
+        /// <summary>
+        /// Controller là artifact: có sẵn thì XOÁ rồi tạo lại (khỏi dồn state trùng); prefab gán lại ngay sau.
+        /// fishing == null (chưa có sheet) → 8 state, nhánh IsFishing==true trỏ về Idle_{dir} như cũ.
+        /// fishing != null → thêm 4 state Fishing_{dir}, nhánh IsFishing==true trỏ vào đó; về Idle khi IsFishing==false (transition sẵn có).
+        /// </summary>
+        private static AnimatorController BuildController(string path, AnimationClip[] idle, AnimationClip[] walk, AnimationClip[] fishing)
         {
             if (AssetDatabase.LoadAssetAtPath<AnimatorController>(path) != null) { AssetDatabase.DeleteAsset(path); }
 
@@ -305,17 +626,23 @@ namespace FarmGame.Fishing
             AnimatorStateMachine sm = ctrl.layers[0].stateMachine;
             var idleStates = new AnimatorState[4];
             var walkStates = new AnimatorState[4];
+            AnimatorState[] fishStates = fishing != null ? new AnimatorState[4] : null;
             for (int d = 0; d < 4; d++)
             {
                 idleStates[d] = sm.AddState("Idle_" + Directions[d]);
                 idleStates[d].motion = idle[d];
                 walkStates[d] = sm.AddState("Walk_" + Directions[d]);
                 walkStates[d].motion = walk[d];
+                if (fishStates != null)
+                {
+                    fishStates[d] = sm.AddState("Fishing_" + Directions[d]);
+                    fishStates[d].motion = fishing[d];
+                }
             }
             sm.defaultState = idleStates[0];
 
-            // Thứ tự thêm = độ ưu tiên AnyState: IsFishing → Idle hướng đó TRƯỚC, rồi Walk, rồi Idle.
-            for (int d = 0; d < 4; d++) { AddTransition(sm, idleStates[d], d, moving: false, fishing: true); }
+            // Thứ tự thêm = độ ưu tiên AnyState: IsFishing → Fishing (hoặc Idle nếu chưa có clip) hướng đó TRƯỚC, rồi Walk, rồi Idle.
+            for (int d = 0; d < 4; d++) { AddTransition(sm, fishStates != null ? fishStates[d] : idleStates[d], d, moving: false, fishing: true); }
             for (int d = 0; d < 4; d++) { AddTransition(sm, walkStates[d], d, moving: true, fishing: false); }
             for (int d = 0; d < 4; d++) { AddTransition(sm, idleStates[d], d, moving: false, fishing: false); }
 
@@ -326,6 +653,7 @@ namespace FarmGame.Fishing
         /// <summary>
         /// AnyState → state. down: DirY &lt; -0.5 · up: DirY &gt; 0.5 · left: DirX &lt; -0.5 · right: DirX &gt; 0.5 (ngang thêm chặn |DirY| &lt; 0.5).
         /// fishing=true: chỉ điều kiện IsFishing + hướng (bỏ qua IsMoving). fishing=false: IsFishing == false + IsMoving đúng chiều.
+        /// canTransitionToSelf=false nên state Fishing_{dir} (clip không loop) không bị AnyState kích lại từ đầu mỗi frame.
         /// </summary>
         private static void AddTransition(AnimatorStateMachine sm, AnimatorState state, int dirIndex, bool moving, bool fishing)
         {
@@ -365,7 +693,7 @@ namespace FarmGame.Fishing
             }
         }
 
-        /// <summary>Xác minh controller dùng được (statemachine Base Layer tồn tại, đủ state). FishingCheckTool dùng chung.</summary>
+        /// <summary>Xác minh controller dùng được (statemachine Base Layer tồn tại, 8 state chưa có cầm cần hoặc 12 state đã có). FishingCheckTool dùng chung.</summary>
         public static bool ControllerHopLe(string path, out string loi)
         {
             var ctrl = AssetDatabase.LoadAssetAtPath<AnimatorController>(path);
@@ -374,7 +702,7 @@ namespace FarmGame.Fishing
             AnimatorStateMachine sm = ctrl.layers[0].stateMachine;
             if (sm == null) { loi = "Base Layer THIẾU statemachine"; return false; }
             int n = sm.states != null ? sm.states.Length : 0;
-            if (n != ExpectedStateCount) { loi = "có " + n + " state, cần " + ExpectedStateCount; return false; }
+            if (n != ExpectedStateCount && n != ExpectedStateCountWithFishing) { loi = "có " + n + " state, cần " + ExpectedStateCount + " (chưa có sheet cầm cần) hoặc " + ExpectedStateCountWithFishing + " (đã có)"; return false; }
             loi = string.Empty;
             return true;
         }
@@ -393,6 +721,26 @@ namespace FarmGame.Fishing
                 var ps = ctrl.parameters;
                 for (int j = 0; j < ps.Length; j++) { if (ps[j].name == can[i]) { found = true; break; } }
                 if (!found) { missing.Add(can[i]); }
+            }
+            thieu = string.Join(", ", missing);
+            return missing.Count == 0;
+        }
+
+        /// <summary>[Dev B 09/09] Controller đã có đủ 4 state Fishing_{dir} chưa (FishingCheckTool dùng khi Sheet_Fishing.png tồn tại).</summary>
+        public static bool ControllerCoStateFishing(string path, out string thieu)
+        {
+            thieu = string.Empty;
+            var ctrl = AssetDatabase.LoadAssetAtPath<AnimatorController>(path);
+            if (ctrl == null) { thieu = "không load được controller"; return false; }
+            if (ctrl.layers == null || ctrl.layers.Length == 0 || ctrl.layers[0].stateMachine == null) { thieu = "không có statemachine"; return false; }
+            ChildAnimatorState[] states = ctrl.layers[0].stateMachine.states;
+            var missing = new List<string>();
+            for (int d = 0; d < Directions.Length; d++)
+            {
+                string muon = "Fishing_" + Directions[d];
+                bool found = false;
+                for (int i = 0; i < states.Length; i++) { if (states[i].state != null && states[i].state.name == muon) { found = true; break; } }
+                if (!found) { missing.Add(muon); }
             }
             thieu = string.Join(", ", missing);
             return missing.Count == 0;
@@ -497,6 +845,12 @@ namespace FarmGame.Fishing
         public static string PngPath(string ch, string dir, int frame1Based)
         {
             return FishingIds.ArtCharactersRoot + "/" + ch + "/" + ch + "_" + dir + "_" + frame1Based.ToString(CultureInfo.InvariantCulture) + ".png";
+        }
+
+        /// <summary>[Dev B 09/09] Đường dẫn sheet cầm cần của nhân vật (đội vẽ giao theo prompt V4).</summary>
+        public static string SheetPath(string ch)
+        {
+            return FishingIds.ArtCharactersRoot + "/" + ch + "/" + FishingSheetFileName;
         }
 
         public static string ControllerPath(string ch)

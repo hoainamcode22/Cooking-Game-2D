@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::FarmGame.Fishing.FishData
   fishId: fish_tai_tuong
   displayName: "C\xE1 tai t\u01B0\u1EE3ng"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 33c2795ebfc0d333950255eaed75c1fe, type: 3}
   sellPrice: 320
   rarity: 2
   minRodTier: 3

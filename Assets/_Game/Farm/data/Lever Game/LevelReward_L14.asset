@@ -13,44 +13,32 @@ MonoBehaviour:
   m_Name: LevelReward_L14
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 14
-  giftGold: 880
-  giftGems: 5
+  giftGold: 565
+  giftGems: 2
   giftItems:
-  - itemId: seed_hoa_mau_don
-    displayName: "H\u1EA1t Hoa M\u1EABu \u0110\u01A1n"
-    icon: {fileID: 0}
-    amount: 2
-  - itemId: seed_hoa_anh_thao
-    displayName: "H\u1EA1t Hoa Anh Th\u1EA3o"
-    icon: {fileID: 0}
-    amount: 2
-  - itemId: hoa_hong
-    displayName: "Hoa H\u1ED3ng"
-    icon: {fileID: 0}
-    amount: 4
-  - itemId: cachua
-    displayName: "C\xE0 Chua"
-    icon: {fileID: 842159095332149779, guid: 96c480eebb5cbec4a91d9fd42fd43b54, type: 3}
-    amount: 4
-  - itemId: milk
-    displayName: "S\u1EEFa"
-    icon: {fileID: -7435295506528113853, guid: 309bc08c5417bfc48a42313d16d33afb, type: 3}
-    amount: 1
+  - itemId: seed_watermelon
+    displayName: "H\u1EA1t D\u01B0a H\u1EA5u"
+    icon: {fileID: 21300000, guid: 750fae147bfb5d66502740a65fd9291b, type: 3}
+    amount: 3
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 10
   - itemId: da
     displayName: "\u0110\xE1"
-    icon: {fileID: -121973485040521977, guid: a68f6969126f0d648a32160873fda832, type: 3}
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 6
+  - itemId: dinh
+    displayName: "\u0110inh"
+    icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 4
+  - itemId: sup_bi_do_kem
+    displayName: "S\xFAp b\xED \u0111\u1ECF kem s\u1EEFa"
+    icon: {fileID: 21300000, guid: e64bc131392784929293dc5e4163841d, type: 3}
     amount: 1
-  - itemId: seed_hoa_hong
-    displayName: "H\u1EA1t Hoa h\u1ED3ng"
-    icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
-    amount: 2
   unlockEntries:
-  - label: "\u0110\u01A1n 2 m\xF3n xu\u1EA5t hi\u1EC7n nhi\u1EC1u h\u01A1n"
-    icon: {fileID: -6116058755252793876, guid: 6fa3ebb28106006499981cca0d210947, type: 3}
-  - label: "M\u1EDF th\xEAm hoa m\u1EDBi"
-    icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
+  - label: "\u0110\u01a1n 2 m\u00f3n xu\u1ea5t hi\u1ec7n nhi\u1ec1u h\u01a1n"
+    icon: {fileID: 0}
   unlockDescriptions:
-  - "\u0110\u01A1n 2 m\xF3n xu\u1EA5t hi\u1EC7n nhi\u1EC1u h\u01A1n"
-  - "M\u1EDF th\xEAm hoa m\u1EDBi"
-  hintText: "D\xE2n l\xE0ng b\u1EAFt \u0111\u1EA7u \u0111\u1EB7t nhi\u1EC1u \u0111\u01A1n
-    2 m\xF3n h\u01A1n \u2014 chu\u1EA9n b\u1ECB nguy\xEAn li\u1EC7u nh\xE9!"
+  - "\u0110\u01a1n 2 m\u00f3n xu\u1ea5t hi\u1ec7n nhi\u1ec1u h\u01a1n"
+  hintText: "L\u00ean c\u1ea5p 14! M\u1edf shop xem th\u1ee9 m\u1edbi."

@@ -9,12 +9,14 @@ namespace FarmGame.Fishing
     /// Panel bạn bè trong scene câu (con "Panel_Friends" của Canvas_FishingHUD): khung dài cuộn dọc, mỗi bạn 1 FriendCardUI.
     /// "Mời" → FishingNetHub.Friends.InviteToRoom(id, Room.CurrentRoomId). "Tới" → đóng panel, FishingSession.SelectRoom(roomId);
     /// vòng 1 đang trong scene câu chỉ toast "Sẽ đổi phòng ở vòng online". Refresh theo OnFriendsChanged.
+    /// Thoát: X · chạm nền mờ nhạt phía sau (Img_Dim con, phủ cả màn hình) · Escape/Back qua FishingPopupStack (Push OnEnable / Remove OnDisable).
     /// </summary>
     public class FriendsPanelUI : MonoBehaviour
     {
         public static readonly Vector2 PanelSize = new Vector2(720f, 860f);
 
         [Header("Tham chiếu (BuildIfEmpty tự gán nếu trống)")]
+        [SerializeField] private Button btnDim;
         [SerializeField] private Image imgFrame;
         [SerializeField] private Image imgPaper;
         [SerializeField] private TextMeshProUGUI txtHeader;
@@ -33,6 +35,7 @@ namespace FarmGame.Fishing
             if (_wired) { return; }
             _wired = true;
             if (btnClose != null) { btnClose.onClick.AddListener(Close); }
+            if (btnDim != null) { btnDim.onClick.AddListener(Close); }
         }
 
         private void OnEnable()
@@ -41,6 +44,7 @@ namespace FarmGame.Fishing
             Wire();
             IFriendService fs = FishingNetHub.Friends;
             if (fs != null) { fs.OnFriendsChanged -= Refresh; fs.OnFriendsChanged += Refresh; }
+            FishingPopupStack.Push(this);
             Refresh();
         }
 
@@ -48,6 +52,13 @@ namespace FarmGame.Fishing
         {
             IFriendService fs = FishingNetHub.Friends;
             if (fs != null) { fs.OnFriendsChanged -= Refresh; }
+            FishingPopupStack.Remove(this);
+        }
+
+        private void Update()
+        {
+            // Escape / Back Android: chỉ panel ở đỉnh FishingPopupStack đóng, 1 lần mỗi frame.
+            if (FishingPopupStack.ConsumeEscape(this)) { Close(); }
         }
 
         public void Close()
@@ -61,6 +72,20 @@ namespace FarmGame.Fishing
         {
             var rt = transform as RectTransform;
             if (rt != null && rt.sizeDelta == Vector2.zero) { rt.sizeDelta = PanelSize; }
+
+            // Nền mờ nhạt phủ cả màn hình, nằm SAU khung (sibling đầu): chạm ra ngoài panel = đóng.
+            // [Lead vòng 16 — Reviewer L9] Nền mờ chỉ khi cfg.hudPanelTapOutsideCloses: dim 6000 px phủ cả cột tab HUD nên bấm tab khác
+            // khi panel đang mở = bấm dim = đóng, phải bấm 2 lần. Mặc định TẮT (panel HUD không modal, đóng bằng X / Escape).
+            if (FishingDatabase.ConfigOrDefault.hudPanelTapOutsideCloses)
+            {
+                Button dim = FishingUiKit.DimBehindPanel(transform, null, FishingUiKit.DimLight);
+                if (btnDim == null) { btnDim = dim; }
+            }
+            else
+            {
+                Transform dimCu = transform.Find("Img_Dim");
+                if (dimCu != null && dimCu.gameObject.activeSelf) { dimCu.gameObject.SetActive(false); }
+            }
 
             Image frame = FishingUiKit.Panel(transform, "Img_Frame", PanelSize, UIStandardSprites.FrameWood, Vector2.zero, FishingUiKit.FrameFallback);
             if (imgFrame == null) { imgFrame = frame; }

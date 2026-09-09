@@ -13,6 +13,8 @@ namespace FarmGame.Fishing
     /// Bước 2: danh sách phòng (Room.RequestRoomList): tên, "x/10", nút "Vào" (tắt khi đầy) + Quay lại.
     /// "Vào" → FishingSession.SelectCharacter/SelectRoom/EnterFishingScene. OpenForInvite → nhân vật đã lưu, nhấn mạnh phòng mời, vào ngay nếu còn chỗ.
     /// Guard: FishingDatabase.IsEnabled && level ≥ cfg.unlockLevel. FarmInputLock Register/Unregister cân bằng (_inputLockHeld).
+    /// Thoát: X (đóng hẳn ở mọi bước) · chạm nền mờ · Escape/Back qua FishingPopupStack (chỉ khi ở đỉnh) · Step 2 có "Quay lại" về Step 1.
+    /// Root bị SetActive(false) từ ngoài → Update tự dọn AnyOpen + lock (MarkClosed) để không kẹt PopupManager.
     /// </summary>
     public class FishingEntryPopupUI : MonoBehaviour
     {
@@ -72,14 +74,20 @@ namespace FarmGame.Fishing
             AnyOpen = false;
         }
 
-        private void OnDestroy() { if (Instance == this) { Instance = null; AnyOpen = false; } }
+        private void OnDestroy() { FishingPopupStack.Remove(this); if (Instance == this) { Instance = null; AnyOpen = false; } }
 
-        private void OnDisable() { ReleaseLock(); AnyOpen = false; }
+        private void OnDisable() { MarkClosed(); }
 
         private void Update()
         {
-            if (!IsOpen) { return; }
-            if (UnityEngine.InputSystem.Keyboard.current != null && UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame) { ClosePopup(); }
+            if (!IsOpen)
+            {
+                // Root bị tắt trực tiếp từ ngoài (không qua ClosePopup) → dọn cờ/lock như đã đóng.
+                if (AnyOpen || _inputLockHeld) { MarkClosed(); }
+                return;
+            }
+            // Escape / Back Android: chỉ popup ở đỉnh FishingPopupStack xử lý, 1 lần mỗi frame.
+            if (FishingPopupStack.ConsumeEscape(this)) { ClosePopup(); }
         }
 
         private void Wire()
@@ -143,6 +151,7 @@ namespace FarmGame.Fishing
             root.SetAsLastSibling();
             AnyOpen = true;
             AcquireLock();
+            FishingPopupStack.Push(this);
             RefreshCharacterCards();
             if (fromInvite) { GoToStep2(); } else { GoToStep1(); }
             if (frame != null) { JuicyPulseFX.Play(frame, 1.06f, 0.22f); }
@@ -152,10 +161,17 @@ namespace FarmGame.Fishing
         public void ClosePopup()
         {
             if (!IsOpen) { return; }
-            _roomRequestSerial++;
             root.gameObject.SetActive(false);
+            MarkClosed();
+        }
+
+        /// <summary>Dọn MỌI trạng thái "đang mở": cờ AnyOpen (PopupManager), FarmInputLock, stack Escape, request phòng đang chờ. An toàn gọi nhiều lần.</summary>
+        private void MarkClosed()
+        {
+            _roomRequestSerial++;
             AnyOpen = false;
             ReleaseLock();
+            FishingPopupStack.Remove(this);
         }
 
         private void AcquireLock()

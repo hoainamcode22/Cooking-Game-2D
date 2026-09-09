@@ -12,6 +12,8 @@ namespace FarmGame.Fishing
     /// Tools/Farm Game/Test/Check Fishing — PASS/FAIL từng dòng cho module Hồ Câu. CHỦ FILE: Dev D.
     /// Kiểm: database ở Resources · config.enabled · 4 rod tier 1..4 · rod có itemID · fishId bắt đầu "fish_" · không trùng id ·
     /// 24 PNG · 2 prefab + controller đủ 4 param · scene trong Build Settings · mỗi .cs trong Scripts/ chỉ 1 type top-level, tên = tên file.
+    /// [Dev B 09/09] thêm: (1b) 3 asset công cụ tab Shop (rìu/búa/kéo) — CHỈ kiểm khi thư mục Data/Tools đã có (tool 7 đã chạy), chưa có thì PASS "bỏ qua";
+    /// (2b) Sheet_Fishing.png từng nhân vật — có thì controller phải có 4 state Fishing_{dir} (chạy lại menu 2), chưa có thì PASS "chờ art".
     /// In tổng PASS/FAIL; Debug.LogError nếu có FAIL.
     /// </summary>
     public static class FishingCheckTool
@@ -82,6 +84,9 @@ namespace FarmGame.Fishing
                 }
             }
 
+            // 1b. [Dev B 09/09] Công cụ tab Shop (rìu/búa/kéo) — chỉ kiểm khi tool 7 đã tạo thư mục Data/Tools
+            CheckToolAssets(sb, ref pass, ref fail);
+
             // 2. 24 PNG
             for (int c = 0; c < Characters.Length; c++)
             {
@@ -95,6 +100,20 @@ namespace FarmGame.Fishing
                     }
                 }
                 Check(sb, missing.Count == 0, "12 PNG " + Characters[c] + (missing.Count > 0 ? " — thiếu: " + string.Join(", ", missing) : ""), ref pass, ref fail);
+            }
+
+            // 2b. [Dev B 09/09] Sheet cầm cần — có sheet thì controller phải có 4 state Fishing_{dir}; chưa có thì "chờ art" (PASS)
+            for (int c = 0; c < Characters.Length; c++)
+            {
+                string sheet = FishingPlayerAnimSetupTool.SheetPath(Characters[c]);
+                if (!File.Exists(sheet))
+                {
+                    Check(sb, true, FishingPlayerAnimSetupTool.FishingSheetFileName + " " + Characters[c] + ": chưa có — chờ art (animator giữ 8 state)", ref pass, ref fail);
+                    continue;
+                }
+                string thieuFishing;
+                bool coState = FishingPlayerAnimSetupTool.ControllerCoStateFishing(FishingPlayerAnimSetupTool.ControllerPath(Characters[c]), out thieuFishing);
+                Check(sb, coState, FishingPlayerAnimSetupTool.FishingSheetFileName + " " + Characters[c] + " có → controller có 4 state Fishing_*" + (coState ? "" : " — thiếu: " + thieuFishing + " (chạy lại menu 2)"), ref pass, ref fail);
             }
 
             // 3. Prefab + controller
@@ -134,6 +153,35 @@ namespace FarmGame.Fishing
             if (fail == 0) { Debug.Log(FishingIds.SetupLogTag + " " + sb); }
             else { Debug.LogError(FishingIds.SetupLogTag + " " + sb); }
             EditorUtility.DisplayDialog("Check Fishing", tong + (fail > 0 ? "\n\nXem Console (lọc FishingSetup) để biết dòng FAIL." : "\n\nTất cả OK."), "OK");
+        }
+
+        /// <summary>
+        /// [Dev B 09/09] 3 asset ToolData của tab CÔNG CỤ (Tool_axe / Tool_hammer / Tool_scissors).
+        /// Thư mục Data/Tools chưa có = tool 7 chưa chạy → 1 dòng PASS "bỏ qua" (tab Shop là phần tuỳ chọn, không ép).
+        /// Có thư mục → từng asset phải tồn tại, itemID đúng bảng, bán bằng VÀNG (goldPrice &gt; 0, diamondPrice = 0), unlockLevel ≥ 1, không trùng itemID.
+        /// </summary>
+        private static void CheckToolAssets(StringBuilder sb, ref int pass, ref int fail)
+        {
+            if (!AssetDatabase.IsValidFolder(FishingShopToolTabSetupTool.ToolFolder))
+            {
+                Check(sb, true, "Công cụ tab Shop: chưa chạy tool 7 (" + FishingShopToolTabSetupTool.ToolFolder + " chưa có) — bỏ qua", ref pass, ref fail);
+                return;
+            }
+            var ids = new HashSet<string>();
+            bool trungId = false;
+            for (int i = 0; i < FishingShopToolTabSetupTool.ToolCount; i++)
+            {
+                string path = FishingShopToolTabSetupTool.ToolAssetPathAt(i);
+                string idMuon = FishingShopToolTabSetupTool.ToolItemIdAt(i);
+                var t = AssetDatabase.LoadAssetAtPath<ToolData>(path);
+                Check(sb, t != null, "Công cụ " + Path.GetFileName(path) + " tồn tại" + (t == null ? " — chạy lại tool 7 (7. Thêm tab CÔNG CỤ)" : ""), ref pass, ref fail);
+                if (t == null) { continue; }
+                Check(sb, t.itemID == idMuon, "  " + t.name + ": itemID = \"" + idMuon + "\"" + (t.itemID == idMuon ? "" : " — đang là \"" + t.itemID + "\""), ref pass, ref fail);
+                Check(sb, t.goldPrice > 0 && t.diamondPrice == 0, "  " + t.name + ": bán bằng VÀNG (gold " + t.goldPrice.ToString(CultureInfo.InvariantCulture) + ", gem " + t.diamondPrice.ToString(CultureInfo.InvariantCulture) + ")", ref pass, ref fail);
+                Check(sb, t.unlockLevel >= 1, "  " + t.name + ": unlockLevel " + t.unlockLevel.ToString(CultureInfo.InvariantCulture) + " ≥ 1", ref pass, ref fail);
+                if (!string.IsNullOrEmpty(t.itemID) && !ids.Add(t.itemID)) { trungId = true; }
+            }
+            Check(sb, !trungId, "Không trùng itemID giữa các công cụ", ref pass, ref fail);
         }
 
         private static void CheckOneTypePerFile(StringBuilder sb, ref int pass, ref int fail)

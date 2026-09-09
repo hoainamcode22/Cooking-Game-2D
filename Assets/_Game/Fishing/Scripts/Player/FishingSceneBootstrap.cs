@@ -42,6 +42,16 @@ namespace FarmGame.Fishing
 
             LocalPlayer = SpawnLocalPlayer(spawnPos, cfg);
 
+            // Đèn lồng theo người chơi (Light2D Point) — bật/tắt và số đo lấy từ FishingConfig.
+            if (cfg != null && cfg.playerLanternEnabled && LocalPlayer != null)
+            {
+                PlayerLanternLight.Attach(LocalPlayer.transform, cfg);
+            }
+
+            // VONG 14b — ha sang rieng cho scene cau ca (xem FishingLightDamper).
+            // Dat tren chinh object bootstrap nen song suot scene, khong dung prefab chung.
+            FishingLightDamper.GanVao(gameObject);
+
             var camFollow = FindFirstObjectByType<FishingCameraFollow>();
             if (camFollow != null && LocalPlayer != null)
             {
@@ -51,6 +61,7 @@ namespace FarmGame.Fishing
             else if (camFollow == null) { Debug.LogWarning(FishingIds.LogTag + " Main Camera chưa có FishingCameraFollow — camera đứng yên."); }
 
             // Nối giờ từ farm để trời ở hồ câu giống lúc rời đi. -1 = không biết → giữ StartingTime của scene.
+            // Controller nay nằm trong prefab DayNightWeatherSetup (lấy từ farm) — vẫn tìm theo type.
             if (FishingSession.CarriedDayRatio >= 0f)
             {
                 var dayNight = FindFirstObjectByType<Day_Night.DayNightCycleController>();

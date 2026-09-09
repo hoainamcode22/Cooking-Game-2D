@@ -24,7 +24,7 @@ public class RewardIconLibrary : ScriptableObject
     [Tooltip("Icon KIM CƯƠNG chính thức (Assets/Art/UI/Currency/icon_gem.png).")]
     public Sprite gemSprite;
 
-    [Tooltip("Icon EXP — ngôi sao xanh lá (Assets/Art/UI/Currency/icon_exp_star.png).")]
+    [Tooltip("Icon EXP — ngôi sao xanh dương / cyan (Assets/Assetsgame/Fantasy Wooden GUI  Free/PNG/exp.png).")]
     public Sprite expSprite;
 
     private static RewardIconLibrary cached;

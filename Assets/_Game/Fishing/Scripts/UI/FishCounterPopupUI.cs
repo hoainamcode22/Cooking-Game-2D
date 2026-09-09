@@ -11,6 +11,7 @@ namespace FarmGame.Fishing
     /// Tab BÁN CÁ: giỏ cá → vàng (RewardFlyFX.GoiYDiemXuatPhat rồi AddGold, không gọi Fly thêm) + EXP = vàng/expPerGoldDivisor.
     /// Tab CẦN CÂU: 4 card RodData, mua qua FishingGearState.TryBuy (tiền đã tự phát tiếng ở FarmEconomyManager).
     /// KHÔNG đụng ShopManager. FarmInputLock Register/Unregister cân (_inputLockHeld). AnyOpen cho PopupManager.
+    /// Thoát: X · chạm nền mờ · Escape/Back qua FishingPopupStack (chỉ khi ở đỉnh). Root bị tắt từ ngoài → Update tự dọn cờ/lock (MarkClosed).
     /// </summary>
     public class FishCounterPopupUI : MonoBehaviour
     {
@@ -70,11 +71,22 @@ namespace FarmGame.Fishing
         {
             FishBasket.Instance.OnChanged -= RefreshSell;
             FishingGearState.Instance.OnChanged -= RefreshRods;
-            ReleaseLock();
-            AnyOpen = false;
+            MarkClosed();
         }
 
-        private void OnDestroy() { if (Instance == this) { Instance = null; AnyOpen = false; } }
+        private void OnDestroy() { FishingPopupStack.Remove(this); if (Instance == this) { Instance = null; AnyOpen = false; } }
+
+        private void Update()
+        {
+            if (!IsOpen)
+            {
+                // Root bị tắt trực tiếp từ ngoài (không qua ClosePopup) → dọn cờ/lock như đã đóng.
+                if (AnyOpen || _inputLockHeld) { MarkClosed(); }
+                return;
+            }
+            // Escape / Back Android: chỉ popup ở đỉnh FishingPopupStack xử lý, 1 lần mỗi frame.
+            if (FishingPopupStack.ConsumeEscape(this)) { ClosePopup(); }
+        }
 
         private void Wire()
         {
@@ -110,6 +122,7 @@ namespace FarmGame.Fishing
             root.SetAsLastSibling();
             AnyOpen = true;
             AcquireLock();
+            FishingPopupStack.Push(this);
             ShowTab(FishingGearState.Instance.HasUsableRod || FishBasket.Instance.TotalCount > 0 ? 0 : 1);
             if (frame != null) { JuicyPulseFX.Play(frame, 1.06f, 0.22f); }
             if (AudioManager.Instance != null) { AudioManager.Instance.PlayUIClick(); }
@@ -119,8 +132,15 @@ namespace FarmGame.Fishing
         {
             if (!IsOpen) { return; }
             root.gameObject.SetActive(false);
+            MarkClosed();
+        }
+
+        /// <summary>Dọn MỌI trạng thái "đang mở": cờ AnyOpen (PopupManager), FarmInputLock, stack Escape. An toàn gọi nhiều lần.</summary>
+        private void MarkClosed()
+        {
             AnyOpen = false;
             ReleaseLock();
+            FishingPopupStack.Remove(this);
         }
 
         private void AcquireLock()

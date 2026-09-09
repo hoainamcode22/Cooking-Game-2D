@@ -466,6 +466,19 @@ public class MarketManager : MonoBehaviour
             return visual;
         }
 
+        // [Vòng 16] Hàng của kho NGOÀI (cá từ giỏ cá) do người chơi đăng ở quầy cũng lên bảng tin
+        // qua MarketPlayerListingBridge; bảng giá farm không biết nó → hỏi thẳng cổng cắm kho ngoài
+        // để không hiện "fish_ca_chep" trơ trọi. CHỈ chạm hàng của kho ngoài; mọi id khác đi
+        // đường cũ y nguyên. Không có kho ngoài đăng ký → không đổi gì.
+        if (StallExternalStores.TryFindOwner(itemID, out _, out _, out StallExternalItemInfo ngoai))
+        {
+            return new MarketItemVisual
+            {
+                DisplayName = !string.IsNullOrEmpty(ngoai.displayName) ? ngoai.displayName : MarketPriceTable.GetDisplayName(itemID),
+                Icon        = ngoai.icon
+            };
+        }
+
         return new MarketItemVisual
         {
             DisplayName = MarketPriceTable.GetDisplayName(itemID),

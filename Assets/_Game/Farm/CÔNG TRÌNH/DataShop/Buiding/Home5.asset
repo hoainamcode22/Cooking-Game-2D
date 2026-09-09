@@ -18,7 +18,16 @@ MonoBehaviour:
   goldPrice: 3000
   diamondPrice: 0
   prefabToBuild: {fileID: 1582242620454337050, guid: a9229cf0ba6b6b04fb012b47f8639e99, type: 3}
-  unlockLevel: 1
-  gridSize: {x: 1, y: 1}
+  unlockLevel: 16
+  gridSize: {x: 2, y: 1}
   buildTimeSeconds: 900
   rushGemCost: 0
+  materialCosts:
+  - itemId: go
+    amount: 20
+  - itemId: da
+    amount: 14
+  - itemId: dinh
+    amount: 8
+  - itemId: kinh
+    amount: 6

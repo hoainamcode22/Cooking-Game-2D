@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 881f517fd1ecee64eba715924352862a, type: 3}
+  m_Name: "\u0110\xE8n T\u01B0\u1EDDng"
+  m_EditorClassIdentifier: Assembly-CSharp::DecorData
+  itemID: 204
+  itemName: "\u0110\xE8n T\u01B0\u1EDDng"
+  itemIcon: {fileID: 21300000, guid: 6f2feb569c844a7fa0598a5b5195f559, type: 3}
+  goldPrice: 400
+  diamondPrice: 0
+  prefabToBuild: {fileID: 6918980455819380047, guid: deb4c587270f687e50a42e36232a922b, type: 3}
+  unlockLevel: 1
+  gridSize: {x: 1, y: 1}
+  buildTimeSeconds: 0
+  rushGemCost: 0
+  materialCosts: []

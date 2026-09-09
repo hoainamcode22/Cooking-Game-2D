@@ -13,45 +13,39 @@ MonoBehaviour:
   m_Name: LevelReward_L10
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 10
-  giftGold: 600
-  giftGems: 8
+  giftGold: 380
+  giftGems: 12
   giftItems:
   - itemId: seed_pepper
     displayName: "H\u1EA1t Ti\xEAu"
     icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
-    amount: 3
-  - itemId: seed_hoa_mau_don
-    displayName: "H\u1EA1t Hoa M\u1EABu \u0110\u01A1n"
+    amount: 4
+  - itemId: seed_hoa_anh_thao
+    displayName: "H\u1EA1t Hoa Anh Th\u1EA3o"
     icon: {fileID: 0}
-    amount: 2
+    amount: 4
   - itemId: seed_hoa_cam_tu_cau
     displayName: "H\u1EA1t Hoa C\u1EA9m T\xFA C\u1EA7u"
     icon: {fileID: 0}
-    amount: 2
-  - itemId: pepper
-    displayName: "Ti\xEAu"
-    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
-    amount: 3
-  - itemId: hoa_hong
-    displayName: "Hoa H\u1ED3ng"
+    amount: 4
+  - itemId: seed_hoa_mau_don
+    displayName: "H\u1EA1t Hoa M\u1EABu \u0110\u01A1n"
     icon: {fileID: 0}
-    amount: 3
-  - itemId: beef
-    displayName: "Th\u1ECBt B\xF2"
-    icon: {fileID: 615841201721118202, guid: 7c146c31094766a4888de50bc8013caa, type: 3}
-    amount: 1
+    amount: 4
   - itemId: go
     displayName: "G\u1ED7"
     icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
-    amount: 1
+    amount: 6
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 4
   unlockEntries:
-  - label: "M\u1EDF kh\xF3a Ti\xEAu v\xE0 c\xE1c lo\u1EA1i hoa c\xF2n l\u1EA1i"
-    icon: {fileID: -7915255342677413277, guid: cd4948aa0afe3c14e87ee94fb4c5a9f6, type: 3}
-  - label: "B\u1EA1n \u0111\xE3 ho\xE0n th\xE0nh h\xE0nh tr\xECnh C\u1EA5p 1-10!"
-    icon: {fileID: -1926695167413176463, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}
+  - label: "M\u1edf kh\u00f3a Ti\u00eau v\u00e0 c\u00e1c lo\u1ea1i hoa c\u00f2n l\u1ea1i"
+    icon: {fileID: 21300000, guid: 40d0076abe66468d9d93d3c000c0bdd9, type: 3}
+  - label: "B\u1ebfn t\u00e0u: v\u1eadt li\u1ec7u x\u00e2y d\u1ef1ng"
+    icon: {fileID: 0}
   unlockDescriptions:
-  - "M\u1EDF kh\xF3a Ti\xEAu v\xE0 c\xE1c lo\u1EA1i hoa c\xF2n l\u1EA1i"
-  - "B\u1EA1n \u0111\xE3 ho\xE0n th\xE0nh h\xE0nh tr\xECnh C\u1EA5p 1-10!"
-  hintText: "Ch\xFAc m\u1EEBng! B\u1EA1n \u0111\xE3 ho\xE0n th\xE0nh h\xE0nh tr\xECnh
-    C\u1EA5p 1-10. H\xE3y ti\u1EBFp t\u1EE5c ph\xE1t tri\u1EC3n n\xF4ng tr\u1EA1i
-    nh\xE9!"
+  - "M\u1edf kh\u00f3a Ti\u00eau v\u00e0 c\u00e1c lo\u1ea1i hoa c\u00f2n l\u1ea1i"
+  - "B\u1ebfn t\u00e0u: v\u1eadt li\u1ec7u x\u00e2y d\u1ef1ng"
+  hintText: "T\u00e0u mang v\u1eadt li\u1ec7u v\u1ec1 \u2014 gom g\u1ed7 \u0111\u00e1 \u0111\u1ec3 n\u00e2ng nh\u00e0."

@@ -16,7 +16,9 @@ public class PlayerProgressManager : MonoBehaviour
     // công thức mà không migrate thì người chơi có thể đang giữ số dư LỚN HƠN mốc cấp mới
     // ⇒ vào game là lên vài cấp một lúc, hoặc kẹt vì mốc mới cao hơn nhiều.
     private const string SaveFamily  = "PLAYER_PROGRESS";
-    private const int    SaveVersion = 1;
+    // v2 (vong 15): duong cong 30L + 7L^2, tran 50. Moc moi >= moc cu o MOI cap nen EXP du cu
+    // luon < moc moi => khong ai len/tut cap; van kep du <= Req-1 mot lan cho chac.
+    private const int    SaveVersion = 2;
 
     [Header("Config")]
     [SerializeField] private int startLevel = 1;
@@ -27,7 +29,7 @@ public class PlayerProgressManager : MonoBehaviour
     /// nội dung nào. Trần khai bằng const và kẹp đè lên giá trị Inspector: field
     /// serialize trong scene vẫn đang lưu 100, đổi mỗi default là không đủ.
     /// </summary>
-    public const int CapToiDa = 30;
+    public const int CapToiDa = 50;
 
     [SerializeField] private int maxLevel = CapToiDa;
 
@@ -60,7 +62,15 @@ public class PlayerProgressManager : MonoBehaviour
 
         Load();
 
-        // Save cũ đã leo quá trần (32…) → đưa về đúng 30 một lần và lưu lại.
+        // Vong 15: save v1 co the giu EXP du lon hon moc moi (khong the xay ra vi moc moi >= moc cu,
+        // nhung kep mot lan cho chac). Khong bao gio tu len cap tai day.
+        if (Level < maxLevel && CurrentExp >= RequiredExpForLevel(Level))
+        {
+            CurrentExp = Mathf.Max(0, RequiredExpForLevel(Level) - 1);
+            Save();
+        }
+
+        // Save cũ đã leo quá trần → đưa về đúng trần một lần và lưu lại.
         if (Level > maxLevel)
         {
             Debug.LogWarning($"[Progress] Save đang ở cấp {Level} > trần {maxLevel} — kẹp về trần.");
@@ -80,11 +90,13 @@ public class PlayerProgressManager : MonoBehaviour
         level = Mathf.Clamp(level, 1, maxLevel);
         int n = level - 1;
 
-        // Đường cong cho MAX LEVEL 100 — nhẹ hơn nhiều so với bản cũ (n²) để không "nổ" về cuối.
-        // GIỮ Required(L1) = 40 (đúng tutorial: 8 lúa × 5 EXP = 40 → lên cấp 2).
-        // Mốc: L1=40, L2=50, L5≈82, L10≈142, L20≈284, L30≈456, L50≈890, L100=2500.
-        // Tổng tới L30 ≈ 6.8k (NHANH HƠN bản cũ ~12.9k); tổng tới L100 ≈ 100k (nội dung dài hạn).
-        return 40 + (n * 10) + (n * n * 3) / 20;
+        // VONG 15 — DUONG CONG MOI: 30·L + 7·L². Ly do: ban cu tong L1->L30 chi 6.822 EXP, ma
+        // moi o dat cho ~6 EXP/phut => 9 o = het 30 cap sau ~2 gio (do that). Ban moi: tong toi
+        // L30 = 80.138, toi L50 = 338.728. Mo phong 45 phut/ngay: L10≈2 ngay, L20≈9, L30≈23, L50≈77.
+        // GIU Required(L1) = 40 (tutorial: 8 lua x 5 EXP).
+        // Moc: L2=88, L5=325, L10=1000, L20=3400, L30=7200, L40=12400, L50=19000.
+        if (level <= 1) return 40;
+        return 30 * level + 7 * level * level;
     }
 
     public int RequiredExpCurrentLevel => RequiredExpForLevel(Level);

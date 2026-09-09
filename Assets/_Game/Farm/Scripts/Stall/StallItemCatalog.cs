@@ -10,6 +10,13 @@ public enum StallItemCategory
     Hoa      = 2,
     HatGiong = 3,
     CheBien  = 4,   // sản phẩm chuồng, sản phẩm máy, gia vị, món ăn, vật liệu
+
+    /// <summary>
+    /// [Vòng 16 · Hồ Câu] Cá từ giỏ cá (kho ngoài). Thêm ở CUỐI vì `CategoryOverride.category`
+    /// serialize theo số. CHƯA có tab riêng trong StallPopupUI (cột tab 620 px đã đủ 5 tab) →
+    /// cá hiện ở tab "Tất cả"; muốn tab "Cá" riêng phải dựng thêm ở StallHierarchyBuilderTool.
+    /// </summary>
+    Ca       = 5,
 }
 
 /// <summary>
@@ -183,7 +190,31 @@ public class StallItemCatalog : MonoBehaviour
         if (!_built) Build();
         string id = Normalize(itemId);
         if (string.IsNullOrEmpty(id)) return null;
-        return _entries.TryGetValue(id, out Entry e) ? e : null;
+        if (_entries.TryGetValue(id, out Entry e)) { return e; }
+
+        // [Vòng 16] Không có trong asset farm → hỏi KHO NGOÀI (giỏ cá…) qua cổng cắm. Tra lười
+        // và cache vào _entries (Build() có xoá thì lần tra sau lại hỏi tiếp) — nhờ vậy thứ tự
+        // đăng ký kho ngoài / Awake catalog không quan trọng. Không có kho ngoài → null như cũ.
+        return FindExternal(id);
+    }
+
+    private Entry FindExternal(string id)
+    {
+        if (!StallExternalStores.TryFindOwner(id, out StallSourceStore store, out _, out StallExternalItemInfo info))
+        {
+            return null;
+        }
+
+        var e = new Entry
+        {
+            icon        = info.icon,
+            displayName = !string.IsNullOrEmpty(info.displayName) ? info.displayName : id,
+            category    = info.category,
+            store       = store,
+            sellGold    = Mathf.Max(0, info.baseSellGold),
+        };
+        Put(id, e);
+        return e;
     }
 
     /// <summary>"Lúa" → "Hạt Lúa". Không thêm nếu tên đã tự nói nó là hạt.</summary>

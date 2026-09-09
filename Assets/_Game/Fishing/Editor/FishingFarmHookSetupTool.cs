@@ -16,7 +16,10 @@ namespace FarmGame.Fishing
     /// (a) Tab_Fishing trong Canvas_HUD/BottomLeft_Nav_Group: bản sao Tab_Cooking (giữ style/anchor/sprite), xoá mọi listener + component
     ///     không thuộc UI cơ bản (không kéo logic tab Bếp theo), TMP → "HỒ CÂU", + FishingHudTabButton. Có rồi → chỉ bổ sung, không đổi vị trí.
     /// (b) Canvas_FishingPopup (Overlay order 410) + FishingEntryPopup / FishCounterPopup / FishingInviteHint (BuildIfEmpty của Dev C).
+    /// (b2) [Vòng 16] StallSaleHint (+StallSaleHintUI.BuildIfEmpty) — hint "NPC đã mua … của bạn" góc phải-dưới, cùng canvas 410.
     /// (c) FishCounter world object gần cổng bếp (494,-2367)+(350,0), sprite tạm, BoxCollider2D, FishCounterWorldObject.
+    /// (c2) FishingDock — BẾN HỒ CÂU, cách FishCounter 700 unit về bên TRÁI (farm world ×150), sprite tạm,
+    ///      BoxCollider2D, FishingDockWorldObject. Bấm vào là mở FishingEntryPopupUI → vào thẳng scene câu.
     /// Undo.RegisterCreatedObjectUndo mọi object mới, MarkSceneDirty, KHÔNG SaveScene (Sếp Ctrl+S). Có DRY-RUN.
     /// </summary>
     public static class FishingFarmHookSetupTool
@@ -33,12 +36,20 @@ namespace FarmGame.Fishing
         private const string TabWarehouseName = "Tab_Warehouse";
         private const string TabLabelVi = "HỒ CÂU";
         private const float DefaultTabGap = 12f;
+        /// <summary>[Vòng 16] Object hint bán được ở quầy hàng (StallSaleHintUI), con của Canvas_FishingPopup.</summary>
+        private const string StallSaleHintName = "StallSaleHint";
 
         /// <summary>Cổng bếp đo từ SCN_Farm (TouristBoatOneClickSetup) + lệch phải 350.</summary>
         private static readonly Vector2 CounterPos = new Vector2(494f + 350f, -2367f);
         /// <summary>Farm dùng world ×150 (khách cao 170 unit) → quầy tạm rộng ~120 unit mới nhìn thấy.</summary>
         private const float CounterTargetWidth = 120f;
         private static readonly Color CounterColor = new Color(0.55f, 0.35f, 0.18f, 1f);
+
+        /// <summary>Bến Hồ Câu đặt cách quầy cá 700 unit về bên TRÁI (farm world ×150 nên số lớn mới thấy cách nhau).</summary>
+        private const float DockOffsetFromCounterX = -700f;
+        /// <summary>Bến rộng hơn quầy một chút cho ra dáng công trình.</summary>
+        private const float DockTargetWidth = 160f;
+        private static readonly Color DockColor = new Color(0.24f, 0.52f, 0.72f, 1f);
 
         /// <summary>Component được GIỮ trên bản sao tab (mọi thứ khác bị gỡ để không kéo logic tab Bếp).</summary>
         private static readonly Type[] KeepOnTabCopy =
@@ -70,7 +81,7 @@ namespace FarmGame.Fishing
             }
 
             if (apply && !EditorUtility.DisplayDialog("Gắn Hồ Câu vào SCN_Farm",
-                "Sẽ thêm vào scene ĐANG MỞ:\n• Tab_Fishing (bản sao Tab_Cooking, đặt cạnh phải) + FishingHudTabButton\n• Canvas_FishingPopup (order " + FishingIds.FarmPopupCanvasOrder + ") + 3 popup\n• Object FishCounter (quầy cá tạm) gần cổng bếp\n\nKhông xoá/đổi gì đã có. Scene KHÔNG tự lưu — Sếp Ctrl+S. Ctrl+Z hoàn tác.", "Chạy", "Huỷ"))
+                "Sẽ thêm vào scene ĐANG MỞ:\n• Tab_Fishing (bản sao Tab_Cooking, đặt cạnh phải) + FishingHudTabButton\n• Canvas_FishingPopup (order " + FishingIds.FarmPopupCanvasOrder + ") + 3 popup + StallSaleHint (hint bán được ở quầy)\n• Object FishCounter (quầy cá tạm) gần cổng bếp\n• Object FishingDock (bến Hồ Câu tạm) cách quầy cá 700 unit về trái\n\nKhông xoá/đổi gì đã có. Scene KHÔNG tự lưu — Sếp Ctrl+S. Ctrl+Z hoàn tác.", "Chạy", "Huỷ"))
             { return "Huỷ."; }
 
             if (apply) { Undo.IncrementCurrentGroup(); Undo.SetCurrentGroupName(UndoLabel); }
@@ -81,6 +92,7 @@ namespace FarmGame.Fishing
                 ping = StepTab(apply, report, thieu);
                 StepPopupCanvas(apply, report, thieu);
                 StepCounter(apply, report, thieu);
+                StepDock(apply, report, thieu);
                 if (apply) { EditorSceneManager.MarkSceneDirty(scene); }
             }
             catch (Exception e)
@@ -99,7 +111,7 @@ namespace FarmGame.Fishing
             if (apply)
             {
                 head.AppendLine();
-                head.AppendLine("SẾP LÀM: 1) Ctrl+S lưu scene. 2) Kéo Tab_Fishing đến vị trí muốn (tool không đè). 3) Kéo FishCounter tới chỗ muốn + thay sprite quầy. 4) Play → tab HỒ CÂU.");
+                head.AppendLine("SẾP LÀM: 1) Ctrl+S lưu scene. 2) Kéo Tab_Fishing đến vị trí muốn (tool không đè). 3) Kéo FishCounter tới chỗ muốn + thay sprite quầy. 4) Kéo FishingDock tới vị trí muốn + thay sprite khi đội vẽ giao building bến. 5) Play → tab HỒ CÂU, bấm bến để vào hồ.");
             }
             head.AppendLine("Chi tiết ở Console (lọc FishingSetup).");
             Debug.Log(FishingIds.SetupLogTag + " Gắn vào SCN_Farm:\n" + report);
@@ -288,6 +300,9 @@ namespace FarmGame.Fishing
             EnsurePopupChild<FishingEntryPopupUI>(canvasT, "FishingEntryPopup", apply, report, thieu, ui => ui.BuildIfEmpty());
             EnsurePopupChild<FishCounterPopupUI>(canvasT, "FishCounterPopup", apply, report, thieu, ui => ui.BuildIfEmpty());
             EnsurePopupChild<FishingInviteHintUI>(canvasT, "FishingInviteHint", apply, report, thieu, ui => ui.BuildIfEmpty());
+            // (b2) [Vòng 16] Hint "NPC đã mua … của bạn" góc phải-dưới. Đặt ở canvas 410 (không phải Canvas_HUD order 100)
+            //      để hint vẫn nhìn thấy khi StallPopup/Canvas_Popup (300) hay TouristBoat (400) đang mở — NPC mua lúc nào không biết.
+            EnsurePopupChild<StallSaleHintUI>(canvasT, StallSaleHintName, apply, report, thieu, ui => ui.BuildIfEmpty());
         }
 
         private static void EnsurePopupChild<T>(Transform canvas, string name, bool apply, StringBuilder report, List<string> thieu, Action<T> build) where T : Component
@@ -363,6 +378,56 @@ namespace FarmGame.Fishing
 
             go.AddComponent<FishCounterWorldObject>();
             report.AppendLine("  ✓ Tạo " + FishingIds.FarmCounterName + " (scale " + k.ToString("0.#", CultureInfo.InvariantCulture) + "). Sếp kéo tới vị trí muốn và thay sprite quầy + chỉnh requiredLevel.");
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        //  (c2) Bến Hồ Câu world object — lối vào scene câu
+        // ─────────────────────────────────────────────────────────────────
+
+        private static void StepDock(bool apply, StringBuilder report, List<string> thieu)
+        {
+            report.AppendLine("(c2) " + FishingIds.FarmDockName);
+            Transform exist = FindByName(FishingIds.FarmDockName);
+            if (exist != null)
+            {
+                report.AppendLine("  · " + FishingIds.FarmDockName + " đã có tại " + Fmt(exist.position) + " — chỉ bổ sung component thiếu, KHÔNG đổi vị trí.");
+                if (!apply) { return; }
+                if (exist.GetComponent<Collider2D>() == null) { Undo.AddComponent<BoxCollider2D>(exist.gameObject); report.AppendLine("    + BoxCollider2D"); }
+                if (exist.GetComponent<FishingDockWorldObject>() == null) { Undo.AddComponent<FishingDockWorldObject>(exist.gameObject); report.AppendLine("    + FishingDockWorldObject"); }
+                return;
+            }
+
+            // Neo theo quầy cá THẬT trong scene (Sếp có thể đã kéo đi chỗ khác), không có thì theo số mặc định.
+            Transform counter = FindByName(FishingIds.FarmCounterName);
+            Vector2 basePos = counter != null ? (Vector2)counter.position : CounterPos;
+            Vector2 dockPos = basePos + new Vector2(DockOffsetFromCounterX, 0f);
+
+            report.AppendLine("  + Sẽ tạo " + FishingIds.FarmDockName + " tại " + Fmt(dockPos) + " (cách " + FishingIds.FarmCounterName + " " + Mathf.Abs(DockOffsetFromCounterX).ToString("0", CultureInfo.InvariantCulture) + " unit về trái), sprite tạm Knob xanh rộng ~" + DockTargetWidth.ToString("0", CultureInfo.InvariantCulture) + " unit, layer Objects/500");
+            if (!apply) { return; }
+
+            var go = new GameObject(FishingIds.FarmDockName);
+            Undo.RegisterCreatedObjectUndo(go, UndoLabel);
+            go.transform.position = new Vector3(dockPos.x, dockPos.y, 0f);
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            Sprite knob = null;
+            try { knob = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/Knob.psd"); }
+            catch (Exception e) { report.AppendLine("    ⚠ Không lấy được sprite built-in Knob: " + e.Message); }
+            sr.sprite = knob;
+            sr.color = DockColor;
+            sr.sortingLayerName = TouristSortingLayers.ResolveOrOverride("Objects", TouristSortingLayers.Visitor);
+            sr.sortingOrder = 500;
+
+            float w = knob != null ? knob.bounds.size.x : 1f;
+            float k = w > 0.0001f ? DockTargetWidth / w : 3f;
+            go.transform.localScale = new Vector3(k, k, 1f);
+
+            var col = go.AddComponent<BoxCollider2D>();
+            col.size = knob != null ? (Vector2)knob.bounds.size : Vector2.one;
+            col.offset = Vector2.zero;
+
+            go.AddComponent<FishingDockWorldObject>();
+            report.AppendLine("  ✓ Tạo " + FishingIds.FarmDockName + " (scale " + k.ToString("0.#", CultureInfo.InvariantCulture) + "). Bấm vào = mở FishingEntryPopupUI (vào scene câu). Sếp kéo tới vị trí muốn, thay sprite building bến, chỉnh requiredLevel.");
         }
 
         // ─────────────────────────────────────────────────────────────────

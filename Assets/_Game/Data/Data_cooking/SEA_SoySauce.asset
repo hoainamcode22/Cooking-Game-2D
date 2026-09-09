@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: soysauce
   displayName: SoySauce
-  icon: {fileID: -6838146847458198126, guid: 5c65947b00d7d5a44a54a4cd07de9661, type: 3}
+  icon: {fileID: 6635270834017547936, guid: 7f753037e083e334d99a2d5aaf2d51ee, type: 3}
   kind: 1
   tier: 1
   vector:

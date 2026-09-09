@@ -1,0 +1,10 @@
+{
+    "name": "Nam695472.Comunityburst.Editor",
+    "references": [
+      "Nam695472.Comunityburst"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}

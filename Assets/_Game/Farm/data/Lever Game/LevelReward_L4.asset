@@ -13,40 +13,38 @@ MonoBehaviour:
   m_Name: LevelReward_L4
   m_EditorClassIdentifier: Assembly-CSharp::LevelRewardConfig
   levelReached: 4
-  giftGold: 250
-  giftGems: 3
+  giftGold: 170
+  giftGems: 2
   giftItems:
   - itemId: seed_hoa_hong
-    displayName: "H\u1EA1t Hoa H\u1ED3ng"
+    displayName: "H\u1EA1t Hoa h\u1ED3ng"
     icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
-    amount: 2
+    amount: 4
   - itemId: seed_hoa_oai_huong
     displayName: "H\u1EA1t Hoa O\u1EA3i H\u01B0\u01A1ng"
     icon: {fileID: 0}
-    amount: 2
-  - itemId: hoa_hong
-    displayName: "Hoa H\u1ED3ng"
-    icon: {fileID: 0}
+    amount: 4
+  - itemId: go
+    displayName: "G\u1ED7"
+    icon: {fileID: -4226611041232017745, guid: 1949807e11e35604c923915186458b4d, type: 3}
+    amount: 4
+  - itemId: da
+    displayName: "\u0110\xE1"
+    icon: {fileID: -8240987795322086458, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 3
-  - itemId: pork
-    displayName: "Th\u1ECBt Heo"
-    icon: {fileID: -1397836899716242382, guid: de16df85269be62459a51c70a1ac2585, type: 3}
+  - itemId: ga_xao_bap_cai
+    displayName: "G\xE0 x\xE0o b\u1EAFp c\u1EA3i"
+    icon: {fileID: 21300000, guid: 80010402ccdee1d063c3a5070849037d, type: 3}
     amount: 1
-  - itemId: soysauce
-    displayName: "N\u01B0\u1EDBc T\u01B0\u01A1ng"
-    icon: {fileID: -6838146847458198126, guid: 0d8b9e5342fcc9e4ba5df2a11bf75d31, type: 3}
-    amount: 2
-  - itemId: salt
-    displayName: "Mu\u1ED1i"
-    icon: {fileID: -1162442978445507191, guid: a849ade4905cf98419e62a9cf5b043e5, type: 3}
-    amount: 2
   unlockEntries:
-  - label: "M\u1EDF kh\xF3a Hoa h\u1ED3ng v\xE0 O\u1EA3i h\u01B0\u01A1ng"
-    icon: {fileID: -2028016088073520220, guid: f3a220502921e49488416ed35ea197b3, type: 3}
-  - label: "Chu\u1ED3ng heo \u0111\xE3 m\u1EDF b\xE1n trong Shop"
-    icon: {fileID: -6437395713708752273, guid: cf63b2f7d48b30a419f6f54b3ce4cda7, type: 3}
+  - label: "M\u1edf kh\u00f3a Hoa h\u1ed3ng, O\u1ea3i h\u01b0\u01a1ng"
+    icon: {fileID: 21300000, guid: be5905bd85d640fe999f56d9f082def4, type: 3}
+  - label: "Chu\u1ed3ng B\u00f2 S\u1eefa \u0111\u00e3 m\u1edf b\u00e1n"
+    icon: {fileID: 0}
+  - label: "Decor b\u1eadc 1 (hoa, \u0111\u00e1, kh\u00fac g\u1ed7)"
+    icon: {fileID: 0}
   unlockDescriptions:
-  - "M\u1EDF kh\xF3a Hoa h\u1ED3ng v\xE0 O\u1EA3i h\u01B0\u01A1ng"
-  - "Chu\u1ED3ng heo \u0111\xE3 m\u1EDF b\xE1n trong Shop"
-  hintText: "Hoa h\u1ED3ng v\xE0 O\u1EA3i h\u01B0\u01A1ng \u0111\xE3 c\xF3 trong
-    Shop. Gh\xE9 xem chu\u1ED3ng heo m\u1EDBi nh\xE9!"
+  - "M\u1edf kh\u00f3a Hoa h\u1ed3ng, O\u1ea3i h\u01b0\u01a1ng"
+  - "Chu\u1ed3ng B\u00f2 S\u1eefa \u0111\u00e3 m\u1edf b\u00e1n"
+  - "Decor b\u1eadc 1 (hoa, \u0111\u00e1, kh\u00fac g\u1ed7)"
+  hintText: "L\u00ean c\u1ea5p 4! M\u1edf shop xem th\u1ee9 m\u1edbi."
