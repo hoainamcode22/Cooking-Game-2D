@@ -17,7 +17,7 @@ using UnityEngine;
 public static class CookingGateAccess
 {
     /// <summary>Cấp tối thiểu để vào Bếp. Bằng `unlockLevel` nhỏ nhất trong toàn bộ DishData.</summary>
-    public const int RequiredLevel = 5;
+    public const int RequiredLevel = 4;
 
     /// <summary>Thông báo hiện cho người chơi khi chưa đủ cấp. Ghép từ <see cref="RequiredLevel"/>
     /// chứ không gõ lại số — đổi cấp một chỗ là câu thông báo đổi theo.</summary>

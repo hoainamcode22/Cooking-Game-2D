@@ -720,6 +720,10 @@ public class ConstructionManager : MonoBehaviour
     {
         if (completeVfxPrefab != null) return completeVfxPrefab;
 
+        completeVfxPrefab = Resources.Load<GameObject>("VFX/Confetti_blast_multicolor")
+                         ?? Resources.Load<GameObject>("VFX/LevelUp_Confetti_Lana02");
+        if (completeVfxPrefab != null) return completeVfxPrefab;
+
         var popup = FindFirstObjectByType<LevelUpPopupUI>(FindObjectsInactive.Include);
         if (popup == null) return null;
 

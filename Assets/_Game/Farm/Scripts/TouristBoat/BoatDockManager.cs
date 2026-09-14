@@ -809,7 +809,42 @@ public class BoatDockManager : MonoBehaviour
     /// </summary>
     private double EffectiveTravelSeconds()
     {
-        return Mathf.Max(0.01f, _scheduleTravelSeconds) / EffectiveTimeScale();
+        // [BOAT-TUT 2026-09-10] Chia them he so tang toc cua cinematic tutorial (mac dinh 1).
+        return Mathf.Max(0.01f, _scheduleTravelSeconds)
+             / (EffectiveTimeScale() * Mathf.Max(0.05f, _tutorialSpeedMul));
+    }
+
+    // ─── [BOAT-TUT 2026-09-10] He so tang toc tau khi dang chay cinematic tutorial ──
+
+    /// <summary>He so nhan toc do DI CHUYEN cua tau (1 = binh thuong). Chi anh huong
+    /// travel, KHONG dung toi gap / stagger / thoi gian dau ben.</summary>
+    private float _tutorialSpeedMul = 1f;
+
+    /// <summary>He so tang toc tau dang ap dung (1 = binh thuong).</summary>
+    public float TutorialSpeedMultiplier => _tutorialSpeedMul;
+
+    /// <summary>
+    /// Dat he so tang toc tau cho cinematic tutorial. Goi <c>SetTutorialSpeedMultiplier(1f)</c>
+    /// de tra ve binh thuong. Ket qua chi doi <see cref="EffectiveTravelSeconds"/> nen
+    /// phai dat TRUOC khi len lich chuyen (UnlockDockFree) thi tau moi chay nhanh that.
+    /// </summary>
+    public void SetTutorialSpeedMultiplier(float heSo)
+    {
+        // [FIX HEAVY 5] CHOT NaN/vo cuc/so am NGAY TAI DAY (lop cuoi truoc khi ghi state).
+        // Mathf.Clamp(NaN, a, b) tra ve NaN chu KHONG kep ve a, va Mathf.Approximately(NaN, 1f)
+        // = false nen cua "khong doi gi" cung khong chan duoc -> NaN se duoc LUU vao
+        // _tutorialSpeedMul, chay vao EffectiveTravelSeconds, roi thanh tick lich ben
+        // GHI XUONG PlayerPrefs => save hong that su. "!(x > 0f)" bat ca NaN lan <= 0.
+        if (!(heSo > 0f))
+        {
+            Debug.LogWarning($"[TouristBoat] SetTutorialSpeedMultiplier({heSo}) khong hop le — dung 1x.");
+            heSo = 1f;
+        }
+
+        float m = Mathf.Clamp(heSo, 0.05f, 50f);
+        if (Mathf.Approximately(m, _tutorialSpeedMul)) return;
+        _tutorialSpeedMul = m;
+        Debug.Log($"[TouristBoat] He so toc do tau (tutorial) = {m:0.##}x.");
     }
 
     /// <summary>

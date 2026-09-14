@@ -228,27 +228,80 @@ public class StallItemCatalog : MonoBehaviour
 
     // ── API tra cứu ──────────────────────────────────────────────────────────
 
+    private static Sprite ResolveMissingIcon(string id)
+    {
+#if UNITY_EDITOR
+        switch (id)
+        {
+            case "cam_ga":
+                return LoadSpriteAtPath("Assets/_Game/GeneratedUI/Mill/Icons/feed_cam_ga.png");
+            case "cam_heo":
+                return LoadSpriteAtPath("Assets/_Game/GeneratedUI/Mill/Icons/feed_cam_heo.png");
+            case "co_tron_bo":
+                return LoadSpriteAtPath("Assets/_Game/GeneratedUI/Mill/Icons/feed_co_tron_bo.png");
+            case "cam_bo_sua":
+                return LoadSpriteAtPath("Assets/_Game/GeneratedUI/Mill/Icons/feed_cam_bo_sua.png");
+        }
+#endif
+        return null;
+    }
+
+    private static Sprite LoadSpriteAtPath(string path)
+    {
+#if UNITY_EDITOR
+        if (string.IsNullOrEmpty(path)) return null;
+        var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        if (sp != null) return sp;
+        var all = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(path);
+        if (all != null)
+        {
+            foreach (var o in all) if (o is Sprite s) return s;
+        }
+#endif
+        return null;
+    }
+
     public bool TryGetVisual(string itemId, out Sprite icon, out string displayName)
     {
         Entry e = Find(itemId);
+        string id = Normalize(itemId);
         if (e == null)
         {
-            icon = null;
-            displayName = itemId;
-            return false;
+            icon = ResolveMissingIcon(id);
+            displayName = GetDisplayName(itemId);
+            return icon != null;
         }
 
+        if (e.icon == null) e.icon = ResolveMissingIcon(id);
         icon = e.icon;
-        displayName = e.displayName;
+        displayName = GetDisplayName(itemId);
         return true;
     }
 
-    public Sprite GetIcon(string itemId) => Find(itemId)?.icon;
+    public Sprite GetIcon(string itemId)
+    {
+        var e = Find(itemId);
+        if (e != null && e.icon != null) return e.icon;
+        string id = Normalize(itemId);
+        Sprite fallback = ResolveMissingIcon(id);
+        if (fallback != null && e != null) e.icon = fallback;
+        return fallback ?? e?.icon;
+    }
 
     public string GetDisplayName(string itemId)
     {
         Entry e = Find(itemId);
-        return e != null && !string.IsNullOrEmpty(e.displayName) ? e.displayName : itemId;
+        if (e != null && !string.IsNullOrEmpty(e.displayName) && e.displayName != itemId)
+            return e.displayName;
+        string id = Normalize(itemId);
+        switch (id)
+        {
+            case "cam_ga": return "Cám cho gà";
+            case "cam_heo": return "Cám cho heo";
+            case "co_tron_bo": return "Cỏ trộn cho bò";
+            case "cam_bo_sua": return "Cám cho bò sữa";
+        }
+        return e != null ? e.displayName : itemId;
     }
 
     public StallItemCategory GetCategory(string itemId)

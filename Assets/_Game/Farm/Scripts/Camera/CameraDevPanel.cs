@@ -21,7 +21,7 @@ public class CameraDevPanel : MonoBehaviour
 {
     [Header("Hiển thị")]
     [Tooltip("Hiện panel khi bắt đầu chạy.")]
-    public bool showOnStart = true;
+    public bool showOnStart = false;
 
     [Tooltip("Phím ẩn/hiện panel.")]
     public Key toggleKey = Key.F3;
@@ -60,7 +60,8 @@ public class CameraDevPanel : MonoBehaviour
         // Không dùng `?? Camera.main`: Unity override toán tử == nên
         // null-coalescing bỏ qua "fake null" của UnityEngine.Object (UNT0007).
         if (_cam == null) _cam = Camera.main;
-        _visible = showOnStart;
+        // Cong tac dev quyet dinh: gate tat thi panel khong tu hien.
+        _visible = showOnStart && DevOverlayGate.Enabled;
 
 #if !UNITY_EDITOR && !DEVELOPMENT_BUILD
         // Bản phát hành: tự huỷ, người chơi không bao giờ thấy panel dev.
@@ -76,6 +77,8 @@ public class CameraDevPanel : MonoBehaviour
 
     private void Update()
     {
+        if (!DevOverlayGate.Enabled) return;
+
         // Toggle panel — chặn Key.None / giá trị ngoài dải vì Keyboard indexer sẽ ném exception
         var kb = Keyboard.current;
         if (kb != null && CameraController.IsValidKey(toggleKey) && kb[toggleKey].wasPressedThisFrame)
@@ -125,6 +128,7 @@ public class CameraDevPanel : MonoBehaviour
 
     private void OnGUI()
     {
+        if (!DevOverlayGate.Enabled) return;
         if (!_visible || _controller == null || _cam == null) return;
 
         BuildStyles();

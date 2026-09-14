@@ -333,9 +333,14 @@ public static class MarketPriceTable
         Add("bot_gao",       "Bột Gạo",      MarketCategory.CheBien, 130, 17, 60, false);
         Add("nuoc_mia_ep",   "Nước Mía Ép",  MarketCategory.CheBien, 185, 21, 50, false);
         Add("pho_mai",       "Phô Mai",      MarketCategory.CheBien, 260, 24, 45, false);
+        Add("cam_ga",        "Cám Gà",       MarketCategory.CheBien,  15,  2, 70);
+        Add("cam_heo",       "Cám Heo",      MarketCategory.CheBien,  25,  4, 65);
+        Add("co_tron_bo",    "Cỏ Trộn Bò",   MarketCategory.CheBien,  35,  8, 60);
+        Add("cam_bo_sua",    "Cám Bò Sữa",   MarketCategory.CheBien,  45, 13, 55);
 
         // ── GIA VỊ ───────────────────────────────────────────────────────
         Add("salt",       "Muối",        MarketCategory.GiaVi, 12, 1, 90);
+        Add("sugar",      "Đường",       MarketCategory.GiaVi, 15, 2, 85);
         Add("herbs",      "Rau Thơm",    MarketCategory.GiaVi, 18, 3, 85);
         Add("soysauce",   "Nước Tương",  MarketCategory.GiaVi, 26, 4, 80);
         Add("fishsauce",  "Nước Mắm",    MarketCategory.GiaVi, 28, 4, 80);

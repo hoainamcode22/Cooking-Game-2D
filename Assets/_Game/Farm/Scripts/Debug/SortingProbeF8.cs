@@ -60,6 +60,8 @@ public class SortingProbeF8 : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoBoot()
     {
+        if (!DevOverlayGate.Enabled) return;
+
         try
         {
             if (UnityEngine.Object.FindAnyObjectByType<SortingProbeF8>() != null) return;

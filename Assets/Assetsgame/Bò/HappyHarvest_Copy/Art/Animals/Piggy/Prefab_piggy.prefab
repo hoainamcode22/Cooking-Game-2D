@@ -27,8 +27,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -6.24, y: 4.25, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 70, y: 70, z: 70}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 594127902878852341}
   - {fileID: 7633586567731287743}
@@ -112,17 +112,37 @@ PrefabInstance:
       propertyPath: m_Name
       value: shadow
       objectReference: {fileID: 0}
+    - target: {fileID: 4457846380110540658, guid: f75bf051b0bf44ad9c0d973d37b2b2b4, type: 3}
+      propertyPath: m_LocalBounds.m_Extent.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4457846380110540658, guid: f75bf051b0bf44ad9c0d973d37b2b2b4, type: 3}
+      propertyPath: m_LocalBounds.m_Extent.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5745308098977659993, guid: f75bf051b0bf44ad9c0d973d37b2b2b4, type: 3}
+      propertyPath: m_LocalBounds.m_Center.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5745308098977659993, guid: f75bf051b0bf44ad9c0d973d37b2b2b4, type: 3}
+      propertyPath: m_LocalBounds.m_Extent.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5745308098977659993, guid: f75bf051b0bf44ad9c0d973d37b2b2b4, type: 3}
+      propertyPath: m_LocalBounds.m_Extent.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6929098867049519375, guid: f75bf051b0bf44ad9c0d973d37b2b2b4, type: 3}
       propertyPath: m_LocalScale.y
-      value: 0.003954053
+      value: 0.35000005
       objectReference: {fileID: 0}
     - target: {fileID: 6929098867049519375, guid: f75bf051b0bf44ad9c0d973d37b2b2b4, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071068
+      value: -0.00000004371139
       objectReference: {fileID: 0}
     - target: {fileID: 6929098867049519375, guid: f75bf051b0bf44ad9c0d973d37b2b2b4, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0.7071068
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 9021639811468630604, guid: f75bf051b0bf44ad9c0d973d37b2b2b4, type: 3}
       propertyPath: shadowLength

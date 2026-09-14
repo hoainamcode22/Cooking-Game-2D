@@ -92,40 +92,64 @@ public class PlotCropVisual : MonoBehaviour
 
     private Coroutine wiggleRoutine;
 
+    /// <summary>
+    /// Tính toán scale chuẩn của cây theo stage và loại cây (hoa hoặc nông sản thông thường).
+    /// </summary>
+    public Vector3 GetCurrentTargetScale(int stage = -1)
+    {
+        if (currentCrop == null) return Vector3.one;
+        if (stage < 0)
+        {
+            stage = _lastShownStage >= 0 ? _lastShownStage : (currentCrop.StageCount - 1);
+        }
+        Vector3 targetScale = currentCrop.GetScale(stage);
+
+        bool isFlower = currentCrop.cropCategory == CropCategory.Flower;
+        if (!isFlower)
+        {
+            var plot = GetComponentInParent<PlotController>();
+            if (plot != null && plot.Category == PlotCategory.Flower) isFlower = true;
+            else if (transform.parent != null && (transform.parent.name.ToLower().Contains("chau") || transform.parent.name.ToLower().Contains("pot") || transform.parent.name.ToLower().Contains("hoa")))
+                isFlower = true;
+        }
+        if (isFlower)
+        {
+            targetScale *= 0.72f;
+        }
+        return targetScale;
+    }
+
     public void PlayWiggleAnimation()
     {
+        if (currentCrop == null || slotVisuals == null) return;
         if (wiggleRoutine != null) StopCoroutine(wiggleRoutine);
         wiggleRoutine = StartCoroutine(CoWiggle());
     }
 
     private System.Collections.IEnumerator CoWiggle()
     {
-        if (slotVisuals == null) yield break;
-        
+        if (slotVisuals == null || currentCrop == null) yield break;
+
         bool wasSwayActive = isReadySwayActive;
         isReadySwayActive = false;
 
         float elapsed = 0f;
         float duration = 0.35f;
-        
-        Vector3[] startScales = new Vector3[slotVisuals.Length];
-        for (int i = 0; i < slotVisuals.Length; i++) {
-            if (slotVisuals[i] != null) startScales[i] = slotVisuals[i].localScale;
-        }
+        Vector3 baseScale = GetCurrentTargetScale();
 
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
             float t = elapsed / duration;
             float sin = Mathf.Sin(t * Mathf.PI);
-            float angle = sin * 8f;
-            float scaleMulti = 1f + sin * 0.15f;
+            float angle = sin * 6f;
 
             for (int i = 0; i < slotVisuals.Length; i++)
             {
                 if (slotVisuals[i] == null) continue;
                 slotVisuals[i].localRotation = Quaternion.Euler(0f, 0f, angle * ((i % 2 == 0) ? 1 : -1));
-                slotVisuals[i].localScale = startScales[i] * scaleMulti;
+                // Luôn giữ đúng scale chuẩn của stage hiện tại, KHÔNG nhân hệ số phóng to làm to khổng lồ
+                slotVisuals[i].localScale = baseScale;
             }
             yield return null;
         }
@@ -134,9 +158,9 @@ public class PlotCropVisual : MonoBehaviour
         {
             if (slotVisuals[i] == null) continue;
             slotVisuals[i].localRotation = Quaternion.identity;
-            slotVisuals[i].localScale = startScales[i];
+            slotVisuals[i].localScale = baseScale;
         }
-        
+
         isReadySwayActive = wasSwayActive;
     }
 
@@ -370,7 +394,7 @@ public class PlotCropVisual : MonoBehaviour
     {
         if (currentCrop == null || slotRenderers == null) return;
 
-        Vector3 targetScale = currentCrop.GetScale(stage);
+        Vector3 targetScale = GetCurrentTargetScale(stage);
 
         // Bộ 5 stage mới vẽ pivot Bottom-Center → gốc cây nằm ĐÚNG tại CropPoint,
         // không cần đẩy lên. Cây cũ (3 stage) giữ nguyên offset như trước.

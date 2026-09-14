@@ -17,6 +17,35 @@ namespace Day_Night
         public bool RunInPlayMode = true;
         public bool PreviewInEditMode = true;
 
+        [Header("Nhip Ngay/Dem (Task: ngay dai, dem nhanh)")]
+        [Tooltip("Bat/tat toan bo lop chinh nhip. Tat = quay ve dung hanh vi goc (moi pha chay deu nhau).")]
+        public bool UsePhaseDurationScaling = true;
+
+        [Tooltip("He so KEO DAI ban ngay. 1 = nhu cu, 1.8 = ban ngay lau gap 1.8 lan.")]
+        [Range(0.25f, 4f)] public float DayPhaseDurationScale = 1.8f;
+
+        [Tooltip("He so RUT NGAN ban dem. 1 = nhu cu, 0.5 = ban dem troi qua nhanh gap doi.")]
+        [Range(0.1f, 2f)] public float NightPhaseDurationScale = 0.5f;
+
+        [Tooltip("He so cho hai doan chuyen tiep binh minh va hoang hon. 1 = giu nguyen do dai nhu cu.")]
+        [Range(0.1f, 3f)] public float TwilightPhaseDurationScale = 1f;
+
+        [Tooltip("Khi dang MUA (hoac giong), pha hien tai keo dai them bao nhieu phan tram. 0.25 = lau them 25%.")]
+        [Range(0f, 1f)] public float RainPhaseExtension = 0.25f;
+
+        [Tooltip("Bat: mot vong ngay/dem VAN dai dung DayDurationInSeconds, chi doi ty le ngay/dem ben trong. Tat: ngay dai ra lam ca vong dai them.")]
+        public bool KeepTotalDayLength = true;
+
+        [Header("Nhip Ngay/Dem - Moc chia pha (khop voi gradient anh sang)")]
+        [Tooltip("Moc ket thuc dem sang binh minh.")]
+        [Range(0f, 1f)] public float DawnStartRatio = 0.05f;
+        [Tooltip("Moc binh minh chuyen thanh ban ngay day du.")]
+        [Range(0f, 1f)] public float DayStartRatio = 0.10f;
+        [Tooltip("Moc ban ngay bat dau chuyen sang hoang hon.")]
+        [Range(0f, 1f)] public float DuskStartRatio = 0.85f;
+        [Tooltip("Moc hoang hon chuyen han sang ban dem.")]
+        [Range(0f, 1f)] public float NightStartRatio = 0.90f;
+
         [Header("Lights")]
         public Transform LightsRoot;
         public Light2D DayLight;
@@ -42,8 +71,8 @@ namespace Day_Night
         [Range(0f, 1f)] public float DayRainStartMax = 0.52f;
         [Range(0f, 1f)] public float NightRainStartMin = 0.82f;
         [Range(0f, 1f)] public float NightRainStartMax = 0.88f;
-        [Min(1f)] public float MinRainDurationSeconds = 8f;
-        [Min(1f)] public float MaxRainDurationSeconds = 12f;
+        [Min(1f)] public float MinRainDurationSeconds = 25f;
+        [Min(1f)] public float MaxRainDurationSeconds = 50f;
         [Range(0f, 1f)] public float ThunderChance = 0.08f;
         [Range(0.4f, 1.5f)] public float RainLightMultiplier = 1f;
         [Range(0.25f, 1.5f)] public float ThunderLightMultiplier = 0.85f;
@@ -61,6 +90,9 @@ namespace Day_Night
 
         public float CurrentDayRatio { get { return currentDayRatio; } }
 
+        // Toc do troi thoi gian hien tai (1 = nhu ban goc). Chi de debug/hien thi.
+        public float CurrentTimeSpeedMultiplier { get { return GetPhaseSpeedMultiplier(currentDayRatio); } }
+
         private float currentDayRatio;
         private float previousDayRatio;
         private ScheduledRain dayRain;
@@ -69,6 +101,9 @@ namespace Day_Night
         // Task #35: chan khong cho lop mua/giong lam toi qua muc so voi lop ngay/dem.
         // Toi da giam 12% do sang (>= 0.88x), khong nhan don them voi curve ngay/dem.
         private const float MinWeatherLightMultiplier = 0.88f;
+        // Chan so lan chia nho mot frame khi thoi gian nhay qua nhieu moc pha cung luc.
+        private const int MaxPhaseSubSteps = 8;
+        private const float PhaseBoundaryEpsilon = 0.00001f;
 
         private struct ScheduledRain
         {
@@ -98,6 +133,36 @@ namespace Day_Night
             if (Application.isPlaying)
             {
                 InitializeAutomaticWeather();
+                EnsureRainAmbienceAudio();
+            }
+        }
+
+        private void EnsureRainAmbienceAudio()
+        {
+            if (RainAmbience == null)
+            {
+                var sources = GetComponentsInChildren<AudioSource>(true);
+                foreach (var s in sources)
+                {
+                    if (s != null && (s.name.Contains("Rain") || (s.clip != null && s.clip.name.Contains("Rain"))))
+                    {
+                        RainAmbience = s;
+                        break;
+                    }
+                }
+
+                if (RainAmbience == null)
+                {
+                    var go = new GameObject("RainAmbienceAudio");
+                    go.transform.SetParent(transform, false);
+                    RainAmbience = go.AddComponent<AudioSource>();
+                    RainAmbience.loop = true;
+                    RainAmbience.spatialBlend = 0f;
+                    RainAmbience.playOnAwake = false;
+#if UNITY_EDITOR
+                    RainAmbience.clip = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Day_Night/Audio/Ambience/Rain.wav");
+#endif
+                }
             }
         }
 
@@ -124,7 +189,8 @@ namespace Day_Night
 
                 if (RunInPlayMode)
                 {
-                    currentDayRatio = Mathf.Repeat(currentDayRatio + Time.deltaTime / Mathf.Max(1f, DayDurationInSeconds), 1f);
+                    // Time.deltaTime da nhan Time.timeScale: game pause (timeScale = 0) thi dong ho dung han.
+                    currentDayRatio = AdvanceDayRatio(currentDayRatio, Time.deltaTime);
                 }
 
                 UpdateAutomaticWeather();
@@ -159,6 +225,16 @@ namespace Day_Night
         {
             presetVersion = CurrentPresetVersion;
             DayDurationInSeconds = 300f;
+            UsePhaseDurationScaling = true;
+            DayPhaseDurationScale = 1.8f;
+            NightPhaseDurationScale = 0.5f;
+            TwilightPhaseDurationScale = 1f;
+            RainPhaseExtension = 0.25f;
+            KeepTotalDayLength = true;
+            DawnStartRatio = 0.05f;
+            DayStartRatio = 0.10f;
+            DuskStartRatio = 0.85f;
+            NightStartRatio = 0.90f;
             StartingTime = 0.5f;
             UseAutomaticWeather = true;
             DayRainStartMin = 0.42f;
@@ -413,6 +489,189 @@ namespace Day_Night
             }
         }
 
+        // Tra ve he so TOC DO troi thoi gian cho pha dang chay.
+        // Ban chat: doi do dai pha thanh toc do (speed = 1 / duration scale),
+        // nen chi thay doi thoi gian troi NHANH hay CHAM, khong dung vao mau/anh sang.
+        // ApplyLighting van doc cung mot ratio 0..1 nhu cu.
+        private float GetPhaseSpeedMultiplier(float ratio)
+        {
+            if (!UsePhaseDurationScaling)
+            {
+                return 1f;
+            }
+
+            float durationScale = GetPhaseDurationScale(ratio);
+
+            if (KeepTotalDayLength)
+            {
+                // Chia cho do dai trung binh => tong mot vong van bang DayDurationInSeconds,
+                // chi ty le ngay/dem ben trong vong la thay doi.
+                float average = GetAveragePhaseDurationScale();
+                if (IsUsableNumber(average) && average > 0.0001f)
+                {
+                    durationScale /= average;
+                }
+            }
+
+            if (IsRainingNow())
+            {
+                durationScale *= 1f + Mathf.Max(0f, SanitizeNumber(RainPhaseExtension, 0f));
+            }
+
+            if (!IsUsableNumber(durationScale))
+            {
+                return 1f;
+            }
+
+            durationScale = Mathf.Clamp(durationScale, 0.05f, 20f);
+            return 1f / durationScale;
+        }
+
+        // Do dai trung binh (co trong so theo be rong tung pha) cua mot vong.
+        private float GetAveragePhaseDurationScale()
+        {
+            float dawn = Mathf.Clamp01(SanitizeNumber(DawnStartRatio, 0.05f));
+            float day = Mathf.Clamp01(SanitizeNumber(DayStartRatio, 0.10f));
+            float dusk = Mathf.Clamp01(SanitizeNumber(DuskStartRatio, 0.85f));
+            float night = Mathf.Clamp01(SanitizeNumber(NightStartRatio, 0.90f));
+
+            if (!(dawn <= day && day <= dusk && dusk <= night))
+            {
+                return 1f;
+            }
+
+            float nightSpan = dawn + (1f - night);
+            float twilightSpan = (day - dawn) + (night - dusk);
+            float daySpan = dusk - day;
+
+            float dayScale = Mathf.Max(0.05f, SanitizeNumber(DayPhaseDurationScale, 1f));
+            float nightScale = Mathf.Max(0.05f, SanitizeNumber(NightPhaseDurationScale, 1f));
+            float twilightScale = Mathf.Max(0.05f, SanitizeNumber(TwilightPhaseDurationScale, 1f));
+
+            return nightSpan * nightScale + twilightSpan * twilightScale + daySpan * dayScale;
+        }
+
+        // Cong don thoi gian theo tung doan pha: neu mot frame dai vuot qua moc chuyen pha
+        // (hoac vuot qua 1.0), phan con lai duoc tinh bang toc do cua pha moi, khong bi sai nhip.
+        private float AdvanceDayRatio(float ratio, float deltaSeconds)
+        {
+            if (!IsUsableNumber(ratio))
+            {
+                ratio = Mathf.Clamp01(SanitizeNumber(StartingTime, 0.5f));
+            }
+
+            if (!IsUsableNumber(deltaSeconds) || deltaSeconds <= 0f)
+            {
+                return Mathf.Repeat(ratio, 1f);
+            }
+
+            float duration = Mathf.Max(1f, SanitizeNumber(DayDurationInSeconds, 300f));
+            float remaining = deltaSeconds;
+            float speed = 1f;
+
+            for (int i = 0; i < MaxPhaseSubSteps && remaining > 0f; i++)
+            {
+                speed = GetPhaseSpeedMultiplier(ratio);
+                if (!IsUsableNumber(speed) || speed <= 0f)
+                {
+                    speed = 1f;
+                }
+
+                float boundary = GetNextPhaseBoundary(ratio);
+                float distance = boundary - ratio;
+                if (distance <= 0f)
+                {
+                    break;
+                }
+
+                float secondsToBoundary = distance * duration / speed;
+                if (!IsUsableNumber(secondsToBoundary) || secondsToBoundary > remaining)
+                {
+                    break;
+                }
+
+                ratio = Mathf.Repeat(boundary + PhaseBoundaryEpsilon, 1f);
+                remaining -= secondsToBoundary;
+            }
+
+            if (remaining > 0f)
+            {
+                ratio = Mathf.Repeat(ratio + remaining * speed / duration, 1f);
+            }
+
+            return IsUsableNumber(ratio) ? Mathf.Repeat(ratio, 1f) : 0f;
+        }
+
+        // Moc chuyen pha ke tiep tinh tu ratio (co the > 1 khi sap sang ngay moi).
+        private float GetNextPhaseBoundary(float ratio)
+        {
+            float best = 1f;
+
+            best = PickCloserBoundary(ratio, best, Mathf.Clamp01(SanitizeNumber(DawnStartRatio, 0.05f)));
+            best = PickCloserBoundary(ratio, best, Mathf.Clamp01(SanitizeNumber(DayStartRatio, 0.10f)));
+            best = PickCloserBoundary(ratio, best, Mathf.Clamp01(SanitizeNumber(DuskStartRatio, 0.85f)));
+            best = PickCloserBoundary(ratio, best, Mathf.Clamp01(SanitizeNumber(NightStartRatio, 0.90f)));
+
+            return best;
+        }
+
+        private static float PickCloserBoundary(float ratio, float best, float candidate)
+        {
+            return candidate > ratio && candidate < best ? candidate : best;
+        }
+
+        private static bool IsUsableNumber(float value)
+        {
+            return !float.IsNaN(value) && !float.IsInfinity(value);
+        }
+
+        private static float SanitizeNumber(float value, float fallback)
+        {
+            return IsUsableNumber(value) ? value : fallback;
+        }
+
+        // Phan loai pha theo cac moc, dung dung thu tu dem -> binh minh -> ngay -> hoang hon -> dem.
+        private float GetPhaseDurationScale(float ratio)
+        {
+            float dawn = Mathf.Clamp01(SanitizeNumber(DawnStartRatio, 0.05f));
+            float day = Mathf.Clamp01(SanitizeNumber(DayStartRatio, 0.10f));
+            float dusk = Mathf.Clamp01(SanitizeNumber(DuskStartRatio, 0.85f));
+            float night = Mathf.Clamp01(SanitizeNumber(NightStartRatio, 0.90f));
+
+            float dayScale = Mathf.Max(0.05f, SanitizeNumber(DayPhaseDurationScale, 1f));
+            float nightScale = Mathf.Max(0.05f, SanitizeNumber(NightPhaseDurationScale, 1f));
+            float twilightScale = Mathf.Max(0.05f, SanitizeNumber(TwilightPhaseDurationScale, 1f));
+
+            // Moc bi dao lon trong Inspector: bo qua lop chinh nhip cho an toan.
+            if (!(dawn <= day && day <= dusk && dusk <= night))
+            {
+                return 1f;
+            }
+
+            if (ratio < dawn || ratio >= night)
+            {
+                return nightScale;
+            }
+
+            if (ratio < day || ratio >= dusk)
+            {
+                return twilightScale;
+            }
+
+            return dayScale;
+        }
+
+        private bool IsRainingNow()
+        {
+            if (WeatherSystem == null)
+            {
+                return false;
+            }
+
+            return WeatherSystem.CurrentWeather == DayNightWeatherType.Rain ||
+                   WeatherSystem.CurrentWeather == DayNightWeatherType.Thunder;
+        }
+
         private float GetWeatherLightMultiplier()
         {
             if (WeatherSystem == null)
@@ -461,9 +720,14 @@ namespace Day_Night
                 source.Play();
             }
 
+            // [FIX 10/09] Nhan he so am luong SFX. Truoc day ham nay ghi thang volume moi
+            // khung hinh nen ambience Ngay / Dem / MUA khong he theo thanh truot "Am thanh
+            // VFX" - keo ve 0 van nghe ro, va tat SFX cung khong tat duoc.
+            float mucDich = target * global::AudioManager.SfxGain;
+
             source.volume = instant
-                ? target
-                : Mathf.MoveTowards(source.volume, target, AudioFadeSpeed * Time.deltaTime);
+                ? mucDich
+                : Mathf.MoveTowards(source.volume, mucDich, AudioFadeSpeed * Time.deltaTime);
         }
 
         private void RefreshDayEventHandlers()

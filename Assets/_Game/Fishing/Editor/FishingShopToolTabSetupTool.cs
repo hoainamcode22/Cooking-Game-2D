@@ -122,6 +122,7 @@ namespace FarmGame.Fishing
                     StepWireFields(apply, shop, btn, report, thieu);
                     StepFillToolList(apply, shop, tools, report, thieu);
                 }
+                StepSyncWarehouseAndStall(apply, report, thieu);
                 if (apply) { EditorSceneManager.MarkSceneDirty(scene); }
             }
             catch (Exception e)
@@ -185,7 +186,12 @@ namespace FarmGame.Fishing
                 if (string.IsNullOrEmpty(have.itemName)) { have.itemName = def.nameVi; doi = true; }
                 if (string.IsNullOrEmpty(have.toolKind)) { have.toolKind = def.kind; doi = true; }
                 if (string.IsNullOrEmpty(have.description)) { have.description = def.description; doi = true; }
-                if (doi) { EditorUtility.SetDirty(have); AssetDatabase.SaveAssets(); report.AppendLine("    + bù field rỗng (itemID/itemName/toolKind/description)"); }
+                if (have.itemIcon == null)
+                {
+                    var ic = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Fishing/Art/Tools/tool_" + def.kind + ".png");
+                    if (ic != null) { have.itemIcon = ic; doi = true; }
+                }
+                if (doi) { EditorUtility.SetDirty(have); AssetDatabase.SaveAssets(); report.AppendLine("    + bù field rỗng (itemID/itemName/toolKind/description/itemIcon)"); }
                 return have;
             }
 
@@ -210,10 +216,11 @@ namespace FarmGame.Fishing
             tool.toolKind = def.kind;
             tool.durabilityUses = def.durability;
             tool.description = def.description;
+            tool.itemIcon = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Fishing/Art/Tools/tool_" + def.kind + ".png");
             AssetDatabase.CreateAsset(tool, path);
             EditorUtility.SetDirty(tool);
             AssetDatabase.SaveAssets();
-            report.AppendLine("  ✓ Tạo " + path + " — " + def.nameVi.ToUpperInvariant() + " CHƯA CÓ CHỨC NĂNG, mua xong chỉ vào kho. Sếp kéo icon vào ô Item Icon.");
+            report.AppendLine("  ✓ Tạo " + path + " — " + def.nameVi.ToUpperInvariant() + " (đã gán icon tool_" + def.kind + ".png).");
             return tool;
         }
 
@@ -294,7 +301,7 @@ namespace FarmGame.Fishing
             var conBtn = copy.GetComponentsInChildren<Button>(true);
             for (int i = 0; i < conBtn.Length; i++) { if (conBtn[i] != btn) { conBtn[i].onClick = new Button.ButtonClickedEvent(); } }
 
-            // Nhãn — GIỮ NGUYÊN Image/sprite, Sếp thay icon sau.
+            // Nhãn và Icon
             var tmp = copy.GetComponentInChildren<TMP_Text>(true);
             if (tmp != null) { tmp.text = TabLabelVi; }
             else
@@ -304,8 +311,22 @@ namespace FarmGame.Fishing
                 else { thieu.Add(TabButtonName + " không có TMP/Text con — Sếp gõ chữ \"" + TabLabelVi + "\" tay"); }
             }
 
+            var tabIcon = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Fishing/Art/UI/icon_tab_shop_tool.png");
+            if (tabIcon != null)
+            {
+                var childImgs = copy.GetComponentsInChildren<Image>(true);
+                for (int i = 0; i < childImgs.Length; i++)
+                {
+                    if (childImgs[i].gameObject != copy)
+                    {
+                        childImgs[i].sprite = tabIcon;
+                        break;
+                    }
+                }
+            }
+
             EditorUtility.SetDirty(copy);
-            report.AppendLine("  ✓ Tạo " + Path(copy.transform) + " — onClick trống, nhãn \"" + TabLabelVi + "\", Image/sprite giữ nguyên.");
+            report.AppendLine("  ✓ Tạo " + Path(copy.transform) + " — onClick trống, nhãn \"" + TabLabelVi + "\", đã gán icon_tab_shop_tool.");
             return copy;
         }
 
@@ -443,6 +464,110 @@ namespace FarmGame.Fishing
             so.ApplyModifiedProperties();
             EditorUtility.SetDirty(shop);
             report.AppendLine("  ✓ toolList giờ có " + list.arraySize.ToString(CultureInfo.InvariantCulture) + " món (chỉ THÊM, không xoá/sắp lại thứ Sếp đã kéo tay).");
+        }
+
+        // ─────────────────────────────────────────────────────────────────
+        //  (e) Đồng bộ 6 nguyên liệu nấu ăn + 3 công cụ vào Kho & Quầy Hàng
+        // ─────────────────────────────────────────────────────────────────
+
+        private static void StepSyncWarehouseAndStall(bool apply, StringBuilder report, List<string> thieu)
+        {
+            report.AppendLine("(e) Đồng bộ 6 nguyên liệu nấu ăn + 3 công cụ vào Kho & Quầy Hàng");
+
+            string cookDir = "Assets/_Game/Farm/data/Item_Kho_Cook";
+            string toolDir = "Assets/_Game/Fishing/Data/Tools";
+
+            var itemsToSync = new List<InventoryItemData>
+            {
+                AssetDatabase.LoadAssetAtPath<InventoryItemData>($"{cookDir}/Item_Herbs.asset"),
+                AssetDatabase.LoadAssetAtPath<InventoryItemData>($"{cookDir}/Item_FishSauce.asset"),
+                AssetDatabase.LoadAssetAtPath<InventoryItemData>($"{cookDir}/Item_SoySauce.asset"),
+                AssetDatabase.LoadAssetAtPath<InventoryItemData>($"{cookDir}/Item_Salt.asset"),
+                AssetDatabase.LoadAssetAtPath<InventoryItemData>($"{cookDir}/Item_Pepper.asset"),
+                AssetDatabase.LoadAssetAtPath<InventoryItemData>($"{cookDir}/Item_Sugar.asset"),
+                AssetDatabase.LoadAssetAtPath<InventoryItemData>($"{toolDir}/Item_tool_axe.asset"),
+                AssetDatabase.LoadAssetAtPath<InventoryItemData>($"{toolDir}/Item_tool_hammer.asset"),
+                AssetDatabase.LoadAssetAtPath<InventoryItemData>($"{toolDir}/Item_tool_scissors.asset"),
+            };
+
+            // 1. WarehousePopupUI
+            var warehouse = UnityEngine.Object.FindFirstObjectByType<WarehousePopupUI>(FindObjectsInactive.Include);
+            if (warehouse != null)
+            {
+                var so = new SerializedObject(warehouse);
+                var pExtra = so.FindProperty("extraItemDatabase");
+                if (pExtra != null)
+                {
+                    var set = new HashSet<UnityEngine.Object>();
+                    for (int i = 0; i < pExtra.arraySize; i++)
+                    {
+                        var o = pExtra.GetArrayElementAtIndex(i).objectReferenceValue;
+                        if (o != null) set.Add(o);
+                    }
+
+                    int added = 0;
+                    for (int i = 0; i < itemsToSync.Count; i++)
+                    {
+                        var item = itemsToSync[i];
+                        if (item != null && !set.Contains(item))
+                        {
+                            if (apply)
+                            {
+                                int idx = pExtra.arraySize++;
+                                pExtra.GetArrayElementAtIndex(idx).objectReferenceValue = item;
+                            }
+                            set.Add(item);
+                            added++;
+                            report.AppendLine($"  + Kho: thêm {item.displayName} ({item.itemId})");
+                        }
+                    }
+                    if (apply && added > 0)
+                    {
+                        so.ApplyModifiedProperties();
+                        EditorUtility.SetDirty(warehouse);
+                    }
+                }
+            }
+
+            // 2. StallItemCatalog
+            var catalog = UnityEngine.Object.FindFirstObjectByType<StallItemCatalog>(FindObjectsInactive.Include);
+            if (catalog != null)
+            {
+                var so = new SerializedObject(catalog);
+                var pItems = so.FindProperty("itemDatabase");
+                if (pItems != null)
+                {
+                    var set = new HashSet<UnityEngine.Object>();
+                    for (int i = 0; i < pItems.arraySize; i++)
+                    {
+                        var o = pItems.GetArrayElementAtIndex(i).objectReferenceValue;
+                        if (o != null) set.Add(o);
+                    }
+
+                    int added = 0;
+                    for (int i = 0; i < itemsToSync.Count; i++)
+                    {
+                        var item = itemsToSync[i];
+                        if (item != null && !set.Contains(item))
+                        {
+                            if (apply)
+                            {
+                                int idx = pItems.arraySize++;
+                                pItems.GetArrayElementAtIndex(idx).objectReferenceValue = item;
+                            }
+                            set.Add(item);
+                            added++;
+                            report.AppendLine($"  + Quầy hàng: thêm {item.displayName} ({item.itemId})");
+                        }
+                    }
+                    if (apply && added > 0)
+                    {
+                        so.ApplyModifiedProperties();
+                        EditorUtility.SetDirty(catalog);
+                        catalog.Build();
+                    }
+                }
+            }
         }
 
         // ─────────────────────────────────────────────────────────────────

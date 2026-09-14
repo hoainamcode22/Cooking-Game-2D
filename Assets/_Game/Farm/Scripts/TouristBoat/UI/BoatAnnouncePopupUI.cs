@@ -398,23 +398,75 @@ public class BoatAnnouncePopupUI : MonoBehaviour
 
         int soHieu = _manager != null ? _manager.BoatNumber(dockIndex) : dockIndex + 1;
 
+        // [VÒNG 2026-09-11] Áp dụng sprite khung Toast bo tròn cao cấp
+        if (cardRect != null)
+        {
+            var cardImg = cardRect.GetComponent<Image>();
+            if (cardImg != null)
+            {
+                Sprite bgSpr = FarmGame.UI.TouristBoatArtRuntime.GetBoatAnnounceCardSprite();
+                if (bgSpr != null)
+                {
+                    cardImg.sprite = bgSpr;
+                    cardImg.type = Image.Type.Sliced;
+                    cardImg.color = Color.white;
+                }
+            }
+        }
+
         if (titleText != null)
         {
-            titleText.text = Loc.TF("⚓ Tàu số {0:00} sắp cập bến!", soHieu);
-            titleText.color = new Color(1f, 0.95f, 0.82f); // #FFF4D0 Vàng kem sáng
-            titleText.fontSize = 24f;
+            titleText.text = Loc.TF("⚓ <color=#FFF275>TÀU SỐ {0:00} SẮP CẬP BẾN!</color>", soHieu);
+            titleText.fontSize = 23f;
+            titleText.fontStyle = FontStyles.Bold;
+            titleText.color = new Color(1f, 0.95f, 0.45f); // Vàng kim sáng rực rỡ
+            titleText.enableVertexGradient = true;
+            titleText.colorGradient = new VertexGradient(
+                new Color(1f, 0.98f, 0.70f),
+                new Color(1f, 0.98f, 0.70f),
+                new Color(1f, 0.75f, 0.15f),
+                new Color(1f, 0.75f, 0.15f));
         }
         if (bodyText != null)
         {
-            bodyText.text = Loc.TF("Sẽ cập bến sau {0} phút. Hãy chuẩn bị món ăn đón khách nhé!", phut);
-            bodyText.color = new Color(1f, 0.98f, 0.92f); // Kem sáng rõ ràng
-            bodyText.fontSize = 18f;
+            bodyText.text = Loc.TF("Sẽ cập bến sau <color=#5DD6FF><b>{0} phút</b></color> nữa!\nHãy chuẩn bị sẵn món ngon đón khách nhé! 🍲", phut);
+            bodyText.color = new Color(1f, 0.99f, 0.95f); // Trắng sáng rõ ràng, tương phản cao
+            bodyText.fontSize = 17f;
             bodyText.maxVisibleCharacters = KyTuHienHet;
         }
 
         if (confirmButton != null)
         {
             confirmButton.gameObject.SetActive(true);
+
+            // Áp dụng sprite nút bấm bo tròn màu hổ phách
+            var btnImg = confirmButton.GetComponent<Image>();
+            if (btnImg != null)
+            {
+                Sprite btnSpr = FarmGame.UI.TouristBoatArtRuntime.GetBoatAnnounceBtnSprite();
+                if (btnSpr != null)
+                {
+                    btnImg.sprite = btnSpr;
+                    btnImg.type = Image.Type.Sliced;
+                    btnImg.color = Color.white;
+                }
+            }
+
+            var btnTxt = confirmButton.GetComponentInChildren<TextMeshProUGUI>();
+            if (btnTxt != null)
+            {
+                btnTxt.text = "<b>ĐÃ RÕ</b>";
+                btnTxt.fontSize = 16f;
+                btnTxt.fontStyle = FontStyles.Bold;
+                btnTxt.color = new Color(0.25f, 0.12f, 0.02f); // Nâu sậm tương phản cao trên nền hổ phách sáng
+            }
+
+            var btnRt = confirmButton.GetComponent<RectTransform>();
+            if (btnRt != null)
+            {
+                btnRt.sizeDelta = new Vector2(115f, 42f);
+                btnRt.anchoredPosition = new Vector2(-22f, 18f);
+            }
         }
 
         // TẮT dim đen hoàn toàn để không chặn màn hình người chơi
@@ -429,7 +481,7 @@ public class BoatAnnouncePopupUI : MonoBehaviour
         {
             cardRect.anchorMin = cardRect.anchorMax = new Vector2(1f, 1f);
             cardRect.pivot = new Vector2(1f, 1f);
-            cardRect.sizeDelta = new Vector2(500f, 140f);
+            cardRect.sizeDelta = new Vector2(520f, 146f);
             cardRect.anchoredPosition = new Vector2(400f, -135f); // Bắt đầu ngoài mép phải
         }
 
@@ -458,6 +510,8 @@ public class BoatAnnouncePopupUI : MonoBehaviour
     {
         if (!_dangHien || popupRoot == null || !popupRoot.activeSelf) return;
 
+        AudioManager.Instance?.PlayUIClick();
+
         if (_animRoutine != null) StopCoroutine(_animRoutine);
         _animRoutine = StartCoroutine(DongAnimRoutine());
     }
@@ -466,6 +520,9 @@ public class BoatAnnouncePopupUI : MonoBehaviour
     private IEnumerator MoAnimRoutine()
     {
         if (contentGroup != null) contentGroup.alpha = 0f;
+
+        // Âm thanh báo hiệu nhẹ nhàng vui tai
+        AudioManager.Instance?.PlayCoinTing();
 
         Vector2 startPos = new Vector2(420f, -135f);
         Vector2 targetPos = new Vector2(-30f, -135f);

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -20,6 +21,12 @@ public class StallPickItemCellUI : MonoBehaviour, IInitializePotentialDragHandle
     [Header("Chỗ chờ art")]
     [SerializeField] private Image      imageArtCellBackground;
     [SerializeField] private GameObject selectedFrame;
+
+    /// <summary>Mau o cho art khi vat pham chua co icon — hien mo mo con hon bien mat.</summary>
+    private static readonly Color MauChoIcon = new Color(0.72f, 0.72f, 0.78f, 0.55f);
+
+    // Moi itemId chi canh bao 1 lan / phien chay (o duoc tai su dung lien tuc khi loc).
+    private static readonly HashSet<string> _daCanhBaoThieuIcon = new HashSet<string>();
 
     private StallPopupUI _owner;
     private string       _itemId;
@@ -73,7 +80,16 @@ public class StallPickItemCellUI : MonoBehaviour, IInitializePotentialDragHandle
         {
             Sprite icon = catalog != null ? catalog.GetIcon(itemId) : null;
             imageIcon.sprite  = icon;
-            imageIcon.enabled = icon != null;
+            // Truoc day thieu icon = tat han Image => o trong ron, khong ai biet la loi.
+            // Nay giu o HIEN voi mau cho art de nhin thay ngay cho nao con thieu.
+            imageIcon.enabled = true;
+            imageIcon.color   = icon != null ? Color.white : MauChoIcon;
+            if (icon == null)
+            {
+                string idThieu = string.IsNullOrEmpty(itemId) ? "(id rong)" : itemId;
+                if (_daCanhBaoThieuIcon.Add(idThieu))
+                    Debug.LogWarning($"[Quầy] thieu icon: {idThieu}");
+            }
         }
 
         if (textName != null)

@@ -303,10 +303,13 @@ public class GameBuildTool : EditorWindow
         var nbt = NamedBuildTarget.WebGL;
         PlayerSettings.SetApplicationIdentifier(nbt, packageId);
 
-        // Brotli nen nho nhat. decompressionFallback = true de trinh duyet nao
-        // khong nhan header nen (itch.io doi khi vay) van giai nen duoc bang JS.
-        PlayerSettings.WebGL.compressionFormat     = WebGLCompressionFormat.Brotli;
-        PlayerSettings.WebGL.decompressionFallback = true;
+        // Gzip la chuan nhat tren itch.io va tat ca trinh duyet di dong.
+        // decompressionFallback = false de trinh duyet (C++) tu giai nen tren luong mang,
+        // TUYET DOI KHONG dung JS decompressor de tranh nhan doi RAM gay crash 90% tren iOS/Safari/Messenger.
+        PlayerSettings.WebGL.compressionFormat     = WebGLCompressionFormat.Gzip;
+        PlayerSettings.WebGL.decompressionFallback = false;
+        PlayerSettings.WebGL.dataCaching           = false;
+        PlayerSettings.WebGL.initialMemorySize     = 64;
 
         // Tat bat loi ngoai le -> ban build nho hon va chay nhanh hon han tren
         // dien thoai. Khi nao can soi loi thi doi lai ExplicitlyThrownExceptionsOnly.

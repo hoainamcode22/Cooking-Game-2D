@@ -65,6 +65,8 @@ public static class HudNavHider
     {
         DonChuDaChet();
 
+        if (_cg == null && _chuSoHuu.Count == 0) return;
+
         CanvasGroup cg = LayCanvasGroup();
         if (cg == null) return;   // HUD chưa có / scene khác — không có gì để ẩn, im lặng
 
@@ -93,10 +95,14 @@ public static class HudNavHider
         _bufXoa.Clear();
     }
 
+    private static bool _isQuitting;
+
     /// <summary>Tìm (và cache) CanvasGroup trên BottomLeft_Nav_Group; thêm mới nếu chưa có.</summary>
     private static CanvasGroup LayCanvasGroup()
     {
         if (_cg != null) return _cg;   // == null cũng bắt được trường hợp object đã bị huỷ ⇒ dò lại
+
+        if (!Application.isPlaying || _isQuitting) return null;
 
         GameObject nav = TimNhomNav();
         if (nav == null) return null;
@@ -108,16 +114,25 @@ public static class HudNavHider
 
     private static GameObject TimNhomNav()
     {
-        // 1) Nhanh nhất — nav bình thường luôn active nên GameObject.Find đủ dùng.
-        GameObject go = GameObject.Find(TenNhomNav);
-        if (go != null) return go;
+        if (!Application.isPlaying || _isQuitting) return null;
 
-        // 2) Nav đang tắt (ai đó SetActive(false)) ⇒ quét đệ quy dưới Canvas_HUD, kể cả con inactive.
-        GameObject hud = GameObject.Find(TenCanvasHud);
-        if (hud == null) return null;
+        try
+        {
+            // 1) Nhanh nhất — nav bình thường luôn active nên GameObject.Find đủ dùng.
+            GameObject go = GameObject.Find(TenNhomNav);
+            if (go != null) return go;
 
-        foreach (Transform t in hud.GetComponentsInChildren<Transform>(true))
-            if (t.name == TenNhomNav) return t.gameObject;
+            // 2) Nav đang tắt (ai đó SetActive(false)) ⇒ quét đệ quy dưới Canvas_HUD, kể cả con inactive.
+            GameObject hud = GameObject.Find(TenCanvasHud);
+            if (hud == null) return null;
+
+            foreach (Transform t in hud.GetComponentsInChildren<Transform>(true))
+                if (t != null && t.name == TenNhomNav) return t.gameObject;
+        }
+        catch
+        {
+            // Bỏ qua khi Unity đang dọn dẹp scene lúc thoát game
+        }
 
         return null;
     }
@@ -132,5 +147,13 @@ public static class HudNavHider
         _chuSoHuu.Clear();
         _bufXoa.Clear();
         _cg = null;
+        _isQuitting = false;
+        Application.quitting -= OnAppQuitting;
+        Application.quitting += OnAppQuitting;
+    }
+
+    private static void OnAppQuitting()
+    {
+        _isQuitting = true;
     }
 }

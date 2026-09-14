@@ -109,10 +109,10 @@ public static class HudEditModeButtonSetupTool
             rt.anchorMax = new Vector2(0f, 1f);
             rt.pivot     = new Vector2(0f, 1f);
             rt.localScale = Vector3.one;
-            rt.sizeDelta        = new Vector2(105f, 105f);
-            rt.anchoredPosition = new Vector2(30f, -230f);
+            rt.sizeDelta        = new Vector2(95f, 95f);
+            rt.anchoredPosition = new Vector2(30f, -172f);
 
-            log.AppendLine($"+ Tạo {TenNutMoi} tại Top-Left pos (30, -230) size (105, 105) trên Canvas_HUD");
+            log.AppendLine($"+ Tạo {TenNutMoi} tại Top-Left pos (30, -172) size (95, 95) trên Canvas_HUD");
         }
         else
         {
@@ -124,9 +124,9 @@ public static class HudEditModeButtonSetupTool
             rt.anchorMax = new Vector2(0f, 1f);
             rt.pivot     = new Vector2(0f, 1f);
             rt.localScale = Vector3.one;
-            rt.sizeDelta        = new Vector2(105f, 105f);
-            rt.anchoredPosition = new Vector2(30f, -230f);
-            log.AppendLine($"· {TenNutMoi} đã có — chuyển lên Canvas_HUD và ghim vị trí (30, -230).");
+            rt.sizeDelta        = new Vector2(95f, 95f);
+            rt.anchoredPosition = new Vector2(30f, -172f);
+            log.AppendLine($"· {TenNutMoi} đã có — chuyển lên Canvas_HUD và ghim vị trí (30, -172).");
         }
 
         // ── 3. Background Card: Luôn dùng sprite khung thẻ bo góc chuẩn của Game ─────

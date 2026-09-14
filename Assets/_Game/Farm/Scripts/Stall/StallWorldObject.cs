@@ -37,13 +37,25 @@ public class StallWorldObject : MonoBehaviour
         if (targetCollider == null) targetCollider = GetComponent<Collider2D>();
 
         if (popupUI == null)
-            popupUI = FindAnyObjectByType<StallPopupUI>(FindObjectsInactive.Include);
+            popupUI = StallPopupUI.Instance ?? FindAnyObjectByType<StallPopupUI>(FindObjectsInactive.Include);
     }
 
     private void Update()
     {
         if (TryGetPointerScreenPosition(out Vector2 screenPos))
             TryOpenStall(screenPos);
+    }
+
+    private void OnMouseUpAsButton()
+    {
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
+        Vector2 pos;
+#if ENABLE_INPUT_SYSTEM
+        pos = Mouse.current != null ? Mouse.current.position.ReadValue() : (Vector2)Input.mousePosition;
+#else
+        pos = (Vector2)Input.mousePosition;
+#endif
+        TryOpenStall(pos);
     }
 
     private static bool TryGetPointerScreenPosition(out Vector2 screenPos)
@@ -62,27 +74,58 @@ public class StallWorldObject : MonoBehaviour
             return true;
         }
 
+        if (Input.GetMouseButtonDown(0))
+        {
+            screenPos = (Vector2)Input.mousePosition;
+            return true;
+        }
+
         return false;
     }
 
     private void TryOpenStall(Vector2 screenPos)
     {
-        if (FarmInputLock.BlockWorldInteraction) return;
+        if (FarmInputLock.IsCookingMode) return;
         // Minigame nấu ăn nạp chồng lên scene farm — lúc đó click thuộc về minigame.
         if (SceneManager.GetSceneByName("SampleScene").isLoaded) return;
 
         if (EditModeManager.IsEditMode) return;
-        if (FarmInputLock.BlockMapPan) return;
 
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen()) return;
 
-        if (popupUI == null || mainCamera == null || targetCollider == null) return;
+        if (mainCamera == null || !mainCamera.gameObject.activeInHierarchy)
+            mainCamera = Camera.main;
+
+        if (popupUI == null)
+            popupUI = StallPopupUI.Instance ?? FindAnyObjectByType<StallPopupUI>(FindObjectsInactive.Include);
+
+        if (popupUI == null || mainCamera == null) return;
         if (popupUI.IsOpen) return;
 
         if (IsPointerOverPopupUI(screenPos)) return;
 
         Vector3 world3 = mainCamera.ScreenToWorldPoint(screenPos);
-        if (!targetCollider.OverlapPoint(new Vector2(world3.x, world3.y))) return;
+        Vector2 world2 = new Vector2(world3.x, world3.y);
+
+        bool hit = false;
+        var colliders = GetComponentsInChildren<Collider2D>();
+        if (colliders != null && colliders.Length > 0)
+        {
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                if (colliders[i] != null && colliders[i].enabled && colliders[i].OverlapPoint(world2))
+                {
+                    hit = true;
+                    break;
+                }
+            }
+        }
+        else if (targetCollider != null && targetCollider.OverlapPoint(world2))
+        {
+            hit = true;
+        }
+
+        if (!hit) return;
 
         if (requiredLevel > 0 && GetPlayerLevel() < requiredLevel)
         {
@@ -104,6 +147,10 @@ public class StallWorldObject : MonoBehaviour
     {
         if (EventSystem.current == null) return false;
 
+        // Nếu không có popup nào đang mở thì không chặn
+        if (PopupManager.Instance != null && !PopupManager.Instance.IsAnyPopupOpen())
+            return false;
+
         var eventData = new PointerEventData(EventSystem.current) { position = screenPos };
 
         RaycastBuffer.Clear();
@@ -113,6 +160,8 @@ public class StallWorldObject : MonoBehaviour
         {
             Canvas parentCanvas = RaycastBuffer[i].gameObject.GetComponentInParent<Canvas>();
             if (parentCanvas == null) continue;
+
+            if (popupCanvasNames == null) continue;
 
             for (int n = 0; n < popupCanvasNames.Length; n++)
             {

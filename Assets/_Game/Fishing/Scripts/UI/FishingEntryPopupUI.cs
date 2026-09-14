@@ -20,7 +20,15 @@ namespace FarmGame.Fishing
     {
         public static FishingEntryPopupUI Instance { get; private set; }
         /// <summary>Cho PopupManager.IsAnyPopupOpen (YÊU CẦU LIÊN DEV: Lead thêm 1 dòng) — chặn click world khi mở.</summary>
-        public static bool AnyOpen { get; private set; }
+        public static bool AnyOpen
+        {
+            get
+            {
+                if (Instance == null)
+                    Instance = FindFirstObjectByType<FishingEntryPopupUI>(FindObjectsInactive.Include);
+                return Instance != null && Instance.IsOpen;
+            }
+        }
 
         private static readonly Vector2 FrameSize = new Vector2(1160f, 780f);
         private static readonly Vector2 CardSize = new Vector2(380f, 520f);
@@ -55,10 +63,10 @@ namespace FarmGame.Fishing
         private Coroutine _toastRoutine;
         private readonly List<RectTransform> _roomRows = new List<RectTransform>();
 
-        public bool IsOpen { get { return root != null && root.gameObject.activeSelf; } }
+        public bool IsOpen { get { return root != null && root.gameObject.activeInHierarchy; } }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
-        private static void ResetStatics() { Instance = null; AnyOpen = false; }
+        private static void ResetStatics() { Instance = null; }
 
         // ─────────────────────────────────────────────────────────────────────
         //  VÒNG ĐỜI
@@ -71,10 +79,9 @@ namespace FarmGame.Fishing
             BuildIfEmpty();
             Wire();
             if (root != null) { root.gameObject.SetActive(false); }
-            AnyOpen = false;
         }
 
-        private void OnDestroy() { FishingPopupStack.Remove(this); if (Instance == this) { Instance = null; AnyOpen = false; } }
+        private void OnDestroy() { FishingPopupStack.Remove(this); if (Instance == this) { Instance = null; } }
 
         private void OnDisable() { MarkClosed(); }
 
@@ -82,8 +89,8 @@ namespace FarmGame.Fishing
         {
             if (!IsOpen)
             {
-                // Root bị tắt trực tiếp từ ngoài (không qua ClosePopup) → dọn cờ/lock như đã đóng.
-                if (AnyOpen || _inputLockHeld) { MarkClosed(); }
+                // Root bị tắt trực tiếp từ ngoài (không qua ClosePopup) → dọn lock như đã đóng.
+                if (_inputLockHeld) { MarkClosed(); }
                 return;
             }
             // Escape / Back Android: chỉ popup ở đỉnh FishingPopupStack xử lý, 1 lần mỗi frame.
@@ -149,7 +156,6 @@ namespace FarmGame.Fishing
             FishingUiKit.ActivateUpToCanvas(root);
             root.gameObject.SetActive(true);
             root.SetAsLastSibling();
-            AnyOpen = true;
             AcquireLock();
             FishingPopupStack.Push(this);
             RefreshCharacterCards();
@@ -169,7 +175,6 @@ namespace FarmGame.Fishing
         private void MarkClosed()
         {
             _roomRequestSerial++;
-            AnyOpen = false;
             ReleaseLock();
             FishingPopupStack.Remove(this);
         }

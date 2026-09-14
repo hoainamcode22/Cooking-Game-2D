@@ -172,10 +172,24 @@ public class TutorialDialogueCard : MonoBehaviour
         TuDoThanhPhanThieu();
         LuuViTriGoc();
 
+        // Ẩn sạch mọi popup/khay hạt giống/khay liềm đang mở để không bao giờ bị đè UI thoại
+        if (FarmUIManager.Instance != null)
+        {
+            FarmUIManager.Instance.HidePlantSelectPopup();
+            FarmUIManager.Instance.HideAllPopups();
+        }
+        if (CropProcessPopupUI.Instance != null && CropProcessPopupUI.Instance.gameObject.activeInHierarchy)
+        {
+            CropProcessPopupUI.Instance.ClosePopup();
+        }
+
         _onContinue = khiBamTiepTuc;
         _onTap      = khiChamCard;
 
-        if (root != null && !root.activeSelf) root.SetActive(true);
+        if (root != null)
+        {
+            if (!root.activeSelf) root.SetActive(true);
+        }
 
         // Làm mờ hàng nút HUD góc trái-dưới trong lúc card mở (card/NPC nay neo góc PHẢI-dưới nên
         // không đè nút, nhưng người chơi hay bấm lạc sang Shop/Kho giữa bước). Bước nào cần bấm
@@ -284,7 +298,7 @@ public class TutorialDialogueCard : MonoBehaviour
             lbl.fontSizeMin = 16f;
             lbl.fontSizeMax = 28f;
             lbl.enableWordWrapping = false;
-            lbl.text = "Tiếp tục";
+            lbl.text = LocalizationManager.T("Tiếp tục");
         }
     }
 
@@ -304,7 +318,7 @@ public class TutorialDialogueCard : MonoBehaviour
 
         if (bodyText == null) return;
 
-        bodyText.text = noiDung ?? string.Empty;
+        bodyText.text = LocalizationManager.T(noiDung) ?? string.Empty;
         bodyText.ForceMeshUpdate();               // cập nhật textInfo.characterCount ngay
         bodyText.maxVisibleCharacters = 0;
 

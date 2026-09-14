@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27da4e0963ef8a14bba5b6535e1c8d80, type: 3}
   m_Name: Mission_a_proc_harvest_2
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
-  missionIcon: {fileID: 0}
+  missionIcon: {fileID: 21300000, guid: 12ef2b6b9877444f9ec11c59fa1e92dd, type: 3}
   missionName: "N\xF4ng d\xE2n Si\xEAu H\u1EA1ng (M\u1ED1c 2) \u2014 Thu ho\u1EA1ch
     300 n\xF4ng s\u1EA3n"
   targetAmount: 300

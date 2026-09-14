@@ -65,6 +65,21 @@ public class MobileEditModeButton : MonoBehaviour
         CapNhatNhan(EditModeManager.IsEditMode);
     }
 
+    private void Update()
+    {
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+        {
+            if (_nut != null && _nut.interactable)
+                _nut.interactable = false;
+            return;
+        }
+        else
+        {
+            if (_nut != null && !_nut.interactable)
+                _nut.interactable = true;
+        }
+    }
+
     private void OnEnable()
     {
         EditModeManager.OnEditModeChanged -= CapNhatNhan;
@@ -84,6 +99,12 @@ public class MobileEditModeButton : MonoBehaviour
     /// <summary>Bấm nút = gọi đúng API public đang có của EditModeManager.</summary>
     public void OnBamNut()
     {
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+        {
+            Debug.Log("[MobileEditModeButton] Đang chạy Tutorial — không cho phép bật Edit Mode.");
+            return;
+        }
+
         var mgr = EditModeManager.Instance;
         if (mgr == null)
         {

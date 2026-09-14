@@ -16,14 +16,29 @@ public class SimpleSpriteAnimator : MonoBehaviour
     public Sprite[] sprites;
     public float fps = 15f;
     public bool destroyOnEnd = true;
+    [System.NonSerialized] public bool disableOnEnd = false;
 
     private SpriteRenderer _sr;
     private float _timer;
     private int _frame;
 
-    private void Start()
+    private void Awake()
     {
         _sr = GetComponent<SpriteRenderer>();
+    }
+
+    private void Start()
+    {
+        if (_sr == null) _sr = GetComponent<SpriteRenderer>();
+        if (_sr != null && sprites != null && sprites.Length > 0)
+            _sr.sprite = sprites[0];
+    }
+
+    public void Play()
+    {
+        _timer = 0f;
+        _frame = 0;
+        if (_sr == null) _sr = GetComponent<SpriteRenderer>();
         if (_sr != null && sprites != null && sprites.Length > 0)
             _sr.sprite = sprites[0];
     }
@@ -41,6 +56,7 @@ public class SimpleSpriteAnimator : MonoBehaviour
             if (_frame >= sprites.Length)
             {
                 if (destroyOnEnd) { Destroy(gameObject); return; }
+                if (disableOnEnd) { gameObject.SetActive(false); return; }
                 _frame = 0;
             }
             _sr.sprite = sprites[_frame];

@@ -343,16 +343,37 @@ public class MillSlotUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
         SetMode(MillSlotMode.LockedLevel);
         DatCongThuc(null);
 
+        Color colLabel = new Color(0.35f, 0.25f, 0.16f, 1f); // #594029 Nâu đậm rõ nét
+        Color colLevel = new Color(0.65f, 0.18f, 0.12f, 1f); // #A62E1F Đỏ gạch nổi bật
+
+        if (rootLockedLevel != null)
+        {
+            var imgs = rootLockedLevel.GetComponentsInChildren<Image>(true);
+            for (int i = 0; i < imgs.Length; i++)
+            {
+                if (imgs[i] != null && imgs[i].gameObject.name.Contains("Pill"))
+                {
+                    imgs[i].color = new Color(0.92f, 0.86f, 0.79f, 1f); // #EADBCA Nền kem ấm bo góc
+                }
+            }
+        }
+
         if (txtLockLevelValue != null)
         {
             // Hai ô riêng — đúng như video (chữ nâu + viên thuốc xám).
-            if (txtLockLabel != null) txtLockLabel.text = "Chưa đủ cấp";
+            if (txtLockLabel != null)
+            {
+                txtLockLabel.text = "Chưa đủ cấp";
+                txtLockLabel.color = colLabel;
+            }
             txtLockLevelValue.text = Loc.TF("Cấp {0}", capYeuCau);
+            txtLockLevelValue.color = colLevel;
         }
         else if (txtLockLabel != null)
         {
             // Dev B chưa wire ô thứ hai ⇒ dồn hai dòng vào một ô để không mất thông tin cấp.
             txtLockLabel.text = Loc.TF("Chưa đủ cấp\nCấp {0}", capYeuCau);
+            txtLockLabel.color = colLabel;
         }
     }
 

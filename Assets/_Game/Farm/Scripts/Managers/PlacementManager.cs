@@ -1266,6 +1266,8 @@ public class PlacementManager : MonoBehaviour
             return;
         }
 
+        AudioManager.Instance?.PlayBuildingPlace();   // [THEM 2026-09-10] tieng dat cong trinh (sfx_building_place)
+
         // Ghost đứng yên khi user thả chuột → vị trí ghost chính là vị trí đặt công trình.
         // `pos` là ĐIỂM NEO = MÉP DƯỚI + GIỮA NGANG vùng ô (V8), và vì art đặt pivot ở đáy
         // thì đây đúng là CHÂN công trình → toạ độ để Instantiate và để ghi save.

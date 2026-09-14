@@ -40,6 +40,12 @@ public class TouristVisitorManager : MonoBehaviour
     /// <summary>Bắn khi hàng chờ thay đổi (khách mới đến, nhận món, dồn hàng, hết giờ) để Cooking UI đồng bộ.</summary>
     public static event System.Action OnQueueOrderChanged;
 
+    /// <summary>
+    /// [BOAT-TUT 2026-09-10] Hang cho dung chung (chi doc tham chieu) — cinematic tutorial
+    /// doc de biet khach da xep hang xong chua. Co the null neu scene chua wire QueueAnchor.
+    /// </summary>
+    public TouristQueue Queue => queue;
+
     /// <summary>Lấy khách du lịch đang đứng đầu hàng chờ và đang đợi nhận món.</summary>
     public TouristAgent GetFrontWaitingTourist()
     {
@@ -832,6 +838,7 @@ public class TouristVisitorManager : MonoBehaviour
 
         // ── ④ CỘNG THƯỞNG (chắc chắn thành công vì đã kiểm ở ②) ──
         eco.AddGold(vang);              // tự bắn OnGoldAddedFx → CoinFlyFX có sẵn
+        AudioManager.Instance?.PlayCoinTing();   // [THEM 2026-09-10] tieng vang khi khach tra tien
         if (exp > 0) tien.AddExp(exp);
 
         if (banMissionEvent)

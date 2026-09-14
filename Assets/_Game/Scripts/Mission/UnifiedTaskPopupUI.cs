@@ -135,6 +135,8 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     private static Sprite _circleSprite;
     private static Sprite _rightTriangleSprite;
     private static Sprite _leftTriangleSprite;
+    private static Sprite _defaultMissionIcon;
+    private static Sprite _defaultAchievementIcon;
 
     [SerializeField] private UnifiedTaskPopupSprites sprites = new UnifiedTaskPopupSprites();
 
@@ -487,9 +489,78 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         eventSystem.transform.SetAsLastSibling();
     }
 
+    private static Sprite LoadSpriteAsset(string path, string resourcesFallback = null)
+    {
+        Sprite sp = null;
+#if UNITY_EDITOR
+        if (!string.IsNullOrEmpty(path))
+        {
+            sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sp == null)
+            {
+                var all = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(path);
+                if (all != null)
+                {
+                    foreach (var obj in all)
+                    {
+                        if (obj is Sprite s) { sp = s; break; }
+                    }
+                }
+            }
+        }
+#endif
+        if (sp == null && !string.IsNullOrEmpty(resourcesFallback))
+        {
+            sp = Resources.Load<Sprite>(resourcesFallback);
+        }
+        return sp;
+    }
+
+    private void EnsureSpritesLoaded()
+    {
+        if (sprites == null) sprites = new UnifiedTaskPopupSprites();
+
+        const string BaseProcessedPath = "Assets/Assetsgame/Icon_Processed";
+        if (sprites.missionTabIcon == null)
+            sprites.missionTabIcon = LoadSpriteAsset($"{BaseProcessedPath}/NhiemVu/icon_tab_mission.png");
+        if (sprites.dailyTabIcon == null)
+            sprites.dailyTabIcon = LoadSpriteAsset($"{BaseProcessedPath}/DangNhap/login_calendar.png");
+        if (sprites.achievementTabIcon == null)
+            sprites.achievementTabIcon = LoadSpriteAsset($"{BaseProcessedPath}/ThanhTuu/achieve_trophy_gold.png");
+        if (sprites.chestIcon == null)
+            sprites.chestIcon = LoadSpriteAsset($"{BaseProcessedPath}/NhiemVu/icon_chest_gold.png");
+
+        if (sprites.coinIcon == null)
+            sprites.coinIcon = LoadSpriteAsset("Assets/Assetsgame/Icon_vang.png", "UI/Standard/icon_gold")
+                ?? LoadSpriteAsset($"{BaseProcessedPath}/DangNhap/login_gold_sack.png");
+        if (sprites.diamondIcon == null)
+            sprites.diamondIcon = LoadSpriteAsset("Assets/Assetsgame/kimcuong-removebg-preview.png", "UI/Standard/kimcuong-removebg-preview")
+                ?? LoadSpriteAsset("Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/kimcuong.png")
+                ?? LoadSpriteAsset($"{BaseProcessedPath}/DangNhap/login_diamond_pouch.png");
+        if (sprites.expIcon == null)
+            sprites.expIcon = LoadSpriteAsset("Assets/Assetsgame/iconsao-removebg-preview.png")
+                ?? LoadSpriteAsset("Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/iconsao.png");
+
+        if (_defaultMissionIcon == null)
+            _defaultMissionIcon = LoadSpriteAsset($"{BaseProcessedPath}/NhiemVu/icon_task_scroll.png");
+        if (_defaultAchievementIcon == null)
+            _defaultAchievementIcon = LoadSpriteAsset($"{BaseProcessedPath}/ThanhTuu/achieve_trophy_gold.png");
+
+        if (sprites.dailyRewardIcons == null || sprites.dailyRewardIcons.Length < 7)
+            sprites.dailyRewardIcons = new Sprite[7];
+
+        if (sprites.dailyRewardIcons[0] == null) sprites.dailyRewardIcons[0] = LoadSpriteAsset($"{BaseProcessedPath}/DangNhap/login_gold_sack.png");
+        if (sprites.dailyRewardIcons[1] == null) sprites.dailyRewardIcons[1] = LoadSpriteAsset($"{BaseProcessedPath}/DangNhap/login_fertilizer_bag.png");
+        if (sprites.dailyRewardIcons[2] == null) sprites.dailyRewardIcons[2] = LoadSpriteAsset($"{BaseProcessedPath}/DangNhap/login_diamond_pouch.png");
+        if (sprites.dailyRewardIcons[3] == null) sprites.dailyRewardIcons[3] = LoadSpriteAsset($"{BaseProcessedPath}/DangNhap/login_upgrade_mats.png");
+        if (sprites.dailyRewardIcons[4] == null) sprites.dailyRewardIcons[4] = LoadSpriteAsset($"{BaseProcessedPath}/DangNhap/login_gourmet_dish.png");
+        if (sprites.dailyRewardIcons[5] == null) sprites.dailyRewardIcons[5] = LoadSpriteAsset($"{BaseProcessedPath}/DangNhap/login_harvest_basket.png");
+        if (sprites.dailyRewardIcons[6] == null) sprites.dailyRewardIcons[6] = LoadSpriteAsset($"{BaseProcessedPath}/DangNhap/login_grand_chest.png");
+    }
+
     private void BuildIfNeeded()
     {
-       
+        EnsureSpritesLoaded();
         if (_root == null)
             _root = GetComponent<RectTransform>();
         if (_canvasGroup == null)
@@ -1441,12 +1512,15 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         h.doMo.alpha = khoa ? TaskPopupDesign.MoKhoa : daNhan ? TaskPopupDesign.MoDaNhan : 1f;
         h.doMo.blocksRaycasts = true;
 
-        // Nhiệm vụ chưa gán icon (Giao đơn, Nấu món, Đạt cấp…) thì ẨN ảnh — để
-        // fallback vòng tròn trắng như ảnh chụp trông như lỗi. Khung vàng nghiêng
-        // trống tự nó đã là một ô sạch sẽ, chờ chủ dự án gán icon là hiện.
-        bool coIcon = data != null && data.missionIcon != null;
+        // Nhiệm vụ chưa gán icon riêng thì fallback về icon cuộn giấy nhiệm vụ / cúp thành tựu
+        Sprite itemIcon = data != null ? data.missionIcon : null;
+        if (itemIcon == null)
+        {
+            itemIcon = laThanhTuu ? (_defaultAchievementIcon ?? AchievementTabSprite) : (_defaultMissionIcon ?? MissionTabSprite);
+        }
+        bool coIcon = itemIcon != null;
         h.icon.enabled = coIcon;
-        if (coIcon) { h.icon.sprite = data.missionIcon; h.icon.color = Color.white; }
+        if (coIcon) { h.icon.sprite = itemIcon; h.icon.color = Color.white; }
 
         h.ten.text  = data != null ? data.missionName : "";
         h.ten.color = (khoa || daNhan) ? TaskPopupDesign.TenMoNhat : TaskPopupDesign.TenBinhThuong;
@@ -1850,7 +1924,10 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         CreateImage(goc, "Stitch_Bottom", null, TaskPopupDesign.MocChiMay, new Vector2(0f, -iy), new Vector2(ix * 2f, 3f), true);
 
         float xRuong = -kt.x * 0.5f + 18f + 50f;
-        RectTransform ruong = CreateImage(goc, "Img_WeeklyChest", ChestSprite, Color.white,
+        Sprite wkChest = (sprites.dailyRewardIcons != null && sprites.dailyRewardIcons.Length > 6 && sprites.dailyRewardIcons[6] != null)
+            ? sprites.dailyRewardIcons[6]
+            : ChestSprite;
+        RectTransform ruong = CreateImage(goc, "Img_WeeklyChest", wkChest, Color.white,
             new Vector2(xRuong, 14f), new Vector2(100f, 100f), false);
         ruong.GetComponent<Image>().preserveAspect = true;
 
@@ -1920,13 +1997,16 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         var scroll = view.gameObject.AddComponent<ScrollRect>();
         scroll.horizontal = false;
         scroll.vertical = true;
-        scroll.movementType = ScrollRect.MovementType.Elastic;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
         scroll.scrollSensitivity = 35f;
 
         // Viewport: clip nội dung + nhận kéo cuộn ở vùng trống.
         RectTransform viewport = CreateRect(view, "Viewport", Vector2.zero, size);
-        viewport.anchorMin = Vector2.zero; viewport.anchorMax = Vector2.one;
-        viewport.offsetMin = Vector2.zero; viewport.offsetMax = Vector2.zero;
+        viewport.anchorMin = Vector2.zero;
+        viewport.anchorMax = Vector2.one;
+        viewport.offsetMin = Vector2.zero;
+        viewport.offsetMax = Vector2.zero;
+        viewport.sizeDelta = Vector2.zero;
         var vpImg = viewport.gameObject.AddComponent<Image>();
         vpImg.color = new Color(0f, 0f, 0f, 0f);
         vpImg.raycastTarget = true;
@@ -1934,13 +2014,11 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
         // Content: top-anchored, width theo viewport, cao tự giãn theo số item.
         RectTransform content = CreateRect(viewport, "Content", Vector2.zero, new Vector2(size.x, size.y));
-        content.anchorMin = new Vector2(0f, 1f);
-        content.anchorMax = new Vector2(1f, 1f);
+        content.anchorMin = new Vector2(0.5f, 1f);
+        content.anchorMax = new Vector2(0.5f, 1f);
         content.pivot = new Vector2(0.5f, 1f);
-        content.offsetMin = Vector2.zero;
-        content.offsetMax = Vector2.zero;
         content.anchoredPosition = Vector2.zero;
-        content.sizeDelta = new Vector2(0f, size.y);
+        content.sizeDelta = new Vector2(size.x, size.y);
 
         var vlg = content.gameObject.AddComponent<VerticalLayoutGroup>();
         vlg.spacing = 12f;
@@ -2085,8 +2163,10 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     {
         if (rewards.coin > 0)
             FarmEconomyManager.Instance?.AddGold(rewards.coin);
+        if (rewards.coin > 0) AudioManager.Instance?.PlayCoinTing();      // [THEM 2026-09-10] tieng vang (sfx_coin)
         if (rewards.diamond > 0)
             FarmEconomyManager.Instance?.AddGems(rewards.diamond);
+        if (rewards.diamond > 0) AudioManager.Instance?.PlayGemSparkle(); // [THEM 2026-09-10] tieng kim cuong (sfx_gem)
         if (rewards.exp > 0)
             PlayerProgressManager.Instance?.AddExp(rewards.exp);
     }

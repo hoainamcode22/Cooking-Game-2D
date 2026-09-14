@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -39,6 +40,9 @@ public class MarketListingCardUI : MonoBehaviour, IInitializePotentialDragHandle
     [Header("Tương tác")]
     [SerializeField] private Button     buttonBuy;
     [SerializeField] private CanvasGroup canvasGroup;
+
+    // Moi itemId chi canh bao 1 lan / phien chay (bang tin cho ve lai lien tuc khi cuon).
+    private static readonly HashSet<string> _daCanhBaoThieuIcon = new HashSet<string>();
 
     private string          listingId;
     private Action<string>  onBuyRequested;
@@ -110,6 +114,14 @@ public class MarketListingCardUI : MonoBehaviour, IInitializePotentialDragHandle
             imageIcon.color   = visual.Icon != null
                 ? Color.white
                 : MarketCategoryUtil.GetAccentColor(listing.Category);
+
+            // Chan doan: icon rong truoc day im lang => khong biet vi sao build khac Editor.
+            if (visual.Icon == null)
+            {
+                string idThieu = string.IsNullOrEmpty(listing.ItemId) ? "(id rong)" : listing.ItemId;
+                if (_daCanhBaoThieuIcon.Add(idThieu))
+                    Debug.LogWarning($"[Chợ] thieu icon: {idThieu}");
+            }
         }
 
         if (textItemName != null)

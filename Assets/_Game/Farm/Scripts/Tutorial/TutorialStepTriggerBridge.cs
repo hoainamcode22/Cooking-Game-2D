@@ -225,6 +225,7 @@ public class TutorialStepTriggerBridge : MonoBehaviour
             if (!_allFlowerPlantsNotified && AllUnlockedNonEmpty(PlotCategory.Flower))
             {
                 _allFlowerPlantsNotified = true;
+                FarmUIManager.Instance?.HidePlantSelectPopup();
                 TutorialManager.Instance?.NotifyAllFlowerPlotsPlanted();
             }
         }
@@ -235,6 +236,7 @@ public class TutorialStepTriggerBridge : MonoBehaviour
             if (!_allRicePlantsNotified && AllRiceFieldPlanted())
             {
                 _allRicePlantsNotified = true;
+                FarmUIManager.Instance?.HidePlantSelectPopup();
                 TutorialManager.Instance?.NotifyAllPlotsPlanted();
                 Debug.Log("[Tutorial] >>> NotifyAllPlotsPlanted FIRED (qua L1L2_06)");
             }

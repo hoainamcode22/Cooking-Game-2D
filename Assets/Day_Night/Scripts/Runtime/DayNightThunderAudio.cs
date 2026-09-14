@@ -27,7 +27,8 @@ namespace Day_Night
                 return;
             }
 
-            ThunderSource.PlayOneShot(ThunderSource.clip, Volume);
+            // [FIX 10/09] Sam set cung phai theo thanh truot "Am thanh VFX".
+            ThunderSource.PlayOneShot(ThunderSource.clip, Volume * global::AudioManager.SfxGain);
             ScheduleNextThunder();
         }
 

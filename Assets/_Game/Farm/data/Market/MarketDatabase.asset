@@ -361,6 +361,34 @@ MonoBehaviour:
     Category: 4
     UnlockLevel: 13
     Weight: 75
+  - ItemID: cam_ga
+    BuyPrice: 23
+    MinQuantity: 1
+    MaxQuantity: 4
+    Category: 5
+    UnlockLevel: 2
+    Weight: 70
+  - ItemID: cam_heo
+    BuyPrice: 38
+    MinQuantity: 1
+    MaxQuantity: 4
+    Category: 5
+    UnlockLevel: 4
+    Weight: 65
+  - ItemID: co_tron_bo
+    BuyPrice: 53
+    MinQuantity: 1
+    MaxQuantity: 4
+    Category: 5
+    UnlockLevel: 8
+    Weight: 60
+  - ItemID: cam_bo_sua
+    BuyPrice: 68
+    MinQuantity: 1
+    MaxQuantity: 4
+    Category: 5
+    UnlockLevel: 13
+    Weight: 55
   - ItemID: com_chien_bap_cai
     BuyPrice: 93
     MinQuantity: 1
@@ -634,6 +662,13 @@ MonoBehaviour:
     Category: 7
     UnlockLevel: 1
     Weight: 90
+  - ItemID: sugar
+    BuyPrice: 23
+    MinQuantity: 2
+    MaxQuantity: 8
+    Category: 7
+    UnlockLevel: 2
+    Weight: 85
   - ItemID: herbs
     BuyPrice: 27
     MinQuantity: 2

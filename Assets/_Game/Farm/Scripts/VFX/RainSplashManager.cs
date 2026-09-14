@@ -175,16 +175,21 @@ public class RainSplashManager : MonoBehaviour
         if (splashSprites == null || splashSprites.Length == 0) return;
 
         _timer += Time.deltaTime;
-        float buoc = 1f / Mathf.Max(1, splashesPerSecond);
+        int targetRate = Application.isMobilePlatform ? Mathf.Min(splashesPerSecond, 20) : splashesPerSecond;
+        float buoc = 1f / Mathf.Max(1, targetRate);
         // Chan vong lap: mot frame giat khong duoc sinh 500 hat. Tran 24 = nua giay o 48 hat/giay.
         int chan = 0;
-        while (_timer >= buoc && chan++ < 24)
+        while (_timer >= buoc && chan++ < 16)
         {
             _timer -= buoc;
             SinhMotHat();
         }
         if (chan >= 24) _timer = 0f;
     }
+
+    private readonly List<GameObject> _splashPool = new List<GameObject>();
+    private int _poolIndex = 0;
+    private const int MaxPoolCount = 24;
 
     private void SinhMotHat()
     {
@@ -208,17 +213,35 @@ public class RainSplashManager : MonoBehaviour
 
         float co = splashScale * Random.Range(daoDongCo.x, daoDongCo.y);
 
-        var go = new GameObject("Splash");
-        go.transform.position   = pos;
-        go.transform.localScale = new Vector3(co, co, 1f);
+        GameObject go = null;
+        if (_splashPool.Count < MaxPoolCount)
+        {
+            go = new GameObject("Splash_Pooled");
+            go.transform.SetParent(transform, false);
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = sortingOrder;
+            sr.color = new Color(1f, 1f, 1f, alpha);
 
-        var sr = go.AddComponent<SpriteRenderer>();
-        sr.sortingOrder = sortingOrder;
-        sr.color = new Color(1f, 1f, 1f, alpha);
+            var anim = go.AddComponent<SimpleSpriteAnimator>();
+            anim.sprites      = splashSprites;
+            anim.fps          = animSpeed;
+            anim.destroyOnEnd = false;
+            anim.disableOnEnd = true;
+            _splashPool.Add(go);
+        }
+        else
+        {
+            go = _splashPool[_poolIndex % _splashPool.Count];
+            _poolIndex = (_poolIndex + 1) % _splashPool.Count;
+        }
 
-        var anim = go.AddComponent<SimpleSpriteAnimator>();
-        anim.sprites      = splashSprites;
-        anim.fps          = animSpeed;
-        anim.destroyOnEnd = true;
+        if (go != null)
+        {
+            go.transform.position   = pos;
+            go.transform.localScale = new Vector3(co, co, 1f);
+            go.SetActive(true);
+            var a = go.GetComponent<SimpleSpriteAnimator>();
+            if (a != null) a.Play();
+        }
     }
 }

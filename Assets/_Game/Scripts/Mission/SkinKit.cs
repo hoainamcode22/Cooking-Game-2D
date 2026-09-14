@@ -31,6 +31,12 @@ public static class SkinKit
     //  Resources/Fonts/Baloo2 SDF — có thì mọi vỏ tự dùng, chưa có thì giữ mặc định.
     // ═════════════════════════════════════════════════════════════════════════
 
+    public const string TIENG_VIET_CHARS =
+        " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~" +
+        "¡§©®°±²·º»ÀÁÂÃÆÈÉÊÌÍÒÓÔÕ×ÙÚÜÝàáâãèéêìíòóôõ÷ùúýĂăĐđĨĩŨũƠơƯư" +
+        "ẠạẢảẤấẦầẨẩẪẫẬậẮắẰằẲẳẴẵẶặẸẹẺẻẼẽẾếỀềỂểỄễỆệỈỉỊịỌọỎỏỐốỒồỔổỖỗỘộỚớỜờỞởỠỡỢợỤụỦủỨứỪừỬửỮữỰựỲỳỴỵỶỷỸỹ" +
+        "–—‘’“”•…‹›₫";
+
     private static TMP_FontAsset _fontVo;
     private static bool _daTimFontVo;
 
@@ -52,8 +58,47 @@ public static class SkinKit
                 if (_fontVo == null)
                     _fontVo = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/_Game/Resources/Fonts/FontVo.asset");
 #endif
+                if (_fontVo != null)
+                {
+                    EnsureFallback(_fontVo);
+                    EnsureVietnameseCharacters(_fontVo);
+                }
             }
             return _fontVo;
+        }
+    }
+
+    private static void EnsureVietnameseCharacters(TMP_FontAsset font)
+    {
+        if (font == null) return;
+        try
+        {
+            font.TryAddCharacters(TIENG_VIET_CHARS);
+        }
+        catch { }
+    }
+
+    private static void EnsureFallback(TMP_FontAsset font)
+    {
+        if (font == null) return;
+        TMP_FontAsset fallback = TMP_Settings.defaultFontAsset;
+        if (fallback == null || fallback == font)
+        {
+            fallback = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
+#if UNITY_EDITOR
+            if (fallback == null || fallback == font)
+                fallback = UnityEditor.AssetDatabase.LoadAssetAtPath<TMP_FontAsset>("Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset");
+#endif
+        }
+
+        if (fallback != null && fallback != font)
+        {
+            if (font.fallbackFontAssetTable == null)
+                font.fallbackFontAssetTable = new List<TMP_FontAsset>();
+            if (!font.fallbackFontAssetTable.Contains(fallback))
+            {
+                font.fallbackFontAssetTable.Add(fallback);
+            }
         }
     }
 

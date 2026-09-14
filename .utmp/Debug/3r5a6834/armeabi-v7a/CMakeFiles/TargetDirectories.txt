@@ -1,0 +1,8 @@
+E:/Game2/Cooking-Game-2D/.utmp/Debug/3r5a6834/armeabi-v7a/CMakeFiles/edit_cache.dir
+E:/Game2/Cooking-Game-2D/.utmp/Debug/3r5a6834/armeabi-v7a/CMakeFiles/rebuild_cache.dir
+E:/Game2/Cooking-Game-2D/.utmp/Debug/3r5a6834/armeabi-v7a/GameActivity/CMakeFiles/game.dir
+E:/Game2/Cooking-Game-2D/.utmp/Debug/3r5a6834/armeabi-v7a/GameActivity/CMakeFiles/edit_cache.dir
+E:/Game2/Cooking-Game-2D/.utmp/Debug/3r5a6834/armeabi-v7a/GameActivity/CMakeFiles/rebuild_cache.dir
+E:/Game2/Cooking-Game-2D/.utmp/Debug/3r5a6834/armeabi-v7a/FramePacing/CMakeFiles/swappywrapper.dir
+E:/Game2/Cooking-Game-2D/.utmp/Debug/3r5a6834/armeabi-v7a/FramePacing/CMakeFiles/edit_cache.dir
+E:/Game2/Cooking-Game-2D/.utmp/Debug/3r5a6834/armeabi-v7a/FramePacing/CMakeFiles/rebuild_cache.dir

@@ -963,17 +963,18 @@ public class TutorialManager : MonoBehaviour
                 continue;
             }
 
-            // Buoc tang toc CHUONG: dan ga xong tu nhien => nut kim cuong khong con y nghia.
-            if (_pendingWait == TutorialWaitAction.WaitForPenSpeedUp
+            // Buoc mo / cho an / tang toc CHUONG: dan ga xong tu nhien (Ready) => lap tuc chuyen sang buoc thu hoach trung!
+            if ((_pendingWait == TutorialWaitAction.WaitForPenSpeedUp || _pendingWait == TutorialWaitAction.WaitForOpenPen || _pendingWait == TutorialWaitAction.WaitForFeed)
+                && (CurrentStepName == "L2_08_FeedPen" || CurrentStepName == "L2_09_PenSpeedUp" || CurrentStepName == "L2_07_FocusPen")
                 && ChuongOTrangThai(PenMiniPanelUI.PenState.Ready))
             {
-                Debug.Log("[Tutorial] Dan ga da xong tu nhien - khong can bam kim cuong. Cho qua buoc.");
-                NotifyAction(TutorialWaitAction.WaitForPenSpeedUp);
+                Debug.Log("[Tutorial] Dan ga da xong tu nhien / da Ready — lap tuc qua buoc thu hoach trung.");
+                NotifyAction(_pendingWait);
                 continue;
             }
 
-            // Buoc thu hoach CHUONG: chuong da ve Idle (da thu trung) => khong con gi de cho.
-            if (_pendingWait == TutorialWaitAction.WaitForPenHarvest
+            // Buoc thu hoach CHUONG: chuong da ve Idle (da thu trung) => khong con gi de cho, hoan thanh tutorial!
+            if ((_pendingWait == TutorialWaitAction.WaitForPenHarvest || CurrentStepName == "L2_10_CollectEggs" || CurrentStepName == "L2_10_HarvestPen")
                 && ChuongOTrangThai(PenMiniPanelUI.PenState.Idle))
             {
                 Debug.Log("[Tutorial] Chuong da ve Idle (trung da thu). Cho qua buoc thu hoach chuong.");
@@ -1024,13 +1025,13 @@ public class TutorialManager : MonoBehaviour
     /// <summary>
     /// [VÒNG 15] Có ô đất nào đã CHÍN (Ready) chưa. Dùng cho lối thoát mềm của bước tăng tốc:
     /// người chơi kiên nhẫn đợi cây lớn thì cũng phải được đi tiếp, không bắt buộc tiêu kim cương.
-    /// Quét cả object đang tắt để không bỏ sót ô bị ẩn tạm.
+    /// Chỉ kiểm tra các ô đất ruộng tutorial (không quét toàn bộ map làm sai lệch tiến trình).
     /// </summary>
-    private bool CoOChinRoi()
+    private static bool CoOChinRoi()
     {
-        var oDat = FindObjectsByType<PlotController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-        for (int i = 0; i < oDat.Length; i++)
-            if (oDat[i] != null && oDat[i].IsReady) return true;
+        var ds = TutorialStepTriggerBridge.LayODatLua();
+        for (int i = 0; i < ds.Count; i++)
+            if (ds[i] != null && !ds[i].IsEmpty && ds[i].IsReady) return true;
 
         return false;
     }
@@ -1080,8 +1081,133 @@ public class TutorialManager : MonoBehaviour
         StartCoroutine(PlayStep(step));
     }
 
+    private void OnDisable()
+    {
+        HudNavHider.Hien(this);
+    }
+
+    private void OnDestroy()
+    {
+        HudNavHider.Hien(this);
+    }
+
+    /// <summary>
+    /// Khóa toàn bộ các nút HUD trong suốt quá trình chạy Tutorial,
+    /// chỉ mở lại riêng nút Shop khi bước yêu cầu mở Shop (L2_01, L2_02...).
+    /// </summary>
+    public void CapNhatKhoaHudTheoBuoc(TutorialStepData step)
+    {
+        if (!DangChayTutorial)
+        {
+            HudNavHider.Hien(this);
+            return;
+        }
+
+        if (BuocChoPhepMoShop(step))
+        {
+            HudNavHider.Hien(this);
+        }
+        else
+        {
+            HudNavHider.An(this, 0.4f);
+        }
+    }
+
+    /// <summary>Đang có hộp thoại / card hội thoại NPC hiển thị trên màn hình?</summary>
+    public bool IsNpcDialogueShowing =>
+        DangChayTutorial && (
+            (DungCardV2 && _v2Card != null && _v2Card.DangMo)
+            || _state == TutorialState.TypingText
+            || (_currentIndex >= 0 && _currentIndex < _steps.Count && _steps[_currentIndex].waitAction == TutorialWaitAction.WaitForClick)
+        );
+
+    /// <summary>
+    /// Kiểm tra xem bước Tutorial hiện tại có cho phép người chơi click vào ô đất / chậu hoa hay không.
+    /// Khi NPC đang nói chuyện (WaitForClick hoặc Typing) hoặc ở các bước Shop, Chuồng gà...
+    /// TUYỆT ĐỐI KHÔNG cho click ô đất / chậu hoa để tránh bật khay hạt giống đè lên UI hội thoại.
+    /// </summary>
+    public bool CurrentStepAllowsPlotInteraction(PlotController plot)
+    {
+        if (!DangChayTutorial) return true;
+        if (IsNpcDialogueShowing) return false;
+
+        if (_currentIndex < 0 || _currentIndex >= _steps.Count) return true;
+        var step = _steps[_currentIndex];
+        if (step == null) return false;
+
+        if (step.waitAction == TutorialWaitAction.WaitForClick) return false;
+
+        string name = step.name ?? "";
+        bool isFlowerPlot = plot != null && plot.Category == PlotCategory.Flower;
+
+        // Các bước thao tác trên ruộng lúa (Phase 1-3)
+        if (name.StartsWith("L1L2_04") || name.StartsWith("L1L2_05") || name.StartsWith("L1L2_06")
+            || name.StartsWith("L1L2_07") || name.StartsWith("L1L2_08") || name.StartsWith("L1L2_09")
+            || name.StartsWith("L1L2_10"))
+        {
+            return !isFlowerPlot;
+        }
+
+        // Các bước thao tác trên vườn hoa (Phase 4)
+        if (name.StartsWith("L1L2_12") || name.StartsWith("L1L2_13") || name.StartsWith("L1L2_14")
+            || name.StartsWith("L1L2_15") || name.StartsWith("L1L2_16") || name.StartsWith("L1L2_17"))
+        {
+            return isFlowerPlot;
+        }
+
+        // Bước trồng bắp cải / ngô (Phase 5)
+        if (name.StartsWith("L2_05"))
+        {
+            return !isFlowerPlot;
+        }
+
+        return false;
+    }
+
+    public bool CurrentStepAllowsShopClick()
+    {
+        if (!DangChayTutorial) return true;
+        if (_currentIndex < 0 || _currentIndex >= _steps.Count) return true;
+        return BuocChoPhepMoShop(_steps[_currentIndex]);
+    }
+
+    public bool CurrentStepAllowsPenInteraction()
+    {
+        if (!DangChayTutorial) return true;
+        if (_currentIndex < 0 || _currentIndex >= _steps.Count) return true;
+        var step = _steps[_currentIndex];
+        if (step == null) return false;
+
+        string name = step.name ?? "";
+        string target = step.targetID ?? "";
+
+        // Các bước hướng dẫn chuồng gà / gia súc
+        if (name.StartsWith("L2_06") || name.StartsWith("L2_07") || name.StartsWith("L2_08") || name.StartsWith("L2_09") || name.StartsWith("L2_10"))
+            return true;
+
+        if (target.Contains("pen") || target.Contains("chicken") || target.Contains("chuong"))
+            return true;
+
+        if (step.waitAction == TutorialWaitAction.WaitForOpenPen || step.waitAction == TutorialWaitAction.WaitForFeed 
+            || step.waitAction == TutorialWaitAction.WaitForPenSpeedUp || step.waitAction == TutorialWaitAction.WaitForPenHarvest)
+            return true;
+
+        return false;
+    }
+
+    private static bool BuocChoPhepMoShop(TutorialStepData step)
+    {
+        if (step == null) return false;
+        if (step.waitAction == TutorialWaitAction.WaitForOpenShop) return true;
+        if (step.targetID == "hud_shop" || step.targetID == "btn_store" || step.targetID == "Tab_Shop") return true;
+        if (!string.IsNullOrEmpty(step.name) && (step.name.StartsWith("L2_01") || step.name.StartsWith("L2_02"))) return true;
+        return false;
+    }
+
     private IEnumerator PlayStep(TutorialStepData step)
     {
+        CapNhatKhoaHudTheoBuoc(step);
+
         // [FIX 2026-09-06 vong4] Dau MOI buoc: bao dam lop tay ve TREN khay chuong / bang tien trinh.
         BaoDamLopTayNamTrenKhay();
 
@@ -1281,7 +1407,7 @@ public class TutorialManager : MonoBehaviour
 
         if (step.name == "L1L2_06_PlantAllRice")
         {
-            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? step.npcText : "Gieo nốt hạt lúa cho kín cả 8 ô ruộng nhé — bàn tay sẽ chỉ ô còn trống cho bạn!");
+            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? LocalizationManager.T(step.npcText) : LocalizationManager.T("Gieo nốt hạt lúa cho kín cả 8 ô ruộng nhé — bàn tay sẽ chỉ ô còn trống cho bạn!"));
             SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: false);
             _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
             if (ThuQuaGateNgay(step)) { ConsumeQueuedAction(); yield break; }   // [WP-A1] đã đủ từ trước → qua luôn
@@ -1294,7 +1420,7 @@ public class TutorialManager : MonoBehaviour
         // Ô đất — thu hoạch: tay chỉ vào ô đã chín, chờ thu hoạch hết.
         if (step.name == "L1L2_10_HarvestAllRice")
         {
-            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? step.npcText : "Lúa chín vàng cả ruộng rồi! Quẹt liềm thu hoạch nốt những ô còn lại nào.");
+            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? LocalizationManager.T(step.npcText) : LocalizationManager.T("Lúa chín vàng cả ruộng rồi! Quẹt liềm thu hoạch nốt những ô còn lại nào."));
             SetupSmartGuide(TutorialAreaKind.Rice, harvestMode: true);
             _pendingWait = step.waitAction; _state = TutorialState.WaitingAction;
             if (ThuQuaGateNgay(step)) { ConsumeQueuedAction(); yield break; }   // [WP-A1] đã đủ từ trước → qua luôn
@@ -1307,7 +1433,7 @@ public class TutorialManager : MonoBehaviour
         // Chậu hoa — trồng toàn bộ.
         if (step.name == "L1L2_14_PlantAllFlowers")
         {
-            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? step.npcText : "Gieo not hat huong duong vao nhung chau con trong nhe!");
+            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? LocalizationManager.T(step.npcText) : LocalizationManager.T("Gieo not hat huong duong vao nhung chau con trong nhe!"));
             if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
             TatDim();   // SetupSmartGuide se bat lai kem mask vung (co lo)
 
@@ -1328,7 +1454,7 @@ public class TutorialManager : MonoBehaviour
         // Chậu hoa — thu hoạch.
         if (step.name == "L1L2_17_HarvestAllFlowers")
         {
-            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? step.npcText : "Hoa no ruc ro het roi! Thu hoach not nhung chau con lai thoi nao.");
+            NhacNhanh(step != null && !string.IsNullOrWhiteSpace(step.npcText) ? LocalizationManager.T(step.npcText) : LocalizationManager.T("Hoa no ruc ro het roi! Thu hoach not nhung chau con lai thoi nao."));
             if (_cameraFocus != null) _cameraFocus.FocusOnFlower(GetComponent<TutorialStepTriggerBridge>());
             TatDim();
 
@@ -1417,7 +1543,6 @@ public class TutorialManager : MonoBehaviour
             if (ShopManager.Instance != null)
             {
                 ShopManager.Instance.ScrollItemIntoView("seed_bapcai");
-                ShopManager.Instance.ScrollItemIntoView("seed_ngo");
             }
             yield return new WaitForSecondsRealtime(0.4f);
             if (_currentIndex != buocLuc) yield break;
@@ -1427,7 +1552,7 @@ public class TutorialManager : MonoBehaviour
             _state = TutorialState.WaitingAction;
 
             yield return ChoTargetRoiChiTay(
-                new[] { "shop_bapcai_plus", "shop_corn_plus", "shop_bapcai", "shop_corn" }, 10f,
+                new[] { "shop_bapcai_plus", "shop_bapcai", "shop_corn_plus", "shop_corn" }, 10f,
                 id =>
                 {
                     string plusTarget = GetTargetRect("shop_bapcai_plus") != null ? "shop_bapcai_plus" : "shop_corn_plus";
@@ -1753,6 +1878,14 @@ public class TutorialManager : MonoBehaviour
         // Ảo ảnh chạy TRƯỚC, tay thật bị ẩn (alpha 0) trong lúc demo rồi hiện lại — xem AnTayThat.
         if (step.name == "L1L2_05_DragFirstRice")
         {
+            if (!FarmInputLock.IsSeedPopupOpen)
+            {
+                var ds = TutorialStepTriggerBridge.LayODatLua();
+                if (ds != null && ds.Count > 0 && ds[0] != null)
+                {
+                    FarmManager.Instance?.OnPlotClicked(ds[0]);
+                }
+            }
             TutorialPhantomDemoManager.Instance?.PlayPlantPhantom(LayIconHat(HatCanChoBuoc(step.name)), "seed_rice", "tutorial_plot_01");
         }
         else if (step.name == "L1L2_07_OpenCropProgress" || step.name == "L1L2_08_SpeedUpTip")
@@ -1766,6 +1899,14 @@ public class TutorialManager : MonoBehaviour
         }
         else if (step.name == "L1L2_13_DragFirstFlower")
         {
+            if (!FarmInputLock.IsSeedPopupOpen)
+            {
+                var chau = TutorialStepTriggerBridge.LayChauHoa();
+                if (chau != null && chau.Count > 0 && chau[0] != null)
+                {
+                    FarmManager.Instance?.OnPlotClicked(chau[0]);
+                }
+            }
             TutorialPhantomDemoManager.Instance?.PlayPlantPhantom(LayIconHat(HatCanChoBuoc(step.name)), "seed_huong_duong", "tutorial_flower_01");
         }
         else
@@ -1876,7 +2017,7 @@ public class TutorialManager : MonoBehaviour
                 // vua de len khay vua che nut "Tiep tuc". Nay: cho tha tay + dong khay + 1 nhip.
                 yield return ChoThaoTacXongHan();
 
-                _v2Card.Show(step.npcText, ChonClipNpc(step), khiBamTiep, NextStep);
+                _v2Card.Show(LocalizationManager.T(step.npcText), ChonClipNpc(step), khiBamTiep, NextStep);
             }
             // [V6] Hộp thoại NPC cũ đã bị khai tử — chỉ dùng card V2.
             // Trước đây nhánh else ở đây gọi _npcDialogPopup.SetActive(true), làm hộp thoại
@@ -1897,7 +2038,7 @@ public class TutorialManager : MonoBehaviour
         }
         else
         {
-            yield return StartTyping(step.npcText, step.typingSpeed);
+            yield return StartTyping(LocalizationManager.T(step.npcText), step.typingSpeed);
         }
 
         // 6. Chá» action
@@ -2002,7 +2143,7 @@ public class TutorialManager : MonoBehaviour
         // Null-check thêm: ở chế độ V2 scene có thể không còn gán _npcDialogText.
         if (_npcDialogText != null && _currentIndex >= 0 && _currentIndex < _steps.Count
             && _steps[_currentIndex] != null)
-            _npcDialogText.text = _steps[_currentIndex].npcText;
+            _npcDialogText.text = LocalizationManager.T(_steps[_currentIndex].npcText);
         _typingDone          = true;
         _state               = TutorialState.WaitingAction;
         _pendingWait         = _steps[_currentIndex].waitAction;
@@ -2337,6 +2478,7 @@ public class TutorialManager : MonoBehaviour
         _state        = TutorialState.Finished;
         _currentIndex = _steps.Count;
 
+        HudNavHider.Hien(this);
         SetTutorialUIVisible(false);
         SetCloudPanelVisible(false);
         AnHopThoai();   // [V6] đóng card thoại để nhả HUD (HudNavHider) khi bỏ qua tutorial
@@ -2361,6 +2503,7 @@ public class TutorialManager : MonoBehaviour
     {
         _state = TutorialState.Finished;
 
+        HudNavHider.Hien(this);
         // B1 — đóng dấu NGAY tại đây, TRƯỚC phần dọn UI: nếu một lời gọi dọn bên dưới ném
         // lỗi (ref rỗng chẳng hạn) thì cờ vẫn đã ghi xong, người chơi không bị dắt lại.
         MarkTutorialDone();
@@ -2790,7 +2933,7 @@ public class TutorialManager : MonoBehaviour
             return false;
 
         if (_typingCoroutine != null) StopCoroutine(_typingCoroutine);
-        if (_npcDialogText != null) _npcDialogText.text = step.npcText;
+        if (_npcDialogText != null) _npcDialogText.text = LocalizationManager.T(step.npcText);
         _typingDone = true;
         _interactionDialogDismissed = true;
         _pendingWait = step.waitAction;
@@ -2892,10 +3035,17 @@ public class TutorialManager : MonoBehaviour
             yield return null;
         }
 
-        if (FarmInputLock.IsSeedPopupOpen && FarmUIManager.Instance != null)
+        if (FarmUIManager.Instance != null)
+        {
             FarmUIManager.Instance.HidePlantSelectPopup();
+            FarmUIManager.Instance.HideAllPopups();
+        }
+        if (CropProcessPopupUI.Instance != null && CropProcessPopupUI.Instance.gameObject.activeInHierarchy)
+        {
+            CropProcessPopupUI.Instance.ClosePopup();
+        }
 
-        yield return new WaitForSecondsRealtime(0.35f);   // nhip nghi cho khay dong xong
+        yield return new WaitForSecondsRealtime(0.25f);   // nhịp nghỉ cho khay đóng xong hoàn toàn
     }
 
     private void HideBlockingTutorialUI()
@@ -3134,6 +3284,10 @@ public class TutorialManager : MonoBehaviour
         _actionHandGuide?.StopGuide();
         _dragHintAnimator?.StopDragHint();
         if (_handPointer != null) _handPointer.gameObject.SetActive(false);
+        if (FarmUIManager.Instance != null)
+        {
+            FarmUIManager.Instance.HidePlantSelectPopup();
+        }
     }
 
     /// <summary>RectTransform dau tien dang BAT trong danh sach id. null neu khong co cai nao.</summary>

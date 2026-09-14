@@ -227,6 +227,18 @@ public class OrderBoardWorldObject : MonoBehaviour
     //  BẤM ĐỂ MỞ POPUP
     // ─────────────────────────────────────────────────────────────────────────
 
+    private void OnMouseUpAsButton()
+    {
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
+        Vector2 pos;
+#if ENABLE_INPUT_SYSTEM
+        pos = Mouse.current != null ? Mouse.current.position.ReadValue() : (Vector2)Input.mousePosition;
+#else
+        pos = (Vector2)Input.mousePosition;
+#endif
+        TryOpenBoard(pos);
+    }
+
     private static bool TryGetPointerScreenPosition(out Vector2 screenPos)
     {
         screenPos = default;
@@ -243,27 +255,58 @@ public class OrderBoardWorldObject : MonoBehaviour
             return true;
         }
 
+        if (Input.GetMouseButtonDown(0))
+        {
+            screenPos = (Vector2)Input.mousePosition;
+            return true;
+        }
+
         return false;
     }
 
     private void TryOpenBoard(Vector2 screenPos)
     {
-        if (FarmInputLock.BlockWorldInteraction) return;
+        if (FarmInputLock.IsCookingMode) return;
         // Minigame nấu ăn nạp chồng lên scene farm — lúc đó click thuộc về minigame.
         if (SceneManager.GetSceneByName("SampleScene").isLoaded) return;
 
         if (EditModeManager.IsEditMode) return;
-        if (FarmInputLock.BlockMapPan) return;
 
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen()) return;
 
-        if (popupUI == null || mainCamera == null || targetCollider == null) return;
+        if (mainCamera == null || !mainCamera.gameObject.activeInHierarchy)
+            mainCamera = Camera.main;
+
+        if (popupUI == null)
+            popupUI = OrderBoardPopupUI.Instance ?? FindAnyObjectByType<OrderBoardPopupUI>(FindObjectsInactive.Include);
+
+        if (popupUI == null || mainCamera == null) return;
         if (popupUI.IsOpen) return;
 
         if (IsPointerOverPopupUI(screenPos)) return;
 
         Vector3 world3 = mainCamera.ScreenToWorldPoint(screenPos);
-        if (!targetCollider.OverlapPoint(new Vector2(world3.x, world3.y))) return;
+        Vector2 world2 = new Vector2(world3.x, world3.y);
+
+        bool hit = false;
+        var colliders = GetComponentsInChildren<Collider2D>();
+        if (colliders != null && colliders.Length > 0)
+        {
+            for (int i = 0; i < colliders.Length; i++)
+            {
+                if (colliders[i] != null && colliders[i].enabled && colliders[i].OverlapPoint(world2))
+                {
+                    hit = true;
+                    break;
+                }
+            }
+        }
+        else if (targetCollider != null && targetCollider.OverlapPoint(world2))
+        {
+            hit = true;
+        }
+
+        if (!hit) return;
 
         if (requiredLevel > 0 && GetPlayerLevel() < requiredLevel)
         {
@@ -284,6 +327,9 @@ public class OrderBoardWorldObject : MonoBehaviour
     private bool IsPointerOverPopupUI(Vector2 screenPos)
     {
         if (EventSystem.current == null) return false;
+
+        if (PopupManager.Instance != null && !PopupManager.Instance.IsAnyPopupOpen())
+            return false;
 
         var eventData = new PointerEventData(EventSystem.current) { position = screenPos };
 

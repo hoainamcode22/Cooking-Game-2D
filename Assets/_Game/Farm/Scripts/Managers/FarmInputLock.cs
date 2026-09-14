@@ -37,12 +37,15 @@ public static class FarmInputLock
     {
         get
         {
+            if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial) return true;
             if (IsCookingMode) return true;
             if (popupLockCount > 0 || IsPopupOpen) return true;
             if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen()) return true;
+            if (OrderBoardPopupUI.AnyOpen) return true;
+            if (TutorialGate.CoPopupDangMo()) return true;
             if (IsDraggingSeed || IsDraggingSickle) return true;
             if (IsSeedPopupOpen || IsMarketPopupOpen) return true;
-            if (EditModeManager.IsEditMode) return true;
+            if (EditModeManager.IsEditMode || PlacementManager.IsPlacingNewObject) return true;
             if (ConTroTrenUiThat()) return true;
             return false;
         }
@@ -80,7 +83,27 @@ public static class FarmInputLock
         _uiHits.Clear();
         es.RaycastAll(data, _uiHits);
         for (int i = 0; i < _uiHits.Count; i++)
-            if (_uiHits[i].module is UnityEngine.UI.GraphicRaycaster) return true;
+        {
+            var hit = _uiHits[i];
+            if (hit.module is UnityEngine.UI.GraphicRaycaster)
+            {
+                if (hit.gameObject == null) continue;
+                string goName = hit.gameObject.name;
+                // Bỏ qua các canvas/layer của Tutorial để không chặn click ô đất và thao tác tutorial
+                if (goName.Contains("Tutorial") || goName.Contains("Dim_Background") || goName.Contains("Hand") || goName.Contains("Unmask"))
+                    continue;
+
+                Transform rootT = hit.gameObject.transform.root;
+                if (rootT != null)
+                {
+                    string rootName = rootT.name;
+                    if (rootName.Contains("Tutorial") || rootName.Contains("Canvas_TutorialHand"))
+                        continue;
+                }
+
+                return true;
+            }
+        }
         return false;
     }
 
@@ -98,9 +121,11 @@ public static class FarmInputLock
             if (IsCookingMode) return true;
             if (popupLockCount > 0 || IsPopupOpen) return true;
             if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen()) return true;
+            if (OrderBoardPopupUI.AnyOpen) return true;
+            if (TutorialGate.CoPopupDangMo()) return true;
             if (IsDraggingSeed || IsDraggingSickle) return true;
             if (IsSeedPopupOpen || IsMarketPopupOpen) return true;
-            if (EditModeManager.IsEditMode) return true;
+            if (EditModeManager.IsEditMode || PlacementManager.IsPlacingNewObject) return true;
             return false;
         }
     }
@@ -148,10 +173,22 @@ public static class FarmInputLock
             if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
                 return true;
 
+            if (OrderBoardPopupUI.AnyOpen)
+                return true;
+
+            if (TutorialGate.CoPopupDangMo())
+                return true;
+
             if (IsDraggingSeed || IsDraggingSickle)
                 return true;
 
             if (IsSeedPopupOpen || IsMarketPopupOpen)
+                return true;
+
+            if (SettingsPopupUI.Instance != null && SettingsPopupUI.Instance.gameObject.activeInHierarchy)
+                return true;
+
+            if (AvatarProfilePopupUI.Instance != null && AvatarProfilePopupUI.Instance.gameObject.activeInHierarchy)
                 return true;
 
             return false;

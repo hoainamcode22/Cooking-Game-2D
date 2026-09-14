@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>{{{ PRODUCT_NAME }}}</title>
+  <link rel="stylesheet" href="TemplateData/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>🌾</text></svg>">
+
+  <!-- ═══════════════════════════════════════════════════════════════════════
+       ██  CHỖ DUY NHẤT BẠN PHẢI SỬA — CÓ 2 DÒNG  ██
+
+       ▶ DÒNG SỐ 1 (BẮT BUỘC):  hằng số GA4_MEASUREMENT_ID ngay bên dưới.
+         Thay "G-XXXXXXXXXX" bằng Measurement ID thật của bạn.
+         Lấy ở đâu:  analytics.google.com  →  Admin (bánh răng góc trái dưới)
+                     →  Data streams  →  bấm vào luồng Web của bạn
+                     →  góc trên bên phải hiện "MEASUREMENT ID  G-XXXXXXXXXX".
+         Nếu chưa có luồng Web: Data streams → Add stream → Web →
+                     dán URL trang itch.io của bạn (vd https://ten-cua-ban.itch.io).
+
+       ▶ DÒNG SỐ 2 (TUỲ CHỌN — bỏ qua cũng được):  hằng số FIREBASE_CONFIG
+         ở khối phía dưới. Để nguyên null nếu bạn chỉ dùng Google Analytics 4.
+         Firebase Unity SDK KHÔNG chạy được trên WebGL, nên nếu muốn dữ liệu
+         cũng đổ về Firebase thì phải dùng Firebase JS SDK ở đây.
+
+       KHÔNG cần sửa gì khác trong file này.
+       ═══════════════════════════════════════════════════════════════════════ -->
+  <script>
+    // ┌──────────────────────────────────────────────────────────────────────┐
+    // │ DÒNG PHẢI SỬA #1 — dán Measurement ID GA4 của bạn vào giữa hai dấu " │
+    // └──────────────────────────────────────────────────────────────────────┘
+    var GA4_MEASUREMENT_ID = "G-S3CQPPDM64";   // <- da dan 10/09/2026, stream "Hoai Nam" / nguyenhoainam.itch.io/farmhn
+
+    // ┌──────────────────────────────────────────────────────────────────────┐
+    // │ DÒNG PHẢI SỬA #2 (TUỲ CHỌN) — để null nếu KHÔNG dùng Firebase.       │
+    // │ Muốn dùng thì thay null bằng object config lấy ở                     │
+    // │ Firebase Console → Project settings → Your apps → Web app → Config.  │
+    // │ Ví dụ:                                                               │
+    // │   var FIREBASE_CONFIG = {                                            │
+    // │     apiKey: "...", authDomain: "...", projectId: "...",              │
+    // │     appId: "...", measurementId: "G-..."                             │
+    // │   };                                                                 │
+    // └──────────────────────────────────────────────────────────────────────┘
+    var FIREBASE_CONFIG = null;
+  </script>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       Nạp gtag.js (Google Analytics 4).
+       Thẻ script này có thể bị chặn bởi uBlock / Brave / mạng công ty.
+       Đó KHÔNG phải lỗi: window.__gameAnalytics bên dưới tự phát hiện và
+       chuyển sang chế độ "không làm gì", game vẫn chạy bình thường.
+       ───────────────────────────────────────────────────────────────────── -->
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { window.dataLayer.push(arguments); }
+
+    (function loadGtag() {
+      if (!GA4_MEASUREMENT_ID || GA4_MEASUREMENT_ID.indexOf("G-") !== 0 || GA4_MEASUREMENT_ID === "G-XXXXXXXXXX") {
+        console.warn("[Analytics] Chưa điền GA4_MEASUREMENT_ID thật trong index.html — sẽ không có dữ liệu nào được gửi đi.");
+        return;
+      }
+      var s = document.createElement("script");
+      s.async = true;
+      s.src = "https://www.googletagmanager.com/gtag/js?id=" + encodeURIComponent(GA4_MEASUREMENT_ID);
+      s.onerror = function () {
+        console.warn("[Analytics] gtag.js bị chặn (ad-blocker hoặc mạng). Bỏ qua, game vẫn chạy.");
+      };
+      document.head.appendChild(s);
+
+      gtag("js", new Date());
+      // transport_type beacon: sự kiện session_end vẫn kịp bay đi khi người chơi đóng tab.
+      gtag("config", GA4_MEASUREMENT_ID, { transport_type: "beacon", send_page_view: true });
+    })();
+  </script>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       Firebase JS SDK — CHỈ nạp nếu FIREBASE_CONFIG khác null.
+       ───────────────────────────────────────────────────────────────────── -->
+  <script type="module">
+    (async function () {
+      if (!window.FIREBASE_CONFIG) { return; }
+      try {
+        const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+        const { getAnalytics, logEvent, setUserProperties } =
+          await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js");
+
+        const app = initializeApp(window.FIREBASE_CONFIG);
+        const fa = getAnalytics(app);
+        window.__firebaseAnalytics = {
+          logEvent: (n, p) => logEvent(fa, n, p),
+          setUserProperties: (p) => setUserProperties(fa, p)
+        };
+        console.log("[Analytics] Firebase JS SDK đã sẵn sàng.");
+      } catch (e) {
+        console.warn("[Analytics] Không nạp được Firebase JS SDK — bỏ qua.", e);
+      }
+    })();
+  </script>
+
+  <!-- ─────────────────────────────────────────────────────────────────────
+       window.__gameAnalytics — ĐÂY là thứ mà Plugins/WebGL/GameAnalytics.jslib
+       gọi vào từ C#. Không sửa phần này.
+       ───────────────────────────────────────────────────────────────────── -->
+  <script>
+    (function () {
+      var queuedWhileNotReady = 0;
+
+      function hasGtag() {
+        return typeof window.gtag === "function" && window.dataLayer && window.dataLayer.length > 0;
+      }
+      function hasFirebase() {
+        return !!window.__firebaseAnalytics;
+      }
+
+      window.__gameAnalytics = {
+        ready: function () {
+          try { return hasGtag() || hasFirebase(); } catch (e) { return false; }
+        },
+
+        logEvent: function (name, params) {
+          try {
+            params = params || {};
+            if (hasGtag()) {
+              gtag("event", name, params);
+            } else {
+              queuedWhileNotReady++;
+              if (queuedWhileNotReady <= 3) {
+                console.info("[Analytics] (không có GA) event bỏ qua:", name, params);
+              }
+            }
+            if (hasFirebase()) {
+              window.__firebaseAnalytics.logEvent(name, params);
+            }
+          } catch (e) { /* không bao giờ để lỗi lọt ngược vào Unity */ }
+        },
+
+        setUserProperty: function (key, value) {
+          try {
+            var o = {}; o[key] = value;
+            if (hasGtag()) { gtag("set", "user_properties", o); }
+            if (hasFirebase()) { window.__firebaseAnalytics.setUserProperties(o); }
+          } catch (e) { /* im lặng */ }
+        }
+      };
+    })();
+  </script>
+</head>
+
+<body>
+  <div id="unity-container">
+    <canvas id="unity-canvas" width="{{{ WIDTH }}}" height="{{{ HEIGHT }}}" tabindex="-1"></canvas>
+
+    <!-- Màn hình tải: bản build khá nặng, không có thanh % thì người chơi tưởng treo. -->
+    <div id="unity-loading-cover">
+      <div id="unity-loading-title">{{{ PRODUCT_NAME }}}</div>
+      <div id="unity-progress-track"><div id="unity-progress-fill"></div></div>
+      <div id="unity-progress-text">Đang tải… 0%</div>
+      <div id="unity-loading-hint">Lần đầu tải hơi lâu, các lần sau sẽ nhanh hơn.</div>
+    </div>
+
+    <div id="unity-warning"></div>
+  </div>
+
+  <!-- Hướng dẫn mở bằng Safari nếu phát hiện đang mở trong In-App Browser (Messenger / FB / Zalo) -->
+  <div id="inapp-browser-guide">
+    <div class="inapp-arrow">↗️</div>
+    <div class="inapp-card">
+      <div class="inapp-title">🌾 Chơi Game Mượt Hơn</div>
+      <div class="inapp-desc">Bạn đang mở link trong trình duyệt nhúng của ứng dụng chat (Messenger / Facebook / Zalo), bộ nhớ bị giới hạn nên game có thể bị trắng màn hình.</div>
+      <div class="inapp-steps">
+        👉 Bấm vào biểu tượng <b>(•••)</b> ở góc trên bên phải màn hình<br>
+        👉 Chọn <b>"Mở bằng Safari"</b> (hoặc Chrome)
+      </div>
+      <button class="inapp-btn" onclick="document.getElementById('inapp-browser-guide').style.display='none'">Tiếp tục tại đây</button>
+    </div>
+  </div>
+
+  <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+  <script>
+    (function () {
+      var container   = document.querySelector("#unity-container");
+      var canvas      = document.querySelector("#unity-canvas");
+      var cover       = document.querySelector("#unity-loading-cover");
+      var fill        = document.querySelector("#unity-progress-fill");
+      var text        = document.querySelector("#unity-progress-text");
+      var warningBox  = document.querySelector("#unity-warning");
+      var inAppGuide  = document.querySelector("#inapp-browser-guide");
+
+      var buildUrl  = "Build";
+      var loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+
+      // ── Phát hiện In-App Browser (Messenger, Facebook, Zalo, Instagram, TikTok...) ──
+      var ua = navigator.userAgent || "";
+      var isInAppBrowser = /FBAN|FBAV|Messenger|Instagram|Zalo|ByteLocale|TikTok|Line/i.test(ua);
+      if (isInAppBrowser && inAppGuide) {
+        inAppGuide.style.display = "flex";
+      }
+
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+        frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+#if USE_THREADS
+        workerUrl: buildUrl + "/{{{ WORKER_FILENAME }}}",
+#endif
+        codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+#if MEMORY_FILENAME
+        memoryUrl: buildUrl + "/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        // Unity tự nhân kích thước bộ đệm vẽ với devicePixelRatio khi cờ này bật.
+        matchWebGLToCanvasSize: true,
+        showBanner: function (msg, type) {
+          try {
+            warningBox.innerHTML = msg;
+            warningBox.style.display = "block";
+            if (type !== "error") {
+              setTimeout(function () { warningBox.style.display = "none"; }, 5000);
+            }
+          } catch (e) { /* bỏ qua */ }
+        }
+      };
+
+#if BACKGROUND_FILENAME
+      canvas.style.background = "url('" + buildUrl + "/{{{ BACKGROUND_FILENAME.replace(/'/g, '%27') }}}') center / cover";
+#endif
+
+      // ── Điện thoại: khoá cuộn/zoom để thao tác trong game không kéo trang itch.io ──
+      var isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      var isMobile = isIOS || /Android|Mobile/i.test(navigator.userAgent);
+      if (isMobile) {
+        container.classList.add("unity-mobile");
+        document.body.classList.add("unity-mobile-body");
+        document.addEventListener("touchmove", function (e) {
+          if (e.target === canvas) { e.preventDefault(); }
+        }, { passive: false });
+      }
+
+      // ── devicePixelRatio: iOS Safari giới hạn RAM khắt khe (Retina 3x làm nổ VRAM) ──
+      // Trên iOS trần DPR = 1.25 giúp giảm 5x dung lượng VRAM framebuffer, hoàn toàn tránh WebGL Context Lost
+      function applyPixelRatio() {
+        try {
+          var dpr = window.devicePixelRatio || 1;
+          var maxDpr = isIOS ? 1.25 : 1.75;
+          if (dpr > maxDpr) { dpr = maxDpr; }
+          if (window.unityInstance && window.unityInstance.Module) {
+            window.unityInstance.Module.devicePixelRatio = dpr;
+          }
+        } catch (e) { /* bỏ qua */ }
+      }
+      window.addEventListener("resize", applyPixelRatio);
+
+      canvas.addEventListener("webglcontextlost", function (e) {
+        e.preventDefault();
+        if (text) text.textContent = "Bộ nhớ đồ họa bị ngắt. Đang tự động khôi phục...";
+        if (cover) cover.style.display = "flex";
+      }, false);
+
+      // ── iOS WebAudio Unlock: Safari yêu cầu touch để phát âm thanh ──
+      function unlockAudio() {
+        if (typeof webkitAudioContext !== "undefined" || typeof AudioContext !== "undefined") {
+          var AudioCtx = window.AudioContext || window.webkitAudioContext;
+          if (AudioCtx) {
+            var ctx = new AudioCtx();
+            if (ctx.state === "suspended") {
+              ctx.resume();
+            }
+          }
+        }
+        window.removeEventListener("touchstart", unlockAudio);
+        window.removeEventListener("touchend", unlockAudio);
+      }
+      window.addEventListener("touchstart", unlockAudio, { passive: true });
+      window.addEventListener("touchend", unlockAudio, { passive: true });
+
+      function setProgress(p) {
+        var pct = Math.round(Math.min(1, Math.max(0, p)) * 100);
+        fill.style.width = pct + "%";
+        text.textContent = "Đang tải… " + pct + "%";
+      }
+
+      function boot() {
+        createUnityInstance(canvas, config, setProgress).then(function (unityInstance) {
+          window.unityInstance = unityInstance;
+          applyPixelRatio();
+          setProgress(1);
+          cover.style.display = "none";
+        }).catch(function (message) {
+          var errStr = String(message || "");
+          if (errStr.indexOf("memory") !== -1 || isIOS) {
+            text.textContent = "Thiết bị không đủ bộ nhớ WebGL. Vui lòng đóng bớt ứng dụng/tab khác rồi tải lại 😢";
+          } else {
+            text.textContent = "Không tải được game 😢";
+          }
+          console.error(message);
+        });
+      }
+
+      if (typeof createUnityInstance === "function") {
+        boot();
+      } else {
+        // Dự phòng nếu thẻ <script> loader phía trên chưa chạy xong.
+        var s = document.createElement("script");
+        s.src = loaderUrl;
+        s.onload = boot;
+        document.body.appendChild(s);
+      }
+    })();
+  </script>
+</body>
+</html>

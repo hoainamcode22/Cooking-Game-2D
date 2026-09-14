@@ -113,7 +113,17 @@ public class OrderBoardPopupUI : MonoBehaviour
     /// Inspector — đúng lối đang dùng của <c>CropProcessPopupUI.AnyOpen</c>.
     /// Cố ý làm vậy để DEV-A và DEV-B không phải sửa cùng một dòng trong PopupManager.
     /// </summary>
-    public static bool AnyOpen { get; private set; }
+    public static OrderBoardPopupUI Instance { get; private set; }
+
+    public static bool AnyOpen
+    {
+        get
+        {
+            if (Instance == null)
+                Instance = FindFirstObjectByType<OrderBoardPopupUI>(FindObjectsInactive.Include);
+            return Instance != null && Instance.IsOpen;
+        }
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     //  VÒNG ĐỜI
@@ -138,9 +148,30 @@ public class OrderBoardPopupUI : MonoBehaviour
     {
         if (anhKhachHang == null || anhKhachHang.Length == 0)
         {
-            OrderBoardIconResolver.DangKyAvatar(null);
+            string[] ma = OrderNameBank.CustomerIds;
+            anhKhachHang = new AnhKhachHang[ma.Length];
+            for (int i = 0; i < ma.Length; i++)
+                anhKhachHang[i] = new AnhKhachHang { maKhach = ma[i], anh = null };
+            
+            var bEmpty = new List<KeyValuePair<string, Sprite>>(anhKhachHang.Length);
+            foreach (var d in anhKhachHang)
+                if (d != null) bEmpty.Add(new KeyValuePair<string, Sprite>(d.maKhach, d.anh));
+            OrderBoardIconResolver.DangKyAvatar(bEmpty);
             return;
         }
+
+        string[] bank = OrderNameBank.CustomerIds;
+        var cu = new Dictionary<string, Sprite>();
+        foreach (var x in anhKhachHang)
+            if (x != null && !string.IsNullOrEmpty(x.maKhach) && x.anh != null)
+                cu[x.maKhach] = x.anh;
+
+        string[] maAll = OrderNameBank.CustomerIds;
+        var moi = new AnhKhachHang[maAll.Length];
+        for (int i = 0; i < maAll.Length; i++)
+            moi[i] = new AnhKhachHang { maKhach = maAll[i], anh = cu.TryGetValue(maAll[i], out Sprite s) ? s : null };
+
+        anhKhachHang = moi;
 
         var bang = new List<KeyValuePair<string, Sprite>>(anhKhachHang.Length);
         foreach (var d in anhKhachHang)
@@ -151,29 +182,12 @@ public class OrderBoardPopupUI : MonoBehaviour
 
     private void OnValidate()
     {
-        string[] ma = OrderNameBank.CustomerIds;
-        if (anhKhachHang != null && anhKhachHang.Length == ma.Length)
-        {
-            bool khop = true;
-            for (int i = 0; i < ma.Length; i++)
-                if (anhKhachHang[i] == null || anhKhachHang[i].maKhach != ma[i]) { khop = false; break; }
-            if (khop) return;
-        }
-
-        var cu = new Dictionary<string, Sprite>();
-        if (anhKhachHang != null)
-            foreach (var d in anhKhachHang)
-                if (d != null && !string.IsNullOrEmpty(d.maKhach) && d.anh != null) cu[d.maKhach] = d.anh;
-
-        var moi = new AnhKhachHang[ma.Length];
-        for (int i = 0; i < ma.Length; i++)
-            moi[i] = new AnhKhachHang { maKhach = ma[i], anh = cu.TryGetValue(ma[i], out Sprite s) ? s : null };
-
-        anhKhachHang = moi;
+        NapBangAvatar();
     }
 
     private void Awake()
     {
+        Instance = this;
         NapBangAvatar();
         WireButton(buttonClose,         ClosePopup);
         WireButton(buttonDimBackground, ClosePopup);
@@ -188,8 +202,6 @@ public class OrderBoardPopupUI : MonoBehaviour
         // tự đóng ngay khi mở. Awake chỉ chạy một lần lúc object sinh ra.
         if (popupRoot != null) popupRoot.SetActive(false);
         if (messageRoot != null) messageRoot.SetActive(false);
-
-        AnyOpen = false;
     }
 
     private void OnEnable() => Subscribe();
@@ -206,13 +218,12 @@ public class OrderBoardPopupUI : MonoBehaviour
     {
         Unsubscribe();
         ReleasePopupInputBlock();
-        AnyOpen = false;
     }
 
     private void OnDestroy()
     {
+        if (Instance == this) Instance = null;
         Unsubscribe();
-        AnyOpen = false;
     }
 
     private void Subscribe()
@@ -258,7 +269,6 @@ public class OrderBoardPopupUI : MonoBehaviour
         if (popupRoot == null || IsOpen) return;
 
         popupRoot.SetActive(true);
-        AnyOpen = true;
 
         Subscribe();               // manager có thể mới sinh ra sau lần Start đầu tiên
         AcquirePopupInputBlock();
@@ -278,7 +288,6 @@ public class OrderBoardPopupUI : MonoBehaviour
         _animating = false;
 
         popupRoot.SetActive(false);
-        AnyOpen = false;
 
         ReleasePopupInputBlock();
     }
@@ -338,6 +347,9 @@ public class OrderBoardPopupUI : MonoBehaviour
         {
             OrderTicketUI t = Instantiate(ticketPrefab, ticketGridContent);
             t.name = $"Ticket_{i}";
+            // Đung đưa nhẹ trong gió — thuần trang trí, tự nhường chỗ cho mọi lệnh dời
+            // phiếu của popup (xem OrderTicketWindSway). Gắn bằng code để prefab khỏi đổi.
+            if (t.GetComponent<OrderTicketWindSway>() == null) t.gameObject.AddComponent<OrderTicketWindSway>();
             t.Bind(this, i);
             _tickets.Add(t);
         }

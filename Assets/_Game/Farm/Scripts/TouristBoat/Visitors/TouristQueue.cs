@@ -39,6 +39,12 @@ public class TouristQueue : MonoBehaviour
     /// <summary>Số khách đang trong hàng.</summary>
     public int Count => _agents.Count;
 
+    /// <summary>
+    /// [BOAT-TUT 2026-09-10] Danh sach khach trong hang (CHI DOC) — cinematic tutorial
+    /// doc de biet khi nao moi nguoi da xep hang xong. Khong cap phat moi, khong sua duoc.
+    /// </summary>
+    public IReadOnlyList<TouristAgent> Agents => _agents;
+
     /// <summary>Manager gọi 1 lần lúc boot để bơm spacing từ TouristBoatConfig.</summary>
     public void Configure(float spacing)
     {

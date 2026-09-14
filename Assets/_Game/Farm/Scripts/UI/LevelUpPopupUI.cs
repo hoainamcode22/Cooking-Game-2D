@@ -151,6 +151,15 @@ public class LevelUpPopupUI : MonoBehaviour
     /// Tutorial dùng cờ này để "nhường sân khấu" — chờ user nhận quà rồi mới chạy bước tiếp.</summary>
     public static bool IsActive { get; private set; }
 
+    /// <summary>
+    /// [BOAT-TUT 2026-09-10] Ban DUNG MOT LAN khi HANG DOI popup len cap da rong han
+    /// (nguoi choi bam "Nhan", anim dong chay xong, IsActive vua ve false).
+    /// Dung cho cac man cinematic phai doi popup dong het moi duoc bat dau
+    /// (vd BoatTutorialCinematic). Chi THEM event, khong doi luong chay cu.
+    /// LUU Y: static event -> nguoi nghe PHAI tu go trong OnDisable/OnDestroy.
+    /// </summary>
+    public static event System.Action OnAllClosed;
+
     private readonly Queue<int> _levelUpQueue = new Queue<int>();
     private bool                _isShowing    = false;
     private int                 _lastKnownLevel;
@@ -316,6 +325,11 @@ public class LevelUpPopupUI : MonoBehaviour
         {
             _isShowing = false;
             IsActive   = false;          // hết popup → tutorial được phép chạy tiếp
+
+            // [BOAT-TUT 2026-09-10] Diem DUY NHAT ma popup "dong han" (goi tu callback
+            // cua AnimateOut trong ClaimAndClose). Bao cho cinematic biet san khau da trong.
+            try { OnAllClosed?.Invoke(); }
+            catch (System.Exception e) { Debug.LogWarning($"[LevelUpPopup] OnAllClosed nem loi: {e}"); }
             return;
         }
 
@@ -1282,6 +1296,7 @@ public class LevelUpPopupUI : MonoBehaviour
         if (cfg.giftGems > 0 && FarmEconomyManager.Instance != null)
         {
             FarmEconomyManager.Instance.AddGems(cfg.giftGems);
+            AudioManager.Instance?.PlayGemSparkle();   // [THEM 2026-09-10] tieng kim cuong qua len cap
             Debug.Log($"[LevelUpPopup] +{cfg.giftGems} kim cương");
         }
 

@@ -1,20 +1,20 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace FarmGame.Fishing
 {
     /// <summary>
-    /// Cắm GIỎ CÁ vào QUẦY HÀNG của farm (Vòng 16): implement IStallExternalStore trên FishBasket và đăng ký
-    /// StallSourceStore.FishBasket qua StallExternalStores ở BeforeSceneLoad (trước Awake/Start của PlayerStallManager,
-    /// để nhịp TickStall đầu tiên hoàn được cá còn treo refundPending). FishBasket là plain C# lazy-load PlayerPrefs
-    /// nên chạy được ngay ở SCN_Farm, không cần object nào của scene câu.
-    /// TẮT: không có FishingDatabase hoặc config.enabled == false → không đăng ký → quầy hàng y như cũ.
-    /// B8: TryTake không đủ → false không trừ; GiveBack chỉ true khi giỏ nhận TRỌN số lượng (không dựa vào
-    /// FishBasket.TryAdd vì hàm đó KẸP về MaxPerType — kẹp là mất cá im lặng).
+    /// Cáº¯m GIá»Ž CÃ vÃ o QUáº¦Y HÃ€NG cá»§a farm (VÃ²ng 16): implement IStallExternalStore trÃªn FishBasket vÃ  Ä‘Äƒng kÃ½
+    /// StallSourceStore.FishBasket qua StallExternalStores á»Ÿ BeforeSceneLoad (trÆ°á»›c Awake/Start cá»§a PlayerStallManager,
+    /// Ä‘á»ƒ nhá»‹p TickStall Ä‘áº§u tiÃªn hoÃ n Ä‘Æ°á»£c cÃ¡ cÃ²n treo refundPending). FishBasket lÃ  plain C# lazy-load PlayerPrefs
+    /// nÃªn cháº¡y Ä‘Æ°á»£c ngay á»Ÿ SCN_Farm, khÃ´ng cáº§n object nÃ o cá»§a scene cÃ¢u.
+    /// Táº®T: khÃ´ng cÃ³ FishingDatabase hoáº·c config.enabled == false â†’ khÃ´ng Ä‘Äƒng kÃ½ â†’ quáº§y hÃ ng y nhÆ° cÅ©.
+    /// B8: TryTake khÃ´ng Ä‘á»§ â†’ false khÃ´ng trá»«; GiveBack chá»‰ true khi giá» nháº­n TRá»ŒN sá»‘ lÆ°á»£ng (khÃ´ng dá»±a vÃ o
+    /// FishBasket.TryAdd vÃ¬ hÃ m Ä‘Ã³ Káº¸P vá» MaxPerType â€” káº¹p lÃ  máº¥t cÃ¡ im láº·ng).
     /// </summary>
     public sealed class FishBasketStallStore : IStallExternalStore
     {
-        /// <summary>Tiền tố id cá — trả lời nhanh "không phải của tôi" cho mọi id farm, không phải quét database.</summary>
+        /// <summary>Tiá»n tá»‘ id cÃ¡ â€” tráº£ lá»i nhanh "khÃ´ng pháº£i cá»§a tÃ´i" cho má»i id farm, khÃ´ng pháº£i quÃ©t database.</summary>
         private const string FishIdPrefix = "fish_";
 
         private static FishBasketStallStore _registered;
@@ -28,16 +28,17 @@ namespace FarmGame.Fishing
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void AutoRegister()
         {
+            if (!FarmGame.Fishing.FishingFeatureGate.IsEnabled) return;
             EnsureRegistered();
         }
 
-        /// <summary>Đăng ký nếu chưa (idempotent). Trả false khi hệ Hồ Câu tắt / chưa có database.</summary>
+        /// <summary>ÄÄƒng kÃ½ náº¿u chÆ°a (idempotent). Tráº£ false khi há»‡ Há»“ CÃ¢u táº¯t / chÆ°a cÃ³ database.</summary>
         public static bool EnsureRegistered()
         {
             if (_registered != null) { return true; }
             if (!FishingDatabase.IsEnabled)
             {
-                Debug.Log(FishingIds.LogTag + " Hệ Hồ Câu tắt/chưa có database → không cắm giỏ cá vào quầy hàng.");
+                Debug.Log(FishingIds.LogTag + " Há»‡ Há»“ CÃ¢u táº¯t/chÆ°a cÃ³ database â†’ khÃ´ng cáº¯m giá» cÃ¡ vÃ o quáº§y hÃ ng.");
                 return false;
             }
             var store = new FishBasketStallStore();
@@ -46,7 +47,7 @@ namespace FarmGame.Fishing
             return true;
         }
 
-        /// <summary>Đang cắm vào quầy chưa (UI/tool hỏi).</summary>
+        /// <summary>Äang cáº¯m vÃ o quáº§y chÆ°a (UI/tool há»i).</summary>
         public static bool IsRegistered { get { return _registered != null; } }
 
         private static FishData Resolve(string itemId)
@@ -57,7 +58,7 @@ namespace FarmGame.Fishing
             return FishingCatchResolver.FindFishLoose(FishingDatabase.Instance, key);
         }
 
-        // ── IStallExternalStore ──────────────────────────────────────────────
+        // â”€â”€ IStallExternalStore â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
         public bool TryGetItemInfo(string itemId, out StallExternalItemInfo info)
         {
@@ -80,7 +81,7 @@ namespace FarmGame.Fishing
         public bool TryTake(string itemId, int amount)
         {
             if (amount <= 0 || Resolve(itemId) == null) { return false; }
-            // FishBasket.Remove: không đủ → false và không đổi gì (đúng hợp đồng B8).
+            // FishBasket.Remove: khÃ´ng Ä‘á»§ â†’ false vÃ  khÃ´ng Ä‘á»•i gÃ¬ (Ä‘Ãºng há»£p Ä‘á»“ng B8).
             return FishBasket.Instance.Remove(itemId, amount);
         }
 
@@ -93,14 +94,14 @@ namespace FarmGame.Fishing
             FishBasket basket = FishBasket.Instance;
             int having = basket.Count(key);
 
-            // Phải NHẬN TRỌN: TryAdd kẹp về MaxPerType nên nếu để nó tự xử thì phần vượt trần biến mất.
-            // Không đủ chỗ → false, quầy giữ refundPending và thử lại nhịp sau (người chơi bán/tặng cá bớt là hoàn được).
+            // Pháº£i NHáº¬N TRá»ŒN: TryAdd káº¹p vá» MaxPerType nÃªn náº¿u Ä‘á»ƒ nÃ³ tá»± xá»­ thÃ¬ pháº§n vÆ°á»£t tráº§n biáº¿n máº¥t.
+            // KhÃ´ng Ä‘á»§ chá»— â†’ false, quáº§y giá»¯ refundPending vÃ  thá»­ láº¡i nhá»‹p sau (ngÆ°á»i chÆ¡i bÃ¡n/táº·ng cÃ¡ bá»›t lÃ  hoÃ n Ä‘Æ°á»£c).
             if (having + amount > basket.MaxPerType) { return false; }
             if (having == 0 && basket.IsFull) { return false; }
 
             string reason;
             bool ok = basket.TryAdd(key, amount, out reason);
-            if (!ok) { Debug.LogWarning(FishingIds.LogTag + " Quầy hoàn " + key + " x" + amount + " về giỏ thất bại: " + reason + " — sẽ thử lại."); }
+            if (!ok) { Debug.LogWarning(FishingIds.LogTag + " Quáº§y hoÃ n " + key + " x" + amount + " vá» giá» tháº¥t báº¡i: " + reason + " â€” sáº½ thá»­ láº¡i."); }
             return ok;
         }
 
@@ -112,8 +113,8 @@ namespace FarmGame.Fishing
             {
                 FishStack s = items[i];
                 if (s == null || s.amount <= 0) { continue; }
-                // Loài không còn trong database (asset bị xoá) thì không lên quầy: không tra được tên/giá,
-                // quầy sẽ bán với giá dự phòng 10 — vẫn nằm trong giỏ, bán ở Quầy Cá riêng nếu muốn.
+                // LoÃ i khÃ´ng cÃ²n trong database (asset bá»‹ xoÃ¡) thÃ¬ khÃ´ng lÃªn quáº§y: khÃ´ng tra Ä‘Æ°á»£c tÃªn/giÃ¡,
+                // quáº§y sáº½ bÃ¡n vá»›i giÃ¡ dá»± phÃ²ng 10 â€” váº«n náº±m trong giá», bÃ¡n á»Ÿ Quáº§y CÃ¡ riÃªng náº¿u muá»‘n.
                 if (Resolve(s.fishId) == null) { continue; }
                 into.Add(new StallSellableItem { itemId = s.fishId, amount = s.amount, store = StallSourceStore.FishBasket });
             }

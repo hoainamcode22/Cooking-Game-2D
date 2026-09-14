@@ -103,7 +103,7 @@ public class SettingsPopupUI : MonoBehaviour
         BindEvents();
 
         if (popupRoot == null) popupRoot = gameObject;
-        popupRoot.SetActive(false);
+        if (popupRoot != gameObject) popupRoot.SetActive(false);
     }
 
     private void Start()
@@ -114,6 +114,7 @@ public class SettingsPopupUI : MonoBehaviour
 
     private void OnEnable()
     {
+        AcquirePopupInputBlock();
         BindEvents();
         RefreshUI();
     }
@@ -217,7 +218,7 @@ public class SettingsPopupUI : MonoBehaviour
     private void Update()
     {
         // Phím tắt tiện ích cho Tester / Developer reset save ngay lập tức trong phiên bản EXE / Editor
-        if (Input.GetKeyDown(KeyCode.F8))
+        if (DevOverlayGate.Enabled && Input.GetKeyDown(KeyCode.F8))
         {
             OnResetProgressClicked();
         }

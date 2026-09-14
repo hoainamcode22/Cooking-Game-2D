@@ -12,14 +12,14 @@ using UnityEngine;
 ///   3. Bat cu code nao goi TrainStationMasterPopupUI.OpenPopup() (tutorial / deeplink sau nay)
 /// Viet so 3 o ba cho thi lan sau doi cap la chac chan lech mot cho.
 ///
-/// Vi sao la cap 3: Sep chot 06/09/2026. Trung luon voi
-/// AnimalGuideController.TrainMinLevel = 3 (con thu huong dan cung chi nhac ve tau tu cap 3),
+/// Vi sao la cap 5: Sep chot 10/09/2026 (truoc la cap 3). Trung luon voi
+/// AnimalGuideController.TrainMinLevel = 5 (con thu huong dan cung chi nhac ve tau tu cap 5),
 /// nen loi nhac va quyen mo khong bao gio lech nhau.
 /// </summary>
 public static class TrainGateAccess
 {
     /// <summary>Cap toi thieu de mo duoc tau cho hang. DOI SO O DAY, khong rai ra cho khac.</summary>
-    public const int RequiredLevel = 3;
+    public const int RequiredLevel = 5;
 
     /// <summary>Thong bao hien cho nguoi choi khi chua du cap. Ghep tu <see cref="RequiredLevel"/>
     /// chu khong go lai so, doi cap mot cho la cau thong bao doi theo.</summary>

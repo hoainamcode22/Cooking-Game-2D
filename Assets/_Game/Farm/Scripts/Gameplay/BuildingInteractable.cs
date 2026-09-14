@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class BuildingInteractable : MonoBehaviour
 {
@@ -15,6 +15,14 @@ public class BuildingInteractable : MonoBehaviour
 
     private void OnMouseDown()
     {
+        // Khóa tương tác công trình thế giới trong suốt tutorial
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+            return;
+
+        // Chặn tuyệt đối khi có popup mở, hoặc đang ở Bếp, hoặc con trỏ đang trên UI
+        if (FarmInputLock.BlockWorldInteraction || FarmInputLock.BlockWorldClickBySceneOrPopup || FarmInputLock.ConTroTrenUiThat())
+            return;
+
         // Không mở popup khi đang Edit Mode
         if (EditModeManager.IsEditMode) return;
 
@@ -22,6 +30,9 @@ public class BuildingInteractable : MonoBehaviour
 
         // Không xử lý khi đang có popup mở
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+            return;
+
+        if (OrderBoardPopupUI.AnyOpen)
             return;
 
         switch (buildingType)

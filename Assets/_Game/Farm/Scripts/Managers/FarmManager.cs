@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class FarmManager : MonoBehaviour
@@ -331,6 +331,20 @@ public class FarmManager : MonoBehaviour
         FarmUIManager.Instance?.ShowSickleTray();
     }
 
+    public bool HasAnyEmptyPlot(PlotCategory cat)
+    {
+        PlotController[] tatCaO = FindObjectsByType<PlotController>(
+            FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+
+        for (int i = 0; i < tatCaO.Length; i++)
+        {
+            PlotController o = tatCaO[i];
+            if (o != null && o.gameObject.activeInHierarchy && o.Category == cat && o.IsUnlocked && o.IsEmpty)
+                return true;
+        }
+        return false;
+    }
+
     public void OnPlotPlanted(PlotController plot, CropData crop)
     {
         selectedPlot = plot;
@@ -338,7 +352,14 @@ public class FarmManager : MonoBehaviour
         if (crop != null && plot != null)
             FarmUIManager.Instance?.ShowHint(Loc.TF("Đã trồng {0} ở ô {1}", Loc.T(crop.displayName), plot.PlotId));
 
+        AudioManager.Instance?.PlayPlanting();   // [THEM 2026-09-10] tieng gieo hat (Resources/Audio/gieohat)
         OnPlotPlantedEvent?.Invoke(plot);
+
+        // Nếu đã gieo đầy tất cả ô đất / chậu hoa của loại này (không còn ô trống), tự động tắt panel hạt giống
+        if (plot != null && !HasAnyEmptyPlot(plot.Category))
+        {
+            FarmUIManager.Instance?.HidePlantSelectPopup();
+        }
     }
 
     public void OnPlotHarvested(PlotController plot, string cropName = "")
@@ -349,6 +370,7 @@ public class FarmManager : MonoBehaviour
         FarmUIManager.Instance?.ShowHint(Loc.TF("Đã thu hoạch {0} ở ô {1}", Loc.T(finalName), plot.PlotId));
         FarmUIManager.Instance?.HideAllPopups();
 
+        AudioManager.Instance?.PlayHarvest();    // [THEM 2026-09-10] tieng thu hoach (Resources/Audio/thuhoach)
         OnPlotHarvestedEvent?.Invoke(plot);
     }
 

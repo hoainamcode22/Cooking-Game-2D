@@ -335,7 +335,7 @@ public class OrderBoardManager : OrderBoardManagerBase
         // KHÔNG nhân đôi EXP ở đây. `rewardExp` đã là con số cuối cùng và cũng chính là
         // con số đang hiện trên phiếu — hệ cũ hiện một đằng cộng một nẻo (×2 lúc giao).
         if (FarmEconomyManager.Instance != null)
-            FarmEconomyManager.Instance.AddGold(order.rewardGold);
+            { FarmEconomyManager.Instance.AddGold(order.rewardGold); AudioManager.Instance?.PlayCoinTing(); }  // [THEM 2026-09-10] tieng vang thuong don
         else
             Debug.LogError("[BảngĐơn] FarmEconomyManager.Instance = null — vàng thưởng KHÔNG vào túi người chơi!");
 

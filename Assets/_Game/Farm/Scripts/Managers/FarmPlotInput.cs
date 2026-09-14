@@ -20,7 +20,7 @@ public class FarmPlotInput : MonoBehaviour
         if (!IsPointerDownThisFrame())
             return;
 
-        if (FarmInputLock.BlockWorldClickBySceneOrPopup)
+        if (FarmInputLock.IsCookingMode)
             return;
 
         // Tuyệt đối không mở Seed Popup / logic trồng trọt khi Edit Mode đang bật
@@ -38,6 +38,11 @@ public class FarmPlotInput : MonoBehaviour
 
         // Không xử lý plot khi đang có popup mở
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+        {
+            return;
+        }
+
+        if (OrderBoardPopupUI.AnyOpen)
         {
             return;
         }

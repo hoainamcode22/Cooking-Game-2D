@@ -22,6 +22,17 @@ public static class FixVietnameseFontTool
     private const string Baloo2AssetPath = "Assets/_Game/Resources/Fonts/Baloo2 SDF.asset";
     private const string FontVoAssetPath = "Assets/_Game/Resources/Fonts/FontVo.asset";
 
+    public static string BuildVietnameseCharset()
+    {
+        var sb = new System.Text.StringBuilder();
+        for (int c = 0x0020; c <= 0x007E; c++) sb.Append((char)c);
+        sb.Append("¡§©®°±²·º»ÀÁÂÃÆÈÉÊÌÍÒÓÔÕ×ÙÚÜÝàáâãèéêìíòóôõ÷ùúý");
+        sb.Append("ĂăĐđĨĩŨũƠơƯư");
+        for (int c = 0x1EA0; c <= 0x1EF9; c++) sb.Append((char)c);
+        sb.Append("–—‘’“”•…‹›₫");
+        return sb.ToString();
+    }
+
     [MenuItem("Tools/Sửa Lỗi Text Tiếng Việt (Tạo lại Font Dynamic Baloo2)", false, -100)]
     public static void FixAllVietnameseFonts()
     {
@@ -42,7 +53,7 @@ public static class FixVietnameseFontTool
 
         Directory.CreateDirectory(FontAssetFolder);
 
-        // 1. Tạo FontAsset Dynamic Baloo2 SDF
+        // 1. Tạo FontAsset Dynamic Baloo2 SDF (2048x2048 để chứa trọn vẹn glyphs)
         TMP_FontAsset dynamicBaloo = CreateDynamicFontAsset(ttf, "Baloo2 SDF", Baloo2AssetPath);
 
         // 2. Tạo FontAsset Dynamic FontVo (đồng bộ)
@@ -93,8 +104,8 @@ public static class FixVietnameseFontTool
         AssetDatabase.Refresh();
         EditorSceneManager.MarkAllScenesDirty();
 
-        Debug.Log($"[FixFont] ✅ ĐÃ SỬA XONG TRIỆT ĐỂ LỖI TIẾNG VIỆT: Đã tạo Font DYNAMIC cho 'Baloo2 SDF' và 'FontVo', cập nhật {count} Text objects trong scene. Sếp chỉ cần Save Scene (Ctrl + S) và bấm Play!");
-        EditorUtility.DisplayDialog("Thành Công!", $"Đã chuyển font 'Baloo2 SDF' và 'FontVo' sang chế độ DYNAMIC hoàn toàn.\nĐã đồng bộ {count} text trong scene hiện tại.\n\nNhớ bấm Ctrl + S để lưu scene nhé Sếp!", "OK");
+        Debug.Log($"[FixFont] ✅ ĐÃ SỬA XONG TRIỆT ĐỂ LỖI TIẾNG VIỆT: Đã nướng toàn bộ ký tự tiếng Việt vào Dynamic Font 'Baloo2 SDF' và 'FontVo', cập nhật {count} Text objects trong scene. Sếp chỉ cần Save Scene (Ctrl + S) và bấm Play!");
+        EditorUtility.DisplayDialog("Thành Công!", $"Đã nướng toàn bộ ký tự tiếng Việt vào font 'Baloo2 SDF' và 'FontVo'.\nĐã đồng bộ {count} text trong scene hiện tại.\n\nNhớ bấm Ctrl + S để lưu scene nhé Sếp!", "OK");
     }
 
     private static TMP_FontAsset CreateDynamicFontAsset(Font ttf, string assetName, string savePath)
@@ -102,10 +113,21 @@ public static class FixVietnameseFontTool
         AssetDatabase.DeleteAsset(savePath);
 
         var fa = TMP_FontAsset.CreateFontAsset(
-            ttf, 72, 6, GlyphRenderMode.SDFAA, 1024, 1024,
+            ttf, 72, 6, GlyphRenderMode.SDFAA, 2048, 2048,
             AtlasPopulationMode.Dynamic, true);
 
         fa.name = assetName;
+
+        // Giữ lại dữ liệu dynamic khi build
+        var so = new SerializedObject(fa);
+        var clearProp = so.FindProperty("m_ClearDynamicDataOnBuild");
+        if (clearProp != null) clearProp.boolValue = false;
+        so.ApplyModifiedPropertiesWithoutUndo();
+
+        // Nướng trước trọn bộ ký tự tiếng Việt + ASCII
+        string charset = BuildVietnameseCharset();
+        fa.TryAddCharacters(charset, out string missing);
+
         AssetDatabase.CreateAsset(fa, savePath);
 
         if (fa.material != null)

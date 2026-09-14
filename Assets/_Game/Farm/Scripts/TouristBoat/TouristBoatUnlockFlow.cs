@@ -153,10 +153,61 @@ public class TouristBoatUnlockFlow : MonoBehaviour
 
     private void HandleLevelChanged(int _) => TryStartIntro();
 
+    // ═══════════════════════════════════════════════════════════════════════
+    //  [BOAT-TUT 2026-09-10] Moc cho BoatTutorialCinematic — THEM, khong doi cu
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// TRUE = KHONG tu chay intro theo su kien len cap nua; BoatTutorialCinematic se
+    /// goi <see cref="ChayIntroNgay"/> vao dung thoi diem (sau khi popup len cap dong).
+    /// Cinematic GAC co nay trong OnEnable va HA no trong OnDisable/OnDestroy (dat ngay
+/// canh cho khoi dong/dung coroutine dao dien cua no), nen "co dang bat" va "cinematic
+/// dang chay" luon la mot. Khong con dat o Awake — Awake van chay ca khi component bi
+/// tat san, se lam co ket true ma khong co ai chay.
+    /// </summary>
+    public static bool TrihoanIntro { get; set; }
+
+    /// <summary>Intro dang chay hay khong (cinematic doc de biet khi nao xong).</summary>
+    public bool IntroDangChay => _running;
+
+    /// <summary>Intro da chay xong trong session nay chua.</summary>
+    public bool IntroDaXong => _done;
+
+    /// <summary>
+    /// TRUE = het buoc "ngam tau" thi KHONG tra camera ve — de cinematic giu camera
+    /// o ben roi tu tra ve sau khi khach xep hang xong.
+    /// </summary>
+    public bool GiuCameraSauIntro { get; set; }
+
+    /// <summary>Chay intro NGAY (dung cho cinematic). Yield toi khi intro ket thuc.</summary>
+    public IEnumerator ChayIntroNgay()
+    {
+        if (_running || _done) yield break;
+
+        var mgr = BoatDockManager.Instance;
+        if (mgr == null || mgr.Config == null)
+        {
+            Debug.LogWarning("[TouristBoat] ChayIntroNgay: thieu BoatDockManager/Config — bo qua intro.");
+            yield break;
+        }
+        if (mgr.IsIntroDone) { _done = true; yield break; }
+
+        yield return IntroRoutine();
+    }
+
+    /// <summary>Tra camera ve trang thai truoc intro (cinematic goi khi da xong het).</summary>
+    public IEnumerator TraCameraVeNgay()
+    {
+        yield return RestoreCameraRoutine();
+    }
+
     /// <summary>Check điều kiện và khởi động intro (idempotent — gọi bao nhiêu lần cũng chỉ chạy 1 lần).</summary>
     private void TryStartIntro()
     {
         if (_running || _done) return;
+
+        // [BOAT-TUT] Cinematic dang cam lai: no se tu goi ChayIntroNgay() dung luc.
+        if (TrihoanIntro) return;
 
         var mgr = BoatDockManager.Instance;
         var lvl = FarmLevelManager.Instance;
@@ -223,7 +274,9 @@ public class TouristBoatUnlockFlow : MonoBehaviour
         if (hasCamera)
         {
             yield return new WaitForSeconds(boatWatchSeconds);
-            yield return RestoreCameraRoutine();
+            // [BOAT-TUT] Cinematic giu camera lai de con theo khach xep hang.
+            if (!GiuCameraSauIntro)
+                yield return RestoreCameraRoutine();
         }
 
         // ── 5. Chốt: intro chỉ chạy 1 lần ───────────────────────────────────
@@ -285,7 +338,11 @@ public class TouristBoatUnlockFlow : MonoBehaviour
     /// </summary>
     private void ApSpriteBangKhoa(int dockIndex, Transform board, TouristBoatConfig cfg)
     {
-        if (lockBoardSprite == null) return; // chưa gán art — giữ nguyên placeholder của tool
+        Sprite plaqueSpr = lockBoardSprite;
+        if (plaqueSpr == null || plaqueSpr.name.Contains("khunggo"))
+        {
+            plaqueSpr = FarmGame.UI.TouristBoatArtRuntime.GetDockPlaqueSprite();
+        }
 
         var sr = _lockBoardSr[dockIndex];
         if (sr == null)
@@ -294,43 +351,41 @@ public class TouristBoatUnlockFlow : MonoBehaviour
             return;
         }
 
-        sr.sprite = lockBoardSprite;
-        sr.color  = Color.white; // art tự mang màu — bỏ lớp tint xám placeholder V1
-
-        Vector2 size = cfg != null
-            ? new Vector2(cfg.lockPanelWidth, cfg.lockPanelHeight)
-            : new Vector2(180f, 90f);
+        if (plaqueSpr != null)
+        {
+            sr.sprite = plaqueSpr;
+            sr.color  = Color.white;
+            sr.drawMode = SpriteDrawMode.Simple;
+            sr.sortingOrder = 55;
+        }
 
         board.localScale = Vector3.one; // chống dồn hệ số giữa các lần chạy
-        if (lockBoardSprite.border != Vector4.zero)
-        {
-            sr.drawMode = SpriteDrawMode.Sliced;
-            sr.size     = size;
-        }
-        else
-        {
-            sr.drawMode = SpriteDrawMode.Simple;
-            Vector2 native = lockBoardSprite.rect.size / Mathf.Max(0.0001f, lockBoardSprite.pixelsPerUnit);
-            if (native.x > 0.0001f && native.y > 0.0001f)
-                board.localScale = new Vector3(size.x / native.x, size.y / native.y, 1f);
-        }
 
-        // Định dạng lại chữ teaser cho gọn gàng trong bảng
+        // Định dạng lại chữ teaser to, rõ nét trên mặt bảng gỗ
         Transform tt = board.Find("TeaserText");
         if (tt != null)
         {
             var tmp = tt.GetComponent<TextMeshPro>();
-            if (tmp != null && cfg != null)
+            if (tmp != null)
             {
-                tmp.fontSize = cfg.lockTeaserFontSize;
+                var font = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
+                if (font == null) font = TMP_Settings.defaultFontAsset;
+                if (font != null) tmp.font = font;
+
+                tmp.isOrthographic = true;
+                tmp.fontSize = 28f;
+                tmp.fontStyle = FontStyles.Bold;
                 tmp.alignment = TextAlignmentOptions.Center;
                 tmp.textWrappingMode = TextWrappingModes.Normal;
+                tmp.color = new Color(1f, 0.98f, 0.88f, 1f);
+                tmp.outlineWidth = 0.22f;
+                tmp.outlineColor = new Color(0.24f, 0.12f, 0.04f, 1f);
                 var rt = tmp.rectTransform;
                 if (rt != null)
                 {
-                    rt.sizeDelta = new Vector2(cfg.lockPanelWidth * 0.9f, cfg.lockPanelHeight * 0.6f);
+                    rt.sizeDelta = new Vector2(210f, 90f);
                 }
-                tt.localPosition = new Vector3(0f, -cfg.lockPanelHeight * 0.08f, 0f);
+                tt.localPosition = new Vector3(0f, 120f, -0.5f);
             }
         }
 
@@ -389,7 +444,10 @@ public class TouristBoatUnlockFlow : MonoBehaviour
         bool slotTuThuBang = board != null &&
                              board.GetComponentInParent<BoatDockSlot>() != null;
 
-        DockUnlockCelebrationFX.Phat(viTri, slotTuThuBang ? null : board);
+        // [BOAT-TUT 2026-09-10] Doi sang ban co man PHA O KHOA truoc khi no sao.
+        // Bang khoa do BoatDockSlot tu thu thi truyen null (giu nguyen luat cu),
+        // nhung o khoa van phai duoc pha -> truyen rieng qua tham so boardChoOKhoa.
+        DockUnlockCelebrationFX.PhatKemPhaKhoa(viTri, slotTuThuBang ? null : board, board);
     }
 
     // =========================================================================

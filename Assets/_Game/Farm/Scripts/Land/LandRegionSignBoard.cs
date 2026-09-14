@@ -46,6 +46,10 @@ public class LandRegionSignBoard : MonoBehaviour
     [Tooltip("Nới rộng vùng bấm so với tấm bảng (1.15 = rộng hơn 15%).")]
     public float clickPadding = 1.15f;
 
+    [Tooltip("Bat (mac dinh) = bam bien cua lo DANG DON se mo popup tien do (khung go + " +
+             "dong ho + nut kim cuong). Tat = quay ve hanh vi cu: bam khong ra gi ca.")]
+    public bool moPopupTienDoKhiDangDon = true;
+
     [Header("Hiển thị")]
     public string sortingLayerName = "ObjectsFront";
     public int sortingOrder = 900;
@@ -347,7 +351,21 @@ public class LandRegionSignBoard : MonoBehaviour
         if (PlacementManager.IsPlacingNewObject) return;
 
         _punch = 1f;
-        if (_manager.IsClearing(_region)) return;
+
+        if (_manager.IsClearing(_region))
+        {
+            // Lo dang don: KHONG mo popup mua nua (nhu cu), nhung gio cho xem tien do.
+            // Site null (vd save con do ma site chua kip dung lai) => y het ban cu: khong lam gi.
+            if (moPopupTienDoKhiDangDon)
+            {
+                var site = _manager.ClearingSiteOf(_region.regionId);
+                if (site != null && site.IsRunning)
+                    BuildingProcessPopupUI.GetOrCreate().Open(site);
+            }
+            return;
+        }
+
+        // Lo chua mua: nguyen ven duong cu, khong dong gi vao.
         LandPurchasePopupUI.Show(_region, _manager);
     }
 }

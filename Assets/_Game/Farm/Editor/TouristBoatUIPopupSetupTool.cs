@@ -256,19 +256,22 @@ public static class TouristBoatUIPopupSetupTool
             Ghi("    + Dim (đen 60%, chặn raycast)");
         }
 
+        Sprite cardToastSpr = FarmGame.UI.TouristBoatArtRuntime.GetBoatAnnounceCardSprite() ?? khungGo;
+        Sprite btnAmberSpr  = FarmGame.UI.TouristBoatArtRuntime.GetBoatAnnounceBtnSprite() ?? spriteNut;
+
         Image card = EnsureImage(rootVisual, "Card", out bool cardMoi);
         if (cardMoi)
         {
             card.rectTransform.anchorMin = card.rectTransform.anchorMax = new Vector2(1f, 1f);
             card.rectTransform.pivot = new Vector2(1f, 1f);
-            card.rectTransform.sizeDelta = CardAnnounceSize;
+            card.rectTransform.sizeDelta = new Vector2(520f, 146f);
             card.rectTransform.anchoredPosition = new Vector2(-30f, -135f);
-            ApSpriteKhung(card, khungGo);
-            Ghi($"    + Card (Toast Báo Tàu {CardAnnounceSize.x:0}x{CardAnnounceSize.y:0})");
+            ApSpriteKhung(card, cardToastSpr);
+            Ghi($"    + Card (Toast Báo Tàu Bo Tròn 520x146)");
         }
-        else if (card.sprite == null)
+        else if (card.sprite == null || card.sprite.name.Contains("UISprite"))
         {
-            ApSpriteKhung(card, khungGo);
+            ApSpriteKhung(card, cardToastSpr);
         }
 
         Transform content = TimHoacTaoUI(card.transform, "Content", out bool ctMoi);
@@ -310,8 +313,8 @@ public static class TouristBoatUIPopupSetupTool
         }
 
         // Nút "Đã rõ"
-        Button btn = EnsureButton(content, "Btn_DaRo", spriteNut, MauNutXacNhan,
-                                  new Vector2(100f, 38f), out TextMeshProUGUI label, out bool nMoi);
+        Button btn = EnsureButton(content, "Btn_DaRo", btnAmberSpr, Color.white,
+                                  new Vector2(115f, 42f), out TextMeshProUGUI label, out bool nMoi);
         if (nMoi || btn != null)
         {
             RectTransform btnRt = btn.GetComponent<RectTransform>();

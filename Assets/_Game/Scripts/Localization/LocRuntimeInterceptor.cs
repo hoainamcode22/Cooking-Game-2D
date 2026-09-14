@@ -35,6 +35,7 @@ public static class LocRuntimeInterceptor
     private static readonly HashSet<string> _chuaDich = new HashSet<string>();
     private static bool _daKhoiTao;
     private static GameObject _runner;
+    private static bool _daNgheSceneLoaded;
 
     public static int SoDangTheoDoi => _theoDoi.Count;
     public static int SoChuaDich    => _chuaDich.Count;
@@ -54,6 +55,38 @@ public static class LocRuntimeInterceptor
             _runner.hideFlags = HideFlags.HideInHierarchy;
             _runner.AddComponent<LocInterceptorRunner>();
         }
+
+        // Scene moi tai xong thi UI dung trong Awake/Start co the bi lo mat toi 0,2s
+        // (nhip quet) => man hinh loe tieng Viet. Nghe sceneLoaded de quet NGAY.
+        if (!_daNgheSceneLoaded)
+        {
+            _daNgheSceneLoaded = true;
+            UnityEngine.SceneManagement.SceneManager.sceneLoaded += KhiSceneVuaTai;
+        }
+    }
+
+    /// <summary>Scene vua tai xong: don muc chet roi quet lai ngay + cuoi khung hinh.</summary>
+    private static void KhiSceneVuaTai(UnityEngine.SceneManagement.Scene scene,
+                                       UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        DonMucChet();
+        if (!LocalizationManager.DangTiengAnh) return;
+
+        QuetVaDich();
+
+        if (_runner != null)
+        {
+            var chay = _runner.GetComponent<LocInterceptorRunner>();
+            if (chay != null) chay.StartCoroutine(QuetLaiCuoiKhung());
+        }
+    }
+
+    /// <summary>Quet lai sau khi moi UI cua scene moi da kip dung xong.</summary>
+    private static IEnumerator QuetLaiCuoiKhung()
+    {
+        yield return null;
+        yield return new WaitForEndOfFrame();
+        if (LocalizationManager.DangTiengAnh) QuetVaDich();
     }
 
     private static void KhiDoiNgonNgu(string lang)

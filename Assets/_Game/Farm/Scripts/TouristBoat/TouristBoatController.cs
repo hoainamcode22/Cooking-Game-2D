@@ -204,7 +204,8 @@ public class TouristBoatController : MonoBehaviour
         // giu nguyen logic coi tau, dat SAU guard nen 'info' chac chan hop le.
         if (_lastKnownState != info.State)
         {
-            if (info.State == BoatState.Arriving || info.State == BoatState.Docked)
+            // [FIX 10/09] Bo Docked: thuyen DA CAP BEN roi con hu coi la sai, va cung lam on.
+            if (info.State == BoatState.Arriving)
             {
                 AudioManager.Instance?.PlayBoatHorn();
             }

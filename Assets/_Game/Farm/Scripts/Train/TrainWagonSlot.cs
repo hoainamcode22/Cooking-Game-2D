@@ -228,6 +228,7 @@ public class TrainWagonSlot : MonoBehaviour
         if (_col == null) _col = GetComponent<BoxCollider2D>();
         if (_col != null && _col.enabled && _col.OverlapPoint(worldPos))
         {
+            if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial) return;
             TrainManager.Instance.OnWagonSlotClicked(this);
         }
     }
@@ -235,6 +236,7 @@ public class TrainWagonSlot : MonoBehaviour
     // Unity gọi OnMouseDown khi collider của chính GO này được click (legacy fallback).
     private void OnMouseDown()
     {
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial) return;
         // Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
         if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         if (!enabled || !gameObject.activeInHierarchy) return;

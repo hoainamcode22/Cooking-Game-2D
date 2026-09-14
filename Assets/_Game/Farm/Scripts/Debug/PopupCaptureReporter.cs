@@ -36,6 +36,8 @@ public class PopupCaptureReporter : MonoBehaviour
     private static void AutoSpawn()
     {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (!DevOverlayGate.Enabled) return;
+
         if (_instance != null) return;
         var go = new GameObject("~PopupCaptureReporter");
         Object.DontDestroyOnLoad(go);

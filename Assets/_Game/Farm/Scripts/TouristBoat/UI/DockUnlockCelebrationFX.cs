@@ -36,6 +36,7 @@ public class DockUnlockCelebrationFX : MonoBehaviour
     private const float SaoTrongLuc     = 420f;  // kéo nhẹ xuống cho có "rơi"
     private const float BangThuSeconds  = 0.45f; // punch + thu bảng khóa
     private const int   SortingOrderSao = 210;   // trên bảng khóa (LockUI sorting ~50)
+    private const float TocDoManhKhoa  = 260f;  // [BOAT-TUT] unit/giay — 2 manh o khoa bay ra
 
     // 2 tông vàng ấm — sao xen kẽ cho đỡ đều
     private static readonly Color MauSao1 = new Color(1f, 0.827f, 0.302f); // #FFD34D — vàng HUD
@@ -75,6 +76,195 @@ public class DockUnlockCelebrationFX : MonoBehaviour
         var fx = go.AddComponent<DockUnlockCelebrationFX>();
         fx._bangKhoa = bangKhoaRoot;
         fx.StartCoroutine(fx.ChayRoutine(worldPos));
+    }
+
+    /// <summary>
+    /// [BOAT-TUT 2026-09-10] Nhu <see cref="Phat"/> nhung PHA O KHOA truoc:
+    /// o khoa (con "LockIcon" cua bang khoa) rung lac -> loe sang -> vo lam 2 manh
+    /// bay ra + xoay + mo dan, xong moi no sao vang nhu cu.
+    ///
+    /// KHONG can art moi: dung lai chinh sprite dang co tren LockIcon (2 manh la 2
+    /// ban sao cua sprite do). Neu bang khoa khong co LockIcon thi bo qua doan pha khoa
+    /// va chay y het <see cref="Phat"/>.
+    /// </summary>
+    /// <param name="worldPos">Tam no sao.</param>
+    /// <param name="bangKhoaRoot">Bang khoa can thu nho (cho phep null neu noi khac lo).</param>
+    /// <param name="boardChoOKhoa">Bang khoa dung de TIM con "LockIcon" (cho phep null).</param>
+    /// <param name="thoiLuongPhaKhoa">Tong giay cho man pha khoa. [FIX LIGHT 10] Mac dinh
+    /// 0.4s — PHAI ngan hon nhip thu bang cua BoatDockSlot (~0.45s) va cua
+    /// <see cref="ThuBangKhoaRoutine"/> (BangThuSeconds = 0.45s), neu khong bang khoa da
+    /// bien mat truoc khi o khoa kip vo va nguoi choi khong thay gi.</param>
+    public static void PhatKemPhaKhoa(Vector3 worldPos,
+                                      Transform bangKhoaRoot   = null,
+                                      Transform boardChoOKhoa  = null,
+                                      float     thoiLuongPhaKhoa = 0.4f)
+    {
+        var go = new GameObject("DockUnlockCelebrationFX");
+        go.transform.position = worldPos;
+        var fx = go.AddComponent<DockUnlockCelebrationFX>();
+        fx._bangKhoa = bangKhoaRoot;
+
+        Transform icon = TimOKhoa(boardChoOKhoa != null ? boardChoOKhoa : bangKhoaRoot);
+        fx.StartCoroutine(fx.PhaKhoaRoiNoSaoRoutine(worldPos, icon, thoiLuongPhaKhoa));
+    }
+
+    /// <summary>Tim con "LockIcon" co SpriteRenderer trong bang khoa; null neu khong co.</summary>
+    private static Transform TimOKhoa(Transform board)
+    {
+        if (board == null) return null;
+
+        Transform icon = board.Find("LockIcon");
+        if (icon == null)
+        {
+            // Du phong: quet con chau, bat moi ten co chua "lock"/"khoa" (khong phan biet hoa thuong).
+            var srs = board.GetComponentsInChildren<SpriteRenderer>(true);
+            for (int i = 0; i < srs.Length; i++)
+            {
+                if (srs[i] == null || srs[i].transform == board) continue;
+                string ten = srs[i].name.ToLowerInvariant();
+                if (ten.Contains("lock") || ten.Contains("khoa")) { icon = srs[i].transform; break; }
+            }
+        }
+
+        if (icon == null) return null;
+        return icon.GetComponent<SpriteRenderer>() != null ? icon : null;
+    }
+
+    /// <summary>
+    /// [FIX LIGHT 10] Pha o khoa CHAY SONG SONG voi man an mung, khong noi tiep.
+    ///
+    /// Ban dau man pha khoa chay TRUOC roi moi toi sao + thu bang. Nhung o nhanh
+    /// slotTuThuBang (BoatDockSlot tu lo bang khoa), BoatDockSlot bat dau thu bang NGAY
+    /// luc OnDockUnlocked theo nhip rieng ~0.45s cua no — doi het 0.9s pha khoa thi bang
+    /// (ke ca o khoa nam trong bang) da bien mat tu lau, nguoi choi khong he thay o khoa vo.
+    ///
+    /// Nay: bat man pha khoa thanh coroutine RIENG (chay ngay, ngan hon nhip thu bang) roi
+    /// lap tuc chay tiep man an mung cu. Hai thu dien ra cung luc — dung y do "khoa vo TRONG
+    /// LUC bang tan ra".
+    /// </summary>
+    private IEnumerator PhaKhoaRoiNoSaoRoutine(Vector3 tam, Transform oKhoa, float thoiLuong)
+    {
+        if (oKhoa != null)
+            StartCoroutine(PhaOKhoaRoutine(oKhoa, Mathf.Clamp(thoiLuong, 0.15f, BangThuSeconds * 0.9f)));
+
+        yield return ChayRoutine(tam);
+    }
+
+    /// <summary>
+    /// Man PHA O KHOA thuan code:
+    ///   1) Rung lac + phong to nhe (60% thoi luong) — cang thang truoc khi vo.
+    ///   2) An o khoa goc, sinh 2 MANH (ban sao SpriteRenderer cung sprite) bay nguoc
+    ///      huong nhau, xoay va mo dan (40% con lai).
+    /// Manh la con cua object FX nen chet chum khi FX bi Destroy. O khoa goc duoc
+    /// TRA LAI nguyen trang (scale/goc/mau/enabled) o cuoi — phong khi bang khoa
+    /// duoc bat lai sau nay.
+    /// </summary>
+    private IEnumerator PhaOKhoaRoutine(Transform oKhoa, float thoiLuong)
+    {
+        var sr = oKhoa.GetComponent<SpriteRenderer>();
+        if (sr == null) yield break;
+
+        Vector3 scaleGoc = oKhoa.localScale;
+        Quaternion goc0  = oKhoa.localRotation;
+        Color mauGoc     = sr.color;
+        Vector3 viTri    = oKhoa.position;
+
+        float rungDur = thoiLuong * 0.6f;
+        float voDur   = thoiLuong - rungDur;
+
+        // ── 1. Rung lac ────────────────────────────────────────────────────
+        float t = 0f;
+        while (t < rungDur)
+        {
+            if (oKhoa == null || sr == null) yield break;
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / rungDur);
+
+            // Bien do rung TANG dan (0 -> 14 do), tan so 22 Hz
+            float bienDo = Mathf.Lerp(0f, 14f, p);
+            oKhoa.localRotation = goc0 * Quaternion.Euler(0f, 0f, Mathf.Sin(t * 22f) * bienDo);
+            oKhoa.localScale    = scaleGoc * Mathf.Lerp(1f, 1.18f, p);
+            yield return null;
+        }
+
+        // ── 2. Vo lam 2 manh ───────────────────────────────────────────────
+        if (oKhoa != null)
+        {
+            oKhoa.localRotation = goc0;
+            oKhoa.localScale    = scaleGoc;
+        }
+        if (sr != null) sr.enabled = false;   // giau ban goc, 2 manh thay the
+
+        // Co cua manh: doi ra unit world tu lossyScale de manh khong to/nho lech.
+        Vector3 coManh = oKhoa != null ? oKhoa.lossyScale : Vector3.one;
+
+        var manh   = new Transform[2];
+        var manhSr = new SpriteRenderer[2];
+        for (int i = 0; i < 2; i++)
+        {
+            var go = new GameObject($"ManhKhoa_{i}");
+            go.transform.SetParent(transform, false);
+            go.transform.position   = viTri;
+            go.transform.localScale = coManh;
+
+            var msr = go.AddComponent<SpriteRenderer>();
+            msr.sprite       = sr.sprite;
+            msr.color        = mauGoc;
+            msr.sortingLayerID = sr.sortingLayerID;
+            msr.sortingOrder = SortingOrderSao;   // tren bang khoa, cung tang voi sao
+
+            manh[i]   = go.transform;
+            manhSr[i] = msr;
+        }
+
+        // Manh 0 bay len-trai, manh 1 bay xuong-phai (nguoc chieu -> doc ra "vo doi").
+        Vector2 v0 = new Vector2(-1f,  0.85f).normalized * TocDoManhKhoa;
+        Vector2 v1 = new Vector2( 1f, -0.35f).normalized * TocDoManhKhoa;
+
+        t = 0f;
+        float voDurAnToan = Mathf.Max(0.05f, voDur);
+        while (t < voDurAnToan)
+        {
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / voDurAnToan);
+            float dt = Time.deltaTime;
+
+            v0 += Vector2.down * (SaoTrongLuc * dt);
+            v1 += Vector2.down * (SaoTrongLuc * dt);
+
+            if (manh[0] != null)
+            {
+                manh[0].position += (Vector3)(v0 * dt);
+                manh[0].Rotate(0f, 0f, -320f * dt);
+            }
+            if (manh[1] != null)
+            {
+                manh[1].position += (Vector3)(v1 * dt);
+                manh[1].Rotate(0f, 0f, 260f * dt);
+            }
+
+            for (int i = 0; i < 2; i++)
+            {
+                if (manhSr[i] == null) continue;
+                Color c = mauGoc;
+                c.a = mauGoc.a * (1f - p * p);
+                manhSr[i].color = c;
+            }
+            yield return null;
+        }
+
+        for (int i = 0; i < 2; i++)
+            if (manh[i] != null) manh[i].gameObject.SetActive(false);
+
+        // Tra o khoa goc ve nguyen trang (bang khoa co the duoc bat lai sau nay).
+        if (oKhoa != null)
+        {
+            oKhoa.localScale    = scaleGoc;
+            oKhoa.localRotation = goc0;
+        }
+        // CO Y giu sr.enabled = false: o khoa "da vo" thi khong duoc hien lai.
+        // Chi tra mau/scale/goc de neu bang khoa co bat lai thi khong bi meo.
+        if (sr != null) sr.color = mauGoc;
     }
 
     // =========================================================================

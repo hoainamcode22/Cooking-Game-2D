@@ -716,14 +716,44 @@ namespace ExportTrainUIPackage
         {
             if (currentState != TrainState.WaitingForLoad) return;
 
-            // Open Load Popup (Popup 2/3)
+            // 1. Popup nap hang cua PACKAGE (Popup_item_Train) - ban day du, co ca "Nap tat ca".
             var loadPopup = TrainLoadPopupUI.Instance
                 ?? FindFirstObjectByType<TrainLoadPopupUI>(FindObjectsInactive.Include);
 
             if (loadPopup != null)
             {
                 loadPopup.OpenForWagon(wagonIndex);
+                return;
             }
+
+            // 2. Popup CU o global namespace. GameObject 'Popup_item_Train' trong SCN_Farm mang
+            //    script nay, KHONG phai ban package. Truoc 10/09/2026 cho nay chi tim ban package
+            //    nen bam vao toa tau khong ra gi ca, khong log, khong bao - dac biet trong BUILD,
+            //    vi ban package chi duoc TrainStationBuilding.EnsurePopupsExist() dung len ma ham
+            //    do nam tron trong #if UNITY_EDITOR.
+            //    Hai ban KHONG cung chu ky: ban cu can them TrainWagonSlotData.
+            var popupCu = FindFirstObjectByType<global::TrainLoadPopupUI>(FindObjectsInactive.Include);
+            if (popupCu != null)
+            {
+                var mgr = TrainManager.Instance;
+                if (mgr != null && mgr.SlotData != null &&
+                    wagonIndex >= 0 && wagonIndex < mgr.SlotData.Length &&
+                    mgr.SlotData[wagonIndex] != null)
+                {
+                    popupCu.OpenForCargoSlot(wagonIndex, mgr.SlotData[wagonIndex]);
+                    return;
+                }
+
+                Debug.LogWarning($"[Train] Bam toa {wagonIndex} nhung TrainManager chua co SlotData " +
+                                 "- khong mo duoc popup nap hang ban cu.");
+                return;
+            }
+
+            // 3. Khong co ban nao. KHONG BAO GIO im lang nua.
+            Debug.LogWarning($"[Train] Bam toa {wagonIndex} nhung KHONG tim thay popup nap hang nao " +
+                             "(ca ExportTrainUIPackage.TrainLoadPopupUI lan TrainLoadPopupUI ban cu). " +
+                             "Keo Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab vao " +
+                             "Canvas_Popup trong SCN_Farm (de inactive) roi luu scene.");
         }
 
         public void CheckAndTriggerDepartureIfAllComplete()

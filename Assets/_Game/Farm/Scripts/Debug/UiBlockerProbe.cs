@@ -38,6 +38,9 @@ public class UiBlockerProbe : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoBoot()
     {
+        // Chua tung duoc boc #if -> chan tai day, tranh RaycastAll moi frame o ban release.
+        if (!DevOverlayGate.Enabled) return;
+
         GameObject go = new GameObject("~UiBlockerProbe");
         go.AddComponent<UiBlockerProbe>();
         Object.DontDestroyOnLoad(go);

@@ -208,7 +208,8 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
         PlayerPrefs.DeleteKey(SaveKey);   // Xóa luôn để không còn "vết tích" cũ
     }
 
-    private float wiggleTimer = 0f;
+    private float wiggleTimer = 3f;
+    private float growthUpdateTimer = 0f;
 
     private void Update()
     {
@@ -217,19 +218,26 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
             wiggleTimer -= Time.deltaTime;
             if (wiggleTimer <= 0f)
             {
-                wiggleTimer = UnityEngine.Random.Range(3f, 6f);
+                wiggleTimer = UnityEngine.Random.Range(4f, 8f);
                 if (cropVisual != null) cropVisual.PlayWiggleAnimation();
             }
+            return;
         }
 
         if (state != PlotState.Growing)
             return;
+
+        // [TỐI ƯU HIỆU NĂNG] Giảm tần suất cập nhật từ 60fps xuống 10fps (mỗi 0.1s) cho 38 ô đất
+        growthUpdateTimer -= Time.deltaTime;
+        if (growthUpdateTimer > 0f) return;
+        growthUpdateTimer = 0.1f;
 
         TryResolvePlantedCrop();
 
         if (IsTimeUp())
         {
             state = PlotState.Ready;
+            wiggleTimer = UnityEngine.Random.Range(4f, 8f);
             Save();
         }
 
@@ -254,13 +262,31 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
             return;
         lastHandledFrame = Time.frameCount;
 
-        // Không xử lý click khi đang kéo hạt giống — tránh liềm hiện nhầm
-        if (FarmInputLock.IsDraggingSeed)
+        if (FarmInputLock.IsCookingMode)
             return;
 
-        if (state == PlotState.Growing || state == PlotState.Ready)
+        if (EditModeManager.IsEditMode || PlacementManager.IsPlacingNewObject)
+            return;
+
+        // Không xử lý click khi đang kéo hạt giống hoặc kéo liềm
+        if (FarmInputLock.IsDraggingSeed || FarmInputLock.IsDraggingSickle)
+            return;
+
+        // Chặn khi có popup hệ thống đang mở (Kho, Chợ, Bảng đơn hàng...)
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen())
+            return;
+
+        if (OrderBoardPopupUI.AnyOpen)
+            return;
+
+        if (FarmInputLock.ConTroTrenUiThat())
+            return;
+
+        // Chặn click ô đất / chậu hoa khi đang chạy Tutorial mà bước hiện tại không cho phép (hoặc NPC đang thoại)
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
         {
-            if (cropVisual != null) cropVisual.PlayWiggleAnimation();
+            if (!TutorialManager.Instance.CurrentStepAllowsPlotInteraction(this))
+                return;
         }
 
         if (FarmManager.Instance == null)
@@ -279,18 +305,6 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
         if (state == PlotState.Ready)
         {
             TryResolvePlantedCrop();
-            // Nếu không có crop nào (save bị lỗi) → reset về Empty thay vì hiện liềm
-            if (plantedCrop == null)
-            {
-                state = PlotState.Empty;
-                plantedCropId = "";
-                startUnixTime = 0;
-                finishUnixTime = 0;
-                Save();
-                RefreshVisual();
-                FarmManager.Instance.OnPlotClicked(this);
-                return;
-            }
             FarmManager.Instance.OnReadyPlotClicked(this);
             return;
         }
@@ -940,16 +954,22 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
         if (plantedCrop != null)
             return;
 
-        if (string.IsNullOrEmpty(plantedCropId))
+        if (FarmManager.Instance == null)
             return;
 
-        if (FarmManager.Instance == null)
+        if (!string.IsNullOrEmpty(plantedCropId))
         {
-            return;
+            plantedCrop = FarmManager.Instance.GetCropById(plantedCropId);
+            if (plantedCrop != null) return;
         }
 
-        CropData resolved = FarmManager.Instance.GetCropById(plantedCropId);
-        plantedCrop = resolved;
+        if (state == PlotState.Growing || state == PlotState.Ready)
+        {
+            if (isRarePlot || plotCategory == PlotCategory.Flower)
+                plantedCrop = FarmManager.Instance.GetCropById("seed_huong_duong") ?? FarmManager.Instance.GetCropById("huong_duong");
+            else
+                plantedCrop = FarmManager.Instance.GetCropById("seed_rice") ?? FarmManager.Instance.GetCropById("rice");
+        }
     }
 
     private void Save()

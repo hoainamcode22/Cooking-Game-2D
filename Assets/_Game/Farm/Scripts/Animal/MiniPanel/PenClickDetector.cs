@@ -108,6 +108,15 @@ public class PenClickDetector : MonoBehaviour
             return;
         }
 
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+        {
+            if (!TutorialManager.Instance.CurrentStepAllowsPenInteraction())
+            {
+                Debug.Log("[PenClick] '" + name + "': bo qua vi dang chay Tutorial buoc khac.");
+                return;
+            }
+        }
+
         Debug.Log("[PenClick] '" + name + "': TRUNG chuong. state=" + miniPanel.CurrentState + " panelDangMo=" + miniPanel.IsPanelOpen());
 
         if (miniPanel.CurrentState == PenMiniPanelUI.PenState.Processing)

@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
@@ -97,6 +98,8 @@ namespace KitchenUIv2
         private Image _imgOvenFill;
         private Button _btnPlating;
         private TMP_Text _txtPlating;
+        private Image _imgPlateDish;
+        private bool _dishPopAnimated;
 
         private Transform _gridIngredients, _gridSeasonings;
         private GameObject _tabIngredients, _tabSeasonings;
@@ -192,6 +195,7 @@ namespace KitchenUIv2
             // AddComponent<GridLayoutGroup> trả null) giết cả chuỗi Start → bảng công thức
             // trống + MỌI nút (kể cả VỀ NÔNG TRẠI, khay nguyên liệu) mất listener cùng lúc.
             // Một tài nguyên/hierarchy gãy chỉ được phép làm hỏng đúng phần của nó.
+            EnsureSkinLoaded();
             BuocInit("Bind/Build khung", () =>
             {
                 if (transform.Find("Order_Banner") != null) BindExistingHierarchy();
@@ -201,6 +205,8 @@ namespace KitchenUIv2
             BuocInit("BuildTrayCards", BuildTrayCards);
             BuocInit("PickDefaultDish", PickDefaultDish);
             BuocInit("RefreshAll", RefreshAll);
+            BuocInit("ShowRecipeListMenu", () => ShowBoardDetail(false));
+            BuocInit("ApplyFont", () => SkinKit.ApFont(transform));
         }
 
         /// <summary>[FIX 2026-09-02] Chạy 1 bước init trong rào try/catch — lỗi thì log rõ
@@ -295,10 +301,128 @@ namespace KitchenUIv2
             challenge.OnClickCookSubmit();
         }
 
+        private void EnsurePlatingDishVisual()
+        {
+            if (_btnPlating == null) return;
+            if (_imgPlateDish == null)
+            {
+                var tr = _btnPlating.transform.Find("Dish_Visual");
+                if (tr != null)
+                {
+                    _imgPlateDish = tr.GetComponent<Image>();
+                }
+                else
+                {
+                    var go = new GameObject("Dish_Visual", typeof(RectTransform));
+                    go.transform.SetParent(_btnPlating.transform, false);
+                    var rt = go.GetComponent<RectTransform>();
+                    rt.anchorMin = new Vector2(0.5f, 0.5f);
+                    rt.anchorMax = new Vector2(0.5f, 0.5f);
+                    rt.pivot = new Vector2(0.5f, 0.5f);
+                    rt.anchoredPosition = new Vector2(0f, 22f); // Nổi lên trên mặt đĩa trình bày
+                    rt.sizeDelta = new Vector2(72f, 72f);
+
+                    _imgPlateDish = go.AddComponent<Image>();
+                    _imgPlateDish.preserveAspect = true;
+                    _imgPlateDish.raycastTarget = false;
+                }
+            }
+        }
+
+        private System.Collections.IEnumerator AnimateDishPopToPlate()
+        {
+            if (_imgPlateDish == null) yield break;
+            Transform tr = _imgPlateDish.transform;
+            Vector3 baseScale = Vector3.one;
+            Vector3 startPos = new Vector3(0f, -10f, 0f);
+            Vector3 endPos = new Vector3(0f, 22f, 0f);
+
+            float duration = 0.45f;
+            float elapsed = 0f;
+            tr.localScale = Vector3.zero;
+
+            // SFX tiếng hoàn thành món ăn
+            AudioManager.Instance?.PlaySuccess();
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+
+                // Hiệu ứng nảy bounce đàn hồi
+                float scaleT = Mathf.Sin(t * Mathf.PI * 0.7f) * 1.25f;
+                if (t > 0.7f)
+                {
+                    float subT = (t - 0.7f) / 0.3f;
+                    scaleT = Mathf.Lerp(1.25f, 1f, subT);
+                }
+
+                tr.localScale = baseScale * scaleT;
+                tr.localPosition = Vector3.Lerp(startPos, endPos, Mathf.SmoothStep(0f, 1f, t));
+                yield return null;
+            }
+
+            tr.localScale = baseScale;
+            tr.localPosition = endPos;
+        }
+
+        private System.Collections.IEnumerator AnimateDishFlyToWarehouse(System.Action onDone)
+        {
+            if (_imgPlateDish == null)
+            {
+                onDone?.Invoke();
+                yield break;
+            }
+
+            // [FIX 2026-09-11] Âm thanh ting ting vui tai khi món bay vào kho theo yêu cầu của Sếp!
+            AudioManager.Instance?.PlayCoinTing();
+            AudioManager.Instance?.PlayGemSparkle();
+
+            Transform tr = _imgPlateDish.transform;
+            Vector3 startPos = tr.position;
+            Vector3 targetPos = startPos + new Vector3(250f, 120f, 0f);
+
+            Transform wh = (_txtSentCount != null ? _txtSentCount.transform.parent : null)
+                ?? (_root != null ? _root.Find("Warehouse_Box") : null)
+                ?? transform.Find("Warehouse_Box")
+                ?? transform.Find("Top_Bar/Btn_Warehouse");
+            if (wh != null) targetPos = wh.position;
+
+            float duration = 0.45f;
+            float elapsed = 0f;
+            Vector3 startScale = tr.localScale;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+
+                // Đường bay cánh cung parabol mềm mại
+                float height = Mathf.Sin(t * Mathf.PI) * 70f;
+                Vector3 current = Vector3.Lerp(startPos, targetPos, t);
+                current.y += height;
+
+                tr.position = current;
+                tr.localScale = Vector3.Lerp(startScale, startScale * 0.35f, t);
+
+                yield return null;
+            }
+
+            _imgPlateDish.gameObject.SetActive(false);
+            tr.localPosition = new Vector3(0f, 22f, 0f);
+            tr.localScale = startScale;
+
+            onDone?.Invoke();
+        }
+
         private void OnPlatingClicked()
         {
-            challenge?.CollectCookedDishToWarehouse();
-            RefreshDynamic();
+            if (_btnPlating != null) _btnPlating.interactable = false;
+            StartCoroutine(AnimateDishFlyToWarehouse(() =>
+            {
+                challenge?.CollectCookedDishToWarehouse();
+                RefreshDynamic();
+            }));
         }
 
         private void OnClearAllClicked()
@@ -506,8 +630,29 @@ namespace KitchenUIv2
             bool plateReady = challenge != null && challenge.CookedDishOnPlate != null;
             bool cooking    = (challenge != null && challenge.IsCooking) || _ovenBusy;
 
+            EnsurePlatingDishVisual();
             if (_btnPlating != null) _btnPlating.interactable = plateReady;
             SetText(_txtPlating, plateReady ? "CHẠM ĐỂ CẤT VÀO KHO!" : "Trình bày");
+
+            if (_imgPlateDish != null)
+            {
+                if (plateReady)
+                {
+                    _imgPlateDish.sprite = challenge.CookedDishOnPlate.dishSprite;
+                    _imgPlateDish.gameObject.SetActive(true);
+
+                    if (!_dishPopAnimated)
+                    {
+                        _dishPopAnimated = true;
+                        StartCoroutine(AnimateDishPopToPlate());
+                    }
+                }
+                else
+                {
+                    _dishPopAnimated = false;
+                    _imgPlateDish.gameObject.SetActive(false);
+                }
+            }
 
             if (_btnAction != null && _imgAction != null)
             {
@@ -1256,10 +1401,15 @@ namespace KitchenUIv2
             content.GetComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             var scroll = scrollGo.GetComponent<ScrollRect>();
-            scroll.content = crt; scroll.horizontal = false; scroll.vertical = true;
+            scroll.content = crt;
+            scroll.viewport = srt;
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
             _dishListContent = content.transform;
 
-            lst.SetActive(false);
+            lst.SetActive(true);
+            det.SetActive(false);
         }
 
         private void BuildFlavorRow(RectTransform parent, int index, float y)
@@ -1359,14 +1509,27 @@ namespace KitchenUIv2
                 var im = ico.GetComponent<Image>();
                 im.sprite = d.dishSprite; im.enabled = d.dishSprite != null;
                 im.preserveAspect = true; im.raycastTarget = false;
+                if (!unlocked) im.color = new Color(0.45f, 0.45f, 0.45f, 0.65f);
                 Anchor((RectTransform)ico.transform, 0f, 0.5f, new Vector2(26f, 0f), new Vector2(38f, 38f), new Vector2(0.5f, 0.5f));
 
-                var name = MakeText(row.transform, "Txt_Name", d.dishName, 16, new Color(0.36f, 0.20f, 0.09f));
+                if (!unlocked)
+                {
+                    var lockGo = new GameObject("Img_Lock", typeof(RectTransform), typeof(Image));
+                    lockGo.transform.SetParent(row.transform, false);
+                    var lockImg = lockGo.GetComponent<Image>();
+                    var lockSp = skin.iconLock != null ? skin.iconLock : Resources.Load<Sprite>("icon_lock");
+                    lockImg.sprite = lockSp;
+                    lockImg.preserveAspect = true;
+                    lockImg.raycastTarget = false;
+                    Anchor((RectTransform)lockGo.transform, 0f, 0.5f, new Vector2(26f, 0f), new Vector2(24f, 24f), new Vector2(0.5f, 0.5f));
+                }
+
+                var name = MakeText(row.transform, "Txt_Name", d.dishName, 16, unlocked ? new Color(0.36f, 0.20f, 0.09f) : new Color(0.52f, 0.46f, 0.40f));
                 Anchor(name.rectTransform, 0f, 1f, new Vector2(52f, -4f), new Vector2(210f, 22f), new Vector2(0f, 1f));
 
                 string meta = unlocked
                     ? Loc.TF("{0} · Cấp {1} · {2} vàng", DiffName(d.difficulty), d.unlockLevel, d.rewardGold)
-                    : Loc.TF("🔒 Mở ở cấp {0}", d.unlockLevel);
+                    : Loc.TF("Mở ở cấp {0}", d.unlockLevel);
                 var sub = MakeText(row.transform, "Txt_Meta", meta, 12, new Color(0.6f, 0.45f, 0.28f));
                 Anchor(sub.rectTransform, 0f, 0f, new Vector2(52f, 4f), new Vector2(220f, 18f), new Vector2(0f, 0f));
             }
@@ -1939,10 +2102,20 @@ namespace KitchenUIv2
 
         private static void Skin9(GameObject go, Sprite sp)
         {
-            if (go == null || sp == null) return;
+            if (go == null) return;
             var img = go.GetComponent<Image>();
             if (img == null) return;
-            img.sprite = sp; img.type = Image.Type.Sliced; img.color = Color.white;
+            if (sp != null)
+            {
+                img.sprite = sp;
+                img.type = Image.Type.Sliced;
+                img.color = Color.white;
+            }
+            else
+            {
+                img.sprite = SkinKit.BoGoc(12f);
+                img.type = Image.Type.Sliced;
+            }
         }
 
         private static void SkinFlat(GameObject go, Sprite sp, bool preserveAspect = true)
@@ -2121,19 +2294,60 @@ namespace KitchenUIv2
             return gl;
         }
 
-        private static TMP_FontAsset _viFont;
+        private static Sprite LoadKitchenSprite(string path)
+        {
+#if UNITY_EDITOR
+            if (!string.IsNullOrEmpty(path))
+            {
+                var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(path);
+                if (sp != null) return sp;
+                var all = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(path);
+                if (all != null)
+                {
+                    foreach (var obj in all)
+                        if (obj is Sprite s) return s;
+                }
+            }
+#endif
+            return null;
+        }
+
+        private void EnsureSkinLoaded()
+        {
+            if (skin == null) skin = new KitchenSkin();
+            const string P = "Assets/Export_Kitchen_UI_Package/Sprites";
+            if (skin.wallTile == null) skin.wallTile = LoadKitchenSprite($"{P}/bg_wall_tile.png");
+            if (skin.floorTile == null) skin.floorTile = LoadKitchenSprite($"{P}/bg_floor_tile.png");
+            if (skin.panelBoard == null) skin.panelBoard = LoadKitchenSprite($"{P}/panel_board_9slice.png");
+            if (skin.panelPaper == null) skin.panelPaper = LoadKitchenSprite($"{P}/panel_paper_9slice.png");
+            if (skin.cardIngredient == null) skin.cardIngredient = LoadKitchenSprite($"{P}/card_ingredient.png");
+            if (skin.cardSelectedGlow == null) skin.cardSelectedGlow = LoadKitchenSprite($"{P}/card_selected_glow.png");
+            if (skin.cardLocked == null) skin.cardLocked = LoadKitchenSprite($"{P}/card_locked.png");
+            if (skin.btnGreen == null) skin.btnGreen = LoadKitchenSprite($"{P}/btn_big_green.png");
+            if (skin.btnGray == null) skin.btnGray = LoadKitchenSprite($"{P}/btn_big_gray.png");
+            if (skin.btnRedSmall == null) skin.btnRedSmall = LoadKitchenSprite($"{P}/btn_red_small.png");
+            if (skin.btnPaperSmall == null) skin.btnPaperSmall = LoadKitchenSprite($"{P}/btn_paper_small.png");
+            if (skin.tabOn == null) skin.tabOn = LoadKitchenSprite($"{P}/tab_pill_on.png");
+            if (skin.tabOff == null) skin.tabOff = LoadKitchenSprite($"{P}/tab_pill_off.png");
+            if (skin.btnBackFarm == null) skin.btnBackFarm = LoadKitchenSprite($"{P}/btn_back_farm_sign.png");
+            if (skin.ribbon == null) skin.ribbon = LoadKitchenSprite($"{P}/ribbon_header.png");
+            if (skin.chalkboard == null) skin.chalkboard = LoadKitchenSprite($"{P}/chalkboard_menu.png");
+            if (skin.tasteTrack == null) skin.tasteTrack = LoadKitchenSprite($"{P}/track_taste_bg.png");
+            if (skin.tasteFill == null) skin.tasteFill = LoadKitchenSprite($"{P}/fill_taste_green.png");
+            if (skin.chipTaste == null) skin.chipTaste = LoadKitchenSprite($"{P}/chip_taste.png");
+            if (skin.iconLock == null) skin.iconLock = LoadKitchenSprite($"{P}/icon_lock_small.png");
+            if (skin.iconGold == null) skin.iconGold = LoadKitchenSprite("Assets/Assetsgame/Icon_vang.png") ?? LoadKitchenSprite($"{P}/icon_gold_coin.png");
+        }
+
         private void ApplyFont(TMP_Text t)
         {
-            if (_viFont == null)
+            if (t == null) return;
+            var f = SkinKit.FontVo;
+            if (f != null)
             {
-                foreach (var txt in FindObjectsByType<TextMeshProUGUI>(FindObjectsInactive.Include, FindObjectsSortMode.None))
-                    if (txt != null && txt.font != null && txt.transform.root != transform.root)
-                    { _viFont = txt.font; break; }
+                t.font = f;
+                if (f.material != null) t.fontSharedMaterial = f.material;
             }
-            // [FIX 2026-09-02] Fallback: scene không còn TMP_Text nào có font (font asset bị
-            // xoá/đổi) → dùng font mặc định của TMP Settings, chữ runtime không bao giờ "tàng hình".
-            if (_viFont == null) _viFont = TMP_Settings.defaultFontAsset;
-            if (_viFont != null) t.font = _viFont;
         }
 
         private GameObject MakePanel(RectTransform parent, string name, Color color)
@@ -2141,6 +2355,8 @@ namespace KitchenUIv2
             var go = new GameObject(name, typeof(RectTransform), typeof(Image));
             go.transform.SetParent(parent, false);
             var img = go.GetComponent<Image>();
+            img.sprite = SkinKit.BoGoc(14f);
+            img.type = Image.Type.Sliced;
             img.color = color;
             img.raycastTarget = false;
             return go;
@@ -2164,8 +2380,6 @@ namespace KitchenUIv2
 
         /// <summary>
         /// [VÒNG 13] Tô nút đang chọn bằng tab_pill_on, 3 nút còn lại tab_pill_off.
-        /// Thiếu sprite (skin chưa nạp) ⇒ lùi về tô MÀU đậm/nhạt — vẫn phân biệt được,
-        /// không bao giờ để cả 4 nút trông giống hệt nhau như trước.
         /// </summary>
         private void CapNhatTabLoc()
         {
@@ -2177,6 +2391,7 @@ namespace KitchenUIv2
                 if (go == null) continue;
 
                 bool dangChon = (i - 1) == _listFilter;
+                var img = go.GetComponent<Image>();
 
                 if (skin != null && skin.tabOn != null && skin.tabOff != null)
                 {
@@ -2184,16 +2399,22 @@ namespace KitchenUIv2
                 }
                 else
                 {
-                    var img = go.GetComponent<Image>();
                     if (img != null)
+                    {
+                        img.sprite = SkinKit.BoGoc(10f);
+                        img.type = Image.Type.Sliced;
                         img.color = dangChon ? new Color(0.98f, 0.86f, 0.58f)
                                              : new Color(0.86f, 0.76f, 0.58f);
+                    }
                 }
 
                 var txt = go.GetComponentInChildren<TMP_Text>(true);
                 if (txt != null)
+                {
+                    ApplyFont(txt);
                     txt.color = dangChon ? new Color(0.28f, 0.15f, 0.05f)
                                          : new Color(0.48f, 0.38f, 0.28f);
+                }
             }
         }
 
@@ -2201,7 +2422,10 @@ namespace KitchenUIv2
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
             go.transform.SetParent(parent, false);
-            go.GetComponent<Image>().color = color;
+            var img = go.GetComponent<Image>();
+            img.sprite = SkinKit.BoGoc(12f);
+            img.type = Image.Type.Sliced;
+            img.color = color;
             var btn = go.GetComponent<Button>();
             if (onClick != null) btn.onClick.AddListener(onClick);
             else btn.interactable = false;

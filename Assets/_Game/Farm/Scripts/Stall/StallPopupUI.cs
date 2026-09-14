@@ -114,8 +114,19 @@ public class StallPopupUI : MonoBehaviour
     private Coroutine _messageRoutine;
     private float     _nextSlotRefresh;
 
-    public bool IsOpen => popupRoot != null && popupRoot.activeSelf;
-    public static bool AnyOpen { get; private set; }
+    public static StallPopupUI Instance { get; private set; }
+
+    public bool IsOpen => popupRoot != null && popupRoot.activeInHierarchy;
+
+    public static bool AnyOpen
+    {
+        get
+        {
+            if (Instance == null)
+                Instance = Object.FindFirstObjectByType<StallPopupUI>(FindObjectsInactive.Include);
+            return Instance != null && Instance.IsOpen;
+        }
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     //  VÒNG ĐỜI
@@ -123,6 +134,8 @@ public class StallPopupUI : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
+
         if (buttonClose != null)
         {
             buttonClose.onClick.RemoveAllListeners();
@@ -160,7 +173,11 @@ public class StallPopupUI : MonoBehaviour
 
         // Popup phải TẮT lúc khởi động.
         if (popupRoot != null) popupRoot.SetActive(false);
-        AnyOpen = false;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     private void OnEnable() => Resubscribe();
@@ -195,7 +212,12 @@ public class StallPopupUI : MonoBehaviour
         if (PlayerStallManager.Instance != null)
             PlayerStallManager.Instance.OnStallChanged -= OnStallChanged;
 
-        AnyOpen = false;
+        if (popupRoot != null && popupRoot.activeSelf)
+        {
+            popupRoot.SetActive(false);
+            FarmInputLock.SetPopupRaycastBlock(popupRoot, false);
+            FarmInputLock.RegisterPopupClose();
+        }
     }
 
     private void Update()
@@ -242,7 +264,6 @@ public class StallPopupUI : MonoBehaviour
         }
 
         popupRoot.SetActive(true);
-        AnyOpen = true;
         Resubscribe();
 
         FarmInputLock.RegisterPopupOpen();
@@ -255,15 +276,19 @@ public class StallPopupUI : MonoBehaviour
 
     public void ClosePopup()
     {
-        if (popupRoot == null) return;
-        if (!IsOpen) return;
+        bool wasOpen = IsOpen;
 
         HidePickerImmediate();
-        popupRoot.SetActive(false);
-        AnyOpen = false;
+        if (popupRoot != null)
+        {
+            popupRoot.SetActive(false);
+            FarmInputLock.SetPopupRaycastBlock(popupRoot, false);
+        }
 
-        FarmInputLock.SetPopupRaycastBlock(popupRoot, false);
-        FarmInputLock.RegisterPopupClose();
+        if (wasOpen || FarmInputLock.IsPopupOpen)
+        {
+            FarmInputLock.RegisterPopupClose();
+        }
     }
 
     /// <summary>Cho nút HUD/phím tắt: mở nếu đang đóng, đóng nếu đang mở.</summary>
@@ -313,7 +338,32 @@ public class StallPopupUI : MonoBehaviour
         RefreshProfile();
         RefreshSlots();
 
-        if (textTitle != null) textTitle.text = "QUẦY HÀNG";
+        SkinKit.ApFont(transform);
+        HidePlayerProfileTab();
+
+        if (textTitle != null)
+        {
+            textTitle.text = Loc.T("QUẦY HÀNG");
+            textTitle.ForceMeshUpdate(true);
+        }
+    }
+
+    private void HidePlayerProfileTab()
+    {
+        if (textPlayerName != null && textPlayerName.gameObject != null)
+        {
+            textPlayerName.gameObject.SetActive(false);
+            Transform p = textPlayerName.transform.parent;
+            if (p != null && p != transform && p.gameObject != popupRoot && (p.name.Contains("Profile") || p.name.Contains("Player") || p.name.Contains("Tab")))
+            {
+                p.gameObject.SetActive(false);
+            }
+        }
+
+        if (textPlayerLevel != null && textPlayerLevel.gameObject != null)
+        {
+            textPlayerLevel.gameObject.SetActive(false);
+        }
     }
 
     private void RefreshGold()
@@ -325,19 +375,7 @@ public class StallPopupUI : MonoBehaviour
 
     private void RefreshProfile()
     {
-        if (textPlayerName != null)
-        {
-            string ten = PlayerPrefs.GetString("PLAYER_PROFILE_NAME", "");
-            textPlayerName.text = string.IsNullOrWhiteSpace(ten) ? "Người chơi" : ten;
-        }
-
-        if (textPlayerLevel != null)
-        {
-            int level = PlayerProgressManager.Instance != null
-                ? PlayerProgressManager.Instance.Level
-                : (FarmLevelManager.Instance != null ? FarmLevelManager.Instance.CurrentLevel : 1);
-            textPlayerLevel.text = level.ToString();
-        }
+        HidePlayerProfileTab();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -364,7 +402,7 @@ public class StallPopupUI : MonoBehaviour
             return;
         }
 
-        ShowMessage("Đã mở thêm một ô quầy!");
+        ShowMessage(Loc.T("Đã mở thêm một ô quầy!"));
         RefreshSlots();
         RefreshGold();
     }
@@ -383,7 +421,7 @@ public class StallPopupUI : MonoBehaviour
             return;
         }
 
-        ShowMessage("Đã gỡ hàng, hoàn về kho.");
+        ShowMessage(Loc.T("Đã gỡ hàng, hoàn về kho."));
         RefreshSlots();
     }
 

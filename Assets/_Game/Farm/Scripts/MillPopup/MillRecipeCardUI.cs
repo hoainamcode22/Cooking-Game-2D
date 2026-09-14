@@ -81,6 +81,28 @@ public class MillRecipeCardUI : MonoBehaviour
     [Range(0.1f, 1f)]
     [SerializeField] private float alphaKhiKhoa = 0.55f;
 
+    [Header("Anh thay the khi thieu icon — TUY CHON")]
+    [Tooltip("TUY CHON. Sprite hien trong o icon khi cong thuc chua co icon (hoac icon " +
+             "bi hong tham chieu). De trong ⇒ chi to xam, van thay o icon chu khong bien mat.")]
+    [SerializeField] private Sprite spriteThieuIcon;
+
+    [Tooltip("Mau to o icon khi dang dung anh thay the. Xam nhat de doc ra ngay la 'thieu art'.")]
+    [SerializeField] private Color mauKhiThieuIcon = new Color(0.72f, 0.72f, 0.72f, 0.65f);
+
+    [Header("Bo cuc")]
+    [Tooltip("BAT = code ep lai fontSize / vi tri / kich thuoc cua ten + gio u moi lan Bind, " +
+             "dung dung so cu (26pt, 156x30 tai 148,-24 / 20pt, 156x24 tai 148,-58).\n" +
+             "TAT (mac dinh) = prefab thang: moi chinh sua trong prefab duoc giu nguyen.\n" +
+             "Chi bat lai neu co card nao bi mot he thong khac keo lech bo cuc va can reset.")]
+    [SerializeField] private bool epLayoutTheoCode = false;
+
+    // Khoang co chu cho phep khi auto-size. Can tren giu dung co thiet ke, can duoi
+    // la muc con doc duoc tren dien thoai.
+    private const float CO_CHU_TEN_MIN = 20f;
+    private const float CO_CHU_TEN_MAX = 26f;
+    private const float CO_CHU_GIO_MIN = 16f;
+    private const float CO_CHU_GIO_MAX = 20f;
+
     // ─────────────────────────── SỰ KIỆN ───────────────────────────
 
     /// <summary>Người chơi bấm chọn card này. Không phát khi card bị khoá.</summary>
@@ -148,9 +170,48 @@ public class MillRecipeCardUI : MonoBehaviour
 
         if (!gameObject.activeSelf) gameObject.SetActive(true);
 
-        if (txtName != null)     txtName.text     = r.displayName;
-        if (txtBrewTime != null) txtBrewTime.text = Loc.TF("Ủ {0}", r.BrewTimeLabel);   // "Ủ 2p00"
-        if (txtBadge != null)    txtBadge.text    = r.animalTag;
+        if (txtName != null)
+        {
+            txtName.text = r.displayName;
+
+            // Chong tran chu: "Co tron cho bo" o 26pt khong vua o rong 156px cua card.
+            // Prefab dang de overflowMode = Overflow va tat auto-size nen chu tran ra
+            // ngoai nen card. Khong sua duoc prefab tu day nen ep bang code.
+            ApChongTranChu(txtName, CO_CHU_TEN_MIN, CO_CHU_TEN_MAX);
+
+            if (epLayoutTheoCode)
+            {
+                txtName.fontSize = 26f;
+                var rtName = txtName.rectTransform;
+                if (rtName != null)
+                {
+                    rtName.anchoredPosition = new Vector2(148f, -24f);
+                    rtName.sizeDelta = new Vector2(156f, 30f);
+                }
+            }
+        }
+
+        if (txtBrewTime != null)
+        {
+            txtBrewTime.text = Loc.TF("Ủ {0}", r.BrewTimeLabel);   // "Ủ 2p00"
+
+            // Nhan gio u ngan ("U 10p00") nhung ban dich khac co the dai hon nhieu,
+            // vd tieng Anh "Brew 10m00". Cho no cung duoc co lai thay vi tran.
+            ApChongTranChu(txtBrewTime, CO_CHU_GIO_MIN, CO_CHU_GIO_MAX);
+
+            if (epLayoutTheoCode)
+            {
+                txtBrewTime.fontSize = 20f;
+                var rtTime = txtBrewTime.rectTransform;
+                if (rtTime != null)
+                {
+                    rtTime.anchoredPosition = new Vector2(148f, -58f);
+                    rtTime.sizeDelta = new Vector2(156f, 24f);
+                }
+            }
+        }
+
+        if (txtBadge != null) txtBadge.text = r.animalTag;
 
         DatAnh(imgIcon,  r.icon);
         DatAnh(imgBadge, r.animalBadgeIcon);
@@ -159,6 +220,16 @@ public class MillRecipeCardUI : MonoBehaviour
         // thì ẩn cả icon lẫn chữ, không để lại ô trống.
         DatChipNguyenLieu(0, imgIng1, txtIng1, r.ingredients);
         DatChipNguyenLieu(1, imgIng2, txtIng2, r.ingredients);
+
+        if (epLayoutTheoCode &&
+            imgIng1 != null && imgIng1.transform.parent != null && imgIng1.transform.parent.parent != null)
+        {
+            var costRowRt = imgIng1.transform.parent.parent.GetComponent<RectTransform>();
+            if (costRowRt != null)
+            {
+                costRowRt.anchoredPosition = new Vector2(148f, -94f);
+            }
+        }
 
         // Lớp phủ khoá + chữ "Mở ở cấp N"
         if (lockOverlay != null && lockOverlay.activeSelf != !unlocked)
@@ -215,13 +286,71 @@ public class MillRecipeCardUI : MonoBehaviour
             imgBg.sprite = s;
     }
 
-    private static void DatAnh(Image img, Sprite s)
+    /// <summary>
+    /// Dat sprite cho mot o anh cua card.
+    ///
+    /// ⚠ SUA — TRUOC DAY: `img.enabled = (s != null)`, tuc thieu sprite thi TAT han o anh.
+    /// Ket qua that: bon icon cam bi hong tham chieu (rect sprite trong file .meta tran ra
+    /// ngoai texture 225x225) lam ca 20 o icon tra ve null, va vi o anh tu tat nen tren man
+    /// hinh chi con cai vong tron nen mau kem — khong ai nhan ra la LOI, ai cung tuong
+    /// "thiet ke no the". Loi song mot thoi gian dai chi vi cach an nay.
+    ///
+    /// Nay thieu sprite thi o anh VAN BAT: dung <see cref="spriteThieuIcon"/> neu Dev B co
+    /// wire, khong thi giu nguyen sprite cu / o trong nhung to mau xam
+    /// <see cref="mauKhiThieuIcon"/> ⇒ nhin la biet thieu art chu khong phai thiet ke.
+    ///
+    /// Duong co sprite PHAI tra mau ve trang duc: card duoc TAI DUNG (xem `_cards` trong
+    /// MillPopupUI), khong tra mau thi mot card tung thieu icon se xam vinh vien du lan
+    /// Bind sau da co icon that.
+    /// </summary>
+    private void DatAnh(Image img, Sprite s)
     {
         if (img == null) return;
 
-        img.sprite         = s;
         img.preserveAspect = true;
-        img.enabled        = (s != null);
+
+        if (s != null)
+        {
+            img.sprite  = s;
+            img.color   = Color.white;   // tra ve trang duc — bat buoc vi card tai dung
+            img.enabled = true;
+            return;
+        }
+
+        // Thieu sprite: van hien o anh de loi nhin thay duoc.
+        img.sprite  = spriteThieuIcon;   // co the null — Image van ve o mau tron
+        img.color   = mauKhiThieuIcon;
+        img.enabled = true;
+    }
+
+    /// <summary>
+    /// Ep mot nhan chu khong tran ra ngoai khung: cat duoi bang dau ba cham va cho co chu
+    /// tu co lai trong khoang cho phep.
+    ///
+    /// Prefab MillRecipeCard dang de `m_overflowMode: 0` (Overflow) va `m_enableAutoSizing: 0`
+    /// cho moi nhan, nen ten dai nhu "Co tron cho bo" (14 ky tu, 27pt) tran qua khoi o rong
+    /// 156px cua Txt_Name va de len nen card. Khong sua duoc prefab tu day nen ep bang code.
+    /// Goi trong Bind, sau khi da gan .text.
+    /// </summary>
+    private void ApChongTranChu(TMP_Text txt, float coMin, float coMax)
+    {
+        if (txt == null) return;
+
+        // Cat duoi bang "…" thay vi de chu tran ra ngoai nen card — dung trong CA HAI che do.
+        txt.overflowMode = TextOverflowModes.Ellipsis;
+
+        // Auto-size va fontSize la hai duong loai tru nhau trong TMP: bat auto-size thi
+        // gan .fontSize khong con tac dung. Nen che do "ep layout theo code" (hanh vi cu)
+        // phai TAT auto-size, de doan ma ngay duoi con set duoc 26pt/20pt nhu truoc.
+        if (epLayoutTheoCode)
+        {
+            txt.enableAutoSizing = false;
+            return;
+        }
+
+        txt.enableAutoSizing = true;
+        txt.fontSizeMin      = coMin;
+        txt.fontSizeMax      = coMax;
     }
 
     /// <summary>

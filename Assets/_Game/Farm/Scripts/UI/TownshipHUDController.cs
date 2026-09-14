@@ -820,8 +820,24 @@ namespace FarmGame.UI
 
         // ── Xử lý Click Nút ────────────────────────────────────────────────────
 
+        private bool IsBlockedByTutorial(string buttonType)
+        {
+            if (TutorialManager.Instance == null || !TutorialManager.Instance.DangChayTutorial)
+                return false;
+
+            if (buttonType == "shop")
+            {
+                return !TutorialManager.Instance.CurrentStepAllowsShopClick();
+            }
+
+            Debug.Log($"[TownshipHUD] Nút '{buttonType}' bị khóa trong lúc đang chạy Tutorial.");
+            return true;
+        }
+
         private void OnAvatarClicked()
         {
+            if (IsBlockedByTutorial("avatar")) return;
+
             var avatarPopup = Object.FindFirstObjectByType<AvatarProfilePopupUI>(FindObjectsInactive.Include);
             if (avatarPopup != null)
             {
@@ -835,6 +851,8 @@ namespace FarmGame.UI
 
         private void OnShopClicked()
         {
+            if (IsBlockedByTutorial("shop")) return;
+
             if (goMissionWidget != null) goMissionWidget.SetActive(false);
 
             if (ShopManager.Instance != null)
@@ -850,6 +868,8 @@ namespace FarmGame.UI
 
         private void OnWarehouseClicked()
         {
+            if (IsBlockedByTutorial("warehouse")) return;
+
             if (goMissionWidget != null) goMissionWidget.SetActive(false);
 
             var wh = Object.FindFirstObjectByType<WarehousePopupUI>(FindObjectsInactive.Include);
@@ -865,6 +885,8 @@ namespace FarmGame.UI
 
         private void OnMarketClicked()
         {
+            if (IsBlockedByTutorial("market")) return;
+
             if (goMissionWidget != null) goMissionWidget.SetActive(false);
 
             // Mở Bảng Tin Chợ (OrderBoard / Stall)
@@ -887,6 +909,8 @@ namespace FarmGame.UI
 
         private void OnMissionButtonClicked()
         {
+            if (IsBlockedByTutorial("mission")) return;
+
             if (goMissionWidget != null)
             {
                 goMissionWidget.SetActive(!goMissionWidget.activeSelf);
@@ -899,6 +923,8 @@ namespace FarmGame.UI
 
         private void OnMissionGoClicked()
         {
+            if (IsBlockedByTutorial("mission")) return;
+
             if (goMissionWidget != null)
                 goMissionWidget.SetActive(false);
 
@@ -912,6 +938,8 @@ namespace FarmGame.UI
 
         private void OnCookingClicked()
         {
+            if (IsBlockedByTutorial("cooking")) return;
+
             if (goMissionWidget != null) goMissionWidget.SetActive(false);
 
             // Chuyển sang Cooking Scene
@@ -936,6 +964,8 @@ namespace FarmGame.UI
 
         private void OnFishingClicked()
         {
+            if (IsBlockedByTutorial("fishing")) return;
+
             if (goMissionWidget != null) goMissionWidget.SetActive(false);
             FarmGame.Fishing.FishingEntryPopupUI.Open();
         }
@@ -947,6 +977,8 @@ namespace FarmGame.UI
 
         private void OnSettingsClicked()
         {
+            if (IsBlockedByTutorial("settings")) return;
+
             var settings = SettingsPopupUI.FindOrCreate();
             if (settings != null)
             {

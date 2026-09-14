@@ -1069,7 +1069,7 @@ AudioSource:
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: dd1a6148136943789e7ebdec33535750, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.55
+  m_Volume: 0.46750003
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -7104,6 +7104,16 @@ MonoBehaviour:
   StartingTime: 0.5
   RunInPlayMode: 1
   PreviewInEditMode: 1
+  UsePhaseDurationScaling: 1
+  DayPhaseDurationScale: 1.8
+  NightPhaseDurationScale: 0.5
+  TwilightPhaseDurationScale: 1
+  RainPhaseExtension: 0.25
+  KeepTotalDayLength: 1
+  DawnStartRatio: 0.05
+  DayStartRatio: 0.1
+  DuskStartRatio: 0.85
+  NightStartRatio: 0.9
   LightsRoot: {fileID: 5489388213882164898}
   DayLight: {fileID: 923933963732243374}
   DayLightGradient:
@@ -7589,12 +7599,12 @@ MonoBehaviour:
     m_RotationOrder: 4
   WeatherSystem: {fileID: 1379236838402414735}
   UseAutomaticWeather: 1
-  DayRainStartMin: 0.42
-  DayRainStartMax: 0.52
+  DayRainStartMin: 0.55
+  DayRainStartMax: 0.62
   NightRainStartMin: 0.82
   NightRainStartMax: 0.88
-  MinRainDurationSeconds: 8
-  MaxRainDurationSeconds: 12
+  MinRainDurationSeconds: 30
+  MaxRainDurationSeconds: 45
   ThunderChance: 0.08
   RainLightMultiplier: 1
   ThunderLightMultiplier: 0.88

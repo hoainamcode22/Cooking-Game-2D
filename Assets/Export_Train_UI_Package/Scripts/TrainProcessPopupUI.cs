@@ -226,6 +226,26 @@ namespace ExportTrainUIPackage
                     else TrainSpriteLoader.Assign(img, "Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/btnX.png", "Assets/Assetsgame/btnX.png");
                     img.preserveAspect = true;
                 }
+
+                // [FIX 2026-09-11] Đảm bảo nút đóng luôn có ký hiệu "✕" rõ nét màu trắng ở giữa
+                var xTr = btnClose.transform.Find("Txt_X");
+                if (xTr == null)
+                {
+                    var xGo = new GameObject("Txt_X", typeof(RectTransform));
+                    xGo.transform.SetParent(btnClose.transform, false);
+                    var rt = xGo.GetComponent<RectTransform>();
+                    rt.anchorMin = Vector2.zero;
+                    rt.anchorMax = Vector2.one;
+                    rt.offsetMin = Vector2.zero;
+                    rt.offsetMax = Vector2.zero;
+                    var tmp = xGo.AddComponent<TMPro.TextMeshProUGUI>();
+                    tmp.text = "✕";
+                    tmp.fontSize = UIStandardSprites.CloseGlyphSize > 0 ? UIStandardSprites.CloseGlyphSize : 26f;
+                    tmp.fontStyle = TMPro.FontStyles.Bold;
+                    tmp.color = Color.white;
+                    tmp.alignment = TMPro.TextAlignmentOptions.Center;
+                    tmp.raycastTarget = false;
+                }
             }
 
             if (imgTrackBox != null)

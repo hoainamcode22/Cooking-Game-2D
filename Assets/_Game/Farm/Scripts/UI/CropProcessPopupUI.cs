@@ -262,6 +262,23 @@ public class CropProcessPopupUI : MonoBehaviour
 
             // InstantGrow tự trừ gem + ép trạng thái Ready
             currentPlot.InstantGrow();
+
+            // Nếu đang trong tutorial: tăng tốc luôn toàn bộ các ô cùng loại (Lúa hoặc Hoa)
+            // để người chơi không phải chờ 50 giây cho các ô còn lại khi qua bước thu hoạch
+            if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+            {
+                var plots = currentPlot.Category == PlotCategory.Flower
+                    ? TutorialStepTriggerBridge.LayChauHoa()
+                    : TutorialStepTriggerBridge.LayODatLua();
+                foreach (var p in plots)
+                {
+                    if (p != null && p.IsGrowing)
+                    {
+                        p.CompleteInstantly();
+                    }
+                }
+            }
+
             TutorialManager.Instance?.NotifySpeedUp();
             ClosePopup();
         }
@@ -468,21 +485,11 @@ public class CropProcessPopupUI : MonoBehaviour
 
     private void AcquirePopupInputBlock()
     {
-        FarmInputLock.SetPopupRaycastBlock(gameObject, true);
-
-        if (popupInputLockHeld) return;
-        FarmInputLock.RegisterPopupOpen();
-        popupInputLockHeld = true;
         _openInstances.Add(this);
     }
 
     private void ReleasePopupInputBlock()
     {
-        FarmInputLock.SetPopupRaycastBlock(gameObject, false);
-
-        if (!popupInputLockHeld) return;
-        FarmInputLock.RegisterPopupClose();
-        popupInputLockHeld = false;
         _openInstances.Remove(this);
     }
 

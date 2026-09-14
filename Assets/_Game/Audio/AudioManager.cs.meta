@@ -1,2 +1,38 @@
 fileFormatVersion: 2
 guid: 7b592ce0e1b2c5147a7a21241bde44da
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - bgmSource: {instanceID: 0}
+  - uiSource: {instanceID: 0}
+  - fxSource: {instanceID: 0}
+  - waterAmbienceSource: {instanceID: 0}
+  - bgmMain: {fileID: 8300000, guid: 3d007f0ef76c6704a99ada93d3621692, type: 3}
+  - uiClick: {instanceID: 0}
+  - expClip: {instanceID: 0}
+  - plantingClip: {instanceID: 0}
+  - harvestClip: {instanceID: 0}
+  - coinReward: {instanceID: 0}
+  - ingredientPop: {instanceID: 0}
+  - cookStart: {instanceID: 0}
+  - successJingle: {instanceID: 0}
+  - waterFlowClip: {instanceID: 0}
+  - fanfareLevelUp: {instanceID: 0}
+  - coinTing: {instanceID: 0}
+  - gemSparkle: {instanceID: 0}
+  - bubblePop: {instanceID: 0}
+  - trainWhistle: {instanceID: 0}
+  - boatHorn: {instanceID: 0}
+  - cookingSizzle: {instanceID: 0}
+  - cookingChop: {instanceID: 0}
+  - buildingPlace: {instanceID: 0}
+  - giftUnbox: {instanceID: 0}
+  - buildingHammer: {instanceID: 0}
+  - touristChatter: {instanceID: 0}
+  - characterGreet: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

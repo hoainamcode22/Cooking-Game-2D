@@ -504,6 +504,7 @@ public class TouristAgent : MonoBehaviour
     /// </summary>
     private void OnMouseUpAsButton()
     {
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial) return;
         // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
         if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         // Popup đang mở / đang kéo hạt giống-liềm → không nhận tap world (luật FarmInputLock).

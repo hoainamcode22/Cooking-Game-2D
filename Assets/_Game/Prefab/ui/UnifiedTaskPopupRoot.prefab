@@ -1,4 +1,4 @@
-%YAML 1.1
+﻿%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!1 &112581744186898637
 GameObject:
@@ -332,22 +332,22 @@ MonoBehaviour:
     closeButton: {fileID: 0}
     tabButton: {fileID: 0}
     selectedTabButton: {fileID: 0}
-    missionTabIcon: {fileID: 0}
-    dailyTabIcon: {fileID: 0}
-    achievementTabIcon: {fileID: 0}
-    coinIcon: {fileID: 0}
-    diamondIcon: {fileID: 0}
-    expIcon: {fileID: 0}
-    chestIcon: {fileID: 0}
+    missionTabIcon: {fileID: 21300000, guid: 237cf3aa883f4ee78b0cf92b3303e68a, type: 3}
+    dailyTabIcon: {fileID: 21300000, guid: 43cc3d6d0a8d43adaf4eb19056bb79df, type: 3}
+    achievementTabIcon: {fileID: 21300000, guid: abb867dcd93a4af799cc3a5b3c809074, type: 3}
+    coinIcon: {fileID: 21300000, guid: 4ea8eea6e91225d4990a2f7ac96013f0, type: 3}
+    diamondIcon: {fileID: 21300000, guid: 63b103dfe32bee843a5c100fa9a0968d, type: 3}
+    expIcon: {fileID: 21300000, guid: 5daaf966f9563084782a04f2f0168bb9, type: 3}
+    chestIcon: {fileID: 21300000, guid: 550b9bfdf24b411b87d09e2bfe57c902, type: 3}
     lockIcon: {fileID: 0}
     dailyRewardIcons:
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 21300000, guid: 0c3a3faea74744f0ac44ee3b7c9c1f49, type: 3}
+    - {fileID: 21300000, guid: 589d1c818bb14ae8b1f395353d48b932, type: 3}
+    - {fileID: 21300000, guid: 254b6b7ad54146789fd32d189108ae2f, type: 3}
+    - {fileID: 21300000, guid: 838f91d895dd49e892b9692b8517dfc0, type: 3}
+    - {fileID: 21300000, guid: 8cea32d680aa410191c30c07516c6730, type: 3}
+    - {fileID: 21300000, guid: 5e7f5c9328ff4fa8a525ea6e94b75c8e, type: 3}
+    - {fileID: 21300000, guid: 84c826f60eb64605a37516cd157668f7, type: 3}
     mascot: {fileID: 0}
     leafCluster: {fileID: 0}
     flowerCluster: {fileID: 0}

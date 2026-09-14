@@ -293,6 +293,9 @@ public class HouseGrowthController : MonoBehaviour
 
     public void HandleClick()
     {
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+            return;
+
         if (state == GrowthState.Building)
         {
             BuildingProcessPopupUI.GetOrCreate().Open(this);

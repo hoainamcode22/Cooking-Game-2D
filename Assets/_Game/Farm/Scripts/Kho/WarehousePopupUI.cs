@@ -250,7 +250,9 @@ public class WarehousePopupUI : MonoBehaviour
     {
         currentCategory = category;
         UpdateTabVisuals();
-        selectedItemId = null;
+
+        List<WarehouseViewItem> items = GetItemsForCategory(currentCategory);
+        selectedItemId = items.Count > 0 ? items[0].itemId : null;
         transferQuantity = 1;
 
         if (itemGridContainer != null)
@@ -260,7 +262,6 @@ public class WarehousePopupUI : MonoBehaviour
         }
 
         RefreshUI();
-        AutoSelectFirstItem();
     }
 
     private void UpdateTabVisuals()
@@ -268,12 +269,17 @@ public class WarehousePopupUI : MonoBehaviour
         Color activeTextColor = new Color(0.36f, 0.20f, 0.09f, 1f);   // #5B3417 bold dark brown
         Color inactiveTextColor = new Color(0.43f, 0.25f, 0.08f, 1f); // #6E4014 warm brown
 
-        UpdateSingleTabVisual(imgTabNongSan, txtTabNongSan, rectTabNongSan, currentCategory == WarehouseCategory.NongSan, activeTextColor, inactiveTextColor);
-        UpdateSingleTabVisual(imgTabChanNuoi, txtTabChanNuoi, rectTabChanNuoi, currentCategory == WarehouseCategory.ChanNuoi, activeTextColor, inactiveTextColor);
-        UpdateSingleTabVisual(imgTabMonAn, txtTabMonAn, rectTabMonAn, currentCategory == WarehouseCategory.MonAn, activeTextColor, inactiveTextColor);
+        UpdateSingleTabVisual(imgTabNongSan, txtTabNongSan, rectTabNongSan, currentCategory == WarehouseCategory.NongSan, activeTextColor, inactiveTextColor, -255f);
+        UpdateSingleTabVisual(imgTabChanNuoi, txtTabChanNuoi, rectTabChanNuoi, currentCategory == WarehouseCategory.ChanNuoi, activeTextColor, inactiveTextColor, 0f);
+        UpdateSingleTabVisual(imgTabMonAn, txtTabMonAn, rectTabMonAn, currentCategory == WarehouseCategory.MonAn, activeTextColor, inactiveTextColor, 255f);
+
+        // Đảm bảo tab đang active nổi lên trên cùng, không bị tab bên cạnh đè lên viền
+        if (currentCategory == WarehouseCategory.NongSan && rectTabNongSan != null) rectTabNongSan.SetAsLastSibling();
+        else if (currentCategory == WarehouseCategory.ChanNuoi && rectTabChanNuoi != null) rectTabChanNuoi.SetAsLastSibling();
+        else if (currentCategory == WarehouseCategory.MonAn && rectTabMonAn != null) rectTabMonAn.SetAsLastSibling();
     }
 
-    private void UpdateSingleTabVisual(Image img, TMP_Text txt, RectTransform rect, bool isActive, Color activeColor, Color inactiveColor)
+    private void UpdateSingleTabVisual(Image img, TMP_Text txt, RectTransform rect, bool isActive, Color activeColor, Color inactiveColor, float posX)
     {
         if (img != null && tabActiveSprite != null && tabInactiveSprite != null)
             img.sprite = isActive ? tabActiveSprite : tabInactiveSprite;
@@ -283,9 +289,7 @@ public class WarehousePopupUI : MonoBehaviour
 
         if (rect != null)
         {
-            Vector2 pos = rect.anchoredPosition;
-            pos.y = isActive ? 0f : -6f; // Tab active nhô cao hơn tab inactive
-            rect.anchoredPosition = pos;
+            rect.anchoredPosition = new Vector2(posX, isActive ? 0f : -6f);
         }
     }
 
@@ -667,7 +671,17 @@ public class WarehousePopupUI : MonoBehaviour
 
         string key = itemId.Trim().ToLowerInvariant();
 
-        // 1. Check StallItemCatalog
+        // 1. Check Cooked Dish or Processed Good FIRST (Ưu tiên món ăn lên hàng đầu để các món như "trứng chiên", "bò xào" không bị nuốt vào chăn nuôi)
+        if (IsCookedDish(key) || key.StartsWith("item_") || key.StartsWith("dish_") ||
+            key.Contains("chien") || key.Contains("xao") || key.Contains("ham") || key.Contains("luoc") ||
+            key.Contains("nuong") || key.Contains("sup") || key.Contains("canh") || key.Contains("salad") ||
+            key.Contains("pho_") || key.Contains("com_") || key.Contains("banh") || key.Contains("che_bien") ||
+            key.Contains("nuoc_mia") || key.Contains("bot_gao") || key.Contains("pho_mai") || key.Contains("op_la"))
+        {
+            return WarehouseCategory.MonAn;
+        }
+
+        // 2. Check StallItemCatalog
         if (StallItemCatalog.Instance != null)
         {
             StallItemCategory cat = StallItemCatalog.Instance.GetCategory(key);
@@ -675,21 +689,14 @@ public class WarehousePopupUI : MonoBehaviour
                 return WarehouseCategory.NongSan;
         }
 
-        // 2. Check Animal product
-        if (AnimalItemIds.Contains(key) || key.Contains("egg") || key.Contains("milk") ||
-            key.Contains("beef") || key.Contains("pork") || key.Contains("chicken") ||
-            key.Contains("trung") || key.Contains("sua") || key.Contains("thit") || key.Contains("long_vu"))
+        // 3. Check Animal product (CHỈ nguyên liệu chăn nuôi thô, dùng so sánh chính xác id để không bắt nhầm món ăn)
+        if (AnimalItemIds.Contains(key) ||
+            key == "egg" || key == "milk" || key == "beef" || key == "pork" || key == "chicken" ||
+            key == "trung" || key == "sua" || key == "thit_bo" || key == "thit_heo" || key == "thit_ga" ||
+            key == "long_vu" || key == "chickenmeat" || key == "chicken_meat" ||
+            key.StartsWith("cam_") || key.StartsWith("co_tron"))
         {
             return WarehouseCategory.ChanNuoi;
-        }
-
-        // 3. Check Cooked Dish or Processed Good
-        if (IsCookedDish(key) || key.StartsWith("item_") || key.Contains("xao") || key.Contains("ham") ||
-            key.Contains("nuoc_mia") || key.Contains("bot_gao") || key.Contains("pho_mai") ||
-            key.Contains("salad") || key.Contains("sup_") || key.Contains("chien") || key.Contains("pho_") ||
-            key.Contains("banh") || key.Contains("nuoc") || key.Contains("che_bien"))
-        {
-            return WarehouseCategory.MonAn;
         }
 
         // 4. Check Crop Database
@@ -798,7 +805,7 @@ public class WarehousePopupUI : MonoBehaviour
         // chăn nuôi
         "beef", "pork", "chicken_meat", "egg", "milk",
         // gia vị / nguyên liệu mua chợ
-        "fishsauce", "salt", "soysauce", "herbs",
+        "fishsauce", "salt", "soysauce", "herbs", "sugar",
         // quả to (2026-08-27) — đã có IngredientData nên bếp nấu được
         "pumpkin", "watermelon",
     };
@@ -841,6 +848,11 @@ public class WarehousePopupUI : MonoBehaviour
         {
             int sellGold = crop.sellGold > 0 ? crop.sellGold : 12;
             return Loc.TF("Nguyên liệu nông sản tươi ngon. Dùng để nấu ăn tại bếp hoặc bán tại quầy. Giá tham khảo {0} vàng/cái.", sellGold);
+        }
+
+        if (key.StartsWith("cam_") || key.Contains("co_tron"))
+        {
+            return "Thức ăn chăn nuôi chất lượng cao dùng cho gia súc, gia cầm trong chuồng.";
         }
 
         if (AnimalItemIds.Contains(key))

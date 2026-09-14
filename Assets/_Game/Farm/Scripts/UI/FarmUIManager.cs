@@ -302,18 +302,22 @@ public class FarmUIManager : MonoBehaviour
         }
     }
 
-    // BÆ°á»›c 1: click Ã´ chÃ­n â†’ chá»‰ hiá»‡n khay (tray), chÆ°a báº¯t Ä‘áº§u harvest
+    // Bước 1: click ô chín → chỉ hiện khay (tray), chưa bắt đầu harvest
     public void ShowSickleTray()
     {
+        HidePlantSelectPopup();
+
         if (sickleToolRoot != null)
             sickleToolRoot.SetActive(true);
 
         TutorialManager.Instance?.NotifySickleShown();
     }
 
-    // BÆ°á»›c 2: player nháº¥n giá»¯ icon liá»m trong tray â†’ báº¯t Ä‘áº§u harvest mode
+    // Bước 2: player nhấn giữ icon liềm trong tray → bắt đầu harvest mode
     public void ShowSickleTool(Vector3 startWorldPos)
     {
+        HidePlantSelectPopup();
+
         if (sickleToolRoot != null)
             sickleToolRoot.SetActive(true);
 
@@ -339,6 +343,9 @@ public class FarmUIManager : MonoBehaviour
         if (isCookingMode)
             return;
 
+        // Chặn mở khay hạt giống khi NPC đang thoại trong Tutorial để không đè UI
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial && TutorialManager.Instance.IsNpcDialogueShowing)
+            return;
 
         HideAllPopups();
 
@@ -348,7 +355,7 @@ public class FarmUIManager : MonoBehaviour
             return;
         }
 
-        // Äáº£m báº£o toÃ n bá»™ parent chain cá»§a popupSeed Ä‘á»u active
+        // Ä Áº£m báº£o toÃ n bá»™ parent chain cá»§a popupSeed Ä‘á» u active
         Transform p = popupSeed.transform.parent;
         while (p != null)
         {
@@ -360,7 +367,7 @@ public class FarmUIManager : MonoBehaviour
             p = p.parent;
         }
 
-        // Reset popup vá» giá»¯a mÃ n hÃ¬nh Ä‘á»ƒ Ä‘áº£m báº£o luÃ´n hiá»ƒn thá»‹
+        // Reset popup vá»  giá»¯a mÃ n hÃ¬nh Ä‘á»ƒ Ä‘áº£m báº£o luÃ´n hiá»ƒn thá»‹
         RectTransform popupRect = popupSeed.GetComponent<RectTransform>();
         if (popupRect != null)
         {
@@ -380,6 +387,10 @@ public class FarmUIManager : MonoBehaviour
     public void ShowPlantSelectForFlower(PlotController plot)
     {
         if (isCookingMode) return;
+
+        // Chặn mở khay hạt giống khi NPC đang thoại trong Tutorial để không đè UI
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial && TutorialManager.Instance.IsNpcDialogueShowing)
+            return;
 
         HideAllPopups();
 
@@ -423,6 +434,21 @@ public class FarmUIManager : MonoBehaviour
 
         FarmInputLock.IsSeedPopupOpen = false;
         FarmInputLock.IsDraggingSeed  = false;
+    }
+
+    /// <summary>Làm mới số lượng hạt hiển thị trong khay hạt giống/hoa đang mở.</summary>
+    public void RefreshSeedPopups()
+    {
+        if (popupSeed != null && popupSeed.activeInHierarchy)
+        {
+            var sp = popupSeed.GetComponent<SeedPopupController>();
+            if (sp != null) sp.RefreshAllItemStocks();
+        }
+        if (popupSeedFlower != null && popupSeedFlower.activeInHierarchy)
+        {
+            var sp = popupSeedFlower.GetComponent<SeedPopupController>();
+            if (sp != null) sp.RefreshAllItemStocks();
+        }
     }
 
     /// <summary>Mở Popup Cho Ăn Gia Súc dạng Screen-Space UI (giống hệt Popup Hạt Giống).</summary>
@@ -617,6 +643,9 @@ public class FarmUIManager : MonoBehaviour
 
         if (farmCamera != null)
             farmCamera.enabled = false;
+
+        // [FIX 2026-09-11] Bật nhạc nền nhẹ nhàng cho Bếp khi chuyển chế độ nấu ăn
+        AudioManager.Instance?.PlayCookingBGM();
     }
 
     public void ExitCookingMode()
@@ -625,6 +654,11 @@ public class FarmUIManager : MonoBehaviour
             return;
 
         isCookingMode = false;
+
+        // [THEM 10/09] Scene Bep load ADDITIVE nen luc RA khong co su kien sceneLoaded nao
+        // ban ra de AudioManager doi nhac lai. Guard `!isCookingMode` o tren dam bao dong
+        // nay chi chay DUNG MOT LAN du BackToFarm() va OnDestroy() cung goi ham nay.
+        AudioManager.Instance?.PlayFarmBGM();
 
         if (canvasHudRoot != null)
             canvasHudRoot.SetActive(true);

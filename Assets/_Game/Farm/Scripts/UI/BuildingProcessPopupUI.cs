@@ -13,6 +13,10 @@ public class BuildingProcessPopupUI : MonoBehaviour
 
     private HouseGrowthController _house;
     private DecorGrowthController _decor;
+    // [Vong 25] Nguon thu BA: cong truong don o dat. Dung y het hai nguon tren —
+    // cung khung go, cung thanh tien do, cung nut kim cuong — vi dung chung
+    // LoadDesignAssets()/BuildUI(). KHONG them mot lan tim sprite nao khac.
+    private LandClearingSite      _site;
     private Canvas                _canvas;
     private GameObject            _root;
     private Image                 _rootImg;
@@ -40,6 +44,32 @@ public class BuildingProcessPopupUI : MonoBehaviour
 
     public bool IsOpen => _root != null && _root.activeSelf;
 
+    /// <summary>
+    /// [Vong 25] Bat = vua bam mua lo dat xong la popup tien do tu hien len.
+    /// Dat false truoc khi vao game de quay ve hanh vi cu (chi bam bien moi thay).
+    /// </summary>
+    public static bool TuMoKhiBatDauDonDat = true;
+
+    /// <summary>
+    /// Dang ky nghe LandClearingSite mot lan duy nhat cho ca phien choi.
+    /// Dung RuntimeInitializeOnLoadMethod chu KHONG tao san popup: GetOrCreate()
+    /// chi duoc goi ben trong callback, nen khong co lo dat nao dang don thi
+    /// khong ton mot Canvas nao het.
+    /// </summary>
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void DangKyNgheDonDat()
+    {
+        LandClearingSite.OnClearSiteStarted -= MoChoCongTruongDonDat;
+        LandClearingSite.OnClearSiteStarted += MoChoCongTruongDonDat;
+    }
+
+    private static void MoChoCongTruongDonDat(LandClearingSite site)
+    {
+        if (!TuMoKhiBatDauDonDat) return;
+        if (site == null || !site.IsRunning) return;
+        GetOrCreate().Open(site);
+    }
+
     public static BuildingProcessPopupUI GetOrCreate()
     {
         if (Instance == null)
@@ -65,8 +95,11 @@ public class BuildingProcessPopupUI : MonoBehaviour
 
         bool isHouseActive = _house != null && _house.State == HouseGrowthController.GrowthState.Building;
         bool isDecorActive = _decor != null && _decor.State == DecorGrowthController.DecorState.Building;
+        // Site tu Destroy sau khi xong nen phai kiem tra ca null LAN IsRunning:
+        // het gio hoac bam kim cuong deu lam IsRunning = false ngay frame do.
+        bool isSiteActive  = _site  != null && _site.IsRunning;
 
-        if (!isHouseActive && !isDecorActive)
+        if (!isHouseActive && !isDecorActive && !isSiteActive)
         {
             Close();
             return;
@@ -88,6 +121,7 @@ public class BuildingProcessPopupUI : MonoBehaviour
         if (house == null || house.State != HouseGrowthController.GrowthState.Building) return;
         _house = house;
         _decor = null;
+        _site  = null;
         _openedAtFrame = Time.frameCount;
 
         if (_frameBgSpr == null || _fillGreenSpr == null)
@@ -110,6 +144,7 @@ public class BuildingProcessPopupUI : MonoBehaviour
         if (decor == null || decor.State != DecorGrowthController.DecorState.Building) return;
         _decor = decor;
         _house = null;
+        _site  = null;
         _openedAtFrame = Time.frameCount;
 
         if (_frameBgSpr == null || _fillGreenSpr == null)
@@ -127,11 +162,37 @@ public class BuildingProcessPopupUI : MonoBehaviour
         // nen khong can khoa. Close() van goi Release de go bat ky khoa ket nao.
     }
 
+    /// <summary>
+    /// [Vong 25] Mo popup cho CONG TRUONG DON O DAT.
+    /// Dung y chang hai ham Open ben tren: khong tao UI moi, khong nap sprite moi —
+    /// chi tro _site vao roi bat _root len.
+    /// </summary>
+    public void Open(LandClearingSite site)
+    {
+        if (site == null || !site.IsRunning) return;
+        _site  = site;
+        _house = null;
+        _decor = null;
+        _openedAtFrame = Time.frameCount;
+
+        if (_frameBgSpr == null || _fillGreenSpr == null)
+        {
+            LoadDesignAssets();
+        }
+
+        ApplyLoadedSprites();
+        RefreshDisplay();
+        UpdateScreenPosition();
+        _root.SetActive(true);
+        // Cung ly do nhu hai ham Open tren: KHONG khoa input, popup neo o world.
+    }
+
     public void Close()
     {
         if (_root != null) _root.SetActive(false);
         _house = null;
         _decor = null;
+        _site  = null;
         ReleasePopupInputBlock();
     }
 
@@ -161,17 +222,38 @@ public class BuildingProcessPopupUI : MonoBehaviour
             if (_fillImg != null) _fillImg.fillAmount = _decor.Progress;
             if (_txtGemCost != null) _txtGemCost.text = _decor.SpeedUpGemCost.ToString();
         }
+        else if (_site != null)
+        {
+            // Ten khu dat thay cho ten nha. Region co the null neu site vua bi huy.
+            if (_txtName != null)
+                _txtName.text = _site.Region != null ? _site.Region.displayName : "Khu dat";
+
+            // RemainingSeconds la int giay san, khong phai float nhu hai nguon tren.
+            int con = Mathf.Max(0, _site.RemainingSeconds);
+            int min = con / 60;
+            int sec = con % 60;
+
+            if (_txtTime != null) _txtTime.text = $"{min:00}:{sec:00}";
+            if (_fillImg != null) _fillImg.fillAmount = _site.Progress01;
+            if (_txtGemCost != null) _txtGemCost.text = _site.RushGemCost.ToString();
+        }
     }
 
     private void UpdateScreenPosition()
     {
-        Transform targetTf = _house != null ? _house.transform : (_decor != null ? _decor.transform : null);
+        Transform targetTf = _house != null ? _house.transform
+                           : (_decor != null ? _decor.transform
+                           : (_site  != null ? _site.transform : null));
         if (targetTf == null || _root == null) return;
 
         Camera cam = Camera.main;
         if (cam == null) return;
 
-        Vector3 worldPos = targetTf.position + new Vector3(0f, 3.2f, 0f);
+        // Nha/decor: giu nguyen 3.2 unit nhu cu, KHONG dung toi.
+        // Lo dat: 3.2 unit la vo hinh o the gioi mot o = 300 x 150, nen neo theo
+        // chieu cao o luoi de khung go noi han tren mat dat.
+        float caoLen = _site != null ? IsoGrid.CellHeight * 1.6f : 3.2f;
+        Vector3 worldPos = targetTf.position + new Vector3(0f, caoLen, 0f);
         Vector3 screenPos = cam.WorldToScreenPoint(worldPos);
 
         RectTransform rootRect = _root.GetComponent<RectTransform>();
@@ -190,6 +272,12 @@ public class BuildingProcessPopupUI : MonoBehaviour
         else if (_decor != null)
         {
             _decor.TrySpeedUpWithGem();
+        }
+        else if (_site != null)
+        {
+            // TryRushWithGem tu tru kim cuong va tu goi Finish(); thieu gem thi tra false
+            // va khong lam gi ca — dung hanh vi hai nguon tren.
+            _site.TryRushWithGem();
         }
     }
 

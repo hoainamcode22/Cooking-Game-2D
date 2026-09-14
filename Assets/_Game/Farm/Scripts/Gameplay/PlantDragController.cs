@@ -71,18 +71,27 @@ public class PlantDragController : MonoBehaviour
 
         bool   didPlant  = plantedAnyThisDrag;
         int    count     = plantedThisDrag.Count;
-        string cropName  = currentDragCrop?.displayName ?? "?";
+        CropData crop    = currentDragCrop;
+        string cropName  = crop?.displayName ?? "?";
 
         CleanupPlantDragState();
 
         if (didPlant)
         {
-            FarmUIManager.Instance?.HidePlantSelectPopup();
+            FarmUIManager.Instance?.RefreshSeedPopups();
             FarmUIManager.Instance?.ShowHint(Loc.TF("Đã trồng {0} ô {1}", count, Loc.T(cropName)));
+
+            // Tự động tắt khay hạt giống / hoa khi đã gieo hết các ô đất / chậu hoa
+            PlotCategory cat = (crop != null && crop.cropCategory == CropCategory.Flower)
+                ? PlotCategory.Flower : PlotCategory.Normal;
+            if (FarmManager.Instance != null && !FarmManager.Instance.HasAnyEmptyPlot(cat))
+            {
+                FarmUIManager.Instance?.HidePlantSelectPopup();
+            }
         }
         else
         {
-            // Drag cancelled without planting — popup already closed, nothing to reopen.
+            // Drag cancelled without planting — popup vẫn giữ nguyên
         }
     }
 
@@ -96,11 +105,10 @@ public class PlantDragController : MonoBehaviour
         currentDragCrop    = null;
         plantedThisDrag.Clear();
 
-        FarmInputLock.IsDraggingSeed  = false;
-        FarmInputLock.IsSeedPopupOpen = false;
+        FarmInputLock.IsDraggingSeed = false;
+        // KHÔNG xoá IsSeedPopupOpen ở đây — cờ đó do chính SeedPopupController quản lý.
 
         FarmUIManager.Instance?.HideFloatingDragIcon();
-
     }
 
     // ── Update sweep ──────────────────────────────────────────────────────────

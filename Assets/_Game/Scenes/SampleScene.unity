@@ -5193,8 +5193,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 0}
-  m_Type: 3
+  m_Sprite: {fileID: 1000402781115094627, guid: 7ab00fc7156f0854ab2e2dc3d9ab416d, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 0
@@ -40053,6 +40053,7 @@ MonoBehaviour:
   fxSource: {fileID: 1898416656}
   waterAmbienceSource: {fileID: 0}
   bgmMain: {fileID: 8300000, guid: 6f6ed4940482a57448a5c9fca85f90c8, type: 3}
+  bgmCooking: {fileID: 0}
   uiClick: {fileID: 8300000, guid: 3d007f0ef76c6704a99ada93d3621692, type: 3}
   expClip: {fileID: 0}
   plantingClip: {fileID: 0}

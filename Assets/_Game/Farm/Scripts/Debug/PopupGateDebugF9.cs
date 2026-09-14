@@ -22,6 +22,9 @@ public class PopupGateDebugF9 : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
     {
+        // Chua tung duoc boc #if -> phai chan bang gate, neu khong se lot vao ban release.
+        if (!DevOverlayGate.Enabled) return;
+
         if (FindFirstObjectByType<PopupGateDebugF9>() != null) return;
         var go = new GameObject("~PopupGateDebugF9");
         go.AddComponent<PopupGateDebugF9>();

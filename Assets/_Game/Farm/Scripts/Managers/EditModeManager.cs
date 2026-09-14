@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -52,6 +52,15 @@ public class EditModeManager : MonoBehaviour
 
     private void Update()
     {
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+        {
+            if (isEditMode)
+            {
+                ToggleEditMode();
+            }
+            return;
+        }
+
         // PhÃ­m E Ä‘á»ƒ toggle (tiá»‡n test trong Editor) â€” dÃ¹ng New Input System
         if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
             ToggleEditMode();
@@ -62,6 +71,24 @@ public class EditModeManager : MonoBehaviour
     /// <summary>Gáº¯n vÃ o Btn_EditMode.OnClick() trong Inspector</summary>
     public void ToggleEditMode()
     {
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+        {
+            Debug.Log("[EditModeManager] Đang trong Tutorial — không cho phép bật Edit Mode.");
+            if (isEditMode)
+            {
+                isEditMode = false;
+                if (gridOverlay != null) gridOverlay.SetActive(false);
+                if (PlacementManager.Instance != null && PlacementManager.Instance.IsEditingBuilding)
+                    PlacementManager.Instance.CancelPlacement();
+                RestoreBubbles();
+                ToggleAllFootprints(false);
+                PlacementManager.Instance?.RefreshOccupancy();
+                ApplyVisuals(false);
+                OnEditModeChanged?.Invoke(false);
+            }
+            return;
+        }
+
         isEditMode = !isEditMode;
 
         if (gridOverlay != null)

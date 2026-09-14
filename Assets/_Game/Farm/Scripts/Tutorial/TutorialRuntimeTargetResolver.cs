@@ -29,7 +29,10 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
         "huong_duong", "Huong_Duong", "hoa_huong_duong", "seed_huong_duong", "sunflower"
     };
     private static readonly string[] BAPCAI_ALIASES = {
-        "bapcai", "BapCai", "bap_cai", "seed_bapcai", "cabbage", "Cabbage", "bap_sui", "ngo", "seed_ngo"
+        "bapcai", "BapCai", "bap_cai", "seed_bapcai", "cabbage", "Cabbage", "bap_sui"
+    };
+    private static readonly string[] NGO_ALIASES = {
+        "ngo", "Ngo", "seed_ngo", "corn", "Corn", "bap_ngo"
     };
 
     [Tooltip("Canvas để tạo world-proxy UI elements. Nếu null, setup tool sẽ gán.")]
@@ -262,27 +265,29 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
         {
             var data = item.Data;
             if (data == null) continue;
-            bool isBapCaiOrCorn = string.Equals(data.itemID, "seed_bapcai", System.StringComparison.OrdinalIgnoreCase)
-                || string.Equals(data.itemID, "seed_ngo", System.StringComparison.OrdinalIgnoreCase)
-                || (data is CropData c && (string.Equals(c.cropId, "bapcai", System.StringComparison.OrdinalIgnoreCase)
-                                        || string.Equals(c.cropId, "cabbage", System.StringComparison.OrdinalIgnoreCase)
-                                        || string.Equals(c.cropId, "ngo", System.StringComparison.OrdinalIgnoreCase)));
-            if (!isBapCaiOrCorn) continue;
 
-            AddRuntimeTarget(item.gameObject, "shop_bapcai");
-            AddRuntimeTarget(item.gameObject, "shop_corn");
-            if (item.btnPlus != null)
+            bool isBapCai = string.Equals(data.itemID, "seed_bapcai", System.StringComparison.OrdinalIgnoreCase)
+                || (data is CropData c && (string.Equals(c.cropId, "bapcai", System.StringComparison.OrdinalIgnoreCase)
+                                        || string.Equals(c.cropId, "cabbage", System.StringComparison.OrdinalIgnoreCase)));
+
+            bool isCorn = string.Equals(data.itemID, "seed_ngo", System.StringComparison.OrdinalIgnoreCase)
+                || (data is CropData c2 && (string.Equals(c2.cropId, "ngo", System.StringComparison.OrdinalIgnoreCase)
+                                         || string.Equals(c2.cropId, "corn", System.StringComparison.OrdinalIgnoreCase)));
+
+            if (isBapCai)
             {
-                AddRuntimeTarget(item.btnPlus.gameObject, "shop_bapcai_plus");
-                AddRuntimeTarget(item.btnPlus.gameObject, "shop_corn_plus");
+                AddRuntimeTarget(item.gameObject, "shop_bapcai");
+                if (item.btnPlus != null) AddRuntimeTarget(item.btnPlus.gameObject, "shop_bapcai_plus");
+                if (item.btnBuy != null) AddRuntimeTarget(item.btnBuy.gameObject, "shop_bapcai_buy");
+                Debug.Log("[TutorialTargetResolver] Registered shop_bapcai + ＋/Mua.");
             }
-            if (item.btnBuy != null)
+            else if (isCorn)
             {
-                AddRuntimeTarget(item.btnBuy.gameObject, "shop_bapcai_buy");
-                AddRuntimeTarget(item.btnBuy.gameObject, "shop_corn_buy");
+                AddRuntimeTarget(item.gameObject, "shop_corn");
+                if (item.btnPlus != null) AddRuntimeTarget(item.btnPlus.gameObject, "shop_corn_plus");
+                if (item.btnBuy != null) AddRuntimeTarget(item.btnBuy.gameObject, "shop_corn_buy");
+                Debug.Log("[TutorialTargetResolver] Registered shop_corn + ＋/Mua.");
             }
-            Debug.Log("[TutorialTargetResolver] Registered shop_bapcai / shop_corn + ＋/Mua.");
-            return;
         }
     }
 
@@ -299,17 +304,15 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
             if (!n.Contains("close") && !n.Contains("dong") && n != "btn_x" && n != "x")
                 continue;
 
-            float score = 0f;
-            RectTransform rt = btn.transform as RectTransform;
-            if (rt != null)
-                score = (rt.anchoredPosition - ShopCloseTargetPosition).sqrMagnitude;
-
-            if (best == null || score < bestScore)
+            // Điểm càng thấp càng ưu tiên: đúng tên x/close/btn_close được 0-10, có tiền tố dài điểm cao hơn.
+            float score = n.Length + (btn.transform.parent == root ? 0f : 50f);
+            if (score < bestScore)
             {
-                best = btn;
                 bestScore = score;
+                best = btn;
             }
         }
+
         return best != null ? best.gameObject : null;
     }
 
@@ -354,7 +357,7 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
             if (TutorialManager.GetTargetRect("seed_bapcai") == null)
                 TryScanSeed("seed_bapcai", BAPCAI_ALIASES);
             if (TutorialManager.GetTargetRect("seed_ngo") == null)
-                TryScanSeed("seed_ngo", BAPCAI_ALIASES);
+                TryScanSeed("seed_ngo", NGO_ALIASES);
             yield return wait;
         }
     }

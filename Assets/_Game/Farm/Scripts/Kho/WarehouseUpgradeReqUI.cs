@@ -1,26 +1,26 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Khung "NÃ¢ng cáº¥p Kho" (WarehouseUpgradeReqUI) â€” ÄIÃŠU KHáº®C GIAO DIá»†N 3D CHUáº¨N TOWNSHIP/GAME:
-/// - Ná»n vÃ¡n gá»— bo gÃ³c cao cáº¥p (FrameWood) lÃ³t giáº¥y kem áº¥m Ã¡p (PanelPaper).
-/// - NÃºt ÄÃ“NG (X) trÃ²n Ä‘á» 3D ná»•i báº­t á»Ÿ gÃ³c trÃªn pháº£i.
-/// - HÃ ng tháº» Card nguyÃªn liá»‡u gá»—/giáº¥y bo gÃ³c hiá»ƒn thá»‹ rÃµ sá»‘ lÆ°á»£ng sá»Ÿ há»¯u/yÃªu cáº§u.
-/// - DÃ²ng giÃ¡ vÃ ng cÃ³ icon Ä‘á»“ng xu lÃºa vÃ ng Ã³ng áº£ chÃ­nh thá»©c.
-/// - NÃºt báº¥m hÃ nh Ä‘á»™ng 3D ná»•i báº­t (BtnGreen3D khi Ä‘á»§ / BtnGray khi thiáº¿u) kÃ¨m hiá»‡u á»©ng náº£y Pop-in khi má»Ÿ.
+/// Khung "Nâng cấp Kho" (WarehouseUpgradeReqUI) — Giao diện Popup Nâng cấp kho chuẩn Township:
+/// - Nền ván gỗ bo góc cao cấp (FrameWood) lót giấy kem ấm áp (PanelPaper).
+/// - Nút ĐÓNG (X) tròn đỏ 3D nổi bật ở góc trên phải.
+/// - Hàng thẻ Card nguyên liệu gỗ/giấy bo góc hiển thị rõ số lượng sở hữu/yêu cầu.
+/// - Dòng giá vàng có icon đồng xu lúa vàng óng ả chính thức.
+/// - Nút bấm hành động 3D nổi bật (BtnGreen3D khi đủ / BtnGray khi thiếu) kèm hiệu ứng nảy Pop-in khi mở.
 /// </summary>
 public class WarehouseUpgradeReqUI : MonoBehaviour
 {
     private const int MAX_O = 6;
 
     private static readonly Color MAU_NEN_TOI   = new Color(0.04f, 0.08f, 0.03f, 0.72f);
-    private static readonly Color MAU_CHU_TIEU_DE = new Color(0.35f, 0.18f, 0.05f, 1f); // NÃ¢u gá»— Ä‘áº­m
+    private static readonly Color MAU_CHU_TIEU_DE = new Color(0.35f, 0.18f, 0.05f, 1f); // Nâu gỗ đậm
     private static readonly Color MAU_CHU       = new Color(0.42f, 0.30f, 0.16f, 1f);
-    private static readonly Color MAU_DU        = new Color(0.18f, 0.58f, 0.18f, 1f); // Xanh lÃ¡ Ä‘á»§
-    private static readonly Color MAU_THIEU     = new Color(0.85f, 0.22f, 0.18f, 1f); // Äá» thiáº¿u
+    private static readonly Color MAU_DU        = new Color(0.18f, 0.58f, 0.18f, 1f); // Xanh lá đủ
+    private static readonly Color MAU_THIEU     = new Color(0.85f, 0.22f, 0.18f, 1f); // Đỏ thiếu
     private static readonly Color MAU_O_DU      = new Color(0.92f, 0.98f, 0.90f, 1f);
     private static readonly Color MAU_O_THIEU   = new Color(1.00f, 0.93f, 0.91f, 1f);
 
@@ -145,25 +145,28 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
         chanXuyen.transition = Selectable.Transition.None; // KhÃ´ng Ä‘Ã³ng khi click vÃ o báº£ng
 
         // 3. Khung gá»— ngoÃ i (FrameWood)
+        chanXuyen.transition = Selectable.Transition.None; // Không đóng khi click vào bảng
+
+        // 3. Khung gỗ ngoài (FrameWood)
         Sprite sprFrame = UIStandardSprites.FrameWood;
         _frameWood = TaoAnh(_bangRoot, "FrameWood", Color.white, sprFrame);
         PhuKin(_frameWood.rectTransform);
         _frameWood.type = Image.Type.Sliced;
         if (sprFrame == null) _frameWood.color = new Color(0.55f, 0.38f, 0.20f, 1f);
 
-        // 4. LÃ³t giáº¥y kem bÃªn trong (PanelPaper)
+        // 4. Lót giấy kem bên trong (PanelPaper)
         Sprite sprPaper = UIStandardSprites.PanelPaper;
         _paperBg = TaoAnh(_frameWood.transform, "PaperBg", Color.white, sprPaper);
-        PhuKin(_paperBg.rectTransform, 26f); // Thá»¥t vÃ o 26px tá»« viá»n gá»—
+        PhuKin(_paperBg.rectTransform, 26f); // Thụt vào 26px từ viền gỗ
         _paperBg.type = Image.Type.Sliced;
         if (sprPaper == null) _paperBg.color = new Color(0.99f, 0.95f, 0.88f, 1f);
 
-        // 5. TiÃªu Ä‘á»: NÃ‚NG Cáº¤P KHO
-        _tieuDe = TaoChu(_paperBg.transform, "TieuDe", "NÃ¢ng cáº¥p Kho", 36, MAU_CHU_TIEU_DE, TextAlignmentOptions.Center);
+        // 5. Tiêu đề: NÂNG CẤP KHO
+        _tieuDe = TaoChu(_paperBg.transform, "TieuDe", Loc.T("Nâng cấp Kho"), 36, MAU_CHU_TIEU_DE, TextAlignmentOptions.Center);
         Neo(_tieuDe.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -44f), new Vector2(650f, 48f));
         _tieuDe.fontStyle = FontStyles.Bold;
 
-        // 6. Cá»¥m giÃ¡ vÃ ng: Icon Ä‘á»“ng xu lÃºa + Text sá»‘ vÃ ng
+        // 6. Cụm giá vàng: Icon đồng xu lúa + Text số vàng
         GameObject goldGroup = new GameObject("GoldGroup", typeof(RectTransform), typeof(HorizontalLayoutGroup));
         goldGroup.transform.SetParent(_paperBg.transform, false);
         RectTransform goldRt = (RectTransform)goldGroup.transform;
@@ -182,7 +185,7 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
         _dongVang.rectTransform.sizeDelta = new Vector2(280f, 40f);
         _dongVang.fontStyle = FontStyles.Bold;
 
-        // 7. HÃ ng card nguyÃªn liá»‡u (Gá»—, ÄÃ¡, Äinh...)
+        // 7. Hàng card nguyên liệu (Gỗ, Đá, Đinh...)
         GameObject hang = new GameObject("HangCard", typeof(RectTransform));
         hang.transform.SetParent(_paperBg.transform, false);
         _hangO = (RectTransform)hang.transform;
@@ -195,12 +198,12 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
 
         for (int i = 0; i < MAX_O; i++) { _oList.Add(TaoCard(_hangO)); }
 
-        // 8. DÃ²ng cáº£nh bÃ¡o khi thiáº¿u Ä‘á»“
+        // 8. Dòng cảnh báo khi thiếu đồ
         _dongCanhBao = TaoChu(_paperBg.transform, "CanhBao", "", 21, MAU_THIEU, TextAlignmentOptions.Center);
         Neo(_dongCanhBao.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -346f), new Vector2(680f, 34f));
         _dongCanhBao.fontStyle = FontStyles.Bold;
 
-        // 9. NÃšT XÃC NHáº¬N 3D (BtnGreen3D hoáº·c BtnGray)
+        // 9. NÚT XÁC NHẬN 3D (BtnGreen3D hoặc BtnGray)
         Sprite sprBtn = UIStandardSprites.BtnGreen3D != null ? UIStandardSprites.BtnGreen3D : UIStandardSprites.BtnGreen;
         _imgNutXacNhan = TaoAnh(_paperBg.transform, "NutXacNhan", Color.white, sprBtn);
         Neo(_imgNutXacNhan.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 38f), new Vector2(280f, 68f));
@@ -209,11 +212,11 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
         _nutXacNhan.targetGraphic = _imgNutXacNhan;
         _nutXacNhan.onClick.AddListener(BamXacNhan);
 
-        _chuNutXacNhan = TaoChu(_imgNutXacNhan.rectTransform, "Chu", "NÃ‚NG Cáº¤P", 28, Color.white, TextAlignmentOptions.Center);
+        _chuNutXacNhan = TaoChu(_imgNutXacNhan.rectTransform, "Chu", Loc.T("NÂNG CẤP"), 28, Color.white, TextAlignmentOptions.Center);
         PhuKin(_chuNutXacNhan.rectTransform);
         _chuNutXacNhan.fontStyle = FontStyles.Bold;
 
-        // 10. NÃšT ÄÃ“NG (X) TRÃ’N Äá»Ž 3D Ná»”I Báº¬T GÃ“C TRÃŠN PHáº¢I
+        // 10. NÚT ĐÓNG (X) TRÒN ĐỎ 3D NỔI BẬT GÓC TRÊN PHẢI
         Sprite sprClose = UIStandardSprites.Close;
         Image imgDong = TaoAnh(_bangRoot, "BtnClose", Color.white, sprClose);
         Neo(imgDong.rectTransform, new Vector2(1f, 1f), new Vector2(-16f, -16f), new Vector2(64f, 64f));
@@ -231,7 +234,7 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
     {
         ONguyenLieu o = new ONguyenLieu();
 
-        // Khung Card ngoÃ i bo gÃ³c
+        // Khung Card ngoài bo góc
         Sprite sprOuter = UIStandardSprites.CardOuter;
         Image outer = TaoAnh(cha, "CardOuter", Color.white, sprOuter);
         outer.type = Image.Type.Sliced;
@@ -242,23 +245,23 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
         le.preferredWidth = 118f;
         le.preferredHeight = 175f;
 
-        // Ná»n giáº¥y kem trong
+        // Nền giấy kem trong
         Sprite sprInner = UIStandardSprites.CardInner;
         o.nenInner = TaoAnh(outer.rectTransform, "CardInner", MAU_O_THIEU, sprInner);
         PhuKin(o.nenInner.rectTransform, 6f);
         o.nenInner.type = Image.Type.Sliced;
 
-        // Icon nguyÃªn liá»‡u (Gá»—, ÄÃ¡...)
+        // Icon nguyên liệu (Gỗ, Đá...)
         o.icon = TaoAnh(o.nenInner.rectTransform, "Icon", Color.white, null);
         Neo(o.icon.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -12f), new Vector2(76f, 76f));
         o.icon.preserveAspect = true;
 
-        // TÃªn nguyÃªn liá»‡u
+        // Tên nguyên liệu
         o.ten = TaoChu(o.nenInner.rectTransform, "Ten", "", 19, MAU_CHU, TextAlignmentOptions.Center);
         Neo(o.ten.rectTransform, new Vector2(0.5f, 1f), new Vector2(0f, -94f), new Vector2(106f, 26f));
         o.ten.fontStyle = FontStyles.Bold;
 
-        // Sá»‘ lÆ°á»£ng hiá»‡n cÃ³ / yÃªu cáº§u
+        // Số lượng hiện có / yêu cầu
         o.soLuong = TaoChu(o.nenInner.rectTransform, "SoLuong", "", 22, MAU_THIEU, TextAlignmentOptions.Center);
         Neo(o.soLuong.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 16f), new Vector2(106f, 30f));
         o.soLuong.fontStyle = FontStyles.Bold;
@@ -266,14 +269,14 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
         return o;
     }
 
-    // â”€â”€ Cáº­p nháº­t ná»™i dung hiá»ƒn thá»‹ â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Cập nhật nội dung hiển thị ─────────────────────────────────────────
     public void VeLai()
     {
         if (_bangRoot == null || _capHienTai < 0) return;
 
         if (!WarehouseUpgradeCostTable.CanUpgradeFurther(_capHienTai))
         {
-            _tieuDe.text = "Kho Ä‘Ã£ á»Ÿ cáº¥p tá»‘i Ä‘a";
+            _tieuDe.text = Loc.T("Kho đã ở cấp tối đa");
             _dongVang.text = "";
             _dongCanhBao.text = "";
             foreach (ONguyenLieu o in _oList) { o.root.SetActive(false); }
@@ -282,12 +285,12 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
         }
 
         WarehouseUpgradeCostTable.Entry e = WarehouseUpgradeCostTable.CostFor(_capHienTai);
-        _tieuDe.text = $"NÃ¢ng cáº¥p Kho  Â·  Cáº¥p {_capHienTai} â†’ {_capHienTai + 1}";
+        _tieuDe.text = $"{Loc.T("Nâng cấp Kho")}  ·  {Loc.T("Cấp")} {_capHienTai} → {_capHienTai + 1}";
 
         FarmEconomyManager eco = FarmEconomyManager.Instance;
         int vangDangCo = eco != null ? eco.Gold : 0;
         bool duVang = e.gold <= 0 || vangDangCo >= e.gold;
-        _dongVang.text = $"VÃ ng: <color=#{(duVang ? "2E7D32" : "C62828")}>{vangDangCo:n0}</color> / {e.gold:n0}";
+        _dongVang.text = $"{Loc.T("Vàng")}: <color=#{(duVang ? "2E7D32" : "C62828")}>{vangDangCo:n0}</color> / {e.gold:n0}";
 
         bool duHet = duVang;
         int n = e.materials != null ? e.materials.Count : 0;
@@ -312,8 +315,8 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
             o.icon.enabled = true;
             o.icon.color = icon != null ? Color.white : new Color(0.78f, 0.68f, 0.52f, 1f);
 
-            o.ten.text = BuildMaterials.DisplayNameOf(c.itemId);
-            o.soLuong.text = du ? $"{dangCo}/{c.amount}  âœ“" : $"{dangCo}/{c.amount}";
+            o.ten.text = Loc.T(BuildMaterials.DisplayNameOf(c.itemId));
+            o.soLuong.text = du ? $"{dangCo}/{c.amount}  ✓" : $"{dangCo}/{c.amount}";
             o.soLuong.color = du ? MAU_DU : MAU_THIEU;
             o.nenInner.color = du ? MAU_O_DU : MAU_O_THIEU;
         }
@@ -330,8 +333,8 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
             _imgNutXacNhan.color = duHet ? Color.white : new Color(0.85f, 0.85f, 0.85f, 1f);
         }
 
-        _chuNutXacNhan.text = duHet ? "NÃ‚NG Cáº¤P" : "CHÆ¯A Äá»¦";
-        _dongCanhBao.text = duHet ? "" : "CÃ²n thiáº¿u Ä‘á»“ â€” gom thÃªm tá»« tÃ u lá»­a rá»“i quay láº¡i nhÃ©!";
+        _chuNutXacNhan.text = duHet ? Loc.T("NÂNG CẤP") : Loc.T("CHƯA ĐỦ");
+        _dongCanhBao.text = duHet ? "" : Loc.T("Còn thiếu đồ — gom thêm từ tàu lửa rồi quay lại nhé!");
     }
 
     private void BamXacNhan()

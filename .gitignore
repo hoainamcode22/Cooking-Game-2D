@@ -1,15 +1,31 @@
-# Th? m?c r�c v� cache c?a Unity
+﻿# Thư mục rác và cache của Unity
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
+/[Bb]uild/
 /[Bb]uilds/
 /[Ll]ogs/
 /[Mm]emoryCaptures/
 /[Uu]ser[Ss]ettings/
 
-# File t?m c?a Visual Studio
+# File nhị phân, build APK, ZIP
+*.apk
+*.aab
+*.zip
+*.7z
+*.rar
+*.tar.gz
+
+# Thư mục backup, nhật ký và tài liệu nội bộ
+production/
+*.bak
+*.tmp
+*.log
+
+# File tạm của Visual Studio / Rider / VS Code
 .vs/
 .vscode/
+.idea/
 *.csproj
 *.unityproj
 *.sln
@@ -24,9 +40,10 @@
 *.opendb
 *.VC.db
 
-# File h? ?i?u h�nh
+# File hệ điều hành
 .DS_Store
 Thumbs.db
+
 # Exclude HappyHarvest source (copy reference only)
 Assets/HappyHarvest/
 Assets/HappyHarvest.meta

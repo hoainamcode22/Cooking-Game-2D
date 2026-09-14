@@ -116,6 +116,7 @@ public class BoatDockSlot : MonoBehaviour
     /// </summary>
     private void OnMouseDown()
     {
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial) return;
         // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
         if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         _dangNhan  = false;
@@ -153,6 +154,14 @@ public class BoatDockSlot : MonoBehaviour
         if (mgr.IsDockUnlocked(dockIndex)) return;
         if (dockIndex == 0 && !mgr.IsIntroDone) return;
 
+        // [VÒNG 2026-09-11] Âm thanh click + hiệu ứng nảy đàn hồi (juicy bounce punch) cực mượt mà
+        AudioManager.Instance?.PlayUIClick();
+        if (lockRoot != null && lockRoot.activeSelf)
+        {
+            if (_tapPunchRoutine != null) StopCoroutine(_tapPunchRoutine);
+            _tapPunchRoutine = StartCoroutine(TapPunchRoutine());
+        }
+
         // ── V2: tap bảng khóa → MỞ POPUP MUA ──
         if (_popupMua == null)
             _popupMua = FindFirstObjectByType<DockPurchasePopupUI>(FindObjectsInactive.Include);
@@ -180,6 +189,47 @@ public class BoatDockSlot : MonoBehaviour
         {
             // Thiếu level/tiền — hiện đúng lý do manager đưa (text tiếng Việt từ Dev A).
             ShowFloatingText(reason);
+        }
+    }
+
+    private Coroutine _tapPunchRoutine;
+    private IEnumerator TapPunchRoutine()
+    {
+        if (lockRoot == null) yield break;
+        Transform tr = lockRoot.transform;
+        Vector3 baseScale = Vector3.one;
+
+        float duration = 0.18f;
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(elapsed / duration);
+            // Co nhẹ xuống 0.92 rồi nảy lên 1.07 rồi về 1.0
+            float scale = 1f - Mathf.Sin(p * Mathf.PI) * 0.08f + Mathf.Sin(p * Mathf.PI * 2f) * 0.05f;
+            tr.localScale = baseScale * scale;
+            yield return null;
+        }
+        tr.localScale = baseScale;
+        _tapPunchRoutine = null;
+    }
+
+    private Vector3 _baseLockLocalPos = Vector3.zero;
+    private bool _savedBasePos = false;
+
+    private void Update()
+    {
+        // Hiệu ứng lơ lửng nhấp nhô nhẹ nhàng trên sóng nước (subtle water bobbing)
+        if (lockRoot != null && lockRoot.activeSelf)
+        {
+            if (!_savedBasePos)
+            {
+                _baseLockLocalPos = lockRoot.transform.localPosition;
+                _savedBasePos = true;
+            }
+
+            float bob = Mathf.Sin(Time.time * 2.2f + dockIndex * 1.4f) * 2.5f;
+            lockRoot.transform.localPosition = _baseLockLocalPos + new Vector3(0f, bob, 0f);
         }
     }
 
@@ -221,42 +271,62 @@ public class BoatDockSlot : MonoBehaviour
 
             if (!unlocked)
             {
-                // Tắt hoàn toàn LockIcon placeholder nếu dùng sprite Knob (vòng tròn vàng to đùng)
-                Transform icon = lockRoot.transform.Find("LockIcon");
-                if (icon != null)
+                // [VÒNG 2026-09-11] Áp dụng Biển Cọc Gỗ Cắm Cầu Tàu (Wooden Signpost) đẹp mắt
+                var sr = lockRoot.GetComponent<SpriteRenderer>();
+                if (sr != null)
                 {
-                    var isr = icon.GetComponent<SpriteRenderer>();
-                    if (isr == null || isr.sprite == null || isr.sprite.name == "Knob" || isr.sprite.name == "Circle")
+                    Sprite plaque = FarmGame.UI.TouristBoatArtRuntime.GetDockPlaqueSprite();
+                    if (plaque != null)
                     {
-                        icon.gameObject.SetActive(false);
+                        sr.sprite = plaque;
+                        sr.color = Color.white;
+                        sr.drawMode = SpriteDrawMode.Simple;
                     }
+                    sr.sortingOrder = 55; // Nổi bật trên mặt nước
                 }
 
-                // Căn chỉnh chữ teaser nằm gọn gàng bên trong bảng gỗ
+                lockRoot.transform.localScale = Vector3.one;
+
+                // Tắt hoàn toàn LockIcon placeholder nếu có
+                Transform icon = lockRoot.transform.Find("LockIcon");
+                if (icon != null) icon.gameObject.SetActive(false);
+
+                // Căn chỉnh chữ teaser to, rõ nét, font Baloo2 tiếng Việt chuẩn, nằm gọn trên mặt bảng gỗ
                 if (teaserText != null)
                 {
+                    var font = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
+                    if (font == null) font = TMP_Settings.defaultFontAsset;
+                    if (font != null) teaserText.font = font;
+
                     teaserText.text = BuildTeaserText(mgr.Config);
-                    if (mgr.Config != null)
+                    teaserText.isOrthographic = true;
+                    teaserText.fontSize = 28f;
+                    teaserText.fontStyle = FontStyles.Bold;
+                    teaserText.alignment = TextAlignmentOptions.Center;
+                    teaserText.textWrappingMode = TextWrappingModes.Normal;
+                    teaserText.overflowMode = TextOverflowModes.Overflow;
+                    teaserText.color = new Color(1f, 0.98f, 0.88f, 1f); // Màu kem vàng sáng
+                    teaserText.outlineWidth = 0.22f;
+                    teaserText.outlineColor = new Color(0.24f, 0.12f, 0.04f, 1f); // Viền nâu gỗ đậm
+
+                    var mr = teaserText.GetComponent<MeshRenderer>();
+                    if (mr != null) mr.sortingOrder = 58;
+
+                    var rt = teaserText.rectTransform;
+                    if (rt != null)
                     {
-                        teaserText.fontSize = mgr.Config.lockTeaserFontSize > 0 ? mgr.Config.lockTeaserFontSize : 18f;
-                        teaserText.alignment = TextAlignmentOptions.Center;
-                        teaserText.textWrappingMode = TextWrappingModes.Normal;
-                        var rt = teaserText.rectTransform;
-                        if (rt != null)
-                        {
-                            rt.sizeDelta = new Vector2(mgr.Config.lockPanelWidth * 0.9f, mgr.Config.lockPanelHeight * 0.65f);
-                        }
-                        teaserText.transform.localPosition = new Vector3(0f, -mgr.Config.lockPanelHeight * 0.05f, 0f);
+                        rt.sizeDelta = new Vector2(210f, 90f);
                     }
+                    teaserText.transform.localPosition = new Vector3(0f, 120f, -0.5f); // Đặt chính giữa mặt bảng gỗ phía trên cọc
                 }
 
-                // Đảm bảo BoxCollider2D phủ đúng kích thước bảng gỗ để click mượt 100%
+                // Đảm bảo BoxCollider2D phủ vừa khít kích thước toàn bộ biển cọc gỗ để chạm là ăn 100%
                 var col = lockRoot.GetComponent<BoxCollider2D>();
                 if (col == null) col = GetComponent<BoxCollider2D>();
-                if (col != null && mgr.Config != null)
+                if (col != null)
                 {
-                    col.size = new Vector2(mgr.Config.lockPanelWidth, mgr.Config.lockPanelHeight);
-                    col.offset = Vector2.zero;
+                    col.size = new Vector2(240f, 180f);
+                    col.offset = new Vector2(0f, 90f);
                 }
             }
         }
@@ -265,10 +335,10 @@ public class BoatDockSlot : MonoBehaviour
     }
 
     /// <summary>
-    /// Teaser mở khóa — đọc toàn bộ số từ Config, không hardcode:
-    ///   dock 0: "Mở ở Lv10" (miễn phí, mở qua intro)
-    ///   dock 1: "Mở ở Lv12 · 2.000 vàng"
-    ///   dock 2: "Mở ở Lv14 · 25 Kim Cương"
+    /// [VÒNG 2026-09-11] Teaser mở khóa thiết kế mới — chữ to, sáng rõ, in đậm trên bảng gỗ cắm cầu tàu:
+    ///   dock 0: "MỞ Ở CẤP 10 \n ★ MIỄN PHÍ ★"
+    ///   dock 1: "MỞ Ở CẤP 12 \n 2.000 VÀNG"
+    ///   dock 2: "MỞ Ở CẤP 14 \n 25 KIM CƯƠNG"
     /// </summary>
     private string BuildTeaserText(TouristBoatConfig config)
     {
@@ -276,10 +346,14 @@ public class BoatDockSlot : MonoBehaviour
 
         switch (dockIndex)
         {
-            case 0:  return Loc.TF("Mở ở Lv{0}", config.unlockLevel);
-            case 1:  return Loc.TF("Mở ở Lv{0}\n{1} vàng", config.dock2Level, FormatVN(config.dock2GoldCost));
-            case 2:  return Loc.TF("Mở ở Lv{0}\n{1} Kim Cương", config.dock3Level, config.dock3GemCost);
-            default: return string.Empty;
+            case 0:
+                return $"<b>MỞ Ở CẤP {config.unlockLevel}</b>\n<size=75%><color=#81ECEC>★ MIỄN PHÍ ★</color></size>";
+            case 1:
+                return $"<b>MỞ Ở CẤP {config.dock2Level}</b>\n<size=80%><color=#FFD700>{FormatVN(config.dock2GoldCost)} VÀNG</color></size>";
+            case 2:
+                return $"<b>MỞ Ở CẤP {config.dock3Level}</b>\n<size=80%><color=#74B9FF>{config.dock3GemCost} KIM CƯƠNG</color></size>";
+            default:
+                return string.Empty;
         }
     }
 

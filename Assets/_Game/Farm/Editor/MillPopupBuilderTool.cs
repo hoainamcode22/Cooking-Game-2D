@@ -3669,15 +3669,15 @@ namespace Farm.EditorTools.Mill
 
             RectTransform pill = MillUI.BC(MillUI.Node(rLvl, "Locked_Pill"),
                 MillDesign.SlotPillW, MillDesign.SlotPillH, MillDesign.SlotPillBottom);
-            MillUI.Img(pill, sk.pillBg, Color.white);
+            MillUI.Img(pill, sk.pillBg, MillSpriteFactory.Hex("#EADBCA"));
 
             var txtLockLabel = MillUI.Txt(MillUI.TL(MillUI.Node(pill, "Txt_LockLabel"),
                     MillDesign.SlotPillW, 22f, 0f, 2f),
-                "Chưa đủ cấp", MillDesign.SlotLockTextFont, Color.white,
+                "Chưa đủ cấp", MillDesign.SlotLockTextFont, MillSpriteFactory.Hex("#4A3222"),
                 TextAlignmentOptions.Center);
             var txtLvl = MillUI.Txt(MillUI.TL(MillUI.Node(pill, "Txt_LockLevelValue"),
                     MillDesign.SlotPillW, 26f, 0f, 24f),
-                "Cấp 18", MillDesign.SlotLockLevelFont, Color.white,
+                "Cấp 18", MillDesign.SlotLockLevelFont, MillSpriteFactory.Hex("#8C261A"),
                 TextAlignmentOptions.Center);
 
             // ═══ NODE DÙNG CHUNG (vẽ SAU 5 root) ════════════════════════════════

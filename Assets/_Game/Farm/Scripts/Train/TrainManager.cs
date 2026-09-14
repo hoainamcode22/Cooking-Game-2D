@@ -131,6 +131,17 @@ public class TrainManager : MonoBehaviour
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
+
+        // [KHÓA CẤP 1-4] Nếu chưa đạt Cấp 5, ngay từ Awake ẩn sạch sành sanh tàu!
+        // Ở Level 1 tàu tuyệt đối KHÔNG ĐƯỢC CHẠY, KHÔNG ĐƯỢC LÀM GÌ HẾT, không phát âm thanh!
+        if (!DuocChayHeTau)
+        {
+            shippingPathFollower?.HideTrain();
+            rewardPathFollower?.HideTrain();
+            HideAllShippingSlots();
+            HideAllRewardSlots();
+            _heTauDangHien = false;
+        }
     }
 
     void Update()
@@ -138,6 +149,120 @@ public class TrainManager : MonoBehaviour
         // Timer chuyến tàu — tính theo unix time nên tự "chạy" cả khi offline/đóng popup
         if (State == TrainState.Processing && NowUnix() >= _tripEndUnix)
             FinishProcessing();
+    }
+
+    // --- CONG CAP 5: an ca he tau khi chua du cap -------------------------------
+    // Mau lay tu he thuyen du lich (TouristBoatController.SetVisualShown + BoatDockSlot):
+    // co guard chong SetActive lap, va nghe OnLevelChanged de hien lai ngay khi du cap.
+    // KHONG them field Inspector nao: SCN_Farm da luu roi, field moi se null va cong se chet.
+
+    private GameObject _gaTauGo;          // 'gataulua' - tim mot lan roi cache
+    private bool _heTauDangHien = true;   // guard: chi SetActive khi trang thai THAT SU doi
+    private bool _daDangKyCongCap;
+
+    /// <summary>
+    /// GameObject nha ga ngoai world. Trong SCN_Farm chi co DUY NHAT mot TrainStationBuilding
+    /// (tren 'gataulua') nen tim theo type la du. FindObjectsInactive.Include la BAT BUOC:
+    /// sau lan an dau tien GO da tat, tim kieu thuong se khong bao gio ra nua.
+    /// </summary>
+    private GameObject GaTauGo
+    {
+        get
+        {
+            if (_gaTauGo == null)
+            {
+                var ga = FindFirstObjectByType<TrainStationBuilding>(FindObjectsInactive.Include);
+                if (ga != null) _gaTauGo = ga.gameObject;
+            }
+            return _gaTauGo;
+        }
+    }
+
+    /// <summary>
+    /// [CHỐT SẾP 2026-09-11] Cấp < 5 thì TUYỆT ĐỐI KHÔNG ĐƯỢC CHẠY TÀU, KHÔNG ĐƯỢC LÀM GÌ HẾT.
+    /// Chỉ khi người chơi đạt đúng CẤP 5 (TrainGateAccess.DuCap == true) thì tàu mới được phép xuất hiện,
+    /// lăn bánh ra ga và phát âm thanh còi tàu!
+    /// </summary>
+    private bool DuocChayHeTau => TrainGateAccess.DuCap;
+
+    /// <summary>
+    /// Bat/tat toan bo he tau (2 doan tau + nha ga). Goi bao nhieu lan cung duoc.
+    /// batBuoc = true: ap dung ke ca khi trang thai khong doi (dung cho lan dau).
+    /// LUU Y: gataulua co component PermanentBuilding (marker rong, chi FarmUIManager doc de
+    /// bo qua khi HideAllPopups). Tat no o day la CO Y - cong cap 5 uu tien hon marker do.
+    /// </summary>
+    private void ApDungCongCapTau(bool batBuoc = false)
+    {
+        bool hien = DuocChayHeTau;
+        if (!batBuoc && hien == _heTauDangHien) return;
+        _heTauDangHien = hien;
+
+        if (!hien)
+        {
+            shippingPathFollower?.HideTrain();
+            rewardPathFollower?.HideTrain();
+            HideAllShippingSlots();
+            HideAllRewardSlots();
+        }
+        // hien == true: KHONG bat cung o day - InitAfterFrame()/state machine tu quyet dinh
+        // tau nao duoc hien, neu bat bua se lam hien ca tau thuong dang phai an.
+
+        // [FIX SẾP 2026-09-11] Nhà ga 'gataulua' PHẢI LUÔN HIỂN THỊ trên bản đồ để người chơi thấy
+        // và bấm vào nhận thông báo (cấp 5 mở). Tuyệt đối không SetActive(false) làm biến mất cả nhà ga!
+        var ga = GaTauGo;
+        if (ga != null && !ga.activeSelf) ga.SetActive(true);
+    }
+
+    void OnEnable()
+    {
+        if (Instance != this) return;   // ban trung dang cho Destroy() trong Awake
+        StartCoroutine(DangKyCongCapKhiSanSang());
+    }
+
+    void OnDisable()
+    {
+        if (!_daDangKyCongCap) return;
+        if (PlayerProgressManager.Instance != null)
+            PlayerProgressManager.Instance.OnLevelChanged -= HandleLevelChangedChoTau;
+        if (FarmLevelManager.Instance != null)
+            FarmLevelManager.Instance.OnLevelChanged -= HandleLevelChangedChoTau;
+        _daDangKyCongCap = false;
+    }
+
+    /// <summary>
+    /// Cho manager cap xuat hien roi moi dang ky (giong AnimalGuideController.SubscribeWhenReady),
+    /// nhung co TRAN THOI GIAN: scene khac co the khong co PlayerProgressManager, cho vo han
+    /// se treo coroutine mai mai. Nghe CA HAI nguon cap vi PlayerProgressManager.AddExp() con
+    /// goi FarmLevelManager.SetLevel() - trung nhau cung khong sao, ApDungCongCapTau co guard.
+    /// </summary>
+    private IEnumerator DangKyCongCapKhiSanSang()
+    {
+        float doi = 0f;
+        while (PlayerProgressManager.Instance == null && FarmLevelManager.Instance == null && doi < 15f)
+        {
+            doi += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (PlayerProgressManager.Instance != null)
+            PlayerProgressManager.Instance.OnLevelChanged += HandleLevelChangedChoTau;
+        if (FarmLevelManager.Instance != null)
+            FarmLevelManager.Instance.OnLevelChanged += HandleLevelChangedChoTau;
+        _daDangKyCongCap = true;
+
+        // Su kien co the da ban TRUOC khi minh kip dang ky -> tu kiem tra ngay mot lan.
+        ApDungCongCapTau(batBuoc: true);
+    }
+
+    private void HandleLevelChangedChoTau(int level)
+    {
+        bool hienTruocDo = _heTauDangHien;
+        ApDungCongCapTau();
+
+        // Vua du cap NGAY TRONG LUC dang choi -> dung chuyen dau tien luon, khong bat
+        // nguoi choi thoat game vao lai moi thay tau.
+        if (!hienTruocDo && _heTauDangHien)
+            StartCoroutine(InitAfterFrame());
     }
 
     void Start()
@@ -192,6 +317,13 @@ public class TrainManager : MonoBehaviour
     private IEnumerator InitAfterFrame()
     {
         yield return null;
+
+        // --- CONG CAP 5 -----------------------------------------------------------
+        // Chua du cap va khong co chuyen do dang -> an sach he tau, KHONG tao chuyen,
+        // KHONG snap tau ve ga. HandleLevelChangedChoTau() se goi lai ham nay dung
+        // luc nguoi choi cham cap 5.
+        ApDungCongCapTau(batBuoc: true);
+        if (!DuocChayHeTau) yield break;
 
         // Đảm bảo tàu MỚI hiện trước khi HideTrain() làm bất cứ điều gì
         shippingPathFollower.ShowTrain();
@@ -561,28 +693,38 @@ public class TrainManager : MonoBehaviour
     {
         if (shippingPathFollower == null) return;
 
+        // Cong cap 5: OnRewardReachedHidden() goi ham nay de mo chuyen ke tiep. Neu nguoi choi
+        // chi duoc mo tau vi con chuyen do dang, chuyen do vua ket thuc -> tat han he tau lai.
+        if (!DuocChayHeTau)
+        {
+            ApDungCongCapTau(batBuoc: true);
+            return;
+        }
+
         Vector3 hiddenPos  = pointHiddenShip  != null ? pointHiddenShip.position  : transform.position;
         Vector3 stationPos = pointStationShip != null ? pointStationShip.position : transform.position;
 
-        // backwardDir = ngÆ°á»£c chiá»u cháº¡y (HiddenShip â†’ StationShip)
-        // wagon tráº£i vá» phÃ­a sau HiddenShip, khuáº¥t táº§m nhÃ¬n
+        // backwardDir = ngÆ°á»£c chiá» u cháº¡y (HiddenShip â†’ StationShip)
+        // wagon tráº£i vá»  phÃ­a sau HiddenShip, khuáº¥t táº§m nhÃ¬n
         Vector3 backwardDir = (hiddenPos - stationPos).normalized;
 
         // ShowTrain TRÆ¯á»šC Ä‘á»ƒ GO active, sau Ä‘Ã³ SnapToPosition + MoveTo má»›i hoáº¡t Ä‘á»™ng
         shippingPathFollower.ShowTrain();
         shippingPathFollower.SnapToPosition(hiddenPos, backwardDir);
+        AudioManager.Instance?.PlayTrainWhistle();
         shippingPathFollower.MoveTo(stationPos, onArrived);
     }
 
     /// Cháº·ng 2 â€” Shipping depart: StationShip â†’ TunnelShip
-    /// TÃ u Má»šI rá»i ga cháº¡y vÃ o háº§m rá»“i áº©n.
+    /// TÃ u Má»šI rá» i ga cháº¡y vÃ o háº§m rá»“i áº©n.
     private void SendShippingFromStationToTunnel()
     {
+        AudioManager.Instance?.PlayTrainWhistle();
         shippingPathFollower.MoveTo(pointTunnelShip.position, OnShippingReachedTunnel);
     }
 
     /// Cháº·ng 3 â€” Reward arrive: TunnelReward â†’ StationReward
-    /// TÃ u CÅ¨ xuáº¥t hiá»‡n táº¡i cá»­a háº§m rá»“i cháº¡y vá» ga Ä‘á»ƒ user nháº­n reward.
+    /// TÃ u CÅ¨ xuáº¥t hiá»‡n táº¡i cá»­a háº§m rá»“i cháº¡y vá»  ga Ä‘á»ƒ user nháº­n reward.
     private void ShowRewardAtTunnelThenMoveToStation(System.Action onArrived = null)
     {
         if (rewardPathFollower == null) return;
@@ -590,19 +732,21 @@ public class TrainManager : MonoBehaviour
         Vector3 tunnelPos  = pointTunnelReward  != null ? pointTunnelReward.position  : transform.position;
         Vector3 stationPos = pointStationReward != null ? pointStationReward.position : transform.position;
 
-        // backwardDir = ngÆ°á»£c chiá»u cháº¡y (TunnelReward â†’ StationReward)
+        // backwardDir = ngÆ°á»£c chiá» u cháº¡y (TunnelReward â†’ StationReward)
         Vector3 backwardDir = (tunnelPos - stationPos).normalized;
 
         // ShowTrain TRÆ¯á»šC Ä‘á»ƒ GO active, sau Ä‘Ã³ SnapToPosition + MoveTo má»›i hoáº¡t Ä‘á»™ng
         rewardPathFollower.ShowTrain();
         rewardPathFollower.SnapToPosition(tunnelPos, backwardDir);
+        AudioManager.Instance?.PlayTrainWhistle();
         rewardPathFollower.MoveTo(stationPos, onArrived);
     }
 
     /// Cháº·ng 4 â€” Reward leave: StationReward â†’ HiddenReward
-    /// TÃ u CÅ¨ rá»i ga cháº¡y ra Ä‘iá»ƒm khuáº¥t rá»“i áº©n.
+    /// TÃ u CÅ¨ rá» i ga cháº¡y ra Ä‘iá»ƒm khuáº¥t rá»“i áº©n.
     private void SendRewardFromStationToHidden()
     {
+        AudioManager.Instance?.PlayTrainWhistle();
         rewardPathFollower.MoveTo(pointHiddenReward.position, OnRewardReachedHidden);
     }
 
@@ -670,10 +814,10 @@ public class TrainManager : MonoBehaviour
     {
         State = newState;
 
-        if (newState == TrainState.WaitingForLoad || newState == TrainState.RewardArriving || newState == TrainState.ShipDeparting)
-        {
-            AudioManager.Instance?.PlayTrainWhistle();
-        }
+        // [FIX 2026-09-11] Tiếng còi tàu chỉ phát khi tàu THỰC SỰ di chuyển (gọi trực tiếp
+        // trong ShowShippingAtHiddenThenMoveToStation, SendShippingFromStationToTunnel,
+        // ShowRewardAtTunnelThenMoveToStation, SendRewardFromStationToHidden).
+        // Tuyệt đối không gọi trong ChangeState để tránh kêu khi tàu dừng đỗ hoặc refresh.
 
         // Ẩn process popup cũ ở mọi state ngoại trừ Processing
         if (newState != TrainState.Processing)
@@ -906,12 +1050,15 @@ public class TrainManager : MonoBehaviour
                 if (d.currentAmounts != null && SlotData != null)
                     for (int i = 0; i < SlotData.Length && i < d.currentAmounts.Length; i++)
                         SlotData[i].currentAmount = d.currentAmounts[i];
-                ShowShippingAtHiddenThenMoveToStation(() =>
-                {
-                    ChangeState(TrainState.WaitingForLoad);
-                    RefreshAllShippingSlots();
-                    CheckAllLoaded(); // M1: save cũ đã đủ hàng → tự khởi hành, không kẹt ga
-                });
+                // Tàu vốn đã đỗ ở ga từ trước khi thoát game: chỉ cần hiện và snap đúng vị trí ga,
+                // TUYỆT ĐỐI không gọi chuyển động hay hú còi lại làm ồn!
+                shippingPathFollower.ShowTrain();
+                Vector3 hPos = pointHiddenShip != null ? pointHiddenShip.position : transform.position;
+                Vector3 sPos = pointStationShip != null ? pointStationShip.position : transform.position;
+                shippingPathFollower.SnapToPosition(sPos, (hPos - sPos).normalized);
+                ChangeState(TrainState.WaitingForLoad);
+                RefreshAllShippingSlots();
+                CheckAllLoaded();
                 return true;
 
             case TrainState.ShipDeparting:
@@ -934,8 +1081,27 @@ public class TrainManager : MonoBehaviour
                 ChangeState(TrainState.Processing);
                 return true;
 
-            case TrainState.RewardArriving:
             case TrainState.RewardReadyToCollect:
+                SnapshotSentCargo();
+                shippingPathFollower.HideTrain();
+                HideAllShippingSlots();
+                shippingPathFollower.SnapToPosition(pointHiddenShip.position,
+                    (pointHiddenShip.position - pointStationShip.position).normalized);
+                ApplyRewardsToSlots();
+                if (d.collected != null && SlotData != null)
+                    for (int i = 0; i < SlotData.Length && i < d.collected.Length; i++)
+                        SlotData[i].isCollected = d.collected[i];
+                // Tàu thưởng vốn đã về ga từ trước: chỉ cần hiện và snap đúng vị trí ga, hoàn toàn im lặng
+                rewardPathFollower.ShowTrain();
+                Vector3 tPos = pointTunnelReward != null ? pointTunnelReward.position : transform.position;
+                Vector3 stPos = pointStationReward != null ? pointStationReward.position : transform.position;
+                rewardPathFollower.SnapToPosition(stPos, (tPos - stPos).normalized);
+                OnRewardArrivedAtStation();
+                RefreshAllRewardSlots();
+                CheckAllCollected();
+                return true;
+
+            case TrainState.RewardArriving:
                 SnapshotSentCargo();
                 shippingPathFollower.HideTrain();
                 HideAllShippingSlots();

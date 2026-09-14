@@ -938,6 +938,7 @@ public class PenMiniPanelUI : MonoBehaviour
     private void SpawnHarvestFX(string itemId, Sprite icon, int amount, Vector3 vfxWorldPosition)
     {
         if (icon == null) return;
+        HarvestSlashFX.Spawn(vfxWorldPosition);
         HarvestFeedbackSpawner.Instance?.SpawnHarvestFly(icon, vfxWorldPosition, amount);
         FarmCropVFXSpawner.Instance?.PlayHarvestAmountVFX(amount, vfxWorldPosition);
     }
@@ -1245,7 +1246,7 @@ public class PenMiniPanelUI : MonoBehaviour
                 readyBubbleSortingLayer, TouristSortingLayers.Overlay);
         }
 
-        // ---- 2. Do chieu cao + order THAT cua chuong va trang tri quanh do ----
+        // ---- 2. Do chieu cao + order THAT cua chuong ----
         float dinhWorldY;
         int   orderCaoNhat;
         bool  doDuoc = DoDinhVaOrderQuanhChuong(out dinhWorldY, out orderCaoNhat);
@@ -1258,57 +1259,26 @@ public class PenMiniPanelUI : MonoBehaviour
             canvas.sortingOrder = Mathf.Clamp(order, 0, ReadyBubbleOrderMax);
         }
 
-        // ---- 4. Vi tri ----
+        // ---- 4. Vi tri: dat ngay tren dinh chuong, cach vua du de khong che ga va khong bay len kho ----
         float nuaCaoWorld = _readyBubbleRt.sizeDelta.y * 0.5f * donVi;
+        Transform goc = LayGocChuong();
+        float clearance = 65f; // Khoang cach phia tren dinh chuong/ga
+        float tamWorldY = doDuoc
+            ? (dinhWorldY + clearance + nuaCaoWorld)
+            : (goc.position.y + 350f + nuaCaoWorld);
 
-        if (datBongBongTheoWorld)
-        {
-            // V13e — DAT THANG BANG WORLD POSITION (xem khoi giai thich o phan field).
-            Transform goc = LayGocChuong();
-            float tamWorldY = doDuoc
-                ? dinhWorldY + Mathf.Max(0f, readyBubbleWorldClearance)
-                              + Mathf.Max(0f, bongBongCaoThemWorld) + nuaCaoWorld
-                : goc.position.y + Mathf.Max(0f, bongBongCaoDuPhongWorld);
-
-            // Tran: khong bao gio bay qua readyBubbleMaxRaiseWorld tinh tu goc chuong.
-            float tranY = goc.position.y + Mathf.Max(0f, readyBubbleMaxRaiseWorld) + nuaCaoWorld;
-            if (tamWorldY > tranY) tamWorldY = tranY;
-
-            Vector3 wp = _readyBubbleRt.position;
-            _readyBubbleRt.position = new Vector3(goc.position.x, tamWorldY, wp.z);
-            _readyBubbleBasePos = _readyBubbleRt.anchoredPosition;   // bob nhun tiep tu day
-        }
-        else
-        {
-            // Duong CU, giu lai de bat nguoc bang mot o tick.
-            float localY = readyBubbleLocalPos.y;
-            if (doDuoc)
-            {
-                float tamWorld = dinhWorldY + Mathf.Max(0f, readyBubbleWorldClearance) + nuaCaoWorld;
-                float yTheoDo  = (tamWorld - transform.position.y) / donVi;
-                localY = Mathf.Max(localY, yTheoDo);
-            }
-            _readyBubbleBasePos             = new Vector2(readyBubbleLocalPos.x, localY);
-            _readyBubbleRt.anchoredPosition = _readyBubbleBasePos;
-        }
+        Vector3 wp = _readyBubbleRt.position;
+        _readyBubbleRt.position = new Vector3(goc.position.x, tamWorldY, wp.z);
+        _readyBubbleBasePos = _readyBubbleRt.anchoredPosition; // bob nhun tiep tu day
 
         { Debug.Log($"[Pen] {(config != null ? config.penId : "?")} BONGBONG_DAT layer={(canvas != null ? canvas.sortingLayerName : "?")} order={(canvas != null ? canvas.sortingOrder : 0)} yWorld={_readyBubbleRt.position.y:F0} donVi={donVi:F3} dinhDo={(doDuoc ? dinhWorldY.ToString("F0") : "khongDo")} orderDo={(doDuoc ? orderCaoNhat.ToString() : "khongDo")}"); }
     }
 
     /// <summary>
-    /// Do THAT hai con so can de dat bong bong:
-    ///   * <paramref name="dinhWorldY"/> = canh TREN cao nhat co the che bong bong (world unit)
+    /// Do THAT chieu cao va sorting order cua CHINH chuong (BarnSprite + con vat):
+    ///   * <paramref name="dinhWorldY"/> = canh TREN cao nhat cua chuong/con vat (world unit)
     ///   * <paramref name="orderCaoNhat"/> = sortingOrder lon nhat trong so do
-    ///
-    /// Cach quet: chi vat nao NAM DE LEN BE NGANG cua bong bong moi che duoc no, nen quet theo
-    /// be ngang bong bong (noi rong <see cref="readyBubbleScanPad"/> moi ben) chu KHONG quet ban
-    /// kinh tron - mot cai cay cach do 400 unit sang ben khong bao gio che bong bong, tinh vao
-    /// chi lam bong bong bay cao vo ich.
-    ///
-    /// Hai chot chong so rac:
-    ///   * bo qua renderer rong hon chuong <see cref="ReadyBubbleNenRongGap"/> lan (nen / mat dat)
-    ///   * ket qua bi kep boi <see cref="readyBubbleMaxRaiseWorld"/> tinh tu dinh chuong
-    /// Tra false khi khong do duoc gi - luc do ben goi giu nguyen so trong Inspector.
+    /// Tra false khi khong do duoc gi.
     /// </summary>
     private bool DoDinhVaOrderQuanhChuong(out float dinhWorldY, out int orderCaoNhat)
     {
@@ -1318,9 +1288,6 @@ public class PenMiniPanelUI : MonoBehaviour
 
         Transform penRoot = transform.parent != null ? transform.parent : transform;
 
-        // ---- 2a. Renderer CUA CHINH chuong (BarnSprite + con vat): luon tinh, bat ke be ngang ----
-        float rongChuong = 0f;
-        float dinhChuong = 0f;
         SpriteRenderer[] cuaChuong = penRoot.GetComponentsInChildren<SpriteRenderer>(true);
         for (int i = 0; i < cuaChuong.Length; i++)
         {
@@ -1329,44 +1296,12 @@ public class PenMiniPanelUI : MonoBehaviour
             if (!sr.enabled || !sr.gameObject.activeInHierarchy) continue;
 
             Bounds bd = sr.bounds;
-            if (bd.size.x > rongChuong) rongChuong = bd.size.x;
             if (!coSoLieu || bd.max.y > dinhWorldY) dinhWorldY = bd.max.y;
             if (!coSoLieu || sr.sortingOrder > orderCaoNhat) orderCaoNhat = sr.sortingOrder;
             coSoLieu = true;
         }
 
-        if (!coSoLieu) return false;
-        dinhChuong = dinhWorldY;
-
-        // ---- 2b. Be ngang cua bong bong, doi ra world ----
-        float donVi   = CanvasWorldUnitPerLocal();
-        float tamBubX = transform.position.x + readyBubbleLocalPos.x * donVi;
-        float nuaRong = (_readyBubbleRt != null ? _readyBubbleRt.sizeDelta.x * 0.5f : 100f) * donVi;
-        float pad     = Mathf.Max(0f, readyBubbleScanPad);
-        float minX    = tamBubX - nuaRong - pad;
-        float maxX    = tamBubX + nuaRong + pad;
-
-        // ---- 2c. Trang tri de len be ngang do (bui co / cay): do THAT tu scene, khong go so ----
-        float ranNen = rongChuong > 0.01f ? rongChuong * ReadyBubbleNenRongGap : float.MaxValue;
-        float tran   = dinhChuong + Mathf.Max(0f, readyBubbleMaxRaiseWorld);
-
-        SpriteRenderer[] tatCa = FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None);
-        for (int i = 0; i < tatCa.Length; i++)
-        {
-            SpriteRenderer sr = tatCa[i];
-            if (sr == null || sr.sprite == null) continue;
-            if (!sr.enabled || !sr.gameObject.activeInHierarchy) continue;
-
-            Bounds bd = sr.bounds;
-            if (bd.size.x > ranNen) continue;                 // nen / mat dat, khong phai bui co
-            if (bd.max.x < minX || bd.min.x > maxX) continue; // khong de len be ngang bong bong
-
-            if (bd.max.y > dinhWorldY) dinhWorldY = Mathf.Min(bd.max.y, tran);
-            if (sr.sortingOrder > orderCaoNhat) orderCaoNhat = sr.sortingOrder;
-        }
-
-        if (dinhWorldY > tran) dinhWorldY = tran;
-        return true;
+        return coSoLieu;
     }
 
     /// <summary>

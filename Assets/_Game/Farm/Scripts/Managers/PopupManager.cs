@@ -77,7 +77,6 @@ public class PopupManager : MonoBehaviour
             || (WelfareEventManager.Instance  != null && WelfareEventManager.Instance.gameObject.activeInHierarchy && WelfareEventManager.Instance.IsOpen)
             || (AttendanceManager.Instance    != null && AttendanceManager.Instance.gameObject.activeInHierarchy && AttendanceManager.Instance.IsOpen)
             || (AvatarProfilePopupUI.Instance != null && AvatarProfilePopupUI.Instance.gameObject.activeInHierarchy && AvatarProfilePopupUI.Instance.IsOpen)
-            || CropProcessPopupUI.AnyOpen
             || OrderBoardPopupUI.AnyOpen
             || StallPopupUI.AnyOpen
             || MillPopupUI.AnyOpen

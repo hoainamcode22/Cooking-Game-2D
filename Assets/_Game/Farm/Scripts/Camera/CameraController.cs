@@ -100,6 +100,7 @@ public class CameraController : MonoBehaviour
     // Touch drag detection — tương tự cho mobile 1 ngón
     private Vector2 touchStartScreenPos; // Toạ độ màn hình lúc ngón tay chạm
     private bool    touchHeld;           // Ngón đang giữ nhưng chưa đủ pixel để thành drag
+    private bool    gestureStartedOnUI;  // Cử chỉ chạm bắt đầu trên UI hoặc khi popup đang mở -> không bao giờ pan map
 
     // Zoom
     private float targetSize;       // Orthographic size đích
@@ -233,6 +234,9 @@ public class CameraController : MonoBehaviour
             isDragging          = false;
             pressHeld           = false;
             pressStartScreenPos = Vector2.zero;
+            panVelocity         = Vector3.zero;
+            targetPosition      = transform.position;
+            gestureStartedOnUI  = true;
 
             // Cho zoom trừ khi harvest mode đang active
             if (!FarmInputLock.BlockMapZoom)
@@ -245,23 +249,25 @@ public class CameraController : MonoBehaviour
         ApplyZoomStep(ReadMouseScrollSteps(), mouse.position.ReadValue());
 
         // ── BƯỚC 1: Nhấn chuột xuống → lưu vị trí screen, chưa drag ────
-        // Không bắt đầu drag nếu con trỏ đang ở trên UI element
-        if (ConTroDangTrenUI(mouse.position.ReadValue()))
+        // Không bắt đầu drag nếu con trỏ đang ở trên UI element hoặc popup
+        if (ConTroDangTrenUI(mouse.position.ReadValue()) || FarmInputLock.BlockMapPan)
         {
             isDragging          = false;
             pressHeld           = false;
             pressStartScreenPos = Vector2.zero;
+            gestureStartedOnUI  = true;
             return;
         }
 
         if (mouse.leftButton.wasPressedThisFrame)
         {
+            gestureStartedOnUI  = false;
             pressStartScreenPos = mouse.position.ReadValue();
             pressHeld           = true;
         }
 
         // ── BƯỚC 2: Đang giữ — kiểm tra đã di chuyển đủ dragThreshold chưa ──
-        if (pressHeld && !isDragging && mouse.leftButton.isPressed)
+        if (!gestureStartedOnUI && pressHeld && !isDragging && mouse.leftButton.isPressed)
         {
             float movedPixels = Vector2.Distance(mouse.position.ReadValue(), pressStartScreenPos);
             if (movedPixels > dragThreshold)
@@ -272,7 +278,7 @@ public class CameraController : MonoBehaviour
         }
 
         // ── BƯỚC 3: Đang drag → thực hiện pan ──────────────────────────
-        if (mouse.leftButton.isPressed && isDragging)
+        if (!gestureStartedOnUI && mouse.leftButton.isPressed && isDragging)
         {
             Vector3 current  = ScreenToWorld(mouse.position.ReadValue());
             Vector3 delta    = lastPointerWorld - current;
@@ -287,6 +293,7 @@ public class CameraController : MonoBehaviour
             isDragging          = false;
             pressHeld           = false;
             pressStartScreenPos = Vector2.zero;
+            gestureStartedOnUI  = false;
         }
     }
 
@@ -334,6 +341,9 @@ public class CameraController : MonoBehaviour
             isDragging          = false;
             pressHeld           = false;
             pressStartScreenPos = Vector2.zero;
+            panVelocity         = Vector3.zero;
+            targetPosition      = transform.position;
+            gestureStartedOnUI  = true;
 
             // Cho zoom trừ khi harvest mode đang active
             if (!FarmInputLock.BlockMapZoom)
@@ -346,22 +356,24 @@ public class CameraController : MonoBehaviour
         ApplyZoomStep(ReadLegacyScrollSteps(), (Vector2)Input.mousePosition);
 
         // ── BƯỚC 1: Nhấn chuột xuống → lưu vị trí screen, chưa drag ────
-        if (ConTroDangTrenUI((Vector2)Input.mousePosition))
+        if (ConTroDangTrenUI((Vector2)Input.mousePosition) || FarmInputLock.BlockMapPan)
         {
             isDragging          = false;
             pressHeld           = false;
             pressStartScreenPos = Vector2.zero;
+            gestureStartedOnUI  = true;
             return;
         }
 
         if (Input.GetMouseButtonDown(0))
         {
+            gestureStartedOnUI  = false;
             pressStartScreenPos = (Vector2)Input.mousePosition;
             pressHeld           = true;
         }
 
         // ── BƯỚC 2: Đang giữ — kiểm tra đã di chuyển đủ dragThreshold chưa ──
-        if (pressHeld && !isDragging && Input.GetMouseButton(0))
+        if (!gestureStartedOnUI && pressHeld && !isDragging && Input.GetMouseButton(0))
         {
             float movedPixels = Vector2.Distance((Vector2)Input.mousePosition, pressStartScreenPos);
             if (movedPixels > dragThreshold)
@@ -372,7 +384,7 @@ public class CameraController : MonoBehaviour
         }
 
         // ── BƯỚC 3: Đang drag → thực hiện pan ──────────────────────────
-        if (Input.GetMouseButton(0) && isDragging)
+        if (!gestureStartedOnUI && Input.GetMouseButton(0) && isDragging)
         {
             Vector3 current  = ScreenToWorld(Input.mousePosition);
             Vector3 delta    = lastPointerWorld - current;
@@ -387,6 +399,7 @@ public class CameraController : MonoBehaviour
             isDragging          = false;
             pressHeld           = false;
             pressStartScreenPos = Vector2.zero;
+            gestureStartedOnUI  = false;
         }
     }
 
@@ -424,6 +437,9 @@ public class CameraController : MonoBehaviour
             isDragging          = false;
             touchHeld           = false;
             touchStartScreenPos = Vector2.zero;
+            panVelocity         = Vector3.zero;
+            targetPosition      = transform.position;
+            gestureStartedOnUI  = true;
             return;
         }
 
@@ -436,10 +452,21 @@ public class CameraController : MonoBehaviour
             var t     = activeTouches[0];
             var phase = t.phase;
 
+            // Chặn kéo map nếu ngón tay chạm hoặc đang ở trên UI thật (Slider, Popup, v.v.)
+            if (ConTroDangTrenUI(t.screenPosition) || FarmInputLock.BlockMapPan)
+            {
+                isDragging          = false;
+                touchHeld           = false;
+                touchStartScreenPos = Vector2.zero;
+                gestureStartedOnUI  = true;
+                return;
+            }
+
             // ── BƯỚC 1: Ngón chạm xuống → lưu vị trí screen, chưa drag ──
             // Tap ngắn không di chuyển → EventSystem xử lý popup bình thường.
             if (phase == UnityEngine.InputSystem.TouchPhase.Began)
             {
+                gestureStartedOnUI  = false;
                 touchStartScreenPos = t.screenPosition;
                 touchHeld           = true;
                 isDragging          = false; // Reset phòng trường hợp ngón mới
@@ -449,7 +476,7 @@ public class CameraController : MonoBehaviour
                      phase == UnityEngine.InputSystem.TouchPhase.Stationary)
             {
                 // Chưa drag: kiểm tra đã di chuyển đủ dragThreshold pixel chưa
-                if (touchHeld && !isDragging)
+                if (!gestureStartedOnUI && touchHeld && !isDragging)
                 {
                     float movedPixels = Vector2.Distance(t.screenPosition, touchStartScreenPos);
                     if (movedPixels > dragThreshold)
@@ -460,7 +487,7 @@ public class CameraController : MonoBehaviour
                 }
 
                 // Đang drag → thực hiện pan
-                if (isDragging)
+                if (!gestureStartedOnUI && isDragging)
                 {
                     Vector3 current  = ScreenToWorld(t.screenPosition);
                     Vector3 delta    = lastPointerWorld - current;
@@ -476,6 +503,7 @@ public class CameraController : MonoBehaviour
                 isDragging          = false;
                 touchHeld           = false;
                 touchStartScreenPos = Vector2.zero;
+                gestureStartedOnUI  = false;
             }
         }
         else if (touchCount == 2)
@@ -718,6 +746,8 @@ public class CameraController : MonoBehaviour
     private void HandleDevHotkeys()
     {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (!DevOverlayGate.Enabled) return;
+
         var kb = Keyboard.current;
         if (kb == null) return;
 

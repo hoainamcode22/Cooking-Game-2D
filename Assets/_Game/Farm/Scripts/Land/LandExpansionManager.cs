@@ -90,6 +90,40 @@ public class LandExpansionManager : MonoBehaviour
     [Tooltip("Bat = ghi log chi tiet khi mua / kiem tra o.")]
     public bool verboseLog = false;
 
+    [Header("Vá 2026-09 — cac co MOI (chua co trong scene nen mac dinh code co hieu luc)")]
+    [Tooltip("Bat = LUON chan dat cong trinh len dat CHUA MUA, ke ca khi co cu " +
+             "'enforceLandBounds' trong scene dang tat. Dat mac dinh BAT vi gia tri cu " +
+             "da bi luu = 0 trong SCN_Farm.unity nen sua mac dinh cu khong an thua.")]
+    public bool epChanDatChuaMua = true;
+
+    [Tooltip("Bat = o KHONG thuoc khu nao cung coi la CHUA MUA (cam xay). " +
+             "Tat (mac dinh) = giu nguyen hanh vi cu: o vo chu la dat tu do.")]
+    public bool coiODaiLaChuaMua = false;
+
+    [Tooltip("Bat = ve hang rao RuleTile quanh vien cac lo CHUA MUA. " +
+             "Tat (mac dinh) = khong ve, tranh hang rao de len art co san.")]
+    public bool veHangRaoQuanhLoChuaMua = false;
+
+    [Tooltip("Cac vung (o luoi) KHONG duoc xoa tile khi an duong ke chia lo — " +
+             "vd cau tau / ben thuyen cua nguoi choi nam chung lop Tilemap_IsoDock. " +
+             "Thuong KHONG can dien neu 'locTheoLoaiTile' dang bat.")]
+    public List<RectInt> vungGiuNguyenTile = new List<RectInt>();
+
+    [Header("Vá 2026-09-10 — LOC THEO LOAI TILE (cach chuan de cuu cau tau)")]
+    [Tooltip("BAT (mac dinh) = khi an duong ke chia lo, chi xoa o nao dang dat TILE HANG RAO. " +
+             "O dat tile khac tren cung lop (cau tau RuleTile_IsoDock45) duoc GIU NGUYEN. " +
+             "Day la cach dung: khong can nhap toa do vung giu bang tay nua.")]
+    public bool locTheoLoaiTile = true;
+
+    [Tooltip("Danh sach tile duoc coi la HANG RAO (se bi an). De TRONG = tu nhan dang: " +
+             "trung voi 'fenceTile', hoac ten tile co chu 'fence' / 'rao'.")]
+    public List<TileBase> tileLaHangRao = new List<TileBase>();
+
+    [Tooltip("BAT (mac dinh) = quet CA LOP divider va an MOI tile hang rao, khong chi nhung o " +
+             "co trong 'dividerCells'. Dung khi danh sach o do tool ghi bi thieu — hang rao " +
+             "van con sot lai trong game. Cau tau khong bi anh huong vi loc theo loai tile.")]
+    public bool anMoiTileHangRaoTrenLop = true;
+
     // ─────────────────────────────────────────────────────────────────────
     /// <summary>Ban ra khi mot khu vua duoc mo khoa.</summary>
     public static event Action<LandRegionData> OnRegionUnlocked;
@@ -131,6 +165,42 @@ public class LandExpansionManager : MonoBehaviour
     private int _soODaAn;      // để in ra log tổng kết, khỏi phải đoán
     private int _soBienLoi;
 
+    /// <summary>O nay co nam trong mot vung "giu nguyen tile" khong (cau tau, ben thuyen...).</summary>
+    private bool ONamTrongVungGiu(Vector2Int c)
+    {
+        if (vungGiuNguyenTile == null) return false;
+        for (int i = 0; i < vungGiuNguyenTile.Count; i++)
+            if (vungGiuNguyenTile[i].Contains(c)) return true;
+        return false;
+    }
+
+    /// <summary>
+    /// Tile nay co phai HANG RAO khong (de biet co duoc phep an hay khong).
+    ///
+    /// VI SAO CAN: Sep ve NHAM hang rao chung lop voi cau tau, nen lop Tilemap_IsoDock
+    /// chua CA HAI: RuleTile_IsoDock45 (cau tau) + RuleTile_IsoFence45 (hang rao).
+    /// An theo o thi xoa nham ca cau tau. An theo LOAI TILE thi tach duoc chinh xac.
+    /// </summary>
+    private bool LaTileHangRao(TileBase t)
+    {
+        if (t == null) return false;
+
+        // 1. Danh sach chi dinh tay (neu Sep co dien).
+        if (tileLaHangRao != null && tileLaHangRao.Count > 0)
+        {
+            for (int i = 0; i < tileLaHangRao.Count; i++)
+                if (tileLaHangRao[i] == t) return true;
+            return false;
+        }
+
+        // 2. Trung dung RuleTile hang rao da khai bao o tren.
+        if (fenceTile != null && t == fenceTile) return true;
+
+        // 3. Doan theo ten — RuleTile_IsoFence45, hang_rao, fence_...
+        string ten = t.name != null ? t.name.ToLowerInvariant() : string.Empty;
+        return ten.Contains("fence") || ten.Contains("rao");
+    }
+
     /// <summary>
     /// An hang rao chia lo khi vao game (designer van thay trong Editor).
     ///
@@ -155,14 +225,73 @@ public class LandExpansionManager : MonoBehaviour
         if (hideFenceInPlayMode && !_dividersHidden &&
             dividerTilemap != null && dividerCells != null && dividerCells.Count > 0)
         {
+            int soGiuLai = 0;
             foreach (var c in dividerCells)
-                dividerTilemap.SetTile(new Vector3Int(c.x, c.y, 0), null);
+            {
+                var pos = new Vector3Int(c.x, c.y, 0);
+
+                // (a) Vung Sep chi dinh giu nguyen (neu co dien).
+                if (ONamTrongVungGiu(c)) { soGiuLai++; continue; }
+
+                // (b) LOC THEO LOAI TILE — o nay dang dat cau tau chu khong phai hang rao
+                //     => GIU. Day la cach cuu cau tau ma khong can toa do.
+                if (locTheoLoaiTile && !LaTileHangRao(dividerTilemap.GetTile(pos)))
+                {
+                    soGiuLai++;
+                    continue;
+                }
+
+                dividerTilemap.SetTile(pos, null);
+            }
+            // (c) QUET CA LOP — bat mot vai o hang rao ma tool 11 ghi thieu.
+            //     Van loc theo loai tile nen cau tau tuyet doi khong bi dung toi.
+            int soQuetThem = 0;
+            if (anMoiTileHangRaoTrenLop)
+            {
+                // [FIX LIGHT 7] Kep vung quet ve DUNG MOT LOP z = 0. cellBounds tra ve ca
+                // chieu z: chi mot tile lac o z = 5 la size.z thanh 6 va vong quet phinh
+                // len 6 lan so o (map nay rat rong) — cham ma van chi co z = 0 la co nghia,
+                // vi moi cho khac trong file deu dung new Vector3Int(x, y, 0).
+                var bo0 = dividerTilemap.cellBounds;
+                var bo   = new BoundsInt(bo0.xMin, bo0.yMin, 0, bo0.size.x, bo0.size.y, 1);
+                var daXet = new HashSet<Vector2Int>(dividerCells);
+                foreach (var pos in bo.allPositionsWithin)
+                {
+                    var oXY = new Vector2Int(pos.x, pos.y);
+                    if (daXet.Contains(oXY)) continue;
+                    if (ONamTrongVungGiu(oXY)) continue;
+                    if (!LaTileHangRao(dividerTilemap.GetTile(pos))) continue;
+
+                    dividerTilemap.SetTile(pos, null);
+                    soQuetThem++;
+                }
+            }
+
             _dividersHidden = true;
-            _soODaAn = dividerCells.Count;
+            _soODaAn = dividerCells.Count - soGiuLai + soQuetThem;
+
+            // [FIX HEAVY 6] KHONG AN DUOC O NAO ma van khong ai biet: neu lo duoc ve tay
+            // bang RuleTile_IsoDock45 (thay vi RuleTile_IsoFence45) thi LaTileHangRao tra
+            // false cho MOI o -> giu lai tat ca -> duong ke chia lo khong con bien mat nua.
+            // verboseLog mac dinh TAT nen loi nay im lang tuyet doi. Canh bao nay khong
+            // phu thuoc verboseLog: het an duoc o nao la CHAC CHAN sai cau hinh, khong phai
+            // trang thai binh thuong (danh sach dividerCells von khong rong o nhanh nay).
+            if (soGiuLai == dividerCells.Count && soQuetThem == 0)
+            {
+                Debug.LogWarning(
+                    $"[Land] KHONG an duoc o hang rao nao tren '{dividerTilemap.name}' — " +
+                    $"ca {dividerCells.Count} o deu bi giu lai. Gan nhu chac chan la loc theo " +
+                    "LOAI TILE khong nhan ra hang rao (lo ve tay bang RuleTile_IsoDock45 thay " +
+                    "vi RuleTile_IsoFence45, hoac ten tile khong chua 'fence'/'rao').\n" +
+                    "→ CACH SUA: keo dung RuleTile cua hang rao vao 'tileLaHangRao' (hoac " +
+                    "'fenceTile') tren LandExpansionManager; hoac bo tick 'locTheoLoaiTile' " +
+                    "neu o trong dividerCells chac chan chi toan hang rao.");
+            }
 
             if (verboseLog)
-                Debug.Log($"[Land] Da an {dividerCells.Count} o duong ke chia lo tren " +
-                          $"'{dividerTilemap.name}' (thoat Play la hien lai).");
+                Debug.Log($"[Land] Da an {_soODaAn} o hang rao tren '{dividerTilemap.name}' " +
+                          $"(danh sach {dividerCells.Count} o, quet them {soQuetThem} o) — " +
+                          $"giu lai {soGiuLai} o cau tau / vung chi dinh. Thoat Play la hien lai het.");
         }
 
         // ── 1. AN CA LOP — chi khi duoc bat han (mac dinh TAT) ──────────
@@ -274,16 +403,18 @@ public class LandExpansionManager : MonoBehaviour
     /// <summary>O nay da thuoc dat cua nguoi choi chua.</summary>
     public bool IsCellUnlocked(Vector2Int cell)
     {
-        if (!enforceLandBounds) return true;
-        // Khong khu nao khai bao o nay => coi nhu dat tu do (tuong thich map cu).
-        if (!IsCellOwnedByAnyRegion(cell)) return true;
+        // Chi bo qua kiem tra khi CA HAI co deu tat.
+        if (!enforceLandBounds && !epChanDatChuaMua) return true;
+        // Khong khu nao khai bao o nay => tuy co 'coiODaiLaChuaMua'.
+        if (!IsCellOwnedByAnyRegion(cell)) return !coiODaiLaChuaMua;
         return unlockedCells.Contains(cell);
     }
 
     /// <summary>Toan bo vung o co nam trong dat da mua khong.</summary>
     public bool IsRectUnlocked(RectInt rect)
     {
-        if (!enforceLandBounds) return true;
+        // VONG 17 — dong bo voi IsCellUnlocked: chi bo qua khi CA HAI co deu tat.
+        if (!enforceLandBounds && !epChanDatChuaMua) return true;
         for (int x = rect.xMin; x < rect.xMax; x++)
             for (int y = rect.yMin; y < rect.yMax; y++)
                 if (!IsCellUnlocked(new Vector2Int(x, y))) return false;
@@ -459,7 +590,9 @@ public class LandExpansionManager : MonoBehaviour
     private void RedrawTilemaps()
     {
         if (lockedOverlayTilemap != null) lockedOverlayTilemap.ClearAllTiles();
-        if (fenceTilemap != null) fenceTilemap.ClearAllTiles();
+        // Chi dung toi fenceTilemap khi thuc su co ve hang rao — neu khong, ClearAllTiles
+        // se xoa luon vien dao ma designer da ve tay tren cung lop.
+        if (veHangRaoQuanhLoChuaMua && fenceTilemap != null) fenceTilemap.ClearAllTiles();
 
         foreach (var r in regions)
         {
@@ -469,7 +602,7 @@ public class LandExpansionManager : MonoBehaviour
                 foreach (var c in r.AllCells())
                     lockedOverlayTilemap.SetTile(new Vector3Int(c.x, c.y, 0), lockedOverlayTile);
 
-            if (fenceTilemap != null && fenceTile != null)
+            if (veHangRaoQuanhLoChuaMua && fenceTilemap != null && fenceTile != null)
                 foreach (var c in r.BorderCells())
                     fenceTilemap.SetTile(new Vector3Int(c.x, c.y, 0), fenceTile);
         }

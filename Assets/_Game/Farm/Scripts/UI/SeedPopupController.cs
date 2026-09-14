@@ -75,10 +75,22 @@ public class SeedPopupController : MonoBehaviour
 
         bool onPopup = IsPointerOnThisPopup();
 
-
         if (onPopup) return;
 
+        FarmInputLock.SuppressWorldClickForCurrentFrame();
         FarmUIManager.Instance?.HidePlantSelectPopup();
+    }
+
+    /// <summary>Làm mới hiển thị số lượng của tất cả thẻ hạt đang có trong khay.</summary>
+    public void RefreshAllItemStocks()
+    {
+        if (content == null) return;
+        for (int i = 0; i < content.childCount; i++)
+        {
+            var item = content.GetChild(i).GetComponent<SeedDragItem>();
+            if (item != null)
+                item.RefreshStockDisplay();
+        }
     }
 
     private bool IsPointerOnThisPopup()

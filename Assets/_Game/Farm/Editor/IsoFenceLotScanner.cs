@@ -63,8 +63,58 @@ public class IsoFenceLotScanner : EditorWindow
 
     // ── Phu kin ban do ───────────────────────────────────────────────────
     private bool fillWholeMap = true;
-    private int  blockSize    = 10;      // canh moi lo luoi (o)
+    [SerializeField] private int  blockSize = 10;   // canh moi lo luoi (o) — 10x10 = ~100 o, bang co lo cu
     private int  maxLots      = 80;      // chan tren cho khoi sinh ca nghin asset
+
+    // ═══════════════════════════════════════════════════════════════════
+    // VONG 18 — CHIA LO TOAN BAN DO + TU DONG NE 3 VUNG CAM
+    // -------------------------------------------------------------------
+    // Sep duyet: cat CA BAN DO thanh lo co ~100 o (bang co lo cu), TRU:
+    //   (1) khu duong ray / tau lua      (2) khu giua dang co cong trinh
+    //   (3) cau tau + bien + bai cat
+    // Khong bat Sep nhap toa do — tool tu do lay tu scene.
+    // ═══════════════════════════════════════════════════════════════════
+
+    /// <summary>Bat = quay ve cach cu (chi lay dung cac khung rao ve tay).</summary>
+    [SerializeField] private bool cheDoCu_KhungRaoVeTay = false;
+
+    /// <summary>Bat = ap dung bo loc loai tru tu dong khi cat lo luoi.</summary>
+    [SerializeField] private bool apDungLoaiTruTuDong = true;
+
+    [SerializeField] private bool loaiTruDuongRay = true;
+    [SerializeField] private int  banKinhNoRongDuongRay = 2;   // o, de lo khong sat ray
+
+    [SerializeField] private bool loaiTruVungDaDatDo = true;
+    [SerializeField] private int  banKinhNoRongVungDaDat = 1;
+
+    [SerializeField] private bool loaiTruBienCatCauTau = true;
+
+    /// <summary>Bat = coi MOI SpriteRenderer tren map la vat da dat (rat manh tay).</summary>
+    [SerializeField] private bool coiMoiSpriteLaVatDaDat = false;
+
+    /// <summary>Vung Sep tu tay khoanh them de KHONG chia lo (toa do O LUOI).</summary>
+    [SerializeField] private List<RectInt> vungLoaiTruThem = new List<RectInt>();
+
+    private bool showLoaiTru = true;
+
+    /// <summary>So lieu cua lan loc gan nhat — dung cho bao cao quet thu.</summary>
+    private class ThongKeLoaiTru
+    {
+        public int oDatThoTruocLoc;
+        public int oXanh;
+        public int boBienCatDock;
+        public int boDuongRay;
+        public int boVungDaDat;
+        public int boThuCong;
+        public int oConLai;
+        public RectInt bienBanDo;
+        public int soTilemapRay;
+        public int soObjectRay;
+        public int soObjectDaDat;
+        public string ghiChu = "";
+    }
+
+    private ThongKeLoaiTru tkLoaiTru = new ThongKeLoaiTru();
 
     private readonly List<Tilemap> groundMaps = new List<Tilemap>();
     private readonly List<bool>    groundUse  = new List<bool>();
@@ -227,6 +277,73 @@ public class IsoFenceLotScanner : EditorWindow
         baseUnlockLevel = EditorGUILayout.IntField("Cap mo lo gan nhat", baseUnlockLevel);
         maxUnlockLevel  = EditorGUILayout.IntField("Cap mo lo xa nhat",  maxUnlockLevel);
         clearSeconds    = EditorGUILayout.IntField("Giay don dep moi lo", clearSeconds);
+
+        // ── VONG 18 — CHIA LO TOAN BAN DO + TU DONG NE VUNG CAM ──────────
+        EditorGUILayout.Space();
+        EditorGUILayout.LabelField("C. Chia lô TOÀN BẢN ĐỒ (tự động né vùng cấm)",
+                                   EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox(
+            "Cắt cả bản đồ thành lô ~" + (blockSize * blockSize) + " ô, TRỪ: đường ray / tàu lửa, " +
+            "khu giữa đang có công trình, và cầu tàu + biển + bãi cát.\n" +
+            "Không cần nhập toạ độ — tool tự đọc từ scene.",
+            MessageType.Info);
+
+        cheDoCu_KhungRaoVeTay = EditorGUILayout.ToggleLeft(
+            "Quay về CÁCH CŨ (chỉ lấy đúng các khung rào vẽ tay — 28 lô)",
+            cheDoCu_KhungRaoVeTay);
+
+        showLoaiTru = EditorGUILayout.Foldout(showLoaiTru, "Vùng loại trừ tự động", true);
+        if (showLoaiTru)
+        {
+            using (new EditorGUI.IndentLevelScope())
+            {
+                apDungLoaiTruTuDong = EditorGUILayout.ToggleLeft(
+                    "Bật bộ lọc loại trừ tự động (nên bật)", apDungLoaiTruTuDong);
+
+                using (new EditorGUI.DisabledScope(!apDungLoaiTruTuDong))
+                {
+                    loaiTruDuongRay = EditorGUILayout.ToggleLeft(
+                        "Né ĐƯỜNG RAY / TÀU LỬA", loaiTruDuongRay);
+                    banKinhNoRongDuongRay = Mathf.Clamp(
+                        EditorGUILayout.IntField("   Nới rộng quanh ray (ô)", banKinhNoRongDuongRay), 0, 20);
+
+                    loaiTruVungDaDatDo = EditorGUILayout.ToggleLeft(
+                        "Né KHU GIỮA đang có công trình / đồ đã đặt", loaiTruVungDaDatDo);
+                    banKinhNoRongVungDaDat = Mathf.Clamp(
+                        EditorGUILayout.IntField("   Nới rộng quanh công trình (ô)", banKinhNoRongVungDaDat), 0, 20);
+                    coiMoiSpriteLaVatDaDat = EditorGUILayout.ToggleLeft(
+                        "   Mạnh tay: coi MỌI sprite trên map là đồ đã đặt", coiMoiSpriteLaVatDaDat);
+
+                    loaiTruBienCatCauTau = EditorGUILayout.ToggleLeft(
+                        "Né CẦU TÀU / BIỂN / BÃI CÁT (chỉ giữ ô đất xanh)", loaiTruBienCatCauTau);
+
+                    EditorGUILayout.LabelField(
+                        $"Vùng khoanh tay thêm: {(vungLoaiTruThem == null ? 0 : vungLoaiTruThem.Count)}");
+                    if (vungLoaiTruThem == null) vungLoaiTruThem = new List<RectInt>();
+                    for (int i = 0; i < vungLoaiTruThem.Count; i++)
+                    {
+                        using (new EditorGUILayout.HorizontalScope())
+                        {
+                            vungLoaiTruThem[i] = EditorGUILayout.RectIntField($"   Vùng {i}", vungLoaiTruThem[i]);
+                            if (GUILayout.Button("X", GUILayout.Width(24)))
+                            { vungLoaiTruThem.RemoveAt(i); break; }
+                        }
+                    }
+                    if (GUILayout.Button("   + Thêm vùng loại trừ thủ công"))
+                        vungLoaiTruThem.Add(new RectInt(0, 0, 10, 10));
+                }
+            }
+        }
+
+        EditorGUILayout.Space();
+        if (GUILayout.Button("QUÉT THỬ (không ghi gì)", GUILayout.Height(30)))
+            QuetThuChiaLoToanMap();
+
+        GUI.backgroundColor = new Color(1f, 0.75f, 0.55f);
+        if (GUILayout.Button("GHI THẬT — chia lô toàn bản đồ (sinh lại mã lô)",
+                             GUILayout.Height(30)))
+            GhiThatChiaLoToanMap(luuScene: true);
+        GUI.backgroundColor = Color.white;
 
         // ── Nut ──────────────────────────────────────────────────────────
         EditorGUILayout.Space();
@@ -432,7 +549,7 @@ public class IsoFenceLotScanner : EditorWindow
         string reportB = "B. Phu kin: tat.\n";
         if (fillWholeMap || evenGridWholeMap)
         {
-            var land = BuildLandMask();
+            var land = apDungLoaiTruTuDong ? BuildLandMaskDaLoc() : BuildLandMask();
             land.ExceptWith(taken);
             // Chia deu: duong ke se bi AN nen o do van la dat xai duoc -> chi bo vien dao.
             // Che do ve tay: bo ca duong ke (no la ranh giua cac lo).
@@ -851,42 +968,768 @@ public class IsoFenceLotScanner : EditorWindow
         w.AutoFindTilemaps();
         w.CollectGroundMaps();
 
-        // 🔴 VÒNG 17 — QUAY VỀ CHẾ ĐỘ KHUNG RÀO.
-        // Bản trước để evenGridWholeMap = true, cắt đều 10x10 phủ CẢ BẢN ĐỒ nên sinh
-        // 152 lô, đè cả vào giữa làng Sếp đang chơi. Sếp muốn: lô = đúng những khung
-        // rào đã vạch, phần giữa để trống làm đất nhà, biển/bãi cát không chia lô.
-        w.evenGridWholeMap   = false;
-        w.fillWholeMap       = false;
+        // VONG 18 — SEP DA DUYET: chia lo CA BAN DO.
+        // Vong 17 phai quay ve khung rao ve tay vi ban chia deu cu de len khu giua
+        // lang. Nay bo loc tu dong da ne: duong ray, khu dang co cong trinh, cau tau
+        // + bien + bai cat. Muon quay lai cach cu -> bat cheDoCu_KhungRaoVeTay
+        // trong cua so Tools/Map45/11.
+        w.ApDungCheDoChiaLo();             // VONG 18 — mac dinh CHIA DEU TOAN MAP
         w.hideAllDividerCells = true;      // vào game ẩn sạch lớp vạch rào
         w.useBorderAsWall    = true;       // viền đá bờ biển khép kín bản đồ
         w.minLotCells        = 6;
         w.maxLotCells        = 200000;     // giữ luôn cả vùng giữa làng làm ĐẤT NHÀ
         w.maxLots            = 400;
 
-        w.ScanLots();
-        if (w.lots.Count == 0)
+        // VONG 18 — di qua luong AN TOAN: quet -> hoi lai -> sao luu -> sinh lai
+        // -> ANH XA lai tien do mua dat sang ma lo moi -> luu scene.
+        // (Ban cu xoa thang FARM_UNLOCKED_REGIONS => Sep mat sach dat da mua.)
+        w.GhiThatChiaLoToanMap(luuScene: true);
+    }
+
+
+    // ═════════════════════════════════════════════════════════════════════
+    // VONG 18 — CHIA LO TOAN BAN DO (them moi, khong dung toi ham cu)
+    // ═════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Chon che do chia lo cho nut "LAM HET". Mac dinh = CHIA DEU TOAN MAP.
+    /// Bat cheDoCu_KhungRaoVeTay de quay lai cach cu (chi 28 khung rao ve tay).
+    /// </summary>
+    private void ApDungCheDoChiaLo()
+    {
+        if (cheDoCu_KhungRaoVeTay)
         {
-            EditorUtility.DisplayDialog("Chia Lo Dat",
-                "Khong tim ra o dat nao.\n\n" + w.status +
-                "\nKiem tra: Grid_Iso45 co trong scene? Cac lop nen (Grass/Dirt...) co tile?", "OK");
-            return;
+            evenGridWholeMap = false;
+            fillWholeMap     = false;
+        }
+        else
+        {
+            evenGridWholeMap = true;
+            fillWholeMap     = true;
+            if (blockSize < 3) blockSize = 10;      // ~100 o / lo, bang co lo cu
+        }
+    }
+
+    // ── Loc ten ─────────────────────────────────────────────────────────
+
+    /// <summary>Tach ten thanh tu (cat theo ky tu la va theo chu HOA giua ten).</summary>
+    private static List<string> TachTu(string ten)
+    {
+        var outList = new List<string>();
+        if (string.IsNullOrEmpty(ten)) return outList;
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < ten.Length; i++)
+        {
+            char ch = ten[i];
+            bool laChuSo = (ch >= '0' && ch <= '9');
+            bool laChu   = (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+            if (!laChu && !laChuSo)
+            {
+                if (sb.Length > 0) { outList.Add(sb.ToString().ToLowerInvariant()); sb.Length = 0; }
+                continue;
+            }
+            // ranh gioi camelCase: 'a' roi 'B'
+            if (i > 0 && ch >= 'A' && ch <= 'Z' && ten[i - 1] >= 'a' && ten[i - 1] <= 'z')
+            {
+                if (sb.Length > 0) { outList.Add(sb.ToString().ToLowerInvariant()); sb.Length = 0; }
+            }
+            sb.Append(ch);
+        }
+        if (sb.Length > 0) outList.Add(sb.ToString().ToLowerInvariant());
+        return outList;
+    }
+
+    /// <summary>
+    /// Ten co dinh toi DUONG RAY / TAU LUA khong.
+    /// Tu khoa manh (tim ca trong ten): rail / train / duongray / taulua.
+    /// Tu khoa ngan (chi khop khi la MOT TU rieng): ray / tau  — de "Tray",
+    /// "Gray", "Restaurant" khong bi nhan nham.
+    /// </summary>
+    private static bool TenLaDuongRay(string ten)
+    {
+        if (string.IsNullOrEmpty(ten)) return false;
+        string n = ten.ToLowerInvariant();
+        if (n.Contains("rail") || n.Contains("train") || n.Contains("duongray")
+            || n.Contains("duong_ray") || n.Contains("taulua") || n.Contains("tau_lua")) return true;
+
+        foreach (var tu in TachTu(n))
+            if (tu == "ray" || tu == "tau" || tu.StartsWith("ray") || tu.StartsWith("taul")) return true;
+        return false;
+    }
+
+    // ── Mat na DUONG RAY ────────────────────────────────────────────────
+
+    /// <summary>
+    /// O thuoc khu duong ray. HAI NGUON, vi du an nay KHONG co tilemap ray rieng:
+    ///   1. Tilemap co ten dinh toi ray/train/tau  (neu sau nay designer them lop).
+    ///   2. GameObject trong scene co ten dinh toi ray/train/tau (Taulua,
+    ///      TrainVisualRoot, TrainPath, ShippingTrainPath, gataulua...) — lay
+    ///      hop bao renderer, khong co renderer thi lay vi tri cac node con.
+    /// UI (nam duoi Canvas / RectTransform) bi bo qua.
+    /// </summary>
+    private HashSet<Vector2Int> BuildDuongRayMask()
+    {
+        var mask = new HashSet<Vector2Int>();
+        tkLoaiTru.soTilemapRay = 0;
+        tkLoaiTru.soObjectRay  = 0;
+
+        // 1. tilemap
+        try
+        {
+            var grid = GameObject.Find(IsoGrid.IsoGridObjectName);
+            if (grid != null)
+            {
+                foreach (var tm in grid.GetComponentsInChildren<Tilemap>(true))
+                {
+                    if (tm == null || !TenLaDuongRay(tm.name)) continue;
+                    tkLoaiTru.soTilemapRay++;
+                    foreach (var p in tm.cellBounds.allPositionsWithin)
+                        if (tm.GetTile(p) != null) mask.Add(new Vector2Int(p.x, p.y));
+                }
+            }
+        }
+        catch (System.Exception e) { Debug.LogWarning($"[LoDat] Doc tilemap ray loi: {e.Message}"); }
+
+        // 2. GameObject trong scene
+        try
+        {
+            var all = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include,
+                                                          FindObjectsSortMode.None);
+            foreach (var t in all)
+            {
+                if (t == null) continue;
+                if (t is RectTransform) continue;                    // UI
+                if (!TenLaDuongRay(t.gameObject.name)) continue;
+                if (t.GetComponentInParent<Canvas>() != null) continue;
+                // cha da duoc nhan roi thi bo qua con
+                if (t.parent != null && TenLaDuongRay(t.parent.name)) continue;
+
+                var oCua = CacOCuaObject(t);
+                if (oCua.Count == 0) continue;
+                tkLoaiTru.soObjectRay++;
+                mask.UnionWith(oCua);
+            }
+        }
+        catch (System.Exception e) { Debug.LogWarning($"[LoDat] Quet object ray loi: {e.Message}"); }
+
+        return mask;
+    }
+
+    // ── Mat na VUNG DA DAT DO (giua lang) ───────────────────────────────
+
+    /// <summary>
+    /// O dang bi cong trinh / do da dat chiem. BA NGUON:
+    ///   1. Save FARM_PLACED_BUILDINGS (do nguoi choi dat luc Play) — dung lai
+    ///      ham LoadPlacedBuildingCells() da co san.
+    ///   2. Object trong scene co script gameplay: PlotController (o dat),
+    ///      PenMiniPanelUI (chuong), EditableBuilding (nha sua duoc).
+    ///   3. Object trong scene TRUNG TEN prefabToBuild cua mot PlaceableItemData
+    ///      (designer keo tay vao scene). Bo "(Clone)" khi so ten.
+    /// Bat coiMoiSpriteLaVatDaDat de quet them MOI SpriteRenderer (manh tay).
+    /// </summary>
+    private HashSet<Vector2Int> BuildVungDaDatMask()
+    {
+        var mask = new HashSet<Vector2Int>();
+        tkLoaiTru.soObjectDaDat = 0;
+
+        // 1. save
+        try { mask.UnionWith(LoadPlacedBuildingCells()); }
+        catch (System.Exception e) { Debug.LogWarning($"[LoDat] Doc save cong trinh loi: {e.Message}"); }
+
+        // 2 + 3. object trong scene
+        var tenPrefabDat = new HashSet<string>();
+        try
+        {
+            foreach (var guid in AssetDatabase.FindAssets("t:PlaceableItemData"))
+            {
+                var d = AssetDatabase.LoadAssetAtPath<PlaceableItemData>(AssetDatabase.GUIDToAssetPath(guid));
+                if (d != null && d.prefabToBuild != null)
+                    tenPrefabDat.Add(d.prefabToBuild.name.ToLowerInvariant());
+            }
+        }
+        catch (System.Exception e) { Debug.LogWarning($"[LoDat] Doc PlaceableItemData loi: {e.Message}"); }
+
+        try
+        {
+            var all = Object.FindObjectsByType<Transform>(FindObjectsInactive.Include,
+                                                          FindObjectsSortMode.None);
+            foreach (var t in all)
+            {
+                if (t == null) continue;
+                if (t is RectTransform) continue;
+                var go = t.gameObject;
+                if (t.GetComponentInParent<Canvas>() != null) continue;
+                if (go.GetComponent<Tilemap>() != null) continue;
+                if (TenLaDuongRay(go.name)) continue;              // ray tinh o mat na khac
+
+                bool laVatDaDat = false;
+                try
+                {
+                    if (go.GetComponent<PlotController>()   != null) laVatDaDat = true;
+                    if (go.GetComponent<PenMiniPanelUI>()   != null) laVatDaDat = true;
+                    if (go.GetComponent<EditableBuilding>() != null) laVatDaDat = true;
+                }
+                catch { }
+
+                if (!laVatDaDat && tenPrefabDat.Count > 0)
+                {
+                    string ten = go.name.ToLowerInvariant().Replace("(clone)", "").Trim();
+                    if (tenPrefabDat.Contains(ten)) laVatDaDat = true;
+                }
+
+                if (!laVatDaDat && coiMoiSpriteLaVatDaDat &&
+                    go.GetComponent<SpriteRenderer>() != null) laVatDaDat = true;
+
+                if (!laVatDaDat) continue;
+
+                var oCua = CacOCuaObject(t);
+                if (oCua.Count == 0) continue;
+                tkLoaiTru.soObjectDaDat++;
+                mask.UnionWith(oCua);
+            }
+        }
+        catch (System.Exception e) { Debug.LogWarning($"[LoDat] Quet vat da dat loi: {e.Message}"); }
+
+        return mask;
+    }
+
+    /// <summary>
+    /// Vung O LUOI ma mot object dang phu. Uu tien hop bao renderer; khong co
+    /// renderer thi lay vi tri cac node con (dung cho TrainPath chi la waypoint).
+    /// Chan vat qua to (hop bao om ca ban do) de khong loai tru nham het map.
+    /// </summary>
+    private static HashSet<Vector2Int> CacOCuaObject(Transform t)
+    {
+        var cells = new HashSet<Vector2Int>();
+        if (t == null) return cells;
+
+        try
+        {
+            bool coBounds = false;
+            Bounds b = default;
+            foreach (var r in t.GetComponentsInChildren<Renderer>(true))
+            {
+                if (r == null) continue;
+                if (r is TilemapRenderer) continue;
+                if (!coBounds) { b = r.bounds; coBounds = true; }
+                else b.Encapsulate(r.bounds);
+            }
+
+            if (coBounds)
+            {
+                var goc = new Vector3[]
+                {
+                    new Vector3(b.min.x, b.min.y, b.center.z),
+                    new Vector3(b.max.x, b.min.y, b.center.z),
+                    new Vector3(b.min.x, b.max.y, b.center.z),
+                    new Vector3(b.max.x, b.max.y, b.center.z),
+                };
+                int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
+                foreach (var g in goc)
+                {
+                    var c = IsoGrid.WorldToCell(g);
+                    minX = Mathf.Min(minX, c.x); maxX = Mathf.Max(maxX, c.x);
+                    minY = Mathf.Min(minY, c.y); maxY = Mathf.Max(maxY, c.y);
+                }
+
+                long dienTich = (long)(maxX - minX + 1) * (maxY - minY + 1);
+                if (dienTich > 20000)
+                {
+                    // vat nay to bat thuong (thuong la root rong om ca map) -> chi lay tam
+                    cells.Add(IsoGrid.WorldToCell(t.position));
+                    return cells;
+                }
+
+                for (int x = minX; x <= maxX; x++)
+                    for (int y = minY; y <= maxY; y++)
+                    {
+                        var w = IsoGrid.CellCenterToWorld(new Vector2Int(x, y));
+                        if (b.Contains(new Vector3(w.x, w.y, b.center.z)))
+                            cells.Add(new Vector2Int(x, y));
+                    }
+
+                if (cells.Count == 0) cells.Add(IsoGrid.WorldToCell(b.center));
+                return cells;
+            }
+
+            // khong co renderer -> lay chinh no + cac node con (waypoint path)
+            cells.Add(IsoGrid.WorldToCell(t.position));
+            foreach (var con in t.GetComponentsInChildren<Transform>(true))
+            {
+                if (con == null || con is RectTransform) continue;
+                cells.Add(IsoGrid.WorldToCell(con.position));
+            }
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[LoDat] Do vung o cua '{t.name}' loi: {e.Message}");
+        }
+        return cells;
+    }
+
+    /// <summary>No rong mot tap o them r vong (8 huong). Co tran chong no bo nho.</summary>
+    private static HashSet<Vector2Int> NoRong(HashSet<Vector2Int> src, int r)
+    {
+        var cur = new HashSet<Vector2Int>(src);
+        if (r <= 0 || cur.Count == 0) return cur;
+        for (int step = 0; step < r; step++)
+        {
+            if (cur.Count > 400000) { Debug.LogWarning("[LoDat] No rong qua lon -> dung som."); break; }
+            var next = new HashSet<Vector2Int>(cur);
+            foreach (var c in cur)
+                for (int dx = -1; dx <= 1; dx++)
+                    for (int dy = -1; dy <= 1; dy++)
+                        next.Add(new Vector2Int(c.x + dx, c.y + dy));
+            cur = next;
+        }
+        return cur;
+    }
+
+    /// <summary>
+    /// MAT NA DAT DUNG DE CAT LO = dat tho (cac lop da tick) sau khi tru:
+    /// bien/cat/cau tau, duong ray, vung da co cong trinh, vung Sep khoanh tay.
+    /// Moi buoc boc try/catch: hong mot buoc thi bo qua buoc do, khong dung ca tool.
+    /// </summary>
+    private HashSet<Vector2Int> BuildLandMaskDaLoc()
+    {
+        tkLoaiTru = new ThongKeLoaiTru();
+
+        var land = BuildLandMask();
+        tkLoaiTru.oDatThoTruocLoc = land.Count;
+
+        int minX = int.MaxValue, maxX = int.MinValue, minY = int.MaxValue, maxY = int.MinValue;
+        foreach (var c in land)
+        {
+            minX = Mathf.Min(minX, c.x); maxX = Mathf.Max(maxX, c.x);
+            minY = Mathf.Min(minY, c.y); maxY = Mathf.Max(maxY, c.y);
+        }
+        tkLoaiTru.bienBanDo = land.Count == 0
+            ? new RectInt(0, 0, 0, 0)
+            : new RectInt(minX, minY, maxX - minX + 1, maxY - minY + 1);
+
+        // 1. BIEN / BAI CAT / CAU TAU — chi giu o nam tren lop DAT XANH
+        if (loaiTruBienCatCauTau)
+        {
+            try
+            {
+                var green = BuildGreenLandMask();
+                tkLoaiTru.oXanh = green.Count;
+                int truoc = land.Count;
+                land.IntersectWith(green);
+                tkLoaiTru.boBienCatDock = truoc - land.Count;
+            }
+            catch (System.Exception e)
+            { Debug.LogWarning($"[LoDat] Loc bien/cat/dock loi: {e.Message}"); }
+        }
+        else
+        {
+            try { tkLoaiTru.oXanh = BuildGreenLandMask().Count; } catch { }
         }
 
-        w.GenerateRegions(silent: true);
+        // 2. DUONG RAY
+        if (loaiTruDuongRay)
+        {
+            try
+            {
+                var ray = NoRong(BuildDuongRayMask(), Mathf.Max(0, banKinhNoRongDuongRay));
+                int truoc = land.Count;
+                land.ExceptWith(ray);
+                tkLoaiTru.boDuongRay = truoc - land.Count;
+                if (tkLoaiTru.soTilemapRay == 0 && tkLoaiTru.soObjectRay == 0)
+                    tkLoaiTru.ghiChu += "Khong tim thay lop/object duong ray nao trong scene. ";
+            }
+            catch (System.Exception e)
+            { Debug.LogWarning($"[LoDat] Loc duong ray loi: {e.Message}"); }
+        }
 
-        // id lo theo chi so -> save cu tro nham, xoa cho sach
-        PlayerPrefs.DeleteKey("FARM_UNLOCKED_REGIONS");
-        for (int i = 0; i < 500; i++) PlayerPrefs.DeleteKey($"LAND_CLEAR_lot_{i:00}");
-        PlayerPrefs.Save();
+        // 3. VUNG GIUA DANG CO CONG TRINH
+        if (loaiTruVungDaDatDo)
+        {
+            try
+            {
+                var vat = NoRong(BuildVungDaDatMask(), Mathf.Max(0, banKinhNoRongVungDaDat));
+                int truoc = land.Count;
+                land.ExceptWith(vat);
+                tkLoaiTru.boVungDaDat = truoc - land.Count;
+            }
+            catch (System.Exception e)
+            { Debug.LogWarning($"[LoDat] Loc vung da dat loi: {e.Message}"); }
+        }
 
-        EditorSceneManager.SaveOpenScenes();
+        // 4. VUNG SEP KHOANH TAY
+        if (vungLoaiTruThem != null && vungLoaiTruThem.Count > 0)
+        {
+            try
+            {
+                int truoc = land.Count;
+                foreach (var r in vungLoaiTruThem)
+                    for (int x = r.xMin; x < r.xMax; x++)
+                        for (int y = r.yMin; y < r.yMax; y++)
+                            land.Remove(new Vector2Int(x, y));
+                tkLoaiTru.boThuCong = truoc - land.Count;
+            }
+            catch (System.Exception e)
+            { Debug.LogWarning($"[LoDat] Loc vung thu cong loi: {e.Message}"); }
+        }
 
-        string msg = $"XONG.\n\n{w.status}\n" +
-                     $"Da luu scene, da xoa tien do mua dat cu.\n" +
-                     $"Bam Play: hang rao an het; moi khung rao chua mua co 1 bang; " +
-                     $"vung giua lang va bien khong bi chia lo.";
-        Debug.Log($"[LoDat] {msg}");
-        EditorUtility.DisplayDialog("Chia Lo Dat — LAM HET", msg, "OK");
+        tkLoaiTru.oConLai = land.Count;
+        return land;
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // GIU DAT DA MUA
+    // ═════════════════════════════════════════════════════════════════════
+
+    private const string KhoaLuuDatDaMua = "FARM_UNLOCKED_REGIONS";
+
+    /// <summary>Danh sach regionId dang duoc ghi trong PlayerPrefs.</summary>
+    private static List<string> DocIdDaMua()
+    {
+        var ids = new List<string>();
+        string raw = PlayerPrefs.GetString(KhoaLuuDatDaMua, "");
+        if (string.IsNullOrEmpty(raw)) return ids;
+        foreach (var s in raw.Split('|'))
+            if (!string.IsNullOrWhiteSpace(s)) ids.Add(s.Trim());
+        return ids;
+    }
+
+    /// <summary>
+    /// TAP O NGUOI CHOI DANG SO HUU truoc khi sinh lai lo.
+    /// = o cua moi khu co regionId nam trong FARM_UNLOCKED_REGIONS, cong o cua
+    /// moi khu unlockedByDefault. Doc tu LandExpansionManager trong scene; neu
+    /// khong co thi doc thang cac asset LandRegionData trong thu muc Land.
+    /// </summary>
+    private static HashSet<Vector2Int> DocODaSoHuu(out int soKhuDaMua)
+    {
+        var cells = new HashSet<Vector2Int>();
+        soKhuDaMua = 0;
+        var ids = new HashSet<string>(DocIdDaMua());
+
+        var khuList = new List<LandRegionData>();
+        try
+        {
+            var mgr = Object.FindFirstObjectByType<LandExpansionManager>();
+            if (mgr != null && mgr.regions != null)
+                foreach (var r in mgr.regions) if (r != null) khuList.Add(r);
+        }
+        catch (System.Exception e) { Debug.LogWarning($"[LoDat] Doc manager loi: {e.Message}"); }
+
+        if (khuList.Count == 0)
+        {
+            try
+            {
+                foreach (var guid in AssetDatabase.FindAssets("t:LandRegionData", new[] { AssetFolder }))
+                {
+                    string p = AssetDatabase.GUIDToAssetPath(guid);
+                    if (p.Contains("_backup_")) continue;
+                    var r = AssetDatabase.LoadAssetAtPath<LandRegionData>(p);
+                    if (r != null) khuList.Add(r);
+                }
+            }
+            catch (System.Exception e) { Debug.LogWarning($"[LoDat] Doc asset khu loi: {e.Message}"); }
+        }
+
+        foreach (var r in khuList)
+        {
+            if (r == null) continue;
+            bool coCua = r.unlockedByDefault || ids.Contains(r.regionId);
+            if (!coCua) continue;
+            soKhuDaMua++;
+            try { foreach (var c in r.AllCells()) cells.Add(c); }
+            catch (System.Exception e) { Debug.LogWarning($"[LoDat] Doc o cua '{r.regionId}' loi: {e.Message}"); }
+        }
+        return cells;
+    }
+
+    /// <summary>
+    /// Sau khi sinh lai lo: lo MOI nao de len o Sep da so huu thi danh dau da mua,
+    /// roi ghi lai FARM_UNLOCKED_REGIONS theo id MOI. Tra ve bao cao dang chu.
+    /// </summary>
+    private string GiuLaiDatDaMua(HashSet<Vector2Int> oSoHuuTruoc, bool ghiThat)
+    {
+        if (oSoHuuTruoc == null) oSoHuuTruoc = new HashSet<Vector2Int>();
+        var idMoi = new List<string>();
+        var oSauKhi = new HashSet<Vector2Int>();
+
+        for (int i = 0; i < lots.Count; i++)
+        {
+            bool trung = false;
+            foreach (var c in lots[i]) if (oSoHuuTruoc.Contains(c)) { trung = true; break; }
+            bool moSan = i == 0 || (i < lotHasBuilding.Count && lotHasBuilding[i]);
+            if (!trung && !moSan) continue;
+            idMoi.Add($"lot_{i:00}");
+            foreach (var c in lots[i]) oSauKhi.Add(c);
+        }
+
+        int thieu = 0;
+        foreach (var c in oSoHuuTruoc) if (!oSauKhi.Contains(c)) thieu++;
+
+        if (ghiThat)
+        {
+            try
+            {
+                PlayerPrefs.SetString(KhoaLuuDatDaMua, string.Join("|", idMoi));
+                PlayerPrefs.Save();
+            }
+            catch (System.Exception e)
+            { Debug.LogError($"[LoDat] GHI LAI tien do mua dat THAT BAI: {e.Message}"); }
+        }
+
+        string bc =
+            $"DAT DA MUA: truoc {oSoHuuTruoc.Count} o -> sau {oSauKhi.Count} o " +
+            $"({idMoi.Count} lo moi duoc danh dau da mo).\n";
+        if (thieu > 0)
+            bc += $"  *** CANH BAO: {thieu} o Sep da so huu KHONG nam trong lo moi nao " +
+                  "(thuong do o do bi loai tru: ray / cong trinh / bien). " +
+                  "O do se thanh dat tu do hoac dat khong thuoc lo nao — KIEM TRA LAI. ***\n";
+        if (oSauKhi.Count > oSoHuuTruoc.Count)
+            bc += $"  Luu y: sau khi chia lai, Sep so huu NHIEU hon {oSauKhi.Count - oSoHuuTruoc.Count} o " +
+                  "vi lo moi to hon phan dat cu (khong mat gi).\n";
+        return bc;
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // SAO LUU
+    // ═════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Chep moi asset LandRegionData hien co sang
+    /// Assets/_Game/Farm/Land/_backup_&lt;ngay_gio&gt;~/  (CHU Y dau ~ o cuoi ten).
+    ///
+    /// VI SAO CO DAU ~ :
+    ///   Unity BO QUA moi thu muc co ten ket thuc bang '~' — khong import, khong
+    ///   cap GUID, khong hien trong Project window, va KHONG bao gio lot vao
+    ///   AssetDatabase.FindAssets("t:LandRegionData"). Neu de thu muc sao luu la
+    ///   thu muc asset binh thuong thi mot tool khac quet theo thu muc se vo tinh
+    ///   nhat ca ban sao vao LandExpansionManager.regions => map co lo ma.
+    ///
+    ///   Hau qua: KHONG duoc dung AssetDatabase.CopyAsset (dich nam ngoai asset
+    ///   database) va KHONG duoc goi AssetDatabase.Refresh() len duong dan nay.
+    ///   Chep bang System.IO.File.Copy, chep CA file .meta de GUID cu con nguyen
+    ///   khi Sep keo nguoc file ra.
+    ///
+    /// Tra ve duong dan thu muc, hoac "" neu that bai.
+    /// </summary>
+    private static string SaoLuuLandAssets()
+    {
+        try
+        {
+            if (!Directory.Exists(AssetFolder))
+            {
+                Directory.CreateDirectory(AssetFolder);
+                AssetDatabase.Refresh();
+            }
+
+            // Day moi thay doi con nam trong bo nho xuong dia truoc da — File.Copy
+            // doc file THAT tren dia, khong doc duoc ban nhap trong AssetDatabase.
+            AssetDatabase.SaveAssets();
+
+            // Lay danh sach TRUOC khi tao thu muc — nguon van la asset that.
+            var nguon = new List<string>();
+            foreach (var guid in AssetDatabase.FindAssets("t:LandRegionData", new[] { AssetFolder }))
+            {
+                string p = AssetDatabase.GUIDToAssetPath(guid);
+                if (string.IsNullOrEmpty(p) || p.Contains("_backup_")) continue;
+                nguon.Add(p);
+            }
+
+            // dau '~' cuoi ten = Unity khong nhin thay thu muc nay
+            string tenThuMuc = "_backup_" + System.DateTime.Now.ToString("yyyy-MM-dd_HHmm") + "~";
+            string duongDan  = $"{AssetFolder}/{tenThuMuc}";
+
+            if (!Directory.Exists(duongDan)) Directory.CreateDirectory(duongDan);
+
+            int chep = 0, chepMeta = 0;
+            foreach (var p in nguon)
+            {
+                string ten = Path.GetFileName(p);
+                try
+                {
+                    File.Copy(p, $"{duongDan}/{ten}", true);
+                    chep++;
+                    // .meta di kem => giu nguyen GUID khi khoi phuc tay
+                    if (File.Exists(p + ".meta"))
+                    {
+                        File.Copy(p + ".meta", $"{duongDan}/{ten}.meta", true);
+                        chepMeta++;
+                    }
+                }
+                catch (System.Exception ex)
+                { Debug.LogWarning($"[LoDat] Khong chep duoc {p}: {ex.Message}"); }
+            }
+
+            // KHONG goi AssetDatabase.Refresh() cho duong dan nay — thu muc '~'
+            // nam ngoai asset database, refresh chi vo ich.
+            Debug.Log($"[LoDat] DA SAO LUU {chep} asset lo dat (+{chepMeta} file .meta) vao: {duongDan}\n" +
+                      "Thu muc nay co dau '~' o cuoi nen KHONG hien trong Unity. Mo bang " +
+                      "Windows Explorer. Muon khoi phuc: chep cac file trong do LEN MOT CAP " +
+                      $"({AssetFolder}) roi quay lai Unity de no tu import.");
+            return duongDan;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogError($"[LoDat] Sao luu that bai: {e.Message}");
+            return "";
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // QUET THU — KHONG GHI GI
+    // ═════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Tinh truoc ket qua chia lo toan map va in bao cao. TUYET DOI khong ghi
+    /// asset, khong dong vao PlayerPrefs, khong sua scene.
+    /// </summary>
+    private void QuetThuChiaLoToanMap()
+    {
+        try
+        {
+            tkLoaiTru = new ThongKeLoaiTru();   // xoa so lieu lan truoc
+            ApDungCheDoChiaLo();
+            AutoFindTilemaps();
+            CollectGroundMaps();
+
+            int soKhuCu;
+            var oSoHuuTruoc = DocODaSoHuu(out soKhuCu);
+            string rawCu = PlayerPrefs.GetString(KhoaLuuDatDaMua, "");
+
+            ScanLots();     // chi tinh trong bo nho
+
+            if (cheDoCu_KhungRaoVeTay)
+                tkLoaiTru.ghiChu += "Dang o CHE DO CU (khung rao ve tay) — bo loc loai tru " +
+                                    "khong chay, cac so loai tru ben duoi deu = 0. ";
+            if (!apDungLoaiTruTuDong)
+                tkLoaiTru.ghiChu += "Bo loc loai tru tu dong DANG TAT. ";
+
+            var kichThuoc = new List<int>();
+            foreach (var l in lots) kichThuoc.Add(l.Count);
+            kichThuoc.Sort();
+            int nho = kichThuoc.Count > 0 ? kichThuoc[0] : 0;
+            int to  = kichThuoc.Count > 0 ? kichThuoc[kichThuoc.Count - 1] : 0;
+            int giua = kichThuoc.Count > 0 ? kichThuoc[kichThuoc.Count / 2] : 0;
+
+            string bcDatMua = GiuLaiDatDaMua(oSoHuuTruoc, ghiThat: false);
+
+            var b = tkLoaiTru.bienBanDo;
+            string bc =
+                "===== QUET THU — KHONG GHI GI =====\n" +
+                $"Bien ban do (o luoi): x {b.xMin}..{b.xMax - 1}, y {b.yMin}..{b.yMax - 1} " +
+                $"({b.width} x {b.height})\n" +
+                $"O dat tho (cac lop da tick): {tkLoaiTru.oDatThoTruocLoc}\n" +
+                $"O DAT XANH (co/dat/da): {tkLoaiTru.oXanh}\n" +
+                "LOAI TRU:\n" +
+                $"   - bien / bai cat / cau tau : {tkLoaiTru.boBienCatDock} o\n" +
+                $"   - duong ray (no rong {banKinhNoRongDuongRay}) : {tkLoaiTru.boDuongRay} o " +
+                $"({tkLoaiTru.soTilemapRay} tilemap + {tkLoaiTru.soObjectRay} object)\n" +
+                $"   - vung da co cong trinh (no rong {banKinhNoRongVungDaDat}) : {tkLoaiTru.boVungDaDat} o " +
+                $"({tkLoaiTru.soObjectDaDat} object)\n" +
+                $"   - vung khoanh tay : {tkLoaiTru.boThuCong} o ({(vungLoaiTruThem == null ? 0 : vungLoaiTruThem.Count)} vung)\n" +
+                $"=> Con {tkLoaiTru.oConLai} o de chia lo.\n" +
+                $"SE SINH {lots.Count} LO (canh block {blockSize}x{blockSize}).\n" +
+                $"   Kich thuoc lo: nho nhat {nho} o · trung vi {giua} o · to nhat {to} o\n" +
+                bcDatMua +
+                $"FARM_UNLOCKED_REGIONS hien tai = \"{rawCu}\" ({soKhuCu} khu dang thuoc ve Sep)\n" +
+                (string.IsNullOrEmpty(tkLoaiTru.ghiChu) ? "" : "GHI CHU: " + tkLoaiTru.ghiChu + "\n") +
+                "===== CHUA GHI GI CA — bam nut GHI THAT neu thay dung =====";
+
+            status = bc;
+            Debug.Log($"[LoDat] {bc}");
+            Repaint();
+        }
+        catch (System.Exception e)
+        {
+            status = "Quet thu loi: " + e.Message;
+            Debug.LogError($"[LoDat] {status}\n{e}");
+        }
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // GHI THAT
+    // ═════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Sao luu -> hoi lai -> sinh lai toan bo lo -> giu dat da mua -> luu scene.
+    /// Day la ham DUY NHAT duoc phep ghi trong luong chia lo toan map.
+    /// </summary>
+    private void GhiThatChiaLoToanMap(bool luuScene)
+    {
+        try
+        {
+            if (Application.isPlaying)
+            {
+                EditorUtility.DisplayDialog("Chia Lo Dat", "Dang Play. Bam Stop roi chay lai.", "OK");
+                return;
+            }
+
+            ApDungCheDoChiaLo();
+            AutoFindTilemaps();
+            CollectGroundMaps();
+
+            int soKhuCu;
+            var oSoHuuTruoc = DocODaSoHuu(out soKhuCu);
+            string rawCu = PlayerPrefs.GetString(KhoaLuuDatDaMua, "");
+            Debug.Log($"[LoDat] TRUOC KHI SUA — FARM_UNLOCKED_REGIONS = \"{rawCu}\"  " +
+                      $"({soKhuCu} khu, {oSoHuuTruoc.Count} o). Chep dong nay lai neu can khoi phuc tay.");
+
+            ScanLots();
+            if (lots.Count == 0)
+            {
+                EditorUtility.DisplayDialog("Chia Lo Dat",
+                    "Khong tim ra o dat nao.\n\n" + status +
+                    "\nKiem tra: Grid_Iso45 co trong scene? Cac lop nen (Grass/Dirt...) co tile?", "OK");
+                return;
+            }
+
+            bool dongY = EditorUtility.DisplayDialog(
+                "Chia Lo Dat — GHI THAT",
+                $"Sap ghi de {lots.Count} lo dat.\n\n" +
+                "MA LO SE DUOC SINH LAI TU DAU (lot_00, lot_01, ...).\n" +
+                "Moi asset LandRegionData cu se duoc chep vao thu muc _backup_...~ truoc\n" +
+                "(thu muc an voi Unity, chi thay bang Windows Explorer).\n" +
+                "Tien do mua dat se duoc ANH XA sang ma lo moi (khong xoa).\n\n" +
+                $"Hien Sep dang so huu {oSoHuuTruoc.Count} o dat.\n\nTiep tuc?",
+                "Ghi that", "Huy");
+            if (!dongY) { status = "Da huy — khong ghi gi."; Debug.Log($"[LoDat] {status}"); return; }
+
+            string thuMucBackup = SaoLuuLandAssets();
+
+            GenerateRegions(silent: true);
+
+            string bcDatMua = GiuLaiDatDaMua(oSoHuuTruoc, ghiThat: true);
+
+            // cong truong dang don do cua ban cu khong con y nghia -> don sach
+            try
+            {
+                for (int i = 0; i < 600; i++) PlayerPrefs.DeleteKey($"LAND_CLEAR_lot_{i:00}");
+                PlayerPrefs.Save();
+            }
+            catch (System.Exception e) { Debug.LogWarning($"[LoDat] Xoa LAND_CLEAR loi: {e.Message}"); }
+
+            if (luuScene)
+            {
+                try { EditorSceneManager.SaveOpenScenes(); }
+                catch (System.Exception e) { Debug.LogWarning($"[LoDat] Luu scene loi: {e.Message}"); }
+            }
+
+            string msg = "XONG.\n\n" + status + "\n" + bcDatMua +
+                         (string.IsNullOrEmpty(thuMucBackup)
+                            ? "*** KHONG SAO LUU DUOC — xem Console. ***\n"
+                            : $"Ban sao lo cu: {thuMucBackup}\n" +
+                              "   Thu muc nay ket thuc bang '~' nen Unity KHONG nhin thay — " +
+                              "mo bang Windows Explorer. Khoi phuc: chep cac file trong do len " +
+                              $"mot cap ({AssetFolder}) roi quay lai Unity cho no tu import.\n") +
+                         $"FARM_UNLOCKED_REGIONS cu (chep lai neu can): \"{rawCu}\"\n";
+            status = msg;
+            Debug.Log($"[LoDat] {msg}");
+            EditorUtility.DisplayDialog("Chia Lo Dat — GHI THAT", msg, "OK");
+            Repaint();
+        }
+        catch (System.Exception e)
+        {
+            status = "Ghi that loi: " + e.Message;
+            Debug.LogError($"[LoDat] {status}\n{e}");
+        }
     }
 
     /// <summary>Tim lo co chi so NHO HON va ke sat lo i (chung canh o).</summary>

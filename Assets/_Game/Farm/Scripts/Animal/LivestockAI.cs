@@ -471,9 +471,20 @@ namespace Assetsgame.Animals
 
         private void OnMouseDown()
         {
-        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
-        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
+            // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+            if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
             if (EditModeManager.IsEditMode) return;
+
+            if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial)
+            {
+                // Trong lúc chạy tutorial khác (trồng lúa/hoa): chỉ kêu be be, không mở khay chuồng
+                if (!TutorialManager.Instance.CurrentStepAllowsPenInteraction())
+                {
+                    PlayAnimalSound(true);
+                    return;
+                }
+            }
+
             PlayAnimalSound(true);
             if (parentPen != null && !parentPen.IsPanelOpen())
                 parentPen.OpenPanel();

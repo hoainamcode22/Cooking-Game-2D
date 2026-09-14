@@ -15,6 +15,9 @@ public class GameProgressionStudioOverlay : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoInit()
     {
+        // Cong tac dev: ban release / mobile khong duoc sinh overlay nay.
+        if (!DevOverlayGate.Enabled) return;
+
         if (_instance == null)
         {
             var go = new GameObject("[QA_Progression_Studio_F10]");
@@ -33,6 +36,8 @@ public class GameProgressionStudioOverlay : MonoBehaviour
 
     private void Update()
     {
+        if (!DevOverlayGate.Enabled) return;
+
 #if ENABLE_INPUT_SYSTEM
         var kb = Keyboard.current;
         if (kb != null && (kb.f7Key.wasPressedThisFrame || kb.f10Key.wasPressedThisFrame || kb.f11Key.wasPressedThisFrame))
@@ -49,6 +54,8 @@ public class GameProgressionStudioOverlay : MonoBehaviour
 
     private void OnGUI()
     {
+        if (!DevOverlayGate.Enabled) return;
+
         // Nút bấm nổi ở góc trái trên màn hình để mở Studio nhanh bằng chuột
         if (!_showOverlay)
         {

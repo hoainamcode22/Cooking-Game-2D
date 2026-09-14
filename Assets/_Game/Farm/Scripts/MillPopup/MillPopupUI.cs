@@ -77,11 +77,15 @@ public class MillPopupUI : MonoBehaviour
     /// Cờ static "popup máy xay đang mở". Theo đúng quy ước sẵn có của dự án
     /// (`CropProcessPopupUI.AnyOpen`, `OrderBoardPopupUI.AnyOpen`) để `PopupManager` chặn
     /// click xuống world được mà KHÔNG cần thêm [SerializeField] và KHÔNG cần tôi sửa
-    /// `PopupManager.cs` (tôi không sửa file có sẵn).
-    /// ➜ Lead chỉ cần thêm một dòng vào cuối `PopupManager.IsAnyPopupOpen()`:
-    ///       || MillPopupUI.AnyOpen
-    /// </summary>
-    public static bool AnyOpen { get; private set; }
+    public static bool AnyOpen
+    {
+        get
+        {
+            if (Instance == null)
+                Instance = FindFirstObjectByType<MillPopupUI>(FindObjectsInactive.Include);
+            return Instance != null && Instance.IsOpen;
+        }
+    }
 
     // ═════════════════════════════ THAM CHIẾU (Dev B wire) ═════════════════════════════
 
@@ -260,7 +264,7 @@ public class MillPopupUI : MonoBehaviour
         get
         {
             GameObject root = popupRoot != null ? popupRoot : gameObject;
-            return root.activeSelf;
+            return root != null && root.activeInHierarchy;
         }
     }
 
@@ -340,10 +344,6 @@ public class MillPopupUI : MonoBehaviour
     private void OnDestroy()
     {
         if (Instance == this) Instance = null;
-
-        // BẮT BUỘC hạ cờ: nếu scene bị unload lúc popup đang mở mà cờ còn true thì
-        // PopupManager sẽ chặn click xuống world MÃI MÃI ở scene sau.
-        AnyOpen = false;
     }
 
     private void Update()
@@ -461,7 +461,6 @@ public class MillPopupUI : MonoBehaviour
             p = p.parent;
         }
         if (!root.activeSelf) root.SetActive(true);
-        AnyOpen = true;
 
         if (txtTitle != null) txtTitle.text = config.title;
 
@@ -535,10 +534,8 @@ public class MillPopupUI : MonoBehaviour
         DungAnimation();
         LuuTrangThai();
 
-        AnyOpen = false;
-
         GameObject root = popupRoot != null ? popupRoot : gameObject;
-        if (root.activeSelf) root.SetActive(false);
+        if (root != null && root.activeSelf) root.SetActive(false);
     }
 
     // ═════════════════════════════ CARD CÔNG THỨC ═════════════════════════════
@@ -679,10 +676,12 @@ public class MillPopupUI : MonoBehaviour
 
         switch (trangThai)
         {
-            case NUT_HET_SLOT:  chu = "HẾT SLOT TRỐNG";        sanSang = false; break;
-            case NUT_THIEU_NL:  chu = "THIẾU NGUYÊN LIỆU";     sanSang = false; break;
-            case NUT_CHUA_CHON: chu = "CHỌN MỘT CÔNG THỨC";    sanSang = false; break;
-            default:            chu = "KÉO VÀO SLOT ĐỂ XAY";   sanSang = true;  break;
+            // Ca bon cau deu da co san cap VI→EN trong LocStringTable (dong 272/274/312/313),
+            // truoc day chi thieu buoc goi Loc.T nen ban tieng Anh van hien chu tieng Viet.
+            case NUT_HET_SLOT:  chu = Loc.T("HẾT SLOT TRỐNG");      sanSang = false; break;
+            case NUT_THIEU_NL:  chu = Loc.T("THIẾU NGUYÊN LIỆU");   sanSang = false; break;
+            case NUT_CHUA_CHON: chu = Loc.T("CHỌN MỘT CÔNG THỨC");  sanSang = false; break;
+            default:            chu = Loc.T("KÉO VÀO SLOT ĐỂ XAY"); sanSang = true;  break;
         }
 
         if (txtMainButton != null)   txtMainButton.text    = chu;

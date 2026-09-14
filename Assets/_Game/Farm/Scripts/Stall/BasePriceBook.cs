@@ -170,6 +170,13 @@ public static class BasePriceBook
         // ── Sản phẩm máy (dự án chưa có giá — đặt mới) ──
         { "bot_gao", 30 }, { "nuoc_mia_ep", 45 }, { "pho_mai", 70 },
 
+        // ── Cam cho vat nuoi (may xay thuc an) ──
+        // Chep dung 4 con so BasePrice trong MarketPriceTable.cs:336-339 — bang gia
+        // chinh thuc cua Dev-A. Bac 2 cua TryGetBasePrice hoi bang do TRUOC bang nay nen
+        // binh thuong 4 dong duoi khong chay; chung ton tai de khi MarketPriceTable bi
+        // bo qua (provider ngoai, test khong nap bang) cam khong roi ve gia mac dinh 10.
+        { "cam_ga", 15 }, { "cam_heo", 25 }, { "co_tron_bo", 35 }, { "cam_bo_sua", 45 },
+
         // ── Gia vị (dự án chưa có giá — rẻ vì mua được thoải mái) ──
         { "salt", 8 }, { "sugar", 10 }, { "fishsauce", 12 }, { "soysauce", 12 }, { "herbs", 14 },
 

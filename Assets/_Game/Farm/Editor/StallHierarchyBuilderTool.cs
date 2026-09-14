@@ -271,9 +271,9 @@ public class StallHierarchyBuilderTool : EditorWindow
         Button closeBtn = close.gameObject.AddComponent<Button>();
         closeBtn.targetGraphic = closeImg;
 
-        // 6. Ví vàng
+        // 6. Ví vàng (Góc trên bên trái, tránh va chạm nút Đóng [X] góc trên phải)
         RectTransform goldBar = CreateUI("GoldBar", main);
-        Anchor(goldBar, new Vector2(1f, 1f), new Vector2(-140f, -96f), new Vector2(220f, 62f));
+        Anchor(goldBar, new Vector2(0f, 1f), new Vector2(140f, -60f), new Vector2(220f, 62f));
         Sliced(goldBar, "stall_btn", TaskPopupDesign.RibbonDuoi);
         RectTransform goldIcon = CreateUI("IMG_ArtGoldIcon", goldBar);
         Anchor(goldIcon, new Vector2(0f, 0.5f), new Vector2(38f, 0f), new Vector2(44f, 44f));
@@ -284,34 +284,13 @@ public class StallHierarchyBuilderTool : EditorWindow
 
         // ── Lưới ô quầy 5×2 ──────────────────────────────────────────────────
         RectTransform slotGrid = CreateUI("SlotGrid", main);
-        Center(slotGrid, new Vector2(0f, 24f), new Vector2(1330f, 490f));
+        Center(slotGrid, new Vector2(0f, 0f), new Vector2(1330f, 520f));
         GridLayoutGroup grid = slotGrid.gameObject.AddComponent<GridLayoutGroup>();
         grid.cellSize        = new Vector2(250f, 230f);
         grid.spacing         = new Vector2(20f, 20f);
         grid.constraint      = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = 5;
         grid.childAlignment  = TextAnchor.UpperCenter;
-
-        // ── Hồ sơ người chơi (góc dưới trái, theo video) ─────────────────────
-        RectTransform profile = CreateUI("ProfileBar", main);
-        Anchor(profile, new Vector2(0f, 0f), new Vector2(210f, 60f), new Vector2(360f, 88f));
-        Sliced(profile, "stall_btn", StallSpriteFactory.Hex("#2A1A3C"));
-
-        RectTransform avatar = CreateUI("IMG_ArtPlayerAvatar", profile);
-        Anchor(avatar, new Vector2(0f, 0.5f), new Vector2(50f, 0f), new Vector2(68f, 68f));
-        Simple(avatar, "stall_circle", StallSpriteFactory.Teal);
-
-        TextMeshProUGUI pName = AddText(profile, "Text_PlayerName", "Người chơi", 28,
-                                        StallSpriteFactory.Cream, TextAlignmentOptions.MidlineLeft);
-        Stretch(pName.rectTransform, 96, 6, 80, 6);
-
-        RectTransform lvBadge = CreateUI("Badge_Level", profile);
-        Anchor(lvBadge, new Vector2(1f, 0.5f), new Vector2(-40f, 0f), new Vector2(58f, 58f));
-        Simple(lvBadge, "stall_circle", StallSpriteFactory.Gold);
-        TextMeshProUGUI pLevel = AddText(lvBadge, "Text_PlayerLevel", "1", 26,
-                                         StallSpriteFactory.Hex("#2A1A3C"), TextAlignmentOptions.Center);
-        Stretch(pLevel.rectTransform, 0, 0, 0, 0);
-        pLevel.fontStyle = FontStyles.Bold;
 
         // ── Thông báo ────────────────────────────────────────────────────────
         RectTransform toast = CreateUI("Message_Toast", main);
@@ -334,8 +313,8 @@ public class StallHierarchyBuilderTool : EditorWindow
             .Obj("textGold",            goldTxt)
             .Obj("slotGridContent",     slotGrid)
             .Obj("slotPrefab",          slotPrefab)
-            .Obj("textPlayerName",      pName)
-            .Obj("textPlayerLevel",     pLevel)
+            .Obj("textPlayerName",      null)
+            .Obj("textPlayerLevel",     null)
             .Obj("pickerRoot",          picker.Root.gameObject)
             .Obj("pickerPanel",         picker.Panel)
             .Obj("buttonPickerBack",    picker.BackButton)
@@ -675,8 +654,10 @@ public class StallHierarchyBuilderTool : EditorWindow
         RectTransform icon = CreateUI("IMG_ArtCategoryIcon", rt);
         Anchor(icon, new Vector2(0.5f, 1f), new Vector2(0f, -30f), new Vector2(44f, 44f));
         Image iconImg = icon.gameObject.AddComponent<Image>();
-        iconImg.sprite = StallSpriteFactory.Load("stall_circle");
-        iconImg.color  = new Color(1f, 1f, 1f, 0.55f);
+        Sprite catSpr = GetCategorySpriteForBuilder(category);
+        iconImg.sprite = catSpr != null ? catSpr : StallSpriteFactory.Load("stall_circle");
+        iconImg.color  = Color.white;
+        iconImg.preserveAspect = true;
         iconImg.raycastTarget = false;
 
         TextMeshProUGUI txt = AddText(rt, "Text_Label", label, 20, StallSpriteFactory.Cream,
@@ -695,6 +676,40 @@ public class StallHierarchyBuilderTool : EditorWindow
             .Apply();
 
         collector.Add(tab);
+    }
+
+    private static Sprite GetCategorySpriteForBuilder(StallItemCategory cat)
+    {
+        switch (cat)
+        {
+            case StallItemCategory.TatCa:
+                return AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Icon_Processed/QuayHang/stall_tab_tatca.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/thietke/Redesign popup nhiệm vụ game1/Export_Popups_Chon/Design_Assets/baothoc.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/Icons/Missions/mission_shop.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_mill_assets/generated_sprites/icon_inventory.png");
+
+            case StallItemCategory.NongSan:
+                return AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Icon_Processed/QuayHang/stall_tab_nongsan.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/thietke/Redesign popup nhiệm vụ game1/Export_Popups_Chon/Design_Assets/iconlua.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/hatgiong/SHOP/lua.png");
+
+            case StallItemCategory.Hoa:
+                return AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Icon_Processed/QuayHang/stall_tab_hoa.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Hoa/hoahong-removebg-preview.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Hoa/hoacuctrang-removebg-preview.png");
+
+            case StallItemCategory.HatGiong:
+                return AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Icon_Processed/QuayHang/stall_tab_hatgiong.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/Icons/tab_seeds.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/hatgiong/SHOP/hathoashop.png.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/hatgiong/SHOP/hathoa.png");
+
+            case StallItemCategory.CheBien:
+                return AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Icon_Processed/QuayHang/stall_tab_chebien.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/thietke/Redesign popup nhiệm vụ game1/Export_Popups_Chon/Design_Assets/monan1.png")
+                    ?? AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/Icons/Missions/mission_cook.png");
+        }
+        return null;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -1158,6 +1173,11 @@ public class StallHierarchyBuilderTool : EditorWindow
     {
         RectTransform rt = CreateUI(name, parent);
         var t = rt.gameObject.AddComponent<TextMeshProUGUI>();
+        if (SkinKit.FontVo != null)
+        {
+            t.font = SkinKit.FontVo;
+            if (SkinKit.FontVo.material != null) t.fontSharedMaterial = SkinKit.FontVo.material;
+        }
         t.text          = content;
         t.fontSize      = size;
         t.color         = color;

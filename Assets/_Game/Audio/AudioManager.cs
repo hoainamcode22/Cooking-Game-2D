@@ -46,6 +46,7 @@ public class AudioManager : MonoBehaviour
 
     [Header("Core Clips (Assets/Audio Game)")]
     [SerializeField] private AudioClip bgmMain;        // Morning_Garden_Waltz.mp3
+    [SerializeField] private AudioClip bgmCooking;     // bgm_cooking.mp3 (= "soft click.mp3") - BGM scene Bep
     [SerializeField] private AudioClip uiClick;        // button.wav (tất cả nút)
     [SerializeField] private AudioClip expClip;        // exp.mp3 (kinh nghiệm)
     [SerializeField] private AudioClip plantingClip;   // gieohat.mp3 (gieo hạt & hoa)
@@ -74,7 +75,7 @@ public class AudioManager : MonoBehaviour
     [Header("Volume")]
     [Range(0f, 1f)][SerializeField] private float bgmVolume = 0.35f;     // Nhạc nền rõ ràng, êm dịu
     [Range(0f, 1f)][SerializeField] private float uiVolume = 0.70f;      // Tiếng nút bấm nảy giòn
-    [Range(0f, 1f)][SerializeField] private float fxVolume = 0.85f;      // Tiếng gieo hạt, thu hoạch, vàng, exp
+    [Range(0f, 1f)][SerializeField] private float fxVolume = 0.45f;      // [10/09] 0.85 -> 0.45: Sep bao SFX on qua. Nhan them SfxGain (mac dinh 0.85) => ~0.38
     [Range(0f, 1f)][SerializeField] private float waterVolume = 0.25f;
 
     [Header("Anti-Spam Cooldowns")]
@@ -128,7 +129,19 @@ public class AudioManager : MonoBehaviour
     private void HandleSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
     {
         EnsureAudioListener();
-        PlayMainBGM();
+
+        // [THEM 10/09] BGM RIENG CHO SCENE BEP.
+        // "SampleScene" la ten THAT cua scene Bep (FarmUIManager.cookingSceneName = "SampleScene").
+        // Scene Bep load kieu ADDITIVE nen sceneLoaded chi ban luc VAO; luc RA thi
+        // FarmUIManager.ExitCookingMode() goi PlayFarmBGM() tra lai nhac Nong Trai.
+        if (scene.name == "SampleScene")
+            PlayCookingBGM();
+        else
+            PlayMainBGM();
+
+        // [THEM 10/09] Nhet moi AudioSource ambience cua scene vua load vao so dang ky SFX,
+        // de tieng nuoc / ambience theo thanh truot "Am thanh VFX".
+        QuetVaDangKyAmbienceTrongScene(scene);
     }
 
     private void Start()
@@ -137,7 +150,12 @@ public class AudioManager : MonoBehaviour
         // AudioListener cua no da ton tai, quet lai de don cai thua.
         EnsureAudioListener();
 
-        PlayMainBGM();
+        var activeScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+        if (activeScene.name == "SampleScene")
+            PlayCookingBGM();
+        else
+            PlayMainBGM();
+
         StartWaterAmbience();
     }
 
@@ -318,6 +336,11 @@ public class AudioManager : MonoBehaviour
             targetVol = waterVolume * proximity * Mathf.Max(0.2f, zoomFactor);
         }
 
+        // [FIX] Tiếng nước là SFX nền chạy vòng lặp, và hàm này GHI ĐÈ volume MỖI KHUNG HÌNH.
+        // Không nhân SfxGain ở đây thì dù người chơi kéo thanh SFX về 0 (hay tắt hẳn SFX),
+        // khung hình kế tiếp lại kéo volume lên theo khoảng cách camera — nước vẫn chảy ầm ầm.
+        targetVol *= SfxGain;
+
         waterAmbienceSource.volume = Mathf.MoveTowards(waterAmbienceSource.volume, targetVol, Time.unscaledDeltaTime * 0.5f);
     }
 
@@ -325,6 +348,10 @@ public class AudioManager : MonoBehaviour
     {
         // 1. Nạp từ Resources/Audio (ưu tiên cao, chạy được trên cả Build và Editor)
         if (bgmMain == null) bgmMain = Resources.Load<AudioClip>("Audio/Morning_Garden_Waltz");
+        // [THEM 10/09] BGM scene Bep. File goc "Assets/_Game/Audio/soft click.mp3" KHONG nam
+        // trong Resources nen Resources.Load khong bao gio thay - phai chep sang
+        // Assets/Resources/Audio/bgm_cooking.mp3 (ten ASCII, khong dau cach).
+        if (bgmCooking == null) bgmCooking = Resources.Load<AudioClip>("Audio/bgm_cooking");
         if (uiClick == null) uiClick = Resources.Load<AudioClip>("Audio/button");
         if (expClip == null) expClip = Resources.Load<AudioClip>("Audio/exp");
         if (plantingClip == null) plantingClip = Resources.Load<AudioClip>("Audio/gieohat");
@@ -347,6 +374,24 @@ public class AudioManager : MonoBehaviour
         if (buildingHammer == null) buildingHammer = Resources.Load<AudioClip>("Audio/building_hammer");
         if (touristChatter == null) touristChatter = Resources.Load<AudioClip>("Audio/tourist_chatter");
         if (characterGreet == null) characterGreet = Resources.Load<AudioClip>("Audio/character_greet");
+
+        // ── [THEM 2026-09-10] 8 FILE AM THANH MOI CUA SEP (Assets/ÂM THANH GAME) ──────────
+        // Vi sao phai qua Resources: AutoInit() chay o BeforeSceneLoad va tu tao MOT
+        // AudioManager moi, nen moi AudioManager dat san trong Scene deu tu huy o Awake
+        // (guard _instance != this). Ket qua: MOI o [SerializeField] AudioClip keo tay
+        // trong Inspector deu CHET luc chay. Duong song duy nhat la Resources.Load.
+        // Ten canonical ASCII do Tools/Map45/24 chep ra Assets/Resources/Audio/.
+        // CHI THEM fallback — moi fallback cu o tren van giu nguyen thu tu uu tien.
+        if (buildingHammer == null) buildingHammer = Resources.Load<AudioClip>("Audio/sfx_builder_hammer");
+        if (bubblePop == null)      bubblePop      = Resources.Load<AudioClip>("Audio/sfx_bubble_pop");
+        if (buildingPlace == null)  buildingPlace  = Resources.Load<AudioClip>("Audio/sfx_building_place");
+        if (gemSparkle == null)     gemSparkle     = Resources.Load<AudioClip>("Audio/sfx_gem");
+        if (fanfareLevelUp == null) fanfareLevelUp = Resources.Load<AudioClip>("Audio/sfx_levelup");
+        if (trainWhistle == null)   trainWhistle   = Resources.Load<AudioClip>("Audio/sfx_train_whistle");
+        if (boatHorn == null)       boatHorn       = Resources.Load<AudioClip>("Audio/sfx_boat_horn");
+        if (coinTing == null)       coinTing       = Resources.Load<AudioClip>("Audio/sfx_coin");
+        // vang.mp3 cung dung duoc cho tieng vang chung neu gold.wav khong co.
+        if (coinReward == null)     coinReward     = Resources.Load<AudioClip>("Audio/sfx_coin");
 
 #if UNITY_EDITOR
         // 2. Fallback trực tiếp từ Assets/Audio Game
@@ -408,9 +453,40 @@ public class AudioManager : MonoBehaviour
             return;
 
         bgmSource.clip = bgmMain;
-        bgmSource.volume = bgmVolume;
+        bgmSource.volume = IsBGMEnabled ? bgmVolume : 0f;   // [FIX 10/09] truoc day scene load lam nhac tu bat lai du da TAT
         bgmSource.spatialBlend = 0f;
         bgmSource.Play();
+    }
+
+    /// <summary>
+    /// [THEM 10/09] Phat MOT ban nhac nen bat ky - dung chung cho Nong Trai va Bep.
+    /// Giu nguyen quy uoc cua PlayMainBGM: dang phat dung bai roi thi khong cat ngang.
+    /// </summary>
+    public void PlayBGM(AudioClip clip)
+    {
+        if (clip == null || bgmSource == null) return;
+
+        if (bgmSource.clip == clip && bgmSource.isPlaying) return;
+
+        bgmSource.clip = clip;
+        bgmSource.loop = true;
+        bgmSource.volume = IsBGMEnabled ? bgmVolume : 0f;   // ton trong nut TAT NHAC
+        bgmSource.spatialBlend = 0f;
+        bgmSource.Play();
+    }
+
+    /// <summary>[THEM 10/09] Tra nhac nen ve bai cua Nong Trai (goi khi thoat scene Bep).</summary>
+    public void PlayFarmBGM()
+    {
+        if (bgmMain == null) LoadDefaultClipsIfMissing();
+        PlayBGM(bgmMain);
+    }
+
+    /// <summary>[THEM 10/09] Nhac nen rieng cho scene Bep - Resources/Audio/bgm_cooking.</summary>
+    public void PlayCookingBGM()
+    {
+        if (bgmCooking == null) LoadDefaultClipsIfMissing();
+        PlayBGM(bgmCooking != null ? bgmCooking : bgmMain);   // thieu file thi giu nhac Farm, khong im lang
     }
 
     public void StartWaterAmbience()
@@ -447,6 +523,12 @@ public class AudioManager : MonoBehaviour
             uiSource.pitch = Random.Range(0.99f, 1.01f);
             uiSource.PlayOneShot(uiClick, uiVolume * SfxGain);           // [FIX] tieng bam nut cung phai theo thanh truot
         }
+    }
+
+    /// <summary>🔘 Alias cho PlayUIClick()</summary>
+    public void PlayButton()
+    {
+        PlayUIClick();
     }
 
     public void PlayIngredientPop()
@@ -518,7 +600,7 @@ public class AudioManager : MonoBehaviour
     /// <summary>🎺 Nhạc Fanfare chúc mừng Lên Cấp rực rỡ (fanfare_levelup.wav)</summary>
     public void PlayLevelUpFanfare()
     {
-        DuckBGM(0.3f, 2.0f);
+        DuckBGM(0.6f, 1.5f);
         if (fanfareLevelUp == null) LoadDefaultClipsIfMissing();
         PlayFX(fanfareLevelUp != null ? fanfareLevelUp : successJingle, 1f, 1f, 1f);
     }
@@ -536,7 +618,7 @@ public class AudioManager : MonoBehaviour
     public void PlayGemSparkle()
     {
         if (gemSparkle == null) LoadDefaultClipsIfMissing();
-        PlayFX(gemSparkle != null ? gemSparkle : expClip, 1f, 0.98f, 1.02f);
+        PlayFX(gemSparkle != null ? gemSparkle : expClip, 0.7f, 0.98f, 1.02f);
     }
 
     /// <summary>🫧 Tiếng Bong Bóng nổ / Pop (bubble_pop.wav)</summary>
@@ -549,17 +631,18 @@ public class AudioManager : MonoBehaviour
     /// <summary>🚂 Tiếng Còi Tàu Hỏa xình xịch (train_whistle.wav)</summary>
     public void PlayTrainWhistle()
     {
-        DuckBGM(0.5f, 1.8f);
+        DuckBGM(0.75f, 1.2f);
         if (trainWhistle == null) LoadDefaultClipsIfMissing();
-        PlayFX(trainWhistle != null ? trainWhistle : successJingle, 0.9f, 0.98f, 1.02f);
+        // [FIX 2026-09-11] Giảm volume còi tàu từ 0.45f xuống 0.18f để âm thanh êm dịu, không gây ồn chói tai
+        PlayFX(trainWhistle != null ? trainWhistle : successJingle, 0.18f, 0.98f, 1.02f);
     }
 
     /// <summary>🚢 Tiếng Còi Tàu Thủy Du Lịch cập bến (boat_horn.wav)</summary>
     public void PlayBoatHorn()
     {
-        DuckBGM(0.5f, 1.8f);
+        DuckBGM(0.75f, 1.2f);
         if (boatHorn == null) LoadDefaultClipsIfMissing();
-        PlayFX(boatHorn != null ? boatHorn : successJingle, 0.9f, 0.98f, 1.02f);
+        PlayFX(boatHorn != null ? boatHorn : successJingle, 0.45f, 0.98f, 1.02f);
     }
 
     /// <summary>🍳 Tiếng Nấu Ăn xèo xèo (cooking_sizzle.wav)</summary>
@@ -595,15 +678,15 @@ public class AudioManager : MonoBehaviour
     public void PlayBuildingHammer()
     {
         if (buildingHammer == null) LoadDefaultClipsIfMissing();
-        PlayFX(buildingHammer != null ? buildingHammer : uiClick, 0.95f, 0.96f, 1.04f);
+        PlayFX(buildingHammer != null ? buildingHammer : uiClick, 0.55f, 0.96f, 1.04f);
     }
 
     /// <summary>👥 Tiếng Khách Du Lịch nói cười ríu rít khi xuống bến (tourist_chatter.wav)</summary>
     public void PlayTouristChatter()
     {
-        DuckBGM(0.6f, 1.4f);
+        DuckBGM(0.85f, 1.0f);
         if (touristChatter == null) LoadDefaultClipsIfMissing();
-        PlayFX(touristChatter != null ? touristChatter : successJingle, 0.9f, 0.98f, 1.02f);
+        PlayFX(touristChatter != null ? touristChatter : successJingle, 0.6f, 0.98f, 1.02f);
     }
 
     /// <summary>👋 Tiếng Nhân Vật chào & huýt sáo khi zoom tới / tương tác (character_greet.wav)</summary>
@@ -629,6 +712,10 @@ public class AudioManager : MonoBehaviour
         bgmSource.volume = originalVolume * multiplier;
 
         yield return new WaitForSecondsRealtime(duration);
+
+        // [FIX 10/09] Truoc day thieu dong nay: sau tieng coi tau/thuyen/fanfare dau tien,
+        // BGM bi ket o 30-60% MAI MAI, lam moi SFX sau do nghe to len tuong ung.
+        bgmSource.volume = IsBGMEnabled ? bgmVolume : 0f;
 
         duckRoutine = null;
     }
@@ -687,6 +774,170 @@ public class AudioManager : MonoBehaviour
     {
         if (fxSource != null) fxSource.volume = 1f;
         if (uiSource != null) uiSource.volume = 1f;
+        ApDungChoNguonNgoai();                    // [FIX] kéo theo cả các nguồn loop bên ngoài
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // SỔ ĐĂNG KÝ NGUỒN SFX NGOÀI (AudioSource loop nằm ngoài AudioManager)
+    // ════════════════════════════════════════════════════════════════════════
+    //
+    // VÌ SAO CẦN: SfxGain chỉ có tác dụng ở nơi NÀO GỌI PlayOneShot — tức là tiếng phát
+    // một nhát. Còn AudioSource bật loop (gia súc, guồng nước, máy xay…) tự đặt volume
+    // một lần rồi kêu mãi, kéo thanh trượt SFX chẳng ảnh hưởng gì tới nó.
+    // Ai có nguồn loop kiểu đó thì DangKyNguonSfx(src, âmLượngGốc) một lần lúc bật;
+    // từ đó mỗi lần người chơi chỉnh thanh trượt, volume được tính lại = gốc × SfxGain.
+
+    // (file đã có `using System.Collections.Generic;` ở đầu — dùng thẳng List/Dictionary)
+    private static readonly List<AudioSource>              _nguonSfxNgoai   = new List<AudioSource>();
+    private static readonly Dictionary<AudioSource, float> _amLuongGocNgoai = new Dictionary<AudioSource, float>();
+
+    /// <summary>Đăng ký một AudioSource loop để nó theo thanh trượt SFX. Gọi lại là cập nhật âm lượng gốc.</summary>
+    public static void DangKyNguonSfx(AudioSource src, float amLuongGoc = 1f)
+    {
+        if (src == null) return;
+
+        amLuongGoc = Mathf.Clamp01(amLuongGoc);
+        if (!_amLuongGocNgoai.ContainsKey(src)) _nguonSfxNgoai.Add(src);
+        _amLuongGocNgoai[src] = amLuongGoc;
+
+        src.volume = amLuongGoc * SfxGain;
+    }
+
+    /// <summary>Bỏ đăng ký (gọi lúc OnDisable/OnDestroy của chủ nguồn). Không bắt buộc — huỷ rồi sẽ tự bị dọn.</summary>
+    public static void HuyDangKyNguonSfx(AudioSource src)
+    {
+        if (src == null) return;
+        _nguonSfxNgoai.Remove(src);
+        _amLuongGocNgoai.Remove(src);
+    }
+
+    /// <summary>Tính lại volume cho mọi nguồn ngoài còn sống, đồng thời dọn nguồn đã bị huỷ.</summary>
+    private static void ApDungChoNguonNgoai()
+    {
+        float gain = SfxGain;
+
+        for (int i = _nguonSfxNgoai.Count - 1; i >= 0; i--)
+        {
+            AudioSource src = _nguonSfxNgoai[i];
+            if (src == null)                       // GameObject đã bị huỷ → dọn khỏi sổ
+            {
+                _amLuongGocNgoai.Remove(src);      // dọn cả bảng âm lượng gốc, khỏi rò rỉ
+                _nguonSfxNgoai.RemoveAt(i);
+                continue;
+            }
+
+            float goc = _amLuongGocNgoai.TryGetValue(src, out float v) ? v : 1f;
+            src.volume = goc * gain;
+        }
+
+        // Dọn nốt các khoá trỏ tới nguồn đã huỷ để Dictionary không phình mãi.
+        if (_amLuongGocNgoai.Count > _nguonSfxNgoai.Count)
+        {
+            var chet = new List<AudioSource>();
+            foreach (var kv in _amLuongGocNgoai)
+                if (kv.Key == null) chet.Add(kv.Key);
+            for (int i = 0; i < chet.Count; i++) _amLuongGocNgoai.Remove(chet[i]);
+        }
+    }
+
+    // ============================================================================
+    // [THEM 10/09] QUET AMBIENCE TRONG SCENE -> NHET VAO SO DANG KY SFX
+    // ============================================================================
+    // VI SAO: SCN_Farm co 4 AudioSource tieng nuoc (loop + playOnAwake, spatialBlend 0,
+    // volume 0.35 / 0.35 / 0.25 / 0.25) nam trong scene va trong prefab
+    // DayNightWeatherSetup. KHONG AI goi DangKyNguonSfx cho chung nen keo thanh truot
+    // "Am thanh VFX" ve 0 thi nuoc VAN chay am am. Quet o sceneLoaded roi dang ky ho,
+    // khoi phai sua file scene 17 MB bang tay.
+    //
+    // CACH NHAN DIEN: uu tien LUAT CAU TRUC (loop && playOnAwake) vi no khong the bo sot
+    // du ai doi ten file clip; danh sach ten chi la luoi phu cho nguon loop khong
+    // playOnAwake. Runtime KHONG doc duoc GUID (AssetDatabase la editor-only).
+    //
+    // CHONG RATCHET: chi lay volume hien tai lam "am luong goc" LAN DAU (khi
+    // _amLuongGocNgoai chua co key). Load lai scene sinh AudioSource MOI (identity khac)
+    // nen lay dung volume tac gia; nguon cu da huy thi ApDungChoNguonNgoai() tu don.
+    //
+    // KHONG DUNG TOI: 4 nguon cua chinh AudioManager, va 3 nguon ambience Ngay/Dem/Mua
+    // do DayNightCycleController ghi volume MOI KHUNG HINH (chung tu nhan SfxGain roi).
+
+    private static readonly string[] _tenClipAmbience =
+    {
+        "water flowing",
+        "water_flowing",
+        "rain",
+        "thunder",
+        "background ambience outside - day",
+        "background ambience outside - night",
+    };
+
+    /// <summary>Quet moi AudioSource ambience cua scene vua load va dang ky vao so SfxGain.</summary>
+    private void QuetVaDangKyAmbienceTrongScene(UnityEngine.SceneManagement.Scene scene)
+    {
+        if (!scene.IsValid() || !scene.isLoaded) return;
+
+        // Nhung nguon do DayNightCycleController tu quan (ghi volume moi frame) -> bo qua.
+        var doDayNightQuanLy = new HashSet<AudioSource>();
+        var dnc = FindObjectsByType<Day_Night.DayNightCycleController>(
+                      FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < dnc.Length; i++)
+        {
+            if (dnc[i] == null) continue;
+            if (dnc[i].DayAmbience   != null) doDayNightQuanLy.Add(dnc[i].DayAmbience);
+            if (dnc[i].NightAmbience != null) doDayNightQuanLy.Add(dnc[i].NightAmbience);
+            if (dnc[i].RainAmbience  != null) doDayNightQuanLy.Add(dnc[i].RainAmbience);
+        }
+
+        GameObject[] goc = scene.GetRootGameObjects();
+        int soDangKy = 0;
+
+        for (int r = 0; r < goc.Length; r++)
+        {
+            if (goc[r] == null) continue;
+
+            AudioSource[] ds = goc[r].GetComponentsInChildren<AudioSource>(true);
+            for (int i = 0; i < ds.Length; i++)
+            {
+                AudioSource s = ds[i];
+                if (s == null) continue;
+
+                // 1. Khong dung 4 nguon cua chinh AudioManager.
+                if (s == bgmSource || s == uiSource || s == fxSource || s == waterAmbienceSource) continue;
+                if (s.transform.IsChildOf(transform)) continue;
+
+                // 2. Khong dung nguon do DayNightCycleController ghi de moi frame.
+                if (doDayNightQuanLy.Contains(s)) continue;
+
+                // 3. DA dang ky roi -> TUYET DOI khong lay volume hien tai lam goc nua
+                //    (neu lay se nhan SfxGain hai lan -> am luong tut dan ve 0).
+                if (_amLuongGocNgoai.ContainsKey(s)) continue;
+
+                if (!LaNguonAmbience(s)) continue;
+
+                DangKyNguonSfx(s, s.volume);   // s.volume luc nay VAN la volume tac gia dat trong scene
+                soDangKy++;
+            }
+        }
+
+        ApDungChoNguonNgoai();                 // don nguon da huy + dong bo lai theo thanh truot
+
+        if (soDangKy > 0)
+            Debug.Log("[Audio] Da dang ky " + soDangKy + " nguon ambience cua scene '" +
+                      scene.name + "' vao thanh truot SFX.");
+    }
+
+    /// <summary>Nguon ambience = loop tu chay nen, hoac ten clip nam trong danh sach ambience.</summary>
+    private static bool LaNguonAmbience(AudioSource s)
+    {
+        if (s.loop && s.playOnAwake) return true;      // luat CAU TRUC - bat het 4 nguon nuoc
+
+        AudioClip c = s.clip;
+        if (c == null) return false;
+
+        string ten = c.name.ToLowerInvariant();
+        for (int i = 0; i < _tenClipAmbience.Length; i++)
+            if (ten == _tenClipAmbience[i]) return true;
+
+        return false;
     }
 
     public bool IsBGMEnabled

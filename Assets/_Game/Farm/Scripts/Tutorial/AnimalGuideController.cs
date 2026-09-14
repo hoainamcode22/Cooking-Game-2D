@@ -73,11 +73,11 @@ public class AnimalGuideController : MonoBehaviour
     private const float DeliverPollInterval = 5f;
     private const int DeliverMinLevel = 1;
 
-    // Tàu chở hàng — lần đầu tàu đứng ga chờ nạp hàng (từ L3)
+    // Tàu chở hàng — lần đầu tàu đứng ga chờ nạp hàng (từ L5)
     private const string TrainPrefKey = "GUIDE_TRAIN_DONE";
     private const string TrainMessage = "Tàu chở hàng đã đến! Chất nông sản lên tàu để nhận thưởng lớn!";
     private const float TrainPollInterval = 5f;
-    private const int TrainMinLevel = 3;
+    private const int TrainMinLevel = 5;
 
     // Vào bếp nấu ăn — mở khoá ở L5
     private const string CookingPrefKey = "GUIDE_COOKING_DONE";

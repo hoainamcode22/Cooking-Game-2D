@@ -33,16 +33,16 @@ public static class TaskPopupSpriteWireTool
         ("diamondIcon", "Assets/Assetsgame/kimcuong-removebg-preview.png"),
         // Sao xanh = EXP (chủ dự án đã chốt).
         ("expIcon",     "Assets/Assetsgame/iconsao-removebg-preview.png"),
-        ("chestIcon",   "Assets/Assetsgame/AnhBtnNhanQua.png"),
+        ("chestIcon",   "Assets/Assetsgame/Icon_Processed/NhiemVu/icon_chest_gold.png"),
 
         // ── nút đóng & ribbon ───────────────────────────────────────────────
         ("closeButton", UIStandardSprites.PathClose),
         ("ribbon",      "Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_banner_ribbon.png"),
 
         // ── icon 3 tab ──────────────────────────────────────────────────────
-        ("missionTabIcon",     "Assets/Assetsgame/img_icon_giay.png"),
-        ("dailyTabIcon",       "Assets/Assetsgame/icon_lich.png"),
-        ("achievementTabIcon", "Assets/Assetsgame/iconsao-removebg-preview.png"),
+        ("missionTabIcon",     "Assets/Assetsgame/Icon_Processed/NhiemVu/icon_tab_mission.png"),
+        ("dailyTabIcon",       "Assets/Assetsgame/Icon_Processed/DangNhap/login_calendar.png"),
+        ("achievementTabIcon", "Assets/Assetsgame/Icon_Processed/ThanhTuu/achieve_trophy_gold.png"),
     };
 
     /// <summary>

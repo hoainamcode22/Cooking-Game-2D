@@ -25,13 +25,50 @@ public class LandClearingSite : MonoBehaviour
     public static event Action<LandRegionData> OnClearStarted;
     public static event Action<LandRegionData> OnClearFinished;
 
+    /// <summary>
+    /// Nhu OnClearStarted nhung dua thang CHINH CAI SITE ra.
+    /// VI SAO CAN THEM: OnClearStarted ban trong Create(), TRUOC khi
+    /// LandExpansionManager kip cat site vao _clearingSites — nen ai nghe
+    /// OnClearStarted roi goi ClearingSiteOf() se luon nhan null.
+    /// Su kien cu giu nguyen, khong doi chu ky, khong lam hong ai dang nghe.
+    /// </summary>
+    public static event Action<LandClearingSite> OnClearSiteStarted;
+
     [Header("Trang thai (chi doc)")]
     [SerializeField] private string regionId;
     [SerializeField] private long finishUnix;
 
+    [Header("Co lui ve ban cu (Vong 25 — moi thay doi deu co duong lui)")]
+    [Tooltip("Bat = dung lai cach cu: tu Instantiate tung tho roi de nguyen o mode Hidden. " +
+             "Tat (mac dinh) = dung BuilderWorkerCrew — 3 tho dung quanh lo va CO dap bua.")]
+    [SerializeField] private bool dungCachCu = false;
+
+    [Tooltip("Bat = dung lai bui cach cu: 14 dom dat o TAM o vien, kich thuoc co dinh 34/55. " +
+             "Tat (mac dinh) = bui bam doc CANH ngoai cua o vien, kich thuoc theo be rong o luoi.")]
+    [SerializeField] private bool dungBuiCachCu = false;
+
+    /// <summary>Ep MOI site tao ra sau day dung cach cu — duong lui mot dong khi crew tro chung.</summary>
+    public static bool EpDungCachCu = false;
+
+    /// <summary>Ep MOI site tao ra sau day dung bui cach cu.</summary>
+    public static bool EpDungBuiCachCu = false;
+
+    /// <summary>So tho Sep chot cho mot lo dat (yeu cau 2026-09-10: dung 3 nguoi).</summary>
+    private const int SoThoSepChot = 3;
+
+    /// <summary>Gia tri MAC DINH cua LandRegionData.workerCount. Bang gia tri nay = Sep chua dat tay.</summary>
+    private const int WorkerCountMacDinhTrongData = 4;
+
+    /// <summary>Toi da bao nhieu he hat bui tren mot duong vien — chan lo 100+ o sinh hang tram he.</summary>
+    private const int SoDiemVienToiDa = 48;
+
+    /// <summary>Be rong mot o ma cac hang so bui cu (34 / 55 / 26 / 90) duoc chinh theo.</summary>
+    private const float DonViOThietKeCu = 100f;
+
     private LandRegionData _region;
     private LandExpansionManager _manager;
     private readonly List<GameObject> _spawned = new List<GameObject>();
+    private BuilderWorkerCrew _crew;
     private GameObject _dustRoot;
     private bool _done;
 
@@ -90,6 +127,10 @@ public class LandClearingSite : MonoBehaviour
         site._region = region;
         site._manager = manager;
         site.regionId = region.regionId;
+        // Site duoc tao bang code nen field serialize khong the chinh trong Inspector truoc
+        // khi chay — hai co static ben duoi la duong bat/tat that su cho ca game.
+        site.dungCachCu = EpDungCachCu;
+        site.dungBuiCachCu = EpDungBuiCachCu;
 
         if (HasPending(region.regionId))
         {
@@ -104,6 +145,7 @@ public class LandClearingSite : MonoBehaviour
 
         site.BuildVisuals();
         OnClearStarted?.Invoke(region);
+        OnClearSiteStarted?.Invoke(site);
 
         if (site.RemainingSeconds <= 0) site.Finish();
         return site;
@@ -137,6 +179,11 @@ public class LandClearingSite : MonoBehaviour
         PlayerPrefs.Save();
 
         PlayFinishBurst();
+
+        // Cho to tho mo dan roi tu bien mat (DismissWithFade tu chan goi lai lan hai).
+        // Goi o day, TRUOC Unlock, de tho van con thay trong luc dat vua mo ra.
+        if (_crew != null) _crew.DismissWithFade();
+
         if (_manager != null && _region != null) _manager.Unlock(_region);
         OnClearFinished?.Invoke(_region);
 
@@ -150,10 +197,71 @@ public class LandClearingSite : MonoBehaviour
     private void BuildVisuals()
     {
         if (_region == null) return;
-        SpawnWorkers();
+
+        // Duong moi truoc; that bai (thieu config / tat feature flag) thi ROI VE cach cu
+        // chu khong de lo dat trong khong co ai — Sep nhin vao chi thay "khong co gi xay ra".
+        if (dungCachCu || !SpawnWorkerCrew()) SpawnWorkers();
+
         SpawnBorderDust();
     }
 
+    // ── Duong MOI: BuilderWorkerCrew ─────────────────────────────────────
+    /// <summary>
+    /// So tho thuc su cho lo nay. Sep chot 3 nguoi, nhung neu ai do da dat tay
+    /// workerCount trong asset lo (khac gia tri mac dinh 4) thi ton trong so do.
+    /// LUU Y: BuilderWorkerCrew con kep lai theo cfg.minWorkers..maxWorkers (dang 1..3),
+    /// nen dat 5 hay 6 trong data van chi ra toi da 3 tho.
+    /// </summary>
+    private int SoThoChoLo()
+    {
+        int n = _region != null ? _region.workerCount : SoThoSepChot;
+        if (n <= 0 || n == WorkerCountMacDinhTrongData) return SoThoSepChot;
+        return n;
+    }
+
+    /// <summary>
+    /// Bounds world bao ca lo dat. AllCells() chi cho TAM tung o, nen phai no them
+    /// nua o moi phia de bounds phu dung vung NHIN THAY chu khong phai chum diem tam.
+    /// </summary>
+    private bool TryLotBounds(out Bounds bounds)
+    {
+        bounds = new Bounds();
+        bool coO = false;
+
+        foreach (var c in _region.AllCells())
+        {
+            Vector3 p = IsoGrid.CellCenterToWorld(c);
+            if (!coO) { bounds = new Bounds(p, Vector3.zero); coO = true; }
+            else bounds.Encapsulate(p);
+        }
+        if (!coO) return false;
+
+        // Expand() cong vao TONG kich thuoc => moi phia duoc them nua o. Dung y muon.
+        bounds.Expand(new Vector3(IsoGrid.CellWidth, IsoGrid.CellHeight, 0f));
+        return true;
+    }
+
+    /// <summary>
+    /// Dung to tho bang BuilderWorkerCrew (co san, da dung cho nha va decor).
+    /// Tra false neu khong dung duoc — goi y quay ve SpawnWorkers().
+    /// </summary>
+    private bool SpawnWorkerCrew()
+    {
+        var cfg = Resources.Load<BuilderWorkerConfig>("BuilderWorkerConfig");
+        if (cfg == null) return false;
+        if (!TryLotBounds(out Bounds bounds)) return false;
+
+        _crew = BuilderWorkerCrew.AttachTo(gameObject, bounds, cfg, SoThoChoLo());
+        if (_crew == null) return false;   // cfg.enabled = false => AttachTo tra null ngay
+
+        // BAT BUOC. AttachTo de moi tho o mode Hidden (SpriteRenderer tat) va cho
+        // "nguoi dieu phoi" ra lenh. Khong goi dong nay = 3 tho VO HINH — dung loi
+        // ma SpawnWorkers() ban cu dang mac phai.
+        _crew.SetHammering();
+        return true;
+    }
+
+    // ── Duong CU: giu nguyen de con cho lui ve ───────────────────────────
     private void SpawnWorkers()
     {
         var cfg = Resources.Load<BuilderWorkerConfig>("BuilderWorkerConfig");
@@ -189,9 +297,75 @@ public class LandClearingSite : MonoBehaviour
     /// <summary>Bui bam chay doc VIEN lo dat — cam giac dang don dep ca manh dat.</summary>
     private void SpawnBorderDust()
     {
+        EnsureDustRoot();
+        if (dungBuiCachCu) { SpawnBorderDustCu(); return; }
+        SpawnAlongOutline(_region.BorderCells());
+    }
+
+    private void EnsureDustRoot()
+    {
+        if (_dustRoot != null) return;
         _dustRoot = new GameObject("Dust_Border");
         _dustRoot.transform.SetParent(transform, false);
+    }
 
+    /// <summary>
+    /// Rai bui doc DUONG VIEN NGOAI cua mot tap o luoi — dung cho hang rao lo dat,
+    /// nhung viet chung de tinh nang sau (vung cam, vung dang xay...) dung lai duoc.
+    ///
+    /// Khac ban cu o hai cho:
+    ///   • Diem phun nam tren CANH NGOAI cua o (tam o + nua o ve phia khong co hang xom),
+    ///     nen bui ve dung duong bien chu khong phai mot hang cham ben trong.
+    ///   • Kich thuoc / toc do hat tinh theo IsoGrid.CellWidth (mot o = 300 x 150 world),
+    ///     khong con dinh 34 / 55 von chinh cho nhan vat cao ~100 unit.
+    /// </summary>
+    public void SpawnAlongOutline(IEnumerable<Vector2Int> cells)
+    {
+        if (cells == null) return;
+        EnsureDustRoot();
+
+        // Vector nua o theo hai truc luoi, doi sang world (khong tu che ma tran iso).
+        Vector3 goc = IsoGrid.CellFloatToWorld(Vector2.zero);
+        Vector3 nuaX = (IsoGrid.CellFloatToWorld(new Vector2(1f, 0f)) - goc) * 0.5f;
+        Vector3 nuaY = (IsoGrid.CellFloatToWorld(new Vector2(0f, 1f)) - goc) * 0.5f;
+
+        // HashSet chi de TRA CUU hang xom. Duyet theo danh sach goc de thu tu diem
+        // con bam theo duong quet cua BorderCells() — neu duyet HashSet thi buoc nhay
+        // ben duoi se boc mot nhum diem ngau nhien thay vi rai deu quanh vien.
+        var danhSach = new List<Vector2Int>(cells);
+        var tapO = new HashSet<Vector2Int>(danhSach);
+        var diem = new List<Vector3>();
+
+        foreach (var c in danhSach)
+        {
+            Vector3 tam = IsoGrid.CellCenterToWorld(c);
+            if (!tapO.Contains(c + Vector2Int.right)) diem.Add(tam + nuaX);
+            if (!tapO.Contains(c + Vector2Int.left))  diem.Add(tam - nuaX);
+            if (!tapO.Contains(c + Vector2Int.up))    diem.Add(tam + nuaY);
+            if (!tapO.Contains(c + Vector2Int.down))  diem.Add(tam - nuaY);
+        }
+        if (diem.Count == 0) return;
+
+        // Chan tran so he hat: lo ~100 o co the ra hang tram canh ngoai.
+        int step = Mathf.Max(1, Mathf.CeilToInt(diem.Count / (float)SoDiemVienToiDa));
+
+        float oW = Mathf.Max(1f, IsoGrid.CellWidth);
+        float k = oW / DonViOThietKeCu;            // o 300 unit => k = 3
+        float size = 34f * k;                      // dam bui to theo o
+        float banKinh = 55f * k * 0.5f;            // hep lai mot nua: bam sat duong bien
+
+        for (int i = 0; i < diem.Count; i += step)
+        {
+            var go = new GameObject("Dust");
+            go.transform.SetParent(_dustRoot.transform, false);
+            go.transform.position = diem[i];
+            MakeDust(go, 0.9f, size, false, banKinh, 26f * k, 90f * k);
+        }
+    }
+
+    /// <summary>Ban bui cu — 14 dom o TAM o vien. Giu de lui ve khi dungBuiCachCu = true.</summary>
+    private void SpawnBorderDustCu()
+    {
         var border = new List<Vector2Int>(_region.BorderCells());
         if (border.Count == 0) return;
 
@@ -210,24 +384,32 @@ public class LandClearingSite : MonoBehaviour
     private void PlayFinishBurst()
     {
         // bung bui manh mot phat khap lo khi xong
+        float k = dungBuiCachCu ? 1f : Mathf.Max(1f, IsoGrid.CellWidth) / DonViOThietKeCu;
+
         var cells = new List<Vector2Int>(_region.AllCells());
         int step = Mathf.Max(1, cells.Count / 10);
         for (int i = 0; i < cells.Count; i += step)
         {
             var go = new GameObject("Dust_Finish");
             go.transform.position = IsoGrid.CellCenterToWorld(cells[i]);
-            MakeDust(go, 2.2f, 90f, burst: true);
+            MakeDust(go, 2.2f, 90f * k, true, 55f * k, 26f * k, 90f * k);
             Destroy(go, 1.4f);
         }
     }
 
     /// <summary>Tao mot ParticleSystem bui don gian bang code (khong can prefab).</summary>
+    /// <remarks>Chu ky cu — giu nguyen so lieu goc de ban cu chay y het truoc.</remarks>
     private static void MakeDust(GameObject host, float rate, float size, bool burst = false)
+        => MakeDust(host, rate, size, burst, 55f, 26f, 90f);
+
+    /// <summary>Ban day du: goi y duoc ca ban kinh phun va toc do hat theo do lon o luoi.</summary>
+    private static void MakeDust(GameObject host, float rate, float size, bool burst,
+                                 float banKinh, float tocDoThuong, float tocDoBurst)
     {
         var ps = host.AddComponent<ParticleSystem>();
         var main = ps.main;
         main.startLifetime = 1.1f;
-        main.startSpeed = burst ? 90f : 26f;
+        main.startSpeed = burst ? tocDoBurst : tocDoThuong;
         main.startSize = size;
         main.startColor = new Color(0.82f, 0.74f, 0.60f, 0.55f);
         main.gravityModifier = -0.05f;
@@ -244,7 +426,7 @@ public class LandClearingSite : MonoBehaviour
 
         var sh = ps.shape;
         sh.shapeType = ParticleSystemShapeType.Circle;
-        sh.radius = 55f;
+        sh.radius = banKinh;
 
         var col = ps.colorOverLifetime;
         col.enabled = true;
@@ -267,6 +449,10 @@ public class LandClearingSite : MonoBehaviour
 
     private void CleanupVisuals()
     {
+        // To tho: mo dan chu khong Destroy thang — crew tu huy GameObject sau khi fade.
+        // Idempotent (co _dismissed ben trong) nen Finish() goi truoc cung khong sao.
+        if (_crew != null) { _crew.DismissWithFade(); _crew = null; }
+
         foreach (var g in _spawned) if (g != null) Destroy(g);
         _spawned.Clear();
         if (_dustRoot != null) Destroy(_dustRoot);
