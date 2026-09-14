@@ -50,6 +50,7 @@ namespace CookingGame.Optimization
         private GUIStyle _buttonStyle;
         private bool     _stylesInit;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AutoBoot()
         {
@@ -58,6 +59,7 @@ namespace CookingGame.Optimization
             DontDestroyOnLoad(go);
             _instance = go.AddComponent<RealtimePerformanceProfiler>();
         }
+#endif
 
         private void Update()
         {
@@ -179,7 +181,7 @@ namespace CookingGame.Optimization
             // Bộ nhớ RAM & VRAM
             GUILayout.Label("<b>💾 BỘ NHỚ (RAM & GC):</b>", _headerStyle);
             GUILayout.Label($" • RAM Đang Dùng: <b>{_allocatedRamMB:0.0} MB</b> / {_reservedRamMB:0.0} MB", _labelStyle);
-            GUILayout.Label($" • Mono Heap (Script): <b>{Profiler.GetMonoUsedSizeLong() / 1024f / 1024f:0.1} MB</b>", _labelStyle);
+            GUILayout.Label($" • Mono Heap (Script): <b>{Profiler.GetMonoUsedSizeLong() / 1024f / 1024f:0.0} MB</b>", _labelStyle);
 
             // Cảnh báo GC
             if (_gcRateKBPerSec > 100f)
@@ -200,14 +202,14 @@ namespace CookingGame.Optimization
             GUILayout.Space(8);
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Dọn RAM (GC.Collect)", _buttonStyle, GUILayout.Height(26)))
+            if (GUILayout.Button("Dọn RAM (GC)", _buttonStyle, GUILayout.Height(26)))
             {
                 System.GC.Collect();
                 Resources.UnloadUnusedAssets();
             }
-            if (GUILayout.Button("Reset Min FPS", _buttonStyle, GUILayout.Height(26)))
+            if (GUILayout.Button(DevOverlayGate.Enabled ? "Tắt Dev UI (F3/F7)" : "Bật Dev UI (F3/F7)", _buttonStyle, GUILayout.Height(26)))
             {
-                _minFps = _currentFps;
+                DevOverlayGate.Set(!DevOverlayGate.Enabled);
             }
             GUILayout.EndHorizontal();
 
