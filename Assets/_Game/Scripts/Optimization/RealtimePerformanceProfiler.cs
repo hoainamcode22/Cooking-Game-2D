@@ -196,7 +196,7 @@ namespace CookingGame.Optimization
 
             // Trạng thái các hệ thống
             GUILayout.Label("<b>⚙️ TRẠNG THÁI HỆ THỐNG:</b>", _headerStyle);
-            GUILayout.Label($" • Hệ thống Câu Cá: <b>{(FarmGame.Fishing.FishingFeatureGate.IsEnabled ? "<color=#4ade80>BẬT</color>" : "<color=#9ca3af>ĐÃ TẮT (Tiết kiệm CPU/RAM)</color>")}</b>", _labelStyle);
+            GUILayout.Label($" • Hệ thống Câu Cá: <b>{GetFishingStatusLabel()}</b>", _labelStyle);
             GUILayout.Label($" • Resolution Scaling: <b>{Screen.width}x{Screen.height} (60Hz)</b>", _labelStyle);
             GUILayout.Label($" • Thiết bị: <b>{SystemInfo.deviceModel}</b>", _labelStyle);
             GUILayout.Space(8);
@@ -214,6 +214,19 @@ namespace CookingGame.Optimization
             GUILayout.EndHorizontal();
 
             GUILayout.EndArea();
+        }
+
+        private static string GetFishingStatusLabel()
+        {
+            var gateType = System.Type.GetType("FarmGame.Fishing.FishingFeatureGate, Assembly-CSharp");
+            if (gateType != null)
+            {
+                var field = gateType.GetField("IsEnabled", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                if (field != null && (bool)field.GetValue(null))
+                    return "<color=#4ade80>BẬT</color>";
+                return "<color=#9ca3af>ĐÃ TẮT (Tiết kiệm CPU/RAM)</color>";
+            }
+            return "<color=#9ca3af>CHƯA CÀI ĐẶT / ĐÃ TÁCH</color>";
         }
     }
 }

@@ -125,7 +125,7 @@ public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBegin
         // Công trình & Trang trí: ẩn stepper, hiện "Mua 1 cái / lần"
         // [Hồ Câu vòng 14] Cần câu cũng là món 1 cái/lần (có độ bền riêng, GrantRod chỉ cấp 1 cần)
         // nên dùng chung đường ẩn stepper — tránh Sếp bấm +5 rồi bị trừ tiền 5 lần mà chỉ nhận 1 cần.
-        bool isPlaceable = data is PlaceableItemData || data is FarmGame.Fishing.RodData;
+        bool isPlaceable = data is PlaceableItemData || (data != null && data.GetType().Name == "RodData");
         if (stepperRoot != null) stepperRoot.SetActive(!isPlaceable);
         if (placeableNote != null) placeableNote.SetActive(isPlaceable);
 
@@ -218,33 +218,43 @@ public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBegin
         // Tiền ĐÃ bị trừ ở đầu hàm này, nên phải gọi GrantRod (KHÔNG trừ tiền).
         // TUYỆT ĐỐI không gọi FishingGearState.TryBuy ở đây: TryBuy tự trừ tiền lần nữa ⇒ mất tiền 2 lần.
         // TryBuy vẫn giữ nguyên cho Quầy Cá (FishCounterPopupUI) — bên đó tự lo tiền.
-        if (currentData is FarmGame.Fishing.RodData rod)
+        if (currentData != null && currentData.GetType().Name == "RodData")
         {
-            FarmGame.Fishing.FishingGearState gear = FarmGame.Fishing.FishingGearState.Instance;
-            string lyDo = string.Empty;
-            bool ok = gear != null && gear.GrantRod(rod, out lyDo);
-
-            if (!ok)
+            var gearStateType = System.Type.GetType("FarmGame.Fishing.FishingGearState, Assembly-CSharp");
+            if (gearStateType != null)
             {
-                // Hoàn đúng số vừa trừ — không để người chơi mất tiền vì data hỏng.
-                if (FarmEconomyManager.Instance != null)
+                var instProp = gearStateType.GetProperty("Instance", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                object gearInst = instProp?.GetValue(null);
+                var grantMethod = gearStateType.GetMethod("GrantRod", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                if (gearInst != null && grantMethod != null)
                 {
-                    if (isDiamondItem) { FarmEconomyManager.Instance.AddGems(totalCost); }
-                    else { FarmEconomyManager.Instance.AddGold(totalCost); }
-                }
-                Debug.Log("[Fishing] Shop: cấp cần " + currentData.itemID + " thất bại (" + lyDo + ") — đã hoàn tiền.");
-                ShopManager.Instance?.ShowToast(string.IsNullOrEmpty(lyDo) ? Loc.T("Mua cần thất bại") : Loc.T(lyDo));
-                ShopManager.Instance?.RefreshCurrencyBalances();
-                return;
-            }
+                    object[] rArgs = new object[] { currentData, string.Empty };
+                    bool ok = (bool)grantMethod.Invoke(gearInst, rArgs);
+                    string lyDo = rArgs[1] as string ?? string.Empty;
 
-            // lyDo rỗng = cần mới; có chữ = đã sở hữu, GrantRod trả "Đã thay cần mới".
-            string thongBao = string.IsNullOrEmpty(lyDo)
-                ? Loc.TF("Đã mua {0}!", Loc.T(currentData.itemName))
-                : Loc.T(lyDo);
-            ShopManager.Instance?.ShowToast(thongBao);
-            ShopManager.Instance?.RefreshCurrencyBalances();
-            return;
+                    if (!ok)
+                    {
+                        // Hoàn đúng số vừa trừ — không để người chơi mất tiền vì data hỏng.
+                        if (FarmEconomyManager.Instance != null)
+                        {
+                            if (isDiamondItem) { FarmEconomyManager.Instance.AddGems(totalCost); }
+                            else { FarmEconomyManager.Instance.AddGold(totalCost); }
+                        }
+                        Debug.Log("[Fishing] Shop: cấp cần " + currentData.itemID + " thất bại (" + lyDo + ") — đã hoàn tiền.");
+                        ShopManager.Instance?.ShowToast(string.IsNullOrEmpty(lyDo) ? Loc.T("Mua cần thất bại") : Loc.T(lyDo));
+                        ShopManager.Instance?.RefreshCurrencyBalances();
+                        return;
+                    }
+
+                    // lyDo rỗng = cần mới; có chữ = đã sở hữu, GrantRod trả "Đã thay cần mới".
+                    string thongBao = string.IsNullOrEmpty(lyDo)
+                        ? Loc.TF("Đã mua {0}!", Loc.T(currentData.itemName))
+                        : Loc.T(lyDo);
+                    ShopManager.Instance?.ShowToast(thongBao);
+                    ShopManager.Instance?.RefreshCurrencyBalances();
+                    return;
+                }
+            }
         }
 
         // Công trình / Trang trí -> Chuyển sang chế độ đặt
@@ -316,7 +326,7 @@ public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBegin
     {
         bool placeable = currentData is PlaceableItemData p && p.prefabToBuild != null;
         // [Hồ Câu vòng 14] Cần câu luôn tính đúng 1 cái/lần (GrantRod chỉ cấp 1 cần).
-        bool isRod = currentData is FarmGame.Fishing.RodData;
+        bool isRod = currentData != null && currentData.GetType().Name == "RodData";
         return (placeable || isRod) ? 1 : Mathf.Max(1, currentQuantity);
     }
 

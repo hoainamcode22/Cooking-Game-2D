@@ -967,7 +967,18 @@ namespace FarmGame.UI
             if (IsBlockedByTutorial("fishing")) return;
 
             if (goMissionWidget != null) goMissionWidget.SetActive(false);
-            FarmGame.Fishing.FishingEntryPopupUI.Open();
+
+            // [DECOUPLED] Kiểm tra module Câu Cá an toàn qua reflection
+            var entryType = System.Type.GetType("FarmGame.Fishing.FishingEntryPopupUI, Assembly-CSharp");
+            if (entryType != null)
+            {
+                var openMethod = entryType.GetMethod("Open", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+                openMethod?.Invoke(null, null);
+            }
+            else
+            {
+                Debug.Log("[Fishing] Module Câu Cá hiện không có trong dự án hoặc đã được tách ra ngoài.");
+            }
         }
 
         private void OnMapClicked()

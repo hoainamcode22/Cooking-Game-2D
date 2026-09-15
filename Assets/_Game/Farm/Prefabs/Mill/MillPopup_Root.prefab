@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "C\u1EA5p 18"
+  m_text: Level 18
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -270,14 +270,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
-  m_Color: {r: 0.5490, g: 0.1490, b: 0.1020, a: 1}
+  m_Color: {r: 0.549, g: 0.149, b: 0.102, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "C\u1EA5p 18"
+  m_text: Level 18
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -679,7 +679,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "K\xC9O V\xC0O SLOT \u0110\u1EC2 XAY"
+  m_text: DRAG INTO A SLOT TO MILL
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 0}
@@ -1772,7 +1772,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Tr\u1ED1ng"
+  m_text: Empty
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -6278,7 +6278,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "C\u1EA5p 18"
+  m_text: Level 18
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -7281,7 +7281,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Ch\u01B0a \u0111\u1EE7 c\u1EA5p"
+  m_text: Level too low
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -8429,7 +8429,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "M\xE1y \u0111ang r\u1EA3nh"
+  m_text: Mill is idle
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -9314,7 +9314,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "C\u1EA5p 18"
+  m_text: Level 18
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -10181,7 +10181,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Ch\u01B0a \u0111\u1EE7 c\u1EA5p"
+  m_text: Level too low
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -11753,7 +11753,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Ch\u01B0a \u0111\u1EE7 c\u1EA5p"
+  m_text: Level too low
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -15262,7 +15262,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Tr\u1ED1ng"
+  m_text: Empty
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -16421,7 +16421,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "C\xD4NG TH\u1EE8C"
+  m_text: RECIPES
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 0}
@@ -17352,7 +17352,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Ch\u01B0a \u0111\u1EE7 c\u1EA5p"
+  m_text: Level too low
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -17565,7 +17565,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Ch\u01B0a \u0111\u1EE7 c\u1EA5p"
+  m_text: Level too low
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -17700,7 +17700,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -17781,7 +17781,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "M\xC1Y XAY TH\u1EE8C \u0102N"
+  m_text: FEED MILL
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 0}
@@ -18352,7 +18352,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "C\u1EA5p 18"
+  m_text: Level 18
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -19281,7 +19281,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Tr\u1ED1ng"
+  m_text: Empty
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -19659,7 +19659,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Tr\u1ED1ng"
+  m_text: Empty
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
@@ -21102,7 +21102,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "Tr\u1ED1ng"
+  m_text: Empty
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}

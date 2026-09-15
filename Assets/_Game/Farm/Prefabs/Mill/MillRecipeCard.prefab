@@ -69,7 +69,7 @@ MonoBehaviour:
   m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
-  m_sharedMaterial: {fileID: 0}
+  m_sharedMaterial: {fileID: -6193662147481049521, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -490,7 +490,7 @@ MonoBehaviour:
   m_text: "\u1EE6 2p00"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
-  m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
+  m_sharedMaterial: {fileID: -6193662147481049521, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -811,6 +811,9 @@ MonoBehaviour:
   lockOverlay: {fileID: 5800898011079565815}
   txtLockText: {fileID: 6039423066163449967}
   alphaKhiKhoa: 0.55
+  spriteThieuIcon: {fileID: 0}
+  mauKhiThieuIcon: {r: 0.72, g: 0.72, b: 0.72, a: 0.65}
+  epLayoutTheoCode: 0
 --- !u!114 &2182832800683963494
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1092,10 +1095,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "C\xE1m cho g\xE0"
+  m_text: Chicken Feed
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
-  m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
+  m_sharedMaterial: {fileID: -6193662147481049521, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1230,10 +1233,10 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "G\xE0"
+  m_text: chickens
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
-  m_sharedMaterial: {fileID: 4623602370775223751, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
+  m_sharedMaterial: {fileID: -6193662147481049521, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -1986,7 +1989,7 @@ MonoBehaviour:
   m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
-  m_sharedMaterial: {fileID: 0}
+  m_sharedMaterial: {fileID: -6193662147481049521, guid: ce482f793c9c3714a88ad0834a12e949, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []

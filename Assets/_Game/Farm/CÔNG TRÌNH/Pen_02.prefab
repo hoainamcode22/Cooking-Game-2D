@@ -490,6 +490,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 1833139184334439992, guid: 03f00e375caf06145a4bc41253a7a2f1, type: 3}
+    - target: {fileID: 663403098289703400, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 736988142960254716, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
@@ -594,6 +598,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2001239432260035534, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2074648036896692960, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2904645104350905686, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: config
       value: 
@@ -658,18 +670,34 @@ PrefabInstance:
       propertyPath: m_SizeDelta.y
       value: 136
       objectReference: {fileID: 0}
+    - target: {fileID: 3970777739552942347, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4355131913021778495, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_SortingOrder
       value: 1500
+      objectReference: {fileID: 0}
+    - target: {fileID: 5248371057442633390, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6056364980241170663, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: -3221476691067369642, guid: 056a5265973e3024785694e5f2f4e236, type: 3}
+    - target: {fileID: 7379982523638865718, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_RaycastTarget
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7645119900833754873, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 21300000, guid: 0f1c2058e02572e49b8081fa161ef681, type: 3}
+    - target: {fileID: 7691381899261656239, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
+      propertyPath: m_text
+      value: ANIMAL PEN
+      objectReference: {fileID: 0}
     - target: {fileID: 8075159325001082237, guid: 9bba0636a85f99c449b552a70632b5d8, type: 3}
       propertyPath: feedItemId
       value: carot

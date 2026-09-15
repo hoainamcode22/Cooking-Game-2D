@@ -64,7 +64,7 @@ public class SettingsPopupUI : MonoBehaviour
     [SerializeField] private Sprite sprBtnRed;
 
     private bool popupInputLockHeld;
-    private string currentLanguage = "vi";
+    private string currentLanguage = "en";
     private Coroutine animRoutine;
 
     public static event Action<string> OnLanguageChanged;
@@ -99,7 +99,7 @@ public class SettingsPopupUI : MonoBehaviour
         }
         Instance = this;
 
-        currentLanguage = PlayerPrefs.GetString(PrefLanguage, "vi");
+        currentLanguage = PlayerPrefs.GetString(PrefLanguage, "en");
         BindEvents();
 
         if (popupRoot == null) popupRoot = gameObject;
@@ -258,7 +258,7 @@ public class SettingsPopupUI : MonoBehaviour
         if (sliderSfx != null) sliderSfx.SetValueWithoutNotify(sfxVal);
         UpdateSfxToggleVisual(sfxEn);
 
-        currentLanguage = PlayerPrefs.GetString(PrefLanguage, "vi");
+        currentLanguage = PlayerPrefs.GetString(PrefLanguage, "en");
         UpdateLanguageVisual(currentLanguage);
         RefreshLocalizedTexts();
     }

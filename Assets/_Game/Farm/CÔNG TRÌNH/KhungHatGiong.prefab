@@ -141,6 +141,8 @@ MonoBehaviour:
   pressTime: 0.05
   bounceTime: 0.07
   settleTime: 0.06
+  hoverScale: 1.06
+  hoverTime: 0.08
 --- !u!1 &2158566956075965253
 GameObject:
   m_ObjectHideFlags: 0
@@ -200,7 +202,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -343,7 +345,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "M\u1EDF \u1EDF c\u1EA5p 5"
+  m_text: Unlocks at Lv 5
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -511,16 +513,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6246a6750db7dc34dbebbac807e7a535, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShopItemUI
-  imgIcon: {fileID: 3515321015253984044}
   txtName: {fileID: 8083005060620551708}
-  txtPrice: {fileID: 8732922878765944823}
+  imgIcon: {fileID: 3515321015253984044}
+  imgCirclePlate: {fileID: 0}
+  stepperRoot: {fileID: 0}
   txtQuantity: {fileID: 7945086621814992614}
-  imgCurrencyIcon: {fileID: 752117902937846214}
-  btnPlus: {fileID: 2177206458793338369}
   btnMinus: {fileID: 1178775614175131472}
+  btnPlus: {fileID: 2177206458793338369}
+  placeableNote: {fileID: 0}
   btnBuy: {fileID: 4517179950651647468}
+  imgBuyBackground: {fileID: 0}
+  imgCurrencyIcon: {fileID: 752117902937846214}
+  txtPrice: {fileID: 8732922878765944823}
+  lockOverlayRoot: {fileID: 0}
+  lockLevelText: {fileID: 0}
   iconGold: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}
   iconDiamond: {fileID: -5564238710932881115, guid: 6a2f7fdb5dbb9f449b7a84545a970569, type: 3}
+  btnBuyGoldSprite: {fileID: 0}
+  btnBuyGemSprite: {fileID: 0}
+  btnBuyLockedSprite: {fileID: 0}
 --- !u!114 &8170099236357954074
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -830,6 +841,8 @@ MonoBehaviour:
   pressTime: 0.05
   bounceTime: 0.07
   settleTime: 0.06
+  hoverScale: 1.06
+  hoverTime: 0.08
 --- !u!1 &5713452197366601645
 GameObject:
   m_ObjectHideFlags: 0
@@ -889,7 +902,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1108,6 +1121,8 @@ MonoBehaviour:
   pressTime: 0.05
   bounceTime: 0.07
   settleTime: 0.06
+  hoverScale: 1.06
+  hoverTime: 0.08
 --- !u!1 &6874722134653195706
 GameObject:
   m_ObjectHideFlags: 0
@@ -1167,7 +1182,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1304,13 +1319,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: MUA
+  m_text: BUY
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1594,13 +1609,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "L\xDAA"
+  m_text: RICE
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -1806,7 +1821,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:

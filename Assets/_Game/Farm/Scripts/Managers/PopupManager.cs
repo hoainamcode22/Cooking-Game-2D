@@ -94,13 +94,31 @@ public class PopupManager : MonoBehaviour
             // thấy → tutorial vẫn chạy đè lên chúng.
             || LevelUpPopupUI.IsActive
             || BoatAnnouncePopupUI.IsActive
-            // [Hồ Câu, vòng 12] 2 popup của module FarmGame.Fishing (cờ static, không cần kéo Inspector).
-            || FarmGame.Fishing.FishingEntryPopupUI.AnyOpen
-            || FarmGame.Fishing.FishCounterPopupUI.AnyOpen;
+            // [DECOUPLED] Kiểm tra popup Câu Cá an toàn qua reflection
+            || IsFishingPopupOpen();
         // [ROLLBACK 2026-09-06] KHONG dua BuildingProcessPopupUI vao day.
         // IsAnyPopupOpen() duoc FarmInputLock.BlockMapPan dung => se chan TOAN BO
         // keo map va click world suot thoi gian popup tien do dang mo. Popup do neo
         // o world, khong che man hinh, khong can khoa. (Van liet ke o TenPopupDangMo.)
+    }
+
+    private static bool IsFishingPopupOpen()
+    {
+        var entryType = System.Type.GetType("FarmGame.Fishing.FishingEntryPopupUI, Assembly-CSharp");
+        if (entryType != null)
+        {
+            var prop = entryType.GetProperty("AnyOpen", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (prop != null && (bool)prop.GetValue(null)) return true;
+        }
+
+        var counterType = System.Type.GetType("FarmGame.Fishing.FishCounterPopupUI, Assembly-CSharp");
+        if (counterType != null)
+        {
+            var prop = counterType.GetProperty("AnyOpen", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (prop != null && (bool)prop.GetValue(null)) return true;
+        }
+
+        return false;
     }
 
     /// <summary>Trả tên popup đang mở (chuỗi rỗng nếu không có). Dùng để ghi log chẩn đoán.</summary>

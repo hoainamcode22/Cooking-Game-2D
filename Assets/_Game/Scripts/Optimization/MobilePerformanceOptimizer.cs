@@ -24,11 +24,23 @@ namespace CookingGame.Optimization
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         private static void InitializePerformance()
         {
-            DetectDevice();
-            ApplyFrameRateAndVsync();
-            ApplyResolutionScaling();
-            ApplyQualityOptimizations();
-            ConfigureGarbageCollection();
+#if UNITY_WEBGL
+            // WebGL uses WebGLTierScaler instead and must not call native mobile/thread APIs
+            return;
+#else
+            try
+            {
+                DetectDevice();
+                ApplyFrameRateAndVsync();
+                ApplyResolutionScaling();
+                ApplyQualityOptimizations();
+                ConfigureGarbageCollection();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogWarning($"[MobilePerformanceOptimizer] Warning during init: {ex.Message}");
+            }
+#endif
         }
 
         private static void DetectDevice()

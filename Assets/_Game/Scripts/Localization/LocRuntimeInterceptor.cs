@@ -10,10 +10,10 @@ using UnityEngine;
 /// (new GameObject + CreateText). Boc Loc.T() cho tung cho la sua hang tram file — khong kha thi
 /// va de bo sot. Thay vao do: quet moi TMP_Text dang song, cau nao co trong bang dich thi thay.
 ///
-/// CACH HOAT DONG
+/// CACH HOAT DONG (EVENT-DRIVEN CHO MOBILE)
 ///   • Dang tieng Viet  → khong lam gi (khong ton hieu nang, khong rui ro).
-///   • Doi sang tieng Anh → quet ngay lap tuc toan bo TMP_Text, roi quet lai moi 0,2s
-///     de bat cac popup vua mo / chu vua doi.
+///   • Doi sang tieng Anh → quet 1 lan duy nhat khi doi ngon ngu hoac khi scene moi vua tai xong.
+///     DA TRIET TIEU HOAN TOAN vong lap quet dinh ky moi 0.2s de dam bao 60 FPS muot ma tren Mobile.
 ///   • Doi ve tieng Viet → tra lai NGUYEN VAN cau goc da nho.
 ///
 /// AN TOAN
@@ -25,7 +25,6 @@ using UnityEngine;
 /// </summary>
 public static class LocRuntimeInterceptor
 {
-    private const float NHIP_QUET   = 0.2f;    // giay
     private const int   DAI_TOI_DA  = 400;
     private const int   THIEU_TOI_DA = 3000;
 
@@ -200,17 +199,10 @@ public static class LocRuntimeInterceptor
 #endif
     }
 
-    /// <summary>Component nho chi de chay vong quet dinh ky.</summary>
+    /// <summary>Component gắn trên GameObject ẩn để host Coroutine một lần khi tải scene.</summary>
     private class LocInterceptorRunner : MonoBehaviour
     {
-        private IEnumerator Start()
-        {
-            var cho = new WaitForSecondsRealtime(NHIP_QUET);
-            while (true)
-            {
-                yield return cho;
-                if (LocalizationManager.DangTiengAnh) QuetVaDich();
-            }
-        }
+        // [TỐI ƯU HIỆU NĂNG MOBILE] Đã loại bỏ hoàn toàn Coroutine quét lặp định kỳ mỗi 0.2s.
+        // Chỉ hoạt động theo cơ chế event-driven (sceneLoaded và OnChanged), không tốn CPU chu kỳ nào.
     }
 }

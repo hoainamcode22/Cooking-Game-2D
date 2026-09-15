@@ -38,7 +38,7 @@ public static class LocalizationManager
     public const string VI = "vi";
     public const string EN = "en";
 
-    private static string _lang = VI;
+    private static string _lang = EN;
     private static bool   _daKhoiTao;
 
     /// <summary>Bắn sau khi ngôn ngữ đã đổi. UI dựng bằng code nên nghe cái này để vẽ lại.</summary>
@@ -62,8 +62,8 @@ public static class LocalizationManager
     {
         if (_daKhoiTao) return;
         _daKhoiTao = true;
-        _lang = PlayerPrefs.GetString(PREF_KEY, VI);
-        if (_lang != VI && _lang != EN) _lang = VI;
+        _lang = PlayerPrefs.GetString(PREF_KEY, EN);
+        if (_lang != VI && _lang != EN) _lang = EN;
 
         // [FIX 2026-09-06] Bat bo dich chay nen: dich MOI chu tren man hinh, khong phai boc
         // Loc.T() cho tung file UI. Dang tieng Viet thi no khong lam gi ca.

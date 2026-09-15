@@ -38,31 +38,32 @@ namespace CookingGame.Optimization
 
         private static void ApplyTierSettings()
         {
-            Application.targetFrameRate = 60;
-            QualitySettings.vSyncCount = 0;
-            QualitySettings.antiAliasing = 0;
-            if (CurrentTier == DeviceTier.Tier1_ConstrainedMobile)
+            try
             {
-                QualitySettings.softParticles = false;
-                QualitySettings.shadows = ShadowQuality.Disable;
-                QualitySettings.particleRaycastBudget = 8;
-                QualitySettings.asyncUploadTimeSlice = 2;
-                QualitySettings.asyncUploadBufferSize = 8;
+                Application.targetFrameRate = 60;
+                QualitySettings.vSyncCount = 0;
+                QualitySettings.antiAliasing = 0;
+                if (CurrentTier == DeviceTier.Tier1_ConstrainedMobile)
+                {
+                    QualitySettings.softParticles = false;
+                    QualitySettings.shadows = ShadowQuality.Disable;
+                    QualitySettings.particleRaycastBudget = 8;
+                }
+                else if (CurrentTier == DeviceTier.Tier2_StandardMobile)
+                {
+                    QualitySettings.softParticles = false;
+                    QualitySettings.shadows = ShadowQuality.Disable;
+                    QualitySettings.particleRaycastBudget = 16;
+                }
+                else
+                {
+                    QualitySettings.softParticles = true;
+                    QualitySettings.particleRaycastBudget = 64;
+                }
             }
-            else if (CurrentTier == DeviceTier.Tier2_StandardMobile)
+            catch (System.Exception ex)
             {
-                QualitySettings.softParticles = false;
-                QualitySettings.shadows = ShadowQuality.Disable;
-                QualitySettings.particleRaycastBudget = 16;
-                QualitySettings.asyncUploadTimeSlice = 2;
-                QualitySettings.asyncUploadBufferSize = 16;
-            }
-            else
-            {
-                QualitySettings.softParticles = true;
-                QualitySettings.particleRaycastBudget = 64;
-                QualitySettings.asyncUploadTimeSlice = 4;
-                QualitySettings.asyncUploadBufferSize = 32;
+                Debug.LogWarning($"[WebGLTierScaler] Exception in ApplyTierSettings: {ex.Message}");
             }
         }
     }
