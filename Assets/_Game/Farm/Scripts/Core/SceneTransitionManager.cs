@@ -194,73 +194,126 @@ public class SceneTransitionManager : MonoBehaviour
     public void UnloadScene(string sceneName, TransitionType type)
     {
         if (_isTransitioning) return;
-        StartCoroutine(TransitionRoutine(type, () => SceneManager.UnloadSceneAsync(sceneName)));
+        StartCoroutine(TransitionRoutine(type, () => SafeUnloadSceneAsync(sceneName)));
+    }
+
+    /// <summary>
+    /// F2: SceneManager.UnloadSceneAsync NÉM ArgumentException (chứ KHÔNG trả null) khi
+    /// scene đã gỡ rồi hoặc đang là scene duy nhất đang nạp. Lỗi đó bay ra giữa
+    /// TransitionRoutine → trước đây là màn đen vĩnh viễn. Kiểm tra trước, trả null để
+    /// TransitionRoutine bỏ qua vòng chờ tiến độ và đi thẳng tới phần đóng màn.
+    /// </summary>
+    private AsyncOperation SafeUnloadSceneAsync(string sceneName)
+    {
+        if (string.IsNullOrEmpty(sceneName)) return null;
+
+        Scene target = SceneManager.GetSceneByName(sceneName);
+        if (!target.isLoaded)
+        {
+            Debug.LogWarning($"[SceneTransition] Scene '{sceneName}' không còn nạp — bỏ qua Unload.");
+            return null;
+        }
+        if (SceneManager.sceneCount <= 1)
+        {
+            Debug.LogWarning($"[SceneTransition] '{sceneName}' là scene DUY NHẤT đang nạp — không thể Unload.");
+            return null;
+        }
+
+        try
+        {
+            return SceneManager.UnloadSceneAsync(sceneName);
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[SceneTransition] Unload '{sceneName}' thất bại: {e.Message}");
+            return null;
+        }
     }
 
     private IEnumerator TransitionRoutine(TransitionType type, Func<AsyncOperation> loadAction)
     {
         _isTransitioning = true;
-        _transitionCanvas.gameObject.SetActive(true);
 
-        SetupPanelsForType(type);
-        _centerGroup.alpha = 0f;                 // cụm giữa chỉ hiện khi cửa đã khép
-        _tipText.text = Tips[UnityEngine.Random.Range(0, Tips.Length)];
-        if (_barFill != null) _barFill.rectTransform.sizeDelta = new Vector2(0, -6);
-
-        yield return StartCoroutine(AnimateIn(type));
-
-        AsyncOperation op = loadAction.Invoke();
-
-        float shown = 0f;   // tiến độ hiển thị — đuổi theo tiến độ thật cho mượt
-        float dotT = 0f; int dots = 0;
-        while (op != null && !op.isDone)
+        // ── F2: BẮT BUỘC CÓ try/finally ────────────────────────────────────
+        // Canvas này phủ kín màn (sortingOrder 9999 + GraphicRaycaster). Nếu có gì
+        // ném lỗi ở giữa, trước đây canvas KHÔNG BAO GIỜ được tắt → người chơi kẹt
+        // màn đen đặc, mất luôn thao tác; tệ hơn là _isTransitioning kẹt true nên mọi
+        // lần chuyển scene sau đó im lặng không làm gì. finally đảm bảo luôn dọn.
+        try
         {
-            float dt = Time.unscaledDeltaTime;
+            _transitionCanvas.gameObject.SetActive(true);
 
-            // hiện dần cụm giữa
-            if (_centerGroup.alpha < 1f)
-                _centerGroup.alpha = Mathf.MoveTowards(_centerGroup.alpha, 1f, dt * 5f);
+            SetupPanelsForType(type);
+            _centerGroup.alpha = 0f;                 // cụm giữa chỉ hiện khi cửa đã khép
+            _tipText.text = Tips[UnityEngine.Random.Range(0, Tips.Length)];
+            if (_barFill != null) _barFill.rectTransform.sizeDelta = new Vector2(0, -6);
 
-            // đĩa lắc lư như đang được bưng
-            float tt = Time.unscaledTime;
-            if (_dishRect != null)
+            yield return StartCoroutine(AnimateIn(type));
+
+            AsyncOperation op = loadAction.Invoke();
+
+            float shown = 0f;   // tiến độ hiển thị — đuổi theo tiến độ thật cho mượt
+            float dotT = 0f; int dots = 0;
+            while (op != null && !op.isDone)
             {
-                _dishRect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(tt * 3.2f) * 9f);
-                float s = 1f + Mathf.Sin(tt * 2.1f) * 0.04f;
-                _dishRect.localScale = new Vector3(s, s, 1f);
+                float dt = Time.unscaledDeltaTime;
+
+                // hiện dần cụm giữa
+                if (_centerGroup.alpha < 1f)
+                    _centerGroup.alpha = Mathf.MoveTowards(_centerGroup.alpha, 1f, dt * 5f);
+
+                // đĩa lắc lư như đang được bưng
+                float tt = Time.unscaledTime;
+                if (_dishRect != null)
+                {
+                    _dishRect.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(tt * 3.2f) * 9f);
+                    float s = 1f + Mathf.Sin(tt * 2.1f) * 0.04f;
+                    _dishRect.localScale = new Vector3(s, s, 1f);
+                }
+
+                // dấu chấm chạy: Đang tải → Đang tải. → .. → ...
+                dotT += dt;
+                if (dotT >= 0.35f)
+                {
+                    dotT = 0f; dots = (dots + 1) % 4;
+                    _loadingText.text = Loc.T("Đang tải") + new string('.', dots);
+                }
+
+                // thanh tiến độ (LoadSceneAsync dừng ở 0.9 rồi nhảy xong — chia lại cho 0..1)
+                float real = Mathf.Clamp01(op.progress / 0.9f);
+                shown = Mathf.MoveTowards(shown, real, dt * 1.5f);
+                if (_barFill != null && _barFrame != null)
+                    _barFill.rectTransform.sizeDelta =
+                        new Vector2((_barFrame.sizeDelta.x - 6f) * shown, -6f);
+
+                yield return null;
             }
 
-            // dấu chấm chạy: Đang tải → Đang tải. → .. → ...
-            dotT += dt;
-            if (dotT >= 0.35f)
-            {
-                dotT = 0f; dots = (dots + 1) % 4;
-                _loadingText.text = Loc.T("Đang tải") + new string('.', dots);
-            }
-
-            // thanh tiến độ (LoadSceneAsync dừng ở 0.9 rồi nhảy xong — chia lại cho 0..1)
-            float real = Mathf.Clamp01(op.progress / 0.9f);
-            shown = Mathf.MoveTowards(shown, real, dt * 1.5f);
+            // đầy thanh + nghỉ một nhịp ngắn cho mắt kịp thấy "xong"
             if (_barFill != null && _barFrame != null)
-                _barFill.rectTransform.sizeDelta =
-                    new Vector2((_barFrame.sizeDelta.x - 6f) * shown, -6f);
+                _barFill.rectTransform.sizeDelta = new Vector2(_barFrame.sizeDelta.x - 6f, -6f);
+            yield return new WaitForSecondsRealtime(0.12f);
 
-            yield return null;
+            // ── F7: GIẢI PHÓNG BỘ NHỚ KHI ĐỔI SCENE ─────────────────────────────
+            // Đo được 2864 MB RAM / 608 MB texture: asset của scene cũ không bao giờ được
+            // thu hồi vì cả codebase chỉ gọi UnloadUnusedAssets() đúng 1 lần trong nút debug.
+            // Chạy Ở ĐÂY (màn còn che kín) để người chơi không thấy khựng hình.
+            AsyncOperation unloadAssets = Resources.UnloadUnusedAssets();
+            while (unloadAssets != null && !unloadAssets.isDone) yield return null;
+            System.GC.Collect();
+
+            _centerGroup.alpha = 0f;
+            if (_dishRect != null) { _dishRect.localRotation = Quaternion.identity; _dishRect.localScale = Vector3.one; }
+            _loadingText.text = "Đang tải";
+
+            yield return StartCoroutine(AnimateOut(type));
+
         }
-
-        // đầy thanh + nghỉ một nhịp ngắn cho mắt kịp thấy "xong"
-        if (_barFill != null && _barFrame != null)
-            _barFill.rectTransform.sizeDelta = new Vector2(_barFrame.sizeDelta.x - 6f, -6f);
-        yield return new WaitForSecondsRealtime(0.12f);
-
-        _centerGroup.alpha = 0f;
-        if (_dishRect != null) { _dishRect.localRotation = Quaternion.identity; _dishRect.localScale = Vector3.one; }
-        _loadingText.text = "Đang tải";
-
-        yield return StartCoroutine(AnimateOut(type));
-
-        _transitionCanvas.gameObject.SetActive(false);
-        _isTransitioning = false;
+        finally
+        {
+            if (_transitionCanvas != null) _transitionCanvas.gameObject.SetActive(false);
+            _isTransitioning = false;
+        }
     }
 
     private void SetupPanelsForType(TransitionType type)

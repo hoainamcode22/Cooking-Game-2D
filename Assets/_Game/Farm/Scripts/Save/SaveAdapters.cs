@@ -410,6 +410,9 @@ public static class SaveAdapters
             "MARKET_REFRESH_PAID_COUNT",                                   // MarketRefreshTimer
             "UNIFIED_TASK_DAILY_STREAK",                                   // UnifiedTaskPopupUI
             "TouristBoat_IntroDone",                                       // BoatDockManager
+            // F8: so slot may xay da mo — truoc day KHONG nam trong save.json nen
+            // nguoi choi mat sach slot da mua neu phai khoi phuc tu file save.
+            "MILL_SlotsUnlocked",                                          // MillPopupUI
         };
 
         private static readonly string[] StringKeys =
@@ -427,6 +430,9 @@ public static class SaveAdapters
             "MARKET_TIMER_NEXT_UTC_TICKS", "MARKET_REFRESH_PAID_DATE",     // MarketRefreshTimer
             "UNIFIED_TASK_DAILY_LAST_SEEN", "UNIFIED_TASK_DAILY_CLAIMED_DATE",
             "FISH_BASKET_SAVE", "FISHING_GEAR_SAVE", "FISHING_PROFILE_SAVE",   // Hồ Câu (FarmGame.Fishing, vòng 12)
+            // F8: danh sach khu dat DA MUA (cac regionId ngan cach bang '|').
+            // Thieu khoa nay thi save.json khong ghi lai dat da mua bang tien/kim cuong.
+            "FARM_UNLOCKED_REGIONS",     // LandExpansionManager.SaveKey
         };
 
         public static void Capture(FarmSaveData d)

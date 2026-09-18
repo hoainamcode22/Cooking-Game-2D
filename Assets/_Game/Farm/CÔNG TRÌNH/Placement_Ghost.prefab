@@ -369,6 +369,8 @@ MonoBehaviour:
   pressTime: 0.05
   bounceTime: 0.07
   settleTime: 0.06
+  hoverScale: 1.06
+  hoverTime: 0.08
 --- !u!1 &1950236596327854492
 GameObject:
   m_ObjectHideFlags: 0
@@ -510,6 +512,8 @@ MonoBehaviour:
   pressTime: 0.05
   bounceTime: 0.07
   settleTime: 0.06
+  hoverScale: 1.06
+  hoverTime: 0.08
 --- !u!1 &2412804118370644247
 GameObject:
   m_ObjectHideFlags: 0
@@ -880,6 +884,81 @@ Transform:
   - {fileID: 2438995012820224949}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1010101010101010101
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4791510232028003415}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f728421f493e91a4489fa487ab38a6f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  tileSprite: {fileID: 0}
+  showTileFill: 0
+  showSoftShadow: 0
+  validFillColor: {r: 0.1, g: 0.95, b: 0.3, a: 0.16}
+  validEdgeColor: {r: 0.13, g: 1, b: 0.34, a: 0.96}
+  validEdgeDarkColor: {r: 0, g: 0.48, b: 0.08, a: 0.78}
+  validEdgeHighlightColor: {r: 0.7, g: 1, b: 0.42, a: 0.95}
+  invalidFillColor: {r: 1, g: 0.08, b: 0.08, a: 0.18}
+  invalidEdgeColor: {r: 1, g: 0.18, b: 0.18, a: 0.96}
+  invalidEdgeDarkColor: {r: 0.62, g: 0, b: 0, a: 0.92}
+  invalidEdgeHighlightColor: {r: 1, g: 0.42, b: 0.35, a: 0.9}
+  shadowColor: {r: 0, g: 0.28, b: 0, a: 0.22}
+  arrowColor: {r: 1, g: 0.84, b: 0.12, a: 1}
+  arrowRimColor: {r: 0.7, g: 0.36, b: 0.02, a: 1}
+  arrowHighlightColor: {r: 1, g: 0.98, b: 0.5, a: 1}
+  arrowShadowColor: {r: 0.45, g: 0.23, b: 0.02, a: 0.42}
+  cornerBracketSprite: {fileID: 0}
+  cornerBracketsOnly: 1
+  cancelButtonColor: {r: 1, g: 1, b: 1, a: 1}
+  rotateButtonColor: {r: 1, g: 1, b: 1, a: 1}
+  confirmButtonColor: {r: 1, g: 1, b: 1, a: 1}
+  deleteButtonColor: {r: 0.7, g: 0.58, b: 0.58, a: 1}
+  freeMoveLabel: "\u0110\u1EB6T MI\u1EC4N PH\xCD"
+  buyLabel: "MUA V\u1EDAI GI\xC1"
+  theRongToiThieu: 296
+  theCao: 200
+  theTamY: 25
+  theLeNgang: 30
+  dayVienThe: 6
+  mauVienThe: {r: 1, g: 1, b: 1, a: 1}
+  mauNenThe: {r: 1, g: 1, b: 1, a: 1}
+  mauChuGia: {r: 0.29, g: 0.17, b: 0.05, a: 1}
+  vienChuTrang: 0.18
+  coChuNhan: 34
+  coChuSo: 42
+  coIconTien: 38
+  hangGiaY: 66
+  hangGiaCao: 44
+  kheHangGia: 10
+  coNutHuy: 106
+  coNutXacNhan: 126
+  coGlyphHuy: 56
+  coGlyphXacNhan: 70
+  kheGiuaHaiNut: 26
+  kheHoDuoiVungO: 20
+  orthoThamChieu: 750
+  buZoomMin: 0.75
+  buZoomMax: 3
+  leAnToanNganPx: 40
+  leAnToanDuoiPx: 170
+  leAnToanTrenPx: 210
+  luonLatSangCanh: 0
+  khongDeCardChePhuCongTrinh: 1
+  caoManThamChieu: 1080
+  heSoManHinhToiDa: 1.6
+  leNutTrongThe: 34
+  mauNenTheKhongHopLe: {r: 1, g: 0.8, b: 0.76, a: 1}
+  mauNutKhiTat: {r: 0.58, g: 0.6, b: 0.58, a: 1}
+  doMoGlyphKhiTat: 0.9
+  useRectChevrons: 1
+  chevronWorldSize: 46
+  chevronBlinkPeriod: 1
+  chevronBlinkPeak: 1.08
 --- !u!210 &-3506140040944137453
 SortingGroup:
   m_ObjectHideFlags: 0
@@ -1509,6 +1588,8 @@ MonoBehaviour:
   pressTime: 0.05
   bounceTime: 0.07
   settleTime: 0.06
+  hoverScale: 1.06
+  hoverTime: 0.08
 --- !u!1 &7308922274686809288
 GameObject:
   m_ObjectHideFlags: 0
@@ -1600,15 +1681,3 @@ SpriteRenderer:
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
---- !u!114 &1010101010101010101
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4791510232028003415}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f728421f493e91a4489fa487ab38a6f5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 

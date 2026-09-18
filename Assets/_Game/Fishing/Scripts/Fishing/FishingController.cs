@@ -234,7 +234,7 @@ namespace FarmGame.Fishing
             string reason;
             if (!FishBasket.Instance.TryAdd(fish.fishId, 1, out reason))
             {
-                _pendingBasketReason = "Giỏ đầy, cá được thả — " + reason;
+                _pendingBasketReason = Loc.TF("Giỏ đầy, cá được thả — {0}", reason);
             }
             if (_cfg.expPerCatch > 0 && PlayerProgressManager.Instance != null)
             {
@@ -294,7 +294,7 @@ namespace FarmGame.Fishing
                     if (_rodBrokeThisCast)
                     {
                         _rodBrokeThisCast = false;
-                        BlockReasonVi = "Cần đã hỏng";
+                        BlockReasonVi = Loc.T("Cần đã hỏng");
                         CanCast = false;
                         OnRodBroken?.Invoke();
                         OnBlocked?.Invoke(BlockReasonVi);
@@ -337,20 +337,20 @@ namespace FarmGame.Fishing
             FishingPlayerController p = FishingPlayerController.Local;
             if (p == null) { CanCast = false; BlockReasonVi = string.Empty; return; }
 
-            if (Phase != FishingPhase.Idle) { CanCast = false; BlockReasonVi = "Đang câu"; return; }
+            if (Phase != FishingPhase.Idle) { CanCast = false; BlockReasonVi = Loc.T("Đang câu"); return; }
 
             FishingGearState gear = FishingGearState.Instance;
             if (!gear.HasUsableRod)
             {
                 CanCast = false;
-                BlockReasonVi = gear.Owned.Count == 0 ? "Chưa có cần câu, mua ở Quầy Cá" : "Cần đã hỏng";
+                BlockReasonVi = gear.Owned.Count == 0 ? Loc.T("Chưa có cần câu, mua ở Quầy Cá") : Loc.T("Cần đã hỏng");
                 return;
             }
 
             if (!FishingZone.TryGetNearest(p.Position, out _nearZone, out _nearPoint, out _nearDist) || _nearDist > _cfg.castRangeFromZone)
             {
                 CanCast = false;
-                BlockReasonVi = "Đến gần mép nước để quăng";
+                BlockReasonVi = Loc.T("Đến gần mép nước để quăng");
                 return;
             }
 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ĐỪNG XOÁ FILE NÀY.
+
+  Bản Android build bằng IL2CPP với "Strip Engine Code" BẬT (stripEngineCode: 1) và
+  ProjectSettings CHỈ khai báo managedStrippingLevel cho WebGL — nên Android đang chạy
+  theo mức mặc định của IL2CPP. Trình cắt code (managed stripping) xoá mọi thành viên mà
+  nó KHÔNG thấy ai gọi trực tiếp. Trong game này có nhiều chỗ gọi qua REFLECTION, trình
+  cắt không nhìn thấy được:
+
+    · Assets/_Game/Farm/Scripts/Managers/PopupManager.cs        (~107, ~114)
+    · Assets/_Game/Farm/Scripts/Shop/ShopItemUI.cs              (~257)
+    · Assets/_Game/Farm/Scripts/UI/TownshipHUDController.cs     (~1079)
+    · Assets/_Game/Farm/Scripts/Managers/PlacementManager.cs    (~1458)
+    · Assets/_Game/Scripts/Optimization/RealtimePerformanceProfiler.cs (~257)
+      → Type.GetType + GetField trên FishingFeatureGate.IsEnabled
+
+  Thiếu file này thì trong bản release (chỉ release, Editor vẫn chạy ngon) các lời gọi đó
+  trả về null → popup không mở, icon shop trắng, HUD sai số, cổng tính năng câu cá tắt câm.
+  Rất khó tìm ra vì Editor không tái hiện được.
+
+  Cả project KHÔNG có file .asmdef nào, nên toàn bộ script gameplay nằm trong
+  Assembly-CSharp. Giữ nguyên assembly này là đủ cho mọi chỗ dùng reflection ở trên.
+  Nếu sau này tách code (ví dụ phần Fishing) ra .asmdef riêng thì PHẢI thêm tên assembly
+  mới vào đây.
+-->
+<linker>
+  <assembly fullname="Assembly-CSharp" preserve="all"/>
+</linker>

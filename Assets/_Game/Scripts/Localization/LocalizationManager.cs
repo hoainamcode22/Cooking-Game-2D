@@ -78,7 +78,9 @@ public static class LocalizationManager
     public static void SetLanguage(string lang)
     {
         KhoiTao();
-        if (lang != VI && lang != EN) lang = VI;
+        // [FIX 2026-09-16] Truoc day coerce ve VI trong khi boot coerce ve EN (:66) => hai duong
+        // khoi tao cho ra hai ngon ngu khac nhau. Tieng Anh gio la ngon ngu chinh => ca hai ve EN.
+        if (lang != VI && lang != EN) lang = EN;
         if (lang == _lang) return;
 
         _lang = lang;
@@ -109,7 +111,104 @@ public static class LocalizationManager
         if (BangBoQuaHoaThuong.TryGetValue(cauTiengViet, out string en2) && !string.IsNullOrEmpty(en2))
             return KhopKieuChu(cauTiengViet, en2);
 
+        // [FIX 2026-09-16] "Khu dat", "MO O CAP 40", "vang", "kim cuong" — tieng Viet ĐA BI BO DAU
+        // (assets cu / code go voi). Hai vong tra o tren deu truot vi khoa trong bang CO dau.
+        // Vong ba: bo dau ca hai ben roi tra lai. Bang phu dung mot lan, cache vinh vien.
+        if (BangBoDau.TryGetValue(BoDau(cauTiengViet), out string en3) && !string.IsNullOrEmpty(en3))
+            return KhopKieuChu(cauTiengViet, en3);
+
+        GhiNhanThieu(cauTiengViet);
         return cauTiengViet;
+    }
+
+    /// <summary>
+    /// Tra thu mot cau: CO ban dich thi tra true + dat <paramref name="en"/>.
+    /// Dung cho cho code dung chuoi ghep (`$"..."`) — hoi truoc roi tu quyet dinh ghep the nao,
+    /// thay vi ghep xong moi goi T() (luc do chuoi da khong con la khoa cua bang nua).
+    /// KHONG ghi vao so cau thieu (day la phep hoi, khong phai luot dich hong).
+    /// </summary>
+    public static bool TryT(string cauTiengViet, out string en)
+    {
+        en = null;
+        if (string.IsNullOrEmpty(cauTiengViet)) return false;
+        KhoiTao();
+
+        if (LocStringTable.EN.TryGetValue(cauTiengViet, out string e1) && !string.IsNullOrEmpty(e1))
+        { en = e1; return true; }
+
+        if (BangBoQuaHoaThuong.TryGetValue(cauTiengViet, out string e2) && !string.IsNullOrEmpty(e2))
+        { en = KhopKieuChu(cauTiengViet, e2); return true; }
+
+        if (BangBoDau.TryGetValue(BoDau(cauTiengViet), out string e3) && !string.IsNullOrEmpty(e3))
+        { en = KhopKieuChu(cauTiengViet, e3); return true; }
+
+        return false;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // BANG TRA KHONG DAU
+    // ═══════════════════════════════════════════════════════════════════════
+    // Khong dung string.Normalize(FormD): build IL2CPP bat Invariant Globalization, chuan hoa
+    // Unicode khong bao dam co mat => tu map tay 134 ky tu, chac chan chay moi nen tang.
+    private static readonly string[] _nhomCoDau =
+    {
+        "àáạảãâầấậẩẫăằắặẳẵ", "èéẹẻẽêềếệểễ", "ìíịỉĩ",
+        "òóọỏõôồốộổỗơờớợởỡ", "ùúụủũưừứựửữ", "ỳýỵỷỹ", "đ",
+        "ÀÁẠẢÃÂẦẤẬẨẪĂẰẮẶẲẴ", "ÈÉẸẺẼÊỀẾỆỂỄ", "ÌÍỊỈĨ",
+        "ÒÓỌỎÕÔỒỐỘỔỖƠỜỚỢỞỠ", "ÙÚỤỦŨƯỪỨỰỬỮ", "ỲÝỴỶỸ", "Đ"
+    };
+    private static readonly char[] _chuGocTuongUng =
+    { 'a', 'e', 'i', 'o', 'u', 'y', 'd', 'A', 'E', 'I', 'O', 'U', 'Y', 'D' };
+
+    private static Dictionary<char, char> _mapBoDau;
+
+    /// <summary>Bo toan bo dau tieng Viet khoi chuoi. Chuoi khong co dau tra ve chinh no (khong cap phat).</summary>
+    public static string BoDau(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return s;
+
+        if (_mapBoDau == null)
+        {
+            _mapBoDau = new Dictionary<char, char>(140);
+            for (int n = 0; n < _nhomCoDau.Length; n++)
+            {
+                string nhom = _nhomCoDau[n];
+                char goc = _chuGocTuongUng[n];
+                for (int i = 0; i < nhom.Length; i++) _mapBoDau[nhom[i]] = goc;
+            }
+        }
+
+        char[] dem = null;
+        for (int i = 0; i < s.Length; i++)
+        {
+            if (!_mapBoDau.TryGetValue(s[i], out char thay)) continue;
+            if (dem == null) dem = s.ToCharArray();
+            dem[i] = thay;
+        }
+        return dem == null ? s : new string(dem);
+    }
+
+    private static Dictionary<string, string> _bangBoDau;
+
+    /// <summary>Ban sao bang dich voi khoa DA BO DAU, tra khong phan biet hoa/thuong. Dung mot lan.</summary>
+    private static Dictionary<string, string> BangBoDau
+    {
+        get
+        {
+            if (_bangBoDau == null)
+            {
+                _bangBoDau = new Dictionary<string, string>(
+                    LocStringTable.EN.Count, StringComparer.OrdinalIgnoreCase);
+
+                foreach (var cap in LocStringTable.EN)
+                {
+                    string khoa = BoDau(cap.Key);
+                    if (string.IsNullOrEmpty(khoa)) continue;
+                    if (!_bangBoDau.ContainsKey(khoa)) _bangBoDau[khoa] = cap.Value;   // gap truoc thi giu
+                }
+            }
+            return _bangBoDau;
+        }
     }
 
     private static Dictionary<string, string> _bangBoQuaHoaThuong;
@@ -147,10 +246,17 @@ public static class LocalizationManager
         return coChuCai ? en.ToUpperInvariant() : en;
     }
 
-    /// <summary>Dịch rồi ghép tham số, ví dụ: `Loc.TF("Còn {0} phút", 5)`.</summary>
+    /// <summary>
+    /// Dịch CHUỖI MẪU rồi mới ghép tham số: `Loc.TF("Mở ở cấp {0}", lv)` tra khoá `"Mở ở cấp {0}"`
+    /// (nguyên văn, còn nguyên `{0}`) trong bảng, lấy `"Unlocks at level {0}"`, xong mới `Format`.
+    /// Thứ tự này là bắt buộc — ghép trước rồi tra thì `"Mở ở cấp 40"` KHÔNG BAO GIỜ là khoá.
+    /// (Đã rà 2026-09-16: đúng thứ tự, giữ nguyên.)
+    /// `args` rỗng ⇒ bỏ qua Format luôn, tránh nuốt mất cặp `{}` có thật trong câu.
+    /// </summary>
     public static string TF(string cauTiengViet, params object[] args)
     {
         string mau = T(cauTiengViet);
+        if (args == null || args.Length == 0) return mau;
         try   { return string.Format(mau, args); }
         catch { return mau; }   // mẫu sai định dạng thì thà hiện thô còn hơn ném lỗi ra người chơi
     }
@@ -165,6 +271,58 @@ public static class LocalizationManager
     }
 
     public static int SoCauDaDich => LocStringTable.EN.Count;
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // SO CAU CHUA DICH — CHI TRONG EDITOR / DEVELOPMENT BUILD
+    // ═══════════════════════════════════════════════════════════════════════
+    // Ban Release: toan bo khoi nay bien mat khi bien dich, GhiNhanThieu() rong tuech,
+    // khong HashSet, khong file, khong mot byte nao phat sinh trong T().
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    private const int THIEU_TOI_DA = 4000;
+    private static readonly HashSet<string> _cauThieu = new HashSet<string>();
+    private static bool _daNgheThoat;
+
+    /// <summary>So cau tieng Viet da goi T() ma bang dich khong co (chi dem o Editor/Dev build).</summary>
+    public static int SoCauThieu => _cauThieu.Count;
+
+    private static void GhiNhanThieu(string vi)
+    {
+        if (_lang != EN) return;                       // dang tieng Viet thi khong tinh la thieu
+        if (string.IsNullOrEmpty(vi)) return;
+        if (_cauThieu.Count >= THIEU_TOI_DA) return;
+        if (!_cauThieu.Add(vi)) return;
+
+        if (!_daNgheThoat)
+        {
+            _daNgheThoat = true;
+            Application.quitting += XuatFileCauThieu;   // dump mot lan luc thoat game
+        }
+    }
+
+    /// <summary>
+    /// Ghi danh sach cau CHUA DICH ra <c>Application.persistentDataPath/loc_missing.txt</c>.
+    /// Boc try/catch toan bo: log thieu ma lam crash game thi phan tac dung.
+    /// </summary>
+    public static void XuatFileCauThieu()
+    {
+        try
+        {
+            if (_cauThieu.Count == 0) return;
+            var dong = new List<string>(_cauThieu);
+            dong.Sort(StringComparer.Ordinal);
+            string f = System.IO.Path.Combine(Application.persistentDataPath, "loc_missing.txt");
+            System.IO.File.WriteAllLines(f, dong, System.Text.Encoding.UTF8);
+            Debug.Log($"[Loc] Da ghi {dong.Count} cau CHUA DICH -> {f}");
+        }
+        catch (Exception e)
+        {
+            Debug.LogWarning($"[Loc] Khong ghi duoc loc_missing.txt: {e.Message}");
+        }
+    }
+#else
+    /// <summary>Ban Release: khong lam gi (JIT/IL2CPP loai bo hoan toan loi goi nay).</summary>
+    private static void GhiNhanThieu(string vi) { }
+#endif
 }
 
 /// <summary>Bí danh ngắn cho <see cref="LocalizationManager"/> — gõ `Loc.T("...")` cho gọn.</summary>
@@ -172,6 +330,15 @@ public static class Loc
 {
     public static string T(string vi) => LocalizationManager.T(vi);
     public static string TF(string vi, params object[] a) => LocalizationManager.TF(vi, a);
+
+    /// <summary>Co ban dich cho cau nay khong? Dung truoc khi ghep chuoi bang `$"..."`.</summary>
+    public static bool TryT(string vi, out string en) => LocalizationManager.TryT(vi, out en);
+
+    /// <summary>Doi ngon ngu ("vi" / "en") — luu PlayerPrefs va ban OnChanged.</summary>
+    public static void SetLanguage(string lang) => LocalizationManager.SetLanguage(lang);
+
+    /// <summary>UI vua dung xong chu moi (mo popup, build list) ⇒ goi cai nay de dich ngay.</summary>
+    public static void RequestRescan() => LocRuntimeInterceptor.RequestRescan();
     public static string Current => LocalizationManager.Current;
     public static bool DangTiengAnh => LocalizationManager.DangTiengAnh;
 

@@ -151,6 +151,7 @@ public class TouristAgent : MonoBehaviour
     private Vector3 _logicalWorldPos;
     private float   _motionSeed;
     private bool    _hasBaseScale;
+    private float   _missingFoodTimer;
 
     // Tên layer đã GIẢI XONG (có thật trong project) — tính 1 lần trong Awake, không
     // gọi lại mỗi frame trong UpdateDynamicSorting.
@@ -275,6 +276,9 @@ public class TouristAgent : MonoBehaviour
         UpdateDynamicSorting();
         TickFadeIn();
 
+        if (_missingFoodTimer > 0f)
+            _missingFoodTimer -= Time.deltaTime;
+
         switch (State)
         {
             case AgentState.Disembarking:  TickDisembark();  break;
@@ -328,6 +332,16 @@ public class TouristAgent : MonoBehaviour
             transform.position = _logicalWorldPos + new Vector3(shakeX, 0f, 0f);
             transform.localScale = new Vector3(_baseLocalScale.x * 1.05f, _baseLocalScale.y * 0.95f, _baseLocalScale.z);
             transform.localRotation = Quaternion.identity;
+            return;
+        }
+        else if (_missingFoodTimer > 0f)
+        {
+            // Giật mình / lắc đầu tiếc nuối khi chưa có món
+            float shakeX = Mathf.Sin(timeVal * 40f) * 3.5f * Mathf.Clamp01(_missingFoodTimer / 0.45f);
+            rotZ = Mathf.Sin(timeVal * 30f) * 4f;
+            transform.position = _logicalWorldPos + new Vector3(shakeX, 0f, 0f);
+            transform.localScale = new Vector3(_baseLocalScale.x * 0.98f, _baseLocalScale.y * 1.02f, _baseLocalScale.z);
+            transform.localRotation = Quaternion.Euler(0f, 0f, rotZ);
             return;
         }
         else if (isMoving)
@@ -449,6 +463,13 @@ public class TouristAgent : MonoBehaviour
     }
 
     // ─── Manager gọi khi giao món / hết giờ ─────────────────────────────
+
+    /// <summary>Người chơi tap nhưng chưa có món trong kho: phản hồi lắc đầu / giật mình kèm rung bubble.</summary>
+    public void TriggerMissingFoodFeedback()
+    {
+        _missingFoodTimer = 0.45f;
+        if (_bubble != null) _bubble.PlayDishMissingShake();
+    }
 
     /// <summary>Giao món thành công: mặt cười 0.5s rồi khách quay về tàu.</summary>
     public void MarkServed()

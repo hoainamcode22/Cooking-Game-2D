@@ -53,6 +53,23 @@ public class HouseGrowthController : MonoBehaviour
     private bool _isPressed;
     private bool _initializedAtRuntime;
 
+    // ── F9: KHOÁ SAVE KHÔNG ĐƯỢC NHÚNG TOẠ ĐỘ ───────────────────────────────
+    // Khoá cũ là "HouseSave_{houseId}_{x*10}_{y*10}". Dời một căn nhà ĐANG XÂY là
+    // khoá cũ mồ côi: hoặc đồng hồ đếm lại từ đầu, hoặc trùng vào khoá cũ của căn
+    // khác rồi tặng không một lần xây. Giờ khoá là "HouseSave_{houseId}_{instanceId}"
+    // với instanceId cố định theo TỪNG CĂN, không đổi khi nhà bị dời.
+    /// <summary>Id riêng của căn nhà này, giữ nguyên suốt đời căn nhà kể cả khi bị dời.</summary>
+    [SerializeField] private string instanceId = "";
+
+    /// <summary>Tiền tố bảng tra "khoá-cũ-theo-vị-trí → instanceId".</summary>
+    private const string InstanceIdKeyPrefix = "HouseInstId_";
+
+    /// <summary>Khoá đời cũ ứng với vị trí lần gần nhất đã ghi bí danh — để khỏi ghi lại mỗi frame.</summary>
+    private string _cachedLegacyKey;
+
+    /// <summary>instanceId này do code tự sinh (chưa ai serialize sẵn trong prefab/scene).</summary>
+    private bool _instanceIdAutoDerived;
+
     public GrowthState State => state;
     public long StartUnix => startUnix;
     public float Duration => duration;
@@ -95,14 +112,99 @@ public class HouseGrowthController : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// F9: khoá save MỚI — chỉ phụ thuộc houseId + instanceId, KHÔNG phụ thuộc toạ độ.
+    /// </summary>
     public string GetSaveKey()
+    {
+        if (string.IsNullOrEmpty(instanceId)) EnsureInstanceId();
+        return $"HouseSave_{houseId}_{instanceId}";
+    }
+
+    /// <summary>
+    /// F9: khoá ĐỜI CŨ (nhúng toạ độ). Chỉ còn dùng để ĐỌC save của người chơi cũ và để
+    /// tra bí danh instanceId — KHÔNG bao giờ ghi dữ liệu mới vào đây nữa.
+    /// </summary>
+    private string LegacyKeyAtCurrentPosition()
     {
         Vector3 pos = transform.position;
         return $"HouseSave_{houseId}_{Mathf.RoundToInt(pos.x * 10)}_{Mathf.RoundToInt(pos.y * 10)}";
     }
 
+    /// <summary>
+    /// F9: xác định instanceId đúng MỘT lần, rồi chuyển save đời cũ sang khoá mới.
+    ///
+    /// TƯƠNG THÍCH NGƯỢC: người chơi hiện tại chỉ có save dưới khoá cũ. Thứ tự là
+    ///   (1) đã serialize sẵn instanceId  → dùng luôn;
+    ///   (2) có bí danh "HouseInstId_&lt;khoá cũ&gt;" → dùng lại (căn này từng chạy bản mới);
+    ///   (3) chưa có gì        → sinh id từ ĐÚNG vị trí hiện tại ("p{x10}_{y10}") nên
+    ///                            mỗi căn vẫn ra một id khác nhau, rồi ghi bí danh lại.
+    /// Sau đó COPY dữ liệu từ khoá cũ sang khoá mới nếu khoá mới còn trống.
+    /// KHÔNG xoá khoá cũ: lỡ người chơi hạ cấp bản game thì vẫn còn đường về.
+    /// </summary>
+    private void EnsureInstanceId()
+    {
+        if (!string.IsNullOrEmpty(instanceId))
+        {
+            RememberAliasForCurrentPosition();
+            return;
+        }
+
+        string legacyKey = LegacyKeyAtCurrentPosition();
+        string aliasKey  = InstanceIdKeyPrefix + legacyKey;
+
+        instanceId = PlayerPrefs.GetString(aliasKey, "");
+        if (string.IsNullOrEmpty(instanceId))
+        {
+            Vector3 pos = transform.position;
+            instanceId = $"p{Mathf.RoundToInt(pos.x * 10)}_{Mathf.RoundToInt(pos.y * 10)}";
+            PlayerPrefs.SetString(aliasKey, instanceId);
+        }
+        _instanceIdAutoDerived = true;
+        _cachedLegacyKey = legacyKey;
+
+        MigrateLegacyHouseSave(legacyKey);
+    }
+
+    /// <summary>F9: copy save đời cũ sang khoá mới (một chiều, không xoá khoá cũ).</summary>
+    private void MigrateLegacyHouseSave(string legacyKey)
+    {
+        string newKey = $"HouseSave_{houseId}_{instanceId}";
+        if (newKey == legacyKey) return;                 // không có gì để chuyển
+        if (PlayerPrefs.HasKey(newKey)) return;          // đã chuyển ở phiên trước
+        if (!PlayerPrefs.HasKey(legacyKey)) return;      // người chơi mới, không có save cũ
+
+        PlayerPrefs.SetString(newKey, PlayerPrefs.GetString(legacyKey, ""));
+        if (PlayerPrefs.HasKey(legacyKey + "_start"))
+            PlayerPrefs.SetString(newKey + "_start", PlayerPrefs.GetString(legacyKey + "_start", "0"));
+        if (PlayerPrefs.HasKey(legacyKey + "_dur"))
+            PlayerPrefs.SetFloat(newKey + "_dur", PlayerPrefs.GetFloat(legacyKey + "_dur", defaultBuildDuration));
+
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+        Debug.Log($"[HouseGrowth] Chuyển save nhà '{legacyKey}' → '{newKey}' (F9: khoá không còn theo toạ độ).");
+    }
+
+    /// <summary>
+    /// F9: nhà vừa bị dời → ghi thêm bí danh "vị trí mới → instanceId" để phiên sau
+    /// căn nhà này vẫn tự nhận ra chính mình. Chỉ ghi khi vị trí THỰC SỰ đổi ô.
+    /// </summary>
+    private void RememberAliasForCurrentPosition()
+    {
+        if (string.IsNullOrEmpty(instanceId)) return;
+
+        string legacyKey = LegacyKeyAtCurrentPosition();
+        if (legacyKey == _cachedLegacyKey) return;
+
+        _cachedLegacyKey = legacyKey;
+        PlayerPrefs.SetString(InstanceIdKeyPrefix + legacyKey, instanceId);
+        LuuGopPrefs.Hen();     // gộp lưu, xem LuuGopPrefs
+    }
+
     private void Awake()
     {
+        // F9: phải chốt instanceId (và chuyển save cũ) TRƯỚC mọi lần đọc/ghi khoá save.
+        EnsureInstanceId();
+
         _sr = GetComponent<SpriteRenderer>();
         _collider = GetComponent<BoxCollider2D>();
         if (_collider == null)
@@ -157,6 +259,9 @@ public class HouseGrowthController : MonoBehaviour
     {
         if (state == GrowthState.Building)
         {
+            // F9: nhà đang xây mà bị dời → ghi bí danh vị trí mới, đừng để mồ côi khoá.
+            RememberAliasForCurrentPosition();
+
             if (RemainingSeconds <= 0f && startUnix > 0)
             {
                 // Hết giờ xây -> Chuyển sang Stage 5 (Hộp quà)
@@ -244,6 +349,16 @@ public class HouseGrowthController : MonoBehaviour
         _initializedAtRuntime = true;
         data = bData;
         houseId = id;
+
+        // F9: Awake() chạy TRƯỚC Initialize() nên instanceId lúc đó được suy ra từ houseId
+        // mặc định của prefab. houseId thật vừa được gán ở trên → tính lại cho đúng.
+        // Chỉ tính lại khi id là do code tự sinh; id ai đó serialize sẵn thì tôn trọng.
+        if (_instanceIdAutoDerived)
+        {
+            instanceId = "";
+            _cachedLegacyKey = null;
+            EnsureInstanceId();
+        }
         duration = buildDuration > 0 ? buildDuration : defaultBuildDuration;
         startUnix = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         state = GrowthState.Building;

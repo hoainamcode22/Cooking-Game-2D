@@ -71,8 +71,11 @@ public static class ChoiLaiTuDauTool
         }
 
         PlayerPrefs.DeleteAll();
+        TutorialManager.ClearTutorialDoneFlag();
+        SaveVersionGuard.ClearAll();
+        TouristBoatUnlockFlow.TrihoanIntro = false;
         PlayerPrefs.Save();
-        Debug.Log("[ChơiLại] ✅ ĐÃ XOÁ SẠCH TOÀN BỘ SAVE (SaveSystem.DeleteSave + PlayerPrefs.DeleteAll). Lần Play tới game sẽ ở trạng thái người chơi mới hoàn toàn!");
+        Debug.Log("[ChơiLại] ✅ ĐÃ XOÁ SẠCH TOÀN BỘ SAVE (SaveSystem.DeleteSave + PlayerPrefs.DeleteAll + SaveVersionGuard). Lần Play tới game sẽ ở trạng thái người chơi mới hoàn toàn!");
     }
 
     // ─────────────────────────────────────────────────────────────────────────

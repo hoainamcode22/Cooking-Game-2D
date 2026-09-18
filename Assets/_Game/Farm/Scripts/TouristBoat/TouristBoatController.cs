@@ -118,6 +118,8 @@ public class TouristBoatController : MonoBehaviour
             _visualBaseLocalPos = visual.transform.localPosition;
             visual.sortingLayerName = "ObjectsFront";
             visual.sortingOrder = 200;
+            visual.gameObject.SetActive(false);
+            _visualShown = false;
         }
 
         EnsureDirectionalSprites();

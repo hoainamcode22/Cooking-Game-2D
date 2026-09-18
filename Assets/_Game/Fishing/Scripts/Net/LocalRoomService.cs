@@ -70,7 +70,7 @@ namespace FarmGame.Fishing
                 var info = new RoomInfo
                 {
                     roomId = id,
-                    displayName = "Phòng " + i.ToString(CultureInfo.InvariantCulture),
+                    displayName = Loc.TF("Phòng {0}", i.ToString(CultureInfo.InvariantCulture)),
                     capacity = cfg.roomCapacity,
                 };
                 if (id == CurrentRoomId) { info.playerCount = 1 + _bots.Count; }
@@ -83,9 +83,9 @@ namespace FarmGame.Fishing
 
         public void JoinRoom(string roomId, PlayerNetState self, Action<bool, string> onResult)
         {
-            if (string.IsNullOrEmpty(roomId)) { Fail(onResult, "Chưa chọn phòng"); return; }
+            if (string.IsNullOrEmpty(roomId)) { Fail(onResult, Loc.T("Chưa chọn phòng")); return; }
             var cfg = Cfg;
-            if (IsFullTestRoom(roomId, cfg)) { Fail(onResult, "Phòng đã đầy"); return; }
+            if (IsFullTestRoom(roomId, cfg)) { Fail(onResult, Loc.T("Phòng đã đầy")); return; }
             if (CurrentRoomId != null) { LeaveRoom(); }
 
             CurrentRoomId = roomId;

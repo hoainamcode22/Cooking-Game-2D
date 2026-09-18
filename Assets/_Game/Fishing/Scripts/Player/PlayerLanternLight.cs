@@ -25,6 +25,16 @@ namespace FarmGame.Fishing
         private bool _dayNightSearched;
         private float _nightBlend;   // 0 = ngày, 1 = đêm (đã nội suy)
 
+        // ── [PERF F4.4 2026-09-17] ───────────────────────────────────────────────
+        // Ban cu: `if (!_dayNightSearched) { _dayNightSearched = true; ... }` — dung, NHUNG
+        // neu lan tim dau tra ve null (DayNightCycleController nap sau, hoac o scene khac
+        // load additive) thi `_dayNight` VINH VIEN null va den long chet han o muc ban ngay.
+        // Neu bo co `_dayNightSearched` di de tim lai thi FindFirstObjectByType chay MOI
+        // LateUpdate = mot lan QUET TOAN SCENE theo kieu, moi frame.
+        // Ban moi: van cache; khi null thi CHI thu lai moi TIM_LAI_MOI_GIAY giay.
+        private const float TIM_LAI_MOI_GIAY = 2f;
+        private float _lanTimKe;
+
         /// <summary>Find-or-create con PlayerLantern dưới owner và cấu hình Light2D theo cfg. Trả về component (không bao giờ null nếu owner != null).</summary>
         public static PlayerLanternLight Attach(Transform owner, FishingConfig cfg)
         {
@@ -103,8 +113,11 @@ namespace FarmGame.Fishing
         private void LateUpdate()
         {
             if (_light == null) { return; }
-            if (!_dayNightSearched)
+
+            // [PERF F4.4] Chi quet scene khi CHUA co tham chieu, va toi da 1 lan / 2 giay.
+            if (_dayNight == null && Time.unscaledTime >= _lanTimKe)
             {
+                _lanTimKe = Time.unscaledTime + TIM_LAI_MOI_GIAY;
                 _dayNightSearched = true;
                 _dayNight = FindFirstObjectByType<Day_Night.DayNightCycleController>();
             }

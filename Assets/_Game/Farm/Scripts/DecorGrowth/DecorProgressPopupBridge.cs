@@ -304,7 +304,7 @@ public static class DecorProgressPopupBridge
         t.color = color;
         t.alignment = align;
         t.textWrappingMode = TextWrappingModes.NoWrap;   // enableWordWrapping đã Obsolete trong TMP của project
-        t.overflowMode = TextOverflowModes.Overflow;
+        t.overflowMode = TextOverflowModes.Ellipsis;
         t.raycastTarget = false;
         t.text = "";
         return t;

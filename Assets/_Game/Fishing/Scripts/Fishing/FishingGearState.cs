@@ -77,17 +77,17 @@ namespace FarmGame.Fishing
         public bool TryBuy(RodData rod, out string reasonVi)
         {
             reasonVi = string.Empty;
-            if (rod == null || string.IsNullOrEmpty(rod.itemID)) { reasonVi = "Cần câu không hợp lệ"; return false; }
+            if (rod == null || string.IsNullOrEmpty(rod.itemID)) { reasonVi = Loc.T("Cần câu không hợp lệ"); return false; }
 
             int level = PlayerProgressManager.Instance != null ? PlayerProgressManager.Instance.Level : 1;
             if (rod.unlockLevel > level)
             {
-                reasonVi = "Cần mở ở cấp " + rod.unlockLevel.ToString(CultureInfo.InvariantCulture);
+                reasonVi = Loc.TF("Cần mở ở cấp {0}", rod.unlockLevel.ToString(CultureInfo.InvariantCulture));
                 return false;
             }
 
             FarmEconomyManager eco = FarmEconomyManager.Instance;
-            if (eco == null) { reasonVi = "Chưa có hệ tiền"; return false; }
+            if (eco == null) { reasonVi = Loc.T("Chưa có hệ tiền"); return false; }
 
             bool paid = rod.IsGemRod ? eco.SpendGems(rod.diamondPrice) : eco.SpendGold(rod.goldPrice);
             if (!paid)
@@ -127,7 +127,7 @@ namespace FarmGame.Fishing
         public bool GrantRod(RodData rod, out string reasonVi)
         {
             reasonVi = string.Empty;
-            if (rod == null || string.IsNullOrEmpty(rod.itemID)) { reasonVi = "Cần câu không hợp lệ"; return false; }
+            if (rod == null || string.IsNullOrEmpty(rod.itemID)) { reasonVi = Loc.T("Cần câu không hợp lệ"); return false; }
 
             int casts = Mathf.Max(1, rod.durabilityCasts);
             bool daCo = false;
@@ -147,7 +147,7 @@ namespace FarmGame.Fishing
             // Chỉ tự cầm khi đang tay không (hoặc cần đang cầm đã hỏng) — không giật cần xịn khỏi tay Sếp.
             if (!HasUsableRod) { _equippedId = rod.itemID; }
 
-            reasonVi = daCo ? "Đã cộng thêm độ bền cho cần " + rod.itemName : string.Empty;
+            reasonVi = daCo ? Loc.TF("Đã cộng thêm độ bền cho cần {0}", Loc.T(rod.itemName)) : string.Empty;
             Debug.Log(FishingIds.LogTag + " Shop cấp cần " + rod.itemID + " (tier " + rod.tier.ToString(CultureInfo.InvariantCulture) + ", độ bền " + casts.ToString(CultureInfo.InvariantCulture) + " lần quăng)" + (daCo ? " — cộng dồn vào cần đã có" : "") + ", KHÔNG trừ tiền ở đây.");
             Save();
             OnChanged?.Invoke();

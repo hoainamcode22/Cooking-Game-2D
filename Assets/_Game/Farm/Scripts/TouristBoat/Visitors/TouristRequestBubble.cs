@@ -137,6 +137,8 @@ public class TouristRequestBubble : MonoBehaviour
         State = BubbleState.Happy;
         SetIcon(SmileySpriteResolved);
         SetShown(true);
+        if (_animRoutine != null) StopCoroutine(_animRoutine);
+        if (isActiveAndEnabled) _animRoutine = StartCoroutine(HappyBounceRoutine());
     }
 
     /// <summary>Đổi icon thành MẶT TỨC GIẬN (hết kiên nhẫn) — agent giữ 2s rồi cho khách về.</summary>
@@ -145,8 +147,18 @@ public class TouristRequestBubble : MonoBehaviour
         EnsureBuilt();
         State = BubbleState.Angry;
         SetIcon(AngrySpriteResolved);
-        if (_root == null || !_root.gameObject.activeSelf) PlayChainScaleIn();
-        else SetShown(true);
+        SetShown(true);
+        if (_animRoutine != null) StopCoroutine(_animRoutine);
+        if (isActiveAndEnabled) _animRoutine = StartCoroutine(AngryRumbleRoutine());
+    }
+
+    /// <summary>Rung lắc bubble cảnh báo người chơi chưa có món trong kho khi tap.</summary>
+    public void PlayDishMissingShake()
+    {
+        EnsureBuilt();
+        if (State != BubbleState.Requesting) return;
+        if (_animRoutine != null) StopCoroutine(_animRoutine);
+        if (isActiveAndEnabled) _animRoutine = StartCoroutine(DishMissingShakeRoutine());
     }
 
     /// <summary>Đóng bubble (khách rời hàng / despawn).</summary>
@@ -330,6 +342,105 @@ public class TouristRequestBubble : MonoBehaviour
         SetAllScales(1f, 1f, 1f);
 
         // ─── Floating Loop (nhấp nhô nhẹ nhàng) ─────────────
+        float parentScale = Mathf.Max(0.0001f, transform.lossyScale.y);
+        float bobAmplitude = 2.6f / parentScale;
+        float bobSpeed     = 2.5f;
+
+        while (true)
+        {
+            float timeVal = Time.time * bobSpeed + _floatSeed;
+            float offsetF = Mathf.Sin(timeVal) * bobAmplitude;
+            float offset2 = Mathf.Sin(timeVal - 0.3f) * (bobAmplitude * 0.5f);
+            float offset1 = Mathf.Sin(timeVal - 0.6f) * (bobAmplitude * 0.25f);
+
+            if (_frameTr != null) _frameTr.localPosition = _baseFramePos + new Vector3(0f, offsetF, 0f);
+            if (_dot2Tr != null)  _dot2Tr.localPosition  = _baseDot2Pos  + new Vector3(0f, offset2, 0f);
+            if (_dot1Tr != null)  _dot1Tr.localPosition  = _baseDot1Pos  + new Vector3(0f, offset1, 0f);
+
+            yield return null;
+        }
+    }
+
+    private IEnumerator HappyBounceRoutine()
+    {
+        float timer = 0f;
+        const float popDuration = 0.35f;
+
+        while (timer < popDuration)
+        {
+            timer += Time.deltaTime;
+            float t = Mathf.Clamp01(timer / popDuration);
+            // Punch scale bounce: 1.0 -> 1.35 -> 1.05
+            float scaleMul = 1f + 0.35f * Mathf.Sin(t * Mathf.PI);
+            SetAllScales(1f, 1f, scaleMul);
+            yield return null;
+        }
+
+        SetAllScales(1f, 1f, 1f);
+
+        // Happy continuous bounce
+        float parentScale = Mathf.Max(0.0001f, transform.lossyScale.y);
+        float bounceAmp = 5f / parentScale;
+
+        while (true)
+        {
+            float timeVal = Time.time * 12f;
+            float hop = Mathf.Abs(Mathf.Sin(timeVal)) * bounceAmp;
+            if (_frameTr != null) _frameTr.localPosition = _baseFramePos + new Vector3(0f, hop, 0f);
+            yield return null;
+        }
+    }
+
+    private IEnumerator AngryRumbleRoutine()
+    {
+        float parentScale = Mathf.Max(0.0001f, transform.lossyScale.y);
+        float shakeAmp = 5.5f / parentScale;
+        SetAllScales(1.1f, 1.1f, 1.15f);
+
+        while (true)
+        {
+            float shakeX = (Random.value - 0.5f) * 2f * shakeAmp;
+            float shakeY = (Random.value - 0.5f) * 2f * (shakeAmp * 0.5f);
+            if (_frameTr != null) _frameTr.localPosition = _baseFramePos + new Vector3(shakeX, shakeY, 0f);
+            yield return null;
+        }
+    }
+
+    private IEnumerator DishMissingShakeRoutine()
+    {
+        float parentScale = Mathf.Max(0.0001f, transform.lossyScale.y);
+        float shakeAmp = 6f / parentScale;
+        float elapsed = 0f;
+        const float duration = 0.45f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float decay = 1f - (elapsed / duration);
+            float shakeX = Mathf.Sin(elapsed * 45f) * shakeAmp * decay;
+            float scaleMul = 1f + 0.15f * Mathf.Sin(elapsed * 30f) * decay;
+
+            if (_frameTr != null)
+            {
+                _frameTr.localPosition = _baseFramePos + new Vector3(shakeX, 0f, 0f);
+                _frameTr.localScale = Vector3.one * (_baseFrameScale * scaleMul);
+            }
+            yield return null;
+        }
+
+        if (_frameTr != null)
+        {
+            _frameTr.localPosition = _baseFramePos;
+            _frameTr.localScale = Vector3.one * _baseFrameScale;
+        }
+
+        // Resume idle floating loop
+        _animRoutine = StartCoroutine(FloatingOnlyRoutine());
+    }
+
+    private IEnumerator FloatingOnlyRoutine()
+    {
+        SetAllScales(1f, 1f, 1f);
         float parentScale = Mathf.Max(0.0001f, transform.lossyScale.y);
         float bobAmplitude = 2.6f / parentScale;
         float bobSpeed     = 2.5f;

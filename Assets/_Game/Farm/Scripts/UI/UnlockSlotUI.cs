@@ -303,6 +303,31 @@ public class UnlockSlotUI : MonoBehaviour
     }
 
     /// <summary>
+    /// [i18n] Tim cum " se mo o cap " trong <paramref name="s"/> — thu cum tieng Viet GOC truoc,
+    /// roi den ban dich hien hanh (Loc.T). Tra ve chi so tim duoc (hoac -1) va do dai cum da khop
+    /// qua <paramref name="daiCum"/>, vi ban tieng Anh dai ngan khac nhau.
+    /// </summary>
+    private static int TimCumSeMoOCap(string s, out int daiCum)
+    {
+        const System.StringComparison KTC = System.StringComparison.OrdinalIgnoreCase;
+
+        daiCum = CUM_SE_MO_O_CAP.Length;
+        if (string.IsNullOrEmpty(s)) return -1;
+
+        int i = s.IndexOf(CUM_SE_MO_O_CAP, KTC);
+        if (i >= 0) return i;
+
+        string daDich = Loc.T(CUM_SE_MO_O_CAP);
+        if (!string.IsNullOrEmpty(daDich) && daDich != CUM_SE_MO_O_CAP)
+        {
+            i = s.IndexOf(daDich, KTC);
+            if (i >= 0) { daiCum = daDich.Length; return i; }
+        }
+
+        return -1;
+    }
+
+    /// <summary>
     /// Cắt nhãn mở khoá dài về đúng DANH TỪ, và tách phần "sẽ mở ở cấp N" ra thành badge.
     ///
     ///   "Mở khóa hạt Ngô"                → "Hạt Ngô"
@@ -323,11 +348,13 @@ public class UnlockSlotUI : MonoBehaviour
         string s = nhanGoc.Trim();
 
         // 1 — "... sẽ mở ở cấp N": cắt đuôi, đẩy "Cấp N" sang badge.
-        int iCap = s.IndexOf(CUM_SE_MO_O_CAP, KTC);
+        // [FIX QA i18n] Nhan co the da bi localizer doi sang tieng Anh => do CA cum tieng Viet
+        // goc lan ban dich hien hanh (Loc.T), y het TutorialManager.NhanLaBoQuaBuocNay.
+        int iCap = TimCumSeMoOCap(s, out int daiCumCap);
         if (iCap >= 0)
         {
-            string so = s.Substring(iCap + CUM_SE_MO_O_CAP.Length).Trim();
-            if (so.Length > 0 && so.Length <= 4) tagCap = Loc.TF(CUM_NHAN_CAP + "{0}", so);   // "Cấp {0}"
+            string so = s.Substring(iCap + daiCumCap).Trim();
+            if (so.Length > 0 && so.Length <= 4) tagCap = Loc.TF("Cấp {0}", so);   // khoá NGUYÊN CÂU, không ghép mảnh
             s = s.Substring(0, iCap).Trim();
 
             // "Nhà dân mới" → "Nhà dân" (chữ "mới" đã nằm trong badge rồi)

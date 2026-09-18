@@ -278,6 +278,8 @@ public class OrderBoardPopupUI : MonoBehaviour
         _animating = false;
 
         RefreshAll();
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     public void ClosePopup()
@@ -386,6 +388,8 @@ public class OrderBoardPopupUI : MonoBehaviour
         }
 
         RefreshDetail();
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     /// <summary>Người chơi bấm vào một phiếu — <see cref="OrderTicketUI"/> gọi vào đây.</summary>

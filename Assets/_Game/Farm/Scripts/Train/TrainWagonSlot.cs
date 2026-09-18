@@ -62,11 +62,28 @@ public class TrainWagonSlot : MonoBehaviour
     private BoxCollider2D      _col;
     private Vector3            _iconBaseScale = Vector3.one;
 
+    // [PERF F4.2 2026-09-17] Camera.main goi BA LAN moi Update (1 lan o cong kiem tra chay
+    // MOI FRAME, 2 lan nua sau khi click). Camera.main phai tra ve camera co tag "MainCamera"
+    // dang bat => khong phai mot phep doc field. Cache lai va chi tim lai khi tham chieu chet
+    // (doi scene / camera bi thay). KHONG doi hanh vi: van tra ve dung camera do.
+    private Camera _cam;
+
+    /// <summary>Camera chinh da cache; tu tim lai neu tham chieu da chet.</summary>
+    private Camera Cam
+    {
+        get
+        {
+            if (_cam == null) _cam = Camera.main;
+            return _cam;
+        }
+    }
+
     // ——————————————————————————————————————————————————————————————————
 
     void Awake()
     {
         _col = GetComponent<BoxCollider2D>();
+        _cam = Camera.main;
         if (iconSprite != null) _iconBaseScale = iconSprite.transform.localScale;
         // Ẩn cargo icon mặc định — chỉ hiện sau khi chất hàng lần đầu
         if (iconSprite != null) iconSprite.enabled = false;
@@ -205,7 +222,10 @@ public class TrainWagonSlot : MonoBehaviour
         if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         if (!enabled || !gameObject.activeInHierarchy) return;
         if (TrainManager.Instance == null) return;
-        if (Camera.main == null) return;
+
+        // [PERF F4.2] doc qua cache thay vi Camera.main.
+        Camera cam = Cam;
+        if (cam == null) return;
 
         bool clicked = InputBridge.IsPointerDownThisFrame
                     || (UnityEngine.InputSystem.Mouse.current != null && UnityEngine.InputSystem.Mouse.current.leftButton.wasPressedThisFrame)
@@ -222,7 +242,7 @@ public class TrainWagonSlot : MonoBehaviour
             if (UnityEngine.InputSystem.Mouse.current != null) screenPos = UnityEngine.InputSystem.Mouse.current.position.ReadValue();
             else screenPos = (Vector2)Input.mousePosition;
         }
-        Vector3 world3 = Camera.main.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, Camera.main.nearClipPlane));
+        Vector3 world3 = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, cam.nearClipPlane));
         Vector2 worldPos = new Vector2(world3.x, world3.y);
 
         if (_col == null) _col = GetComponent<BoxCollider2D>();

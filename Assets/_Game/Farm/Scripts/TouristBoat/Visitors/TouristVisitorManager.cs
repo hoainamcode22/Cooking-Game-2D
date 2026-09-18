@@ -329,6 +329,7 @@ public class TouristVisitorManager : MonoBehaviour
     private void HandleBoatDocked(int dock)
     {
         if (!IsValidDock(dock)) return;
+        if (_mgr != null && !_mgr.IsDockUnlocked(dock)) return;
         ResumeOrStartTrip(dock);
     }
 
@@ -423,6 +424,11 @@ public class TouristVisitorManager : MonoBehaviour
     /// <summary>Có save hợp lệ → khôi phục; không → dựng chuyến mới. Idempotent.</summary>
     private void ResumeOrStartTrip(int dock)
     {
+        if (_mgr != null && !_mgr.IsDockUnlocked(dock))
+        {
+            ClearTripSave(dock);
+            return;
+        }
         if (_trips[dock] != null) return; // chuyến đang chạy — không dựng chồng
 
         TripSave save = LoadTripSave(dock);
@@ -798,6 +804,7 @@ public class TouristVisitorManager : MonoBehaviour
 
         if (!kho.HasItem(dish.dishId))
         {
+            agent.TriggerMissingFoodFeedback();
             FarmUIManager.Instance?.ShowHint(Loc.TF("Chưa có {0} trong kho — vào bếp nấu nhé!", Loc.T(tenMon)));
             return;
         }

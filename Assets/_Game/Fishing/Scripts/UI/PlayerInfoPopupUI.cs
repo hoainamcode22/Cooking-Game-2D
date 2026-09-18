@@ -269,7 +269,7 @@ namespace FarmGame.Fishing
             RelationshipKind rel = fs != null ? fs.GetRelationship(id) : RelationshipKind.None;
 
             if (txtName != null) { txtName.text = s != null && !string.IsNullOrEmpty(s.displayName) ? s.displayName : id; }
-            if (txtLevel != null) { txtLevel.text = "Lv " + FishingUiKit.Num(s != null ? Mathf.Max(1, s.level) : 1); }
+            if (txtLevel != null) { txtLevel.text = Loc.TF("Cấp {0}", FishingUiKit.Num(s != null ? Mathf.Max(1, s.level) : 1)); }
             if (txtStatus != null) { txtStatus.text = StatusText(s); }
             if (imgAvatar != null)
             {

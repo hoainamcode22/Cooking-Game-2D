@@ -8,6 +8,16 @@ using UnityEngine.UI;
 
 public class ShopManager : MonoBehaviour
 {
+
+    // [IL2CPP] KHONG dung new CultureInfo("vi-VN"): build bat Invariant Globalization se nem
+    // CultureNotFoundException. Dung NumberFormatInfo tu khai bao — giong TownshipHUDController.cs.
+    private static readonly System.Globalization.NumberFormatInfo DinhDangTien =
+        new System.Globalization.NumberFormatInfo
+        {
+            NumberGroupSeparator   = ".",
+            NumberDecimalSeparator = ",",
+            NumberGroupSizes       = new[] { 3 },
+        };
     public static ShopManager Instance { get; private set; }
 
     [Header("UI Roots")]
@@ -183,11 +193,16 @@ public class ShopManager : MonoBehaviour
                 parentCanvas.sortingOrder = UILayers.Panel + 3 * UILayers.BuocTrongLop;   // = 230
             }
         }
+        // [EN-fit 2026-09-17] Popup 1500x880 co the loi ra ngoai canvas tren may khong phai
+        // 16:9 — co lai cho vua. Xem VuaKhungManHinh().
+        VuaKhungManHinh();
         AcquirePopupInputBlock();
         if (searchBar != null) searchBar.text = "";
         RefreshCurrencyBalances();
         ShowTab(0);
         TutorialManager.Instance?.NotifyOpenShop();
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     public void CloseShop()
@@ -277,10 +292,14 @@ public class ShopManager : MonoBehaviour
 
         UpdateTabVisuals();
         RenderItems(searchBar != null ? searchBar.text : "");
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     private void UpdateTabVisuals()
     {
+        // [EN-fit 2026-09-17] Dong bo co chu 4 tab truoc khi to mau. Xem ChuanHoaChuTab().
+        ChuanHoaChuTab();
         Color activeTextColor = new Color(0.36f, 0.20f, 0.09f, 1f);   // #5B3417
         Color inactiveTextColor = new Color(0.43f, 0.25f, 0.08f, 1f); // #6E4014
 
@@ -318,9 +337,9 @@ public class ShopManager : MonoBehaviour
         if (FarmEconomyManager.Instance != null)
         {
             if (txtGoldBalance != null)
-                txtGoldBalance.text = FarmEconomyManager.Instance.Gold.ToString("N0", new System.Globalization.CultureInfo("vi-VN"));
+                txtGoldBalance.text = FarmEconomyManager.Instance.Gold.ToString("N0", DinhDangTien);
             if (txtGemBalance != null)
-                txtGemBalance.text = FarmEconomyManager.Instance.Gems.ToString("N0", new System.Globalization.CultureInfo("vi-VN"));
+                txtGemBalance.text = FarmEconomyManager.Instance.Gems.ToString("N0", DinhDangTien);
         }
     }
 
@@ -491,7 +510,12 @@ public class ShopManager : MonoBehaviour
             // (một ô tiêu đề sẽ cao 335px, trông như lỗi) — khoảng trống là cách phân
             // nhóm gọn nhất mà không phải sửa scene. [Sếp 2026-08-27]
             int group = GroupRank(item);
-            if (lastGroup >= 0 && group != lastGroup)
+            // [EN-fit 2026-09-17] KHÔNG chèn ô trống khi vẫn còn ở HÀNG ĐẦU TIÊN.
+            // Nhóm đầu có ít hơn 4 món (ví dụ tab chỉ còn 1 hạt rau củ mở khoá) thì đường
+            // cũ đẩy ngay 3 ô trống vào ⇒ thẻ đầu tiên nằm trơ trọi một mình cả một hàng
+            // và góc trên-phải hở một mảng to — đúng ảnh chụp lưới Shop của Sếp. Ngắt
+            // dòng để phân nhóm chỉ có nghĩa khi đã có ít nhất một hàng đầy phía trên.
+            if (lastGroup >= 0 && group != lastGroup && cellCount >= GridColumns())
                 PadRowWithSpacers(ref cellCount);
             lastGroup = group;
 
@@ -525,6 +549,109 @@ public class ShopManager : MonoBehaviour
             spacer.transform.SetParent(contentParent, false);
             cellCount++;
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  [EN-fit 2026-09-17] HAI VIỆC CHỐNG TRÀN KHI CHUYỂN SANG TIẾNG ANH
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>Sàn cỡ chữ nhãn tab khi autosize co lại.</summary>
+    private const float CO_CHU_TAB_SAN = 16f;
+
+    /// <summary>Cỡ chuẩn đo được ở lượt đầu; -1 = chưa đo.</summary>
+    private float coChuTabChuan = -1f;
+
+    /// <summary>
+    /// Kéo 4 nhãn tab về CÙNG MỘT CỠ và bật autosize CHỈ ĐƯỢC NHỎ LẠI.
+    ///
+    /// Đo trong SCN_Farm: Tab_Seed / Tab_Building / Tab_Decor để nhãn cỡ 24, còn
+    /// Btn_Tab_Tool (tab CÔNG CỤ sinh sau bằng tool nhân bản) để cỡ 20 — nhìn là thấy
+    /// nhãn TOOLS nhỏ hơn hẳn ba nhãn kia. Cả bốn nhãn đều enableAutoSizing = 0 nên câu
+    /// tiếng Anh dài hơn sẽ tràn ra ngoài nút thay vì co lại.
+    ///
+    /// Cách làm: lấy cỡ LỚN NHẤT trong bốn nhãn làm trần chung (nhãn ngắn hiện đúng cỡ
+    /// đó ⇒ đồng bộ), sàn 16 (không bao giờ nhỏ hơn mức đọc được trên điện thoại).
+    /// Cỡ chuẩn chỉ ĐO một lần (đo lại sau khi autosize đã bóp chữ thì fontSize đọc được
+    /// là cỡ ĐÃ BỊ BÓP, lấy nó làm trần là khoá nhãn ở cỡ nhỏ vĩnh viễn), nhưng việc ÁP
+    /// thì lặp lại mỗi lần đổi tab — xem chú thích trong thân hàm.
+    /// </summary>
+    private void ChuanHoaChuTab()
+    {
+        TMP_Text[] nhan = { txtTabSeed, txtTabBuilding, txtTabDecor, txtTabTool };
+
+        // ĐO một lần duy nhất, lúc cả 4 nhãn còn nguyên cỡ thiết kế.
+        if (coChuTabChuan <= 0f)
+        {
+            float coChuan = 0f;
+            for (int i = 0; i < nhan.Length; i++)
+            {
+                if (nhan[i] == null) continue;
+                if (nhan[i].enableAutoSizing) continue;      // đang bị bóp ⇒ số đọc được không tin được
+                if (nhan[i].fontSize > coChuan) coChuan = nhan[i].fontSize;
+            }
+            if (coChuan <= 0f) return;
+            coChuTabChuan = coChuan;
+        }
+
+        // ÁP lại mỗi lần đổi tab (rẻ: 4 nhãn, và nhãn đã chuẩn thì bỏ qua ngay).
+        // Phải áp lại chứ không chốt bằng một cờ chạy-một-lần: LocRuntimeInterceptor có
+        // đường HoanVuaKhung() trả nhãn về cấu hình cỡ chữ GỐC khi người chơi bấm về
+        // tiếng Việt — quay lại tiếng Anh mà ta không áp nữa thì lỗi lệch cỡ tái diễn.
+        for (int i = 0; i < nhan.Length; i++)
+        {
+            TMP_Text t = nhan[i];
+            if (t == null) continue;
+            if (t.enableAutoSizing && Mathf.Approximately(t.fontSizeMax, coChuTabChuan)) continue;
+
+            t.fontSizeMax      = coChuTabChuan;
+            t.fontSizeMin      = Mathf.Min(CO_CHU_TAB_SAN, coChuTabChuan);
+            t.enableAutoSizing = true;
+            t.overflowMode     = TextOverflowModes.Ellipsis;
+        }
+    }
+
+    /// <summary>Chừa mỗi mép canvas bấy nhiêu khi co popup cho vừa màn.</summary>
+    private const float LE_AN_TOAN_POPUP = 24f;
+
+    private Vector3 scaleGocPopup;
+    private bool    daLuuScalePopup;
+
+    /// <summary>
+    /// Co popup lại cho lọt canvas — CHỈ CO, KHÔNG BAO GIỜ PHÓNG TO.
+    ///
+    /// popup_Menu trong scene là 1500×880 ở localScale 0.95, vừa khít khung thiết kế
+    /// 1920×1080. Nhưng CanvasScaler của Canvas_Popup để matchWidthOrHeight = 0.5, nên
+    /// trên máy có tỉ lệ thấp hơn 16:9 (4:3, 16:10, hay điện thoại cầm dọc) chiều cao
+    /// 880 vượt ra ngoài mép canvas — đúng ảnh chụp "popup quá to" của Sếp.
+    ///
+    /// Hệ số luôn ≤ 1 nên scale 0.95 Sếp chỉnh tay được GIỮ NGUYÊN trên máy 16:9; chỉ
+    /// khi popup thật sự lòi ra mới bị nhân thêm. scale gốc được nhớ lại ở lần mở ĐẦU
+    /// TIÊN, nên mở đi mở lại bao nhiêu lần cũng không dồn nén tiếp.
+    /// </summary>
+    private void VuaKhungManHinh()
+    {
+        RectTransform rtPopup = (shopPanel != null ? shopPanel.transform : transform) as RectTransform;
+        if (rtPopup == null) return;
+
+        RectTransform rtKhung = rtPopup.parent as RectTransform;
+        if (rtKhung == null) return;
+
+        if (!daLuuScalePopup)
+        {
+            daLuuScalePopup = true;
+            scaleGocPopup   = rtPopup.localScale;
+        }
+
+        float rongPopup = rtPopup.rect.width  * Mathf.Abs(scaleGocPopup.x);
+        float caoPopup  = rtPopup.rect.height * Mathf.Abs(scaleGocPopup.y);
+        if (rongPopup < 1f || caoPopup < 1f) return;
+
+        float rongKhung = rtKhung.rect.width  - LE_AN_TOAN_POPUP * 2f;
+        float caoKhung  = rtKhung.rect.height - LE_AN_TOAN_POPUP * 2f;
+        if (rongKhung < 1f || caoKhung < 1f) return;
+
+        float heSo = Mathf.Min(1f, Mathf.Min(rongKhung / rongPopup, caoKhung / caoPopup));
+        rtPopup.localScale = scaleGocPopup * heSo;
     }
 
     /// <summary>0 = hạt rau củ, 1 = hạt hoa, 2 = còn lại (công trình/trang trí).</summary>

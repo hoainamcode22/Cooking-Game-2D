@@ -126,7 +126,7 @@ public class TutorialPhantomDemoManager : MonoBehaviour
         Canvas canvas = TimCanvasChua();
         if (canvas == null) return;
 
-        Transform existing = canvas.transform.Find(TEN_LOP);
+        Transform existing = TimSauTrongCanvas(canvas.transform, TEN_LOP);
         GameObject rootGo;
         if (existing != null)
         {
@@ -858,6 +858,22 @@ public class TutorialPhantomDemoManager : MonoBehaviour
             string n = b.name.ToLowerInvariant();
             if (n.Contains("speedup") || n.Contains("rutnang") || n.Contains("gem"))
                 return b.GetComponent<RectTransform>();
+        }
+        return null;
+    }
+
+    // [FIX 2026-09-18] SafeAreaBootstrap boc toan bo con cua Canvas vao lop "~SafeArea",
+    // nen Find() mot cap khong con thay lop cu ⇒ moi lan vao lai scene lai de them mot lop
+    // trung ten (ro ri + hai lop tutorial chong nhau). Tim de quy de van thay lop cu.
+    private static Transform TimSauTrongCanvas(Transform goc, string ten)
+    {
+        if (goc == null || string.IsNullOrEmpty(ten)) return null;
+        for (int i = 0; i < goc.childCount; i++)
+        {
+            var c = goc.GetChild(i);
+            if (c.name == ten) return c;
+            var sau = TimSauTrongCanvas(c, ten);
+            if (sau != null) return sau;
         }
         return null;
     }

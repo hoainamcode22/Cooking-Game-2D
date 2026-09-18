@@ -258,7 +258,18 @@ public class FarmInventoryManager : MonoBehaviour
         string json = PlayerPrefs.GetString(SaveKey, "");
         if (string.IsNullOrEmpty(json)) return;
 
-        var data = JsonUtility.FromJson<InventorySaveData>(json);
+        InventorySaveData data;
+        try
+        {
+            data = JsonUtility.FromJson<InventorySaveData>(json);
+        }
+        catch (Exception e)
+        {
+            // F1: KHÔNG xoá/ghi đè key — giữ nguyên blob hỏng để còn cơ hội khôi phục sau.
+            Debug.LogWarning($"[FarmInventory] Save kho hỏng, bỏ qua (giữ nguyên key '{SaveKey}'): {e.Message}");
+            return;
+        }
+
         if (data?.entries == null) return;
 
         foreach (var entry in data.entries)

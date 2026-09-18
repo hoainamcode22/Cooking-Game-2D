@@ -66,6 +66,8 @@ public class TrainProcessPopupUI : MonoBehaviour
 
         UpdateTimer(totalTime);
         UpdatePosition();
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     public void ShowArrived()
@@ -85,6 +87,8 @@ public class TrainProcessPopupUI : MonoBehaviour
         }
         if (progressFill != null) progressFill.fillAmount = 1f;
         UpdatePosition();
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     public void UpdateTimer(float remaining)

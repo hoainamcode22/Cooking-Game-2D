@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
@@ -34,7 +34,7 @@ public class FloatingDragIcon : MonoBehaviour
         img.preserveAspect    = true;
 
         ghostRect             = imgGo.GetComponent<RectTransform>();
-        ghostRect.sizeDelta   = new Vector2(80f, 80f);
+        ghostRect.sizeDelta   = new Vector2(68f, 68f);
         ghostRect.anchorMin   = ghostRect.anchorMax = Vector2.zero;
         ghostRect.pivot       = new Vector2(0.5f, 0.5f);
         ghostRect.position    = InputBridge.PointerPosition;

@@ -66,6 +66,37 @@ public class HomeScreenManager : MonoBehaviour
     private Vector2[] initialCloudPos;
     private Vector2[] initialSparklePos;
 
+    // ── [PERF F4.8 2026-09-17] CHI GHI KHI SO THAT SU DOI ────────────────────────
+    // Moi lan gan anchoredPosition / localScale / localEulerAngles tren mot RectTransform
+    // LAM BAN layout cua Canvas cha => Canvas phai tinh lai + dung lai batch. Ban cu gan
+    // 6 lan/frame (nhan vat 3, dia an 2, shimmer 1) CONG voi may/hat sang, ke ca khi gia tri
+    // ra y het frame truoc (vd sin() ke o dinh song, hoac fillAmount dung yen).
+    // Cache lai gia tri DA GHI va bo qua luot gan khi lech duoi nguong.
+    // KHONG doi chuyen dong: cong thuc sin/cos giu nguyen 100%.
+    private const float NGUONG_PX  = 0.01f;   // px, cho anchoredPosition
+    private const float NGUONG_GOC = 0.01f;   // do,  cho localEulerAngles
+    private const float NGUONG_TL  = 0.0005f; // ti le, cho localScale
+
+    private Vector2 _charPosDaGhi;   private bool _charPosCo;
+    private float   _charTiltDaGhi;  private bool _charTiltCo;
+    private Vector2 _charSquishDaGhi; private bool _charSquishCo;
+    private Vector2 _foodPosDaGhi;   private bool _foodPosCo;
+    private float   _foodRotDaGhi;   private bool _foodRotCo;
+    private Vector2 _shimmerPosDaGhi; private bool _shimmerPosCo;
+    private Vector2[] _cloudPosDaGhi;
+    private Vector2[] _sparklePosDaGhi;
+    private float[]   _sparkleScaleDaGhi;
+
+    /// <summary>Gan anchoredPosition chi khi lech qua nguong. Tra ve moc moi de luu lai.</summary>
+    private static void GanViTri(RectTransform rt, Vector2 moi, ref Vector2 daGhi, ref bool co)
+    {
+        if (co && Mathf.Abs(moi.x - daGhi.x) <= NGUONG_PX && Mathf.Abs(moi.y - daGhi.y) <= NGUONG_PX)
+            return;
+        rt.anchoredPosition = moi;
+        daGhi = moi;
+        co    = true;
+    }
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -80,14 +111,15 @@ public class HomeScreenManager : MonoBehaviour
     {
         if (imgProgressFill != null) imgProgressFill.fillAmount = 0f;
         if (txtProgressPercent != null) txtProgressPercent.text = "0%";
-        if (txtTipTitle != null) txtTipTitle.text = "Mẹo Hay:";
+        if (txtTipTitle != null) txtTipTitle.text = Loc.T("Mẹo Hay:");
 
         if (characterRect != null) initialCharacterPos = characterRect.anchoredPosition;
         if (foodDecorRect != null) initialFoodPos = foodDecorRect.anchoredPosition;
 
         if (floatingClouds != null && floatingClouds.Length > 0)
         {
-            initialCloudPos = new Vector2[floatingClouds.Length];
+            initialCloudPos  = new Vector2[floatingClouds.Length];
+            _cloudPosDaGhi   = new Vector2[floatingClouds.Length];   // [PERF F4.8]
             for (int i = 0; i < floatingClouds.Length; i++)
             {
                 if (floatingClouds[i] != null) initialCloudPos[i] = floatingClouds[i].anchoredPosition;
@@ -96,7 +128,10 @@ public class HomeScreenManager : MonoBehaviour
 
         if (floatingSparkles != null && floatingSparkles.Length > 0)
         {
-            initialSparklePos = new Vector2[floatingSparkles.Length];
+            initialSparklePos  = new Vector2[floatingSparkles.Length];
+            _sparklePosDaGhi   = new Vector2[floatingSparkles.Length];   // [PERF F4.8]
+            _sparkleScaleDaGhi = new float[floatingSparkles.Length];     // [PERF F4.8]
+            for (int k = 0; k < _sparkleScaleDaGhi.Length; k++) _sparkleScaleDaGhi[k] = float.NaN;
             for (int i = 0; i < floatingSparkles.Length; i++)
             {
                 if (floatingSparkles[i] != null) initialSparklePos[i] = floatingSparkles[i].anchoredPosition;
@@ -120,9 +155,25 @@ public class HomeScreenManager : MonoBehaviour
             float tiltZ = Mathf.Sin(time * 1.8f) * 2f;
             float squishX = 1f + Mathf.Sin(time * 3.5f) * 0.035f;
             float squishY = 1f - Mathf.Sin(time * 3.5f) * 0.035f;
-            characterRect.anchoredPosition = initialCharacterPos + new Vector2(0f, bounceY);
-            characterRect.localScale = new Vector3(squishX, squishY, 1f);
-            characterRect.localEulerAngles = new Vector3(0f, 0f, tiltZ);
+            // [PERF F4.8] chi ghi khi that su lech.
+            GanViTri(characterRect, initialCharacterPos + new Vector2(0f, bounceY),
+                     ref _charPosDaGhi, ref _charPosCo);
+
+            if (!_charSquishCo ||
+                Mathf.Abs(squishX - _charSquishDaGhi.x) > NGUONG_TL ||
+                Mathf.Abs(squishY - _charSquishDaGhi.y) > NGUONG_TL)
+            {
+                characterRect.localScale = new Vector3(squishX, squishY, 1f);
+                _charSquishDaGhi = new Vector2(squishX, squishY);
+                _charSquishCo    = true;
+            }
+
+            if (!_charTiltCo || Mathf.Abs(tiltZ - _charTiltDaGhi) > NGUONG_GOC)
+            {
+                characterRect.localEulerAngles = new Vector3(0f, 0f, tiltZ);
+                _charTiltDaGhi = tiltZ;
+                _charTiltCo    = true;
+            }
         }
 
         // 2. Dĩa món ăn bồng bềnh lơ lửng + lượn sóng
@@ -130,8 +181,16 @@ public class HomeScreenManager : MonoBehaviour
         {
             float floatY = Mathf.Sin(time * 2.8f + 1f) * 6f;
             float rotZ = Mathf.Sin(time * 2.2f) * 3f;
-            foodDecorRect.anchoredPosition = initialFoodPos + new Vector2(0f, floatY);
-            foodDecorRect.localEulerAngles = new Vector3(0f, 0f, rotZ);
+            // [PERF F4.8] chi ghi khi that su lech.
+            GanViTri(foodDecorRect, initialFoodPos + new Vector2(0f, floatY),
+                     ref _foodPosDaGhi, ref _foodPosCo);
+
+            if (!_foodRotCo || Mathf.Abs(rotZ - _foodRotDaGhi) > NGUONG_GOC)
+            {
+                foodDecorRect.localEulerAngles = new Vector3(0f, 0f, rotZ);
+                _foodRotDaGhi = rotZ;
+                _foodRotCo    = true;
+            }
         }
 
         // 3. Vệt sáng Shimmer Gleam trượt dọc thanh loading
@@ -144,7 +203,9 @@ public class HomeScreenManager : MonoBehaviour
                 if (!shimmerRect.gameObject.activeSelf) shimmerRect.gameObject.SetActive(true);
                 float speed = 280f;
                 float shimmerX = Mathf.Repeat(time * speed, curWidth);
-                shimmerRect.anchoredPosition = new Vector2(shimmerX - (totalWidth * 0.5f) + 15f, 0f);
+                // [PERF F4.8] chi ghi khi that su lech.
+                GanViTri(shimmerRect, new Vector2(shimmerX - (totalWidth * 0.5f) + 15f, 0f),
+                         ref _shimmerPosDaGhi, ref _shimmerPosCo);
             }
             else
             {
@@ -160,7 +221,16 @@ public class HomeScreenManager : MonoBehaviour
                 if (floatingClouds[i] == null || i >= initialCloudPos.Length) continue;
                 float speed = 16f + i * 10f;
                 float driftX = (time * speed) % 2400f;
-                floatingClouds[i].anchoredPosition = new Vector2(-1200f + driftX, initialCloudPos[i].y + Mathf.Sin(time * 1.2f + i) * 6f);
+                Vector2 cloudMoi = new Vector2(-1200f + driftX, initialCloudPos[i].y + Mathf.Sin(time * 1.2f + i) * 6f);
+
+                // [PERF F4.8] chi ghi khi that su lech.
+                if (_cloudPosDaGhi == null || i >= _cloudPosDaGhi.Length ||
+                    Mathf.Abs(cloudMoi.x - _cloudPosDaGhi[i].x) > NGUONG_PX ||
+                    Mathf.Abs(cloudMoi.y - _cloudPosDaGhi[i].y) > NGUONG_PX)
+                {
+                    floatingClouds[i].anchoredPosition = cloudMoi;
+                    if (_cloudPosDaGhi != null && i < _cloudPosDaGhi.Length) _cloudPosDaGhi[i] = cloudMoi;
+                }
             }
         }
 
@@ -171,11 +241,26 @@ public class HomeScreenManager : MonoBehaviour
             {
                 if (floatingSparkles[i] == null || i >= initialSparklePos.Length) continue;
                 float pulse = 0.8f + Mathf.Sin(time * 4f + i * 1.5f) * 0.35f;
-                floatingSparkles[i].localScale = new Vector3(pulse, pulse, 1f);
-                floatingSparkles[i].anchoredPosition = initialSparklePos[i] + new Vector2(
+
+                // [PERF F4.8] chi ghi khi that su lech.
+                if (_sparkleScaleDaGhi == null || i >= _sparkleScaleDaGhi.Length ||
+                    !(Mathf.Abs(pulse - _sparkleScaleDaGhi[i]) <= NGUONG_TL))
+                {
+                    floatingSparkles[i].localScale = new Vector3(pulse, pulse, 1f);
+                    if (_sparkleScaleDaGhi != null && i < _sparkleScaleDaGhi.Length) _sparkleScaleDaGhi[i] = pulse;
+                }
+
+                Vector2 spMoi = initialSparklePos[i] + new Vector2(
                     Mathf.Sin(time * 1.5f + i) * 8f,
                     Mathf.Cos(time * 2.0f + i) * 8f
                 );
+                if (_sparklePosDaGhi == null || i >= _sparklePosDaGhi.Length ||
+                    Mathf.Abs(spMoi.x - _sparklePosDaGhi[i].x) > NGUONG_PX ||
+                    Mathf.Abs(spMoi.y - _sparklePosDaGhi[i].y) > NGUONG_PX)
+                {
+                    floatingSparkles[i].anchoredPosition = spMoi;
+                    if (_sparklePosDaGhi != null && i < _sparklePosDaGhi.Length) _sparklePosDaGhi[i] = spMoi;
+                }
             }
         }
     }
@@ -227,7 +312,7 @@ public class HomeScreenManager : MonoBehaviour
                 }
 
                 currentTipIndex = (currentTipIndex + 1) % funTips.Count;
-                txtFunTip.text = funTips[currentTipIndex];
+                txtFunTip.text = Loc.T(funTips[currentTipIndex]);
 
                 // Fade in
                 if (tipCanvasGroup != null)

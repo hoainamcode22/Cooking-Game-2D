@@ -160,14 +160,17 @@ public class StallSlotUI : MonoBehaviour
     /// <summary>"2g 05p" / "38p" / "45 giây" — đủ chính xác cho thứ tính bằng giờ.</summary>
     public static string FormatRemaining(double seconds)
     {
-        if (seconds <= 0) return "Hết hạn";
+        if (seconds <= 0) return Loc.T("Hết hạn");
 
         int total = Mathf.CeilToInt((float)seconds);
         int hours = total / 3600;
         int mins  = (total % 3600) / 60;
 
-        if (hours > 0) return $"{hours}g {mins:00}p";
-        if (mins  > 0) return $"{mins}p";
+        // $"..." ghép thẳng KHÔNG BAO GIỜ khớp khoá trong bảng dịch (khoá là chuỗi MẪU
+        // còn nguyên {0}), nên hai dòng này trước đây luôn hiện "2g 05p" kể cả khi game
+        // đang chạy tiếng Anh. Loc.TF tra MẪU trước rồi mới Format.
+        if (hours > 0) return Loc.TF("{0}g {1:00}p", hours, mins);
+        if (mins  > 0) return Loc.TF("{0}p", mins);
         return Loc.TF("{0} giây", total);
     }
 }

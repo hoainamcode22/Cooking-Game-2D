@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 /// <summary>Tên + icon để vẽ một vật phẩm. Tra một lần rồi dùng lại, không đụng AssetDatabase lúc chạy.</summary>
@@ -156,6 +157,46 @@ public class MarketManager : MonoBehaviour
         }
 
         s_daDongBangTinLanDau = true;
+
+        // [BLOCKER-1 FIX 2026-09-18] PHONG THU TANG HAI — "man dim khong bao gio song sot".
+        // Du nhanh dong o tren co bi bo qua vi bat ky ly do nao ve sau, man dim van
+        // KHONG duoc phep an raycast hay che man hinh khi bang tin dang DONG.
+        BaoDamManDimKhongChanKhiDong();
+    }
+
+    /// <summary>
+    /// [BLOCKER-1 FIX 2026-09-18] Chot an toan doc lap: khi bang tin KHONG mo,
+    /// ep Panel_Dim thoi an raycast va tat lop Canvas cua popup. Goi vo dieu kien
+    /// o Start() nen mot hoi quy trong tuong lai cung khong the hoi sinh tam man den
+    /// phu kin the gioi + HUD. Khong dung toi neu bang tin dang THUC SU mo.
+    /// </summary>
+    private void BaoDamManDimKhongChanKhiDong()
+    {
+        if (IsOpen) return;
+        if (popupRoot == null) return;
+
+        if (popupRoot.TryGetComponent(out Image dimImage))
+            dimImage.raycastTarget = false;
+
+        popupRoot.SetActive(false);
+
+        Canvas cv = popupRoot.GetComponentInParent<Canvas>(true);
+        if (cv == null) return;
+
+        // Neu MarketManager nam BEN TRONG chinh Canvas do thi tat GameObject se giet
+        // luon dong ho lam moi (Update). Truong hop do chi tat component Canvas +
+        // GraphicRaycaster — van het che man hinh va het an click, ma khong mat logic.
+        bool namTrongCanvas = transform.IsChildOf(cv.transform);
+        if (namTrongCanvas)
+        {
+            cv.enabled = false;
+            if (cv.TryGetComponent(out GraphicRaycaster gr))
+                gr.enabled = false;
+        }
+        else if (cv.gameObject.activeSelf)
+        {
+            cv.gameObject.SetActive(false);
+        }
     }
 
     /// <summary>
@@ -173,6 +214,26 @@ public class MarketManager : MonoBehaviour
     /// </summary>
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetDaDongBangTinLanDauKhiVaoScene()
+    {
+        s_daDongBangTinLanDau = false;
+
+        // [BLOCKER-1 FIX 2026-09-18] RuntimeInitializeOnLoadMethod chi chay MOT LAN moi
+        // phien choi, KHONG chay lai moi lan load scene. Nguoi choi quay ve nong trai bang
+        // LoadScene("SCN_Farm", Single) tu cau ca / nau an / bep => co da true san, nhanh
+        // dong o Start() bi bo qua, Panel_Dim (alpha 0.75, sortingOrder 220) phu kin ca the
+        // gioi lan HUD => nong trai chet. Bam vao sceneLoaded de co tro ve "moi lan load
+        // scene" dung nhu y do ban dau: lan Start() DAU TIEN sau moi lan load scene van la
+        // lan dong "cam", cac lan Start() sau do trong cung scene thi khong.
+        // sceneLoaded chay sau Awake va TRUOC Start nen thu tu luon dung.
+        SceneManager.sceneLoaded -= ResetDaDongBangTinLanDauTheoSceneLoad;
+        SceneManager.sceneLoaded += ResetDaDongBangTinLanDauTheoSceneLoad;
+    }
+
+    /// <summary>
+    /// [BLOCKER-1 FIX 2026-09-18] Reset co theo TUNG lan load scene (xem giai thich o
+    /// <see cref="ResetDaDongBangTinLanDauKhiVaoScene"/>).
+    /// </summary>
+    private static void ResetDaDongBangTinLanDauTheoSceneLoad(Scene scene, LoadSceneMode mode)
     {
         s_daDongBangTinLanDau = false;
     }
@@ -243,20 +304,86 @@ public class MarketManager : MonoBehaviour
             }
 
             // Đảm bảo Canvas của Chợ luôn hiển thị trên HUD (order 125 > 100)
-            Canvas cv = popupRoot.GetComponentInParent<Canvas>();
-            if (cv != null && cv.sortingOrder < 125)
+            Canvas cv = popupRoot.GetComponentInParent<Canvas>(true);
+            if (cv != null)
             {
-                cv.overrideSorting = true;
-                cv.sortingOrder = 125;
+                // [BLOCKER-1 FIX 2026-09-18] Mo lai nhung gi BaoDamManDimKhongChanKhiDong() da tat.
+                cv.enabled = true;
+                if (cv.TryGetComponent(out GraphicRaycaster grOpen))
+                    grOpen.enabled = true;
+
+                if (cv.sortingOrder < 125)
+                {
+                    cv.overrideSorting = true;
+                    cv.sortingOrder = 125;
+                }
             }
+
+            // Man dim phai an lai raycast de nut "bam ra ngoai de dong" hoat dong.
+            if (popupRoot.TryGetComponent(out Image dimImageOpen))
+                dimImageOpen.raycastTarget = true;
 
             popupRoot.SetActive(true);
         }
 
         AcquirePopupInputBlock();
+
+        // [FIX P0 2026-09-17] CHOT AN TOAN "BAM DUOC".
+        // Scene dang LUU Canvas_MarketPopup voi CanvasGroup interactable=0, blocksRaycasts=0
+        // (trang thai bi ghi de luc ReleasePopupInputBlock() chay roi Sep luu scene). Khi do
+        // ca popup cho khong an raycast VA moi Button ben trong bi vo hieu — dung trieu chung
+        // "mo popup cho ma khong bam vao duoc". Binh thuong AcquirePopupInputBlock() da bat lai,
+        // nhung no phu thuoc GetComponentInParent<Canvas>() tim ra Canvas; goi them mot luot
+        // sua chua doc lap o day de KHONG BAO GIO con phu thuoc dieu kien do.
+        BaoDamBamDuoc(popupRoot);
+
         PlayOpenAnimation();
 
         OnMarketChanged?.Invoke();
+    }
+
+    /// <summary>
+    /// [FIX P0 2026-09-17] Ep moi CanvasGroup tren duong tu <paramref name="goc"/> nguoc len
+    /// tan Canvas goc phai cho click di qua (blocksRaycasts) va cho Button an (interactable),
+    /// va bao dam Canvas do co GraphicRaycaster. KHONG dung den alpha — alpha thuoc ve hieu ung
+    /// mo popup, sua vao la pha animation.
+    /// Public static de <see cref="MarketPopupUI"/> dung chung khi chay duong du phong
+    /// (luc MarketManager.Instance chua co) — day moi la duong de lot popup chet cung nhat.
+    /// </summary>
+    public static void BaoDamBamDuoc(GameObject goc)
+    {
+        if (goc == null) return;
+
+        Transform t = goc.transform;
+        while (t != null)
+        {
+            CanvasGroup cg = t.GetComponent<CanvasGroup>();
+            if (cg != null)
+            {
+                cg.blocksRaycasts = true;
+                cg.interactable   = true;
+            }
+
+            Canvas cv = t.GetComponent<Canvas>();
+            if (cv != null)
+            {
+                // [BLOCKER-1 FIX 2026-09-18] Mo lai lop Canvas ma
+                // BaoDamManDimKhongChanKhiDong() co the da tat. Duong du phong cua
+                // MarketPopupUI (luc MarketManager.Instance chua co) cung di qua day.
+                cv.enabled = true;
+                if (cv.TryGetComponent(out GraphicRaycaster grBat))
+                    grBat.enabled = true;
+            }
+
+            if (cv != null && cv.isRootCanvas)
+            {
+                if (cv.GetComponent<UnityEngine.EventSystems.BaseRaycaster>() == null)
+                    cv.gameObject.AddComponent<GraphicRaycaster>();
+                break;   // len toi Canvas goc la du, khong can di tiep
+            }
+
+            t = t.parent;
+        }
     }
 
     public void CloseMarketPopup()
@@ -452,6 +579,63 @@ public class MarketManager : MonoBehaviour
     //  ICON / TÊN HIỂN THỊ
     // ══════════════════════════════════════════════════════════════════════
 
+    private static readonly Dictionary<string, Sprite> _fallbackIconCache = new Dictionary<string, Sprite>();
+
+    public static Sprite TryResolveFallbackIcon(string itemID)
+    {
+        if (string.IsNullOrEmpty(itemID)) return null;
+        string key = NormalizeKey(itemID);
+        if (_fallbackIconCache.TryGetValue(key, out Sprite cached) && cached != null)
+            return cached;
+
+        Sprite result = null;
+        string resourceName = null;
+        switch (key)
+        {
+            case "cam_ga":
+                resourceName = "Mill/Icons/feed_cam_ga";
+                break;
+            case "cam_heo":
+                resourceName = "Mill/Icons/feed_cam_heo";
+                break;
+            case "co_tron_bo":
+                resourceName = "Mill/Icons/feed_co_tron_bo";
+                break;
+            case "cam_bo_sua":
+                resourceName = "Mill/Icons/feed_cam_bo_sua";
+                break;
+        }
+
+        if (!string.IsNullOrEmpty(resourceName))
+        {
+            result = Resources.Load<Sprite>(resourceName);
+#if UNITY_EDITOR
+            if (result == null)
+            {
+                string path = $"Assets/_Game/GeneratedUI/Mill/Icons/{System.IO.Path.GetFileName(resourceName)}.png";
+                result = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(path);
+                if (result == null)
+                {
+                    var all = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(path);
+                    if (all != null)
+                    {
+                        foreach (var o in all)
+                        {
+                            if (o is Sprite s) { result = s; break; }
+                        }
+                    }
+                }
+            }
+#endif
+        }
+
+        if (result != null)
+        {
+            _fallbackIconCache[key] = result;
+        }
+        return result;
+    }
+
     /// <summary>
     /// Tra icon + tên. Không tìm thấy thì lấy tên từ bảng giá — thà hiện
     /// "Phở Bò Tái" không icon còn hơn hiện "pho_bo_tai".
@@ -461,6 +645,8 @@ public class MarketManager : MonoBehaviour
         string key = NormalizeKey(itemID);
         if (!string.IsNullOrEmpty(key) && visualLookup.TryGetValue(key, out MarketItemVisual visual))
         {
+            if (visual.Icon == null)
+                visual.Icon = TryResolveFallbackIcon(key);
             if (string.IsNullOrEmpty(visual.DisplayName))
                 visual.DisplayName = MarketPriceTable.GetDisplayName(itemID);
             return visual;
@@ -475,14 +661,14 @@ public class MarketManager : MonoBehaviour
             return new MarketItemVisual
             {
                 DisplayName = !string.IsNullOrEmpty(ngoai.displayName) ? ngoai.displayName : MarketPriceTable.GetDisplayName(itemID),
-                Icon        = ngoai.icon
+                Icon        = ngoai.icon != null ? ngoai.icon : TryResolveFallbackIcon(key)
             };
         }
 
         return new MarketItemVisual
         {
             DisplayName = MarketPriceTable.GetDisplayName(itemID),
-            Icon        = null
+            Icon        = TryResolveFallbackIcon(key)
         };
     }
 
@@ -533,7 +719,7 @@ public class MarketManager : MonoBehaviour
             OverwriteVisual(item.itemId, new MarketItemVisual
             {
                 DisplayName = string.IsNullOrEmpty(item.displayName) ? item.itemId : item.displayName,
-                Icon        = item.icon
+                Icon        = item.icon != null ? item.icon : TryResolveFallbackIcon(item.itemId)
             });
         }
     }

@@ -280,7 +280,7 @@ public class TutorialDialogueCard : MonoBehaviour
             lbl.enableAutoSizing = true;
             lbl.fontSizeMin = 16f;
             lbl.fontSizeMax = 28f;
-            lbl.enableWordWrapping = false;
+            lbl.enableWordWrapping = true;
             lbl.text = nhan;
         }
 
@@ -297,7 +297,7 @@ public class TutorialDialogueCard : MonoBehaviour
             lbl.enableAutoSizing = true;
             lbl.fontSizeMin = 16f;
             lbl.fontSizeMax = 28f;
-            lbl.enableWordWrapping = false;
+            lbl.enableWordWrapping = true;
             lbl.text = LocalizationManager.T("Tiếp tục");
         }
     }

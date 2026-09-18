@@ -793,6 +793,13 @@ public class PlacementManager : MonoBehaviour
         // với NGOÀI BIÊN BẢN ĐỒ — hai nguyên nhân hoàn toàn khác nhau đều rơi vào
         // `inside == false`. Bản này in ĐÚNG TÊN cổng đã chặn + Ô cụ thể gây chặn.
         // In theo THAY ĐỔI chứ không mỗi frame: giữ chuột kéo ghost là 60 dòng/giây.
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // [PERF F4.7 2026-09-17] BOC #if, KHONG XOA LOG.
+        // `logPlacementReason` mac dinh = TRUE (dong 611), nen o ban release truoc day khoi nay
+        // VAN chay moi frame trong suot luot keo ghost: DescribeBlockReason() noi chuoi noi suy
+        // ($"DAT_CHUA_MUA(o {c.x},{c.y} ...)") VA goi FirstCellFailing() duyet tung o cua rect —
+        // day la mot lan cap phat + mot vong quet moi frame chi de dung mot dong log ma nguoi choi
+        // khong bao gio nhin thay. Trong Editor/Development build moi thu giu NGUYEN nhu cu.
         if (logPlacementReason)
         {
             string reason = isValidPos ? "HOP_LE" : DescribeBlockReason(rect, free);
@@ -800,6 +807,7 @@ public class PlacementManager : MonoBehaviour
                 { Debug.Log($"[Place] o=({rect.xMin},{rect.yMin}) co={rect.width}x{rect.height} isValidPos={isValidPos} lyDo={reason}"); }
             _lastBlockReason = reason;
         }
+#endif
 
         if (ghostVisual != null)
             ghostVisual.SetValid(isValidPos);
@@ -1552,7 +1560,18 @@ public class PlacementManager : MonoBehaviour
         string json = PlayerPrefs.GetString(BuildingsSaveKey, "");
         if (string.IsNullOrEmpty(json)) return;
 
-        BuildingsSave save = JsonUtility.FromJson<BuildingsSave>(json);
+        BuildingsSave save;
+        try
+        {
+            save = JsonUtility.FromJson<BuildingsSave>(json);
+        }
+        catch (Exception e)
+        {
+            // F1: KHÔNG xoá/ghi đè key — giữ nguyên blob hỏng để còn cơ hội khôi phục sau.
+            Debug.LogWarning($"[Placement] Save công trình hỏng, bỏ qua (giữ nguyên key '{BuildingsSaveKey}'): {e.Message}");
+            return;
+        }
+
         if (save?.list == null) return;
 
         // v0 = save do bản V7 ghi ra (không có key saveVersion → JsonUtility để 0).

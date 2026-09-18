@@ -3,35 +3,35 @@ guid: 3a7f5cb2ca730b341ae9687ea96d7436
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 305854043962348622
-    second: maylamthucan_0
+      213: 1851582373
+    second: maylamthucan_00
   - first:
-      213: -3808690501772614930
-    second: maylamthucan_1
+      213: -948203597
+    second: maylamthucan_01
   - first:
-      213: 8857273691615640358
-    second: maylamthucan_2
+      213: -1671738738
+    second: maylamthucan_02
   - first:
-      213: 7134218083818440870
-    second: maylamthucan_3
+      213: 2069788377
+    second: maylamthucan_03
   - first:
-      213: -933807414621117407
-    second: maylamthucan_4
+      213: 1921221669
+    second: maylamthucan_04
   - first:
-      213: -8566460170424435292
-    second: maylamthucan_5
+      213: -1593437386
+    second: maylamthucan_05
   - first:
-      213: 505426521882380852
-    second: maylamthucan_6
+      213: -1098570984
+    second: maylamthucan_06
   - first:
-      213: -4251652042053325745
-    second: maylamthucan_7
+      213: 336313277
+    second: maylamthucan_07
   - first:
-      213: -753746757294354223
-    second: maylamthucan_8
+      213: -5410084
+    second: maylamthucan_08
   - first:
-      213: -3622941546363701379
-    second: maylamthucan_9
+      213: 13331811
+    second: maylamthucan_09
   - first:
       213: 3595412901546543333
     second: maylamthucan_10
@@ -133,9 +133,9 @@ TextureImporter:
     buildTarget: Android
     maxTextureSize: 1024
     resizeAlgorithm: 0
-    textureFormat: 50
+    textureFormat: 49
     textureCompression: 1
-    compressionQuality: 50
+    compressionQuality: 100
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 1
@@ -144,7 +144,7 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: WebGL
-    maxTextureSize: 1024
+    maxTextureSize: 2048
     resizeAlgorithm: 0
     textureFormat: -1
     textureCompression: 1
@@ -159,9 +159,9 @@ TextureImporter:
     buildTarget: iOS
     maxTextureSize: 1024
     resizeAlgorithm: 0
-    textureFormat: 50
+    textureFormat: 49
     textureCompression: 1
-    compressionQuality: 50
+    compressionQuality: 100
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 1
@@ -172,57 +172,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: maylamthucan_10
-      rect:
-        serializedVersion: 2
-        x: 294
-        y: 5
-        width: 136
-        height: 138
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 5e8c9811cf875e130800000000000000
-      internalID: 3595412901546543333
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: maylamthucan_11
-      rect:
-        serializedVersion: 2
-        x: 438
-        y: 5
-        width: 136
-        height: 138
-      alignment: 7
-      pivot: {x: 0.5, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 9a7a2121fa8582590800000000000000
-      internalID: -7698806054044129367
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
       name: maylamthucan_00
       rect:
         serializedVersion: 2
-        x: 5
-        y: 291
-        width: 136
-        height: 138
+        x: 0
+        y: 448
+        width: 300
+        height: 224
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -241,10 +197,10 @@ TextureImporter:
       name: maylamthucan_01
       rect:
         serializedVersion: 2
-        x: 149
-        y: 291
-        width: 136
-        height: 138
+        x: 300
+        y: 448
+        width: 300
+        height: 224
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -263,10 +219,10 @@ TextureImporter:
       name: maylamthucan_02
       rect:
         serializedVersion: 2
-        x: 294
-        y: 291
-        width: 136
-        height: 138
+        x: 600
+        y: 448
+        width: 300
+        height: 224
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -285,10 +241,10 @@ TextureImporter:
       name: maylamthucan_03
       rect:
         serializedVersion: 2
-        x: 438
-        y: 291
-        width: 136
-        height: 138
+        x: 900
+        y: 448
+        width: 300
+        height: 224
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -307,10 +263,10 @@ TextureImporter:
       name: maylamthucan_04
       rect:
         serializedVersion: 2
-        x: 5
-        y: 147
-        width: 136
-        height: 138
+        x: 0
+        y: 224
+        width: 300
+        height: 224
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -329,10 +285,10 @@ TextureImporter:
       name: maylamthucan_05
       rect:
         serializedVersion: 2
-        x: 149
-        y: 147
-        width: 136
-        height: 138
+        x: 300
+        y: 224
+        width: 300
+        height: 224
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -351,10 +307,10 @@ TextureImporter:
       name: maylamthucan_06
       rect:
         serializedVersion: 2
-        x: 294
-        y: 147
-        width: 136
-        height: 138
+        x: 600
+        y: 224
+        width: 300
+        height: 224
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -373,10 +329,10 @@ TextureImporter:
       name: maylamthucan_07
       rect:
         serializedVersion: 2
-        x: 438
-        y: 147
-        width: 136
-        height: 138
+        x: 900
+        y: 224
+        width: 300
+        height: 224
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -395,10 +351,10 @@ TextureImporter:
       name: maylamthucan_08
       rect:
         serializedVersion: 2
-        x: 5
-        y: 5
-        width: 136
-        height: 138
+        x: 0
+        y: 0
+        width: 300
+        height: 224
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -417,10 +373,10 @@ TextureImporter:
       name: maylamthucan_09
       rect:
         serializedVersion: 2
-        x: 149
-        y: 5
-        width: 136
-        height: 138
+        x: 300
+        y: 0
+        width: 300
+        height: 224
       alignment: 7
       pivot: {x: 0.5, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -431,6 +387,50 @@ TextureImporter:
       bones: []
       spriteID: 4c5ee5688b6ee46469331fea1af925f3
       internalID: 13331811
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_10
+      rect:
+        serializedVersion: 2
+        x: 600
+        y: 0
+        width: 300
+        height: 224
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5e8c9811cf875e130800000000000000
+      internalID: 3595412901546543333
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: maylamthucan_11
+      rect:
+        serializedVersion: 2
+        x: 900
+        y: 0
+        width: 300
+        height: 224
+      alignment: 7
+      pivot: {x: 0.5, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9a7a2121fa8582590800000000000000
+      internalID: -7698806054044129367
       vertices: []
       indices: 
       edges: []

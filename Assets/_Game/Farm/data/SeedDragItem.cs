@@ -105,14 +105,19 @@ public class SeedDragItem : MonoBehaviour,
 
         if (iconImage != null && data != null)
         {
-            iconImage.sprite = data.icon;
+            iconImage.sprite = data.FinalStageSprite != null ? data.FinalStageSprite : data.icon;
+            iconImage.preserveAspect = true;
+            RectTransform rt = iconImage.rectTransform;
+            if (rt != null)
+            {
+                rt.sizeDelta = new Vector2(76f, 76f);
+            }
         }
 
         if (txtName != null && data != null)
             txtName.text = data.displayName;
 
         RefreshStockDisplay();
-
     }
 
     // ── Stock Display ────────────────────────────────────────────────────

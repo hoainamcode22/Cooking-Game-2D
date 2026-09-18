@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27da4e0963ef8a14bba5b6535e1c8d80, type: 3}
   m_Name: Mission_proc_c_20_1
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
-  missionIcon: {fileID: 21300000, guid: cc12221f5be4877f759e55abbe133951, type: 3}
+  missionIcon: {fileID: 21300000, guid: bb91b2e8c129cfb4eb2b83742659cd67, type: 3}
   missionName: "N\u1EA5u 11 m\xF3n ga_xao_ot"
   targetAmount: 11
   rewardIcon: {fileID: -846414766330871110, guid: a1c4be4bd781bd74399a37785962ed71, type: 3}

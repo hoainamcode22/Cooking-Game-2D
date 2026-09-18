@@ -352,7 +352,7 @@ public static class ConstructionSiteVisuals
         tmp.color            = Color.white;
         tmp.alignment        = TextAlignmentOptions.Center;
         tmp.textWrappingMode = TextWrappingModes.NoWrap;
-        tmp.overflowMode     = TextOverflowModes.Overflow;
+        tmp.overflowMode     = TextOverflowModes.Overflow;   // [FIX QA] Dung chung cho ca nhan UGUI (rect theo host, khong ro co) lan nhan world 320x40 => Ellipsis cat chu tieng Anh. Giu Overflow.
         tmp.raycastTarget    = false;
 
         // Viền đen: nhãn phải đọc được cả khi nằm trên mảnh sáng lẫn mảnh tối.

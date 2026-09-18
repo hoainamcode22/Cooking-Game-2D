@@ -76,6 +76,20 @@ public class ConveyorItem : MonoBehaviour
     private bool    _running;
     private float   _dongHo;             // Thời gian đã chạy, đã bọc trong [0, cycleSeconds).
 
+    // ── [PERF F4.6 2026-09-17] CHI GHI KHI SO THAT SU DOI ────────────────────────
+    // Ghi `anchoredPosition` LAM BAN (dirty) RectTransform => Canvas cha phai dung lai
+    // layout + rebuild batch. Cha o day la `MillPopup_Root`: 231 object, 138 Image — mot
+    // lan rebuild la rat dat. Ban cu ghi MOI FRAME ke ca khi popup dang an.
+    // Hai cong chan:
+    //   ① Update thoat ngay khi popup khong hien (activeInHierarchy=false thi Unity da khong
+    //      goi Update; con lai truong hop CanvasGroup.alpha=0 / Graphic tat => kiem tay).
+    //   ② Chi gan anchoredPosition khi lech qua NGUONG_LECH_PX so voi lan ghi truoc.
+    // KHONG doi quy dao: gia tri van tinh lai tu moc goc `_goc`, chi bot luot GHI trung.
+    private const float NGUONG_LECH_PX = 0.01f;
+    private Vector2 _viTriDaGhi;
+    private bool    _daGhiLanNao;
+    private float   _alphaDaGhi = float.NaN;
+
     private void Awake()
     {
         _rt          = GetComponent<RectTransform>();
@@ -83,6 +97,8 @@ public class ConveyorItem : MonoBehaviour
         _canvasGroup = GetComponent<CanvasGroup>();
 
         _goc = _rt.anchoredPosition;
+        _viTriDaGhi  = _goc;      // [PERF F4.6] moc "da ghi" khop voi thuc te ngay tu dau.
+        _daGhiLanNao = true;
 
         if (_graphic != null)
             _mauGoc = _graphic.color;
@@ -95,6 +111,12 @@ public class ConveyorItem : MonoBehaviour
 
     private void Update()
     {
+        // [PERF F4.6] ① `_running` CHINH LA cong "popup co dang hien khong": MillPopupUI goi
+        // SetRunning(false) khi dong popup, va Unity von khong goi Update tren GameObject tat.
+        //
+        // ⚠ TUYET DOI KHONG them cong kieu `if (_canvasGroup.alpha <= 0) return;`: alpha do
+        // CHINH component nay ghi (DatAlpha), nen 15% cuoi chu ky alpha = 0 se tu khoa minh
+        // lai va bo co khong bao gio sang lai o dau chu ky sau.
         if (!_running) return;
 
         // Bọc trong [0, cycleSeconds) mỗi frame ⇒ không bao giờ tràn float dù popup mở cả ngày.
@@ -137,7 +159,16 @@ public class ConveyorItem : MonoBehaviour
         }
 
         // TÍNH LẠI TỪ MỐC GỐC — không cộng dồn.
-        _rt.anchoredPosition = new Vector2(_goc.x + x, _goc.y + y);
+        // [PERF F4.6] ② chi gan khi lech that su, de khong lam ban RectTransform mien phi.
+        Vector2 viTriMoi = new Vector2(_goc.x + x, _goc.y + y);
+        if (!_daGhiLanNao ||
+            Mathf.Abs(viTriMoi.x - _viTriDaGhi.x) > NGUONG_LECH_PX ||
+            Mathf.Abs(viTriMoi.y - _viTriDaGhi.y) > NGUONG_LECH_PX)
+        {
+            _rt.anchoredPosition = viTriMoi;
+            _viTriDaGhi  = viTriMoi;
+            _daGhiLanNao = true;
+        }
 
         DatAlpha(alpha);
     }
@@ -155,7 +186,13 @@ public class ConveyorItem : MonoBehaviour
         _dongHo = 0f;
 
         if (_rt != null)
+        {
             _rt.anchoredPosition = _goc;
+            // [PERF F4.6] dong bo lai moc "da ghi", neu khong lan chay sau co the bo qua
+            // luot ghi dau tien va bo co dung sai cho mot frame.
+            _viTriDaGhi  = _goc;
+            _daGhiLanNao = true;
+        }
 
         DatHienThi(false);
     }
@@ -175,6 +212,12 @@ public class ConveyorItem : MonoBehaviour
 
     private void DatAlpha(float a)
     {
+        // [PERF F4.6] Graphic.color / CanvasGroup.alpha deu goi SetVerticesDirty tren ca cum
+        // => bo qua luot gan khi gia tri khong doi. `float.NaN` o moc dau lam moi phep so
+        // sanh false nen lan GAN DAU TIEN luon di qua.
+        if (Mathf.Abs(a - _alphaDaGhi) <= 0.001f) return;
+        _alphaDaGhi = a;
+
         if (_canvasGroup != null)
         {
             _canvasGroup.alpha = a;

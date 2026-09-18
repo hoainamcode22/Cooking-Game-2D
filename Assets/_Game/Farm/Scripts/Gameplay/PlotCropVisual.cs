@@ -39,6 +39,21 @@ public class PlotCropVisual : MonoBehaviour
     [SerializeField] private float swaySpeed       = 1.4f;
     [SerializeField] private float swayPhaseRange  = 2.0f;
 
+    // ── [PERF F4.9 — 2026-09-17] ─────────────────────────────────────────────────
+    // Do duoc: ~26 instance PlotCropVisual dang sway trong SCN_Farm, cong 34 instance
+    // EnvironmentSway ⇒ khoang 60 luot Update ghi transform / frame, phan lon cho o ruong
+    // NGOAI khung hinh.
+    // KHONG BO HIEU UNG. Chi them hai cong, GIONG HET EnvironmentSway/GentleSway:
+    //   ① ngoai khung hinh ⇒ bo qua vong ghi rotation;
+    //   ② chay 1 lan moi N frame, moi o ruong mot offset rieng nen khong cung tick.
+    // `swayTimer` VAN cong dồn MOI FRAME nen pha khong bao gio troi du co bo frame.
+    [Tooltip("BẬT = bỏ qua vòng ghi rotation khi cây trồng nằm ngoài khung hình.")]
+    [SerializeField] private bool chiSwayKhiThayDuoc = true;
+
+    [Tooltip("Chạy sway 1 lần mỗi N frame. 2 = 30Hz ở 60fps — mắt không đọc ra vì đây là sin chậm.")]
+    [Range(1, 4)]
+    [SerializeField] private int swayBuocFrame = 2;
+
     // â”€â”€ Internal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private CropData         currentCrop;
     private SpriteRenderer[] slotRenderers;
@@ -46,6 +61,7 @@ public class PlotCropVisual : MonoBehaviour
     private float[]          slotPhase;
 
     private float swayTimer;
+    private int   _swayOffsetFrame = -1;   // [PERF F4.9] rai cac o ruong ra nhieu frame khac nhau.
     private bool  isReadySwayActive;
     private bool  isSetupDone;
     private int   lastLatticeCount = -1;
@@ -76,7 +92,22 @@ public class PlotCropVisual : MonoBehaviour
         if (!enableReadySway || !isReadySwayActive || slotVisuals == null)
             return;
 
+        // ⚠ CONG DON TRUOC MOI CONG BO-FRAME: neu bo qua dong nay o frame bi skip thi pha
+        // sway se CHAY CHAM lai theo ti le buocFrame — cay lac cham dan, khong con dung nhip.
         swayTimer += Time.deltaTime;
+
+        // [PERF F4.9] ① ngoai khung hinh => khong ai nhin thay, bo qua vong ghi rotation.
+        // Cac cay trong CUNG mot o nam sat nhau nen chi can hoi renderer hop le dau tien.
+        if (chiSwayKhiThayDuoc && slotRenderers != null && !CoCayNaoDangHien())
+            return;
+
+        // [PERF F4.9] ② giam nhip. Goc chi phu thuoc swayTimer (da cong du o tren) nen
+        // bo frame KHONG lam troi pha.
+        int buoc = Mathf.Clamp(swayBuocFrame, 1, 4);
+        if (_swayOffsetFrame < 0) _swayOffsetFrame = (int)((uint)GetInstanceID() % 4u);
+        if (buoc > 1 && (Time.frameCount % buoc) != (_swayOffsetFrame % buoc))
+            return;
+
         for (int i = 0; i < slotVisuals.Length; i++)
         {
             Transform      v  = slotVisuals[i];
@@ -86,6 +117,26 @@ public class PlotCropVisual : MonoBehaviour
             float angle = Mathf.Sin((swayTimer + slotPhase[i]) * swaySpeed) * swayAngle;
             v.localRotation = Quaternion.Euler(0f, 0f, angle);
         }
+    }
+
+    /// <summary>
+    /// [PERF F4.9] Co it nhat MOT SpriteRenderer cay trong dang nam trong khung hinh khong.
+    /// `isVisible` la bool do he render ghi — doc rat re, khong phai phep tinh bounds.
+    /// Tra ve TRUE khi khong co renderer nao hop le: khong xac dinh duoc thi cu chay nhu cu.
+    /// </summary>
+    private bool CoCayNaoDangHien()
+    {
+        if (slotRenderers == null) return true;
+
+        bool coRendererHopLe = false;
+        for (int i = 0; i < slotRenderers.Length; i++)
+        {
+            SpriteRenderer sr = slotRenderers[i];
+            if (sr == null || !sr.enabled) continue;
+            coRendererHopLe = true;
+            if (sr.isVisible) return true;
+        }
+        return !coRendererHopLe;
     }
 
     // â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

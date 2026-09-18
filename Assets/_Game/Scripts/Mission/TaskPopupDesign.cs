@@ -184,7 +184,7 @@ public static class TaskPopupDesign
     //  Tấm biển: left/right 76, top 0, bottom 14  →  528 × 120
     public const float RibbonVungRong = 680f;
     public const float RibbonVungCao  = 134f;
-    public static readonly Vector2 RibbonVungTam = new Vector2(0f, NuaCao + 54f - RibbonVungCao * 0.5f);
+    public static readonly Vector2 RibbonVungTam = new Vector2(0f, NuaCao + 12f - RibbonVungCao * 0.5f);
 
     public static readonly Vector2 RibbonTamKichThuoc = new Vector2(RibbonVungRong - 152f, 120f);
     public static readonly Vector2 RibbonTamTam = new Vector2(0f, RibbonVungTam.y + 7f);
@@ -211,11 +211,11 @@ public static class TaskPopupDesign
 
     private const float LeNgang = 48f;
     public const float VungRong = BangRong - LeNgang * 2f;              // 1404
-    public static readonly float TabRong = (VungRong - TabKheHo * 2f) / 3f;
+    public const float TabRong = 360f;
 
-    /// <summary>Tâm X của tab thứ i (0..2).</summary>
+    /// <summary>Tâm X của tab thứ i (0..2). Căn từ lề trái sang để chừa khoảng trống cho nút Close bên phải.</summary>
     public static float TabTamX(int i)
-        => -VungRong * 0.5f + TabRong * 0.5f + i * (TabRong + TabKheHo);
+        => -NuaRong + 48f + TabRong * 0.5f + i * (TabRong + TabKheHo);
 
     /// <summary>Tâm Y của tab. Tab thường lún xuống 14px.</summary>
     public static float TabTamY(bool dangChon)

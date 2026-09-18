@@ -22,6 +22,11 @@ public class UnmaskRaycastFilter : MonoBehaviour, ICanvasRaycastFilter
     private Vector2 _screenRectCenterPx;
     private Vector2 _screenRectSizePx;
 
+    // [PERF F4.5 2026-09-17] `new Vector3[4]` MOI LateUpdate = 1 cap phat heap moi frame
+    // trong suot tutorial => rac dồn cho GC. GetWorldCorners chi GHI DE 4 phan tu nen mot
+    // mang dung lai la du. Khong dung `static`: nhieu UnmaskRaycastFilter co the cung song.
+    private readonly Vector3[] _gocMan = new Vector3[4];
+
     private static readonly int ID_HoleCenter = Shader.PropertyToID("_HoleCenter");
     private static readonly int ID_HoleSize   = Shader.PropertyToID("_HoleSize");
     private static readonly int ID_CircleHole = Shader.PropertyToID("_CircleHole");
@@ -103,11 +108,11 @@ public class UnmaskRaycastFilter : MonoBehaviour, ICanvasRaycastFilter
             ? null
             : _rootCanvas.worldCamera;
 
-        Vector3[] corners = new Vector3[4];
-        _currentTarget.GetWorldCorners(corners);
+        // [PERF F4.5] mang dung lai, khong cap phat moi frame.
+        _currentTarget.GetWorldCorners(_gocMan);
 
-        Vector2 screenMin = RectTransformUtility.WorldToScreenPoint(cam, corners[0]);
-        Vector2 screenMax = RectTransformUtility.WorldToScreenPoint(cam, corners[2]);
+        Vector2 screenMin = RectTransformUtility.WorldToScreenPoint(cam, _gocMan[0]);
+        Vector2 screenMax = RectTransformUtility.WorldToScreenPoint(cam, _gocMan[2]);
 
         screenMin -= Vector2.one * _paddingPx;
         screenMax += Vector2.one * _paddingPx;

@@ -64,6 +64,8 @@ public class LandPurchasePopupUI : MonoBehaviour
         _instance.Bind(region, manager);
         _instance.gameObject.SetActive(true);
         _instance.transform.SetAsLastSibling();
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     public static void Hide()
@@ -168,12 +170,12 @@ public class LandPurchasePopupUI : MonoBehaviour
         _region = region;
         _manager = manager;
 
-        string lv = region.unlockLevel > 0 ? $"  ·  mở ở cấp {region.unlockLevel}" : "";
-        _txtSub.text = $"{region.displayName}  ·  {region.AreaCells} ô đất{lv}";
+        string lv = region.unlockLevel > 0 ? Loc.TF("  ·  mở ở cấp {0}", region.unlockLevel) : "";
+        _txtSub.text = Loc.TF("{0}  ·  {1} ô đất{2}", Loc.T(region.displayName), region.AreaCells, lv);
 
         if (region.goldPrice > 0)       { _txtGold.text = $"{region.goldPrice:n0}"; _imgGoldIcon.enabled = true; }
-        else if (region.gemPrice > 0)   { _txtGold.text = $"{region.gemPrice} kim cương"; _imgGoldIcon.enabled = false; }
-        else                            { _txtGold.text = "Miễn phí"; _imgGoldIcon.enabled = false; }
+        else if (region.gemPrice > 0)   { _txtGold.text = Loc.TF("{0} kim cương", region.gemPrice); _imgGoldIcon.enabled = false; }
+        else                            { _txtGold.text = Loc.T("Miễn phí"); _imgGoldIcon.enabled = false; }
 
         for (int i = _cardRow.childCount - 1; i >= 0; i--) Destroy(_cardRow.GetChild(i).gameObject);
         _cards.Clear();
@@ -233,6 +235,8 @@ public class LandPurchasePopupUI : MonoBehaviour
         _btnBuy.interactable = allow;
         var img = _btnBuy.GetComponent<Image>();
         if (img != null) img.color = allow ? ColBtnOn : ColBtnOff;
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     private void OnEnable()  { InvokeRepeating(nameof(Refresh), 0.4f, 0.6f); }
@@ -281,7 +285,7 @@ public class LandPurchasePopupUI : MonoBehaviour
         t.fontSize = size; t.fontStyle = style; t.color = color;
         t.alignment = TextAlignmentOptions.Center;
         t.enableWordWrapping = false;
-        t.overflowMode = TextOverflowModes.Overflow;
+        t.overflowMode = TextOverflowModes.Ellipsis;
         t.raycastTarget = false;
         return t;
     }

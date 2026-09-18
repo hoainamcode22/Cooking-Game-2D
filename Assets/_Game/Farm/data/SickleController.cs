@@ -18,25 +18,51 @@ public class SickleController : MonoBehaviour
     [Tooltip("Tốc độ follow cursor. Cao = snappy, thấp = lag nhẹ như Hay Day.")]
     [SerializeField] private float followSpeed = 28f;
 
+    [Header("Visual & Sorting")]
+    [SerializeField] private float sickleScale = 7.5f;
+    [SerializeField] private string targetSortingLayer = "Foreground";
+    [SerializeField] private int targetSortingOrder = 30000;
+
     private Camera mainCam;
     private bool isDragging;
-    private int enabledFrame; // guard: khÃ´ng nháº­n release ngay frame enable
+    private int enabledFrame; // guard: không nhận release ngay frame enable
 
-    // Cursor world position frame trÆ°á»›c â€” dÃ¹ng linecast Ä‘á»ƒ khÃ´ng miss khi kÃ©o nhanh
+    // Cursor world position frame trước — dùng linecast để không miss khi kéo nhanh
     private Vector3 prevCursorWorld;
 
-    // HashSet chá»‘ng harvest trÃ¹ng trong cÃ¹ng 1 láº§n kÃ©o
+    // HashSet chống harvest trùng trong cùng 1 lần kéo
     private readonly HashSet<PlotController> harvestedThisDrag = new HashSet<PlotController>();
 
-    // Cache Ä‘á»ƒ trÃ¡nh allocate má»—i frame khi kiá»ƒm tra Canvas UI
+    // Cache để tránh allocate mỗi frame khi kiểm tra Canvas UI
     private readonly List<RaycastResult> _uiRaycastResults = new List<RaycastResult>();
     private PointerEventData _uiPointerEventData;
+
+    // Static buffers để tránh GC Alloc khi raycast/linecast
+    private static readonly RaycastHit2D[] _linecastHits = new RaycastHit2D[16];
+    private static readonly Collider2D[] _overlapHits = new Collider2D[8];
+
+    public void EnforceVisualAndSorting()
+    {
+        // [FIX 2026-09-18] Truoc day: sickleScale > 5.5 thi bi ep ve 4.8. Scene dang dat
+        // sickleScale = 7 nen cai liem LUON bi thu nho con 4.8 (~69% co thiet ke) - dung
+        // la loi "icon liem qua nho". Nay ton trong gia tri Inspector, chi con mot cai kep
+        // rong de gia tri hong khong lam liem bien mat hoac phu kin man hinh.
+        float scale = Mathf.Clamp(sickleScale, 0.1f, 20f);
+        transform.localScale = new Vector3(scale, scale, 1f);
+        var sr = GetComponent<SpriteRenderer>();
+        if (sr != null)
+        {
+            sr.sortingLayerName = targetSortingLayer;
+            sr.sortingOrder = targetSortingOrder;
+        }
+    }
 
     private void Awake()
     {
         mainCam = Camera.main;
+        EnforceVisualAndSorting();
 
-        // Náº¿u cÃ²n Rigidbody2D tá»« version cÅ© â†’ táº¯t simulation Ä‘á»ƒ khÃ´ng conflict vá»›i transform.position
+        // Nếu còn Rigidbody2D từ version cũ → tắt simulation để không conflict với transform.position
         var rb = GetComponent<Rigidbody2D>();
         if (rb != null)
             rb.simulated = false;
@@ -47,7 +73,9 @@ public class SickleController : MonoBehaviour
         if (mainCam == null)
             mainCam = Camera.main;
 
-        // isDragging=false khi tray hiá»‡n â€” chá»‰ set true khi user tháº­t sá»± kÃ©o liá»m (BeginHarvestMode)
+        EnforceVisualAndSorting();
+
+        // isDragging=false khi tray hiện — chỉ set true khi user thật sự kéo liềm (BeginHarvestMode)
         isDragging   = false;
         enabledFrame = Time.frameCount;
         harvestedThisDrag.Clear();
@@ -59,21 +87,22 @@ public class SickleController : MonoBehaviour
         harvestedThisDrag.Clear();
     }
 
-    // FarmUIManager gá»i khi plot Ready Ä‘Æ°á»£c click
+    // FarmUIManager gọi khi plot Ready được click
     public void BeginHarvestMode(Vector3 startWorldPos)
     {
         if (mainCam == null)
             mainCam = Camera.main;
 
+        EnforceVisualAndSorting();
+
         startWorldPos.z    = transform.position.z;
         transform.position = startWorldPos;
         prevCursorWorld    = startWorldPos;
         harvestedThisDrag.Clear();
-        gameObject.SetActive(true);  // kÃ­ch hoáº¡t object (OnEnable set isDragging=false)
+        gameObject.SetActive(true);  // kích hoạt object (OnEnable set isDragging=false)
         isDragging                     = true;  // override OnEnable ngay sau
         enabledFrame                   = Time.frameCount;
         FarmInputLock.IsDraggingSickle = true;
-
     }
 
     public void EndHarvestMode()
@@ -84,8 +113,7 @@ public class SickleController : MonoBehaviour
         if (EventSystem.current != null)
             EventSystem.current.SetSelectedGameObject(null);
 
-        gameObject.SetActive(false); // áº©n SickleTool world object sau khi gáº·t xong
-
+        gameObject.SetActive(false); // ẩn SickleTool world object sau khi gặt xong
     }
 
     private void Update()
@@ -95,45 +123,48 @@ public class SickleController : MonoBehaviour
 
         Vector3 cursorWorld = GetCursorWorldPos();
 
-        // Visual: sickle follow cursor mÆ°á»£t â€” khÃ´ng snap cá»©ng
+        // Visual: sickle follow cursor mượt — không snap cứng
         transform.position = Vector3.Lerp(transform.position, cursorWorld, followSpeed * Time.deltaTime);
 
-        // Detection: trace cursor path má»—i frame Ä‘á»ƒ khÃ´ng miss Ã´ khi kÃ©o nhanh
-        // KhÃ´ng check khi cursor Ä‘ang trÃªn UI, nhÆ°ng KHÃ”NG dá»«ng drag state
+        // Detection: trace cursor path mỗi frame để không miss ô khi kéo nhanh
+        // Không check khi cursor đang trên UI, nhưng KHÔNG dừng drag state
         if (!IsPointerOverUI())
             CheckHarvestPath(prevCursorWorld, cursorWorld);
 
         prevCursorWorld = cursorWorld;
 
-        // Mouse release â†’ káº¿t thÃºc drag
+        // Mouse release → kết thúc drag
         if (IsPointerReleased() && Time.frameCount != enabledFrame)
         {
             FarmUIManager.Instance?.HideSickleTool();
         }
     }
 
-    // Linecast tá»« vá»‹ trÃ­ frame trÆ°á»›c â†’ frame hiá»‡n táº¡i.
-    // Khi kÃ©o nhanh, cursor nháº£y xa â†’ linecast báº¯t háº¿t plot á»Ÿ giá»¯a.
+    // Linecast từ vị trí frame trước → frame hiện tại.
+    // Khi kéo nhanh, cursor nhảy xa → linecast bắt hết plot ở giữa.
     private void CheckHarvestPath(Vector3 from, Vector3 to)
     {
         float distSq = (to - from).sqrMagnitude;
 
         if (distSq < 0.0001f)
         {
-            // Äá»©ng yÃªn â€” check overlap táº¡i Ä‘iá»ƒm hiá»‡n táº¡i
-            Collider2D col = Physics2D.OverlapPoint(to, plotLayerMask);
-            if (col != null)
-                TryHarvest(col);
+            // Đứng yên — check overlap tại điểm hiện tại
+            int overlapCount = Physics2D.OverlapPointNonAlloc(to, _overlapHits, plotLayerMask);
+            for (int i = 0; i < overlapCount; i++)
+            {
+                if (_overlapHits[i] != null)
+                    TryHarvest(_overlapHits[i]);
+            }
             return;
         }
 
-        // Di chuyá»ƒn â€” linecast Ä‘á»ƒ khÃ´ng bá» sÃ³t Ã´ á»Ÿ giá»¯a
-        RaycastHit2D[] hits = Physics2D.LinecastAll(from, to, plotLayerMask);
-        if (hits.Length == 0)
-            return;
-
-        foreach (RaycastHit2D h in hits)
-            TryHarvest(h.collider);
+        // Di chuyển — linecast để không bỏ sót ô ở giữa
+        int hitCount = Physics2D.LinecastNonAlloc(from, to, _linecastHits, plotLayerMask);
+        for (int i = 0; i < hitCount; i++)
+        {
+            if (_linecastHits[i].collider != null)
+                TryHarvest(_linecastHits[i].collider);
+        }
     }
 
     private void TryHarvest(Collider2D col)

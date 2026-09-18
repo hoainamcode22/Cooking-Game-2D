@@ -84,6 +84,8 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
         // Hiá»‡u á»©ng náº£y Pop-in má»Ÿ popup má»m máº¡i, sá»‘ng Ä‘á»™ng
         if (_popAnimCoroutine != null) StopCoroutine(_popAnimCoroutine);
         _popAnimCoroutine = StartCoroutine(PopInRoutine());
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     public void Dong()
@@ -388,7 +390,7 @@ public class WarehouseUpgradeReqUI : MonoBehaviour
         t.alignment = canLe;
         t.raycastTarget = false;
         t.enableWordWrapping = false;
-        t.overflowMode = TextOverflowModes.Overflow;
+        t.overflowMode = TextOverflowModes.Ellipsis;
         return t;
     }
 }

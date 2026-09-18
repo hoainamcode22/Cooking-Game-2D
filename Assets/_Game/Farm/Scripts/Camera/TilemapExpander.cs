@@ -177,12 +177,30 @@ public class TilemapExpander : MonoBehaviour
 
     /// <summary>
     /// Fill đúng 1 chunk chunkSize × chunkSize tile bắt đầu từ origin.
-    /// yield return null sau mỗi tile để không block main thread.
+    /// [PERF P1] Ghi theo LO bang SetTiles() — moi tick coroutine dung 1 lo, 1 lan rebuild chunk.
     /// </summary>
     IEnumerator FillChunk(Vector3Int origin)
     {
+        // [PERF P1] TRUOC: SetTile() tung o trong vong lap. Moi SetTile danh dau chunk mesh +
+        // collider cua Tilemap la "ban" => Unity dung lai TOAN BO mesh/collider cua chunk do o
+        // cuoi frame. Voi `yield return null` sau MOI o, mot chunk 10x10 = 100 frame, moi frame
+        // mot lan rebuild => 100 lan rebuild cho 1 chunk (spike rat nang tren may yeu).
+        // NAY: gom thanh tung LO (batch) va goi SetTiles(Vector3Int[], TileBase[]) — 1 lo = 1 lan
+        // rebuild — va moi tick coroutine chi lam DUNG 1 lo. Ket qua tren man hinh y het.
+        if (targetTilemap == null || grassTile == null) yield break;
+
+        int soLo = Mathf.Max(1, chunkSize);          // moi lo = 1 cot chunkSize o
+
+        if (_loCells == null || _loCells.Length < soLo)
+        {
+            _loCells = new Vector3Int[soLo];
+            _loTiles = new TileBase[soLo];
+        }
+
         for (int x = 0; x < chunkSize; x++)
         {
+            int dem = 0;
+
             for (int y = 0; y < chunkSize; y++)
             {
                 Vector3Int cell = new Vector3Int(origin.x + x, origin.y + y, 0);
@@ -190,18 +208,42 @@ public class TilemapExpander : MonoBehaviour
                 // Chỉ fill nếu ô này chưa tồn tại trong HashSet
                 if (!filledCells.Contains(cell))
                 {
-                    targetTilemap.SetTile(cell, grassTile);
+                    _loCells[dem] = cell;
+                    _loTiles[dem] = grassTile;
+                    dem++;
+
                     filledCells.Add(cell);
 
                     // Cập nhật bounds cache để CheckAndExpand dùng được ngay
                     UpdateBoundsCache(cell);
-
-                    // Nhường frame — tránh lag khi fill nhiều tile liên tiếp
-                    yield return null;
                 }
+            }
+
+            if (dem > 0)
+            {
+                if (dem == _loCells.Length)
+                {
+                    targetTilemap.SetTiles(_loCells, _loTiles);
+                }
+                else
+                {
+                    // SetTiles doi 2 mang DAI BANG NHAU va dung bang so o => cat dung phan da dung.
+                    var cells = new Vector3Int[dem];
+                    var tiles = new TileBase[dem];
+                    System.Array.Copy(_loCells, cells, dem);
+                    System.Array.Copy(_loTiles, tiles, dem);
+                    targetTilemap.SetTiles(cells, tiles);
+                }
+
+                // Nhường frame — TOI DA 1 lo (1 lan rebuild) moi tick coroutine.
+                yield return null;
             }
         }
     }
+
+    // Dem dung lai cho tung lo SetTiles — tranh cap phat moi chunk.
+    private Vector3Int[] _loCells;
+    private TileBase[]   _loTiles;
 
     // ──────────────────────────────────────────────────────────────
     // HELPER METHODS

@@ -1194,4 +1194,23 @@ public static class TouristBoatSetupTool
         Debug.Log("[TouristBoat] " + msg);
         EditorUtility.DisplayDialog("Áp Dụng Bộ Tàu 12 Hướng", msg, "Tuyệt vời!");
     }
+
+    [MenuItem(MenuRoot + "Reset Tourist Boat Save (Khoa Lai Ben 1)")]
+    public static void ResetBoatSave()
+    {
+        PlayerPrefs.DeleteKey("TouristBoat_IntroDone");
+        PlayerPrefs.DeleteKey("TouristBoat_SchemaVersion");
+        for (int i = 0; i < 3; i++)
+        {
+            PlayerPrefs.DeleteKey($"TouristBoat_DockUnlocked_{i}");
+            PlayerPrefs.DeleteKey($"TouristBoat_State_{i}");
+            PlayerPrefs.DeleteKey($"TouristBoat_Anchor_{i}");
+            PlayerPrefs.DeleteKey($"TouristBoat_NextArrival_{i}");
+            PlayerPrefs.DeleteKey($"TouristTrip_{i}");
+            PlayerPrefs.DeleteKey($"BoatAnnounce_DaBao_{i}");
+        }
+        PlayerPrefs.Save();
+        Debug.Log("[TouristBoatSetupTool] Đã xóa toàn bộ save của hệ thống tàu du lịch (bến sẽ khóa lại theo đúng cấp độ).");
+        EditorUtility.DisplayDialog("Reset Tourist Boat Save", "Đã xóa toàn bộ save tàu du lịch.\nBến 1 sẽ khóa lại và chỉ mở khi đạt Cấp 10!", "OK");
+    }
 }

@@ -85,7 +85,8 @@ public static class MarketCategoryUtil
 
     public static string GetDisplayName(MarketCategory category)
     {
-        return DisplayNames.TryGetValue(category, out string name) ? name : category.ToString();
+        string raw = DisplayNames.TryGetValue(category, out string name) ? name : category.ToString();
+        return LocalizationManager.T(raw);
     }
 
     public static Color GetAccentColor(MarketCategory category)

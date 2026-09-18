@@ -228,7 +228,7 @@ public static class MarketBoardUIBuilder
 
         // ── 6. Đếm ngược làm mới chợ (Progress Bar) ─────────────────────
         RectTransform timerChip = NewRect("Chip_Timer", board);
-        AnchorTopRight(timerChip, new Vector2(280f, 52f), new Vector2(310f, 96f));
+        AnchorTopLeft(timerChip, new Vector2(280f, 52f), new Vector2(278f, 96f));
         Image timerTrackImg = AddImage(timerChip, LoadSprite($"{BuildingSvgDir}/proc_track_bg.png") ?? LoadSprite($"{PerfectSvgDir}/progress_track.png"), Color.white, Image.Type.Sliced);
 
         RectTransform timerFill = NewRect("Fill_Timer", timerChip);
@@ -251,7 +251,7 @@ public static class MarketBoardUIBuilder
 
         // ── 7. Nút Làm mới ngay (btn_green.png) ──────────────────────────
         RectTransform refreshRT = NewRect("Btn_Refresh", board);
-        AnchorTopRight(refreshRT, new Vector2(260f, 54f), new Vector2(32f, 96f));
+        AnchorTopLeft(refreshRT, new Vector2(260f, 54f), new Vector2(574f, 96f));
         Image refreshImage = AddImage(refreshRT, LoadSprite($"{PerfectSvgDir}/btn_green.png"), Color.white, Image.Type.Sliced);
         Button refreshButton = refreshRT.gameObject.AddComponent<Button>();
         refreshButton.targetGraphic = refreshImage;

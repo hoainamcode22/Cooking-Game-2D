@@ -698,10 +698,10 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
         Vector3 fxSpawn = GetHarvestSpawnPosition();
 
 
-        // Ưu tiên harvestIcon (gán riêng trong CropData), fallback về icon rồi readySprite như cũ
-        Sprite fxIcon = harvestedCrop.harvestIcon != null
-            ? harvestedCrop.harvestIcon
-            : (harvestedCrop.icon != null ? harvestedCrop.icon : harvestedCrop.readySprite);
+        // Ưu tiên FinalStageSprite (stage chín cuối cùng), fallback về harvestIcon, icon, readySprite
+        Sprite fxIcon = harvestedCrop.FinalStageSprite != null
+            ? harvestedCrop.FinalStageSprite
+            : (harvestedCrop.harvestIcon != null ? harvestedCrop.harvestIcon : (harvestedCrop.icon != null ? harvestedCrop.icon : harvestedCrop.readySprite));
 
 
         HarvestFeedbackSpawner.Instance?.SpawnHarvestFly(
@@ -1013,7 +1013,18 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
         if (string.IsNullOrEmpty(legacyJson))
             return;
 
-        PlotSaveData legacy = JsonUtility.FromJson<PlotSaveData>(legacyJson);
+        PlotSaveData legacy;
+        try
+        {
+            legacy = JsonUtility.FromJson<PlotSaveData>(legacyJson);
+        }
+        catch (Exception e)
+        {
+            // F1: KHÔNG xoá/ghi đè khoá cũ — giữ nguyên để còn khôi phục được.
+            Debug.LogWarning($"[Plot] Save cũ '{legacyKey}' hỏng, bỏ qua chuyển đổi (giữ nguyên key): {e.Message}");
+            return;
+        }
+
         if (legacy == null)
             return;
 
@@ -1053,7 +1064,19 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
             return;
         }
 
-        PlotSaveData data = JsonUtility.FromJson<PlotSaveData>(json);
+        PlotSaveData data;
+        try
+        {
+            data = JsonUtility.FromJson<PlotSaveData>(json);
+        }
+        catch (Exception e)
+        {
+            // F1: KHÔNG gọi Save() ở đây — ghi đè sẽ xoá sạch dữ liệu hỏng nhưng còn cứu được.
+            // Cũng KHÔNG ném ra ngoài, nếu không vòng lặp nạp các ô đất còn lại sẽ đứt.
+            Debug.LogWarning($"[Plot] Save ô đất '{SaveKey}' hỏng, bỏ qua (giữ nguyên key): {e.Message}");
+            return;
+        }
+
         if (data == null)
         {
             state = PlotState.Empty;   // F10: không còn hệ khoá ô đất — ô mới luôn trống, sẵn sàng trồng

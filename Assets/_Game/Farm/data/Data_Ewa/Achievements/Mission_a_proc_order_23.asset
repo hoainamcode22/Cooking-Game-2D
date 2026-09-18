@@ -1,4 +1,4 @@
-﻿%YAML 1.1
+%YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27da4e0963ef8a14bba5b6535e1c8d80, type: 3}
   m_Name: Mission_a_proc_order_23
   m_EditorClassIdentifier: Assembly-CSharp::MissionData
-  missionIcon: {fileID: 21300000, guid: 522e38e38a5f449c87ac4862f03bc081, type: 3}
+  missionIcon: {fileID: 21300000, guid: 18ee7e18318b5904994530f2b537ad13, type: 3}
   missionName: "Th\u01B0\u01A1ng l\xE1i t\xE0i ba (M\u1ED1c 23) \u2014 Giao 920 \u0111\u01A1n
     h\xE0ng"
   targetAmount: 920

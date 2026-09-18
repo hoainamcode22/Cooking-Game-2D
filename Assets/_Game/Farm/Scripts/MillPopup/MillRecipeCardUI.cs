@@ -211,9 +211,17 @@ public class MillRecipeCardUI : MonoBehaviour
             }
         }
 
-        if (txtBadge != null) txtBadge.text = r.animalTag;
+        if (txtBadge != null)
+        {
+            txtBadge.text = Loc.T(r.animalTag);
 
-        DatAnh(imgIcon,  r.icon);
+            // "Ga"/"Heo"/"Bo" → "Chicken"/"Pig"/"Cow": ban tieng Anh dai gap doi. Vien thuoc
+            // Badge_Animal co ContentSizeFitter nen no tu no ra, nhung co chu van phai co
+            // tran de khong doi pixel nao o ban tieng Viet.
+            ApChongTranChu(txtBadge, CO_CHU_GIO_MIN, CO_CHU_GIO_MAX);
+        }
+
+        DatAnh(imgIcon,  r != null ? r.GetIcon() : null);
         DatAnh(imgBadge, r.animalBadgeIcon);
 
         // Chip nguyên liệu: video vẽ tối đa 2–3, layout wire sẵn 2. Chip không có dữ liệu
@@ -339,15 +347,19 @@ public class MillRecipeCardUI : MonoBehaviour
         // Cat duoi bang "…" thay vi de chu tran ra ngoai nen card — dung trong CA HAI che do.
         txt.overflowMode = TextOverflowModes.Ellipsis;
 
-        // Auto-size va fontSize la hai duong loai tru nhau trong TMP: bat auto-size thi
-        // gan .fontSize khong con tac dung. Nen che do "ep layout theo code" (hanh vi cu)
-        // phai TAT auto-size, de doan ma ngay duoi con set duoc 26pt/20pt nhu truoc.
-        if (epLayoutTheoCode)
-        {
-            txt.enableAutoSizing = false;
-            return;
-        }
-
+        // ⚠ SUA 17/09 — TRUOC DAY nhanh `epLayoutTheoCode` TAT HAN auto-size:
+        //       if (epLayoutTheoCode) { txt.enableAutoSizing = false; return; }
+        //   Ly do cu: "auto-size va fontSize loai tru nhau trong TMP, bat auto-size thi gan
+        //   .fontSize khong con tac dung" — dung, nhung ket qua la o che do ep-layout chu
+        //   VAN TRAN ra ngoai nen card, dung cai loi ham nay sinh ra de vá.
+        //
+        //   Nay AP CHO CA HAI NHANH. Meo la dat `fontSizeMax` = DUNG co designer muon
+        //   (coMax = 26pt cho ten / 20pt cho gio u — cung con so ma doan ep-layout ben duoi
+        //   gan vao .fontSize), nen:
+        //     • ban tieng Viet ngan  → TMP ve dung 26pt/20pt, KHONG doi mot pixel nao;
+        //     • ban tieng Anh dai    → tu co xuong toi da con coMin roi moi cat duoi "…".
+        //   Doan `txt.fontSize = 26f` ben duoi tro thanh khong tac dung o che do ep-layout,
+        //   nhung gia tri no muon da nam trong fontSizeMax nen hanh vi nhin thay khong doi.
         txt.enableAutoSizing = true;
         txt.fontSizeMin      = coMin;
         txt.fontSizeMax      = coMax;

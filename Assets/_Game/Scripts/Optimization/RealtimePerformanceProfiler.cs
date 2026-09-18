@@ -27,6 +27,12 @@ namespace CookingGame.Optimization
         private static RealtimePerformanceProfiler _instance;
         private bool _show = false;
 
+        // [VONG 14] cache chuoi nut: OnGUI truoc day noi chuoi mo moi su kien IMGUI.
+        private string    _btnTextCache = "FPS 0";
+        private bool      _btnShowCu    = false;
+        private int       _btnFpsCu     = -1;
+        private Texture2D _bgTex;   // giu lai de Destroy; truoc day bi ro ri.
+
         // FPS & Frame Time
         private float _fpsAccum;
         private int   _fpsFrames;
@@ -60,6 +66,14 @@ namespace CookingGame.Optimization
             _instance = go.AddComponent<RealtimePerformanceProfiler>();
         }
 #endif
+
+        private void Awake()
+        {
+            // [VONG 14] BO: PerformanceGuardian + MobilePerformanceBootstrap moi la noi
+            // quan ly targetFrameRate/vSyncCount. De o day hai ben ghi de len nhau.
+            // Application.targetFrameRate = 60;
+            // QualitySettings.vSyncCount = 0;
+        }
 
         private void Update()
         {
@@ -111,12 +125,18 @@ namespace CookingGame.Optimization
             }
         }
 
+        private void OnDestroy()
+        {
+            // [VONG 14] Texture2D trong InitStyles truoc day khong bao gio duoc huy.
+            if (_bgTex != null) { Destroy(_bgTex); _bgTex = null; }
+        }
+
         private void InitStyles()
         {
             if (_stylesInit) return;
             _stylesInit = true;
 
-            var bgTex = new Texture2D(1, 1);
+            var bgTex = _bgTex = new Texture2D(1, 1);
             bgTex.SetPixel(0, 0, new Color(0.08f, 0.08f, 0.12f, 0.92f));
             bgTex.Apply();
 
@@ -145,12 +165,28 @@ namespace CookingGame.Optimization
 
         private void OnGUI()
         {
+            // [VONG 14] OnGUI chay NHIEU LAN moi frame (Layout, Repaint, chuot...).
+            // Ban cu goi InitStyles + noi chuoi + new Rect o MOI su kien, ke ca khi bang
+            // dang AN => sinh rac lien tuc va lam cham chinh thu no dang do.
+            var evt = Event.current;
+            if (evt == null) return;
+            if (evt.type != EventType.Repaint
+                && evt.type != EventType.MouseDown
+                && evt.type != EventType.MouseUp) return;
+
             InitStyles();
 
             // Nút bấm nhỏ góc màn hình (dành cho Mobile không có phím F4)
             float btnW = 75f;
             float btnH = 30f;
-            string btnText = _show ? "✕ ĐÓNG" : $"⚡ {_currentFps:0} FPS";
+            int fpsLam = Mathf.RoundToInt(_currentFps);
+            if (_show != _btnShowCu || fpsLam != _btnFpsCu)
+            {
+                _btnShowCu = _show;
+                _btnFpsCu  = fpsLam;
+                _btnTextCache = _show ? "DONG" : ("FPS " + fpsLam);
+            }
+            string btnText = _btnTextCache;
             Color oldBg = GUI.backgroundColor;
             GUI.backgroundColor = _show ? new Color(0.9f, 0.3f, 0.3f) : new Color(0.2f, 0.7f, 0.3f);
 

@@ -153,8 +153,14 @@ public class WarehousePopupUI : MonoBehaviour
             string key = GetHarvestItemId(crop);
             if (!string.IsNullOrEmpty(key) && !cropLookup.ContainsKey(key))
                 cropLookup.Add(key, crop);
-            if (!string.IsNullOrEmpty(crop.cropId) && !cropLookup.ContainsKey(crop.cropId))
-                cropLookup.Add(crop.cropId, crop);
+            if (!string.IsNullOrEmpty(crop.cropId))
+            {
+                if (!cropLookup.ContainsKey(crop.cropId))
+                    cropLookup.Add(crop.cropId, crop);
+                string seedKey = "seed_" + crop.cropId;
+                if (!cropLookup.ContainsKey(seedKey))
+                    cropLookup.Add(seedKey, crop);
+            }
         }
 
         extraItemLookup.Clear();
@@ -237,6 +243,8 @@ public class WarehousePopupUI : MonoBehaviour
         LoadWarehouseProgress();
         BuildLookups();
         SetCategory(currentCategory);
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     public void ClosePopup()
@@ -299,6 +307,8 @@ public class WarehousePopupUI : MonoBehaviour
         RefreshCapacityBar();
         RefreshDetailPanel();
         RefreshUpgradeBox();
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     private void EnsureSlotPool(int totalSlotsToRender)
@@ -386,7 +396,7 @@ public class WarehousePopupUI : MonoBehaviour
             storedKinds = FarmInventoryManager.Instance.GetOrderedItems().Count;
 
         if (txtCapacity != null)
-            txtCapacity.text = $"{storedKinds}/{slotCapacity} Slot";
+            txtCapacity.text = Loc.TF("{0}/{1} Slot", storedKinds, slotCapacity);
 
         if (imgCapacityFill != null)
         {
@@ -426,7 +436,7 @@ public class WarehousePopupUI : MonoBehaviour
         string description = GetItemDescription(selectedItemId);
 
         if (txtDetailTitle != null)
-            txtDetailTitle.text = $"{displayName} · x{available}";
+            txtDetailTitle.text = Loc.TF("{0} · x{1}", displayName, available);
 
         if (imgDetailIcon != null)
         {
@@ -735,8 +745,14 @@ public class WarehousePopupUI : MonoBehaviour
             if (!string.IsNullOrEmpty(catName)) return catName;
         }
 
-        if (cropLookup.TryGetValue(key, out CropData crop) && crop != null)
+        string cleanCropKey = key.StartsWith("seed_") ? key.Substring(5) : (key.StartsWith("seed") ? key.Substring(4) : key);
+        if ((cropLookup.TryGetValue(key, out CropData crop) || cropLookup.TryGetValue(cleanCropKey, out crop)) && crop != null)
         {
+            if (key.StartsWith("seed_") || key.StartsWith("seed"))
+            {
+                string baseName = !string.IsNullOrEmpty(crop.displayName) ? crop.displayName : crop.cropId;
+                return "Hạt giống " + baseName;
+            }
             if (!string.IsNullOrEmpty(crop.displayName)) return crop.displayName;
             if (!string.IsNullOrEmpty(crop.cropId)) return crop.cropId;
         }
@@ -764,7 +780,8 @@ public class WarehousePopupUI : MonoBehaviour
         }
 
         // 2. Crop Lookup (seed -> itemIcon; harvest -> harvestIcon > readySprite > itemIcon)
-        if (cropLookup.TryGetValue(key, out CropData crop) && crop != null)
+        string cleanCropKey = key.StartsWith("seed_") ? key.Substring(5) : (key.StartsWith("seed") ? key.Substring(4) : key);
+        if ((cropLookup.TryGetValue(key, out CropData crop) || cropLookup.TryGetValue(cleanCropKey, out crop)) && crop != null)
         {
             if (key.StartsWith("seed_") || key.StartsWith("seed"))
             {

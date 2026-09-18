@@ -173,7 +173,7 @@ namespace FarmGame.Fishing
                     {
                         if (amount < cfg.giftGemMin || amount > cfg.giftGemMax)
                         {
-                            errorVi = "Chỉ tặng từ " + cfg.giftGemMin.ToString(CultureInfo.InvariantCulture) + " đến " + cfg.giftGemMax.ToString(CultureInfo.InvariantCulture) + " kim cương";
+                            errorVi = Loc.TF("Chỉ tặng từ {0} đến {1} kim cương", cfg.giftGemMin.ToString(CultureInfo.InvariantCulture), cfg.giftGemMax.ToString(CultureInfo.InvariantCulture));
                             return false;
                         }
                         var eco = FarmEconomyManager.Instance;

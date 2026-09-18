@@ -209,6 +209,64 @@ public class MillSlotUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
 
         // Prefab có thể được lưu lúc viền sáng đang bật.
         BatRoot(dropHighlight, false);
+
+        TatOKhoaTrung();
+        ApChongTranChuSlot();
+    }
+
+    /// <summary>
+    /// ⚠ SỬA 17/09 — "SLOT #4 VÀ #5 HIỆN HAI Ổ KHOÁ ĐÈ LÊN NHAU, LỆCH NHAU MỘT CHÚT".
+    ///
+    /// CẢ HAI ổ khoá đều do prefab/scene dựng sẵn, KHÔNG có cái nào do code Instantiate:
+    ///
+    ///   Slot_N
+    ///    └─ Img_LockIcon   84×84, top-center @ y −44   sprite = shop_lock_badge.png
+    ///        └─ Glyph_Lock 46×46, căn giữa cha          sprite = mill_glyph_lock
+    ///
+    /// `MillPopupBuilderTool` (dòng ~2527 và ~3706) vẽ `Glyph_Lock` là vì — nguyên văn —
+    /// "shop_lock_badge.png 64×64: đĩa nâu đậm có vành sáng, BÊN TRONG KHÔNG có hình ổ khoá
+    /// (đã soi ảnh thật)". Nhận định đó NAY ĐÃ SAI: file art đã bị thay
+    /// (Assets/Assetsgame/popup/ui_shop_svg/generated_sprites/shop_lock_badge.png) và bản
+    /// hiện tại LÀ một đĩa nâu CÓ ổ khoá vàng vẽ sẵn bên trong. Ổ khoá trắng 46px vẽ đè lên
+    /// thành cái thứ hai; hai hình lệch nhau vì quai khoá của art nằm cao hơn tâm đĩa còn
+    /// glyph thì căn đúng tâm.
+    ///
+    /// Giữ lại ĐĨA (nó là ô [SerializeField] `imgLockIcon` mà SetMode bật/tắt theo trạng
+    /// thái) và TẮT cái glyph thừa. Chỉ SetActive(false) — KHÔNG Destroy: đảo lại art thành
+    /// đĩa trơn thì chỉ cần bật node này lên trong Inspector là xong.
+    /// </summary>
+    private void TatOKhoaTrung()
+    {
+        if (imgLockIcon == null) return;
+
+        Transform goc = imgLockIcon.transform;
+        for (int i = 0; i < goc.childCount; i++)
+        {
+            Transform con = goc.GetChild(i);
+            if (con == null) continue;
+
+            // Tìm theo TÊN để không đụng nhầm node khác ai đó thêm sau này.
+            if (con.name.IndexOf("Glyph", System.StringComparison.OrdinalIgnoreCase) < 0) continue;
+
+            if (con.gameObject.activeSelf)
+                con.gameObject.SetActive(false);
+        }
+    }
+
+    /// <summary>
+    /// Chống tràn chữ cho các nhãn khung CỨNG của slot. Bản tiếng Anh dài hơn hẳn:
+    /// Txt_Name rộng 146.4px @21pt mà "Cattle Feed Mix" là 15 ký tự, Txt_LockLabel rộng
+    /// 152px @20pt mà "Level too low" là 13 ký tự. Auto-size CHỈ-CO (trần = cỡ đang có,
+    /// sàn = 0.75×) + cắt đuôi "…" — bản tiếng Việt ngắn không đổi một pixel nào.
+    /// </summary>
+    private void ApChongTranChuSlot()
+    {
+        MillPopupUI.ApChongTranChu(txtName);
+        MillPopupUI.ApChongTranChu(txtLockLabel);
+        MillPopupUI.ApChongTranChu(txtLockLevelValue);
+        MillPopupUI.ApChongTranChu(txtTimer);
+        MillPopupUI.ApChongTranChu(txtGemCost);
+        MillPopupUI.ApChongTranChu(txtSpeedUpCost);
     }
 
     // ─────────────────────────── API CÔNG KHAI ───────────────────────────
@@ -330,11 +388,31 @@ public class MillSlotUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
         SetMode(MillSlotMode.UnlockGem);
         DatCongThuc(null);
 
+        // ⚠ AN TOÀN ĐỂ GỌI MỖI FRAME (MillPopupUI.VeSlotChuaMo gọi như vậy từ 17/09).
+        // Hàng rào `_giaGemDangHien` chặn việc dựng chuỗi khi CON SỐ chưa đổi ⇒ không rác GC.
+        // `SetMode` đặt lại hàng rào về int.MinValue mỗi lần ĐỔI mode nên lần Bind đầu sau
+        // khi đổi trạng thái luôn ghi thật.
         if (txtGemCost != null)
-            txtGemCost.text = gemCost.ToString();
+        {
+            // Điều kiện thứ hai cứu đúng ca lỗi trong ảnh chụp: ô giá đang RỖNG (chuỗi gốc
+            // của prefab chưa bao giờ bị ghi đè) thì phải ghi, kể cả khi con số không đổi.
+            if (gemCost != _giaGemDangHien || string.IsNullOrEmpty(txtGemCost.text))
+            {
+                _giaGemDangHien = gemCost;
+                txtGemCost.text = gemCost.ToString();
+            }
+        }
 
+        // KHÔNG CÓ GIÁ ĐỂ HIỆN ⇒ ẩn hẳn thanh giá thay vì để một thanh xanh rỗng. Thanh rỗng
+        // trông y như lỗi thiếu dữ liệu, mà đây là trạng thái hợp lệ (config đặt giá 0).
         if (btnUnlockGem != null)
+        {
+            bool coGia = (gemCost > 0);
+            if (btnUnlockGem.gameObject.activeSelf != coGia)
+                btnUnlockGem.gameObject.SetActive(coGia);
+
             btnUnlockGem.interactable = duGem;
+        }
     }
 
     /// <summary>Slot chưa mở và KHÔNG mua được — chờ lên cấp. Video: "Chưa đủ cấp" + "Cấp 18".</summary>
@@ -363,7 +441,10 @@ public class MillSlotUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
             // Hai ô riêng — đúng như video (chữ nâu + viên thuốc xám).
             if (txtLockLabel != null)
             {
-                txtLockLabel.text = "Chưa đủ cấp";
+                // Khoá "Chưa đủ cấp" ĐÃ CÓ trong LocStringTable (dòng 131 → "Level too low");
+                // bản trước gán thẳng chuỗi tiếng Việt nên bản tiếng Anh phải chờ lượt quét
+                // của LocRuntimeInterceptor mới đổi được — nhấp nháy tiếng Việt một nhịp.
+                txtLockLabel.text = Loc.T("Chưa đủ cấp");
                 txtLockLabel.color = colLabel;
             }
             txtLockLevelValue.text = Loc.TF("Cấp {0}", capYeuCau);
@@ -495,9 +576,10 @@ public class MillSlotUI : MonoBehaviour, IDropHandler, IPointerEnterHandler, IPo
 
         if (imgIcon != null)
         {
-            imgIcon.sprite  = (r != null) ? r.icon : null;
+            Sprite s = (r != null) ? r.GetIcon() : null;
+            imgIcon.sprite  = s;
             // Ẩn hẳn ô icon khi không có sprite, tránh hiện ô vuông trắng mặc định của UGUI.
-            imgIcon.enabled = (r != null && r.icon != null);
+            imgIcon.enabled = (s != null);
         }
     }
 

@@ -283,6 +283,27 @@ public class LandRegionSignBoard : MonoBehaviour
     // ─────────────────────────────────────────────────────────────────────
     // NỘI DUNG
     // ─────────────────────────────────────────────────────────────────────
+    /// <summary>Tien to "Mo o cap" cua ly do khoa theo cap (chuoi goc tieng Viet).</summary>
+    private const string TIEN_TO_MO_O_CAP = "Mở ở cấp";
+
+    /// <summary>
+    /// TRUE khi `reason` la ly do "khoa theo cap". `reason` co the da duoc dich sang tieng Anh
+    /// (LandExpansionManager dung Loc.TF), nen so tien to o CA HAI ngon ngu — giong LandRegionSign.
+    /// </summary>
+    private static bool LaLyDoKhoaTheoCap(string reason)
+    {
+        if (string.IsNullOrEmpty(reason)) return false;
+        reason = reason.Trim();
+
+        if (reason.StartsWith(TIEN_TO_MO_O_CAP, System.StringComparison.Ordinal)) return true;
+
+        string daDich = Loc.T(TIEN_TO_MO_O_CAP);
+        if (!string.IsNullOrEmpty(daDich) && daDich != TIEN_TO_MO_O_CAP
+            && reason.StartsWith(daDich.Trim(), System.StringComparison.OrdinalIgnoreCase)) return true;
+
+        return false;
+    }
+
     public void Refresh()
     {
         if (_region == null || _manager == null || label == null) return;
@@ -295,28 +316,28 @@ public class LandRegionSignBoard : MonoBehaviour
                                    : LandClearingSite.PendingRemaining(_region.regionId);
         if (pending > 0)
         {
-            text = $"ĐANG DỌN DẸP\n{FormatTime(pending)}";
+            text = Loc.TF("ĐANG DỌN DẸP\n{0}", FormatTime(pending));
             textColor = textClearing;
             if (boardSprite != null) boardSprite.color = boardReady;
         }
         else
         {
             bool ok = _manager.CanBuy(_region, out string reason);
-            bool lockedByLevel = !ok && !string.IsNullOrEmpty(reason) && reason.StartsWith("Mở ở cấp");
+            bool lockedByLevel = !ok && LaLyDoKhoaTheoCap(reason);
 
             if (lockedByLevel)
             {
-                text = $"Mở ở cấp {_region.unlockLevel}";
+                text = Loc.TF("Mở ở cấp {0}", _region.unlockLevel);
                 textColor = textLocked;
             }
             else if (_region.goldPrice > 0)
             {
-                text = $"{_region.displayName}\n{_region.goldPrice:n0} vàng";
+                text = Loc.TF("{0}\n{1} vàng", Loc.T(_region.displayName), $"{_region.goldPrice:n0}");
                 textColor = textReady;
             }
             else
             {
-                text = _region.displayName;
+                text = Loc.T(_region.displayName);
                 textColor = textReady;
             }
             if (boardSprite != null) boardSprite.color = ok ? boardReady : boardLocked;

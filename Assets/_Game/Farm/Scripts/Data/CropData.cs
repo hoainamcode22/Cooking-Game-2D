@@ -9,8 +9,28 @@ public class CropData : BaseItemData   // ← Đổi từ ScriptableObject sang 
     // Toàn bộ code cũ dùng cropData.displayName / cropData.icon / cropData.seedBuyGold
     // VẪN HOẠT ĐỘNG BÌNH THƯỜNG qua các property này — không cần sửa bất kỳ chỗ nào khác
     public string displayName => itemName;
-    public Sprite icon        => itemIcon;
+    public Sprite icon        => FinalStageSprite != null ? FinalStageSprite : itemIcon;
     public int    seedBuyGold => goldPrice;
+
+    /// <summary>
+    /// Sprite ở stage chín cuối cùng (nông sản / hoa trưởng thành).
+    /// </summary>
+    public Sprite FinalStageSprite
+    {
+        get
+        {
+            if (stageSprites != null && stageSprites.Length > 0)
+            {
+                for (int i = stageSprites.Length - 1; i >= 0; i--)
+                {
+                    if (stageSprites[i] != null) return stageSprites[i];
+                }
+            }
+            if (readySprite != null) return readySprite;
+            if (harvestIcon != null) return harvestIcon;
+            return itemIcon;
+        }
+    }
 
     // ── Category ─────────────────────────────────────────────────────────────
     [Header("Category")]

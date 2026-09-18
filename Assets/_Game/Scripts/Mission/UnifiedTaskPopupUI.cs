@@ -28,6 +28,7 @@ public class UnifiedTaskPopupSprites
     public Sprite coinIcon;
     public Sprite diamondIcon;
     public Sprite expIcon;
+    public Sprite trophyIcon;
     public Sprite chestIcon;
     public Sprite lockIcon;
 
@@ -203,7 +204,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     private static string TenTrang(int trang)
     {
         int a = CapDauTrang(trang);
-        return trang == MocCap.Length - 1 ? $"Cấp {a}+" : $"Cấp {a}–{CapCuoiTrang(trang)}";
+        return trang == MocCap.Length - 1 ? Loc.TF("Cấp {0}+", a) : Loc.TF("Cấp {0}–{1}", a, CapCuoiTrang(trang));
     }
 
     private int _trangNhiemVu = -1;      // -1 = chưa chọn, sẽ tự nhảy tới mốc đang chơi
@@ -360,12 +361,16 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         EnsureParentedToPopupCanvas();
         BuildIfNeeded();
         if (_root != null)
+        {
+            _root.localScale = Vector3.one;
             _root.gameObject.SetActive(false);
+        }
     }
 
     private void OnDisable()
     {
         ReleaseInputBlock();
+        TatLopChanTia();
     }
 
     private void OpenInternal(Tab tab)
@@ -379,6 +384,8 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         _canvasGroup.interactable = true;
         _canvasGroup.blocksRaycasts = true;
 
+        // [EN-fit 2026-09-17] Kích thước canvas đổi theo màn ⇒ căn lại tỉ lệ bảng mỗi lần mở.
+        VuaKhungManHinh();
         AcquireInputBlock();
         SkinKit.ApFont(_root);
         ShowTab(tab);
@@ -394,8 +401,30 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             _canvasGroup.blocksRaycasts = false;
         }
 
+        TatLopChanTia();
+
         if (_root != null)
             _root.gameObject.SetActive(false);
+    }
+
+    /// <summary>
+    /// [UIPROBE 2026-09-17] Tắt lớp phủ tối phủ KÍN MÀN của popup này.
+    ///
+    /// <see cref="BuildIfNeeded"/> gắn một <c>Image</c> alpha 0,68 + <c>UIRaycastBlocker</c>
+    /// THẲNG VÀO GameObject gốc — cùng GameObject đang mang <c>Canvas</c> sortingOrder 120 và
+    /// <c>GraphicRaycaster</c>. Đường đóng bình thường tắt cả GameObject nên lớp đó biến mất
+    /// theo; nhưng nếu có ai bật lại root mà KHÔNG đi qua <see cref="OpenInternal"/> (hoặc
+    /// đường đóng bị ngắt giữa chừng) thì nó thành đúng thứ <c>UiBlockerProbe</c> gọi là
+    /// "lớp UI trong suốt phủ kín màn còn bật raycast" ⇒ kéo map chết cứng.
+    ///
+    /// Hàm này CHỈ hạ <c>raycastTarget</c>; <see cref="AcquireInputBlock"/> bật lại mỗi lần
+    /// mở (qua <c>FarmInputLock.SetPopupRaycastBlock</c>) nên không mất chức năng chặn.
+    /// </summary>
+    private void TatLopChanTia()
+    {
+        Image lopPhu = gameObject.GetComponent<Image>();
+        if (lopPhu != null)
+            lopPhu.raycastTarget = false;
     }
     private void ResolveDatabases()
     {
@@ -540,6 +569,8 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (sprites.expIcon == null)
             sprites.expIcon = LoadSpriteAsset("Assets/Assetsgame/iconsao-removebg-preview.png")
                 ?? LoadSpriteAsset("Assets/thietke/Redesign popup nhiệm vụ game/UnifiedTaskPopup_Redesign/assets/iconsao.png");
+        if (sprites.trophyIcon == null)
+            sprites.trophyIcon = LoadSpriteAsset($"{BaseProcessedPath}/ThanhTuu/achieve_trophy_gold.png");
 
         if (_defaultMissionIcon == null)
             _defaultMissionIcon = LoadSpriteAsset($"{BaseProcessedPath}/NhiemVu/icon_task_scroll.png");
@@ -672,19 +703,21 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         BuildTabs();
 
         // ══ GIẤY KEM — bo góc CHỈ Ở ĐÁY vì mép trên nối liền tab đang chọn ═════
-        var ktGiay = new Vector2(TaskPopupDesign.GiayRong, TaskPopupDesign.GiayCao);
+        // [RIBBON-TAB 2026-09-17] Mép TRÊN tờ giấy tụt xuống DAY_TAB_XUONG px cùng với hàng
+        // tab; mép DƯỚI đứng yên. Xem chú thích ở DAY_TAB_XUONG cho phép tính dải.
+        var ktGiay = KichThuocGiay;
         CreateImage(_board, "Paper_Border", BoGoc(TaskPopupDesign.GiayBoGoc),
-            TaskPopupDesign.GiayVien, TaskPopupDesign.GiayTam, ktGiay + new Vector2(8f, 8f), true);
+            TaskPopupDesign.GiayVien, TamGiay, ktGiay + new Vector2(8f, 8f), true);
         CreateImage(_board, "Paper_Fill", BoGoc(TaskPopupDesign.GiayBoGoc),
-            TaskPopupDesign.GiayDuoi, TaskPopupDesign.GiayTam, ktGiay, true);
+            TaskPopupDesign.GiayDuoi, TamGiay, ktGiay, true);
         PhuGradient(_board, "Paper_Fill_Top", TaskPopupDesign.GiayTren,
-            TaskPopupDesign.GiayTam, ktGiay, TaskPopupDesign.GiayBoGoc);
+            TamGiay, ktGiay, TaskPopupDesign.GiayBoGoc);
         CreateImage(_board, "Paper_InnerRing", BoGoc(TaskPopupDesign.GiayBoGoc - 3f),
-            TaskPopupDesign.GiayVienTrong, TaskPopupDesign.GiayTam, ktGiay - new Vector2(6f, 6f), true);
+            TaskPopupDesign.GiayVienTrong, TamGiay, ktGiay - new Vector2(6f, 6f), true);
         CreateImage(_board, "Paper_Fill_Inner", BoGoc(TaskPopupDesign.GiayBoGoc - 4f),
-            TaskPopupDesign.GiayDuoi, TaskPopupDesign.GiayTam, ktGiay - new Vector2(12f, 12f), true);
+            TaskPopupDesign.GiayDuoi, TamGiay, ktGiay - new Vector2(12f, 12f), true);
 
-        _contentRoot = CreateRect(_board, "ContentRoot", TaskPopupDesign.GiayTam, ktGiay);
+        _contentRoot = CreateRect(_board, "ContentRoot", TamGiay, ktGiay);
         _missionPanel     = CreateRect(_contentRoot, "Panel_Mission", Vector2.zero, ktGiay);
         _dailyPanel       = CreateRect(_contentRoot, "Panel_Daily", Vector2.zero, ktGiay);
         _achievementPanel = CreateRect(_contentRoot, "Panel_Achievement", Vector2.zero, ktGiay);
@@ -754,10 +787,9 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         Vector2 kt = UIStandardSprites.CloseSize;
         if (kt.x < 1f || kt.y < 1f) kt = new Vector2(64f, 64f);
 
-        // Giữ nguyên mép nhô ra góc theo thiết kế (CSS top -34, right -32): tâm nút tính
-        // lại từ KÍCH THƯỚC THẬT thay vì hằng số 100 cũ, nếu không nút lệch hẳn khỏi góc.
-        Vector2 tam = new Vector2(TaskPopupDesign.BangRong * 0.5f + 32f - kt.x * 0.5f,
-                                  TaskPopupDesign.BangCao  * 0.5f + 34f - kt.y * 0.5f);
+        // Đặt nút đóng ngay góc trên-phải của khung ván gỗ (đồng bộ với Storage và Profile popup)
+        Vector2 tam = new Vector2(TaskPopupDesign.BangRong * 0.5f - kt.x * 0.5f - 14f,
+                                  TaskPopupDesign.BangCao  * 0.5f - kt.y * 0.5f - 14f);
 
         Button close = CreateTextButton(_board, "Btn_Close", "X", tam, kt,
             new Color32(255, 255, 255, 0), (int)UIStandardSprites.CloseGlyphSize);
@@ -829,9 +861,12 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         }
 
         // Chữ 46px trắng kem, không ngắt dòng
-        _titleText = CreateText(bien, "Txt_Title", "NHIỆM VỤ", 46,
+        _titleText = CreateText(bien, "Txt_Title", LocalizationManager.T("NHIỆM VỤ"), 46,
             TaskPopupDesign.ChuTieuDe, TextAlignmentOptions.Center, new Vector2(0f, 6f),
             new Vector2(540f, 70f), FontStyles.Bold);
+        _titleText.enableAutoSizing = true;
+        _titleText.fontSizeMin = 20f;
+        _titleText.fontSizeMax = 46f;
         _titleText.characterSpacing = 4f;
         _titleText.textWrappingMode = TextWrappingModes.NoWrap;
         AddOutline(_titleText.gameObject, TaskPopupDesign.VienChuTieuDe, new Vector2(2f, -2f));
@@ -861,7 +896,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     private TabButtonView CreateTabButton(string name, string label, Sprite iconSprite, int chiSo, Tab targetTab)
     {
         var kt = new Vector2(TaskPopupDesign.TabRong, TaskPopupDesign.TabCao);
-        var viTri = new Vector2(TaskPopupDesign.TabTamX(chiSo), TaskPopupDesign.TabTamY(false));
+        var viTri = new Vector2(TaskPopupDesign.TabTamX(chiSo), TabTamYMoi(false));
 
         RectTransform root = CreateRect(_board, name, viTri, kt);
 
@@ -888,7 +923,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
         // Đĩa tròn trắng mờ 54px chứa icon 38px, đặt lệch trái để chừa chỗ cho nhãn.
         RectTransform dia = CreateImage(root, "Icon_Disc", GetCircleSprite(),
-            TaskPopupDesign.TabDiaIcon, new Vector2(-84f, 0f),
+            TaskPopupDesign.TabDiaIcon, new Vector2(X_DIA_TAB, 0f),
             new Vector2(TaskPopupDesign.TabDiaKichThuoc, TaskPopupDesign.TabDiaKichThuoc), false);
         CreateImage(dia, "Disc_Rim", GetCircleSprite(), TaskPopupDesign.TabDiaVien, Vector2.zero,
             new Vector2(TaskPopupDesign.TabDiaKichThuoc + 4f, TaskPopupDesign.TabDiaKichThuoc + 4f),
@@ -899,12 +934,30 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             .GetComponent<Image>();
         icon.preserveAspect = true;
 
+        // [RIBBON-TAB 2026-09-17] Ô chữ tính từ MÉP PHẢI đĩa icon tới MÉP PHẢI tab, trừ
+        // padding hai đầu — bản cũ căn giữa theo nửa đường kính đĩa nên dải chữ (-106..160)
+        // vừa ĐÈ lên đĩa icon (-111..-57) vừa chỉ hở 20px mép phải: "Achievements" chạm viền.
+        //   đĩa phải  = X_DIA_TAB + 54/2            = -57
+        //   trái chữ  = -57 + KHE_NHAN_TAB          = -45
+        //   phải chữ  = 360/2 - PAD_NHAN_TAB        = 164
+        //   rộng 209 · tâm 59,5  ⇒ hở đều 12px với đĩa và 16px với viền tab.
+        float xDiaPhai = X_DIA_TAB + TaskPopupDesign.TabDiaKichThuoc * 0.5f;
+        float xNhanTrai = xDiaPhai + KHE_NHAN_TAB;
+        float xNhanPhai = TaskPopupDesign.TabRong * 0.5f - PAD_NHAN_TAB;
+
         TMP_Text text = CreateText(root, "Txt_Label", label, TaskPopupDesign.CoChuTab,
             TaskPopupDesign.TabChuThuong, TextAlignmentOptions.Center,
-            new Vector2(TaskPopupDesign.TabDiaKichThuoc * 0.5f, 0f),
-            new Vector2(TaskPopupDesign.TabRong - TaskPopupDesign.TabDiaKichThuoc - 40f, 40f),
+            new Vector2((xNhanTrai + xNhanPhai) * 0.5f, 0f),
+            new Vector2(xNhanPhai - xNhanTrai, 40f),
             FontStyles.Bold);
         text.textWrappingMode = TextWrappingModes.NoWrap;
+
+        // Tự co CHỈ THEO CHIỀU NHỎ LẠI: "Achievements"/"Nhiệm vụ" dài hơn hẳn nhau giữa hai
+        // ngôn ngữ. fontSizeMax = cỡ thiết kế nên chữ KHÔNG BAO GIỜ to hơn bản vẽ.
+        text.enableAutoSizing = true;
+        text.fontSizeMax      = TaskPopupDesign.CoChuTab;
+        text.fontSizeMin      = TaskPopupDesign.CoChuTab * 0.75f;
+        text.overflowMode     = TextOverflowModes.Ellipsis;
 
         // Chấm đỏ top 6 right 10 — nghĩa MỚI theo thiết kế: "tab này có thứ chưa nhận",
         // KHÔNG phải "đang chọn" như bản cũ.
@@ -945,9 +998,9 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         // Chữ HOA theo thiết kế — ribbon biển hiệu nông trại: NHIỆM VỤ / ĐIỂM DANH / THÀNH TỰU.
         _titleText.text = tab switch
         {
-            Tab.Daily       => "ĐIỂM DANH",
-            Tab.Achievement => "THÀNH TỰU",
-            _               => "NHIỆM VỤ",
+            Tab.Daily       => LocalizationManager.T("ĐIỂM DANH"),
+            Tab.Achievement => LocalizationManager.T("THÀNH TỰU"),
+            _               => LocalizationManager.T("NHIỆM VỤ"),
         };
 
         switch (tab)
@@ -993,7 +1046,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         // Nổi/lún: tab đang chọn nối liền tờ giấy, tab thường tụt xuống 14px.
         if (view.root != null)
             view.root.anchoredPosition = new Vector2(
-                TaskPopupDesign.TabTamX(view.chiSo), TaskPopupDesign.TabTamY(selected));
+                TaskPopupDesign.TabTamX(view.chiSo), TabTamYMoi(selected));
 
         // Chấm đỏ = "có thưởng chưa nhận" và KHÔNG đang xem tab đó.
         bool co = false;
@@ -1033,11 +1086,11 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             // KHÔNG còn dòng tiêu đề trong giấy — ribbon đã ghi NHIỆM VỤ ngay trên đầu,
             // thêm một dòng nữa là lặp và ăn mất 38px chiều cao danh sách.
             _nhanTrangNhiemVu = DungThanhChuyenTrang(
-                _missionPanel, new Vector2(0f, 283f),
+                _missionPanel, new Vector2(0f, Y_THANH_TRANG),
                 () => DoiTrangNhiemVu(-1), () => DoiTrangNhiemVu(+1));
 
             _vungCuonNhiemVu = BuildVerticalScroll(_missionPanel, "Mission_ScrollView",
-                new Vector2(0f, 33f), new Vector2(TaskPopupDesign.VungTrongRong, 456f));
+                new Vector2(0f, Y_VUNG_CUON), new Vector2(TaskPopupDesign.VungTrongRong, CAO_VUNG_CUON));
 
             _chanMocNhiemVu = DungChanMoc(_missionPanel, "Phần thưởng mốc — cả trang",
                 "Hoàn thành tất cả nhiệm vụ để nhận thưởng đặc biệt!");
@@ -1113,7 +1166,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         List<MissionData> ds = LocTheoTrang(_missionDatabase, a, b, false);
 
         if (_nhanTrangNhiemVu != null)
-            _nhanTrangNhiemVu.text = $"{TenTrang(_trangNhiemVu)}   ·   {ds.Count} nhiệm vụ";
+            _nhanTrangNhiemVu.text = Loc.TF("{0}   ·   {1} nhiệm vụ", TenTrang(_trangNhiemVu), ds.Count);
 
         NapDanhSach(_khoHangNhiemVu, _vungCuonNhiemVu, ds, cap, false);
         CapNhatChanMoc(_chanMocNhiemVu, ds, false);
@@ -1527,12 +1580,12 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
         h.thanhTienDo.fillAmount = khoa ? 0f : daNhan ? 1f : (float)nay / muc;
         h.thanhTienDo.color = daNhan ? TaskPopupDesign.TdRuotXong : TaskPopupDesign.TdRuotDuoi;
-        h.chuTienDo.text = khoa ? $"Mở ở cấp {(data != null ? data.requiredLevel : 0)}" : $"{nay}/{muc}";
+        h.chuTienDo.text = khoa ? Loc.TF("Mở ở cấp {0}", data != null ? data.requiredLevel : 0) : $"{nay}/{muc}";
 
         RewardBundle thuong = laThanhTuu ? GetAchievementRewards(data) : GetMissionRewards(data);
         NapOThuong(h.oThuong[0], CoinSprite,    thuong.coin,    new Color32(240, 174, 45, 255), khoa);
         NapOThuong(h.oThuong[1], DiamondSprite, thuong.diamond, new Color32(120, 205, 255, 255), khoa);
-        NapOThuong(h.oThuong[2], ExpSprite,     thuong.exp,     new Color32(120, 220, 80, 255), khoa);
+        NapOThuong(h.oThuong[2], laThanhTuu ? TrophySprite : ExpSprite, thuong.exp, new Color32(240, 195, 45, 255), khoa);
 
         CapNhatNut(h, khoa, daNhan, nhanDuoc, data, laThanhTuu);
     }
@@ -1568,7 +1621,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (khoa)
         {
             kieu = TaskPopupDesign.NutKhoa;
-            chu  = data != null ? $"Cấp {data.requiredLevel}" : kieu.nhan;
+            chu  = data != null ? Loc.TF("Cấp {0}", data.requiredLevel) : kieu.nhan;
         }
         else if (daNhan)
         {
@@ -1592,10 +1645,11 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             if (!laThanhTuu) h.nut.onClick.AddListener(ClosePopupForAction);
         }
 
-        h.nutChu.text  = chu;
+        string chuHienThi = LocalizationManager.T(chu);
+        h.nutChu.text  = chuHienThi;
         h.nutChu.color = kieu.chu;
         // Nhãn dài ("Đang làm", "Đã nhận") co chữ — để 25 là Ellipsis cắt thành "Đang là…".
-        h.nutChu.fontSize = chu.Length > 6 ? TaskPopupDesign.CoChuNut - 4 : TaskPopupDesign.CoChuNut;
+        h.nutChu.fontSize = chuHienThi.Length > 6 ? TaskPopupDesign.CoChuNut - 4 : TaskPopupDesign.CoChuNut;
 
         h.nutNen.color = kieu.nen;
         if (h.nutNenDuoi != null) h.nutNenDuoi.color = kieu.nenDuoi;
@@ -1617,7 +1671,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         var kt = new Vector2(TaskPopupDesign.HangRong, TaskPopupDesign.MocCao);
 
         // Banner vàng #ffe2a0→#f5b94e, viền 4px #c07d24, cạnh dưới 5px, bo 22.
-        c.goc = CreateRect(cha, "MilestoneFooter", new Vector2(0f, -255f), kt);
+        c.goc = CreateRect(cha, "MilestoneFooter", new Vector2(0f, Y_CHAN_MOC), kt);
         CreateImage(c.goc, "Moc_EdgeBottom", BoGoc(TaskPopupDesign.MocBoGoc),
             TaskPopupDesign.MocDoCanh, new Vector2(0f, -5f), kt, true);
         CreateImage(c.goc, "Moc_Border", BoGoc(TaskPopupDesign.MocBoGoc),
@@ -1644,13 +1698,18 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         float xChu = xRuong + TaskPopupDesign.MocRuongKichThuoc * 0.5f + 22f;
         float wChu = TaskPopupDesign.MocTdRong;
 
+        // [EN-fit 2026-09-17] Xếp lại ba dòng trong chân mốc. Bản cũ: tiêu đề y=18 (cao 32),
+        // thanh tiến độ y=-14 (cao 24), dòng phụ y=-35 (cao 20, cỡ 14) ⇒ dòng phụ chiếm dải
+        // -45..-25 trong khi thanh tiến độ chiếm -26..-2 và đáy banner ở -46: dòng phụ vừa
+        // CHẠM thanh tiến độ vừa dính sát mép dưới, đúng chỗ Sếp kêu "nhỏ và chật".
+        // Bản mới: tiêu đề 10..38, thanh -16..8, dòng phụ -41..-19 ⇒ hở đều 2-5px mọi phía.
         CreateText(c.goc, "Txt_Title", tieuDe, TaskPopupDesign.CoChuMoc - 3, TaskPopupDesign.MocChu,
-            TextAlignmentOptions.Left, new Vector2(xChu + (wChu + 30f) * 0.5f, 18f),
-            new Vector2(wChu + 30f, 32f), FontStyles.Bold);
+            TextAlignmentOptions.Left, new Vector2(xChu + (wChu + 30f) * 0.5f, 24f),
+            new Vector2(wChu + 30f, 28f), FontStyles.Bold);
 
         var ktTd = new Vector2(wChu, TaskPopupDesign.MocTdCao);
         RectTransform mang = CreateImage(c.goc, "Milestone_Progress", BoGoc(12f),
-            TaskPopupDesign.MocTdMang, new Vector2(xChu + wChu * 0.5f, -14f), ktTd, true);
+            TaskPopupDesign.MocTdMang, new Vector2(xChu + wChu * 0.5f, -4f), ktTd, true);
         var fill = CreateImage(mang, "Fill", BoGoc(12f), TaskPopupDesign.MocTdDuoi,
             Vector2.zero, ktTd, true);
         c.thanh = fill.GetComponent<Image>();
@@ -1662,9 +1721,17 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             TextAlignmentOptions.Center, Vector2.zero, new Vector2(wChu - 8f, 22f), FontStyles.Bold);
         AddShadow(c.soTienDo.gameObject, TaskPopupDesign.TdChuVien, new Vector2(0f, -2f));
 
-        c.mota = CreateText(c.goc, "Txt_Desc", moTa, 14, TaskPopupDesign.MocChu,
-            TextAlignmentOptions.Left, new Vector2(xChu + wChu * 0.5f, -35f),
-            new Vector2(wChu, 20f));
+        c.mota = CreateText(c.goc, "Txt_Desc", moTa, 15, TaskPopupDesign.MocChu,
+            TextAlignmentOptions.Left, new Vector2(xChu + wChu * 0.5f, -30f),
+            new Vector2(wChu, 22f));
+        // Câu tiếng Anh dài hơn tiếng Việt ⇒ cho phép co xuống 12, không bao giờ to hơn 15.
+        if (c.mota != null)
+        {
+            c.mota.fontSizeMax      = 15f;
+            c.mota.fontSizeMin      = 12f;
+            c.mota.enableAutoSizing = true;
+            c.mota.overflowMode     = TextOverflowModes.Ellipsis;
+        }
 
         // Hai chip thưởng bên phải — thiết kế chỉ có vàng + kim cương ở footer.
         float xO = kt.x * 0.5f - 18f - TaskPopupDesign.OThuongRong * 0.5f;
@@ -1792,9 +1859,9 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         DailyState state = SyncDailyState();
 
         // Tiêu đề 29px giữa panel — thiết kế chỉ có MỘT dòng, không có subtitle.
-        CreateText(_dailyPanel, "Txt_DailyTitle", "Điểm danh mỗi ngày để nhận quà!", 29,
+        CreateText(_dailyPanel, "Txt_DailyTitle", LocalizationManager.T("Điểm danh mỗi ngày để nhận quà!"), 29,
             TaskPopupDesign.TenBinhThuong, TextAlignmentOptions.Center,
-            new Vector2(0f, 283f), new Vector2(900f, 40f), FontStyles.Bold);
+            new Vector2(0f, Y_THANH_TRANG), new Vector2(900f, 40f), FontStyles.Bold);
 
         // 7 thẻ: (1152 − 6·14) / 7 = 152 mỗi thẻ, cao 300, tâm y = 60.
         DailyReward[] rewards = GetDailyRewards();
@@ -1838,13 +1905,13 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         CreateImage(the, "Band", BoGoc(16f),
             TaskPopupDesign.Hex(homNay ? "#e6913c" : "#c98a3f"),
             new Vector2(0f, kt.y * 0.5f - 22f), ktBand, true);
-        TMP_Text nhan = CreateText(the, "Txt_Day", $"Ngày {day}", 21, Color.white,
+        TMP_Text nhan = CreateText(the, "Txt_Day", Loc.TF("Ngày {0}", day), 21, Color.white,
             TextAlignmentOptions.Center, new Vector2(0f, kt.y * 0.5f - 22f),
             new Vector2(kt.x - 8f, 30f), FontStyles.Bold);
         AddShadow(nhan.gameObject, new Color(0f, 0f, 0f, 0.25f), new Vector2(0f, -2f));
 
         // Icon quà 82px + số lượng.
-        Image icon = CreateImage(the, "Img_RewardIcon", GetDailyRewardSprite(day),
+        Image icon = CreateImage(the, "Img_RewardIcon", GetDailyRewardSprite(day, reward.grant),
             new Color32(245, 182, 67, 255), new Vector2(0f, 28f), new Vector2(82f, 82f), false)
             .GetComponent<Image>();
         icon.preserveAspect = true;
@@ -1857,7 +1924,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         if (homNay)
         {
             // Nút Nhận 112×50 xanh — pulse tĩnh (glow ring đã báo "hôm nay").
-            Button claim = CreateTextButton(the, "Btn_ClaimToday", "Nhận",
+            Button claim = CreateTextButton(the, "Btn_ClaimToday", LocalizationManager.T("Nhận"),
                 new Vector2(0f, -kt.y * 0.5f + 45f), new Vector2(112f, 50f),
                 new Color32(104, 186, 45, 255), 22);
             RectTransform claimRect = claim.transform as RectTransform;
@@ -1866,9 +1933,9 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         else
         {
             // Chip trạng thái: "Đã nhận" nền xanh chữ trắng · "Ngày mai"/"X ngày nữa" nền be.
-            string chu = daNhan ? "Đã nhận"
-                       : day == state.streakDay + 1 ? "Ngày mai"
-                       : $"{day - state.streakDay} ngày nữa";
+            string chu = daNhan ? LocalizationManager.T("Đã nhận")
+                       : day == state.streakDay + 1 ? LocalizationManager.T("Ngày mai")
+                       : Loc.TF("{0} ngày nữa", day - state.streakDay);
             Color nenChip = daNhan ? TaskPopupDesign.Hex("#61a832") : TaskPopupDesign.Hex("#e8d9b4");
             Color chuChip = daNhan ? Color.white : TaskPopupDesign.Hex("#8d7550");
 
@@ -1908,7 +1975,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     {
         // Footer quà tuần — cùng ngôn ngữ với chân mốc: banner vàng + chỉ may + túi nhô.
         var kt = new Vector2(TaskPopupDesign.HangRong, TaskPopupDesign.MocCao);
-        RectTransform goc = CreateRect(_dailyPanel, "Daily_WeeklyReward", new Vector2(0f, -255f), kt);
+        RectTransform goc = CreateRect(_dailyPanel, "Daily_WeeklyReward", new Vector2(0f, Y_CHAN_MOC), kt);
 
         CreateImage(goc, "Wk_EdgeBottom", BoGoc(TaskPopupDesign.MocBoGoc),
             TaskPopupDesign.MocDoCanh, new Vector2(0f, -5f), kt, true);
@@ -1924,18 +1991,22 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         CreateImage(goc, "Stitch_Bottom", null, TaskPopupDesign.MocChiMay, new Vector2(0f, -iy), new Vector2(ix * 2f, 3f), true);
 
         float xRuong = -kt.x * 0.5f + 18f + 50f;
-        Sprite wkChest = (sprites.dailyRewardIcons != null && sprites.dailyRewardIcons.Length > 6 && sprites.dailyRewardIcons[6] != null)
-            ? sprites.dailyRewardIcons[6]
-            : ChestSprite;
+        // [DAILY-ICON 2026-09-17] Cùng luật với ô ngày 7: art rương THẬT (sprites.chestIcon
+        // qua ChestSprite) đi trước, bộ daily_reward_day7 chỉ còn là đường lùi.
+        Sprite wkChest = sprites.chestIcon != null
+            ? sprites.chestIcon
+            : (sprites.dailyRewardIcons != null && sprites.dailyRewardIcons.Length > 6 && sprites.dailyRewardIcons[6] != null)
+                ? sprites.dailyRewardIcons[6]
+                : ChestSprite;
         RectTransform ruong = CreateImage(goc, "Img_WeeklyChest", wkChest, Color.white,
             new Vector2(xRuong, 14f), new Vector2(100f, 100f), false);
         ruong.GetComponent<Image>().preserveAspect = true;
 
         float xChu = xRuong + 72f;
-        CreateText(goc, "Txt_Title", "Phần thưởng tuần — điểm danh đủ 7 ngày", 21,
+        CreateText(goc, "Txt_Title", LocalizationManager.T("Phần thưởng tuần · Điểm danh đủ 7 ngày"), 21,
             TaskPopupDesign.MocChu, TextAlignmentOptions.Left,
             new Vector2(xChu + 230f, 12f), new Vector2(460f, 30f), FontStyles.Bold);
-        CreateText(goc, "Txt_Desc", "Quà tuần đặc biệt đang chờ bạn!", 14,
+        CreateText(goc, "Txt_Desc", LocalizationManager.T("Quà tuần đặc biệt đang chờ bạn!"), 14,
             TaskPopupDesign.MocChu, TextAlignmentOptions.Left,
             new Vector2(xChu + 230f, -16f), new Vector2(460f, 22f));
 
@@ -1953,10 +2024,10 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         {
             ClearChildren(_achievementPanel);
             _nhanTrangThanhTuu = DungThanhChuyenTrang(
-                _achievementPanel, new Vector2(0f, 283f), null, null, false);
+                _achievementPanel, new Vector2(0f, Y_THANH_TRANG), null, null, false);
 
             _vungCuonThanhTuu = BuildVerticalScroll(_achievementPanel, "Achievement_ScrollView",
-                new Vector2(0f, 33f), new Vector2(TaskPopupDesign.VungTrongRong, 456f));
+                new Vector2(0f, Y_VUNG_CUON), new Vector2(TaskPopupDesign.VungTrongRong, CAO_VUNG_CUON));
 
             _chanMocThanhTuu = DungChanMoc(_achievementPanel, "Mốc thành tựu",
                 "Hoàn thành các mốc để mở rương thưởng!");
@@ -1971,7 +2042,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         List<MissionData> ds = LocThanhTuuTheoChuoi(out int tongBac, out int bacDaXong);
 
         if (_nhanTrangThanhTuu != null)
-            _nhanTrangThanhTuu.text = $"{ds.Count} chuỗi thành tựu   ·   {bacDaXong}/{tongBac} mốc";
+            _nhanTrangThanhTuu.text = Loc.TF("{0} chuỗi thành tựu   ·   {1}/{2} mốc", ds.Count, bacDaXong, tongBac);
 
         NapDanhSach(_khoHangThanhTuu, _vungCuonThanhTuu, ds, cap, true);
         CapNhatChanMocChuoi(_chanMocThanhTuu, tongBac, bacDaXong);
@@ -1986,6 +2057,147 @@ public class UnifiedTaskPopupUI : MonoBehaviour
 
 
     // =========================================================================
+    // ═══════════════════════════════════════════════════════════════════════
+    //  [EN-fit 2026-09-17] BA SỐ ĐO CHỐNG "POPUP QUÁ TO / CẮT MẤT HÀNG CUỐI"
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Chiều cao vùng cuộn danh sách nhiệm vụ / thành tựu.
+    ///
+    /// Hàng nhiệm vụ cao 100 (TaskPopupDesign.HangCao), VerticalLayoutGroup dùng
+    /// spacing 12 và padding trên/dưới 8 ⇒ bước 112/hàng. Ngoài ra mỗi hàng còn vẽ LỐ
+    /// ra ngoài rect của nó: viền +3px và đổ bóng -5px.
+    ///
+    /// Bản cũ để 456: 8 + 4×100 + 3×12 = 444, chỉ dư 12px, nên viền và bóng của hàng thứ
+    /// tư chạm sát mép RectMask2D. Ngay dưới đó là chân "Phần thưởng mốc" (tâm y = -255,
+    /// cao 92, viền vẽ thêm 4px ⇒ mép trên thật ở -205) trong khi đáy vùng cuộn ở -195:
+    /// chỉ cách 10px, và hòm vàng của chân mốc còn nhô lên tới -191 ⇒ ĐÈ vào vùng cuộn.
+    /// Nhìn ra màn hình đúng là "hàng cuối bị thanh mốc cắt đôi".
+    ///
+    /// 452 = 8 + 4×100 + 3×12 + 8: vừa KHÍT 4 hàng trọn vẹn. Tâm nhích 33 → 35 để mép
+    /// TRÊN đứng yên (vẫn 261, không đụng thanh chuyển trang ở y = 283) còn mép DƯỚI
+    /// nhô lên 4px thành -191 — hết chồng lấn với hòm vàng, hở với thanh mốc 14px.
+    /// </summary>
+    ///
+    /// [RIBBON-TAB 2026-09-17] Tờ giấy THẤP ĐI 56px (xem <see cref="DAY_TAB_XUONG"/>) nên
+    /// 452 không còn chỗ. Dải mới, đo trong hệ TÂM PANEL (panel = đúng rect tờ giấy,
+    /// cao 620 ⇒ ±310; padding GiayLeDoc 22 ⇒ vùng trong ±288):
+    ///     thanh chuyển trang  268 ± 20      →  248 .. 288   (khít mép trong TRÊN)
+    ///     vùng cuộn            38 ± 207     → -169 .. 245   (hở 3px với thanh trang)
+    ///     chân mốc           -233, cao 92   → -279 .. -187, viền ±4 → -283 .. -183,
+    ///                        cạnh dưới -5   → đáy thật -288 (khít mép trong DƯỚI)
+    ///     hòm vàng chân mốc  tâm y +14, 100 → đỉnh -169  = ĐÚNG đáy vùng cuộn, không đè.
+    /// Khoảng hở hòm-vàng ↔ vùng cuộn giữ nguyên 0px như bản vừa sửa, hở vùng cuộn ↔ viền
+    /// banner vẫn 14px (-169 so với -183).
+    ///
+    /// 414 = 8 + 3×100 + 2×12 + 8 + 74: ba hàng TRỌN VẸN cộng 74px của hàng thứ tư — phần
+    /// ló ra đó chính là tín hiệu "còn cuộn được nữa", tốt hơn mép cắt khít của bản 452.
+    /// </summary>
+    private const float CAO_VUNG_CUON = 414f;
+
+    /// <summary>Tâm Y vùng cuộn — xem <see cref="CAO_VUNG_CUON"/>.</summary>
+    private const float Y_VUNG_CUON = 38f;
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  [RIBBON-TAB 2026-09-17] TÁCH RIBBON TIÊU ĐỀ KHỎI HÀNG TAB
+    // ═════════════════════════════════════════════════════════════════════════
+    //  Ảnh chụp của chủ dự án: tấm biển "ĐIỂM DANH" NẰM ĐÈ lên ba nút tab, mép trên tab
+    //  biến mất sau biển. Đo lại bằng số thật (hệ tâm BẢNG GỖ 1500×880 ⇒ NuaCao = 440):
+    //
+    //    ribbon (nhánh CÓ art, BuildRibbon): tâm y = RibbonVungTam.y = 385, cao 126
+    //        ⇒ dải 322 .. 448          (nhánh vẽ tay: viền tấm biển 327 .. 457)
+    //    tab ĐANG CHỌN  : TabTamY(true)  = 440 - 76 - 0  - 43 = 321 ⇒ dải 278 .. 364
+    //    tab thường     : TabTamY(false) = 440 - 76 - 14 - 43 = 307 ⇒ dải 264 .. 350
+    //
+    //    ⇒ CHỒNG LẤN 364 - 322 = 42px ngay trên tab đang chọn. Đúng thứ nhìn thấy.
+    //
+    //  Ribbon dính mép trên bảng và là một phần của art khung nên KHÔNG đụng tới; hạ
+    //  HÀNG TAB xuống 42 + 14 (hở tối thiểu) = 56px:
+    //    tab đang chọn mới : 265 ⇒ 222 .. 308   (hở ribbon 322 - 308 = 14px)
+    //    tab thường mới    : 251 ⇒ 208 .. 294   (hở 28px)
+    //
+    //  Mép DƯỚI tab đang chọn phải nối liền mép TRÊN tờ giấy (thiết kế "tab 3D"), nên tờ
+    //  giấy cũng tụt 56: mép trên 278 → 222, mép dưới GIỮ NGUYÊN -398.
+    //    cao  676 → 620        tâm y  -60 → -88
+    //  Bù lại bằng CAO_VUNG_CUON 452 → 414 và Y_VUNG_CUON 35 → 38 ở trên.
+    private const float DAY_TAB_XUONG = 56f;
+
+    /// <summary>Tâm Y thanh chuyển trang / tiêu đề trong giấy (cũ 283, tụt theo giấy).</summary>
+    private const float Y_THANH_TRANG = 268f;
+
+    /// <summary>Tâm Y chân trang mốc &amp; quà tuần (cũ -255, nhích lên vì giấy thấp hơn).</summary>
+    private const float Y_CHAN_MOC = -233f;
+
+    /// <summary>Tâm X đĩa tròn chứa icon trong tab — dùng chung với ô chữ nhãn tab.</summary>
+    private const float X_DIA_TAB = -84f;
+
+    /// <summary>Hở giữa đĩa icon và mép trái chữ nhãn tab.</summary>
+    private const float KHE_NHAN_TAB = 12f;
+
+    /// <summary>Hở giữa chữ nhãn tab và mép phải viên tab.</summary>
+    private const float PAD_NHAN_TAB = 16f;
+
+    /// <summary>Kích thước tờ giấy sau khi hạ mép trên — xem <see cref="DAY_TAB_XUONG"/>.</summary>
+    private static readonly Vector2 KichThuocGiay =
+        new Vector2(TaskPopupDesign.GiayRong, TaskPopupDesign.GiayCao - DAY_TAB_XUONG);
+
+    /// <summary>Tâm tờ giấy sau khi hạ mép trên (mép dưới đứng yên ⇒ tâm tụt nửa quãng).</summary>
+    private static readonly Vector2 TamGiay =
+        new Vector2(TaskPopupDesign.GiayTam.x, TaskPopupDesign.GiayTam.y - DAY_TAB_XUONG * 0.5f);
+
+    /// <summary>Tâm Y tab sau khi hạ cả hàng xuống <see cref="DAY_TAB_XUONG"/> px.</summary>
+    private static float TabTamYMoi(bool dangChon)
+        => TaskPopupDesign.TabTamY(dangChon) - DAY_TAB_XUONG;
+
+    /// <summary>
+    /// Hệ số thu nhỏ NỀN của tấm bảng.
+    ///
+    /// Bảng gỗ là 1500×880 giống hệt popup Shop, nhưng popup Shop đã được chỉnh tay
+    /// localScale = 0.95 trong scene còn bảng này dựng bằng code ở scale 1 ⇒ luôn to hơn
+    /// Shop ~5%. Bảng còn có phần lồi ra ngoài rect: ribbon tiêu đề nhô lên và nút X ở góc
+    /// phải-trên (NutDongTam đặt tại NuaCao + 34) ⇒ chiều cao THẬT là 880 + 68 = 948, tức
+    /// 88% chiều cao khung 1080. Đó là cái Sếp thấy "to quá".
+    ///
+    /// 0.90 kéo chiều cao thật về ~853px (79% khung) — ngang ngửa popup Shop sau khi đã
+    /// nhân 0.95 (836px), nên hai popup nhìn cùng cỡ.
+    /// </summary>
+    private const float TI_LE_BANG = 0.90f;
+
+    /// <summary>Phần bảng lồi ra ngoài rect theo mỗi chiều (nút X + ribbon).</summary>
+    private const float BANG_LOI_NGANG = 64f;
+    private const float BANG_LOI_DOC   = 68f;
+
+    /// <summary>Chừa mỗi mép canvas bấy nhiêu khi co bảng cho vừa màn.</summary>
+    private const float LE_AN_TOAN_BANG = 20f;
+
+    /// <summary>
+    /// Đặt tỉ lệ bảng: nền <see cref="TI_LE_BANG"/>, rồi CO THÊM nếu vẫn lòi ra ngoài
+    /// canvas — không bao giờ phóng to. CanvasScaler để matchWidthOrHeight = 0.5 nên trên
+    /// máy thấp hơn 16:9 (4:3, 16:10, điện thoại cầm dọc) bảng vẫn vượt mép; nhánh co thêm
+    /// này lo nốt trường hợp đó. Gọi mỗi lần mở popup vì kích thước canvas đổi theo màn
+    /// (xoay máy, đổi cửa sổ).
+    /// </summary>
+    private void VuaKhungManHinh()
+    {
+        if (_board == null || _root == null) return;
+
+        float rongBang = TaskPopupDesign.BangRong + BANG_LOI_NGANG;
+        float caoBang  = TaskPopupDesign.BangCao  + BANG_LOI_DOC;
+
+        float heSo = TI_LE_BANG;
+
+        float rongKhung = _root.rect.width  - LE_AN_TOAN_BANG * 2f;
+        float caoKhung  = _root.rect.height - LE_AN_TOAN_BANG * 2f;
+        if (rongKhung > 1f && caoKhung > 1f)
+        {
+            heSo = Mathf.Min(heSo, rongKhung / rongBang);
+            heSo = Mathf.Min(heSo, caoKhung  / caoBang);
+        }
+
+        if (heSo <= 0f) return;
+        _board.localScale = new Vector3(heSo, heSo, 1f);
+    }
+
     // Danh sách CUỘN ĐƯỢC (ScrollRect dọc) — dùng cho tab Nhiệm vụ & Thành tựu
     // =========================================================================
 
@@ -2382,30 +2594,37 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     {
         return new[]
         {
-            new DailyReward("Vàng", "x100", new RewardBundle(100, 0, 0)),
-            new DailyReward("Kim cương", "x5", new RewardBundle(0, 5, 0)),
-            new DailyReward("Hạt giống", "x2", new RewardBundle(0, 0, 5)),
-            new DailyReward("Gỗ", "x5", new RewardBundle(0, 0, 5)),
-            new DailyReward("Bình tưới", "x1", new RewardBundle(0, 0, 10)),
-            new DailyReward("Hoa", "x1", new RewardBundle(0, 0, 10)),
-            new DailyReward("Rương", "x1", new RewardBundle(500, 30, 100)),
+            new DailyReward("Vàng", "+200", new RewardBundle(200, 0, 0)),
+            new DailyReward("Vàng", "+300", new RewardBundle(300, 0, 0)),
+            new DailyReward("Vàng", "+450", new RewardBundle(450, 0, 0)),
+            new DailyReward("Vàng", "+650", new RewardBundle(650, 0, 0)),
+            new DailyReward("Vàng", "+900", new RewardBundle(900, 0, 0)),
+            new DailyReward("Vàng", "+1.200", new RewardBundle(1200, 0, 0)),
+            new DailyReward("Vàng", "+2.000", new RewardBundle(2000, 0, 0)),
         };
     }
 
-    private Sprite GetDailyRewardSprite(int day)
+    /// <summary>
+    /// Icon ô điểm danh ngày <paramref name="day"/> — toàn bộ 7 ngày sử dụng icon Vàng HUD chuẩn.
+    /// </summary>
+    private Sprite GetDailyRewardSprite(int day, RewardBundle goi)
     {
-        int index = Mathf.Clamp(day - 1, 0, 6);
-        if (sprites.dailyRewardIcons != null && index < sprites.dailyRewardIcons.Length && sprites.dailyRewardIcons[index] != null)
-            return sprites.dailyRewardIcons[index];
+        return CoinSprite;
+    }
 
-        // Không còn trả null: ngày 3-6 trước đây ra khối màu trơn, không đọc được là thưởng gì.
-        return day switch
-        {
-            1 => CoinSprite,
-            2 => DiamondSprite,
-            7 => ChestSprite,
-            _ => ExpSprite
-        };
+    /// <summary>
+    /// Ánh xạ "gói thưởng → icon". Gói gộp nhiều loại (ngày 7: vàng + kim cương + EXP)
+    /// là RƯƠNG; còn lại lấy loại duy nhất có mặt. Trả null khi gói rỗng để hàm gọi
+    /// tự lùi về đường cũ.
+    /// </summary>
+    private Sprite IconTheoLoaiThuong(RewardBundle goi)
+    {
+        int soLoai = (goi.coin > 0 ? 1 : 0) + (goi.diamond > 0 ? 1 : 0) + (goi.exp > 0 ? 1 : 0);
+        if (soLoai == 0) return null;
+        if (soLoai > 1)  return ChestSprite;
+        if (goi.coin > 0)    return CoinSprite;
+        if (goi.diamond > 0) return DiamondSprite;
+        return ExpSprite;
     }
 
     private struct DailyState
@@ -2685,6 +2904,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
     private Sprite CoinSprite    => sprites.coinIcon    != null ? sprites.coinIcon    : GetCoinShapeSprite();
     private Sprite DiamondSprite => sprites.diamondIcon != null ? sprites.diamondIcon : GetDiamondShapeSprite();
     private Sprite ExpSprite     => sprites.expIcon     != null ? sprites.expIcon     : GetStarSprite();
+    private Sprite TrophySprite  => sprites.trophyIcon  != null ? sprites.trophyIcon  : (sprites.achievementTabIcon ?? GetTrophyShapeSprite());
     private Sprite ChestSprite   => sprites.chestIcon   != null ? sprites.chestIcon   : GetChestShapeSprite();
     private Sprite LockSprite    => sprites.lockIcon    != null ? sprites.lockIcon    : GetLockShapeSprite();
 
@@ -2765,6 +2985,13 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             return r <= wave;
         });
         return _starShape;
+    }
+
+    /// <summary>Cúp vàng thành tựu (hình cúp có quai và đế).</summary>
+    private static Sprite GetTrophyShapeSprite()
+    {
+        return LoadSpriteAsset("Assets/Assetsgame/Icon_Processed/ThanhTuu/achieve_trophy_gold.png")
+            ?? GetStarSprite();
     }
 
     /// <summary>Hòm gỗ: thân chữ nhật + nắp vòm, có khe hở giữa hai phần.</summary>

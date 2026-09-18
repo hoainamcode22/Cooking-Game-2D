@@ -171,6 +171,14 @@ public class MillPopupUI : MonoBehaviour
     [Tooltip("Chữ trong toast.")]
     [SerializeField] private TMP_Text toastText;
 
+    [Header("Vừa khung màn hình (TUỲ CHỌN)")]
+    [Tooltip("TUỲ CHỌN. Tấm bảng gỗ THẬT (node \"Window\") — thứ được co lại cho vừa màn hình.\n" +
+             "⚠ ĐỪNG trỏ vào popupRoot: ô đó là node phủ kín màn hình chứa cả tấm nền mờ " +
+             "(\"Dim\"); co nó thì nền mờ thu lại thành ô vuông giữa màn hình và lòi cả map ra " +
+             "hai bên.\n" +
+             "ĐỂ TRỐNG ⇒ code tự dò (xem TimBangPopup), không cần thao tác tay nào trong Unity.")]
+    [SerializeField] private RectTransform popupBoard;
+
     // ── Các field TUỲ CHỌN do Dev A thêm; để trống popup vẫn chạy đúng ──
 
     [Header("TUỲ CHỌN (Dev A thêm)")]
@@ -258,6 +266,24 @@ public class MillPopupUI : MonoBehaviour
     private CanvasGroup _toastGroup;
     private bool        _daKhoiTao;
 
+    // ── VỪA KHUNG MÀN HÌNH ──
+    /// <summary>Lề an toàn quanh bảng — giống ShopManager/StallPopupUI.LE_AN_TOAN_POPUP.</summary>
+    private const float LE_AN_TOAN_POPUP = 24f;
+
+    private Vector3 _scaleGocBang;
+    private Vector2 _viTriGocBang;
+    private bool    _daLuuBang;
+
+    /// <summary>Bộ nhớ đệm 4 góc — tránh cấp phát mảng mới cho mỗi node lúc đo dấu chân.</summary>
+    private static readonly Vector3[] _gocTam = new Vector3[4];
+
+    // ── CHẶN INPUT / NỀN MỜ ──
+    /// <summary>CHÍNH popup này có đang giữ một nhịp khoá của FarmInputLock hay không.</summary>
+    private bool _popupInputLockHeld;
+
+    private Graphic _dimGraphic;
+    private bool    _daTimDim;
+
     /// <summary>Popup có đang mở.</summary>
     public bool IsOpen
     {
@@ -294,7 +320,49 @@ public class MillPopupUI : MonoBehaviour
         if (r.activeSelf && r != gameObject)
             r.SetActive(false);
 
+        // ⚠ CHẶN KÉO MAP — bug thật, console báo:
+        //     "[UiProbe] ⛔ KÉO MAP BỊ CHẶN — UI dưới con trỏ (dòng đầu = thủ phạm)"
+        // Trong SCN_Farm, node `Canvas_Popup/MillPopup_Root/PopupRoot` được LƯU Ở TRẠNG THÁI
+        // BẬT, và con của nó `Dim` là một Image phủ kín màn hình (anchor 0;0 → 1;1) với
+        // raycastTarget = 1, nằm trên canvas lồng `MillPopup_Root` (sortingOrder 410 — cao
+        // nhất scene). Từ khung hình đầu tiên nó ăn hết con trỏ: map không kéo được dù CHƯA
+        // AI mở popup.
+        //
+        // Dòng trên đã tắt PopupRoot, nhưng đó chỉ là một lớp. Tắt luôn raycast của Dim là
+        // lớp thứ hai, phòng trường hợp ai đó (PopupManager / tool bake scene / SetActive
+        // thẳng) bật PopupRoot lại mà không đi qua Open().
+        DatChanRaycastDim(false);
+
         AnToast(true);
+    }
+
+    /// <summary>
+    /// Lưới an toàn thứ ba cho lỗi "kéo map bị chặn": Start chạy SAU toàn bộ Awake của
+    /// scene, nên nếu một script khác bật `PopupRoot` lên trong Awake của nó thì ở đây ta
+    /// sửa lại. Popup đang thật sự mở thì không đụng vào.
+    /// </summary>
+    private void Start()
+    {
+        if (IsOpen) return;
+
+        GameObject r = popupRoot != null ? popupRoot : gameObject;
+        if (r != null && r != gameObject && r.activeSelf)
+            r.SetActive(false);
+
+        DatChanRaycastDim(false);
+        ReleasePopupInputBlock();
+    }
+
+    /// <summary>
+    /// Popup bị tắt bằng đường khác (PopupManager, đổi scene, ai đó SetActive thẳng).
+    /// GỌI VÔ ĐIỀU KIỆN: `ReleasePopupInputBlock` là bất biến nên gọi chồng lên `Close()`
+    /// cũng chỉ trả đúng một nhịp. Không làm thế thì popupLockCount kẹt > 0 và
+    /// `FarmInputLock.BlockMapPan` đúng mãi mãi — map chết hẳn cho tới khi restart.
+    /// </summary>
+    private void OnDisable()
+    {
+        DatChanRaycastDim(false);
+        ReleasePopupInputBlock();
     }
 
     /// <summary>
@@ -343,7 +411,89 @@ public class MillPopupUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        // Popup bị Destroy giữa chừng (đổi scene) vẫn phải trả khoá input, nếu không map
+        // đứng im mà không còn object nào để đóng lại cho đúng.
+        ReleasePopupInputBlock();
+
         if (Instance == this) Instance = null;
+    }
+
+    // ═════════════════════════════ NỀN MỜ + KHOÁ INPUT ═════════════════════════════
+
+    /// <summary>
+    /// Tìm tấm nền mờ phủ kín màn hình (node <c>Dim</c>) — thứ ĐANG ăn hết con trỏ khi popup
+    /// đóng. Dò một lần rồi nhớ luôn, kể cả khi không tìm thấy (khỏi quét lại mỗi lần đóng).
+    ///
+    /// Dò theo TÊN chứ không bằng ô kéo thả trong Inspector: cấu trúc do
+    /// <c>MillPopupBuilderTool</c> dựng luôn là <c>PopupRoot/Dim</c> + <c>PopupRoot/Window</c>,
+    /// và yêu cầu là KHÔNG phải sờ tay vào scene.
+    /// </summary>
+    private Graphic TimDim()
+    {
+        if (_daTimDim) return _dimGraphic;
+        _daTimDim = true;
+
+        Transform goc = (popupRoot != null) ? popupRoot.transform : transform;
+        if (goc == null) return null;
+
+        // 1) Đúng tên "Dim" ngay dưới popupRoot — đường chính.
+        Transform t = goc.Find("Dim");
+
+        // 2) Dự phòng: con ĐẦU TIÊN phủ kín (anchor 0;0 → 1;1) mà KHÔNG phải tấm bảng.
+        if (t == null)
+        {
+            RectTransform bang = TimBangPopup();
+            for (int i = 0; i < goc.childCount; i++)
+            {
+                RectTransform con = goc.GetChild(i) as RectTransform;
+                if (con == null || con == bang) continue;
+                if (con.anchorMin != Vector2.zero || con.anchorMax != Vector2.one) continue;
+
+                t = con;
+                break;
+            }
+        }
+
+        if (t != null) _dimGraphic = t.GetComponent<Graphic>();
+        return _dimGraphic;
+    }
+
+    /// <summary>
+    /// Bật/tắt khả năng ăn raycast của tấm nền mờ. Popup ĐÓNG ⇒ luôn tắt, nếu không nó chặn
+    /// kéo map. Popup MỞ ⇒ bật lại để click ra ngoài bảng không rơi xuống đồng ruộng.
+    /// </summary>
+    private void DatChanRaycastDim(bool chan)
+    {
+        Graphic g = TimDim();
+        if (g == null) return;
+
+        if (g.raycastTarget != chan)
+            g.raycastTarget = chan;
+    }
+
+    /// <summary>Giữ khoá input + bật lớp chặn raycast. Gọi nhiều lần vẫn chỉ tăng MỘT nhịp.</summary>
+    private void AcquirePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(popupRoot, true);
+
+        if (_popupInputLockHeld) return;
+        FarmInputLock.RegisterPopupOpen();
+        _popupInputLockHeld = true;
+    }
+
+    /// <summary>
+    /// Trả khoá input + tắt lớp chặn raycast. BẤT BIẾN (idempotent): gọi mười lần cũng chỉ
+    /// giảm đúng một nhịp, và gọi khi chưa từng giữ khoá thì không giảm nhịp nào. Nhờ vậy
+    /// Close / OnDisable / OnDestroy được phép gọi chồng lên nhau mà popupLockCount không
+    /// bao giờ tụt xuống dưới 0 (kẹp về 0 ⇒ ăn trộm mất một nhịp của popup KHÁC).
+    /// </summary>
+    private void ReleasePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(popupRoot, false);
+
+        if (!_popupInputLockHeld) return;
+        FarmInputLock.RegisterPopupClose();
+        _popupInputLockHeld = false;
     }
 
     private void Update()
@@ -505,6 +655,21 @@ public class MillPopupUI : MonoBehaviour
         DatChayAnimation(false);
 
         AnToast(true);
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
+
+        // Popup ĐANG MỞ ⇒ nền mờ phải ăn raycast trở lại (click ra ngoài bảng không được
+        // rơi xuống đồng ruộng), và map phải ngừng kéo.
+        DatChanRaycastDim(true);
+        AcquirePopupInputBlock();
+
+        // Chống tràn chữ cho các nhãn khung cứng — làm mỗi lần mở vì ngôn ngữ đổi được
+        // giữa hai lần mở (bản tiếng Anh dài hơn bản tiếng Việt ở gần như mọi câu).
+        ApChongTranChuToanPopup();
+
+        // CUỐI CÙNG: đo dấu chân thật rồi co bảng cho vừa màn hình. Phải chạy SAU
+        // DungDanhSachCard() (card mới vừa Instantiate) và sau khi chữ đã đổi cỡ.
+        VuaKhungManHinh();
     }
 
     /// <summary>Đóng popup, dừng toàn bộ animation và lưu trạng thái ngay.</summary>
@@ -533,6 +698,11 @@ public class MillPopupUI : MonoBehaviour
 
         DungAnimation();
         LuuTrangThai();
+
+        // Trả khoá TRƯỚC khi tắt node: ReleasePopupInputBlock đọc popupRoot, và tắt rồi
+        // mới trả thì thứ tự vẫn đúng nhưng dễ bị ai đó "tối ưu" thành return sớm.
+        DatChanRaycastDim(false);
+        ReleasePopupInputBlock();
 
         GameObject root = popupRoot != null ? popupRoot : gameObject;
         if (root != null && root.activeSelf) root.SetActive(false);
@@ -623,7 +793,7 @@ public class MillPopupUI : MonoBehaviour
         if (r != null)
         {
             if (txtOutputTag != null) txtOutputTag.text = r.displayName;
-            DatAnh(imgOutputIcon, r.icon);
+            DatAnh(imgOutputIcon, r.GetIcon());
 
             MillIngredient ing0 = (r.ingredients != null && r.ingredients.Length > 0) ? r.ingredients[0] : null;
             if (txtInputBubble != null) txtInputBubble.text = (ing0 != null) ? ("x" + ing0.amount) : string.Empty;
@@ -862,7 +1032,7 @@ public class MillPopupUI : MonoBehaviour
 
         // Icon bay từ slot về nút KHO ở HUD. Chỉ phát SAU khi CongSanPham thành công —
         // thấy hàng bay vào kho mà kho không tăng là lỗi tệ nhất có thể có ở đây.
-        if (fxBayVeKho != null) fxBayVeKho.Bay(r.icon, oSlot);
+        if (fxBayVeKho != null) fxBayVeKho.Bay(r != null ? r.GetIcon() : null, oSlot);
 
         // PHÁO HOA nổ NGAY TẠI Ô SLOT vừa bấm.
         //
@@ -999,13 +1169,21 @@ public class MillPopupUI : MonoBehaviour
         // Mua được: chỉ slot KẾ TIẾP và chỉ khi đủ kim cương thì nút mới bấm được.
         bool duGem = ketTiep && MillInventoryBridge.SoKimCuong() >= config.gemCostUnlockSlot;
 
-        // Vẽ lại khi ĐỔI MODE, hoặc khi ví người chơi đổi (nút mua có thể vừa bấm được /
-        // vừa hết bấm được). `_gemDaHien` là số dư của FRAME TRƯỚC — CapNhatSoDuGem() chạy
-        // SAU vòng lặp slot nên so ở đây là so với giá trị cũ, đúng ý.
-        bool doiVi = (_gemDaHien != MillInventoryBridge.SoKimCuong());
-
-        if (CanVeLai(idx, MillSlotMode.UnlockGem) || doiVi)
-            ui.BindUnlockGem(config.gemCostUnlockSlot, duGem);
+        // ⚠ SỬA 17/09 — "SLOT #5 HIỆN THANH GIÁ KIM CƯƠNG RỖNG, #4 HIỆN 💎15".
+        //
+        // Bản trước chỉ gọi BindUnlockGem khi ĐỔI MODE hoặc khi ví đổi:
+        //     if (CanVeLai(idx, MillSlotMode.UnlockGem) || doiVi) ...
+        // `CanVeLai` GHI LẠI mode ngay lần hỏi đầu rồi trả false mãi mãi, nên mọi đường vào
+        // khác (mở slot #4 xong ⇒ #5 thành slot kế tiếp, đổi ngôn ngữ, layout chạy lại sau
+        // khi popup co lại) đều KHÔNG được vẽ lại — ô giá giữ nguyên nội dung cũ, và nếu nó
+        // chưa từng được ghi thì đứng nguyên chuỗi "0"/rỗng của prefab. Slot #4 may mắn rơi
+        // đúng nhánh vẽ nên có số, slot #5 thì không: đúng cảnh trong ảnh chụp.
+        //
+        // Nay gọi MỖI FRAME. An toàn: `MillSlotUI.BindUnlockGem` đã có hàng rào
+        // `_giaGemDangHien` bên trong nên chỉ dựng chuỗi khi CON SỐ đổi — không thêm một
+        // byte rác nào mỗi frame (xem khối ghi chú "CHỐNG RÁC MỖI FRAME" ở đầu file).
+        GhiModeDaVe(idx, MillSlotMode.UnlockGem);
+        ui.BindUnlockGem(config.gemCostUnlockSlot, duGem);
     }
 
     private void CapNhatBadgeVaTongKet(int soDangXay, int soChoThu)
@@ -1223,6 +1401,271 @@ public class MillPopupUI : MonoBehaviour
         }
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+    //  VỪA KHUNG MÀN HÌNH (fit-to-screen)
+    //  Cùng một cách làm với ShopManager.VuaKhungManHinh() và
+    //  StallPopupUI.VuaKhungManHinh(): nhớ scale gốc lúc mở lần đầu, đo DẤU CHÂN THẬT,
+    //  so với khung canvas trừ lề, rồi nhân một hệ số ≤ 1 — KHÔNG BAO GIỜ phóng to.
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Tìm tấm bảng gỗ (node <c>Window</c>) — thứ THẬT SỰ phải co lại.
+    ///
+    /// ⚠ KHÔNG được co <see cref="popupRoot"/>: ô đó trỏ vào <c>PopupRoot</c>, một node phủ
+    /// kín màn hình (anchor 0;0 → 1;1) chứa CẢ tấm nền mờ <c>Dim</c>. Co nó là nền mờ tự thu
+    /// lại thành một ô vuông giữa màn hình và lòi cả map ra hai bên — đúng cái bẫy
+    /// StallPopupUI đã dính (popupRoot của nó là Panel_Dim, bảng thật là Popup_Main).
+    ///
+    /// Thứ tự dò: ô kéo thả → con tên "Window" → con tên "Popup_Main" → tổ tiên của slot #1
+    /// nằm ngay dưới popupRoot → con ĐẦU TIÊN không-phủ-kín. Năm đường này để KHÔNG cần
+    /// thao tác tay nào trong Unity.
+    /// </summary>
+    private RectTransform TimBangPopup()
+    {
+        if (popupBoard != null) return popupBoard;
+
+        Transform goc = (popupRoot != null) ? popupRoot.transform : transform;
+        if (goc == null) return null;
+
+        Transform t = goc.Find("Window");
+        if (t == null) t = goc.Find("Popup_Main");
+        if (t != null) popupBoard = t as RectTransform;
+
+        // Dò từ dưới lên: slot #1 chắc chắn nằm TRONG bảng, leo cha tới khi chạm con trực
+        // tiếp của popupRoot.
+        if (popupBoard == null && slots != null && slots.Length > 0 && slots[0] != null)
+        {
+            Transform cur = slots[0].transform;
+            while (cur != null && cur.parent != null && cur.parent != goc)
+                cur = cur.parent;
+
+            if (cur != null && cur.parent == goc)
+                popupBoard = cur as RectTransform;
+        }
+
+        // Cuối cùng: con đầu tiên KHÔNG phủ kín màn hình (nền mờ thì phủ kín ⇒ bị loại).
+        if (popupBoard == null)
+        {
+            for (int i = 0; i < goc.childCount; i++)
+            {
+                RectTransform con = goc.GetChild(i) as RectTransform;
+                if (con == null) continue;
+                if (con.anchorMin == Vector2.zero && con.anchorMax == Vector2.one) continue;
+
+                popupBoard = con;
+                break;
+            }
+        }
+
+        return popupBoard;
+    }
+
+    /// <summary>
+    /// Đo DẤU CHÂN THẬT của <paramref name="bang"/> trong KHÔNG GIAN CỤC BỘ của chính nó.
+    ///
+    /// ⚠ VÌ SAO KHÔNG DÙNG <c>RectTransformUtility.CalculateRelativeRectTransformBounds</c>:
+    /// hàm đó gom MỌI RectTransform con đang bật, KỂ CẢ phần bị xén. Danh sách công thức của
+    /// popup này là một ScrollRect: <c>RecipeList/Viewport</c> có RectMask2D còn
+    /// <c>Content</c> có VerticalLayoutGroup + ContentSizeFitter, nên Content cao theo SỐ
+    /// CARD (4 card ≈ 650px trong khung chỉ 498px). Đo kiểu đó thì dấu chân phình ra theo số
+    /// công thức và bảng bị co quá tay — càng thêm công thức, popup càng bé.
+    ///
+    /// Ở đây ta tự duyệt và DỪNG tại node có Mask / RectMask2D (vẫn tính rect của chính nó,
+    /// bỏ qua con của nó). Đổi lại ta được đúng thứ MẮT NHÌN THẤY, và vẫn tự động gom
+    /// ruy-băng tiêu đề + nút X thò ra ngoài mép bảng, vẫn tự động bỏ qua toast đang tắt.
+    /// </summary>
+    /// <returns>false nếu không đo được (bảng rỗng).</returns>
+    private bool DoDauChan(RectTransform bang, out Vector2 tamCucBo, out Vector2 cheoCucBo)
+    {
+        tamCucBo  = Vector2.zero;
+        cheoCucBo = Vector2.zero;
+        if (bang == null) return false;
+
+        Vector3 min = new Vector3(float.MaxValue, float.MaxValue, 0f);
+        Vector3 max = new Vector3(float.MinValue, float.MinValue, 0f);
+
+        GomDauChan(bang, bang, ref min, ref max);
+
+        if (min.x > max.x || min.y > max.y) return false;
+
+        tamCucBo  = new Vector2((min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f);
+        cheoCucBo = new Vector2(max.x - min.x, max.y - min.y);
+        return true;
+    }
+
+    private void GomDauChan(RectTransform goc, RectTransform node, ref Vector3 min, ref Vector3 max)
+    {
+        // So tường minh `== null`: component/GameObject đã Destroy trả về "fake-null".
+        if (node == null || !node.gameObject.activeSelf) return;
+
+        node.GetWorldCorners(_gocTam);
+        for (int i = 0; i < 4; i++)
+        {
+            Vector3 cb = goc.InverseTransformPoint(_gocTam[i]);
+            if (cb.x < min.x) min.x = cb.x;
+            if (cb.y < min.y) min.y = cb.y;
+            if (cb.x > max.x) max.x = cb.x;
+            if (cb.y > max.y) max.y = cb.y;
+        }
+
+        // Node CẮT ⇒ con của nó bị xén, không tính vào dấu chân. Xem khối ghi chú ở
+        // DoDauChan để biết vì sao đây là điểm khác biệt quan trọng nhất so với bản Stall.
+        if (node.GetComponent<RectMask2D>() != null) return;
+        if (node.GetComponent<Mask>() != null) return;
+
+        for (int i = 0; i < node.childCount; i++)
+            GomDauChan(goc, node.GetChild(i) as RectTransform, ref min, ref max);
+    }
+
+    /// <summary>
+    /// Co bảng cho vừa canvas và dời cho ruy-băng tiêu đề thôi bị cắt ở mép trên.
+    ///
+    /// ĐO ĐƯỢC (SCN_Farm, 2026-09-17):
+    ///   • rect bảng (Window)           = 1560 × 900
+    ///   • DẤU CHÂN THẬT                = 1566.4 × 992.0, tâm lệch (+3.2 ; +46.0)
+    ///       – ruy-băng Ribbon thò LÊN  +92 trên mép bảng  (y đỉnh = +542 so với tâm rect)
+    ///       – nút X (64×64 · scale 1.5) thò SANG PHẢI +6.4 (x phải = +786.4)
+    ///     ⇒ tâm HÌNH cao hơn tâm RECT đúng 46 — đó chính là lý do ruy-băng luôn là thứ bị
+    ///       cắt ĐẦU TIÊN dù bảng đã co vừa. Dời xuống đúng 46 thì hết cắt.
+    ///   • chuỗi scale tới canvas       = MillPopup_Root 1.2 × PopupRoot 0.9 = 1.08
+    ///     ⇒ dấu chân TRÊN CANVAS       = 1691.7 × 1071.4
+    ///   • Canvas_Popup: Scale With Screen Size, 1920×1080, Match Width-Or-Height = 0.5
+    ///
+    /// ⚠ VÌ SAO KHÔNG SO VỚI `rtBang.parent.rect` NHƯ BẢN STALL:
+    /// ở đây chuỗi cha KHÔNG phải scale 1 — `MillPopup_Root` để localScale 1.2 và `PopupRoot`
+    /// để 0.9. Rect của PopupRoot vẫn là 1920×1080 nhưng nó VẼ RA to gấp 1.08, nên so với
+    /// rect cha là tưởng còn thừa chỗ trong khi thực tế đã tràn 8%. Phải quy dấu chân về
+    /// ĐƠN VỊ CANVAS bằng tỉ số lossyScale rồi mới so.
+    ///
+    /// Gọi MỖI LẦN MỞ: kích thước canvas đổi theo cửa sổ và theo hướng máy, hệ số của lần
+    /// trước không còn đúng cho lần này.
+    /// </summary>
+    private void VuaKhungManHinh()
+    {
+        RectTransform rtBang = TimBangPopup();
+        if (rtBang == null) return;
+
+        RectTransform rtKhung = rtBang.parent as RectTransform;
+        if (rtKhung == null) return;
+
+        Canvas cv = rtBang.GetComponentInParent<Canvas>();
+        if (cv == null) return;
+
+        RectTransform rtCanvas = (cv.rootCanvas != null ? cv.rootCanvas : cv).transform as RectTransform;
+        if (rtCanvas == null) return;
+
+        if (!_daLuuBang)
+        {
+            _daLuuBang    = true;
+            _scaleGocBang = rtBang.localScale;
+            _viTriGocBang = rtBang.anchoredPosition;
+        }
+
+        // Trả về NGUYÊN BẢN trước khi đo. Bounds tính theo không gian cục bộ của bảng nên
+        // không dính scale của chính nó, nhưng độ lệch vị trí thì CỘNG DỒN — không trả về
+        // gốc là mỗi lần mở bảng lại trôi thêm một đoạn.
+        rtBang.localScale       = _scaleGocBang;
+        rtBang.anchoredPosition = _viTriGocBang;
+
+        // DungDanhSachCard() vừa Instantiate thêm card vào ScrollRect ngay trước đó. Chưa ép
+        // layout chạy thì card mới còn nằm ở rect của prefab và GetWorldCorners trả số cũ.
+        Canvas.ForceUpdateCanvases();
+
+        Vector2 tam, cheo;
+        if (!DoDauChan(rtBang, out tam, out cheo)) return;
+        if (cheo.x < 1f || cheo.y < 1f) return;
+
+        // Quy ĐƠN VỊ CỤC BỘ CỦA BẢNG → ĐƠN VỊ CANVAS.
+        Vector3 lsBang   = rtBang.lossyScale;
+        Vector3 lsKhung  = rtKhung.lossyScale;
+        Vector3 lsCanvas = rtCanvas.lossyScale;
+        if (Mathf.Abs(lsCanvas.x) < 1e-5f || Mathf.Abs(lsCanvas.y) < 1e-5f) return;
+
+        float rx = lsBang.x / lsCanvas.x;      // 1 đơn vị cục bộ bảng = rx đơn vị canvas
+        float ry = lsBang.y / lsCanvas.y;
+        float kx = lsKhung.x / lsCanvas.x;     // 1 đơn vị anchoredPosition = kx đơn vị canvas
+        float ky = lsKhung.y / lsCanvas.y;
+        if (Mathf.Abs(kx) < 1e-5f || Mathf.Abs(ky) < 1e-5f) return;
+
+        float rongDauChan = Mathf.Abs(cheo.x * rx);
+        float caoDauChan  = Mathf.Abs(cheo.y * ry);
+        if (rongDauChan < 1f || caoDauChan < 1f) return;
+
+        float rongKhung = rtCanvas.rect.width  - LE_AN_TOAN_POPUP * 2f;
+        float caoKhung  = rtCanvas.rect.height - LE_AN_TOAN_POPUP * 2f;
+        if (rongKhung < 1f || caoKhung < 1f) return;
+
+        // Mathf.Min(1f, …) ⇒ CHỈ ĐƯỢC CO, không bao giờ phóng to. Bảng vẽ ở 1560×900 cho
+        // màn 1920×1080 là cố ý; kéo nó to ra trên màn rộng là làm vỡ art.
+        float heSo = Mathf.Min(1f, Mathf.Min(rongKhung / rongDauChan, caoKhung / caoDauChan));
+        rtBang.localScale = _scaleGocBang * heSo;
+
+        // ── CĂN GIỮA THEO HÌNH, KHÔNG THEO RECT ───────────────────────────────────
+        // Bảng căn giữa theo RECT, nhưng phần NHÌN THẤY lệch LÊN TRÊN 46 vì ruy-băng thò ra
+        // khỏi mép trên mà mép dưới không thò gì. Đó là lý do ruy-băng "FEED MILL" bị mép
+        // trên màn hình cắt cụt dù bảng đã co vừa.
+        //
+        // Tính thẳng trong ĐƠN VỊ CANVAS nên nó gánh luôn cả offset -33 của PopupRoot: tâm
+        // HÌNH của bảng rơi đúng tâm màn hình bất kể cha bị dời/scale bao nhiêu.
+        Vector2 tamCanvas   = rtCanvas.rect.center;
+        Vector3 pivotHienTai = rtCanvas.InverseTransformPoint(rtBang.position);
+
+        float dichX = (tamCanvas.x - tam.x * rx * heSo) - pivotHienTai.x;
+        float dichY = (tamCanvas.y - tam.y * ry * heSo) - pivotHienTai.y;
+
+        rtBang.anchoredPosition = _viTriGocBang + new Vector2(dichX / kx, dichY / ky);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  CHỐNG TRÀN CHỮ (chỉ CO LẠI, không bao giờ phóng to)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Bản tiếng Anh dài hơn bản tiếng Việt ở gần như mọi câu ("THIẾU NGUYÊN LIỆU" →
+    /// "NEED INGREDIENTS", "Cám gà" → "Cattle Feed Mix"), mà mọi nhãn trong popup này đều
+    /// để <c>overflowMode = Overflow</c> và TẮT auto-size ⇒ chữ tràn ra ngoài khung gỗ.
+    ///
+    /// Ở đây bật auto-size CHỈ-CO: <c>fontSizeMax</c> = đúng cỡ designer đã đặt (nên bản
+    /// tiếng Việt ngắn KHÔNG đổi một pixel nào), <c>fontSizeMin</c> = 0.75× cỡ đó, và cắt
+    /// đuôi bằng "…" nếu vẫn không vừa.
+    /// </summary>
+    private void ApChongTranChuToanPopup()
+    {
+        // Ô hẹp nhất: Txt_OutputTag 220×54 @27pt — "Cattle Feed Mix" là 15 ký tự, sát mép.
+        ApChongTranChu(txtOutputTag);
+        ApChongTranChu(txtMainButton);    // 396×80 @32pt — "NEED INGREDIENTS"
+        ApChongTranChu(txtStatusBadge);   // @28pt — "Mill is idle"
+        ApChongTranChu(txtSlotSummary);   // 806×32 @24pt — "3/5 slots open · 0 milling · 0 ready"
+        ApChongTranChu(txtTitle);         // 720×142 @48pt — "FEED MILL"
+        ApChongTranChu(toastText);
+    }
+
+    /// <summary>
+    /// Auto-size CHỈ-CO cho một nhãn: trần = cỡ chữ ĐANG CÓ, sàn = 0.75× cỡ đó.
+    /// Idempotent — gọi lại lần thứ hai không hạ trần thêm lần nữa (đọc
+    /// <c>fontSizeMax</c> đã đặt thay vì <c>fontSize</c> đã bị auto-size ghi đè).
+    /// </summary>
+    internal static void ApChongTranChu(TMP_Text txt)
+    {
+        if (txt == null) return;
+
+        // Cắt đuôi thay vì để chữ tràn ra ngoài khung gỗ — đúng trong mọi trường hợp.
+        if (txt.overflowMode != TextOverflowModes.Ellipsis)
+            txt.overflowMode = TextOverflowModes.Ellipsis;
+
+        // ⚠ Đã bật rồi thì THOÁT NGAY. Bật auto-size xong, TMP ghi đè `fontSize` bằng cỡ
+        // thực tế đang vẽ; lấy cỡ đó làm trần cho lần gọi sau là trần tụt dần mỗi lần mở
+        // popup cho tới khi chạm sàn.
+        if (txt.enableAutoSizing) return;
+
+        float tran = txt.fontSize;
+        if (tran <= 0f) return;
+
+        txt.fontSizeMax     = tran;
+        txt.fontSizeMin     = tran * 0.75f;
+        txt.enableAutoSizing = true;
+    }
+
     // ═════════════════════════════ LƯU / NẠP ═════════════════════════════
     //
     // PlayerPrefs — theo đúng hệ dự án đang dùng. Ghi bằng PlayerPrefs.Set* rồi gọi
@@ -1237,6 +1680,10 @@ public class MillPopupUI : MonoBehaviour
     private const string K_VER      = "MILL_Ver";
     private const string K_UNLOCKED = "MILL_SlotsUnlocked";
     private const int    SAVE_VER   = 1;
+
+    // F8: may xay van co K_VER rieng nhung KHONG nam trong SaveVersionGuard.AllFamilies,
+    // nen cac tool reset khong xoa duoc dau cua no va he version chung khong thay no.
+    private const string SaveFamilyMill = "MILL";
 
     private void KhoiTaoTrangThai()
     {
@@ -1264,6 +1711,10 @@ public class MillPopupUI : MonoBehaviour
 
     private void NapTrangThai()
     {
+        // F8: dong dau vao he version chung (ngoai K_VER rieng o duoi).
+        SaveVersionGuard.Ensure(SaveFamilyMill, SAVE_VER, null,
+                                PlayerPrefs.HasKey(K_VER) || PlayerPrefs.HasKey(K_UNLOCKED));
+
         if (!PlayerPrefs.HasKey(K_VER))
             return;   // chưa từng lưu ⇒ giữ giá trị mặc định từ config
 

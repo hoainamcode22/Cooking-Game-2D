@@ -35,6 +35,12 @@ public class LandExpansionManager : MonoBehaviour
 
     private const string SaveKey = "FARM_UNLOCKED_REGIONS";
 
+    // F8: ho save "LAND" moi duoc dang ky trong SaveVersionGuard.AllFamilies.
+    // Truoc day dat da mua KHONG he co dau phien ban -> ban sau khong the biet
+    // FARM_UNLOCKED_REGIONS / LAND_CLEAR_* dang o dinh dang nao de ma chuyen doi.
+    private const string SaveFamily  = "LAND";
+    private const int    SaveVersion = 1;
+
     // ─────────────────────────────────────────────────────────────────────
     [Header("Danh sach khu dat")]
     [Tooltip("Keo tat ca asset LandRegionData vao day.")]
@@ -460,7 +466,7 @@ public class LandExpansionManager : MonoBehaviour
             if (!IsRegionUnlocked(need))
             {
                 var nr = FindRegion(need);
-                reason = $"Cần mở \"{(nr != null ? nr.displayName : need)}\" trước.";
+                reason = Loc.TF("Cần mở \"{0}\" trước.", Loc.T(nr != null ? nr.displayName : need));
                 return false;
             }
         }
@@ -468,7 +474,7 @@ public class LandExpansionManager : MonoBehaviour
         int level = CurrentLevel();
         if (r.unlockLevel > 0 && level < r.unlockLevel)
         {
-            reason = $"Mở ở cấp {r.unlockLevel}.";
+            reason = Loc.TF("Mở ở cấp {0}.", r.unlockLevel);
             return false;
         }
 
@@ -682,6 +688,10 @@ public class LandExpansionManager : MonoBehaviour
 
     private void LoadSave()
     {
+        // F8: dong dau phien ban cho ho LAND. Ensure() la khong doi neu dau da dung,
+        // nen goi moi lan load cung an toan va re.
+        SaveVersionGuard.Ensure(SaveFamily, SaveVersion, null, PlayerPrefs.HasKey(SaveKey));
+
         unlockedIds.Clear();
         string raw = PlayerPrefs.GetString(SaveKey, "");
         if (string.IsNullOrEmpty(raw)) return;

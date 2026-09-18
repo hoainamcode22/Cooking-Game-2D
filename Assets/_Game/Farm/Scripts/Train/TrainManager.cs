@@ -415,7 +415,7 @@ public class TrainManager : MonoBehaviour
 
         if (!TrainInventoryAdapter.HasItem(slot.itemId, 1))
         {
-            FarmUIManager.Instance?.ShowHint($"Bạn chưa đủ {slot.displayName} — trồng/sản xuất thêm nhé!");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Bạn chưa đủ {0} — trồng/sản xuất thêm nhé!", Loc.T(slot.displayName)));
             return; // Popup vẫn mở để user tự đóng
         }
 
@@ -452,7 +452,7 @@ public class TrainManager : MonoBehaviour
 
         if (toAdd <= 0)
         {
-            FarmUIManager.Instance?.ShowHint($"Bạn chưa đủ {slot.displayName} — trồng/sản xuất thêm nhé!");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Bạn chưa đủ {0} — trồng/sản xuất thêm nhé!", Loc.T(slot.displayName)));
             return 0;
         }
 
@@ -646,7 +646,7 @@ public class TrainManager : MonoBehaviour
         if (goldBonusPerTrip > 0 && FarmEconomyManager.Instance != null)
         {
             FarmEconomyManager.Instance.AddGold(goldBonusPerTrip);
-            FarmUIManager.Instance?.ShowHint($"+{goldBonusPerTrip} vàng thưởng chuyến tàu!");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("+{0} vàng thưởng chuyến tàu!", goldBonusPerTrip));
         }
 
         HideAllRewardSlots();

@@ -69,6 +69,21 @@ public class CameraController : MonoBehaviour
     public float ActiveMinSize => _devMode ? Mathf.Min(devMinSize, minSize) : minSize;
     public float ActiveMaxSize => _devMode ? Mathf.Max(devMaxSize, maxSize) : maxSize;
 
+    // ══ [PERF P1 — CAM NHAN KEO] ════════════════════════════════════════════
+    //  panSpeed = 3 nhan delta ngon tay len 3 lan, roi SmoothDamp(panSmoothTime = 0.08) keo
+    //  nguoc lai => map "chay truoc ngon tay" roi bi giat lui: cam giac day chun.
+    //  panSpeed / panSmoothTime la [SerializeField] nen scene DE LEN gia tri default, khong the
+    //  sua bang cach doi default. Vi vay them CO RIENG dragOneToOne (mac dinh BAT):
+    //    • BAT  : bo he so panSpeed cho duong KEO, va dung dragSmoothTime rat nho => 1:1, dinh tay.
+    //    • TAT  : chay y het code cu (panSpeed + panSmoothTime) — Sep bo tick de revert tuc thi.
+    //  Cac duong khac (zoom, cinematic, tha tay) KHONG doi.
+    [Header("Drag Feel (1:1)")]
+    [Tooltip("BAT (khuyen nghi): keo map dung 1:1 voi ngon tay — bo qua he so panSpeed va dung " +
+             "dragSmoothTime. TAT: quay lai hanh vi cu (panSpeed * delta + panSmoothTime).")]
+    [SerializeField] private bool  dragOneToOne   = true;
+    [Tooltip("Thoi gian mut RIENG cho luc dang keo khi dragOneToOne BAT. De rat nho (~0.02) de map bam tay.")]
+    [SerializeField] private float dragSmoothTime = 0.02f;
+
     [Header("Smooth Damp")]
     [SerializeField] private float panSmoothTime  = 0.08f; // Thời gian giảm tốc khi thả tay (pan mượt mà)
     [SerializeField] private float zoomSmoothTime = 0.1f;  // Thời gian giảm tốc khi thả tay (zoom)
@@ -113,10 +128,16 @@ public class CameraController : MonoBehaviour
     {
         // Bật Enhanced Touch API — bắt buộc để dùng InputTouch.activeTouches trên mobile
         EnhancedTouchSupport.Enable();
+
+        // [PERF P1] Doi scene thi bo cache nhan vat.
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += XoaCacheNhanVat;
     }
 
     private void OnDisable()
     {
+        // [PERF P1] Go dang ky su kien scene (tranh leak khi camera bi disable).
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= XoaCacheNhanVat;
+
         // Tắt khi object bị disable để tránh memory leak
         EnhancedTouchSupport.Disable();
     }
@@ -282,7 +303,7 @@ public class CameraController : MonoBehaviour
         {
             Vector3 current  = ScreenToWorld(mouse.position.ReadValue());
             Vector3 delta    = lastPointerWorld - current;
-            targetPosition  += delta * panSpeed;
+            targetPosition  += ApDungHeSoKeo(delta);
             targetPosition   = ClampToBounds(targetPosition);
             lastPointerWorld = ScreenToWorld(mouse.position.ReadValue());
         }
@@ -388,7 +409,7 @@ public class CameraController : MonoBehaviour
         {
             Vector3 current  = ScreenToWorld(Input.mousePosition);
             Vector3 delta    = lastPointerWorld - current;
-            targetPosition  += delta * panSpeed;
+            targetPosition  += ApDungHeSoKeo(delta);
             targetPosition   = ClampToBounds(targetPosition);
             lastPointerWorld = ScreenToWorld(Input.mousePosition);
         }
@@ -491,7 +512,7 @@ public class CameraController : MonoBehaviour
                 {
                     Vector3 current  = ScreenToWorld(t.screenPosition);
                     Vector3 delta    = lastPointerWorld - current;
-                    targetPosition  += delta * panSpeed;
+                    targetPosition  += ApDungHeSoKeo(delta);
                     targetPosition   = ClampToBounds(targetPosition);
                     lastPointerWorld = ScreenToWorld(t.screenPosition);
                 }
@@ -560,9 +581,25 @@ public class CameraController : MonoBehaviour
 
     // ── SMOOTH MOVEMENT ──────────────────────────────────────────────────
 
+    /// <summary>
+    /// [PERF P1] He so cho duong KEO. dragOneToOne BAT => 1:1 (bo panSpeed). TAT => y code cu.
+    /// </summary>
+    private Vector3 ApDungHeSoKeo(Vector3 delta)
+    {
+        return dragOneToOne ? delta : delta * panSpeed;
+    }
+
+    /// <summary>[PERF P1] Thoi gian mut dang dung: keo 1:1 thi gan nhu khong mut.</summary>
+    private float ThoiGianMutPan()
+    {
+        if (_cinematicActive) return cinematicSmoothTime;
+        if (dragOneToOne && isDragging) return Mathf.Max(0.0001f, dragSmoothTime);
+        return panSmoothTime;
+    }
+
     private void ApplySmoothMovement()
     {
-        float posTime  = _cinematicActive ? cinematicSmoothTime : panSmoothTime;
+        float posTime  = ThoiGianMutPan();
         float zoomTime = _cinematicActive ? cinematicSmoothTime : zoomSmoothTime;
 
         // Smooth damp vị trí camera về targetPosition
@@ -580,13 +617,52 @@ public class CameraController : MonoBehaviour
         }
     }
 
+    // ── [PERF P1] Cache danh sach CharacterVoiceReaction ─────────────────────
+    //  FindObjectsByType<> quet TOAN BO scene — truoc day goi tu trong duong mut camera
+    //  (ApplySmoothMovement) moi lan zoom qua nguong => stall vai ms giua luc dang zoom.
+    //  Nay cache lai, lam moi toi da mot lan moi CACHE_NHAN_VAT_GIAY, va tu lam moi khi
+    //  doi scene. Neu co phan tu da bi Destroy thi cung ep quet lai.
+    private const float CACHE_NHAN_VAT_GIAY = 5f;
+    private CharacterVoiceReaction[] _cacheNhanVat;
+    private float _cacheNhanVatHetHan = -999f;
+
+    private CharacterVoiceReaction[] LayDanhSachNhanVat()
+    {
+        bool hetHan = Time.unscaledTime >= _cacheNhanVatHetHan;
+
+        if (!hetHan && _cacheNhanVat != null)
+        {
+            // Phat hien phan tu da bi Destroy => quet lai ngay.
+            for (int i = 0; i < _cacheNhanVat.Length; i++)
+            {
+                if (_cacheNhanVat[i] == null) { hetHan = true; break; }
+            }
+        }
+
+        if (hetHan || _cacheNhanVat == null)
+        {
+            _cacheNhanVat = Object.FindObjectsByType<CharacterVoiceReaction>(
+                FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            _cacheNhanVatHetHan = Time.unscaledTime + CACHE_NHAN_VAT_GIAY;
+        }
+
+        return _cacheNhanVat;
+    }
+
+    /// <summary>[PERF P1] Doi scene => cache nhan vat cu vo nghia, bo di.</summary>
+    private void XoaCacheNhanVat(UnityEngine.SceneManagement.Scene s, UnityEngine.SceneManagement.LoadSceneMode m)
+    {
+        _cacheNhanVat = null;
+        _cacheNhanVatHetHan = -999f;
+    }
+
     private float _lastZoomGreetTime = -999f;
     private void CheckAndTriggerNearbyCharacterGreeting()
     {
         if (Time.unscaledTime - _lastZoomGreetTime < 3.0f) return;
         _lastZoomGreetTime = Time.unscaledTime;
 
-        var charReactions = Object.FindObjectsByType<CharacterVoiceReaction>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        var charReactions = LayDanhSachNhanVat();
         if (charReactions != null && charReactions.Length > 0)
         {
             Vector3 camPos = transform.position;
@@ -894,6 +970,16 @@ public class CameraController : MonoBehaviour
         new System.Collections.Generic.List<RaycastResult>(16);
 
     /// <summary>True khi con trỏ đang nằm trên UI ĐÁNG ĐỂ chặn kéo map.</summary>
+    // [PERF P0] Truoc day moi frame dang keo lai `new PointerEventData(es)` (rac GC) VA chay
+    // EventSystem.RaycastAll — ham nay con bi goi nhieu lan trong CUNG mot frame (chuot + touch).
+    // Nay: dung lai 1 PointerEventData duy nhat, va nho ket qua theo frameCount + toa do con tro
+    // nen mot frame chi raycast dung 1 lan. Gia tri tra ve khong doi.
+    private PointerEventData _uiPointerData;
+    private EventSystem      _uiPointerOwner;
+    private int     _uiHitFrame = -1;
+    private Vector2 _uiHitPos;
+    private bool    _uiHitKetQua;
+
     private bool ConTroDangTrenUI(Vector2 screenPos)
     {
         EventSystem es = EventSystem.current;
@@ -901,17 +987,32 @@ public class CameraController : MonoBehaviour
 
         if (!chiChanBoiUiThat) return es.IsPointerOverGameObject();
 
-        var data = new PointerEventData(es) { position = screenPos };
+        // Cung frame + cung diem => tra lai ket qua da tinh, khong raycast lai.
+        if (_uiHitFrame == Time.frameCount && _uiHitPos == screenPos) return _uiHitKetQua;
+
+        if (_uiPointerData == null || _uiPointerOwner != es)
+        {
+            _uiPointerData  = new PointerEventData(es);
+            _uiPointerOwner = es;
+        }
+
+        _uiPointerData.Reset();
+        _uiPointerData.position = screenPos;
+
         _uiHits.Clear();
-        es.RaycastAll(data, _uiHits);
+        es.RaycastAll(_uiPointerData, _uiHits);
+
+        _uiHitFrame  = Time.frameCount;
+        _uiHitPos    = screenPos;
+        _uiHitKetQua = false;
 
         for (int i = 0; i < _uiHits.Count; i++)
         {
             // Chỉ hit đến từ GraphicRaycaster mới là UI thật (Canvas + Graphic).
             // Hit từ Physics2DRaycaster là va chạm world ⇒ bỏ qua.
-            if (_uiHits[i].module is UnityEngine.UI.GraphicRaycaster) return true;
+            if (_uiHits[i].module is UnityEngine.UI.GraphicRaycaster) { _uiHitKetQua = true; break; }
         }
-        return false;
+        return _uiHitKetQua;
     }
 
     private Vector3 ClampToBounds(Vector3 pos)

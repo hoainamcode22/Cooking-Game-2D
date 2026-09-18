@@ -137,6 +137,8 @@ public class BuildingProcessPopupUI : MonoBehaviour
         // FarmInputLock.RegisterPopupOpen() lam popupLockCount>0 => BlockMapPan chan
         // TOAN BO map va moi click world. Popup nay neo o world, khong che man hinh,
         // nen khong can khoa. Close() van goi Release de go bat ky khoa ket nao.
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     public void Open(DecorGrowthController decor)
@@ -160,6 +162,8 @@ public class BuildingProcessPopupUI : MonoBehaviour
         // FarmInputLock.RegisterPopupOpen() lam popupLockCount>0 => BlockMapPan chan
         // TOAN BO map va moi click world. Popup nay neo o world, khong che man hinh,
         // nen khong can khoa. Close() van goi Release de go bat ky khoa ket nao.
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     /// <summary>
@@ -185,6 +189,8 @@ public class BuildingProcessPopupUI : MonoBehaviour
         UpdateScreenPosition();
         _root.SetActive(true);
         // Cung ly do nhu hai ham Open tren: KHONG khoa input, popup neo o world.
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     public void Close()
@@ -193,6 +199,23 @@ public class BuildingProcessPopupUI : MonoBehaviour
         _house = null;
         _decor = null;
         _site  = null;
+        ReleasePopupInputBlock();
+    }
+
+    // ── F5: KHÔNG ĐỂ RÒ KHOÁ INPUT ──────────────────────────────────────────
+    // Popup này là singleton DontDestroyOnLoad. Trước đây khoá CHỈ được nhả trong
+    // Close(); mọi đường khác (đổi scene tắt object, Destroy bản trùng trong Awake,
+    // tắt canvas khi vào bếp…) đều bỏ qua Close() → popupLockCount kẹt > 0 →
+    // FarmInputLock.BlockMapPan kẹt true → người chơi KHÔNG kéo được bản đồ nữa.
+    // Nhả vô điều kiện ở cả hai chỗ; ReleasePopupInputBlock() tự chống trừ thừa bằng
+    // cờ _inputLockHeld nên gọi bao nhiêu lần cũng an toàn.
+    private void OnDisable()
+    {
+        ReleasePopupInputBlock();
+    }
+
+    private void OnDestroy()
+    {
         ReleasePopupInputBlock();
     }
 
@@ -226,7 +249,7 @@ public class BuildingProcessPopupUI : MonoBehaviour
         {
             // Ten khu dat thay cho ten nha. Region co the null neu site vua bi huy.
             if (_txtName != null)
-                _txtName.text = _site.Region != null ? _site.Region.displayName : "Khu dat";
+                _txtName.text = _site.Region != null ? _site.Region.displayName : Loc.T("Khu đất");
 
             // RemainingSeconds la int giay san, khong phai float nhu hai nguon tren.
             int con = Mathf.Max(0, _site.RemainingSeconds);

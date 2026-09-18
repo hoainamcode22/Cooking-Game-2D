@@ -69,6 +69,11 @@ public class MarketPopupUI : MonoBehaviour
         }
 
         popupRoot.SetActive(true);
+
+        // [FIX P0 2026-09-17] Duong du phong nay KHONG chay AcquirePopupInputBlock nen truoc day
+        // khong ai bat lai CanvasGroup cua Canvas_MarketPopup (scene luu interactable=0,
+        // blocksRaycasts=0) ⇒ popup hien len nhung chet cung, khong bam duoc gi.
+        MarketManager.BaoDamBamDuoc(popupRoot);
     }
 
     public void ClosePopup()

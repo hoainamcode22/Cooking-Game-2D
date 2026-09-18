@@ -92,6 +92,8 @@ public class PenProcessPopupUI : MonoBehaviour
         UpdateScreenPosition();
         _root.SetActive(true);
         AcquireInputLock();
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     private void ApplyLoadedSprites()

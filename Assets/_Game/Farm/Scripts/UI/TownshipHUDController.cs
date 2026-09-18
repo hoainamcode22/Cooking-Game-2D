@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using TMPro;
 using UnityEngine;
@@ -87,6 +88,26 @@ namespace FarmGame.UI
         [HideInInspector] public Button btnTabMission;
         [HideInInspector] public Button btnTabMap;
 
+        // ── [VÒNG 12] Chuẩn hoá nhãn 4 tab dưới đáy màn ────────────────────────
+        // Chữ Anh dài hơn chữ Việt ("BẢNG TIN CHỢ" → "ORDERS"), mà 4 nhãn tab trong
+        // SCN_Farm đang để enableAutoSizing = 0 + overflowMode = Overflow trên một rect
+        // chỉ rộng 122 px (nút 132 px) ⇒ chuỗi dài TRÀN ra hai mép nút.
+        // Ở đây CHỈ CO NHỎ: fontSizeMax = cỡ lớn nhất mà scene đặt cho 4 nhãn nên chữ
+        // không bao giờ to hơn thiết kế; quá dài thì cắt đuôi Ellipsis; lề hai bên đặt
+        // bằng TMP margin (thu hẹp vùng chữ đúng như co rect, mà KHÔNG sửa file scene).
+        //
+        // LocRuntimeInterceptor.HoanVuaKhung() TRẢ LẠI cấu hình gốc của nhãn mỗi khi
+        // người chơi quay về tiếng Việt. Vì vậy TUYỆT ĐỐI không dùng cờ "đã chạy một
+        // lần": mỗi lần refresh đều kiểm lại, nhãn nào còn đúng cấu hình thì bỏ qua
+        // (không gán gì ⇒ TMP không phải dựng lại mesh), nhãn nào bị trả về thì đặt lại.
+        private const float LE_NGANG_NHAN_TAB  = 10f;    // px mỗi bên, hệ 1920×1080
+        private const float TI_LE_CO_NHO_NHAT  = 0.75f;  // sàn dưới của autosize
+
+        // Cỡ chữ GỐC của từng nhãn, chụp TRƯỚC khi bật autosize — đọc fontSize sau khi
+        // đã bật autosize chỉ ra cỡ đã bị TMP bóp, lấy nó làm trần là khoá nhãn ở cỡ nhỏ.
+        private readonly Dictionary<TMP_Text, float> _coChuGocNhanTab = new Dictionary<TMP_Text, float>();
+        private float _coChuTabLonNhat = -1f;
+
         // [VONG 8] KHONG dung new CultureInfo("vi-VN"): build IL2CPP bat Invariant Globalization
         // se nem CultureNotFoundException NGAY trong static constructor => chet ca HUD.
         // Dung NumberFormatInfo tu khai bao, giong BoatDockSlot.cs / DockPurchasePopupUI.cs.
@@ -116,6 +137,11 @@ namespace FarmGame.UI
         private int   _manHinhWLucNeo = -1;
         private int   _manHinhHLucNeo = -1;
         private Rect  _vungAnToanLucNeo;
+
+        // ── [MAJOR-3 FIX 2026-09-18] Trạng thái của phần nâng cụm tab đáy màn ──
+        private RectTransform _cumNavDuoi;
+        private float _yGocCumNav;
+        private bool  _daLuuYGocNav;
 
         // Đệm 4 góc dùng chung cho phép đo neo — chỉ chạy lúc vào màn / đổi cỡ màn hình.
         private static readonly Vector3[] GocNeoBuf = new Vector3[4];
@@ -326,6 +352,92 @@ namespace FarmGame.UI
             SetTabLabel(btnTabMarket, Loc.T("BẢNG TIN CHỢ"));
             SetTabLabel(btnTabCooking, Loc.T("NẤU ĂN"));
             SetTabLabel(btnTabFishing, Loc.T("CÂU CÁ"));
+
+            // Đặt chữ xong mới chuẩn hoá: autosize phải đo đúng chuỗi vừa gán.
+            ChuanHoaNhomNhanTab();
+        }
+
+        /// <summary>Nhãn chữ của một tab (null nếu tab chưa nối dây hoặc không có TMP_Text).</summary>
+        private TMP_Text NhanCuaTab(Button btn)
+        {
+            return btn != null ? btn.GetComponentInChildren<TMP_Text>() : null;
+        }
+
+        /// <summary>Cỡ chữ GỐC của nhãn — chụp một lần, trước khi ta bật autosize.</summary>
+        private float CoChuGocCuaNhan(TMP_Text txt)
+        {
+            if (txt == null) return 0f;
+            if (_coChuGocNhanTab.TryGetValue(txt, out float daChup)) return daChup;
+
+            // Nhãn vốn đã bật autosize trong thiết kế ⇒ fontSize đọc được là cỡ ĐÃ BỊ BÓP;
+            // fontSizeMax mới là cỡ thật Sếp đặt.
+            float co = txt.enableAutoSizing ? txt.fontSizeMax : txt.fontSize;
+            if (co <= 0f) return 0f;
+
+            // Nhãn bị dựng lại (đổi scene, rebuild HUD) sẽ để lại khoá chết trong từ điển.
+            // Chỉ có 4–5 tab nên ngưỡng 32 là quá rộng, chạm ngưỡng thì dọn rồi chụp lại.
+            if (_coChuGocNhanTab.Count >= 32) _coChuGocNhanTab.Clear();
+            _coChuGocNhanTab[txt] = co;
+            return co;
+        }
+
+        /// <summary>
+        /// Lấy cỡ chữ lớn nhất trong nhóm tab rồi áp cùng một cấu hình co-chữ cho CẢ NHÓM,
+        /// để 4 nhãn luôn cùng cỡ nhìn và không nhãn nào tràn ra ngoài nút.
+        /// </summary>
+        private void ChuanHoaNhomNhanTab()
+        {
+            TMP_Text nShop  = NhanCuaTab(btnTabShop);
+            TMP_Text nKho   = NhanCuaTab(btnTabWarehouse);
+            TMP_Text nCho   = NhanCuaTab(btnTabMarket);
+            TMP_Text nBep   = NhanCuaTab(btnTabCooking);
+            TMP_Text nCau   = NhanCuaTab(btnTabFishing);
+
+            float lonNhat = 0f;
+            lonNhat = Mathf.Max(lonNhat, CoChuGocCuaNhan(nShop));
+            lonNhat = Mathf.Max(lonNhat, CoChuGocCuaNhan(nKho));
+            lonNhat = Mathf.Max(lonNhat, CoChuGocCuaNhan(nCho));
+            lonNhat = Mathf.Max(lonNhat, CoChuGocCuaNhan(nBep));
+            lonNhat = Mathf.Max(lonNhat, CoChuGocCuaNhan(nCau));
+            if (lonNhat <= 0f) return;
+
+            _coChuTabLonNhat = lonNhat;
+
+            ChuanHoaNhanTab(nShop);
+            ChuanHoaNhanTab(nKho);
+            ChuanHoaNhanTab(nCho);
+            ChuanHoaNhanTab(nBep);
+            ChuanHoaNhanTab(nCau);
+        }
+
+        /// <summary>
+        /// Autosize CHỈ CO (trần = cỡ gốc lớn nhất của nhóm) + Ellipsis + lề ngang.
+        /// Nhãn đã đúng cấu hình thì thoát ngay: hàm này chạy mỗi lần refresh nên phải rẻ.
+        /// </summary>
+        private void ChuanHoaNhanTab(TMP_Text txt)
+        {
+            if (txt == null || _coChuTabLonNhat <= 0f) return;
+
+            float coMax = _coChuTabLonNhat;
+            float coMin = Mathf.Max(8f, coMax * TI_LE_CO_NHO_NHAT);
+            Vector4 leCu = txt.margin;
+
+            bool dungRoi = txt.enableAutoSizing
+                           && Mathf.Approximately(txt.fontSizeMax, coMax)
+                           && Mathf.Approximately(txt.fontSizeMin, coMin)
+                           && txt.overflowMode == TextOverflowModes.Ellipsis
+                           && txt.textWrappingMode == TextWrappingModes.NoWrap
+                           && Mathf.Approximately(leCu.x, LE_NGANG_NHAN_TAB)
+                           && Mathf.Approximately(leCu.z, LE_NGANG_NHAN_TAB);
+            if (dungRoi) return;
+
+            // Đặt trần/sàn TRƯỚC khi bật autosize để TMP không kịp bóp chữ theo trần cũ.
+            txt.fontSizeMax      = coMax;
+            txt.fontSizeMin      = coMin;
+            txt.enableAutoSizing = true;
+            txt.overflowMode     = TextOverflowModes.Ellipsis;
+            txt.textWrappingMode = TextWrappingModes.NoWrap;
+            txt.margin           = new Vector4(LE_NGANG_NHAN_TAB, leCu.y, LE_NGANG_NHAN_TAB, leCu.w);
         }
 
         private void SetTabLabel(Button btn, string text)
@@ -702,21 +814,36 @@ namespace FarmGame.UI
             if (khungCanvas == null) return;
 
             TimHaiCumCha();
-            if (_cumTrai == null && _cumPhai == null) return;
+            TimCumNavDuoi();   // [MAJOR-3 FIX 2026-09-18] cụm tab đáy cũng phải được tìm trước khi chặn
+            if (_cumTrai == null && _cumPhai == null && _cumNavDuoi == null) return;
 
             float heSo = _canvasGoc.scaleFactor;
             if (heSo <= 0.0001f) heSo = 1f;
 
             // safeArea trả về PIXEL màn hình thật; chia hệ số CanvasScaler để về px hệ 1920×1080.
             Rect vung = Screen.safeArea;
-            float khuyetTrai = Mathf.Max(0f, vung.x) / heSo;
-            float khuyetPhai = Mathf.Max(0f, Screen.width - (vung.x + vung.width)) / heSo;
+
+            // ── [SAFE-AREA 2026-09-18] CHỐNG BÙ HAI LẦN ────────────────────────
+            // SafeAreaBootstrap nay tự chèn một lớp "~SafeArea" (SafeAreaFitter) bọc
+            // toàn bộ con của Canvas Overlay, nên hai cụm HUD và cụm tab đáy ĐÃ nằm
+            // TRONG vùng an toàn rồi. Nếu ở đây còn cộng thêm khuyết tai thỏ nữa thì
+            // HUD bị đẩy vào gấp đôi. Vì vậy canvas nào đã có lớp bọc thì phần khuyết
+            // coi như 0, chỉ còn giữ leRiaToiThieu (lề thiết kế thuần tuý).
+            bool daCoLopSafeArea = _canvasGoc.GetComponentInChildren<SafeAreaFitter>(true) != null;
+
+            float khuyetTrai = daCoLopSafeArea ? 0f : Mathf.Max(0f, vung.x) / heSo;
+            float khuyetPhai = daCoLopSafeArea ? 0f : Mathf.Max(0f, Screen.width - (vung.x + vung.width)) / heSo;
 
             float leTrai = Mathf.Max(leRiaToiThieu, khuyetTrai + leThemTrongVungAnToan);
             float lePhai = Mathf.Max(leRiaToiThieu, khuyetPhai + leThemTrongVungAnToan);
 
             if (_daLuuXGocTrai) NeoMotCum(_cumTrai, khungCanvas, true,  leTrai, _xGocCumTrai);
             if (_daLuuXGocPhai) NeoMotCum(_cumPhai, khungCanvas, false, lePhai, _xGocCumPhai);
+
+            // [MAJOR-3 FIX 2026-09-18] Cụm tab đáy màn cũng phải tránh thanh cử chỉ Android.
+            // Dùng CHÍNH heSo (CanvasScaler.scaleFactor) như hai cụm trên để nhất quán.
+            float khuyetDuoi = daCoLopSafeArea ? 0f : Mathf.Max(0f, vung.yMin) / heSo;
+            NangCumNavDuoi(khungCanvas, khuyetDuoi);
 
             _manHinhWLucNeo   = Screen.width;
             _manHinhHLucNeo   = Screen.height;
@@ -809,6 +936,119 @@ namespace FarmGame.UI
             }
 
             return maxX - minX > 1f;
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        //  [MAJOR-3 FIX 2026-09-18] NÂNG CỤM TAB ĐÁY LÊN KHỎI THANH CỬ CHỈ ANDROID
+        //
+        //  SỐ ĐO THẬT (audit UI 2026-09-18, đọc thẳng từ YAML của SCN_Farm):
+        //    · Canvas_HUD/BottomLeft_Nav_Group: anchor (0,0) pivot (0,0)
+        //      anchoredPosition (-347 ; -74), localScale 1.2
+        //    · 4 tab trải y = -518 … -359.6, mép đáy canvas = -540
+        //      ⇒ HỞ ĐÚNG 22 px.
+        //  Thanh cử chỉ Android ≈ 48dp ≈ 60–70 px hệ 1920×1080 ⇒ khoảng 38 px dưới
+        //  cùng (24% chiều cao tab) nằm DƯỚI thanh cử chỉ, chạm vào đó bị hệ điều hành
+        //  nuốt mất. ProjectSettings bật androidRenderOutsideSafeArea = 1 và cả dự án
+        //  KHÔNG có object nào gắn SafeAreaFitter (xem khối ghi chú VÒNG 10 ở trên),
+        //  nên không có gì tự lo việc này.
+        //
+        //  CHỈ ĐƯỢC NÂNG LÊN, không bao giờ hạ xuống, và máy KHÔNG có khuyết dưới
+        //  (Editor, PC, phần lớn Android có phím cứng) thì y giữ NGUYÊN SỐ CỦA SCENE —
+        //  Sếp sẽ không thấy bất kỳ thay đổi nào.
+        //  Chạy chung trong NeoHaiCumTheoRia() nên tự động lặp lại khi xoay máy / đổi
+        //  cỡ cửa sổ / hệ điều hành báo lại vùng an toàn (xem Update()).
+        // ══════════════════════════════════════════════════════════════════════
+
+        private void NangCumNavDuoi(RectTransform khungCanvas, float khuyetDuoi)
+        {
+            if (khungCanvas == null) return;
+
+            TimCumNavDuoi();
+            if (_cumNavDuoi == null || !_daLuuYGocNav) return;
+
+            // Luôn đo lại TỪ SỐ GỐC trong scene ⇒ chạy bao nhiêu lần cũng không dồn lệch,
+            // và khi người chơi xoay về hướng không có khuyết thì tự trả về chỗ cũ.
+            Vector2 vt = _cumNavDuoi.anchoredPosition;
+            vt.y = _yGocCumNav;
+            _cumNavDuoi.anchoredPosition = vt;
+
+            // Screen.safeArea = cả màn hình (không khuyết) ⇒ KHÔNG ĐỤNG GÌ.
+            if (khuyetDuoi <= 0.5f) return;
+
+            float leMuon = khuyetDuoi + leThemTrongVungAnToan;
+
+            float minY, maxY;
+            if (!DoMepDocTrenCanvas(_cumNavDuoi, khungCanvas, out minY, out maxY)) return;
+
+            float leDangCo = minY - khungCanvas.rect.yMin;
+            float chenh    = leMuon - leDangCo;
+
+            // CHỈ NÂNG. chenh <= 0 nghĩa là đã đủ hở — để yên.
+            if (chenh < 0.5f) return;
+
+            chenh = Mathf.Min(chenh, nhichToiDaMoiLan);
+            vt.y  = _yGocCumNav + chenh;
+            _cumNavDuoi.anchoredPosition = vt;
+        }
+
+        /// <summary>
+        /// Cụm tab đáy lấy từ chính tham chiếu Sếp đã gán trong Inspector (cha của một tab) —
+        /// giống cách TimHaiCumCha() làm, nên builder tool đổi tên object cũng không hỏng.
+        /// Chỉ dò theo tên khi không còn đường nào khác.
+        /// </summary>
+        private void TimCumNavDuoi()
+        {
+            if (_cumNavDuoi == null)
+            {
+                Button mocNeo = btnTabCooking != null ? btnTabCooking
+                              : btnTabShop    != null ? btnTabShop
+                              : btnTabMarket  != null ? btnTabMarket
+                              : btnTabWarehouse;
+
+                if (mocNeo != null && mocNeo.transform.parent != null)
+                    _cumNavDuoi = mocNeo.transform.parent as RectTransform;
+
+                if (_cumNavDuoi == null)
+                {
+                    Transform nav = transform.Find("BottomLeft_Nav_Group");
+                    if (nav != null) _cumNavDuoi = nav as RectTransform;
+                }
+            }
+
+            if (!_daLuuYGocNav && _cumNavDuoi != null)
+            {
+                _yGocCumNav   = _cumNavDuoi.anchoredPosition.y;
+                _daLuuYGocNav = true;
+            }
+        }
+
+        /// <summary>
+        /// Mép DỌC thật của cụm, đo trong hệ toạ độ Canvas gốc (px hệ 1920×1080).
+        /// Cùng luật với <see cref="DoMepNgangTrenCanvas"/>: chỉ tính con CÓ VẼ RA HÌNH
+        /// (Graphic) và đang BẬT — rect của cụm cha có pivot (0,0) và bề cao không phản ánh
+        /// vùng thật sự nhìn thấy, lấy nó vào là ra số vô nghĩa.
+        /// </summary>
+        private static bool DoMepDocTrenCanvas(RectTransform cum, RectTransform khungCanvas,
+                                               out float minY, out float maxY)
+        {
+            minY = float.MaxValue;
+            maxY = float.MinValue;
+            if (cum == null || khungCanvas == null) return false;
+
+            Graphic[] ds = cum.GetComponentsInChildren<Graphic>(false);
+            for (int i = 0; i < ds.Length; i++)
+            {
+                if (ds[i] == null) continue;
+                ds[i].rectTransform.GetWorldCorners(GocNeoBuf);
+                for (int g = 0; g < 4; g++)
+                {
+                    float y = khungCanvas.InverseTransformPoint(GocNeoBuf[g]).y;
+                    if (y < minY) minY = y;
+                    if (y > maxY) maxY = y;
+                }
+            }
+
+            return maxY - minY > 1f;
         }
 
         /// <summary>So 2 vùng an toàn theo từng cạnh — 1 pixel là ngưỡng đủ mịn.</summary>

@@ -3162,6 +3162,34 @@ public class TutorialManager : MonoBehaviour
     }
 
     /// <summary>
+    /// [i18n] True khi nhan/nut chinh la nut "Bo qua buoc nay" — khop ca ban tieng Viet goc,
+    /// ban dich hien hanh (Loc.T) va ten GameObject.
+    /// </summary>
+    private const string NHAN_BO_QUA_BUOC_NAY = "Bỏ qua bước này";
+
+    private static bool NhanLaBoQuaBuocNay(TMP_Text lbl, Button nutCha)
+    {
+        if (lbl == null) return false;
+
+        string hienTai = lbl.text;
+        if (string.IsNullOrEmpty(hienTai)) return false;
+        hienTai = hienTai.Trim();
+
+        if (hienTai == NHAN_BO_QUA_BUOC_NAY) return true;
+
+        string daDich = Loc.T(NHAN_BO_QUA_BUOC_NAY);
+        if (!string.IsNullOrEmpty(daDich) && hienTai == daDich.Trim()) return true;
+
+        // Du phong cuoi: ten GameObject (khong bao gio bi localizer ghi de).
+        if (nutCha != null && nutCha.name.IndexOf("SkipStep", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+        if (lbl.gameObject.name.IndexOf("SkipStep", System.StringComparison.OrdinalIgnoreCase) >= 0)
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
     /// [WP-A1] Nút "Bỏ qua bước này" là nút Tiếp tục TRONG card thoại. Ở bước quét ô card đã bị
     /// AnHopThoai() ẩn (root SetActive(false)) ⇒ nút được bật nhưng không ai thấy ⇒ lối thoát vô dụng.
     /// Bật lại chuỗi cha từ nút lên tới Canvas (và kéo CanvasGroup về 1). Vì nút là con của card,
@@ -3175,7 +3203,9 @@ public class TutorialManager : MonoBehaviour
         foreach (var b in _v2Card.GetComponentsInChildren<Button>(true))
         {
             var lbl = b.GetComponentInChildren<TMP_Text>(true);
-            if (lbl != null && lbl.text == "Bỏ qua bước này") { nut = b; break; }
+            // [i18n] Nhan co the da bi localizer doi sang tieng Anh => so ca 2 ngon ngu,
+            // va du phong so theo ten GameObject (ten object khong bao gio bi dich).
+            if (lbl != null && NhanLaBoQuaBuocNay(lbl, b)) { nut = b; break; }
         }
         if (nut == null)
         {

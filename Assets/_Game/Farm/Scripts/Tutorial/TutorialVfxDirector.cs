@@ -225,7 +225,7 @@ public class TutorialVfxDirector : MonoBehaviour
             return null;
         }
 
-        var found = canvas.transform.Find(kLayerName) as RectTransform;
+        var found = TimSauTrongCanvas(canvas.transform, kLayerName) as RectTransform;
         if (found == null)
         {
             var go = new GameObject(kLayerName, typeof(RectTransform));
@@ -371,5 +371,21 @@ public class TutorialVfxDirector : MonoBehaviour
         Debug.Log($"[TutorialVfxDirector] Chưa có '{ten}' → bỏ qua hiệu ứng đó, tutorial vẫn chạy bình thường. " +
                   "Art gói B (production/art-handoff/2026-09-04_TutorialV2/B_VFX_Tutorial/) về thì kéo vào " +
                   "Inspector là xong, không cần sửa code.");
+    }
+
+    // [FIX 2026-09-18] SafeAreaBootstrap boc toan bo con cua Canvas vao lop "~SafeArea",
+    // nen Find() mot cap khong con thay lop cu ⇒ moi lan vao lai scene lai de them mot lop
+    // trung ten (ro ri + hai lop tutorial chong nhau). Tim de quy de van thay lop cu.
+    private static Transform TimSauTrongCanvas(Transform goc, string ten)
+    {
+        if (goc == null || string.IsNullOrEmpty(ten)) return null;
+        for (int i = 0; i < goc.childCount; i++)
+        {
+            var c = goc.GetChild(i);
+            if (c.name == ten) return c;
+            var sau = TimSauTrongCanvas(c, ten);
+            if (sau != null) return sau;
+        }
+        return null;
     }
 }

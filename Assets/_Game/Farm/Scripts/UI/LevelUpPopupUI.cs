@@ -402,6 +402,8 @@ public class LevelUpPopupUI : MonoBehaviour
         StartV2Fx();
 
         StartCoroutine(AnimateIn());
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
     }
 
     /// <summary>Đường dẫn hierarchy đầy đủ, dùng cho log lỗi.</summary>

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -7,11 +8,37 @@ public class FarmPlotInput : MonoBehaviour
     [SerializeField] private Camera mainCamera;
     [SerializeField] private LayerMask plotMask = ~0;
 
+    // ── [PERF F4.1 2026-09-17] KHONG CAP PHAT TRONG LUC QUET ──────────────────────
+    // Ban cu: Physics2D.OverlapCircleAll(...) => Unity cap phat MOT Collider2D[] MOI
+    // moi lan quet, roi GetComponent<>() + GetComponentInParent<>() qua toan tu `??`
+    // (toan tu `??` tren UnityEngine.Object con lam hong phep so sanh null cua Unity).
+    // Ban moi: mot List<Collider2D> dung lai + ContactFilter2D + overload khong cap phat.
+    // LUU Y Unity 6: OverlapCircleNonAlloc DA BI DANH DAU OBSOLETE; overload dung la
+    // Physics2D.OverlapCircle(point, radius, ContactFilter2D, List<Collider2D>).
+    private readonly List<Collider2D> _hits = new List<Collider2D>(16);
+    private ContactFilter2D           _filter;
+
+    /// <summary>Ban kinh quet quanh diem bam, giu nguyen gia tri cu (25 world unit).</summary>
+    private const float BAN_KINH_QUET = 25f;
+
     // Cache camera chính nếu chưa gán tay trong Inspector.
     private void Awake()
     {
         if (mainCamera == null)
             mainCamera = Camera.main;
+
+        // Dung ContactFilter2D thay layerMask tho: OverlapCircleAll cu dung
+        // Physics2D.queriesHitTriggers, nen phai chep lai dung co do, khong doi hanh vi.
+        _filter = new ContactFilter2D
+        {
+            useTriggers   = Physics2D.queriesHitTriggers,
+            useLayerMask  = true,
+            layerMask     = plotMask,
+            useDepth      = false,
+            useOutsideDepth = false,
+            useNormalAngle  = false,
+            useOutsideNormalAngle = false
+        };
     }
 
     // Bắt click/tap ngoài world rồi forward vào PlotController tương ứng.
@@ -63,11 +90,22 @@ public class FarmPlotInput : MonoBehaviour
         // Quét tất cả collider tại điểm bấm để tìm PlotController,
         // tránh bị các collider khác (nhà, nhân vật, cây cối) đè lên nuốt mất click
         PlotController plot = null;
-        Collider2D[] hits = Physics2D.OverlapCircleAll(worldPos, 25f, plotMask);
-        for (int i = 0; i < hits.Length; i++)
+
+        // [PERF F4.1] Overload khong cap phat: ket qua do vao _hits dung lai, khong sinh mang moi.
+        // (_filter.layerMask duoc dong bo lai phong khi plotMask bi doi luc chay.)
+        _filter.layerMask = plotMask;
+        _filter.useTriggers = Physics2D.queriesHitTriggers;
+        Physics2D.OverlapCircle(worldPos, BAN_KINH_QUET, _filter, _hits);
+
+        for (int i = 0; i < _hits.Count; i++)
         {
-            if (hits[i] == null) continue;
-            var p = hits[i].GetComponent<PlotController>() ?? hits[i].GetComponentInParent<PlotController>();
+            Collider2D c = _hits[i];
+            if (c == null) continue;
+
+            // TryGetComponent: khong sinh rac khi KHONG tim thay (khac GetComponent<>()).
+            if (!c.TryGetComponent(out PlotController p))
+                p = c.GetComponentInParent<PlotController>();
+
             if (p != null)
             {
                 plot = p;

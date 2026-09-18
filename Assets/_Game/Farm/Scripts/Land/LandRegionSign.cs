@@ -49,6 +49,28 @@ public class LandRegionSign : MonoBehaviour
 
     private void HandleUnlocked(LandRegionData r) { if (r == _region) Destroy(gameObject); }
 
+    /// <summary>Tien to tieng Viet goc cua ly do "chua du cap" do LandExpansionManager.CanBuy sinh ra.</summary>
+    private const string TIEN_TO_MO_O_CAP = "Mở ở cấp";
+
+    /// <summary>
+    /// [i18n] True khi <paramref name="reason"/> la ly do "khoa theo cap". Khop ca ban tieng Viet
+    /// goc lan ban dich hien hanh (Loc.T) — giong cach TutorialManager.NhanLaBoQuaBuocNay lam —
+    /// de bien bao khong hong khi chuoi ly do bi dich sang tieng Anh.
+    /// </summary>
+    private static bool LaLyDoKhoaTheoCap(string reason)
+    {
+        if (string.IsNullOrEmpty(reason)) return false;
+        reason = reason.Trim();
+
+        if (reason.StartsWith(TIEN_TO_MO_O_CAP, System.StringComparison.Ordinal)) return true;
+
+        string daDich = Loc.T(TIEN_TO_MO_O_CAP);
+        if (!string.IsNullOrEmpty(daDich) && daDich != TIEN_TO_MO_O_CAP
+            && reason.StartsWith(daDich.Trim(), System.StringComparison.OrdinalIgnoreCase)) return true;
+
+        return false;
+    }
+
     /// <summary>Cap nhat chu + mau theo dieu kien hien tai.</summary>
     public void Refresh()
     {
@@ -57,14 +79,15 @@ public class LandRegionSign : MonoBehaviour
 
         if (label != null)
         {
-            if (!ok && !string.IsNullOrEmpty(reason) && reason.StartsWith("Mở ở cấp"))
-                label.text = reason.ToUpperInvariant();                  // "MO O CAP 40"
+            // [FIX QA i18n] `reason` co the da duoc dich sang tieng Anh => so tien to CA HAI ngon ngu.
+            if (!ok && LaLyDoKhoaTheoCap(reason))
+                label.text = Loc.TF("MỞ Ở CẤP {0}", _region.unlockLevel);   // trước: "MO O CAP 40" (mất dấu)
             else if (_region.goldPrice > 0)
-                label.text = $"{_region.displayName}\n{_region.goldPrice:n0} vang";
+                label.text = Loc.TF("{0}\n{1} vàng", Loc.T(_region.displayName), $"{_region.goldPrice:n0}");
             else if (_region.gemPrice > 0)
-                label.text = $"{_region.displayName}\n{_region.gemPrice} kim cuong";
+                label.text = Loc.TF("{0}\n{1} kim cương", Loc.T(_region.displayName), _region.gemPrice);
             else
-                label.text = _region.displayName;
+                label.text = Loc.T(_region.displayName);
         }
         if (board != null) board.color = ok ? colorReady : colorBlocked;
     }

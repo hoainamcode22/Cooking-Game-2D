@@ -84,14 +84,14 @@ namespace FarmGame.Fishing
         {
             reasonVi = string.Empty;
             string key = NormalizeKey(fishId);
-            if (string.IsNullOrEmpty(key) || amount <= 0) { reasonVi = "Cá không hợp lệ"; return false; }
+            if (string.IsNullOrEmpty(key) || amount <= 0) { reasonVi = Loc.T("Cá không hợp lệ"); return false; }
 
             FishStack s = Find(key);
             if (s == null)
             {
                 if (IsFull)
                 {
-                    reasonVi = "Giỏ cá đầy (" + UsedSlots.ToString(CultureInfo.InvariantCulture) + "/" + SlotCapacity.ToString(CultureInfo.InvariantCulture) + " loại)";
+                    reasonVi = Loc.TF("Giỏ cá đầy ({0}/{1} loại)", UsedSlots.ToString(CultureInfo.InvariantCulture), SlotCapacity.ToString(CultureInfo.InvariantCulture));
                     return false;
                 }
                 s = new FishStack { fishId = key, amount = 0 };
@@ -99,7 +99,7 @@ namespace FarmGame.Fishing
             }
             else if (s.amount >= MaxPerType)
             {
-                reasonVi = "Đã đủ " + MaxPerType.ToString(CultureInfo.InvariantCulture) + " con loại này";
+                reasonVi = Loc.TF("Đã đủ {0} con loại này", MaxPerType.ToString(CultureInfo.InvariantCulture));
                 return false;
             }
 

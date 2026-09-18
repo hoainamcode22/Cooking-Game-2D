@@ -47,7 +47,7 @@ MonoBehaviour:
   m_UseDepthStencilBuffer: 1
   m_UseCameraSortingLayersTexture: 1
   m_CameraSortingLayersTextureBound: 1161173501
-  m_CameraSortingLayerDownsamplingMethod: 0
+  m_CameraSortingLayerDownsamplingMethod: 2
   m_MaxLightRenderTextureCount: 16
   m_MaxShadowRenderTextureCount: 1
   m_PostProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}

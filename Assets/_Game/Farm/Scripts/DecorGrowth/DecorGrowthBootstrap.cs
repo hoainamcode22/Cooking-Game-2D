@@ -22,6 +22,11 @@ public static class DecorGrowthBootstrap
     public const string ConfigResourcePath = "DecorGrowthConfig";
 
     private const string ActiveListKey = "DecorGrowActive";
+
+    // F8: ho save "DECOR" moi duoc dang ky trong SaveVersionGuard.AllFamilies — truoc
+    // day tien trinh trong trang tri khong co dau phien ban nao ca.
+    private const string DecorSaveFamily  = "DECOR";
+    private const int    DecorSaveVersion = 1;
     private const string SlotCounterPrefix = "DecorGrowSlot_";
     private const float ClickMoveTolerancePixels = 18f;
     private const long StaleEntrySeconds = 7L * 24L * 3600L;   // dọn entry mồ côi sau 7 ngày
@@ -399,6 +404,10 @@ public static class DecorGrowthBootstrap
 
     private static List<ActiveEntry> ReadActive()
     {
+        // F8: dong dau phien ban cho ho DECOR (Ensure khong doi khi dau da dung).
+        SaveVersionGuard.Ensure(DecorSaveFamily, DecorSaveVersion, null,
+                                PlayerPrefs.HasKey(ActiveListKey));
+
         var list = new List<ActiveEntry>();
         string raw = PlayerPrefs.GetString(ActiveListKey, "");
         if (string.IsNullOrEmpty(raw)) return list;

@@ -220,27 +220,60 @@ public class StallItemCatalog : MonoBehaviour
     /// <summary>"Lúa" → "Hạt Lúa". Không thêm nếu tên đã tự nói nó là hạt.</summary>
     private static string TenHatGiong(string cropName)
     {
-        if (string.IsNullOrEmpty(cropName)) return "Hạt giống";
+        if (string.IsNullOrEmpty(cropName)) return Loc.T("Hạt giống");
+        // Ghép chuỗi thì interceptor không match được -> dùng format key "Hạt {0}".
         return cropName.StartsWith("Hạt", StringComparison.OrdinalIgnoreCase)
-            ? cropName
-            : "Hạt " + cropName;
+            ? Loc.T(cropName)
+            : Loc.TF("Hạt {0}", Loc.T(cropName));
     }
 
     // ── API tra cứu ──────────────────────────────────────────────────────────
 
     private static Sprite ResolveMissingIcon(string id)
     {
-#if UNITY_EDITOR
+        Sprite s = MarketManager.TryResolveFallbackIcon(id);
+        if (s != null) return s;
+
+        // ── F4: PHẢI NẠP ĐƯỢC CẢ Ở BẢN RELEASE ──────────────────────────────
+        // Trước đây cả khối tra cứu này nằm trong #if UNITY_EDITOR + AssetDatabase, nên
+        // trên máy người chơi nó luôn trả null → icon cám gà / cám heo / cám bò sữa /
+        // cỏ trộn bò TRẮNG TRƠN. Bốn PNG đó đã có sẵn trong
+        // Assets/_Game/Resources/Mill/Icons/ nên nạp bằng Resources.Load là chạy ở mọi
+        // nền tảng. Vẫn giữ nhánh AssetDatabase làm DỰ PHÒNG cho Editor (phòng khi ai đó
+        // xoá/đổi chỗ thư mục Resources thì trong Editor vẫn thấy icon mà sửa).
+        string resName = null;
+        string editorPath = null;
         switch (id)
         {
             case "cam_ga":
-                return LoadSpriteAtPath("Assets/_Game/GeneratedUI/Mill/Icons/feed_cam_ga.png");
+                resName = "Mill/Icons/feed_cam_ga";
+                editorPath = "Assets/_Game/GeneratedUI/Mill/Icons/feed_cam_ga.png";
+                break;
             case "cam_heo":
-                return LoadSpriteAtPath("Assets/_Game/GeneratedUI/Mill/Icons/feed_cam_heo.png");
+                resName = "Mill/Icons/feed_cam_heo";
+                editorPath = "Assets/_Game/GeneratedUI/Mill/Icons/feed_cam_heo.png";
+                break;
             case "co_tron_bo":
-                return LoadSpriteAtPath("Assets/_Game/GeneratedUI/Mill/Icons/feed_co_tron_bo.png");
+                resName = "Mill/Icons/feed_co_tron_bo";
+                editorPath = "Assets/_Game/GeneratedUI/Mill/Icons/feed_co_tron_bo.png";
+                break;
             case "cam_bo_sua":
-                return LoadSpriteAtPath("Assets/_Game/GeneratedUI/Mill/Icons/feed_cam_bo_sua.png");
+                resName = "Mill/Icons/feed_cam_bo_sua";
+                editorPath = "Assets/_Game/GeneratedUI/Mill/Icons/feed_cam_bo_sua.png";
+                break;
+        }
+
+        if (!string.IsNullOrEmpty(resName))
+        {
+            Sprite fromRes = Resources.Load<Sprite>(resName);
+            if (fromRes != null) return fromRes;
+        }
+
+#if UNITY_EDITOR
+        if (!string.IsNullOrEmpty(editorPath))
+        {
+            Sprite fromEditor = LoadSpriteAtPath(editorPath);
+            if (fromEditor != null) return fromEditor;
         }
 #endif
         return null;

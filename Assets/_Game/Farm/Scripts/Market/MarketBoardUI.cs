@@ -64,6 +64,24 @@ public class MarketBoardUI : MonoBehaviour
     private int lastTimerSecond     = int.MinValue;
     private int lastRefreshCostShown = int.MinValue;
 
+    // ══════════════════════════════════════════════════════════════════════
+    //  BLOCKER-2 FIX 2026-09-18 — CO BẢNG CHO VỪA MÀN HÌNH
+    //  Chép nguyên cách làm của MillPopupUI.VuaKhungManHinh() (bản DUY NHẤT đúng
+    //  theo kết quả audit). Xem khối ghi chú ở VuaKhungManHinh() bên dưới.
+    // ══════════════════════════════════════════════════════════════════════
+
+    /// <summary>Lề an toàn quanh bảng — giống MillPopupUI/StallPopupUI.LE_AN_TOAN_POPUP.</summary>
+    private const float LE_AN_TOAN_POPUP = 24f;
+
+    private RectTransform popupBoard;
+    private Vector3       _scaleGocBang;
+    private Vector2       _viTriGocBang;
+    private bool          _daLuuBang;
+    private bool          _canDoLaiSauKhiBat;
+
+    /// <summary>Đệm dùng chung cho GetWorldCorners — tránh cấp phát mảng mỗi node.</summary>
+    private static readonly Vector3[] _gocTam = new Vector3[4];
+
     /// <summary>
     /// Lấy manager một cách chịu lỗi.
     /// MarketManager nằm CÙNG GameObject nên Awake của nó chạy trước, nhưng nếu sau này
@@ -122,6 +140,17 @@ public class MarketBoardUI : MonoBehaviour
         BuildCategoryTabs();
         TrySubscribe();
         Redraw(true);
+
+        // [BLOCKER-2 FIX 2026-09-18] Popup chợ mở lại bằng cách BẬT Panel_Dim nên OnEnable
+        // CHÍNH LÀ "mỗi lần mở". Phải co cho vừa ở đây, không phải một lần lúc Awake:
+        // kích thước canvas đổi theo tỉ lệ màn và theo hướng máy.
+        VuaKhungManHinh();
+
+        // CanvasScaler có thể chưa chạy xong ở frame vừa bật (thứ tự thực thi giữa
+        // CanvasScaler và OnEnable không được bảo đảm) ⇒ rect canvas còn là số cũ.
+        // Đo lại đúng MỘT lần ở Update kế tiếp. Hàm chỉ-co và luôn trả về giá trị
+        // gốc trước khi đo nên gọi lại hoàn toàn vô hại (idempotent).
+        _canDoLaiSauKhiBat = true;
     }
 
     private void OnDisable()
@@ -141,6 +170,13 @@ public class MarketBoardUI : MonoBehaviour
         UpdateTimerUI();
         UpdateGoldUI();
         UpdateToast();
+
+        // [BLOCKER-2 FIX 2026-09-18] Xem ghi chú ở OnEnable.
+        if (_canDoLaiSauKhiBat)
+        {
+            _canDoLaiSauKhiBat = false;
+            VuaKhungManHinh();
+        }
     }
 
     private void TrySubscribe()
@@ -598,5 +634,208 @@ public class MarketBoardUI : MonoBehaviour
         }
 
         Destroy(flyGo);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    //  BLOCKER-2 FIX 2026-09-18 — CO BẢNG CHO VỪA MÀN HÌNH
+    //
+    //  ĐO ĐƯỢC (audit UI 2026-09-18, đọc thẳng từ YAML của SCN_Farm):
+    //    • Popup_Board rect              = 1880 × 840, localScale 0.95
+    //    • Btn_Close 64×64 scale 1.5, anchor (1,1), ap (13.3 ; 11.4)
+    //      ⇒ thò RA NGOÀI mép bảng 61px bên phải và 59px phía trên
+    //    • DẤU CHÂN THẬT trên canvas     = 1786 × 798
+    //    • 4:3 (canvas 1662.8 × 1247.1)  ⇒ cần nửa-rộng 893 / có 831 ⇒ CỤT 62px MỖI BÊN
+    //      ⇒ Btn_Close VÀ Btn_Refresh nằm ngoài màn ⇒ KHÔNG ĐÓNG ĐƯỢC CHỢ.
+    //      Cũng tràn ở 1:1 (dư 173px) và 9:16 (dư 353px).
+    //
+    //  Trước bản vá này bảng KHÔNG hề có chốt co-vừa-màn-hình.
+    // ══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Tìm RectTransform của <c>Popup_Board</c> (tấm bảng gỗ), KHÔNG phải nền mờ.
+    /// Cùng cách dò nhiều lớp với <see cref="MillPopupUI"/>: ưu tiên đúng tên, rồi
+    /// leo lên từ một node chắc chắn nằm trong bảng, cuối cùng loại mọi node phủ kín
+    /// màn hình (nền mờ Panel_Dim dùng anchor stretch toàn khung ⇒ bị loại).
+    /// </summary>
+    private RectTransform TimBangPopup()
+    {
+        if (popupBoard != null) return popupBoard;
+
+        // MarketBoardUI nằm ngay TRÊN Popup_Board trong SCN_Farm. Nhận ra bằng việc nó
+        // KHÔNG phủ kín khung cha (nền mờ mới phủ kín).
+        RectTransform rtTa = transform as RectTransform;
+        if (rtTa != null && !PhuKinKhung(rtTa))
+        {
+            popupBoard = rtTa;
+            return popupBoard;
+        }
+
+        Transform goc = (rtTa != null) ? (Transform)rtTa : transform;
+
+        Transform t = goc.Find("Popup_Board");
+        if (t == null) t = goc.Find("Window");
+        if (t == null) t = goc.Find("Popup_Main");
+        if (t != null) popupBoard = t as RectTransform;
+
+        // Còn lại: con đầu tiên KHÔNG phủ kín khung.
+        if (popupBoard == null)
+        {
+            for (int i = 0; i < goc.childCount; i++)
+            {
+                RectTransform con = goc.GetChild(i) as RectTransform;
+                if (con == null) continue;
+                if (PhuKinKhung(con)) continue;
+
+                popupBoard = con;
+                break;
+            }
+        }
+
+        return popupBoard;
+    }
+
+    private static bool PhuKinKhung(RectTransform rt)
+    {
+        return rt.anchorMin == Vector2.zero && rt.anchorMax == Vector2.one;
+    }
+
+    /// <summary>
+    /// Đo DẤU CHÂN THẬT của <paramref name="bang"/> trong KHÔNG GIAN CỤC BỘ của chính nó.
+    ///
+    /// ⚠ VÌ SAO KHÔNG DÙNG <c>RectTransformUtility.CalculateRelativeRectTransformBounds</c>:
+    /// hàm đó gom MỌI RectTransform con đang bật, KỂ CẢ phần bị xén. Danh sách hàng của chợ
+    /// là một ScrollRect: Viewport có RectMask2D còn Content có GridLayoutGroup +
+    /// ContentSizeFitter nên Content CAO THEO SỐ THẺ. Đo kiểu đó thì càng nhiều hàng bảng
+    /// càng bị co bé — sai hoàn toàn.
+    ///
+    /// Ở đây tự duyệt và DỪNG tại node có Mask / RectMask2D (vẫn tính rect của chính nó,
+    /// bỏ qua con của nó) ⇒ đo đúng thứ MẮT NHÌN THẤY, vẫn tự động gom Btn_Close thò ra
+    /// ngoài mép bảng, vẫn tự động bỏ qua toast đang tắt.
+    /// </summary>
+    /// <returns>false nếu không đo được (bảng rỗng).</returns>
+    private bool DoDauChan(RectTransform bang, out Vector2 tamCucBo, out Vector2 cheoCucBo)
+    {
+        tamCucBo  = Vector2.zero;
+        cheoCucBo = Vector2.zero;
+        if (bang == null) return false;
+
+        Vector3 min = new Vector3(float.MaxValue, float.MaxValue, 0f);
+        Vector3 max = new Vector3(float.MinValue, float.MinValue, 0f);
+
+        GomDauChan(bang, bang, ref min, ref max);
+
+        if (min.x > max.x || min.y > max.y) return false;
+
+        tamCucBo  = new Vector2((min.x + max.x) * 0.5f, (min.y + max.y) * 0.5f);
+        cheoCucBo = new Vector2(max.x - min.x, max.y - min.y);
+        return true;
+    }
+
+    private void GomDauChan(RectTransform goc, RectTransform node, ref Vector3 min, ref Vector3 max)
+    {
+        // So tường minh `== null`: component/GameObject đã Destroy trả về "fake-null".
+        if (node == null || !node.gameObject.activeSelf) return;
+
+        node.GetWorldCorners(_gocTam);
+        for (int i = 0; i < 4; i++)
+        {
+            Vector3 cb = goc.InverseTransformPoint(_gocTam[i]);
+            if (cb.x < min.x) min.x = cb.x;
+            if (cb.y < min.y) min.y = cb.y;
+            if (cb.x > max.x) max.x = cb.x;
+            if (cb.y > max.y) max.y = cb.y;
+        }
+
+        // Node CẮT ⇒ con của nó bị xén, không tính vào dấu chân.
+        if (node.GetComponent<RectMask2D>() != null) return;
+        if (node.GetComponent<Mask>() != null) return;
+
+        for (int i = 0; i < node.childCount; i++)
+            GomDauChan(goc, node.GetChild(i) as RectTransform, ref min, ref max);
+    }
+
+    /// <summary>
+    /// Co bảng cho vừa canvas và dời cho phần NHÌN THẤY (kể cả Btn_Close thò ra ngoài
+    /// mép bảng) nằm trọn trong màn hình.
+    ///
+    /// ⚠ VÌ SAO KHÔNG SO VỚI <c>rtBang.parent.rect</c>: chuỗi cha ở đây KHÔNG phải scale 1
+    /// (Popup_Board để localScale 0.95, Btn_Close để 1.5). Rect của Panel_Dim vẫn là cỡ
+    /// canvas nhưng thứ VẼ RA thì không cùng tỉ lệ. Phải quy dấu chân về ĐƠN VỊ CANVAS
+    /// bằng tỉ số lossyScale rồi mới so.
+    ///
+    /// Gọi MỖI LẦN MỞ: kích thước canvas đổi theo cửa sổ và theo hướng máy, hệ số của lần
+    /// trước không còn đúng cho lần này.
+    /// </summary>
+    private void VuaKhungManHinh()
+    {
+        RectTransform rtBang = TimBangPopup();
+        if (rtBang == null) return;
+
+        RectTransform rtKhung = rtBang.parent as RectTransform;
+        if (rtKhung == null) return;
+
+        Canvas cv = rtBang.GetComponentInParent<Canvas>();
+        if (cv == null) return;
+
+        RectTransform rtCanvas = (cv.rootCanvas != null ? cv.rootCanvas : cv).transform as RectTransform;
+        if (rtCanvas == null) return;
+
+        if (!_daLuuBang)
+        {
+            _daLuuBang    = true;
+            _scaleGocBang = rtBang.localScale;
+            _viTriGocBang = rtBang.anchoredPosition;
+        }
+
+        // Trả về NGUYÊN BẢN trước khi đo. Bounds tính theo không gian cục bộ của bảng nên
+        // không dính scale của chính nó, nhưng độ lệch vị trí thì CỘNG DỒN — không trả về
+        // gốc là mỗi lần mở bảng lại trôi thêm một đoạn.
+        rtBang.localScale       = _scaleGocBang;
+        rtBang.anchoredPosition = _viTriGocBang;
+
+        // Redraw() vừa Instantiate thêm thẻ hàng vào ScrollRect ngay trước đó. Chưa ép
+        // layout chạy thì thẻ mới còn ở rect của prefab và GetWorldCorners trả số cũ.
+        Canvas.ForceUpdateCanvases();
+
+        Vector2 tam, cheo;
+        if (!DoDauChan(rtBang, out tam, out cheo)) return;
+        if (cheo.x < 1f || cheo.y < 1f) return;
+
+        // Quy ĐƠN VỊ CỤC BỘ CỦA BẢNG → ĐƠN VỊ CANVAS.
+        Vector3 lsBang   = rtBang.lossyScale;
+        Vector3 lsKhung  = rtKhung.lossyScale;
+        Vector3 lsCanvas = rtCanvas.lossyScale;
+        if (Mathf.Abs(lsCanvas.x) < 1e-5f || Mathf.Abs(lsCanvas.y) < 1e-5f) return;
+
+        float rx = lsBang.x / lsCanvas.x;      // 1 đơn vị cục bộ bảng = rx đơn vị canvas
+        float ry = lsBang.y / lsCanvas.y;
+        float kx = lsKhung.x / lsCanvas.x;     // 1 đơn vị anchoredPosition = kx đơn vị canvas
+        float ky = lsKhung.y / lsCanvas.y;
+        if (Mathf.Abs(kx) < 1e-5f || Mathf.Abs(ky) < 1e-5f) return;
+
+        float rongDauChan = Mathf.Abs(cheo.x * rx);
+        float caoDauChan  = Mathf.Abs(cheo.y * ry);
+        if (rongDauChan < 1f || caoDauChan < 1f) return;
+
+        float rongKhung = rtCanvas.rect.width  - LE_AN_TOAN_POPUP * 2f;
+        float caoKhung  = rtCanvas.rect.height - LE_AN_TOAN_POPUP * 2f;
+        if (rongKhung < 1f || caoKhung < 1f) return;
+
+        // Mathf.Min(1f, …) ⇒ CHỈ ĐƯỢC CO, không bao giờ phóng to. Bảng vẽ ở 1880×840 cho
+        // màn 16:9 là cố ý; kéo to ra trên màn rộng là làm vỡ art.
+        float heSo = Mathf.Min(1f, Mathf.Min(rongKhung / rongDauChan, caoKhung / caoDauChan));
+        rtBang.localScale = _scaleGocBang * heSo;
+
+        // ── CĂN GIỮA THEO HÌNH, KHÔNG THEO RECT ───────────────────────────────────
+        // Bảng căn giữa theo RECT, nhưng phần NHÌN THẤY lệch sang phải/lên trên vì Btn_Close
+        // thò ra khỏi hai mép đó mà hai mép kia không thò gì. Căn theo hình mới bảo đảm nút
+        // đóng không bao giờ ra ngoài màn.
+        Vector2 tamCanvas    = rtCanvas.rect.center;
+        Vector3 pivotHienTai = rtCanvas.InverseTransformPoint(rtBang.position);
+
+        float dichX = (tamCanvas.x - tam.x * rx * heSo) - pivotHienTai.x;
+        float dichY = (tamCanvas.y - tam.y * ry * heSo) - pivotHienTai.y;
+
+        rtBang.anchoredPosition = _viTriGocBang + new Vector2(dichX / kx, dichY / ky);
     }
 }

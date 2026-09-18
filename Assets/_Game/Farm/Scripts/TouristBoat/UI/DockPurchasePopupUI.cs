@@ -93,6 +93,15 @@ public class DockPurchasePopupUI : MonoBehaviour
 
     private int       _dockIndex = -1;
     private bool      _dangMo;
+
+    /// <summary>
+    /// F5: cờ "đang giữ khoá input". Trước đây file này có 1 RegisterPopupOpen() nhưng
+    /// tới HAI RegisterPopupClose() (TraTrangThaiVePhongThu + cuối DongAnimRoutine) chạy
+    /// độc lập nhau → có đường trừ popupLockCount hai lần, ăn mất khoá của popup khác
+    /// đang mở. Giờ mọi lối vào/ra đều đi qua Acquire/ReleasePopupInputBlock() và cờ này
+    /// bảo đảm cộng/trừ đúng một lần — đúng pattern ShopManager đang dùng.
+    /// </summary>
+    private bool      _inputLockHeld;
     private bool      _subscribed;
     private Coroutine _animRoutine;
     private float     _nhipKiemTraBep; // đếm ngược tới lần kiểm tra scene bếp kế
@@ -146,9 +155,13 @@ public class DockPurchasePopupUI : MonoBehaviour
     /// </summary>
     private void TraTrangThaiVePhongThu()
     {
+        // F5: nhả khoá VÔ ĐIỀU KIỆN — không phụ thuộc _dangMo nữa. Cờ _inputLockHeld
+        // bên trong ReleasePopupInputBlock() đã chặn trừ thừa, nên kể cả khi _dangMo bị
+        // một đường khác hạ trước thì khoá vẫn được trả đúng một lần.
+        ReleasePopupInputBlock();
+
         if (_dangMo)
         {
-            FarmInputLock.RegisterPopupClose();
             _dangMo    = false;
             _dockIndex = -1;
         }
@@ -207,8 +220,7 @@ public class DockPurchasePopupUI : MonoBehaviour
         if (!_dangMo)
         {
             _dangMo = true;
-            FarmInputLock.RegisterPopupOpen();
-            FarmInputLock.SetPopupRaycastBlock(popupRoot, true);
+            AcquirePopupInputBlock();
             popupRoot.SetActive(true);
 
             if (_animRoutine != null) StopCoroutine(_animRoutine);
@@ -216,6 +228,31 @@ public class DockPurchasePopupUI : MonoBehaviour
         }
 
         DangKyLive();
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
+    }
+
+    // ── F5: cặp khoá input duy nhất của popup này ───────────────────────────
+    private void AcquirePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(popupRoot, true);
+
+        if (!_inputLockHeld)
+        {
+            FarmInputLock.RegisterPopupOpen();
+            _inputLockHeld = true;
+        }
+    }
+
+    private void ReleasePopupInputBlock()
+    {
+        FarmInputLock.SetPopupRaycastBlock(popupRoot, false);
+
+        if (_inputLockHeld)
+        {
+            FarmInputLock.RegisterPopupClose();
+            _inputLockHeld = false;
+        }
     }
 
     /// <summary>Đóng popup (nút X, hoặc sau khi mua thành công).</summary>
@@ -408,7 +445,7 @@ public class DockPurchasePopupUI : MonoBehaviour
         if (cardRect != null)     cardRect.localScale = Vector3.one;
         if (contentGroup != null) contentGroup.alpha = 1f;
 
-        FarmInputLock.RegisterPopupClose(); // tự chặn tap xuyên xuống world frame này
+        ReleasePopupInputBlock(); // tự chặn tap xuyên xuống world frame này
         _dangMo      = false;
         _dockIndex   = -1;
         _animRoutine = null;

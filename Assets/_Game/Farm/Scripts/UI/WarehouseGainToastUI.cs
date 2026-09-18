@@ -193,7 +193,7 @@ public class WarehouseGainToastUI : MonoBehaviour
         _currentDisplayUsed = used;
         if (_txtCount != null)
         {
-            _txtCount.text  = $"Kho: {used}/{cap}";
+            _txtCount.text  = Loc.TF("Kho: {0}/{1}", used, cap);
             _txtCount.color = used >= cap ? new Color(0.96f, 0.13f, 0.18f) : Color.white;
         }
 

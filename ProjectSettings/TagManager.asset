@@ -44,6 +44,12 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Water
+    uniqueID: 3124881317
+    locked: 0
+  - name: CongTrinh
+    uniqueID: 1669604809
+    locked: 0
   - name: Objects
     uniqueID: 1471039481
     locked: 0

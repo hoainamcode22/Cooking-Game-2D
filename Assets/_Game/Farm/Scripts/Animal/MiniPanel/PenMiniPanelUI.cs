@@ -527,7 +527,7 @@ public class PenMiniPanelUI : MonoBehaviour
         int need = FoodNeededFor(foodItemId);
         if (!FarmInventoryManager.Instance.HasItem(foodItemId, need))
         {
-            FarmUIManager.Instance?.ShowHint($"Cần {need} bao thức ăn cho một lượt nuôi. Hãy xay tại Máy Xay Thức Ăn!");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Cần {0} bao thức ăn cho một lượt nuôi. Hãy xay tại Máy Xay Thức Ăn!", need));
             return false;
         }
 
@@ -580,7 +580,7 @@ public class PenMiniPanelUI : MonoBehaviour
             if (!fit)
             {
                 FarmUIManager.Instance?.ShowHint(
-                    $"Kho đầy ({inv.UsedSlots}/{inv.SlotCapacity} slot) — bán bớt hoặc nâng cấp kho rồi thu hoạch.");
+                    Loc.TF("Kho đầy ({0}/{1} slot) — bán bớt hoặc nâng cấp kho rồi thu hoạch.", inv.UsedSlots, inv.SlotCapacity));
                 return false;
             }
         }
@@ -632,7 +632,7 @@ public class PenMiniPanelUI : MonoBehaviour
         int gemCost = SpeedUpGemCost;
         if (FarmEconomyManager.Instance.Gems < gemCost)
         {
-            FarmUIManager.Instance?.ShowHint($"Cần {gemCost} kim cương để hoàn tất ngay.");
+            FarmUIManager.Instance?.ShowHint(Loc.TF("Cần {0} kim cương để hoàn tất ngay.", gemCost));
             return false;
         }
         if (!FarmEconomyManager.Instance.SpendGems(gemCost)) return false;

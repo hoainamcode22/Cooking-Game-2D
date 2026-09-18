@@ -30,6 +30,13 @@ public class MapBoundary : MonoBehaviour
     private CameraController cameraController; // Tham chiếu đến CameraController trên Main Camera
     private Camera            mainCam;
 
+    // ── [PERF P1] Bo qua LateUpdate khi camera KHONG nhuc nhich ──────────────
+    //  LateUpdate cu chay 4 phep so sanh + (khi trung) dung Vector4 moi frame, ke ca luc camera
+    //  dung yen (phan lon thoi gian choi). Nay nho lai vi tri + orthographicSize cua frame truoc;
+    //  giong het thi return ngay — 0 cong viec.
+    private Vector3 _viTriCamTruoc = new Vector3(float.NaN, float.NaN, float.NaN);
+    private float   _orthoTruoc    = float.NaN;
+
     // ────────────────────────────────────────────────────────────────────
 
     private void Awake()
@@ -76,31 +83,56 @@ public class MapBoundary : MonoBehaviour
         if (mainCam == null) return;
 
         Vector3 camPos = mainCam.transform.position;
+        float   ortho  = mainCam.orthographicSize;
+
+        // [PERF P1] Camera y nguyen so voi frame truoc => khong the vuot nguong moi => thoat luon.
+        if (camPos == _viTriCamTruoc && ortho == _orthoTruoc) return;
+
+        _viTriCamTruoc = camPos;
+        _orthoTruoc    = ortho;
+
         bool    changed = false;
 
+        // [FIX QA] Truoc day moi mep chi no THEM MOT LAN moi khung hinh, va vong lap dua vao
+        // viec khung hinh sau camera lai lech di de no tiep. Cong them cua thoat nhanh
+        // "camera y nguyen" o tren thi mot cu nhay xa (teleport / SetPosition) chi no duoc
+        // DUNG MOT LAN roi thoat vinh vien => bien mai khong bao gio phu toi camera.
+        // Doi sang while + tran lap: hoi tu ngay trong khung hinh nay, khong phu thuoc
+        // khung hinh sau. Tran LAP_TOI_DA chan treo neu expandAmount <= 0.
+        const int LAP_TOI_DA = 64;
+        int lap;
+
         // Kiểm tra mép trái
-        if (camPos.x - currentMinX < expandThreshold)
+        lap = 0;
+        while (camPos.x - currentMinX < expandThreshold && lap++ < LAP_TOI_DA)
         {
             currentMinX -= expandAmount;
             changed = true;
+            if (expandAmount <= 0f) break;
         }
         // Kiểm tra mép phải
-        if (currentMaxX - camPos.x < expandThreshold)
+        lap = 0;
+        while (currentMaxX - camPos.x < expandThreshold && lap++ < LAP_TOI_DA)
         {
             currentMaxX += expandAmount;
             changed = true;
+            if (expandAmount <= 0f) break;
         }
         // Kiểm tra mép dưới
-        if (camPos.y - currentMinY < expandThreshold)
+        lap = 0;
+        while (camPos.y - currentMinY < expandThreshold && lap++ < LAP_TOI_DA)
         {
             currentMinY -= expandAmount;
             changed = true;
+            if (expandAmount <= 0f) break;
         }
         // Kiểm tra mép trên
-        if (currentMaxY - camPos.y < expandThreshold)
+        lap = 0;
+        while (currentMaxY - camPos.y < expandThreshold && lap++ < LAP_TOI_DA)
         {
             currentMaxY += expandAmount;
             changed = true;
+            if (expandAmount <= 0f) break;
         }
 
         // Chỉ gọi SetBounds khi có thay đổi thực sự

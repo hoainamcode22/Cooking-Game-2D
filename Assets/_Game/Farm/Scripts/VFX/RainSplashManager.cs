@@ -190,10 +190,12 @@ public class RainSplashManager : MonoBehaviour
     private readonly List<GameObject> _splashPool = new List<GameObject>();
     private int _poolIndex = 0;
     private const int MaxPoolCount = 24;
+    private Camera _cachedCam;
 
     private void SinhMotHat()
     {
-        Camera cam = Camera.main;
+        if (_cachedCam == null) _cachedCam = Camera.main;
+        Camera cam = _cachedCam;
         Vector3 goc = cam != null ? cam.transform.position : transform.position;
 
         // Vung sinh: tu do theo khung nhin THAT, neu khong thi dung so cung trong Inspector.

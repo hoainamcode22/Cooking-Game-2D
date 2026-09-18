@@ -435,6 +435,9 @@ public class BoatAnnouncePopupUI : MonoBehaviour
             bodyText.maxVisibleCharacters = KyTuHienHet;
         }
 
+        // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
+        Loc.RequestRescan();
+
         if (confirmButton != null)
         {
             confirmButton.gameObject.SetActive(true);

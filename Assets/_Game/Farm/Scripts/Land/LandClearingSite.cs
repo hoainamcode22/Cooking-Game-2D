@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;   // F6: NumberStyles / CultureInfo.InvariantCulture cho TryParse
 using UnityEngine;
 
 /// <summary>
@@ -98,6 +99,23 @@ public class LandClearingSite : MonoBehaviour
     private static long NowUnix() => DateTimeOffset.UtcNow.ToUnixTimeSeconds();
     private static string KeyOf(string id) => PrefsPrefix + id;
 
+    /// <summary>
+    /// F6: doc moc thoi gian ket thuc tu PlayerPrefs MOT CACH AN TOAN.
+    /// Truoc day dung long.Parse truc tiep: save hong / bi cat / ghi boi ban cu / may
+    /// dat locale khac (dau phan cach khac) deu nem FormatException lam sap luon ca
+    /// luong mo dat. Moi site anh em trong project da dung TryParse — day la cho sot.
+    /// Luon doc bang InvariantCulture vi luc ghi cung la ToString() mac dinh cua long.
+    /// </summary>
+    private static long ReadFinishUnix(string regionId)
+    {
+        string raw = PlayerPrefs.GetString(KeyOf(regionId), "0");
+        if (long.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out long fin))
+            return fin;
+
+        Debug.LogWarning($"[LandClearing] Moc thoi gian cua khu '{regionId}' hong ('{raw}') — coi nhu da xong (0).");
+        return 0L;
+    }
+
     // ─────────────────────────────────────────────────────────────────────
     /// <summary>Co cong truong dang chay cho khu nay khong (doc tu save).</summary>
     public static bool HasPending(string regionId)
@@ -107,7 +125,7 @@ public class LandClearingSite : MonoBehaviour
     public static int PendingRemaining(string regionId)
     {
         if (!HasPending(regionId)) return 0;
-        long fin = long.Parse(PlayerPrefs.GetString(KeyOf(regionId), "0"));
+        long fin = ReadFinishUnix(regionId);
         return Mathf.Max(0, (int)(fin - NowUnix()));
     }
 
@@ -134,7 +152,7 @@ public class LandClearingSite : MonoBehaviour
 
         if (HasPending(region.regionId))
         {
-            site.finishUnix = long.Parse(PlayerPrefs.GetString(KeyOf(region.regionId), "0"));
+            site.finishUnix = ReadFinishUnix(region.regionId);
         }
         else
         {

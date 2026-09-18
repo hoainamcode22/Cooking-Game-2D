@@ -49,15 +49,46 @@ public class GentleSway : MonoBehaviour
     [Tooltip("Lệch pha tay theo VÒNG (0..1). Chỉ dùng khi tắt 'Auto Phase'.")]
     [SerializeField] private float manualPhase = 0f;
 
+    [Header("◆ HIỆU NĂNG (F4.9 — 2026-09-17)")]
+
+    [Tooltip("BẬT = bỏ qua Update khi Renderer của vật KHÔNG nằm trong khung hình.\n" +
+             "Đo được: 34 instance GentleSway + 26 instance sway cây trồng ⇒ ~60 lượt Update/frame " +
+             "ghi transform, phần lớn cho vật đang ở ngoài màn hình. Vật khuất thì đứng im ở góc " +
+             "nghiêng hiện tại — không ai thấy, và khi hiện lại nó tính theo Time.time nên KHÔNG NHẢY.\n" +
+             "TẮT nếu vật không có Renderer nào (script sẽ tự phát hiện và bỏ qua cổng này).")]
+    [SerializeField] private bool chiChayKhiThayDuoc = true;
+
+    [Tooltip("Chạy 1 lần mỗi N frame. 1 = mỗi frame (như cũ). 2 = 30Hz ở 60fps — mắt không đọc ra " +
+             "vì đây là dao động sin chậm 3s/nhịp. Mỗi instance có offset riêng nên chúng KHÔNG " +
+             "cùng tick vào một frame.")]
+    [Range(1, 4)]
+    [SerializeField] private int buocFrame = 2;
+
     private Vector3    _basePos;
     private Quaternion _baseRot;
     private float      _phase01;
+
+    // ── [PERF F4.9] ──────────────────────────────────────────────────────────────
+    // `isVisible` là một bool do hệ render ghi, đọc rất rẻ. Cache Renderer 1 lần thay vì
+    // GetComponentInChildren mỗi frame. NULL = vật không có Renderer nào ⇒ không có bounds
+    // để cull ⇒ bỏ hẳn cổng hiển thị (giống cách AnimatorCullingOptimizer bỏ qua Animator
+    // không Renderer), chứ không giả vờ là có tác dụng.
+    private Renderer _renderer;
+    private int      _offsetFrame;   // 0..buocFrame-1, rải các instance ra nhiều frame khác nhau.
 
     private void OnEnable()
     {
         _basePos = transform.localPosition;
         _baseRot = transform.localRotation;
         _phase01 = autoPhase ? FxEase.StablePhase01(transform) : Mathf.Repeat(manualPhase, 1f);
+
+        // [PERF F4.9] cache 1 lần. `true` = tính cả Renderer đang tắt, vì nó có thể được bật lên sau.
+        if (_renderer == null) _renderer = GetComponentInChildren<Renderer>(true);
+
+        // Rải instance ra các frame khác nhau: dùng InstanceID (ổn định trong 1 phiên chạy)
+        // thay vì Random để hai lần Play cho kết quả giống nhau.
+        int b = Mathf.Clamp(buocFrame, 1, 4);
+        _offsetFrame = (int)((uint)GetInstanceID() % (uint)b);
     }
 
     private void OnDisable()
@@ -72,6 +103,17 @@ public class GentleSway : MonoBehaviour
     // (Đúng cách EnvironmentSway đang làm.)
     private void Update()
     {
+        // [PERF F4.9] ① Ngoài khung hình ⇒ không ai nhìn thấy, bỏ hẳn lượt ghi transform.
+        // Renderer == null ⇒ không có bounds ⇒ Unity coi luôn hiện ⇒ cổng này vô nghĩa, bỏ qua.
+        if (chiChayKhiThayDuoc && _renderer != null && !_renderer.isVisible)
+            return;
+
+        // [PERF F4.9] ② Giảm nhịp. Phép sway là HÀM THUẦN của Time.time (không cộng dồn),
+        // nên bỏ frame KHÔNG làm lệch pha hay trôi vị trí — chỉ thưa mẫu ra.
+        int buoc = Mathf.Clamp(buocFrame, 1, 4);
+        if (buoc > 1 && (Time.frameCount % buoc) != _offsetFrame)
+            return;
+
         float p    = Mathf.Max(0.05f, period);
         float wave = Mathf.Sin((Time.time / p + _phase01) * Mathf.PI * 2f);
 
@@ -88,5 +130,6 @@ public class GentleSway : MonoBehaviour
     {
         period      = Mathf.Max(0.05f, period);
         swayDegrees = Mathf.Clamp(swayDegrees, 0f, 45f);
+        buocFrame   = Mathf.Clamp(buocFrame, 1, 4);
     }
 }

@@ -67,6 +67,23 @@ public class LocalizedText : MonoBehaviour
         if (boQuaVìCoThamSo) return;
         if (_txt == null || string.IsNullOrEmpty(_khoaGoc)) return;
         _txt.text = LocalizationManager.T(_khoaGoc);
+        VuaKhung(lang);
+    }
+
+    /// <summary>
+    /// [MOI 2026-09-16] Chu tieng Anh dai hon tieng Viet ⇒ tran ra ngoai khung đã đo theo tiếng Việt.
+    /// Nhờ <see cref="LocRuntimeInterceptor"/> đo lại nhãn này và thu nhỏ cỡ chữ nếu cần
+    /// (chỉ nhỏ lại, không bao giờ to lên). Về tiếng Việt thì trả lại cỡ chữ NGUYÊN BẢN.
+    /// Bọc try/catch: hỏng phần làm đẹp thì cũng không được làm hỏng phần đổi ngôn ngữ.
+    /// </summary>
+    private void VuaKhung(string lang)
+    {
+        try
+        {
+            if (lang == LocalizationManager.EN) LocRuntimeInterceptor.ApVuaKhung(_txt);
+            else                                LocRuntimeInterceptor.HoanVuaKhung(_txt);
+        }
+        catch { /* khong bao gio de buoc lam dep nay lam vo UI */ }
     }
 
     /// <summary>
@@ -78,6 +95,8 @@ public class LocalizedText : MonoBehaviour
         _khoaGoc = cauTiengVietMoi;
         _daChup  = true;
         if (_txt == null) _txt = GetComponent<TMP_Text>();
-        if (_txt != null) _txt.text = LocalizationManager.T(_khoaGoc);
+        if (_txt == null) return;
+        _txt.text = LocalizationManager.T(_khoaGoc);
+        VuaKhung(LocalizationManager.Current);
     }
 }

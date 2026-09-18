@@ -10,6 +10,18 @@ using UnityEngine.UI;
 /// </summary>
 public class AvatarProfilePopupUI : MonoBehaviour
 {
+        // [VONG 12] KHONG dung new CultureInfo("vi-VN"): build IL2CPP bat Invariant Globalization
+        // se nem CultureNotFoundException => chet popup Profile. Dung NumberFormatInfo tu khai bao,
+        // giong TownshipHUDController.cs / BoatDockSlot.cs. Giu DUNG output cu: vi-VN nhom bang dau ".",
+        private static readonly System.Globalization.NumberFormatInfo DinhDangSoProfile =
+            // nen .Replace(",", " ") cu khong bao gio khop => bo di la dung.
+            new System.Globalization.NumberFormatInfo
+            {
+                NumberGroupSeparator   = ".",
+                NumberDecimalSeparator = ",",
+                NumberGroupSizes       = new[] { 3 },
+            };
+
     public static AvatarProfilePopupUI Instance { get; private set; }
     public bool IsOpen => popupRoot != null && popupRoot.activeSelf;
 
@@ -207,6 +219,10 @@ public class AvatarProfilePopupUI : MonoBehaviour
         RefreshProgress();
         RefreshStats();
         RefreshAvatarSelection();
+
+        // [Localization] Popup nay dung chu bang code sau khi scene da tai xong, nen luot quet
+        // luc sceneLoaded khong thay. Xin quet lai ngay de khong loe tieng Viet mot nhip.
+        Loc.RequestRescan();
     }
 
     private void LoadAllAvatars()
@@ -269,8 +285,8 @@ public class AvatarProfilePopupUI : MonoBehaviour
             expRequired = PlayerProgressManager.Instance.RequiredExpForLevel(level);
         }
 
-        if (txtLevel != null) txtLevel.text = $"Cấp độ {level}";
-        if (txtLevelRange != null) txtLevelRange.text = $"Cấp 1 – {PlayerProgressManager.CapToiDa}";
+        if (txtLevel != null) txtLevel.text = Loc.TF("Cấp độ {0}", level);
+        if (txtLevelRange != null) txtLevelRange.text = Loc.TF("Cấp 1 – {0}", PlayerProgressManager.CapToiDa);
         if (txtLevelBadge != null) txtLevelBadge.text = level.ToString();
 
         if (expFill != null)
@@ -301,7 +317,7 @@ public class AvatarProfilePopupUI : MonoBehaviour
         }
         if (txtWarehouseLevel != null) 
         {
-            txtWarehouseLevel.text = $"{whLv} ô";
+            txtWarehouseLevel.text = Loc.TF("{0} ô", whLv);
             txtWarehouseLevel.color = new Color32(75, 40, 15, 255);
         }
 
@@ -320,7 +336,7 @@ public class AvatarProfilePopupUI : MonoBehaviour
         if (cookCount <= 0) cookCount = PlayerPrefs.GetInt("COOKING_TOTAL_DISHES_MADE", 0);
         if (txtCookingScore != null) 
         {
-            txtCookingScore.text = $"{cookCount} món";
+            txtCookingScore.text = Loc.TF("{0} món", cookCount);
             txtCookingScore.color = new Color32(75, 40, 15, 255);
         }
 
@@ -336,7 +352,7 @@ public class AvatarProfilePopupUI : MonoBehaviour
         }
         if (txtGoldEarned != null) 
         {
-            txtGoldEarned.text = gold.ToString("N0", new System.Globalization.CultureInfo("vi-VN")).Replace(",", " ");
+            txtGoldEarned.text = gold.ToString("N0", DinhDangSoProfile);
             txtGoldEarned.color = new Color32(75, 40, 15, 255);
         }
 
@@ -345,7 +361,7 @@ public class AvatarProfilePopupUI : MonoBehaviour
         if (ach <= 0) ach = PlayerPrefs.GetInt("COMPLETED_MISSION_COUNT", 0);
         if (txtAchievementCount != null) 
         {
-            txtAchievementCount.text = $"{ach} đã xong";
+            txtAchievementCount.text = Loc.TF("{0} đã xong", ach);
             txtAchievementCount.color = new Color32(75, 40, 15, 255);
         }
 
@@ -360,7 +376,7 @@ public class AvatarProfilePopupUI : MonoBehaviour
         LuuGopPrefs.Hen();
         if (Instance != null && Instance.txtAchievementCount != null)
         {
-            Instance.txtAchievementCount.text = $"{cur} đã xong";
+            Instance.txtAchievementCount.text = Loc.TF("{0} đã xong", cur);
         }
     }
 
@@ -682,15 +698,15 @@ public class AvatarProfilePopupUI : MonoBehaviour
 
     private static void CreateFreshHierarchy(AvatarProfilePopupUI ui, Transform root)
     {
-        // 1. Khung ván gỗ ngoài (1000 x 640) — [WP-D1] UIStandardSprites.FrameWood, fallback VanGo* nếu null
-        RectTransform board = CreateRect(root, "Board_Wooden", new Vector2(1000f, 640f), Vector2.zero);
-        RectTransform boardFill = CreateRect(board, "Fill", new Vector2(986f, 626f), Vector2.zero);
-        RectTransform boardGrad = CreateRect(board, "Gradient", new Vector2(986f, 626f), Vector2.zero);
+        // 1. Khung ván gỗ ngoài (1080 x 680) — [WP-D1] UIStandardSprites.FrameWood, fallback VanGo* nếu null
+        RectTransform board = CreateRect(root, "Board_Wooden", new Vector2(1080f, 680f), Vector2.zero);
+        RectTransform boardFill = CreateRect(board, "Fill", new Vector2(1066f, 666f), Vector2.zero);
+        RectTransform boardGrad = CreateRect(board, "Gradient", new Vector2(1066f, 666f), Vector2.zero);
         SetFrameOrFallback(board, boardFill, boardGrad, UIStandardSprites.FrameWood,
             TaskPopupDesign.VanGoVien, TaskPopupDesign.VanGoDuoi, TaskPopupDesign.VanGoTren, 38f);
 
         // 2. Ruy băng tiêu đề "HỒ SƠ" (400 x 96) — [WP-D1] UIStandardSprites.Ribbon
-        RectTransform ribbon = CreateRect(board, "Ribbon_Header", new Vector2(400f, 96f), new Vector2(0f, 320f));
+        RectTransform ribbon = CreateRect(board, "Ribbon_Header", new Vector2(400f, 96f), new Vector2(0f, 340f));
         RectTransform ribbonFill = CreateRect(ribbon, "Fill", new Vector2(390f, 86f), Vector2.zero);
         RectTransform ribbonGrad = CreateRect(ribbon, "Gradient", new Vector2(390f, 86f), Vector2.zero);
         SetFrameOrFallback(ribbon, ribbonFill, ribbonGrad, UIStandardSprites.Ribbon,
@@ -699,10 +715,9 @@ public class AvatarProfilePopupUI : MonoBehaviour
         TMP_Text titleTxt = CreateText(ribbon, "Txt_Title", "HỒ SƠ", 42, TaskPopupDesign.ChuTieuDe, TextAlignmentOptions.Center, Vector2.zero, new Vector2(380f, 70f), FontStyles.Bold);
         AddShadow(titleTxt.gameObject, TaskPopupDesign.VienChuTieuDe, new Vector2(2f, -3f));
 
-        // 3. Nút đóng [X] — [WP-D1] UIStandardSprites.Close (Sliced 64x64, chuẩn đồng bộ toàn game),
-        //    fallback vẽ tròn code (SkinKit.HinhTron) nếu sprite null. Giữ TMP "X" trên cùng.
+        // 3. Nút đóng [X] — nằm ngay góc trên-phải khung gỗ
         Vector2 closeSize = UIStandardSprites.CloseSize;
-        RectTransform closeRt = CreateRect(board, "Btn_Close", closeSize, new Vector2(470f, 290f));
+        RectTransform closeRt = CreateRect(board, "Btn_Close", closeSize, new Vector2(510f, 310f));
         RectTransform closeInner = CreateRect(closeRt, "Inner", closeSize - new Vector2(8f, 8f), Vector2.zero);
         RectTransform closeGloss = CreateRect(closeInner, "Gloss", new Vector2(52f, 26f), new Vector2(0f, 13f));
 
@@ -728,20 +743,20 @@ public class AvatarProfilePopupUI : MonoBehaviour
         AddShadow(xTxt.gameObject, new Color32(80, 10, 15, 220), new Vector2(1f, -2f));
         Button btnClose = closeRt.gameObject.AddComponent<Button>();
 
-        // 4. Tấm giấy kem bên trong (928 x 534) — [WP-D1] UIStandardSprites.PanelPaper
-        RectTransform parchment = CreateRect(board, "Panel_Parchment", new Vector2(928f, 534f), new Vector2(0f, -24f));
-        RectTransform paperFill = CreateRect(parchment, "Fill", new Vector2(920f, 526f), Vector2.zero);
-        RectTransform paperGrad = CreateRect(parchment, "Gradient", new Vector2(920f, 526f), Vector2.zero);
+        // 4. Tấm giấy kem bên trong (1008 x 574) — [WP-D1] UIStandardSprites.PanelPaper
+        RectTransform parchment = CreateRect(board, "Panel_Parchment", new Vector2(1008f, 574f), new Vector2(0f, -20f));
+        RectTransform paperFill = CreateRect(parchment, "Fill", new Vector2(1000f, 566f), Vector2.zero);
+        RectTransform paperGrad = CreateRect(parchment, "Gradient", new Vector2(1000f, 566f), Vector2.zero);
         SetFrameOrFallback(parchment, paperFill, paperGrad, UIStandardSprites.PanelPaper,
             TaskPopupDesign.GiayVien, TaskPopupDesign.GiayDuoi, TaskPopupDesign.GiayTren, 22f);
 
         // ═════════════════════════════════════════════════════════════════════
-        //  CỘT TRÁI: AVATAR & LƯỚI CHỌN (X: -290, Rộng: 300)
+        //  CỘT TRÁI: AVATAR & LƯỚI CHỌN (X: -320, Rộng: 310)
         // ═════════════════════════════════════════════════════════════════════
-        RectTransform leftCol = CreateRect(parchment, "Col_Left", new Vector2(300f, 490f), new Vector2(-290f, 0f));
+        RectTransform leftCol = CreateRect(parchment, "Col_Left", new Vector2(310f, 520f), new Vector2(-320f, 0f));
 
         // Khung avatar chính tròn (210 x 210) — [WP-D1] UIStandardSprites.AvatarBase (hud_avatar_base)
-        RectTransform avFrame = CreateRect(leftCol, "Avatar_Main_Frame", new Vector2(210f, 210f), new Vector2(0f, 120f));
+        RectTransform avFrame = CreateRect(leftCol, "Avatar_Main_Frame", new Vector2(210f, 210f), new Vector2(0f, 130f));
         Sprite avatarBaseSpr = UIStandardSprites.AvatarBase;
         if (avatarBaseSpr != null) AddImage(avFrame.gameObject, Color.white, avatarBaseSpr, true);
         else { LogSpriteFallbackOnce(); AddImage(avFrame.gameObject, TaskPopupDesign.KhungIconVien, BoGoc(105f), true); }
@@ -762,30 +777,22 @@ public class AvatarProfilePopupUI : MonoBehaviour
         CreateText(badgeRt, "Txt_Cap", "CẤP", 12, new Color32(122, 67, 16, 255), TextAlignmentOptions.Center, new Vector2(0f, 13f), new Vector2(50f, 20f), FontStyles.Bold);
         TMP_Text txtBadgeLevel = CreateText(badgeRt, "Txt_BadgeLevel", "7", 26, new Color32(122, 67, 16, 255), TextAlignmentOptions.Center, new Vector2(0f, -8f), new Vector2(50f, 32f), FontStyles.Bold);
 
-        // Huy hiệu Bút chì góc dưới-phải (48 x 48)
-        RectTransform editRt = CreateRect(avFrame, "Badge_Edit", new Vector2(48f, 48f), new Vector2(75f, -75f));
-        AddImage(editRt.gameObject, new Color32(63, 138, 18, 255), BoGoc(24f), true);
-        RectTransform editFill = CreateRect(editRt, "Fill", new Vector2(42f, 42f), Vector2.zero);
-        AddImage(editFill.gameObject, new Color32(97, 181, 39, 255), BoGoc(21f), true);
-        PhuGradient(editRt, "Gradient", new Color32(165, 224, 94, 255), Vector2.zero, new Vector2(42f, 42f), 21f);
-        CreateText(editRt, "Txt_Icon", "SỬA", 12, Color.white, TextAlignmentOptions.Center, new Vector2(0f, 1f), new Vector2(40f, 40f), FontStyles.Bold);
-
-        // Khung danh sách chọn avatar bên dưới (Rộng 300, Cao 175)
-        RectTransform choiceBox = CreateRect(leftCol, "Box_AvatarChoices", new Vector2(300f, 175f), new Vector2(0f, -145f));
+        // Khung danh sách chọn avatar bên dưới (Rộng 310, Cao 185)
+        RectTransform choiceBox = CreateRect(leftCol, "Box_AvatarChoices", new Vector2(310f, 185f), new Vector2(0f, -145f));
         AddImage(choiceBox.gameObject, new Color32(201, 154, 92, 120), BoGoc(16f), true);
-        RectTransform choiceInner = CreateRect(choiceBox, "Inner", new Vector2(294f, 169f), Vector2.zero);
+        RectTransform choiceInner = CreateRect(choiceBox, "Inner", new Vector2(304f, 179f), Vector2.zero);
         AddImage(choiceInner.gameObject, new Color32(243, 226, 187, 140), BoGoc(14f), true);
 
-        CreateText(choiceBox, "Txt_Title", "Chọn avatar", 16, new Color32(0x65, 0x41, 0x29, 255), TextAlignmentOptions.Center, new Vector2(0f, 68f), new Vector2(280f, 24f), FontStyles.Bold);
+        CreateText(choiceBox, "Txt_Title", "Chọn avatar", 16, new Color32(0x65, 0x41, 0x29, 255), TextAlignmentOptions.Center, new Vector2(0f, 72f), new Vector2(290f, 24f), FontStyles.Bold);
 
-        RectTransform grid = CreateRect(choiceBox, "Grid_AvatarChoices", new Vector2(280f, 125f), new Vector2(0f, -12f));
+        RectTransform grid = CreateRect(choiceBox, "Grid_AvatarChoices", new Vector2(290f, 130f), new Vector2(0f, -12f));
         Button[] btns = new Button[8];
         Image[] btnImgs = new Image[8];
         GameObject[] hlObjs = new GameObject[8];
         Image[] slotBgImgs = new Image[8]; // [WP-D1] để RefreshAvatarSelection đổi SlotNormal/SlotSelected
 
-        float[] posX = { -99f, -33f, 33f, 99f };
-        float[] posY = { 28f, -32f };
+        float[] posX = { -105f, -35f, 35f, 105f };
+        float[] posY = { 30f, -32f };
 
         Sprite slotNormalSpr = UIStandardSprites.SlotNormal;
 
@@ -795,12 +802,12 @@ public class AvatarProfilePopupUI : MonoBehaviour
             int row = i / 4;
             Vector2 slotPos = new Vector2(posX[col], posY[row]);
 
-            RectTransform slot = CreateRect(grid, $"Slot_{i}", new Vector2(56f, 56f), slotPos);
+            RectTransform slot = CreateRect(grid, $"Slot_{i}", new Vector2(58f, 58f), slotPos);
             AddImage(slot.gameObject, TaskPopupDesign.HangVien, BoGoc(28f), true);
 
             // [WP-D1] Nền ô chọn: UIStandardSprites.SlotNormal lúc dựng, RefreshAvatarSelection sẽ
             // đổi sang SlotSelected khi ô này đang được chọn (xem avatarSlotBgImages).
-            RectTransform slotBg = CreateRect(slot, "Bg", new Vector2(52f, 52f), Vector2.zero);
+            RectTransform slotBg = CreateRect(slot, "Bg", new Vector2(54f, 54f), Vector2.zero);
             Image slotBgImg;
             if (slotNormalSpr != null)
             {
@@ -813,24 +820,24 @@ public class AvatarProfilePopupUI : MonoBehaviour
             }
             slotBgImgs[i] = slotBgImg;
 
-            RectTransform iconRt = CreateRect(slotBg, "Img_Icon", new Vector2(48f, 48f), Vector2.zero);
+            RectTransform iconRt = CreateRect(slotBg, "Img_Icon", new Vector2(50f, 50f), Vector2.zero);
             Image ic = AddImage(iconRt.gameObject, Color.white, null, false);
             ic.preserveAspect = true;
             btnImgs[i] = ic;
 
             // Dấu tích chữ V màu xanh 3D khi được chọn (Selection Indicator) — Ring giữ nguyên làm lớp phụ
-            RectTransform selectGroup = CreateRect(slot, "Selection_Indicator", new Vector2(56f, 56f), Vector2.zero);
+            RectTransform selectGroup = CreateRect(slot, "Selection_Indicator", new Vector2(58f, 58f), Vector2.zero);
 
             // 1. Viền sáng xanh lá quanh ô avatar (Outline) — giữ code-drawn làm lớp phụ nổi bật thêm
-            RectTransform ring = CreateRect(selectGroup, "Ring", new Vector2(58f, 58f), Vector2.zero);
+            RectTransform ring = CreateRect(selectGroup, "Ring", new Vector2(60f, 60f), Vector2.zero);
             Image ringImg = AddImage(ring.gameObject, new Color32(76, 185, 30, 255), BoGoc(29f), true);
             ringImg.type = Image.Type.Sliced;
             ringImg.fillCenter = false; // Rỗng ruột để không che mặt avatar
 
             // 2. Huy hiệu tròn dấu tích — [WP-D1] UIStandardSprites.CheckBadge, fallback 2 lớp tròn + chữ V
-            RectTransform checkBadge = CreateRect(selectGroup, "Badge_Check", new Vector2(22f, 22f), new Vector2(17f, -17f));
-            RectTransform checkInner = CreateRect(checkBadge, "Inner", new Vector2(18f, 18f), Vector2.zero);
-            TMP_Text checkTxt = CreateText(checkBadge, "Txt_Check", "V", 13, Color.white, TextAlignmentOptions.Center, new Vector2(0f, 1f), new Vector2(18f, 18f), FontStyles.Bold);
+            RectTransform checkBadge = CreateRect(selectGroup, "Badge_Check", new Vector2(24f, 24f), new Vector2(18f, -18f));
+            RectTransform checkInner = CreateRect(checkBadge, "Inner", new Vector2(20f, 20f), Vector2.zero);
+            TMP_Text checkTxt = CreateText(checkBadge, "Txt_Check", "V", 14, Color.white, TextAlignmentOptions.Center, new Vector2(0f, 1f), new Vector2(20f, 20f), FontStyles.Bold);
 
             Sprite checkBadgeSpr = UIStandardSprites.CheckBadge;
             if (checkBadgeSpr != null)
@@ -842,8 +849,8 @@ public class AvatarProfilePopupUI : MonoBehaviour
             else
             {
                 LogSpriteFallbackOnce();
-                AddImage(checkBadge.gameObject, new Color32(35, 105, 18, 255), BoGoc(11f), true);
-                AddImage(checkInner.gameObject, new Color32(76, 175, 30, 255), BoGoc(9f), true);
+                AddImage(checkBadge.gameObject, new Color32(35, 105, 18, 255), BoGoc(12f), true);
+                AddImage(checkInner.gameObject, new Color32(76, 175, 30, 255), BoGoc(10f), true);
                 AddShadow(checkTxt.gameObject, new Color32(20, 70, 10, 220), new Vector2(1f, -1f));
             }
 
@@ -854,70 +861,79 @@ public class AvatarProfilePopupUI : MonoBehaviour
         }
 
         // ═════════════════════════════════════════════════════════════════════
-        //  CỘT PHẢI: THÔNG TIN & THỐNG KÊ (X: 145, Rộng: 550)
+        //  CỘT PHẢI: THÔNG TIN & THỐNG KÊ (X: 165, Rộng: 610)
         // ═════════════════════════════════════════════════════════════════════
-        RectTransform rightCol = CreateRect(parchment, "Col_Right", new Vector2(550f, 490f), new Vector2(145f, 0f));
+        RectTransform rightCol = CreateRect(parchment, "Col_Right", new Vector2(610f, 520f), new Vector2(165f, 0f));
 
         // 1. Hộp Tên Nông Trại
-        CreateText(rightCol, "Lbl_FarmName", "Tên nông trại", 16, new Color32(138, 99, 55, 255), TextAlignmentOptions.Left, new Vector2(0f, 222f), new Vector2(550f, 24f), FontStyles.Bold);
+        CreateText(rightCol, "Lbl_FarmName", "Tên nông trại", 17, new Color32(138, 99, 55, 255), TextAlignmentOptions.Left, new Vector2(0f, 230f), new Vector2(610f, 24f), FontStyles.Bold);
 
         // [WP-D1] UIStandardSprites.RowDark (hàng lõm tối) — hàng nhập tên nông trại
-        RectTransform nameBox = CreateRect(rightCol, "Box_FarmName", new Vector2(550f, 54f), new Vector2(0f, 180f));
-        RectTransform nameFill = CreateRect(nameBox, "Fill", new Vector2(544f, 48f), Vector2.zero);
+        RectTransform nameBox = CreateRect(rightCol, "Box_FarmName", new Vector2(610f, 56f), new Vector2(0f, 185f));
+        RectTransform nameFill = CreateRect(nameBox, "Fill", new Vector2(604f, 50f), Vector2.zero);
         Sprite rowDarkSpr = UIStandardSprites.RowDark;
         SetFrameOrFallback(nameBox, nameFill, null, rowDarkSpr,
             new Color32(217, 180, 120, 255), new Color32(243, 226, 187, 255), default, 16f);
         if (rowDarkSpr != null)
         {
             // Khi dùng RowDark (nền tối) → lót PanelPaper (giấy kem) vào "Fill" để chữ nâu của ô nhập vẫn đọc được.
-            // Fill vẫn là cha của Input_FarmName nên KHÔNG được tắt/xoá node này.
             Sprite paperInsetSpr = UIStandardSprites.PanelPaper;
-            nameFill.sizeDelta = new Vector2(536f, 42f); // chừa ~7px viền tối lộ ra quanh giấy
+            nameFill.sizeDelta = new Vector2(596f, 44f); // chừa ~7px viền tối lộ ra quanh giấy
             if (paperInsetSpr != null) AddImage(nameFill.gameObject, Color.white, paperInsetSpr, true);
         }
 
-        TMP_InputField input = CreateInput(nameFill, "Input_FarmName", new Vector2(490f, 44f), new Vector2(-20f, 0f));
-        CreateText(nameBox, "Txt_Pencil", "SỬA", 14, new Color32(0x65, 0x41, 0x29, 255), TextAlignmentOptions.Center, new Vector2(240f, 0f), new Vector2(40f, 40f), FontStyles.Bold);
+        TMP_InputField input = CreateInput(nameFill, "Input_FarmName", new Vector2(530f, 44f), new Vector2(-25f, 0f));
+        
+        // Nút biểu tượng bút chì 3D thay cho chữ SỬA phẳng
+        RectTransform pencilRt = CreateRect(nameBox, "Btn_Pencil", new Vector2(36f, 36f), new Vector2(270f, 0f));
+        Sprite pencilSpr = UIStandardSprites.Load("Assets/Assetsgame/PopupArt_Custom/icon_pencil_edit.png");
+        if (pencilSpr != null)
+        {
+            Image pImg = AddImage(pencilRt.gameObject, Color.white, pencilSpr, false);
+            pImg.preserveAspect = true;
+            pImg.type = Image.Type.Simple;
+        }
+        else
+        {
+            CreateText(pencilRt, "Txt_Pencil", "✎", 20, new Color32(0x65, 0x41, 0x29, 255), TextAlignmentOptions.Center, Vector2.zero, new Vector2(36f, 36f), FontStyles.Bold);
+        }
 
         // 2. Cấp Độ & Thanh EXP
-        TMP_Text txtLvlTitle = CreateText(rightCol, "Txt_LevelTitle", "Cấp độ 7", 21, TaskPopupDesign.TenBinhThuong, TextAlignmentOptions.Left, new Vector2(-160f, 122f), new Vector2(220f, 28f), FontStyles.Bold);
-        TMP_Text txtLvlRange = CreateText(rightCol, "Txt_LevelRange", $"Cấp 1 – {PlayerProgressManager.CapToiDa}", 15, new Color32(0x65, 0x41, 0x29, 255), TextAlignmentOptions.Right, new Vector2(160f, 122f), new Vector2(220f, 28f), FontStyles.Bold);
+        TMP_Text txtLvlTitle = CreateText(rightCol, "Txt_LevelTitle", Loc.TF("Cấp độ {0}", 7), 22, TaskPopupDesign.TenBinhThuong, TextAlignmentOptions.Left, new Vector2(-180f, 128f), new Vector2(240f, 30f), FontStyles.Bold);
+        TMP_Text txtLvlRange = CreateText(rightCol, "Txt_LevelRange", Loc.TF("Cấp 1 – {0}", PlayerProgressManager.CapToiDa), 16, new Color32(0x65, 0x41, 0x29, 255), TextAlignmentOptions.Right, new Vector2(180f, 128f), new Vector2(240f, 30f), FontStyles.Bold);
 
         // [WP-D1] Track = UIStandardSprites.BarTrack, Fill = UIStandardSprites.BarFill (giữ cơ chế Filled+fillAmount)
-        RectTransform expBar = CreateRect(rightCol, "Bar_Exp", new Vector2(550f, 32f), new Vector2(0f, 92f));
+        RectTransform expBar = CreateRect(rightCol, "Bar_Exp", new Vector2(610f, 34f), new Vector2(0f, 96f));
         Sprite barTrackSpr = UIStandardSprites.BarTrack;
         if (barTrackSpr != null) AddImage(expBar.gameObject, Color.white, barTrackSpr, true);
         else { LogSpriteFallbackOnce(); AddImage(expBar.gameObject, TaskPopupDesign.TdMang, BoGoc(16f), true); }
 
-        RectTransform expInner = CreateRect(expBar, "Fill_Track", new Vector2(544f, 26f), Vector2.zero);
+        RectTransform expInner = CreateRect(expBar, "Fill_Track", new Vector2(604f, 28f), Vector2.zero);
 
-        RectTransform fillRt = CreateRect(expInner, "Img_ExpFill", new Vector2(544f, 26f), Vector2.zero);
+        RectTransform fillRt = CreateRect(expInner, "Img_ExpFill", new Vector2(604f, 28f), Vector2.zero);
         fillRt.anchorMin = Vector2.zero; fillRt.anchorMax = Vector2.one;
         fillRt.sizeDelta = Vector2.zero;
         Sprite barFillSpr = UIStandardSprites.BarFill;
         Image fillImg = barFillSpr != null
             ? AddImage(fillRt.gameObject, Color.white, barFillSpr, false)
             // Ruột thanh EXP fallback: Xanh dương biển (#1CA4FF) đồng bộ hoàn hảo với HUD ngoài
-            : AddImage(fillRt.gameObject, new Color32(28, 164, 255, 255), BoGoc(13f), false);
+            : AddImage(fillRt.gameObject, new Color32(28, 164, 255, 255), BoGoc(14f), false);
         fillImg.type = Image.Type.Filled;
         fillImg.fillMethod = Image.FillMethod.Horizontal;
         fillImg.fillAmount = 0.62f;
 
         // Gloss highlight nửa trên — chỉ vẽ khi dùng fallback (sprite thật thường đã có bóng sẵn)
-        RectTransform gloss = CreateRect(expBar, "Gloss", new Vector2(538f, 13f), new Vector2(0f, 7f));
+        RectTransform gloss = CreateRect(expBar, "Gloss", new Vector2(598f, 14f), new Vector2(0f, 7f));
         if (barTrackSpr != null) gloss.gameObject.SetActive(false);
-        else AddImage(gloss.gameObject, new Color32(150, 225, 255, 120), BoGoc(13f), false);
+        else AddImage(gloss.gameObject, new Color32(150, 225, 255, 120), BoGoc(14f), false);
 
-        TMP_Text txtExp = CreateText(expBar, "Txt_ExpValue", "248 / 400 EXP", 17, new Color32(0x44, 0x25, 0x10, 255), TextAlignmentOptions.Center, Vector2.zero, new Vector2(500f, 26f), FontStyles.Bold);
-        // [FIX 2026-09-03] Chu trắng chìm trên nền be khi EXP thấp -> đổi sang nâu đậm #442510.
-        // Shadow tối (TdChuVien) trên chữ tối là thừa -> đổi sang highlight sáng đục thấp cho hiệu ứng nổi nhẹ.
+        TMP_Text txtExp = CreateText(expBar, "Txt_ExpValue", "248 / 400 EXP", 17, new Color32(0x44, 0x25, 0x10, 255), TextAlignmentOptions.Center, Vector2.zero, new Vector2(560f, 28f), FontStyles.Bold);
         AddShadow(txtExp.gameObject, new Color(1f, 0.97f, 0.85f, 0.5f), new Vector2(0f, -2f));
 
         // 3. Lưới 4 Thẻ Thống Kê (2x2)
-        RectTransform cardsGrid = CreateRect(rightCol, "Grid_Cards", new Vector2(550f, 150f), new Vector2(0f, -12f));
+        RectTransform cardsGrid = CreateRect(rightCol, "Grid_Cards", new Vector2(610f, 164f), new Vector2(0f, -12f));
 
-        // [WP-D1] Icon thẻ thống kê: đi qua UIStandardSprites.Load (Resources/UI/Standard → AssetDatabase → Resources theo tên),
-        // KHÔNG gọi AssetDatabase trực tiếp nữa. Vẫn giữ các đường Resources/Icons/* làm fallback cuối cho build thật.
+        // [WP-D1] Icon thẻ thống kê: đi qua UIStandardSprites.Load
         Sprite warehouseSpr = UIStandardSprites.Load("Assets/Assetsgame/bocaycoitrangtri/ICON_HUB/icon_warehouse_v2_1786984374562-removebg-preview.png");
         Sprite cookingSpr   = Resources.Load<Sprite>("Icons/icon_cooking_building");
         Sprite goldSpr      = UIStandardSprites.IconGold;
@@ -928,21 +944,20 @@ public class AvatarProfilePopupUI : MonoBehaviour
         if (goldSpr == null)      goldSpr      = Resources.Load<Sprite>("Icons/icon_gold");
         if (achSpr == null)       achSpr       = Resources.Load<Sprite>("Icons/icon_achievement");
 
-        // Tên node giá trị đặt theo đúng khoá mà AutoWireNewHierarchy tìm (Txt_WarehouseVal…) để re-wire prefab cũ không bị null.
-        TMP_Text txtWh = CreateStatCard(cardsGrid, "Card_Warehouse", "Sức chứa kho", "120 ô", warehouseSpr, new Vector2(-142f, 38f), "Txt_WarehouseVal");
-        TMP_Text txtCook = CreateStatCard(cardsGrid, "Card_Cooking", "Điểm nấu ăn", "35 món", cookingSpr, new Vector2(142f, 38f), "Txt_CookingVal");
-        TMP_Text txtGold = CreateStatCard(cardsGrid, "Card_Gold", "Tiền vàng", "1 520", goldSpr, new Vector2(-142f, -42f), "Txt_GoldVal");
-        TMP_Text txtAch = CreateStatCard(cardsGrid, "Card_Achievement", "Nhiệm vụ", "18 đã xong", achSpr, new Vector2(142f, -42f), "Txt_AchievementVal");
+        // Tên node giá trị đặt theo đúng khoá mà AutoWireNewHierarchy tìm (Txt_WarehouseVal…)
+        TMP_Text txtWh = CreateStatCard(cardsGrid, "Card_Warehouse", "Sức chứa kho", "120 ô", warehouseSpr, new Vector2(-155f, 42f), "Txt_WarehouseVal");
+        TMP_Text txtCook = CreateStatCard(cardsGrid, "Card_Cooking", "Điểm nấu ăn", "35 món", cookingSpr, new Vector2(155f, 42f), "Txt_CookingVal");
+        TMP_Text txtGold = CreateStatCard(cardsGrid, "Card_Gold", "Tiền vàng", "1 520", goldSpr, new Vector2(-155f, -42f), "Txt_GoldVal");
+        TMP_Text txtAch = CreateStatCard(cardsGrid, "Card_Achievement", "Nhiệm vụ", "18 đã xong", achSpr, new Vector2(155f, -42f), "Txt_AchievementVal");
 
-        // 4. Nút Lưu Hồ Sơ 3D xanh lá (Rộng 320, Cao 62) — [WP-D1] UIStandardSprites.BtnGreen3D (Sliced),
-        //    Fill/Gradient chỉ vẽ ở nhánh fallback (sprite thật đã có bóng/độ nổi sẵn).
-        RectTransform saveBtnRt = CreateRect(rightCol, "Btn_SaveProfile", new Vector2(320f, 62f), new Vector2(0f, -145f));
-        RectTransform saveFill = CreateRect(saveBtnRt, "Fill", new Vector2(310f, 54f), Vector2.zero);
-        RectTransform saveGrad = CreateRect(saveBtnRt, "Gradient", new Vector2(310f, 54f), Vector2.zero);
+        // 4. Nút Lưu Hồ Sơ 3D xanh lá (Rộng 340, Cao 62)
+        RectTransform saveBtnRt = CreateRect(rightCol, "Btn_SaveProfile", new Vector2(340f, 62f), new Vector2(0f, -155f));
+        RectTransform saveFill = CreateRect(saveBtnRt, "Fill", new Vector2(330f, 54f), Vector2.zero);
+        RectTransform saveGrad = CreateRect(saveBtnRt, "Gradient", new Vector2(330f, 54f), Vector2.zero);
         SetFrameOrFallback(saveBtnRt, saveFill, saveGrad, UIStandardSprites.BtnGreen3D,
             TaskPopupDesign.NutNhan.vien, TaskPopupDesign.NutNhan.nenDuoi, TaskPopupDesign.NutNhan.nen, 26f);
 
-        TMP_Text saveTxt = CreateText(saveBtnRt, "Txt_Save", "LƯU HỒ SƠ", 24, Color.white, TextAlignmentOptions.Center, new Vector2(0f, 2f), new Vector2(300f, 50f), FontStyles.Bold);
+        TMP_Text saveTxt = CreateText(saveBtnRt, "Txt_Save", "LƯU HỒ SƠ", 24, Color.white, TextAlignmentOptions.Center, new Vector2(0f, 2f), new Vector2(320f, 50f), FontStyles.Bold);
         AddShadow(saveTxt.gameObject, new Color32(35, 80, 10, 220), new Vector2(1.5f, -2.5f));
         Button btnSave = saveBtnRt.gameObject.AddComponent<Button>();
 
@@ -967,58 +982,55 @@ public class AvatarProfilePopupUI : MonoBehaviour
         ui.avatarButtons = btns;
         ui.avatarButtonImages = btnImgs;
         ui.avatarSelectionHighlights = hlObjs;
-        ui.avatarSlotBgImages = slotBgImgs; // [WP-D1] để RefreshAvatarSelection đổi SlotNormal/SlotSelected
+        ui.avatarSlotBgImages = slotBgImgs;
     }
 
     /// <summary>
-    /// Thẻ thống kê 265x70. [WP-D1] Viền = UIStandardSprites.CardOuter, ruột "Fill" = CardInner (đều Sliced),
-    /// khung icon = SlotNormal; sprite nào null → fallback vẽ code SkinKit.BoGoc như bản cũ.
-    /// <paramref name="valueNodeName"/>: tên node chữ giá trị (Txt_WarehouseVal…) khớp với AutoWireNewHierarchy.
+    /// Thẻ thống kê 295x76. Viền = CardOuter, ruột "Fill" = CardInner,
+    /// khung icon = SlotNormal; sprite nào null → fallback vẽ code SkinKit.BoGoc.
     /// </summary>
     private static TMP_Text CreateStatCard(Transform parent, string name, string label, string val, Sprite icon, Vector2 pos, string valueNodeName = "Txt_Value")
     {
-        RectTransform card = CreateRect(parent, name, new Vector2(265f, 70f), pos);
-        RectTransform fill = CreateRect(card, "Fill", new Vector2(259f, 64f), Vector2.zero);
+        RectTransform card = CreateRect(parent, name, new Vector2(295f, 76f), pos);
+        RectTransform fill = CreateRect(card, "Fill", new Vector2(289f, 70f), Vector2.zero);
 
         Sprite cardOuterSpr = UIStandardSprites.CardOuter;
         Sprite cardInnerSpr = UIStandardSprites.CardInner;
         if (cardOuterSpr != null)
         {
             AddImage(card.gameObject, Color.white, cardOuterSpr, true);
-            // Ruột: CardInner nếu có, không thì để Fill trong suốt (CardOuter tự có nền).
             if (cardInnerSpr != null) AddImage(fill.gameObject, Color.white, cardInnerSpr, true);
         }
         else
         {
             LogSpriteFallbackOnce();
-            AddImage(card.gameObject, new Color32(217, 180, 120, 255), BoGoc(16f), true);
-            AddImage(fill.gameObject, new Color32(245, 235, 205, 255), BoGoc(14f), true);
+            AddImage(card.gameObject, new Color32(217, 180, 120, 255), BoGoc(18f), true);
+            AddImage(fill.gameObject, new Color32(245, 235, 205, 255), BoGoc(16f), true);
         }
 
-        // Khung Icon nhỏ bên trái — [WP-D1] SlotNormal; fallback vòng tròn KhungIconVien + Bg kem
-        RectTransform icFrame = CreateRect(fill, "Icon_Frame", new Vector2(48f, 48f), new Vector2(-96f, 0f));
-        RectTransform icBg = CreateRect(icFrame, "Bg", new Vector2(44f, 44f), Vector2.zero);
+        // Khung Icon nhỏ bên trái (52 x 52)
+        RectTransform icFrame = CreateRect(fill, "Icon_Frame", new Vector2(52f, 52f), new Vector2(-110f, 0f));
+        RectTransform icBg = CreateRect(icFrame, "Bg", new Vector2(48f, 48f), Vector2.zero);
         Sprite slotSpr = UIStandardSprites.SlotNormal;
         if (slotSpr != null)
         {
             Image icFrameImg = AddImage(icFrame.gameObject, Color.white, slotSpr, false);
             icFrameImg.raycastTarget = false;
-            // "Bg" giữ làm node cha của Img_Icon (không Image) để tên hierarchy không đổi.
         }
         else
         {
             LogSpriteFallbackOnce();
-            AddImage(icFrame.gameObject, TaskPopupDesign.KhungIconVien, BoGoc(24f), false);
-            AddImage(icBg.gameObject, new Color32(255, 250, 235, 255), BoGoc(22f), false);
+            AddImage(icFrame.gameObject, TaskPopupDesign.KhungIconVien, BoGoc(26f), false);
+            AddImage(icBg.gameObject, new Color32(255, 250, 235, 255), BoGoc(24f), false);
         }
 
-        RectTransform icImg = CreateRect(icBg, "Img_Icon", new Vector2(38f, 38f), Vector2.zero);
+        RectTransform icImg = CreateRect(icBg, "Img_Icon", new Vector2(42f, 42f), Vector2.zero);
         Image img = AddImage(icImg.gameObject, Color.white, icon, false);
         img.preserveAspect = true;
-        img.type = Image.Type.Simple; // icon thật không 9-slice — AddImage mặc định Sliced nên ép lại Simple
+        img.type = Image.Type.Simple;
 
-        CreateText(fill, "Txt_Label", label, 14, new Color32(110, 75, 45, 255), TextAlignmentOptions.Left, new Vector2(28f, 12f), new Vector2(170f, 22f), FontStyles.Bold);
-        TMP_Text txtVal = CreateText(fill, valueNodeName, val, 18, new Color32(75, 40, 15, 255), TextAlignmentOptions.Left, new Vector2(28f, -12f), new Vector2(170f, 26f), FontStyles.Bold);
+        CreateText(fill, "Txt_Label", label, 15, new Color32(110, 75, 45, 255), TextAlignmentOptions.Left, new Vector2(30f, 13f), new Vector2(190f, 24f), FontStyles.Bold);
+        TMP_Text txtVal = CreateText(fill, valueNodeName, val, 22, new Color32(75, 40, 15, 255), TextAlignmentOptions.Left, new Vector2(30f, -13f), new Vector2(190f, 28f), FontStyles.Bold);
 
         return txtVal;
     }

@@ -76,6 +76,7 @@ namespace CookingGame.Optimization
 
         private static void ApplyResolutionScaling()
         {
+            if (Application.isEditor) return;
             if (!IsMobile) return;
 
             // Lấy độ phân giải thực của màn hình

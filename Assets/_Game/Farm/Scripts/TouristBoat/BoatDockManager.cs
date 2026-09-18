@@ -433,7 +433,7 @@ public class BoatDockManager : MonoBehaviour
         {
             case UnlockDenyReason.None:            reason = string.Empty;                     return true;
             case UnlockDenyReason.AlreadyUnlocked: reason = "Bến đã mở khóa";                 return false;
-            case UnlockDenyReason.LevelTooLow:     reason = $"Cần đạt Lv{req.RequiredLevel}"; return false;
+            case UnlockDenyReason.LevelTooLow:     reason = Loc.TF("Cần đạt Lv{0}", req.RequiredLevel); return false;
             case UnlockDenyReason.NotEnoughGold:   reason = "Không đủ vàng";                  return false;
             case UnlockDenyReason.NotEnoughGems:   reason = "Không đủ gem";                   return false;
             default:                               reason = "Bến không hợp lệ";               return false;

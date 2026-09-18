@@ -347,11 +347,11 @@ public class BoatDockSlot : MonoBehaviour
         switch (dockIndex)
         {
             case 0:
-                return $"<b>MỞ Ở CẤP {config.unlockLevel}</b>\n<size=75%><color=#81ECEC>★ MIỄN PHÍ ★</color></size>";
+                return "<b>" + Loc.TF("MỞ Ở CẤP {0}", config.unlockLevel) + "</b>\n<size=75%><color=#81ECEC>★ " + Loc.T("MIỄN PHÍ") + " ★</color></size>";
             case 1:
-                return $"<b>MỞ Ở CẤP {config.dock2Level}</b>\n<size=80%><color=#FFD700>{FormatVN(config.dock2GoldCost)} VÀNG</color></size>";
+                return "<b>" + Loc.TF("MỞ Ở CẤP {0}", config.dock2Level) + "</b>\n<size=80%><color=#FFD700>" + Loc.TF("{0} VÀNG", FormatVN(config.dock2GoldCost)) + "</color></size>";
             case 2:
-                return $"<b>MỞ Ở CẤP {config.dock3Level}</b>\n<size=80%><color=#74B9FF>{config.dock3GemCost} KIM CƯƠNG</color></size>";
+                return "<b>" + Loc.TF("MỞ Ở CẤP {0}", config.dock3Level) + "</b>\n<size=80%><color=#74B9FF>" + Loc.TF("{0} KIM CƯƠNG", config.dock3GemCost) + "</color></size>";
             default:
                 return string.Empty;
         }
@@ -425,7 +425,7 @@ public class BoatDockSlot : MonoBehaviour
             _floatingText.fontSize         = 56;
             _floatingText.alignment        = TextAlignmentOptions.Center;
             _floatingText.textWrappingMode = TextWrappingModes.NoWrap;
-            _floatingText.overflowMode     = TextOverflowModes.Overflow;
+            _floatingText.overflowMode     = TextOverflowModes.Overflow;   // [FIX QA] Text noi KHONG co sizeDelta (rect mac dinh ti hon) => Ellipsis cat cut chu. Giu Overflow.
             _floatingText.color            = new Color(1f, 0.95f, 0.75f); // trắng ấm, thân thiện
             var mr = _floatingText.GetComponent<MeshRenderer>();
             if (mr != null)

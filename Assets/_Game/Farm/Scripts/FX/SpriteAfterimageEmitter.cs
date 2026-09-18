@@ -56,8 +56,8 @@ public class SpriteAfterimageEmitter : MonoBehaviour
         _minSpeedOverride = minSpeedOverride;
 
         // Tag trên chính object thắng mọi cấu hình khác (Sếp gắn tay cho NPC cảnh).
-        AfterimageTag tag = GetComponent<AfterimageTag>();
-        if (tag != null)
+        // [PERF F4.11] TryGetComponent: Setup() duoc goi hang loat luc AfterimageBootstrap quet scene.
+        if (TryGetComponent(out AfterimageTag tag))
         {
             _includeChildren = tag.includeChildren;
             if (tag.minSpeedOverride > 0f) _minSpeedOverride = tag.minSpeedOverride;
@@ -86,14 +86,15 @@ public class SpriteAfterimageEmitter : MonoBehaviour
         SpriteRenderer[] all = GetComponentsInChildren<SpriteRenderer>(false);
         int n = 0;
         for (int i = 0; i < all.Length; i++)
-            if (all[i] != null && all[i].GetComponent<SpriteAfterimage>() == null) n++;
+            // [PERF F4.11] TryGetComponent: khong cap phat khi khong tim thay.
+            if (all[i] != null && !all[i].TryGetComponent<SpriteAfterimage>(out _)) n++;
         if (!_includeChildren) n = Mathf.Min(n, 1);
 
         SpriteRenderer[] list = new SpriteRenderer[n];
         int w = 0;
         for (int i = 0; i < all.Length && w < n; i++)
         {
-            if (all[i] == null || all[i].GetComponent<SpriteAfterimage>() != null) continue;
+            if (all[i] == null || all[i].TryGetComponent<SpriteAfterimage>(out _)) continue;   // [PERF F4.11]
             list[w++] = all[i];
         }
 
@@ -148,7 +149,11 @@ public class SpriteAfterimageEmitter : MonoBehaviour
             SpriteRenderer[] now = GetComponentsInChildren<SpriteRenderer>(false);
             int nowValid = 0;
             for (int i = 0; i < now.Length; i++)
-                if (now[i] != null && now[i].GetComponent<SpriteAfterimage>() == null) nowValid++;
+                // [PERF F4.11 2026-09-17] TryGetComponent thay GetComponent<>(): khong sinh
+                // rac khi KHONG tim thay, va khong tao wrapper null cua Unity. Vong lap nay
+                // chay theo nhip rescanInterval chu khong moi frame, nhung no duyet TOAN BO
+                // SpriteRenderer con nen van dang doi.
+                if (now[i] != null && !now[i].TryGetComponent<SpriteAfterimage>(out _)) nowValid++;
             if (nowValid != song) RefreshRenderers();
         }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;   // F6: NumberStyles / CultureInfo.InvariantCulture
 using UnityEngine;
 
 namespace KitchenUIv2
@@ -74,7 +75,11 @@ namespace KitchenUIv2
         /// <summary>Seed cố định theo ngày: cùng ngày = cùng 3 món, ngày mới tự đổi.</summary>
         private void RefreshIfNewDay()
         {
-            string dayKey = DateTime.Now.ToString("yyyyMMdd");
+            // F6: PHAI ep InvariantCulture. Mac dinh ToString() dung lich cua may:
+            // tren may dat lich Phat lich / Hijri thi "yyyy" ra 2569 / 1447, tren locale
+            // chu so khong phai ASCII (ar-SA...) thi ra chu so A-rap — ca hai deu lam
+            // int.Parse ben duoi nem FormatException.
+            string dayKey = DateTime.Now.ToString("yyyyMMdd", CultureInfo.InvariantCulture);
             if (dayKey == _cachedDayKey && _today.Count > 0) return;
 
             _cachedDayKey = dayKey;
@@ -90,7 +95,15 @@ namespace KitchenUIv2
                 if (d != null && d.unlockLevel <= playerLevel) pool.Add(d);
             if (pool.Count == 0) pool.AddRange(dishBook.allDishes);
 
-            var rng = new System.Random(int.Parse(dayKey) ^ 0x5EED);
+            // F6: khong duoc int.Parse tran. Save/locale hong khong duoc lam chet ca
+            // bang "Mon hom nay"; roi ve so ngay tuyet doi — van co dinh trong ngay.
+            if (!int.TryParse(dayKey, NumberStyles.Integer, CultureInfo.InvariantCulture, out int daySeed))
+            {
+                daySeed = (int)(DateTime.UtcNow.Date - new DateTime(2020, 1, 1)).TotalDays;
+                Debug.LogWarning($"[DailySpecial] Khong doc duoc ma ngay '{dayKey}' — dung so ngay du phong {daySeed}.");
+            }
+
+            var rng = new System.Random(daySeed ^ 0x5EED);
             int want = Mathf.Min(dishesPerDay, pool.Count);
             while (_today.Count < want && pool.Count > 0)
             {

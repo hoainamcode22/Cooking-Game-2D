@@ -10,18 +10,57 @@ public class TrainStationBuilding : MonoBehaviour
 {
     [SerializeField] private TrainProcessPopupUI processPopup;
 
+    // ── [FIX QA P2] Chong quet toan scene moi lan cham vao ga ──────────────────
+    // EnsurePopupsExist() chay ca trong HandleClick() nen MOI cu cham deu keo theo
+    // 2 lan FindFirstObjectByType(FindObjectsInactive.Include) = 2 lan duyet toan scene.
+    // Giai xong mot lan thi thoi; nhung van lam lai neu popup da giai bi huy (doi scene),
+    // de doi scene khong lam hong ga vinh vien.
+    private bool      _daTaoPopup;
+    private Component _masterPopupDaGiai;
+
     [Header("World Bubble — báo 'Tàu đã về' trên nóc ga")]
     [Tooltip("Sprite world_bubble_train_arrived.png — gán bằng Tools/Farm Game/Train/Setup Train World Assets")]
     [SerializeField] private Sprite arrivedBubbleSprite;
     [Tooltip("Độ cao bubble so với gốc ga (world unit)")]
     [SerializeField] private float bubbleHeight = 2.2f;
 
+    // ── [BUILD-FIX] Prefab popup cho BAN BUILD ──────────────────────────────────
+    // EnsurePopupsExist() truoc day nam tron trong #if UNITY_EDITOR va dung AssetDatabase,
+    // nen trong ban build KHONG popup nao duoc tao => bam vao ga khong ra gi.
+    // AssetDatabase khong ton tai trong build, va cac prefab nay KHONG nam trong thu muc
+    // Resources/, nen duong duy nhat an toan la tham chieu truc tiep qua [SerializeField]
+    // (Sep keo 3 prefab vao day tren Inspector cua ga), co fallback Resources.Load neu sau
+    // nay prefab duoc chep vao Resources/Train/.
+    [Header("Popup prefabs — BAT BUOC gan de ban BUILD tao duoc popup")]
+    [Tooltip("Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab")]
+    [SerializeField] private GameObject prefabMasterPopup;
+    [Tooltip("Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab")]
+    [SerializeField] private GameObject prefabItemPopup;
+    [Tooltip("Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab")]
+    [SerializeField] private GameObject prefabProcessPopup;
+
     private SpriteRenderer _arrivedBubble;
 
     private Collider2D _col;
 
+    // [PERF F4.3 2026-09-17] Camera.main trong Update: no phai tim GameObject co tag
+    // "MainCamera" dang bat, khong phai mot phep doc field. Cache lai, tu tim lai khi
+    // tham chieu chet (doi scene / camera bi thay). Hanh vi khong doi.
+    private Camera _cam;
+
+    /// <summary>Camera chinh da cache; tu tim lai neu tham chieu da chet.</summary>
+    private Camera Cam
+    {
+        get
+        {
+            if (_cam == null) _cam = Camera.main;
+            return _cam;
+        }
+    }
+
     void Awake()
     {
+        _cam = Camera.main;
         _col = GetComponent<Collider2D>();
         if (_col == null) _col = GetComponentInChildren<Collider2D>();
         if (_col == null) _col = gameObject.AddComponent<BoxCollider2D>();
@@ -120,53 +159,75 @@ public class TrainStationBuilding : MonoBehaviour
 
     private void EnsurePopupsExist()
     {
-#if UNITY_EDITOR
+        // Da giai xong va popup van con song => khong quet lai.
+        if (_daTaoPopup && _masterPopupDaGiai != null) return;
+
         // [VONG 6 - 06/09] Phai dung LayPopupThat(): prefab dang co 4 component MasterPopupUI di lac
         // tren Wagon_1..Wagon_4, neu chi dung Instance/FindFirstObjectByType thi bien 'master' co the
         // tro vao mot BAN DI LAC (mot toa tau) chu khong phai popup that => tuong "da co roi" va bo qua.
-        var master = ExportTrainUIPackage.TrainStationMasterPopupUI.LayPopupThat();
-
+        // [BUILD-FIX] Bo #if UNITY_EDITOR: than chay ca trong build. AssetDatabase chi con la
+        // duong du phong TRONG EDITOR (duoi #if), con build dung [SerializeField] / Resources.Load.
         var canvas = FindPopupCanvas();
-        if (canvas != null)
-        {
-            if (master == null)
-            {
-                var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab");
-                if (prefab != null)
-                {
-                    var instance = Instantiate(prefab, canvas.transform);
-                    instance.name = "Popup_Train_MasterStation";
-                    instance.SetActive(false);
-                }
-            }
+        if (canvas == null) return;
 
-            var itemPopup = ExportTrainUIPackage.TrainLoadPopupUI.Instance
-                ?? FindFirstObjectByType<ExportTrainUIPackage.TrainLoadPopupUI>(FindObjectsInactive.Include);
-            if (itemPopup == null)
-            {
-                var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab");
-                if (prefab != null)
-                {
-                    var instance = Instantiate(prefab, canvas.transform);
-                    instance.name = "Popup_item_Train";
-                    instance.SetActive(false);
-                }
-            }
+        var master = ExportTrainUIPackage.TrainStationMasterPopupUI.LayPopupThat();
+        if (master == null)
+            TaoPopupNeuThieu(canvas, prefabMasterPopup,
+                             "Train/Popup_Train_MasterStation",
+                             "Assets/Export_Train_UI_Package/Prefabs/Popup_Train_MasterStation.prefab",
+                             "Popup_Train_MasterStation");
 
-            var procPopup = ExportTrainUIPackage.TrainProcessPopupUI.Instance
-                ?? FindFirstObjectByType<ExportTrainUIPackage.TrainProcessPopupUI>(FindObjectsInactive.Include);
-            if (procPopup == null)
-            {
-                var prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab");
-                if (prefab != null)
-                {
-                    var instance = Instantiate(prefab, canvas.transform);
-                    instance.name = "Popup_train";
-                    instance.SetActive(false);
-                }
-            }
-        }
+        var itemPopup = ExportTrainUIPackage.TrainLoadPopupUI.Instance
+            ?? FindFirstObjectByType<ExportTrainUIPackage.TrainLoadPopupUI>(FindObjectsInactive.Include);
+        if (itemPopup == null)
+            TaoPopupNeuThieu(canvas, prefabItemPopup,
+                             "Train/Popup_item_Train",
+                             "Assets/Export_Train_UI_Package/Prefabs/Popup_item_Train.prefab",
+                             "Popup_item_Train");
+
+        var procPopup = ExportTrainUIPackage.TrainProcessPopupUI.Instance
+            ?? FindFirstObjectByType<ExportTrainUIPackage.TrainProcessPopupUI>(FindObjectsInactive.Include);
+        if (procPopup == null)
+            TaoPopupNeuThieu(canvas, prefabProcessPopup,
+                             "Train/Popup_train",
+                             "Assets/Export_Train_UI_Package/Prefabs/Popup_train.prefab",
+                             "Popup_train");
+
+        // Ghi nhan ket qua de lan cham sau khong phai quet lai. Neu popup bi huy (doi scene)
+        // thi _masterPopupDaGiai ve null va cua thoat nhanh o dau ham tu dong mo lai.
+        _masterPopupDaGiai = ExportTrainUIPackage.TrainStationMasterPopupUI.LayPopupThat();
+        _daTaoPopup        = true;
+    }
+
+    /// <summary>
+    /// [BUILD-FIX] Tao 1 popup tu prefab, theo thu tu an toan cho BUILD:
+    /// ① tham chieu [SerializeField] → ② Resources.Load (neu prefab duoc chep vao Resources/)
+    /// → ③ AssetDatabase (CHI trong Editor). Khong tim thay thi canh bao, khong nem loi.
+    /// </summary>
+    private void TaoPopupNeuThieu(Canvas canvas, GameObject prefabGan, string duongDanResources,
+                                  string duongDanAsset, string tenObject)
+    {
+        GameObject prefab = prefabGan;
+
+        if (prefab == null && !string.IsNullOrEmpty(duongDanResources))
+            prefab = Resources.Load<GameObject>(duongDanResources);
+
+#if UNITY_EDITOR
+        if (prefab == null)
+            prefab = UnityEditor.AssetDatabase.LoadAssetAtPath<GameObject>(duongDanAsset);
 #endif
+
+        if (prefab == null)
+        {
+            Debug.LogWarning("[Train] Thieu prefab '" + tenObject + "'. Gan no vao TrainStationBuilding " +
+                             "tren Inspector (hoac chep vao Resources/" + duongDanResources + ") " +
+                             "de ban BUILD tao duoc popup.");
+            return;
+        }
+
+        var instance = Instantiate(prefab, canvas.transform);
+        instance.name = tenObject;
+        instance.SetActive(false);
     }
 
     private Canvas FindPopupCanvas()
@@ -199,7 +260,8 @@ public class TrainStationBuilding : MonoBehaviour
         if (EditModeManager.IsEditMode) return;
         if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen()) return;
 
-        var cam = Camera.main;
+        // [PERF F4.3] doc qua cache thay vi Camera.main.
+        var cam = Cam;
         if (cam == null) return;
 
         Vector2 screenPos = InputBridge.PointerPosition;
@@ -212,7 +274,14 @@ public class TrainStationBuilding : MonoBehaviour
         Vector3 world3 = cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, cam.nearClipPlane));
         Vector2 worldPos = new Vector2(world3.x, world3.y);
 
-        if (_col == null) _col = GetComponent<Collider2D>() ?? GetComponentInChildren<Collider2D>();
+        // [PERF F4.3] _col DA duoc cache trong Awake; nhanh nay chi la luoi an toan khi
+        // tham chieu chet. Dung if long thay toan tu `??` — `??` tren UnityEngine.Object
+        // BO QUA phep so sanh null cua Unity nen co the tra ve mot collider da bi Destroy.
+        if (_col == null)
+        {
+            _col = GetComponent<Collider2D>();
+            if (_col == null) _col = GetComponentInChildren<Collider2D>();
+        }
         if (_col == null || !_col.OverlapPoint(worldPos)) return;
 
         HandleClick();

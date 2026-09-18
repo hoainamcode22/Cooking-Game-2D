@@ -18,6 +18,8 @@ public static class DisableStartupPopupsTool
     {
         "Panel_Background",   // Market popup root
         "Frame",              // Warehouse popup root (tên chung)
+        "Panel_Dim",          // Dark dim overlay
+        "Popup_Board",        // Order board popup root
     };
 
     // Tên object cha (canvas/parent) chứa popup — tìm theo tên này trước
@@ -28,6 +30,7 @@ public static class DisableStartupPopupsTool
         "MarketPopup",
         "WarehousePopup",
         "ShopPopup",
+        "Canvas",
     };
 
     // Component types để identify popup objects
@@ -105,6 +108,28 @@ public static class DisableStartupPopupsTool
             }
         }
 
+        // Strategy 3: Tìm trực tiếp các objects có tên nguy hiểm như Panel_Dim
+        var allObjects = Resources.FindObjectsOfTypeAll<GameObject>();
+        foreach (var go in allObjects)
+        {
+            if (EditorUtility.IsPersistent(go)) continue; // skip assets
+            if (go.hideFlags != HideFlags.None) continue;
+            if (go.name == "Panel_Dim")
+            {
+                if (go.activeSelf)
+                {
+                    go.SetActive(false);
+                    EditorUtility.SetDirty(go);
+                    Debug.Log($"  [SET INACTIVE] Direct object '{go.name}' (path: {GetHierarchyPath(go.transform)})");
+                    disabled++;
+                }
+                else
+                {
+                    skipped++;
+                }
+            }
+        }
+
         // Lưu scene
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
             UnityEngine.SceneManagement.SceneManager.GetActiveScene());
@@ -149,5 +174,17 @@ public static class DisableStartupPopupsTool
             if (root != null && root.activeSelf) return true;
         }
         return false;
+    }
+
+    private static string GetHierarchyPath(Transform t)
+    {
+        if (t == null) return "";
+        string path = t.name;
+        while (t.parent != null)
+        {
+            t = t.parent;
+            path = t.name + "/" + path;
+        }
+        return path;
     }
 }

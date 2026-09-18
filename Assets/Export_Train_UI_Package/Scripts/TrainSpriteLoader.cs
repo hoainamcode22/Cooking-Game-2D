@@ -8,6 +8,9 @@ namespace ExportTrainUIPackage
     {
         private static readonly Dictionary<string, Sprite> _cache = new Dictionary<string, Sprite>();
 
+        /// <summary>F4: đã kêu thiếu sprite nào rồi — để mỗi đường dẫn chỉ log MỘT lần.</summary>
+        private static readonly HashSet<string> _warnedMissing = new HashSet<string>();
+
         /// <summary>
         /// Gán sprite cho Image CHỈ KHI load được từ đường dẫn (thử lần lượt các path).
         /// Không tìm thấy (vd: đang chạy trong BUILD, không có AssetDatabase/Assets trên đĩa)
@@ -93,6 +96,38 @@ namespace ExportTrainUIPackage
                     _cache[normalizedPath] = newSp;
                     return newSp;
                 }
+            }
+
+            // ── F4: NHÁNH CUỐI CHO BẢN RELEASE ──────────────────────────────────
+            // Trên Android, Application.dataPath trỏ vào trong file APK nên File.Exists
+            // LUÔN false → nhánh đọc đĩa ở trên không bao giờ chạy được. Tất cả sprite mà
+            // các popup tàu hoả yêu cầu nằm ở Assets/Export_Train_UI_Package/Sprites/ và
+            // Assets/Assetsgame/popup/... — KHÔNG thư mục nào nằm trong Resources/, nên
+            // không thể Resources.Load theo đúng đường dẫn đó.
+            // Một số ảnh có BẢN SAO trùng tên trong Assets/Resources/UI/Standard/
+            // (popup_frame_wood, popup_panel_paper, ribbon_banner_gold, progress_track_bar,
+            //  progress_fill_green, timer_box_dark, btn_green_3d, btn_yellow_3d,
+            //  check_badge_green, shop_card_inner, shop_card_outer, btnX) → thử nạp theo
+            // TÊN FILE ở đó trước khi chịu thua. KHÔNG di chuyển asset nào.
+            string fileName = Path.GetFileNameWithoutExtension(normalizedPath);
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                Sprite fromRes = Resources.Load<Sprite>("UI/Standard/" + fileName);
+                if (fromRes != null)
+                {
+                    _cache[normalizedPath] = fromRes;
+                    return fromRes;
+                }
+            }
+
+            // Thua hẳn. Trước đây im lặng trả null nên không ai biết bản release đang
+            // thiếu ảnh. Kêu to MỘT lần cho mỗi đường dẫn, kèm đúng tên sprite bị thiếu.
+            if (_warnedMissing.Add(normalizedPath))
+            {
+                Debug.LogWarning(
+                    "[TrainSpriteLoader] KHÔNG nạp được sprite '" + fileName + "' (" + normalizedPath +
+                    "). Thư mục này không nằm trong Resources/ nên bản build không đọc được. " +
+                    "Sprite PHẢI được gán sẵn (serialise) trong prefab, nếu không UI tàu hoả sẽ trống.");
             }
 
             return null;

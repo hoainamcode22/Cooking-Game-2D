@@ -103,5 +103,15 @@ public static class SaveVersionGuard
         "MISSION",             // MISSION_PROGRESS_V1, MISSION_CLAIMED_*, ACHIEVEMENT_CLAIMED_*,
                                // UNIFIED_TASK_DAILY_*
         "FISHING",             // FISH_BASKET_SAVE, FISHING_GEAR_SAVE, FISHING_PROFILE_SAVE (Hồ Câu, vòng 12)
+
+        // ── F8: BỐN HỌ DƯỚI ĐÂY TRƯỚC v1 KHÔNG HỀ CÓ DẤU PHIÊN BẢN ──────────────
+        // Không có dấu thì bản sau KHÔNG THỂ biết save đang ở định dạng nào → không
+        // migrate được, chỉ còn cách xoá = mất đất đã mua, mất máy xay, mất trang trí,
+        // mất nhà đang xây. Thêm bây giờ rất rẻ (chỉ là một khoá int), thêm SAU KHI
+        // v1 lên Google Play thì vĩnh viễn không cứu được lớp người chơi cũ.
+        "LAND",                // FARM_UNLOCKED_REGIONS, LAND_CLEAR_<regionId>
+        "MILL",                // MILL_Ver, MILL_SlotsUnlocked, MILL_S<slot>_*
+        "DECOR",               // DecorGrowActive, DecorGrowSlot_*, Decor_* (tiến trình trồng trang trí)
+        "HOUSE_GROWTH",        // HouseSave_<houseId>_* (+ _start / _dur) — nhà đang xây
     };
 }

@@ -51,6 +51,20 @@ public class MillRecipeData : ScriptableObject
     [Tooltip("Icon sản phẩm — đĩa tròn giữa card và trong slot đang xay.")]
     public Sprite icon;
 
+    public Sprite GetIcon()
+    {
+        if (icon != null) return icon;
+        return MarketManager.TryResolveFallbackIcon(outputItemId ?? recipeId);
+    }
+
+    private void OnEnable()
+    {
+        if (icon == null)
+        {
+            icon = MarketManager.TryResolveFallbackIcon(outputItemId ?? recipeId);
+        }
+    }
+
     [Tooltip("Icon nhỏ cạnh nhãn con vật.")]
     public Sprite animalBadgeIcon;
 
