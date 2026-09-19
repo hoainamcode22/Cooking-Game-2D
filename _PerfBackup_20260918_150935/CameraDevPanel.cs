@@ -61,9 +61,7 @@ public class CameraDevPanel : MonoBehaviour
         // null-coalescing bỏ qua "fake null" của UnityEngine.Object (UNT0007).
         if (_cam == null) _cam = Camera.main;
         // Cong tac dev quyet dinh: gate tat thi panel khong tu hien.
-        // [FIX 2026-09-18 PERF] Mac dinh AN. Panel IMGUI nay ton GC + CPU moi frame (8 chuoi $"..." x 2 su kien
-        // GUI/frame) va chay ca trong Development Build tren dien thoai => lam sai moi phep do. Bam phim toggle de hien.
-        _visible = false;
+        _visible = showOnStart && DevOverlayGate.Enabled;
 
 #if !UNITY_EDITOR && !DEVELOPMENT_BUILD
         // Bản phát hành: tự huỷ, người chơi không bao giờ thấy panel dev.
@@ -132,11 +130,6 @@ public class CameraDevPanel : MonoBehaviour
     {
         if (!DevOverlayGate.Enabled) return;
         if (!_visible || _controller == null || _cam == null) return;
-        // [FIX 2026-09-18 PERF] IMGUI goi OnGUI cho MOI su kien (Layout, Repaint, MouseMove, ...).
-        // Chi dung Layout + Repaint (GUILayout can Layout de tinh kich thuoc) va su kien chuot cho nut bam.
-        var ev = Event.current.type;
-        if (ev != EventType.Layout && ev != EventType.Repaint &&
-            ev != EventType.MouseDown && ev != EventType.MouseUp) return;
 
         BuildStyles();
 

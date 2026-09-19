@@ -66,23 +66,7 @@ public class PopupManager : MonoBehaviour
         }
     }
 
-    // [FIX 2026-09-18 P0 — PROFILER] IsAnyPopupOpen() co 82 call site, moi HouseGrowthController.Update()
-    // goi 2 lan/frame qua FarmInputLock, CameraController goi them. Ben trong lai co IsFishingPopupOpen()
-    // dung Type.GetType (reflection) => Profiler do: HouseGrowthController.Update 61ms, CameraController 25ms.
-    // Cache ket qua theo frameCount: du bao nhieu nguoi goi, moi frame chi tinh dung mot lan.
-    private int  _frameCacheAnyOpen = -1;
-    private bool _giaTriCacheAnyOpen;
-
     public bool IsAnyPopupOpen()
-    {
-        int f = Time.frameCount;
-        if (f == _frameCacheAnyOpen) return _giaTriCacheAnyOpen;
-        _frameCacheAnyOpen = f;
-        _giaTriCacheAnyOpen = TinhIsAnyPopupOpen();
-        return _giaTriCacheAnyOpen;
-    }
-
-    private bool TinhIsAnyPopupOpen()
     {
         return (warehousePopup    != null && warehousePopup.gameObject.activeInHierarchy && warehousePopup.IsOpen)
             || (marketPopup       != null && marketPopup.gameObject.activeInHierarchy && marketPopup.IsOpen)
@@ -118,38 +102,22 @@ public class PopupManager : MonoBehaviour
         // o world, khong che man hinh, khong can khoa. (Van liet ke o TenPopupDangMo.)
     }
 
-    // [FIX 2026-09-18 P0 — PROFILER] Ban cu goi Type.GetType(...) + GetProperty(...) MOI LAN.
-    // Khi Fishing bi keo ra khoi source, Type.GetType phai quet het moi assembly roi tra null,
-    // va lam lai y nhu vay o frame sau. Nay tra cuu dung MOT lan, nho ca truong hop khong tim thay.
-    private static bool _daTraCuuFishing;
-    private static System.Reflection.PropertyInfo _propFishingEntry;
-    private static System.Reflection.PropertyInfo _propFishCounter;
-
-    private static void TraCuuFishingMotLan()
-    {
-        if (_daTraCuuFishing) return;
-        _daTraCuuFishing = true;
-        const System.Reflection.BindingFlags co = System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static;
-        try
-        {
-            var t1 = System.Type.GetType("FarmGame.Fishing.FishingEntryPopupUI, Assembly-CSharp");
-            if (t1 != null) _propFishingEntry = t1.GetProperty("AnyOpen", co);
-            var t2 = System.Type.GetType("FarmGame.Fishing.FishCounterPopupUI, Assembly-CSharp");
-            if (t2 != null) _propFishCounter = t2.GetProperty("AnyOpen", co);
-        }
-        catch { /* khong co fishing => khong co popup fishing */ }
-    }
-
     private static bool IsFishingPopupOpen()
     {
-        TraCuuFishingMotLan();
-        if (_propFishingEntry == null && _propFishCounter == null) return false;
-        try
+        var entryType = System.Type.GetType("FarmGame.Fishing.FishingEntryPopupUI, Assembly-CSharp");
+        if (entryType != null)
         {
-            if (_propFishingEntry != null && (bool)_propFishingEntry.GetValue(null)) return true;
-            if (_propFishCounter  != null && (bool)_propFishCounter.GetValue(null))  return true;
+            var prop = entryType.GetProperty("AnyOpen", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (prop != null && (bool)prop.GetValue(null)) return true;
         }
-        catch { }
+
+        var counterType = System.Type.GetType("FarmGame.Fishing.FishCounterPopupUI, Assembly-CSharp");
+        if (counterType != null)
+        {
+            var prop = counterType.GetProperty("AnyOpen", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+            if (prop != null && (bool)prop.GetValue(null)) return true;
+        }
+
         return false;
     }
 

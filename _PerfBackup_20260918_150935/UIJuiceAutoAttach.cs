@@ -26,7 +26,7 @@ using UnityEngine.UI;
 /// </summary>
 public class UIJuiceAutoAttach : MonoBehaviour
 {
-    private const float SweepInterval = 15f;     // [FIX 2026-09-18] 2s -> 15s: quet FindObjectsByType<Button> dinh ky la khong can thiet
+    private const float SweepInterval = 2f;      // nhịp nghỉ — bằng đúng bản cũ
     private const float FastInterval  = 0.35f;   // nhịp gấp — khi UI vừa đổi
     private const int   FastAfterScene = 6;      // số lượt gấp sau khi nạp scene
     private const int   FastAfterNew   = 4;      // số lượt gấp sau khi thấy nút mới

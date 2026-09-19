@@ -41,7 +41,7 @@ public static class SafeAreaBootstrap
     };
 
     /// <summary>Bat/tat toan bo co che (de debug nhanh tren may that).</summary>
-    public static bool BatCoChe = true;
+    public static bool BatCoChe = false; // [2026-09-18] TAM TAT de kiem chung loi "popup khong click duoc". Bat lai = true sau khi xac nhan khong lien quan.
 
     /// <summary>In log moi lan boc mot canvas.</summary>
     public static bool GhiLog = false;

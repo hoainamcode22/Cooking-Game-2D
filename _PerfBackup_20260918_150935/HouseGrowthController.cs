@@ -188,18 +188,9 @@ public class HouseGrowthController : MonoBehaviour
     /// F9: nhà vừa bị dời → ghi thêm bí danh "vị trí mới → instanceId" để phiên sau
     /// căn nhà này vẫn tự nhận ra chính mình. Chỉ ghi khi vị trí THỰC SỰ đổi ô.
     /// </summary>
-    private int _aliasQx = int.MinValue, _aliasQy = int.MinValue;
-
     private void RememberAliasForCurrentPosition()
     {
         if (string.IsNullOrEmpty(instanceId)) return;
-
-        // [FIX 2026-09-18 P0] Ban cu ghep chuoi $"HouseSave_..." MOI FRAME (rac GC). So toa do nguyen truoc,
-        // chi ghep chuoi khi nha thuc su bi doi cho.
-        Vector3 posNow = transform.position;
-        int qx = Mathf.RoundToInt(posNow.x * 10), qy = Mathf.RoundToInt(posNow.y * 10);
-        if (qx == _aliasQx && qy == _aliasQy && _cachedLegacyKey != null) return;
-        _aliasQx = qx; _aliasQy = qy;
 
         string legacyKey = LegacyKeyAtCurrentPosition();
         if (legacyKey == _cachedLegacyKey) return;
@@ -408,16 +399,12 @@ public class HouseGrowthController : MonoBehaviour
                 break;
         }
 
-        // [FIX 2026-09-18 P0] Ban cu gan _collider.size/offset MOI FRAME cho MOI can nha => Box2D huy va
-        // tao lai fixture moi frame. Chi dung lai khi sprite thuc su doi.
-        if (_collider != null && _sr.sprite != null && !ReferenceEquals(_sr.sprite, _spriteColliderCuoi))
+        if (_collider != null && _sr.sprite != null)
         {
-            _spriteColliderCuoi = _sr.sprite;
             _collider.size = _sr.sprite.rect.size / _sr.sprite.pixelsPerUnit;
             _collider.offset = new Vector2(0, _collider.size.y * 0.5f);
         }
     }
-    private Sprite _spriteColliderCuoi;
 
     public void HandleClick()
     {

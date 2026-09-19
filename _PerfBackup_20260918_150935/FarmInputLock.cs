@@ -17,9 +17,6 @@ public static class FarmInputLock
     public static bool IsMarketPopupOpen { get; set; }
 
     /// <summary>True when player is in Cooking scene / Cooking mode.</summary>
-    private static int  _frameCacheCooking = -1;
-    private static bool _giaTriCacheCooking;
-
     public static bool IsCookingMode
     {
         get
@@ -29,15 +26,9 @@ public static class FarmInputLock
             // khong phai "SCN_Cooking" — scene do khong ton tai trong project ⇒ nhanh du phong nay
             // truoc day la DEAD CODE, khong bao gio dung. Nay sua cho dung de con luoi an toan
             // khi FarmUIManager.Instance tam thoi null.
-            // [FIX 2026-09-18 P0] GetSceneByName so chuoi qua moi scene, bi goi N lan/frame. Cache theo frame.
-            int f = Time.frameCount;
-            if (f != _frameCacheCooking)
-            {
-                _frameCacheCooking = f;
-                var cookingScene = SceneManager.GetSceneByName("SampleScene");
-                _giaTriCacheCooking = cookingScene.IsValid() && cookingScene.isLoaded;
-            }
-            return _giaTriCacheCooking;
+            var cookingScene = SceneManager.GetSceneByName("SampleScene");
+            if (cookingScene.IsValid() && cookingScene.isLoaded) return true;
+            return false;
         }
     }
 

@@ -334,17 +334,8 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
         AddRuntimeTarget(go, id);
     }
 
-    // [FIX 2026-09-19 P0 — PROFILER] LateUpdate 9.5ms/frame. Resolver nay chieu toa do moi o dat len man hinh
-    // va gan position cho proxy MOI FRAME, ke ca khi tutorial DA XONG => lam ban Tutorial canvas moi frame.
-    private static bool TutorialDangChay()
-    {
-        var tm = TutorialManager.Instance;
-        return tm != null && tm.DangChayTutorial;
-    }
-
     void LateUpdate()
     {
-        if (!TutorialDangChay()) return;
         UpdateProxyPositions();
         UpdatePlotsAreaMask();
     }
@@ -355,12 +346,9 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
 
     private IEnumerator SeedScanLoop()
     {
-        // [FIX 2026-09-19 P0] Ban cu: 4 x FindObjectsByType<SeedDragItem> moi 0.25s, VINH VIEN, ke ca khi tutorial
-        // da xong (popup hat giong dong => khong bao gio tim thay => quet mai). Nay: chi quet khi tutorial dang chay.
-        var wait = new WaitForSeconds(1f);
+        var wait = new WaitForSeconds(0.25f);
         while (true)
         {
-            if (!TutorialDangChay()) { yield return wait; continue; }
             // Re-scan whenever target drops out of registry (seed panel closed/reopened destroys & recreates SeedDragItems)
             if (TutorialManager.GetTargetRect("seed_rice") == null)
                 TryScanSeed("seed_rice", RICE_ALIASES);
@@ -679,12 +667,9 @@ public class TutorialRuntimeTargetResolver : MonoBehaviour
 
             Vector3 screen = _cam.WorldToScreenPoint(PlotVisualCenter(worldT));
             bool behindCam = screen.z < 0f;
-            if (proxyRT.gameObject.activeSelf == behindCam) proxyRT.gameObject.SetActive(!behindCam);
+            proxyRT.gameObject.SetActive(!behindCam);
             if (!behindCam)
             {
-                // [FIX 2026-09-19] khong ghi lai position neu lech < 0.5px (moi lan ghi = canvas rebuild)
-                Vector3 hienTai = proxyRT.position;
-                if (Mathf.Abs(hienTai.x - screen.x) < 0.5f && Mathf.Abs(hienTai.y - screen.y) < 0.5f) continue;
                 if (_tutorialCanvas != null && _tutorialCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
                 {
                     Camera uiCam = _tutorialCanvas.worldCamera != null ? _tutorialCanvas.worldCamera : _cam;
