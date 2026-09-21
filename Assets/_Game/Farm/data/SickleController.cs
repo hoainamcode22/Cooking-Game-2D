@@ -23,6 +23,15 @@ public class SickleController : MonoBehaviour
     [SerializeField] private string targetSortingLayer = "Foreground";
     [SerializeField] private int targetSortingOrder = 30000;
 
+    [Header("Scale theo zoom")]
+    [Tooltip("Ortho camera mà tại đó liềm đúng bằng Sickle Scale. Zoom in (ortho nhỏ) liềm " +
+             "nhỏ lại theo tỉ lệ ortho/thamChieu, zoom out to lên — kích thước TRÊN MÀN HÌNH " +
+             "giữ ổn định. Kẹp [0.5x, 2x]. Mặc định 750 = CameraController.defaultSize.")]
+    [SerializeField] private float orthoThamChieu = ZoomScaleHelper.ORTHO_THAM_CHIEU;
+
+    // Ortho lần áp scale gần nhất — LateUpdate chỉ tính lại khi lệch > 0.5.
+    private float _orthoDaApDung = float.NegativeInfinity;
+
     private Camera mainCam;
     private bool isDragging;
     private int enabledFrame; // guard: không nhận release ngay frame enable
@@ -47,14 +56,35 @@ public class SickleController : MonoBehaviour
         // sickleScale = 7 nen cai liem LUON bi thu nho con 4.8 (~69% co thiet ke) - dung
         // la loi "icon liem qua nho". Nay ton trong gia tri Inspector, chi con mot cai kep
         // rong de gia tri hong khong lam liem bien mat hoac phu kin man hinh.
-        float scale = Mathf.Clamp(sickleScale, 0.1f, 20f);
-        transform.localScale = new Vector3(scale, scale, 1f);
+        //
+        // [ZOOM 2026-09-21] Nhân thêm hệ số ortho/orthoThamChieu (kẹp [0.5, 2]) để liềm giữ
+        // cỡ trên màn hình khi zoom. Ở ortho 750 hệ số = 1 ⇒ đúng scale 7 như cũ.
+        ApDungScaleTheoZoom();
         var sr = GetComponent<SpriteRenderer>();
         if (sr != null)
         {
             sr.sortingLayerName = targetSortingLayer;
             sr.sortingOrder = targetSortingOrder;
         }
+    }
+
+    /// <summary>
+    /// localScale = sickleScale × (ortho / orthoThamChieu), hệ số kẹp [0.5, 2]. Không alloc.
+    /// </summary>
+    private void ApDungScaleTheoZoom()
+    {
+        float heSo  = ZoomScaleHelper.HeSo(mainCam, orthoThamChieu);
+        float scale = Mathf.Clamp(sickleScale, 0.1f, 20f) * heSo;
+        transform.localScale = new Vector3(scale, scale, 1f);
+        _orthoDaApDung = (mainCam != null) ? mainCam.orthographicSize : float.NegativeInfinity;
+    }
+
+    // Chỉ chạy khi liềm đang bật (đang gặt). Rẻ: 1 phép so; chỉ set scale khi ortho đổi > 0.5.
+    private void LateUpdate()
+    {
+        if (mainCam == null) return;
+        if (Mathf.Abs(mainCam.orthographicSize - _orthoDaApDung) <= 0.5f) return;
+        ApDungScaleTheoZoom();
     }
 
     private void Awake()

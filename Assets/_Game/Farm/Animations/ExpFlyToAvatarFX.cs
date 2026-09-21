@@ -27,6 +27,16 @@ public class ExpFlyToAvatarFX : MonoBehaviour
     private Action onArrived;
     private Coroutine routine;
 
+    // [ZOOM 2026-09-21] Hệ số theo zoom camera (ZoomScaleHelper.HeSo), spawner đặt trước Play().
+    // Nhân vào startScale/normalScale để icon giữ cỡ TRÊN MÀN HÌNH khi zoom in/out.
+    private float zoomMul = 1f;
+
+    /// <summary>Đặt hệ số scale theo zoom (1 = cỡ thiết kế). Gọi TRƯỚC Play().</summary>
+    public void SetZoomScale(float heSo)
+    {
+        zoomMul = Mathf.Clamp(heSo, ZoomScaleHelper.HE_SO_MIN, ZoomScaleHelper.HE_SO_MAX);
+    }
+
     private void Reset()
     {
         visualRoot = transform;
@@ -62,7 +72,7 @@ public class ExpFlyToAvatarFX : MonoBehaviour
         transform.position = worldSpawnPos;
 
         if (visualRoot != null)
-            visualRoot.localScale = startScale;
+            visualRoot.localScale = startScale * zoomMul;
 
         routine = StartCoroutine(CoPlay(worldSpawnPos, worldTargetPos));
     }
@@ -83,14 +93,14 @@ public class ExpFlyToAvatarFX : MonoBehaviour
             transform.position = Vector3.LerpUnclamped(worldSpawnPos, groundPos, ease);
 
             if (visualRoot != null)
-                visualRoot.localScale = Vector3.LerpUnclamped(startScale, normalScale, ease);
+                visualRoot.localScale = Vector3.LerpUnclamped(startScale * zoomMul, normalScale * zoomMul, ease);
 
             yield return null;
         }
 
         transform.position = groundPos;
         if (visualRoot != null)
-            visualRoot.localScale = normalScale;
+            visualRoot.localScale = normalScale * zoomMul;
 
         if (groundStayDuration > 0f)
             yield return new WaitForSeconds(groundStayDuration);

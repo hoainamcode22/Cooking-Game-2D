@@ -138,6 +138,7 @@ public class CropProcessPopupUI : MonoBehaviour
         RefreshDisplay();
         UpdatePosition();
         gameObject.SetActive(true);
+        Loc.RequestRescan();
         AcquirePopupInputBlock();
         TutorialManager.Instance?.NotifyOpenCropProcess();
     }
@@ -156,6 +157,7 @@ public class CropProcessPopupUI : MonoBehaviour
         RefreshDisplay();
         UpdatePosition();
         gameObject.SetActive(true);
+        Loc.RequestRescan();
         AcquirePopupInputBlock();
     }
 
@@ -173,6 +175,7 @@ public class CropProcessPopupUI : MonoBehaviour
         RefreshDisplay();
         UpdatePosition();
         gameObject.SetActive(true);
+        Loc.RequestRescan();
         AcquirePopupInputBlock();
     }
 
@@ -375,8 +378,8 @@ public class CropProcessPopupUI : MonoBehaviour
             if (txtCropName != null)
             {
                 txtCropName.text = currentPlot.CurrentCrop != null
-                    ? currentPlot.CurrentCrop.displayName.ToUpper()
-                    : "ĐANG TRỒNG...";
+                    ? Loc.T(currentPlot.CurrentCrop.displayName).ToUpper()
+                    : Loc.T("ĐANG TRỒNG...");
                 txtCropName.color = Color.white;
             }
 
@@ -393,9 +396,9 @@ public class CropProcessPopupUI : MonoBehaviour
                 int gia = CurrentGemCost;
                 if (gia <= 0)
                 {
-                    txtGemCost.text = "MIỄN PHÍ";
+                    txtGemCost.text = Loc.T("MIỄN PHÍ");
                     txtGemCost.enableAutoSizing = true;
-                    txtGemCost.fontSizeMin = 10f;
+                    txtGemCost.fontSizeMin = 7f;
                     txtGemCost.fontSizeMax = 18f;
                     txtGemCost.alignment = TextAlignmentOptions.Center;
                     if (imgDiamondIcon != null) imgDiamondIcon.gameObject.SetActive(false);
@@ -450,7 +453,7 @@ public class CropProcessPopupUI : MonoBehaviour
         {
             if (txtCropName != null)
             {
-                txtCropName.text = currentHouse.HouseName.ToUpper();
+                txtCropName.text = Loc.T(currentHouse.HouseName).ToUpper();
                 txtCropName.color = Color.white;
             }
 

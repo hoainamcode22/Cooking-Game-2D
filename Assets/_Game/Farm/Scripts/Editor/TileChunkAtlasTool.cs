@@ -92,6 +92,68 @@ public class TileChunkAtlasTool : EditorWindow
             GUILayout.Space(4);
             if (GUILayout.Button("Tra ve Individual TAT CA (hoan tac che do, giu atlas)")) DatMode(TilemapRenderer.Mode.Individual);
         }
+
+        GUILayout.Space(14);
+        EditorGUILayout.LabelField("ATLAS DECOR (bui cay / hoa / thong / khuc go)", EditorStyles.boldLabel);
+        EditorGUILayout.HelpBox(
+            "Zoom het co: Draw ~3.000 vi 420 decor moi cai 2-3 draw (than + bong) tu PNG roi. " +
+            "64 PNG decor = 4,5 trieu pixel, vua 1 trang 2048. Gom vao mot atlas => SRP batcher gop hang tram draw thanh vai chuc.\n" +
+            "Bo qua *_normal / *_mask (khong dung cho sprite thuong).", MessageType.Info);
+        if (GUILayout.Button("4) TAO ATLAS DECOR + pack", GUILayout.Height(28))) TaoAtlasDecor();
+    }
+
+    private const string DECOR_ATLAS_PATH = ATLAS_DIR + "/Atlas_Decor.spriteatlas";
+    private static readonly string[] DECOR_DIRS =
+    {
+        "Assets/maptitle/Design_Map/HappyHarvest_NatureDecor/Art/Environment",
+    };
+
+    private void TaoAtlasDecor()
+    {
+        if (!Directory.Exists(ATLAS_DIR)) Directory.CreateDirectory(ATLAS_DIR);
+        var tex = new List<Object>();
+        var daCo = new HashSet<string>();
+        var trongAtlasKhac = LayTextureDaOAtlasKhac();
+        foreach (var dir in DECOR_DIRS)
+        {
+            if (!AssetDatabase.IsValidFolder(dir)) { Debug.LogWarning("[DecorAtlas] khong thay " + dir); continue; }
+            foreach (var g in AssetDatabase.FindAssets("t:Texture2D", new[] { dir }))
+            {
+                string path = AssetDatabase.GUIDToAssetPath(g);
+                string name = Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
+                if (name.EndsWith("_normal") || name.EndsWith("_mask") || name.EndsWith("_n")) continue;
+                var ti = AssetImporter.GetAtPath(path) as TextureImporter;
+                if (ti == null || ti.textureType != TextureImporterType.Sprite) continue;
+                var t = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                if (t == null || trongAtlasKhac.Contains(t) || !daCo.Add(path)) continue;
+                tex.Add(t);
+            }
+        }
+        if (tex.Count == 0) { Debug.LogWarning("[DecorAtlas] khong co texture nao."); return; }
+
+        var atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(DECOR_ATLAS_PATH);
+        if (atlas == null) { atlas = new SpriteAtlas(); AssetDatabase.CreateAsset(atlas, DECOR_ATLAS_PATH); }
+        else { var cu = atlas.GetPackables(); if (cu != null && cu.Length > 0) atlas.Remove(cu); }
+
+        var pack = atlas.GetPackingSettings();
+        pack.padding = 4; pack.enableRotation = false; pack.enableTightPacking = true; pack.blockOffset = 1;
+        atlas.SetPackingSettings(pack);
+        var ts = atlas.GetTextureSettings();
+        ts.filterMode = FilterMode.Bilinear; ts.generateMipMaps = false; ts.sRGB = true; ts.readable = false;
+        atlas.SetTextureSettings(ts);
+        foreach (var plat in new[] { "DefaultTexturePlatform", "Android", "iPhone" })
+        {
+            var ps = atlas.GetPlatformSettings(plat);
+            ps.overridden = true; ps.maxTextureSize = 2048;
+            ps.format = plat == "DefaultTexturePlatform" ? TextureImporterFormat.Automatic : TextureImporterFormat.ASTC_5x5;
+            ps.compressionQuality = 100; ps.textureCompression = TextureImporterCompression.Compressed;
+            atlas.SetPlatformSettings(ps);
+        }
+        atlas.SetIncludeInBuild(true);
+        atlas.Add(tex.ToArray());
+        EditorUtility.SetDirty(atlas); AssetDatabase.SaveAssets();
+        SpriteAtlasUtility.PackAtlases(new[] { atlas }, EditorUserBuildSettings.activeBuildTarget);
+        Debug.Log($"[DecorAtlas] da tao {DECOR_ATLAS_PATH} voi {tex.Count} texture. Play lai -> doc Draw/Batches tren PerfHud.");
     }
 
     private void Quet()

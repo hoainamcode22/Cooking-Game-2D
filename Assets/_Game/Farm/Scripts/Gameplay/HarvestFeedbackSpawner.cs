@@ -31,6 +31,9 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     [SerializeField] private float expSpawnGap = 0.05f;
     [SerializeField] private float expSpawnScatterRadius = 55f;
 
+    // [ZOOM 2026-09-21] Camera cache — chỉ để đọc orthographicSize lúc spawn (không gọi Camera.main mỗi lần).
+    private Camera _camZoom;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -40,6 +43,14 @@ public class HarvestFeedbackSpawner : MonoBehaviour
         }
 
         Instance = this;
+        _camZoom = Camera.main;
+    }
+
+    /// <summary>Hệ số scale theo zoom hiện tại (ZoomScaleHelper, ortho 750 ⇒ 1, kẹp [0.5, 2]).</summary>
+    private float HeSoZoom()
+    {
+        if (_camZoom == null) _camZoom = Camera.main;
+        return ZoomScaleHelper.HeSo(_camZoom);
     }
 
     private void Start()
@@ -80,6 +91,7 @@ public class HarvestFeedbackSpawner : MonoBehaviour
             if (fx == null) continue;
 
             fx.ClearIconImmediate();
+            fx.SetZoomScale(HeSoZoom());   // icon giữ cỡ trên màn hình theo zoom
 
             Vector3 worldTarget = GetWarehouseTargetWorldPosition(spawnPos);
 
@@ -115,6 +127,7 @@ public class HarvestFeedbackSpawner : MonoBehaviour
             ExpFlyToAvatarFX fx = Instantiate(expFlyPrefab, spawnPos, Quaternion.identity);
             if (fx == null) continue;
 
+            fx.SetZoomScale(HeSoZoom());   // viên EXP giữ cỡ trên màn hình theo zoom
             Vector3 expWorldTarget = GetExpTargetWorldPosition(spawnPos);
             int thisOrbExp = (i == visualCount - 1) ? remainingExp : perOrbExp;
             remainingExp -= thisOrbExp;
@@ -123,6 +136,9 @@ public class HarvestFeedbackSpawner : MonoBehaviour
             {
                 // Khi viên EXP chạm vào thanh EXP_Bar_Container: nảy mẩy mẩy + cộng EXP
                 PlayExpTargetPulse();
+                // [THEM 2026-09-21] Tieng EXP (exp.mp3) dung luc vien EXP CHAM thanh EXP.
+                // AudioManager.PlayExp() da co cooldown chong spam (nhieu vien toi cung luc chi keu 1 lan).
+                AudioManager.Instance?.PlayExp();
 
                 // [FIX 2026-09-03] EXP đã cộng ở dòng 372; orb chỉ chạy FX, không cộng lần 2 (bug cộng đôi).
                 if (addExpOnArrival && PlayerProgressManager.Instance != null)

@@ -1,3 +1,0 @@
-Khoi phuc: copy tat ca file .meta trong thu muc nay ve lai
-  Assets/maptitle/Map45Iso/  va  Assets/maptitle/Map45/
-roi de Unity reimport. Chi doi duy nhat 1 dong: spriteMeshType 1 -> 0 (Tight -> Full Rect).

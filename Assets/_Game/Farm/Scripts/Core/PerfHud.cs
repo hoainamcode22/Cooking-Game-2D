@@ -450,6 +450,7 @@ public sealed class PerfHud : MonoBehaviour
         // ── Phim tat (Editor / PC) ──
         if (PhimVuaBam(true))  { BatTat(); return; }
         if (PhimVuaBam(false)) { XuatCsv(); return; }
+        if (PhimF5VuaBam())    { DonRacVaDoHeap(); return; }
 
         // ── Cham 4 ngon: canh len (0..3 ngon -> >=4 ngon) ──
         int soNgon = DemNgon();
@@ -523,6 +524,55 @@ public sealed class PerfHud : MonoBehaviour
         if (Input.GetKeyDown(laF3 ? KeyCode.F3 : KeyCode.F4)) return true;
 #endif
         return false;
+    }
+
+    /// <summary>Phim F5: don rac + do GC heap truoc/sau (xem <see cref="DonRacVaDoHeap"/>).</summary>
+    private static bool PhimF5VuaBam()
+    {
+#if ENABLE_INPUT_SYSTEM
+        var ban = UnityEngine.InputSystem.Keyboard.current;
+        if (ban != null && ban.f5Key.wasPressedThisFrame) return true;
+#endif
+#if ENABLE_LEGACY_INPUT_MANAGER
+        if (Input.GetKeyDown(KeyCode.F5)) return true;
+#endif
+        return false;
+    }
+
+    /// <summary>
+    /// [GC HEAP 2026-09-21] Chan doan heap phinh: do Mono heap TRUOC, ep GC full +
+    /// Resources.UnloadUnusedAssets, roi do lai SAU. Doc 2 so "used" trong log:
+    ///   • used SAU van ~ used TRUOC (ca tram MB / ~1 GB)  => object SONG that (co ai giu).
+    ///   • used SAU tut manh                              => la rac chua don; GC incremental
+    ///     de heap phinh, khong phai ro ri. Reserved thuong KHONG tra lai OS ngay.
+    /// Luu y: trong Editor, Mono heap dung CHUNG voi code cua Editor (AssetDatabase,
+    /// Inspector, UI Toolkit...) nen so nay luon cao hon ban build.
+    /// </summary>
+    private void DonRacVaDoHeap()
+    {
+        StartCoroutine(DonRacVaDoHeapCo());
+    }
+
+    private System.Collections.IEnumerator DonRacVaDoHeapCo()
+    {
+        const float MB = 1f / (1024f * 1024f);
+        long usedTruoc = UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong();
+        long heapTruoc = UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong();
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        yield return Resources.UnloadUnusedAssets();
+        GC.Collect();
+        yield return null;
+
+        long usedSau = UnityEngine.Profiling.Profiler.GetMonoUsedSizeLong();
+        long heapSau = UnityEngine.Profiling.Profiler.GetMonoHeapSizeLong();
+
+        Debug.Log(string.Format(CultureInfo.InvariantCulture,
+            "[PerfHud F5] Mono heap TRUOC: used {0:F1} MB / reserved {1:F1} MB  ->  SAU: used {2:F1} MB / reserved {3:F1} MB  (used giam {4:F1} MB). " +
+            "used SAU van cao => object song that; used SAU tut manh => rac chua don (heap phinh do GC incremental).",
+            usedTruoc * MB, heapTruoc * MB, usedSau * MB, heapSau * MB, (usedTruoc - usedSau) * MB));
     }
 
     private static int DemNgon()

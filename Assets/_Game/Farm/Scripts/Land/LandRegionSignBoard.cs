@@ -97,9 +97,15 @@ public class LandRegionSignBoard : MonoBehaviour
         }
 
         if (Time.time < _nextRefresh) return;
-        _nextRefresh = Time.time + 0.5f;
+        // [FIX 2026-09-21 P0 — PROFILER] 27 bang cung bat dau nen cung Refresh() trong MOT frame moi 0.5s
+        // => 216 lan cap phat chuoi (8.7 KB) + 2.7ms gom vao mot frame = gai GC deu dan. Nay: nhip 1s va
+        // moi bang lech pha ngau nhien de tai roi deu ra cac frame.
+        if (_phaLech < 0f) _phaLech = UnityEngine.Random.value;
+        _nextRefresh = Time.time + 1f + (_phaLech * 0.5f);
+        _phaLech = 0f;
         Refresh();
     }
+    private float _phaLech = -1f;
 
     // ─────────────────────────────────────────────────────────────────────
     // DỰNG HÌNH

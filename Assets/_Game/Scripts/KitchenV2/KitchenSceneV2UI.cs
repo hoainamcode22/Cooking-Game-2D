@@ -207,6 +207,8 @@ namespace KitchenUIv2
             BuocInit("RefreshAll", RefreshAll);
             BuocInit("ShowRecipeListMenu", () => ShowBoardDetail(false));
             BuocInit("ApplyFont", () => SkinKit.ApFont(transform));
+            // [SkinUnifier 2026-09-21] Dong bo nut/vien/ruy bang theo bo cua Shop (chi doi sprite/mau/font).
+            BuocInit("PopupSkinUnifier", () => PopupSkinUnifier.ApDung(transform));
         }
 
         /// <summary>[FIX 2026-09-02] Chạy 1 bước init trong rào try/catch — lỗi thì log rõ

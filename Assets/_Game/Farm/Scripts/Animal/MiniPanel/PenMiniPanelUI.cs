@@ -711,7 +711,7 @@ public class PenMiniPanelUI : MonoBehaviour
             if (progressFill  != null) progressFill.fillAmount = t;
             if (progressLabel != null) progressLabel.text = FormatTime(remaining);
             // [FIX 2026-09-06] Hien dung gia: mien phi thi bao MIEN PHI, khong bao "x21".
-            if (_gemCostText  != null) _gemCostText.text = TangTocChuongDangMienPhi ? "MIỄN PHÍ" : ("x" + ConstructionManager.RushCostFor(remaining));
+            if (_gemCostText  != null) _gemCostText.text = TangTocChuongDangMienPhi ? Loc.T("MIỄN PHÍ") : ("x" + ConstructionManager.RushCostFor(remaining));
 
             yield return null;
         }
@@ -1016,17 +1016,17 @@ public class PenMiniPanelUI : MonoBehaviour
     public string GetPenDisplayName()
     {
         if (config != null && !string.IsNullOrEmpty(config.penName))
-            return config.penName.ToUpper();
+            return Loc.T(config.penName).ToUpper();
 
         if (config != null)
         {
-            if (config.penId == "pen_01" || config.productItemId == "beef") return "CHUỒNG BÒ";
-            if (config.penId == "pen_02" || config.productItemId == "pork") return "CHUỒNG HEO";
-            if (config.penId == "pen_03" || config.productItemId == "chicken_meat" || config.secondProductItemId == "egg") return "CHUỒNG GÀ";
-            if (config.penId == "pen_04" || config.productItemId == "milk") return "CHUỒNG BÒ SỮA";
+            if (config.penId == "pen_01" || config.productItemId == "beef") return Loc.T("CHUỒNG BÒ");
+            if (config.penId == "pen_02" || config.productItemId == "pork") return Loc.T("CHUỒNG HEO");
+            if (config.penId == "pen_03" || config.productItemId == "chicken_meat" || config.secondProductItemId == "egg") return Loc.T("CHUỒNG GÀ");
+            if (config.penId == "pen_04" || config.productItemId == "milk") return Loc.T("CHUỒNG BÒ SỮA");
         }
 
-        return "CHUỒNG NUÔI";
+        return Loc.T("CHUỒNG NUÔI");
     }
 
     /// <summary>Giay Unix (UTC) — CUNG mot cua voi PlotController / ConstructionManager.</summary>
@@ -1138,7 +1138,7 @@ public class PenMiniPanelUI : MonoBehaviour
         txtRt.sizeDelta = new Vector2(rt.sizeDelta.x * 0.5f, rt.sizeDelta.y * 0.82f);
         txtRt.anchoredPosition = new Vector2(rt.sizeDelta.x * 0.18f, 0f);
         var t = txtGO.AddComponent<TextMeshProUGUI>();
-        t.text = TangTocChuongDangMienPhi ? "MIỄN PHÍ" : ("x" + SpeedUpGemCost);
+        t.text = TangTocChuongDangMienPhi ? Loc.T("MIỄN PHÍ") : ("x" + SpeedUpGemCost);
         t.color = Color.white;
         t.alignment = TextAlignmentOptions.Center;
         t.fontStyle = FontStyles.Bold;

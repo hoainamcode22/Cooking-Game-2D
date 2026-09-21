@@ -1,0 +1,66 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99ce6d69278eb5c4aae466e01a79cde2, type: 3}
+  m_Name: North_Ray_04
+  m_EditorClassIdentifier: Assembly-CSharp::LandRegionData
+  regionId: north_ray_04
+  displayName: Rail Lot 04
+  cellRects:
+  - x: 9
+    y: 29
+    width: 1
+    height: 7
+  - x: 10
+    y: 29
+    width: 1
+    height: 8
+  - x: 11
+    y: 29
+    width: 1
+    height: 9
+  - x: 12
+    y: 29
+    width: 1
+    height: 10
+  - x: 13
+    y: 29
+    width: 1
+    height: 10
+  - x: 14
+    y: 29
+    width: 1
+    height: 10
+  - x: 15
+    y: 29
+    width: 1
+    height: 10
+  - x: 16
+    y: 29
+    width: 1
+    height: 10
+  - x: 17
+    y: 29
+    width: 1
+    height: 10
+  - x: 18
+    y: 29
+    width: 1
+    height: 10
+  unlockLevel: 36
+  goldPrice: 109510
+  gemPrice: 0
+  materialCosts: []
+  clearSeconds: 300
+  rushGemCost: 0
+  workerCount: 4
+  requiredRegionIds: []
+  unlockedByDefault: 0

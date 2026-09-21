@@ -336,6 +336,9 @@ public class TouristBoatUnlockFlow : MonoBehaviour
     /// TouristBoatSetupTool — nhầm 2 đường này thì 2 hệ số NHÂN nhau, icon từng
     /// phình 27.000 unit che kín map).
     /// </summary>
+    /// <summary>[FIX 2026-09-19] Phải bằng BoatDockSlot.BangGoScale (1.35) để 2 đường set không đá nhau.</summary>
+    private const float BoatDockSlotBangGoScale = 1.35f;
+
     private void ApSpriteBangKhoa(int dockIndex, Transform board, TouristBoatConfig cfg)
     {
         Sprite plaqueSpr = lockBoardSprite;
@@ -359,7 +362,9 @@ public class TouristBoatUnlockFlow : MonoBehaviour
             sr.sortingOrder = 55;
         }
 
-        board.localScale = Vector3.one; // chống dồn hệ số giữa các lần chạy
+        // [FIX 2026-09-19] Đồng bộ với BoatDockSlot.RefreshLockUI: bảng gỗ 1.35x (trước: Vector3.one).
+        // Gán tuyệt đối nên chạy lại nhiều lần vẫn không dồn hệ số; pivot chân cọc giữ nguyên vị trí.
+        board.localScale = new Vector3(BoatDockSlotBangGoScale, BoatDockSlotBangGoScale, 1f);
 
         // Định dạng lại chữ teaser to, rõ nét trên mặt bảng gỗ
         Transform tt = board.Find("TeaserText");
@@ -373,17 +378,22 @@ public class TouristBoatUnlockFlow : MonoBehaviour
                 if (font != null) tmp.font = font;
 
                 tmp.isOrthographic = true;
+                // [FIX 2026-09-19] Auto-size 17..28 + Overflow (không Ellipsis) — giống BoatDockSlot.RefreshLockUI.
                 tmp.fontSize = 28f;
+                tmp.enableAutoSizing = true;
+                tmp.fontSizeMax = 28f;
+                tmp.fontSizeMin = 17f;
                 tmp.fontStyle = FontStyles.Bold;
                 tmp.alignment = TextAlignmentOptions.Center;
                 tmp.textWrappingMode = TextWrappingModes.Normal;
+                tmp.overflowMode = TextOverflowModes.Overflow;
                 tmp.color = new Color(1f, 0.98f, 0.88f, 1f);
                 tmp.outlineWidth = 0.22f;
                 tmp.outlineColor = new Color(0.24f, 0.12f, 0.04f, 1f);
                 var rt = tmp.rectTransform;
                 if (rt != null)
                 {
-                    rt.sizeDelta = new Vector2(210f, 90f);
+                    rt.sizeDelta = new Vector2(190f, 96f); // [FIX 2026-09-19] trước 210x90; ~85% bề rộng mặt bảng
                 }
                 tt.localPosition = new Vector3(0f, 120f, -0.5f);
             }

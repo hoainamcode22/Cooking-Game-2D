@@ -51,6 +51,9 @@ public class BoatDockSlot : MonoBehaviour
     [SerializeField] private float floatingTextRise    = 80f;   // đơn vị world (map hệ tọa độ lớn)
     [SerializeField] private float floatingTextSeconds = 1.6f;
 
+    // [FIX 2026-09-19] Hệ số phóng to biển cọc gỗ khóa bến (sprite 240x180 px, PPU 1) để chữ teaser không tràn mép.
+    private const float BangGoScale = 1.35f;
+
     // [QA M-6] Ngưỡng coi là "chạm" chứ không phải "kéo" (pixel màn hình).
     private const float NguongKeoPixel = 24f;
 
@@ -285,7 +288,9 @@ public class BoatDockSlot : MonoBehaviour
                     sr.sortingOrder = 55; // Nổi bật trên mặt nước
                 }
 
-                lockRoot.transform.localScale = Vector3.one;
+                // [FIX 2026-09-19] Bảng gỗ to lên 1.35x để chữ nằm gọn trong khung (trước: Vector3.one).
+                // Scale quanh gốc lockRoot = pivot chân cọc (0.5, 0.05) nên cọc vẫn cắm đúng chỗ cũ.
+                lockRoot.transform.localScale = new Vector3(BangGoScale, BangGoScale, 1f);
 
                 // Tắt hoàn toàn LockIcon placeholder nếu có
                 Transform icon = lockRoot.transform.Find("LockIcon");
@@ -300,7 +305,12 @@ public class BoatDockSlot : MonoBehaviour
 
                     teaserText.text = BuildTeaserText(mgr.Config);
                     teaserText.isOrthographic = true;
+                    // [FIX 2026-09-19] Auto-size để 3 dòng ("UNLOCKS AT / LV 12 / 2.000 GOLD") luôn nằm gọn trong mặt bảng.
+                    // fontSizeMax = 28 (size cũ), fontSizeMin = 60% = 17. KHÔNG dùng Ellipsis (sẽ cắt mất "GOLD"/"GEMS").
                     teaserText.fontSize = 28f;
+                    teaserText.enableAutoSizing = true;
+                    teaserText.fontSizeMax = 28f;
+                    teaserText.fontSizeMin = 17f;
                     teaserText.fontStyle = FontStyles.Bold;
                     teaserText.alignment = TextAlignmentOptions.Center;
                     teaserText.textWrappingMode = TextWrappingModes.Normal;
@@ -315,7 +325,9 @@ public class BoatDockSlot : MonoBehaviour
                     var rt = teaserText.rectTransform;
                     if (rt != null)
                     {
-                        rt.sizeDelta = new Vector2(210f, 90f);
+                        // [FIX 2026-09-19] Rect chữ = ~85% bề rộng mặt bảng (224px) x chiều cao ván trong (~98px).
+                        // Trước: 210x90 (sát mép, 3 dòng tràn dọc). Đơn vị local của lockRoot, tự to theo scale 1.35.
+                        rt.sizeDelta = new Vector2(190f, 96f);
                     }
                     teaserText.transform.localPosition = new Vector3(0f, 120f, -0.5f); // Đặt chính giữa mặt bảng gỗ phía trên cọc
                 }
@@ -325,8 +337,10 @@ public class BoatDockSlot : MonoBehaviour
                 if (col == null) col = GetComponent<BoxCollider2D>();
                 if (col != null)
                 {
-                    col.size = new Vector2(240f, 180f);
-                    col.offset = new Vector2(0f, 90f);
+                    // Collider nằm trên lockRoot thì tự to theo scale; nếu fallback nằm trên slot (không scale) thì nhân tay.
+                    float k = (col.gameObject == lockRoot) ? 1f : BangGoScale;
+                    col.size = new Vector2(240f * k, 180f * k);
+                    col.offset = new Vector2(0f, 90f * k);
                 }
             }
         }

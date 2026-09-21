@@ -388,6 +388,8 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         VuaKhungManHinh();
         AcquireInputBlock();
         SkinKit.ApFont(_root);
+        // [SkinUnifier 2026-09-21] Dong bo nut/vien/ruy bang theo bo cua Shop (chi doi sprite/mau/font).
+        PopupSkinUnifier.ApDung(_root);
         ShowTab(tab);
     }
 
@@ -1015,6 +1017,10 @@ public class UnifiedTaskPopupUI : MonoBehaviour
                 BuildAchievementContent();
                 break;
         }
+
+        // [Localization 2026-09-19] Popup vừa dựng/đổi tab ⇒ xin bộ dịch quét NGAY khung hình kế,
+        // không chờ nhịp poll nền (tới 8s) — trước đây chữ Việt hiện vài giây rồi mới đổi.
+        Loc.RequestRescan();
     }
 
     private void ApplyTabState(TabButtonView view, bool selected)
@@ -1575,7 +1581,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         h.icon.enabled = coIcon;
         if (coIcon) { h.icon.sprite = itemIcon; h.icon.color = Color.white; }
 
-        h.ten.text  = data != null ? data.missionName : "";
+        h.ten.text  = data != null ? Loc.T(data.missionName) : "";
         h.ten.color = (khoa || daNhan) ? TaskPopupDesign.TenMoNhat : TaskPopupDesign.TenBinhThuong;
 
         h.thanhTienDo.fillAmount = khoa ? 0f : daNhan ? 1f : (float)nay / muc;
@@ -1703,7 +1709,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         // -45..-25 trong khi thanh tiến độ chiếm -26..-2 và đáy banner ở -46: dòng phụ vừa
         // CHẠM thanh tiến độ vừa dính sát mép dưới, đúng chỗ Sếp kêu "nhỏ và chật".
         // Bản mới: tiêu đề 10..38, thanh -16..8, dòng phụ -41..-19 ⇒ hở đều 2-5px mọi phía.
-        CreateText(c.goc, "Txt_Title", tieuDe, TaskPopupDesign.CoChuMoc - 3, TaskPopupDesign.MocChu,
+        CreateText(c.goc, "Txt_Title", Loc.T(tieuDe), TaskPopupDesign.CoChuMoc - 3, TaskPopupDesign.MocChu,
             TextAlignmentOptions.Left, new Vector2(xChu + (wChu + 30f) * 0.5f, 24f),
             new Vector2(wChu + 30f, 28f), FontStyles.Bold);
 
@@ -1721,7 +1727,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             TextAlignmentOptions.Center, Vector2.zero, new Vector2(wChu - 8f, 22f), FontStyles.Bold);
         AddShadow(c.soTienDo.gameObject, TaskPopupDesign.TdChuVien, new Vector2(0f, -2f));
 
-        c.mota = CreateText(c.goc, "Txt_Desc", moTa, 15, TaskPopupDesign.MocChu,
+        c.mota = CreateText(c.goc, "Txt_Desc", Loc.T(moTa), 15, TaskPopupDesign.MocChu,
             TextAlignmentOptions.Left, new Vector2(xChu + wChu * 0.5f, -30f),
             new Vector2(wChu, 22f));
         // Câu tiếng Anh dài hơn tiếng Việt ⇒ cho phép co xuống 12, không bao giờ to hơn 15.
@@ -1786,9 +1792,9 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         c.thanh.fillAmount = (float)xong / mau;
         c.soTienDo.text = $"{xong}/{moKhoa}";
         c.mota.text = xong >= moKhoa && moKhoa > 0
-            ? "Đã xong cả mốc này! Sang mốc sau để nhận thêm."
-            : (laThanhTuu ? "Hoàn thành các mốc để mở rương thưởng!"
-                          : "Hoàn thành tất cả nhiệm vụ để nhận thưởng đặc biệt!");
+            ? Loc.T("Đã xong cả mốc này! Sang mốc sau để nhận thêm.")
+            : (laThanhTuu ? Loc.T("Hoàn thành các mốc để mở rương thưởng!")
+                          : Loc.T("Hoàn thành tất cả nhiệm vụ để nhận thưởng đặc biệt!"));
     }
 
     /// <summary>

@@ -243,6 +243,8 @@ public class WarehousePopupUI : MonoBehaviour
         LoadWarehouseProgress();
         BuildLookups();
         SetCategory(currentCategory);
+        // [SkinUnifier 2026-09-21] Dong bo nut/vien/ruy bang theo bo cua Shop (chi doi sprite/mau/font).
+        PopupSkinUnifier.ApDung(popupRoot != null ? popupRoot.transform : transform);
         // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
         Loc.RequestRescan();
     }

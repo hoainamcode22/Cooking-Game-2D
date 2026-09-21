@@ -77,12 +77,18 @@ public class MillPopupUI : MonoBehaviour
     /// Cờ static "popup máy xay đang mở". Theo đúng quy ước sẵn có của dự án
     /// (`CropProcessPopupUI.AnyOpen`, `OrderBoardPopupUI.AnyOpen`) để `PopupManager` chặn
     /// click xuống world được mà KHÔNG cần thêm [SerializeField] và KHÔNG cần tôi sửa
+    private static int _frameTimCuoi = -1;
     public static bool AnyOpen
     {
         get
         {
-            if (Instance == null)
+            // [FIX 2026-09-21 P0] Ban cu FindFirstObjectByType(Include) MOI LAN GOI khi Instance null
+            // (popup khong co trong scene => tim mai, moi frame, tu nhieu noi). Chi tim lai toi da 1 lan/frame.
+            if (Instance == null && _frameTimCuoi != Time.frameCount)
+            {
+                _frameTimCuoi = Time.frameCount;
                 Instance = FindFirstObjectByType<MillPopupUI>(FindObjectsInactive.Include);
+            }
             return Instance != null && Instance.IsOpen;
         }
     }
@@ -655,6 +661,8 @@ public class MillPopupUI : MonoBehaviour
         DatChayAnimation(false);
 
         AnToast(true);
+        // [SkinUnifier 2026-09-21] Dong bo nut/vien/ruy bang theo bo cua Shop (chi doi sprite/mau/font).
+        PopupSkinUnifier.ApDung(popupRoot != null ? popupRoot.transform : transform);
         // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
         Loc.RequestRescan();
 

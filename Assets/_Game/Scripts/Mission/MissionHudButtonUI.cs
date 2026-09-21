@@ -185,7 +185,7 @@ public class MissionHudButtonUI : MonoBehaviour
             missionIcon.sprite = _currentMission.missionIcon;
 
         if (missionNameText != null)
-            missionNameText.text = _currentMission.missionName;
+            missionNameText.text = Loc.T(_currentMission.missionName);
         if (buttonProgressFill != null)
             buttonProgressFill.fillAmount = progress01;
         if (missionProgressFill != null)
@@ -258,7 +258,7 @@ public class MissionHudButtonUI : MonoBehaviour
     private void ApplyEmptyState()
     {
         if (missionNameText != null)
-            missionNameText.text = EmptyMission;
+            missionNameText.text = Loc.T(EmptyMission);
         if (buttonProgressText != null)
             buttonProgressText.text = "0/0";
         if (missionProgressText != null)

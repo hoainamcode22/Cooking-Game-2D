@@ -82,45 +82,57 @@ public class PopupManager : MonoBehaviour
         return _giaTriCacheAnyOpen;
     }
 
+    // [DO 2026-09-21] Profiler: PopupManager.LateUpdate 7.14ms SELF ma moi property doc ra deu re.
+    // Tach thanh 5 nhom co marker de Hierarchy chi dung nhom.
+    private static readonly UnityEngine.Profiling.CustomSampler _spA = UnityEngine.Profiling.CustomSampler.Create("PM.A_Inspector");
+    private static readonly UnityEngine.Profiling.CustomSampler _spB = UnityEngine.Profiling.CustomSampler.Create("PM.B_Singleton");
+    private static readonly UnityEngine.Profiling.CustomSampler _spC = UnityEngine.Profiling.CustomSampler.Create("PM.C_AnyOpenStatic");
+    private static readonly UnityEngine.Profiling.CustomSampler _spD = UnityEngine.Profiling.CustomSampler.Create("PM.D_Train");
+    private static readonly UnityEngine.Profiling.CustomSampler _spE = UnityEngine.Profiling.CustomSampler.Create("PM.E_Fishing");
+
     private bool TinhIsAnyPopupOpen()
     {
-        return (warehousePopup    != null && warehousePopup.gameObject.activeInHierarchy && warehousePopup.IsOpen)
-            || (marketPopup       != null && marketPopup.gameObject.activeInHierarchy && marketPopup.IsOpen)
-            || (trainProcessPopup != null && trainProcessPopup.gameObject.activeInHierarchy && trainProcessPopup.IsOpen)
-            || (trainLoadPopup    != null && trainLoadPopup.gameObject.activeInHierarchy && trainLoadPopup.IsOpen)
-            || (shopPopup         != null && shopPopup.gameObject.activeInHierarchy && shopPopup.IsOpen)
-            || (ewarPopup         != null && ewarPopup.gameObject.activeInHierarchy && ewarPopup.IsOpen)
-            || (WelfareEventManager.Instance  != null && WelfareEventManager.Instance.gameObject.activeInHierarchy && WelfareEventManager.Instance.IsOpen)
-            || (AttendanceManager.Instance    != null && AttendanceManager.Instance.gameObject.activeInHierarchy && AttendanceManager.Instance.IsOpen)
-            || (AvatarProfilePopupUI.Instance != null && AvatarProfilePopupUI.Instance.gameObject.activeInHierarchy && AvatarProfilePopupUI.Instance.IsOpen)
-            || OrderBoardPopupUI.AnyOpen
-            || StallPopupUI.AnyOpen
-            || MillPopupUI.AnyOpen
-            // POPUP CHO (21/08): field `marketPopup` trong scene dang NULL/chua gan —
-            // F9 debug chup duoc canh popup cho MO nhung IsAnyPopupOpen van False,
-            // blockingOverlay khong bat, click world xuyen qua popup cho. Doc thang
-            // MarketManager.Instance de khong phu thuoc keo-tha Inspector.
-            || (MarketManager.Instance != null && MarketManager.Instance.IsOpen)
-            || (ExportTrainUIPackage.TrainStationMasterPopupUI.Instance != null && ExportTrainUIPackage.TrainStationMasterPopupUI.Instance.gameObject.activeInHierarchy)
-            || (ExportTrainUIPackage.TrainLoadPopupUI.Instance != null && ExportTrainUIPackage.TrainLoadPopupUI.Instance.gameObject.activeInHierarchy)
-            || (ExportTrainUIPackage.TrainProcessPopupUI.Instance != null && ExportTrainUIPackage.TrainProcessPopupUI.Instance.gameObject.activeInHierarchy)
-            || UnifiedTaskPopupUI.IsOpenStatic
-            // Hai popup dưới đây trước nay LỌT LƯỚI: chúng tự bật theo sự kiện /
-            // đồng hồ, không có ô kéo-thả trong Inspector nên IsAnyPopupOpen() không
-            // thấy → tutorial vẫn chạy đè lên chúng.
-            || LevelUpPopupUI.IsActive
-            || BoatAnnouncePopupUI.IsActive
-            // [DECOUPLED] Kiểm tra popup Câu Cá an toàn qua reflection
-            || IsFishingPopupOpen();
-        // [ROLLBACK 2026-09-06] KHONG dua BuildingProcessPopupUI vao day.
-        // IsAnyPopupOpen() duoc FarmInputLock.BlockMapPan dung => se chan TOAN BO
-        // keo map va click world suot thoi gian popup tien do dang mo. Popup do neo
-        // o world, khong che man hinh, khong can khoa. (Van liet ke o TenPopupDangMo.)
+        bool r;
+        _spA.Begin();
+        r = (warehousePopup    != null && warehousePopup.gameObject.activeInHierarchy && warehousePopup.IsOpen)
+         || (marketPopup       != null && marketPopup.gameObject.activeInHierarchy && marketPopup.IsOpen)
+         || (trainProcessPopup != null && trainProcessPopup.gameObject.activeInHierarchy && trainProcessPopup.IsOpen)
+         || (trainLoadPopup    != null && trainLoadPopup.gameObject.activeInHierarchy && trainLoadPopup.IsOpen)
+         || (shopPopup         != null && shopPopup.gameObject.activeInHierarchy && shopPopup.IsOpen)
+         || (ewarPopup         != null && ewarPopup.gameObject.activeInHierarchy && ewarPopup.IsOpen);
+        _spA.End();
+        if (r) return true;
+
+        _spB.Begin();
+        r = (WelfareEventManager.Instance  != null && WelfareEventManager.Instance.gameObject.activeInHierarchy && WelfareEventManager.Instance.IsOpen)
+         || (AttendanceManager.Instance    != null && AttendanceManager.Instance.gameObject.activeInHierarchy && AttendanceManager.Instance.IsOpen)
+         || (AvatarProfilePopupUI.Instance != null && AvatarProfilePopupUI.Instance.gameObject.activeInHierarchy && AvatarProfilePopupUI.Instance.IsOpen)
+         || (MarketManager.Instance != null && MarketManager.Instance.IsOpen)
+         || UnifiedTaskPopupUI.IsOpenStatic
+         || LevelUpPopupUI.IsActive
+         || BoatAnnouncePopupUI.IsActive;
+        _spB.End();
+        if (r) return true;
+
+        _spC.Begin();
+        r = OrderBoardPopupUI.AnyOpen || StallPopupUI.AnyOpen || MillPopupUI.AnyOpen;
+        _spC.End();
+        if (r) return true;
+
+        _spD.Begin();
+        r = (ExportTrainUIPackage.TrainStationMasterPopupUI.Instance != null && ExportTrainUIPackage.TrainStationMasterPopupUI.Instance.gameObject.activeInHierarchy)
+         || (ExportTrainUIPackage.TrainLoadPopupUI.Instance != null && ExportTrainUIPackage.TrainLoadPopupUI.Instance.gameObject.activeInHierarchy)
+         || (ExportTrainUIPackage.TrainProcessPopupUI.Instance != null && ExportTrainUIPackage.TrainProcessPopupUI.Instance.gameObject.activeInHierarchy);
+        _spD.End();
+        if (r) return true;
+
+        _spE.Begin();
+        r = IsFishingPopupOpen();
+        _spE.End();
+        return r;
+        // [ROLLBACK 2026-09-06] KHONG dua BuildingProcessPopupUI vao day (xem ghi chu cu).
     }
 
-    // [FIX 2026-09-18 P0 — PROFILER] Ban cu goi Type.GetType(...) + GetProperty(...) MOI LAN.
-    // Khi Fishing bi keo ra khoi source, Type.GetType phai quet het moi assembly roi tra null,
-    // va lam lai y nhu vay o frame sau. Nay tra cuu dung MOT lan, nho ca truong hop khong tim thay.
     private static bool _daTraCuuFishing;
     private static System.Reflection.PropertyInfo _propFishingEntry;
     private static System.Reflection.PropertyInfo _propFishCounter;

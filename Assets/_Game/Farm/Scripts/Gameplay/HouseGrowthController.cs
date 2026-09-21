@@ -264,21 +264,29 @@ public class HouseGrowthController : MonoBehaviour
         UpdateVisuals();
     }
 
+    // [DO 2026-09-19] Profiler bao Update() nay 7ms self-time cho 5 can nha ma C# khong lo gi dat.
+    // Gan marker de Hierarchy goi ten dung buoc. Marker gan nhu mien phi o ban release.
+    private static readonly UnityEngine.Profiling.CustomSampler _spAlias  = UnityEngine.Profiling.CustomSampler.Create("HG.RememberAlias");
+    private static readonly UnityEngine.Profiling.CustomSampler _spRemain = UnityEngine.Profiling.CustomSampler.Create("HG.RemainingSeconds");
+    private static readonly UnityEngine.Profiling.CustomSampler _spVisual = UnityEngine.Profiling.CustomSampler.Create("HG.UpdateVisuals");
+    private static readonly UnityEngine.Profiling.CustomSampler _spClick  = UnityEngine.Profiling.CustomSampler.Create("HG.CheckInputClick");
+
     private void Update()
     {
         if (state == GrowthState.Building)
         {
             // F9: nhà đang xây mà bị dời → ghi bí danh vị trí mới, đừng để mồ côi khoá.
-            RememberAliasForCurrentPosition();
+            _spAlias.Begin(); RememberAliasForCurrentPosition(); _spAlias.End();
 
-            if (RemainingSeconds <= 0f && startUnix > 0)
+            _spRemain.Begin(); bool hetGio = RemainingSeconds <= 0f && startUnix > 0; _spRemain.End();
+            if (hetGio)
             {
                 // Hết giờ xây -> Chuyển sang Stage 5 (Hộp quà)
                 FinishBuildingNow();
             }
             else
             {
-                UpdateVisuals();
+                _spVisual.Begin(); UpdateVisuals(); _spVisual.End();
             }
         }
         else if (state == GrowthState.ReadyToReveal)
@@ -290,14 +298,22 @@ public class HouseGrowthController : MonoBehaviour
             transform.localScale = new Vector3(_initialScale.x * scaleX, _initialScale.y * scaleY, _initialScale.z);
         }
 
-        CheckInputClick();
+        _spClick.Begin(); CheckInputClick(); _spClick.End();
     }
 
     private void CheckInputClick()
     {
-        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
-        if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         if (state == GrowthState.Completed) return;
+
+        // [FIX 2026-09-21 P0 — PROFILER] HG.CheckInputClick 7.76ms self / 5 can nha. Ban cu hoi
+        // FarmInputLock.BlockWorldClickBySceneOrPopup (chuoi ~15 property, co FindFirstObjectByType) MOI FRAME
+        // truoc ca khi biet co ai cham man hinh khong. Doc input TRUOC (re), khong co su kien thi thoat ngay.
+        bool down = TouchInput.TapDownThisFrame();
+        bool up   = TouchInput.TapUpThisFrame();
+        if (!down && !up) return;
+
+        // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
+        if (FarmInputLock.BlockWorldClickBySceneOrPopup) { _isPressed = false; return; }
 
         // [FIX-HOPQUA 2026-09-02] Đọc input qua TouchInput (Core/TouchInput.cs — helper
         // DÙNG CHUNG, thứ tự Touchscreen → Mouse → Input legacy) thay vì chỉ Input legacy.
@@ -306,13 +322,13 @@ public class HouseGrowthController : MonoBehaviour
         // trên điện thoại Mouse.current = null và mô phỏng chuột từ ngón tay không đáng
         // tin, trong khi plot (FarmPlotInput) đã đọc Input System nên "plot bấm được,
         // hộp quà thì không". Editor/PC: TouchInput rơi về đúng GetMouseButton* cũ.
-        if (TouchInput.TapDownThisFrame())
+        if (down)
         {
             _isPressed = true;
             _pressScreenPos = TouchInput.PointerScreen();
         }
 
-        if (TouchInput.TapUpThisFrame() && _isPressed)
+        if (up && _isPressed)
         {
             _isPressed = false;
             Vector2 releasePos = TouchInput.PointerScreen();
@@ -389,14 +405,13 @@ public class HouseGrowthController : MonoBehaviour
         switch (state)
         {
             case GrowthState.Building:
+            {
                 float p = Progress;
-                if (p < 0.33f)
-                    _sr.sprite = stage1_Frame != null ? stage1_Frame : _sr.sprite;
-                else if (p < 0.66f)
-                    _sr.sprite = stage2_Foundation != null ? stage2_Foundation : _sr.sprite;
-                else
-                    _sr.sprite = stage3_HalfBuilt != null ? stage3_HalfBuilt : _sr.sprite;
+                Sprite muon = p < 0.33f ? stage1_Frame : (p < 0.66f ? stage2_Foundation : stage3_HalfBuilt);
+                // [FIX 2026-09-19] chi gan khi khac: set_sprite la loi goi native moi frame x so can nha
+                if (muon != null && !ReferenceEquals(_sr.sprite, muon)) _sr.sprite = muon;
                 break;
+            }
 
             case GrowthState.ReadyToReveal:
                 _sr.sprite = stage5_GiftBox != null ? stage5_GiftBox : _sr.sprite;

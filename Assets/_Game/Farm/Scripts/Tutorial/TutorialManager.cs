@@ -268,6 +268,38 @@ public class TutorialManager : MonoBehaviour
         return Mathf.Max(1, PlayerPrefs.GetInt(KhoaPrefCapNguoiChoi, 1));
     }
 
+    // =========================================================================
+    //  [THEM 2026-09-21] CHON BUOC BAT DAU THEO CAP NGUOI CHOI
+    // =========================================================================
+    //  Sep bao: tutorial huong dan tat ca, khong biet nguoi choi dang cap may. Nay moi
+    //  TutorialStepData co CapYeuCau (dat tay, hoac suy tu ten L1L2_* → 1, L2_* → 2...).
+    //  Luc BAT DAU MOI (khong co buoc resume) thi bo qua moi buoc co cap THAP HON cap hien
+    //  tai: cap 2 → nhay thang sang chuoi L2_*, cap 3 → het buoc de day → dong dau DA XONG.
+    //  Nguoi choi moi cap 1: khong buoc nao bi bo (1 < 1 sai) → hanh vi y nhu cu.
+    //  Buoc khong suy duoc cap (0) coi nhu khong gioi han → khong bao gio bi bo qua.
+
+    /// <summary>Chỉ số bước đầu tiên còn đáng dạy cho cấp <paramref name="cap"/>; = _steps.Count nếu không còn bước nào.</summary>
+    private int TinhBuocBatDauTheoCap(int cap)
+    {
+        for (int i = 0; i < _steps.Count; i++)
+        {
+            TutorialStepData b = _steps[i];
+            if (b == null) continue;
+            int capBuoc = b.CapYeuCau;
+            if (capBuoc <= 0 || capBuoc >= cap) return i;
+        }
+        return _steps.Count;
+    }
+
+    /// <summary>Bước có cấp yêu cầu ĐẶT TAY cao hơn cấp hiện tại → chưa được chạy (bị bỏ qua khi tới lượt).
+    /// Cấp suy từ tên KHÔNG dùng để chặn, vì chuỗi L1L2 → L2 vốn lên cấp ngay giữa chuỗi.</summary>
+    private static bool BuocBiChanTheoCap(TutorialStepData b, int capHienTai)
+    {
+        if (b == null) return false;
+        int yeuCau = b.CapYeuCauTuongMinh;
+        return yeuCau > 0 && capHienTai < yeuCau;
+    }
+
     /// <summary>Đã chạy hết tutorial chính chưa (đọc từ PlayerPrefs).</summary>
     public static bool IsTutorialDone => PlayerPrefs.GetInt(PrefKeyDone, 0) == 1;
 
@@ -433,6 +465,17 @@ public class TutorialManager : MonoBehaviour
                 SkipTutorialEntirely();
                 return;
             }
+
+            // [THEM 2026-09-21] Khong con buoc nao day cho cap nay (vd cap 3 ma moi buoc chi
+            // la L1L2_* / L2_*) VA khong dang do buoc nao (khong co resume) → dong dau DA XONG.
+            // Dang do (PrefKeyStep > 0) thi de yen: nguoi choi len cap giua chuoi la binh thuong.
+            if (PlayerPrefs.GetInt(PrefKeyStep, 0) <= 0 && TinhBuocBatDauTheoCap(capHienTai) >= _steps.Count)
+            {
+                MarkTutorialDone();
+                { Debug.Log("[Tutorial] Cap " + capHienTai + ": moi buoc tutorial deu day cap thap hon (theo CapYeuCau) - dong dau DA XONG va bo qua."); }
+                SkipTutorialEntirely();
+                return;
+            }
         }
 
         if (IsTutorialDone && !DevChayLaiDuDaXong)
@@ -556,6 +599,19 @@ public class TutorialManager : MonoBehaviour
             }
             _currentIndex = buocDaLuu - 1;
             Debug.Log($"[Tutorial] Resume bước {buocDaLuu} '{LayTenBuoc(buocDaLuu)}' (lưu từ phiên trước).");
+        }
+
+        // [THEM 2026-09-21] BAT DAU MOI (khong resume): bo qua chuoi day cap THAP HON cap hien tai.
+        // Dev tick "chay lai" thi van tu buoc 0 de test.
+        if (_currentIndex < 0 && !DevChayLaiDuDaXong)
+        {
+            int capHienTai = LayCapNguoiChoi();
+            int batDau = TinhBuocBatDauTheoCap(capHienTai);
+            if (batDau > 0 && batDau < _steps.Count)
+            {
+                _currentIndex = batDau - 1;
+                Debug.Log($"[Tutorial] Cap {capHienTai}: bo qua {batDau} buoc day cap thap hon, bat dau tu buoc {batDau} '{LayTenBuoc(batDau)}'.");
+            }
         }
 
         // KHÔNG focus camera ở màn chào mừng — camera chỉ lia vào 6 ô đất
@@ -1046,6 +1102,16 @@ public class TutorialManager : MonoBehaviour
         _interactionDialogDismissed = false;
         _penOpenSubActionReceived = false;
         _currentIndex++;
+
+        // [THEM 2026-09-21] Buoc co capYeuCau DAT TAY cao hon cap hien tai → bo qua, sang buoc ke.
+        {
+            int capHienTai = LayCapNguoiChoi();
+            while (_currentIndex < _steps.Count && BuocBiChanTheoCap(_steps[_currentIndex], capHienTai))
+            {
+                Debug.Log($"[Tutorial] Bo qua buoc '{_steps[_currentIndex].name}': can cap {_steps[_currentIndex].CapYeuCauTuongMinh}, dang cap {capHienTai}.");
+                _currentIndex++;
+            }
+        }
 
         if (_currentIndex >= _steps.Count)
         {

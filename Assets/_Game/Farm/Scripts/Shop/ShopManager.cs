@@ -610,48 +610,39 @@ public class ShopManager : MonoBehaviour
         }
     }
 
-    /// <summary>Chừa mỗi mép canvas bấy nhiêu khi co popup cho vừa màn.</summary>
-    private const float LE_AN_TOAN_POPUP = 24f;
+    /// <summary>Chừa mỗi mép canvas bấy nhiêu khi dịch/co popup cho vừa màn.</summary>
+    private const float LE_AN_TOAN_POPUP = 16f;
 
     private Vector3 scaleGocPopup;
+    private Vector2 viTriGocPopup;
     private bool    daLuuScalePopup;
 
     /// <summary>
-    /// Co popup lại cho lọt canvas — CHỈ CO, KHÔNG BAO GIỜ PHÓNG TO.
+    /// Dịch/co popup cho lọt canvas — CHỈ CO, KHÔNG BAO GIỜ PHÓNG TO.
     ///
-    /// popup_Menu trong scene là 1500×880 ở localScale 0.95, vừa khít khung thiết kế
-    /// 1920×1080. Nhưng CanvasScaler của Canvas_Popup để matchWidthOrHeight = 0.5, nên
-    /// trên máy có tỉ lệ thấp hơn 16:9 (4:3, 16:10, hay điện thoại cầm dọc) chiều cao
-    /// 880 vượt ra ngoài mép canvas — đúng ảnh chụp "popup quá to" của Sếp.
-    ///
-    /// Hệ số luôn ≤ 1 nên scale 0.95 Sếp chỉnh tay được GIỮ NGUYÊN trên máy 16:9; chỉ
-    /// khi popup thật sự lòi ra mới bị nhân thêm. scale gốc được nhớ lại ở lần mở ĐẦU
-    /// TIÊN, nên mở đi mở lại bao nhiêu lần cũng không dồn nén tiếp.
+    /// [FIX 2026-09-21] Bản cũ chỉ so <c>rtPopup.rect</c> (1500×880) với khung nên KHÔNG
+    /// thấy ruy-băng tiêu đề <c>Header_Banner</c> (620×126 ở y = +445 ⇒ mép trên ở +508,
+    /// thò lên khỏi mép bảng 68) — ở Free Aspect rộng chữ "SHOP" bị màn hình cắt mất nửa
+    /// trên dù bảng "vừa". Nay dùng <see cref="PopupFitClamp"/>: đo DẤU CHÂN THẬT (kể cả
+    /// ruy-băng, nút X; dừng ở RectMask2D của ScrollRect), quy về đơn vị canvas gốc rồi
+    ///   1. DỊCH anchoredPosition cho mép bị cắt lọt vào trong (lề 16),
+    ///   2. chỉ khi dấu chân to hơn khung mới CO thêm rồi dịch lại.
+    /// scale/vị trí gốc nhớ ở lần mở ĐẦU TIÊN và đặt lại trước mỗi lần đo nên mở đi mở lại
+    /// không dồn nén, không trôi.
     /// </summary>
     private void VuaKhungManHinh()
     {
         RectTransform rtPopup = (shopPanel != null ? shopPanel.transform : transform) as RectTransform;
         if (rtPopup == null) return;
 
-        RectTransform rtKhung = rtPopup.parent as RectTransform;
-        if (rtKhung == null) return;
-
         if (!daLuuScalePopup)
         {
             daLuuScalePopup = true;
             scaleGocPopup   = rtPopup.localScale;
+            viTriGocPopup   = rtPopup.anchoredPosition;
         }
 
-        float rongPopup = rtPopup.rect.width  * Mathf.Abs(scaleGocPopup.x);
-        float caoPopup  = rtPopup.rect.height * Mathf.Abs(scaleGocPopup.y);
-        if (rongPopup < 1f || caoPopup < 1f) return;
-
-        float rongKhung = rtKhung.rect.width  - LE_AN_TOAN_POPUP * 2f;
-        float caoKhung  = rtKhung.rect.height - LE_AN_TOAN_POPUP * 2f;
-        if (rongKhung < 1f || caoKhung < 1f) return;
-
-        float heSo = Mathf.Min(1f, Mathf.Min(rongKhung / rongPopup, caoKhung / caoPopup));
-        rtPopup.localScale = scaleGocPopup * heSo;
+        PopupFitClamp.VuaKhung(rtPopup, scaleGocPopup, viTriGocPopup, LE_AN_TOAN_POPUP);
     }
 
     /// <summary>0 = hạt rau củ, 1 = hạt hoa, 2 = còn lại (công trình/trang trí).</summary>

@@ -142,12 +142,18 @@ public class StallPopupUI : MonoBehaviour
 
     public bool IsOpen => popupRoot != null && popupRoot.activeInHierarchy;
 
+    private static int _frameTimCuoi = -1;
     public static bool AnyOpen
     {
         get
         {
-            if (Instance == null)
-                Instance = Object.FindFirstObjectByType<StallPopupUI>(FindObjectsInactive.Include);
+            // [FIX 2026-09-21 P0] Ban cu FindFirstObjectByType(Include) MOI LAN GOI khi Instance null
+            // (popup khong co trong scene => tim mai, moi frame, tu nhieu noi). Chi tim lai toi da 1 lan/frame.
+            if (Instance == null && _frameTimCuoi != Time.frameCount)
+            {
+                _frameTimCuoi = Time.frameCount;
+                Instance = FindFirstObjectByType<StallPopupUI>(FindObjectsInactive.Include);
+            }
             return Instance != null && Instance.IsOpen;
         }
     }
@@ -310,6 +316,9 @@ public class StallPopupUI : MonoBehaviour
         // Phải gọi SAU HidePickerImmediate(): panel chọn vật phẩm đỗ ở x=1700, còn bật
         // là dấu chân bảng phình ra gấp đôi và hệ số co sẽ bé đến vô lý.
         VuaKhungManHinh();
+
+        // [SkinUnifier 2026-09-21] Dong bo nut/vien/ruy bang theo bo cua Shop (chi doi sprite/mau/font).
+        PopupSkinUnifier.ApDung(popupRoot.transform);
 
         // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
         Loc.RequestRescan();

@@ -80,7 +80,7 @@ public class AudioManager : MonoBehaviour
 
     [Header("Anti-Spam Cooldowns")]
     [SerializeField] private float uiClickCooldown = 0.05f;
-    [SerializeField] private float expCooldown = 0.08f;
+    [SerializeField] private float expCooldown = 0.06f;   // [2026-09-21] 0.08 -> 0.06: toi da 1 tieng / 0.06s khi nhieu vien EXP toi cung luc
     [SerializeField] private float farmCooldown = 0.07f;
     [SerializeField] private float coinCooldown = 0.06f;
 

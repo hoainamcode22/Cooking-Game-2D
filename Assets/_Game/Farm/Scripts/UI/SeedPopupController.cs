@@ -183,6 +183,7 @@ public class SeedPopupController : MonoBehaviour
                 Debug.LogError($"[SeedPopup] Prefab thiếu SeedDragItem!");
             }
         }
+        Loc.RequestRescan();
     }
 
     private void AcquirePopupInputBlock()

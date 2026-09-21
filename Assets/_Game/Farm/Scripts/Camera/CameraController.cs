@@ -31,9 +31,9 @@ public class CameraController : MonoBehaviour
     //   giống Township/Hay Day. Cảm giác zoom đều ở mọi mức, và số nấc để đi
     //   hết tầm là hằng số, không phụ thuộc dải min/max.
     [Header("Zoom — Tốc độ")]
-    [Tooltip("Mỗi nấc lăn chuột đổi bao nhiêu % kích thước. 0.12 = 12%/nấc (~8-12 nấc là hết tầm).")]
+    [Tooltip("Mỗi nấc lăn chuột đổi bao nhiêu % kích thước. 0.10 = nhân/chia 1.1 mỗi nấc (~8-14 nấc là hết tầm).")]
     [Range(0.02f, 0.40f)]
-    public float zoomStepPercent = 0.12f;
+    public float zoomStepPercent = 0.10f;
 
     [Tooltip("Độ nhạy pinch 2 ngón. 1 = chuẩn. Tăng nếu thấy pinch chậm.")]
     [Range(0.2f, 4f)]
@@ -81,8 +81,37 @@ public class CameraController : MonoBehaviour
     [Tooltip("BAT (khuyen nghi): keo map dung 1:1 voi ngon tay — bo qua he so panSpeed va dung " +
              "dragSmoothTime. TAT: quay lai hanh vi cu (panSpeed * delta + panSmoothTime).")]
     [SerializeField] private bool  dragOneToOne   = true;
-    [Tooltip("Thoi gian mut RIENG cho luc dang keo khi dragOneToOne BAT. De rat nho (~0.02) de map bam tay.")]
+    [Tooltip("[2026-09-21] KHONG con dung khi dragOneToOne BAT (dang keo = bam 1:1 tuyet doi, nha tay = quan tinh). Giu cho tuong thich Inspector.")]
     [SerializeField] private float dragSmoothTime = 0.02f;
+
+    // ══ [2026-09-21 KEO/ZOOM MUOT] ══════════════════════════════════════════
+    //  • Dang cham: camera bam 1:1 theo delta MAN HINH cua ngon (transform.position = dich,
+    //    khong SmoothDamp). Delta tinh tu pixel × (2*orthoSize/Screen.height) nen KHONG phu
+    //    thuoc vi tri camera dang lerp — code cu do world-point o 2 frame khac vi tri camera
+    //    => tu triet tieu mot phan delta => cam giac khung/tre tay.
+    //  • Nha tay: quan tinh = van toc TB QUAN_TINH_SO_MAU frame cuoi × QUAN_TINH_HE_SO,
+    //    giam dan exp(-dt / QUAN_TINH_THOI_GIAN).
+    //  • Pinch: zoom NHAN theo ti le khoang cach 2 ngon, neo world point duoi tam 2 ngon,
+    //    tam troi thi pan theo; mut ve dich voi PINCH_SMOOTH_TIME. Lan chuot dung zoomSmoothTime.
+    //  • Moi SmoothDamp dung Time.unscaledDeltaTime => khong phu thuoc timeScale.
+    //  • Khong alloc moi frame (ring buffer co dinh), khong FindObject, khong raycast them.
+    private const int   QUAN_TINH_SO_MAU    = 3;
+    private const float QUAN_TINH_HE_SO     = 0.9f;
+    private const float QUAN_TINH_THOI_GIAN = 0.25f;
+    private const float QUAN_TINH_DUNG_KHI  = 2f;     // world unit/s — nho hon thi dung han
+    private const float PINCH_SMOOTH_TIME   = 0.08f;
+
+    private readonly Vector3[] _mauDelta = new Vector3[QUAN_TINH_SO_MAU];
+    private readonly float[]   _mauDt    = new float[QUAN_TINH_SO_MAU];
+    private int     _mauChiSo;
+    private int     _mauDem;
+    private Vector3 _quanTinhVanToc;
+    private bool    _quanTinhDangChay;
+    private bool    _dangPinch;                 // frame nay co 2 ngon dang pinch
+    private int     _soNgonFrameTruoc;          // de nhan ra 2 ngon -> 1 ngon (khong co phase Began)
+    private float   _zoomTimeHienTai = 0.1f;    // smoothTime zoom theo nguon (pinch / lan chuot)
+    private Vector2 lastPointerScreen;          // toa do man hinh con tro frame truoc (khi keo)
+    private Vector2 lastPinchCenter;            // tam 2 ngon frame truoc
 
     [Header("Smooth Damp")]
     [SerializeField] private float panSmoothTime  = 0.08f; // Thời gian giảm tốc khi thả tay (pan mượt mà)
@@ -105,7 +134,6 @@ public class CameraController : MonoBehaviour
     // Pan
     private Vector3 panVelocity    = Vector3.zero; // Vận tốc hiện tại (smooth damp)
     private Vector3 targetPosition;               // Vị trí đích của camera
-    private Vector3 lastPointerWorld;             // Vị trí world của pointer frame trước
     private bool    isDragging;                   // Đang thực sự kéo (sau khi vượt dragThreshold)
 
     // Mouse drag detection — phân biệt tap (click object) vs drag (pan camera)
@@ -152,6 +180,7 @@ public class CameraController : MonoBehaviour
         float startSize      = Mathf.Clamp(defaultSize, ActiveMinSize, ActiveMaxSize);
         cam.orthographicSize = startSize;
         targetSize           = startSize;
+        _zoomTimeHienTai     = zoomSmoothTime;
 
         if (_devMode)
             Debug.LogWarning("[CameraController] DEV MODE đang BẬT (devModeOnStart). Nhớ TẮT trước khi build phát hành!");
@@ -171,17 +200,21 @@ public class CameraController : MonoBehaviour
 
         // Khi tutorial đang điều khiển camera (cinematic) → bỏ qua input người chơi,
         // chỉ chạy smooth movement để camera tự lia tới target. Tránh tranh chấp.
+        _dangPinch = false;
+        int soNgon = (Touchscreen.current != null) ? InputTouch.activeTouches.Count : 0;
+
         if (!_cinematicActive)
         {
             // Runtime detection: nếu có touch thật (mobile/simulator) → dùng touch path.
             // Nếu không → dùng mouse path (Editor desktop / standalone).
-            if (Touchscreen.current != null && InputTouch.activeTouches.Count > 0)
+            if (soNgon > 0)
                 HandleTouchInput();
             else
                 HandleMouseInput();
         }
 
         ApplySmoothMovement();
+        _soNgonFrameTruoc = soNgon;
     }
 
     // ── MOUSE INPUT (Editor / Desktop) ──────────────────────────────────
@@ -258,6 +291,7 @@ public class CameraController : MonoBehaviour
             panVelocity         = Vector3.zero;
             targetPosition      = transform.position;
             gestureStartedOnUI  = true;
+            DungQuanTinh();
 
             // Cho zoom trừ khi harvest mode đang active
             if (!FarmInputLock.BlockMapZoom)
@@ -282,6 +316,7 @@ public class CameraController : MonoBehaviour
 
         if (mouse.leftButton.wasPressedThisFrame)
         {
+            DungQuanTinh();
             gestureStartedOnUI  = false;
             pressStartScreenPos = mouse.position.ReadValue();
             pressHeld           = true;
@@ -293,24 +328,20 @@ public class CameraController : MonoBehaviour
             float movedPixels = Vector2.Distance(mouse.position.ReadValue(), pressStartScreenPos);
             if (movedPixels > dragThreshold)
             {
-                isDragging       = true;
-                lastPointerWorld = ScreenToWorld(mouse.position.ReadValue());
+                BatDauKeo(mouse.position.ReadValue());
             }
         }
 
         // ── BƯỚC 3: Đang drag → thực hiện pan ──────────────────────────
         if (!gestureStartedOnUI && mouse.leftButton.isPressed && isDragging)
         {
-            Vector3 current  = ScreenToWorld(mouse.position.ReadValue());
-            Vector3 delta    = lastPointerWorld - current;
-            targetPosition  += ApDungHeSoKeo(delta);
-            targetPosition   = ClampToBounds(targetPosition);
-            lastPointerWorld = ScreenToWorld(mouse.position.ReadValue());
+            KeoTheoManHinh(mouse.position.ReadValue());
         }
 
         // ── BƯỚC 4: Thả chuột → reset toàn bộ trạng thái ───────────────
         if (mouse.leftButton.wasReleasedThisFrame)
         {
+            if (isDragging) BatDauQuanTinh();
             isDragging          = false;
             pressHeld           = false;
             pressStartScreenPos = Vector2.zero;
@@ -365,6 +396,7 @@ public class CameraController : MonoBehaviour
             panVelocity         = Vector3.zero;
             targetPosition      = transform.position;
             gestureStartedOnUI  = true;
+            DungQuanTinh();
 
             // Cho zoom trừ khi harvest mode đang active
             if (!FarmInputLock.BlockMapZoom)
@@ -388,6 +420,7 @@ public class CameraController : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
+            DungQuanTinh();
             gestureStartedOnUI  = false;
             pressStartScreenPos = (Vector2)Input.mousePosition;
             pressHeld           = true;
@@ -399,24 +432,20 @@ public class CameraController : MonoBehaviour
             float movedPixels = Vector2.Distance((Vector2)Input.mousePosition, pressStartScreenPos);
             if (movedPixels > dragThreshold)
             {
-                isDragging       = true;
-                lastPointerWorld = ScreenToWorld(Input.mousePosition);
+                BatDauKeo(Input.mousePosition);
             }
         }
 
         // ── BƯỚC 3: Đang drag → thực hiện pan ──────────────────────────
         if (!gestureStartedOnUI && Input.GetMouseButton(0) && isDragging)
         {
-            Vector3 current  = ScreenToWorld(Input.mousePosition);
-            Vector3 delta    = lastPointerWorld - current;
-            targetPosition  += ApDungHeSoKeo(delta);
-            targetPosition   = ClampToBounds(targetPosition);
-            lastPointerWorld = ScreenToWorld(Input.mousePosition);
+            KeoTheoManHinh(Input.mousePosition);
         }
 
         // ── BƯỚC 4: Thả chuột → reset toàn bộ trạng thái ───────────────
         if (Input.GetMouseButtonUp(0))
         {
+            if (isDragging) BatDauQuanTinh();
             isDragging          = false;
             pressHeld           = false;
             pressStartScreenPos = Vector2.zero;
@@ -461,6 +490,7 @@ public class CameraController : MonoBehaviour
             panVelocity         = Vector3.zero;
             targetPosition      = transform.position;
             gestureStartedOnUI  = true;
+            DungQuanTinh();
             return;
         }
 
@@ -485,8 +515,14 @@ public class CameraController : MonoBehaviour
 
             // ── BƯỚC 1: Ngón chạm xuống → lưu vị trí screen, chưa drag ──
             // Tap ngắn không di chuyển → EventSystem xử lý popup bình thường.
-            if (phase == UnityEngine.InputSystem.TouchPhase.Began)
+            // 2 ngón → còn 1 ngón: ngón còn lại không có phase Began, coi như chạm mới để kéo tiếp được.
+            bool vuaConMotNgon = _soNgonFrameTruoc != 1 && !touchHeld && !isDragging &&
+                                 (phase == UnityEngine.InputSystem.TouchPhase.Moved ||
+                                  phase == UnityEngine.InputSystem.TouchPhase.Stationary);
+
+            if (phase == UnityEngine.InputSystem.TouchPhase.Began || vuaConMotNgon)
             {
+                DungQuanTinh();
                 gestureStartedOnUI  = false;
                 touchStartScreenPos = t.screenPosition;
                 touchHeld           = true;
@@ -502,25 +538,21 @@ public class CameraController : MonoBehaviour
                     float movedPixels = Vector2.Distance(t.screenPosition, touchStartScreenPos);
                     if (movedPixels > dragThreshold)
                     {
-                        isDragging       = true;
-                        lastPointerWorld = ScreenToWorld(t.screenPosition);
+                        BatDauKeo(t.screenPosition);
                     }
                 }
 
                 // Đang drag → thực hiện pan
                 if (!gestureStartedOnUI && isDragging)
                 {
-                    Vector3 current  = ScreenToWorld(t.screenPosition);
-                    Vector3 delta    = lastPointerWorld - current;
-                    targetPosition  += ApDungHeSoKeo(delta);
-                    targetPosition   = ClampToBounds(targetPosition);
-                    lastPointerWorld = ScreenToWorld(t.screenPosition);
+                    KeoTheoManHinh(t.screenPosition);
                 }
             }
             // ── BƯỚC 4: Ngón nhấc lên → reset trạng thái ────────────────
             else if (phase == UnityEngine.InputSystem.TouchPhase.Ended ||
                      phase == UnityEngine.InputSystem.TouchPhase.Canceled)
             {
+                if (isDragging) BatDauQuanTinh();
                 isDragging          = false;
                 touchHeld           = false;
                 touchStartScreenPos = Vector2.zero;
@@ -529,43 +561,55 @@ public class CameraController : MonoBehaviour
         }
         else if (touchCount == 2)
         {
-            // 2 ngón → pinch zoom, huỷ pan đang có
+            // 2 ngón → pinch zoom (+ pan theo tâm 2 ngón), huỷ pan 1 ngón đang có
             isDragging = false;
             touchHeld  = false;
+            _dangPinch = true;
+            DungQuanTinh();
+            XoaMauVanToc();
 
             var t0 = activeTouches[0];
             var t1 = activeTouches[1];
 
+            Vector2 pinchCenter = (t0.screenPosition + t1.screenPosition) * 0.5f;
+            float   currentDist = Vector2.Distance(t0.screenPosition, t1.screenPosition);
+
             if (t0.phase == UnityEngine.InputSystem.TouchPhase.Began ||
-                t1.phase == UnityEngine.InputSystem.TouchPhase.Began)
+                t1.phase == UnityEngine.InputSystem.TouchPhase.Began ||
+                _soNgonFrameTruoc != 2 || lastPinchDist <= 0f)
             {
-                // Lưu khoảng cách ban đầu giữa 2 ngón
-                lastPinchDist = Vector2.Distance(t0.screenPosition, t1.screenPosition);
+                // Mốc ban đầu của cử chỉ pinch; bỏ "dư" SmoothDamp để tâm neo chính xác.
+                lastPinchDist   = currentDist;
+                lastPinchCenter = pinchCenter;
+                targetPosition  = transform.position;
+                panVelocity     = Vector3.zero;
             }
             else
             {
-                float currentDist = Vector2.Distance(t0.screenPosition, t1.screenPosition);
-
                 // Bảo vệ: 2 ngón chập vào nhau → tỉ lệ nổ vô cực
                 const float MIN_PINCH_DIST = 20f;
-                if (!FarmInputLock.BlockMapZoom &&
-                    lastPinchDist > MIN_PINCH_DIST && currentDist > MIN_PINCH_DIST)
+                if (!FarmInputLock.BlockMapZoom)
                 {
-                    // PINCH THEO TỈ LỆ, không theo pixel.
-                    // Code cũ: delta_pixel * 0.005 → cần ~110.000 pixel vuốt = bất khả thi.
-                    // Giờ: ngón dang rộng gấp đôi ⇒ zoom vào đúng gấp đôi. Độc lập DPI màn hình.
-                    float ratio = lastPinchDist / currentDist;   // >1 = 2 ngón chụm lại = zoom ra
+                    // (a) Tâm 2 ngón trôi → pan theo, giữ world point dưới tâm cố định (1:1 theo pixel).
+                    Vector2 dTam = pinchCenter - lastPinchCenter;
+                    if (dTam.sqrMagnitude > 1e-6f)
+                    {
+                        float upp = DonViMoiPixel(cam.orthographicSize);
+                        targetPosition = ClampToBounds(targetPosition + new Vector3(-dTam.x * upp, -dTam.y * upp, 0f));
+                    }
 
-                    // Quy tỉ lệ về "số nấc" để dùng chung ApplyZoomStep với chuột.
-                    // steps = -log(ratio) / log(1 + zoomStepPercent)
-                    float steps = -Mathf.Log(ratio) / Mathf.Log(1f + zoomStepPercent);
-
-                    // Tâm 2 ngón làm điểm neo zoom (giống Township)
-                    Vector2 pinchCenter = (t0.screenPosition + t1.screenPosition) * 0.5f;
-
-                    ApplyZoomStep(steps * pinchSensitivity, pinchCenter);
+                    // (b) Zoom NHÂN theo tỉ lệ khoảng cách: ngón dang rộng gấp đôi ⇒ zoom vào gấp đôi.
+                    //     Độc lập DPI. ratio > 1 = 2 ngón chụm lại = zoom ra.
+                    if (lastPinchDist > MIN_PINCH_DIST && currentDist > MIN_PINCH_DIST)
+                    {
+                        float ratio = lastPinchDist / currentDist;
+                        if (!Mathf.Approximately(pinchSensitivity, 1f))
+                            ratio = Mathf.Pow(ratio, pinchSensitivity);
+                        ApplyZoomRatio(ratio, pinchCenter, PINCH_SMOOTH_TIME);
+                    }
                 }
-                lastPinchDist = currentDist;
+                lastPinchDist   = currentDist;
+                lastPinchCenter = pinchCenter;
             }
         }
         else
@@ -599,22 +643,149 @@ public class CameraController : MonoBehaviour
 
     private void ApplySmoothMovement()
     {
-        float posTime  = ThoiGianMutPan();
-        float zoomTime = _cinematicActive ? cinematicSmoothTime : zoomSmoothTime;
+        // unscaled: pause / slow-motion (timeScale) không làm camera đơ hay trôi khác nhịp.
+        float dt = Time.unscaledDeltaTime;
+        if (dt <= 0f) dt = 1f / 60f;
 
-        // Smooth damp vị trí camera về targetPosition
-        transform.position = Vector3.SmoothDamp(
-            transform.position, targetPosition, ref panVelocity, posTime);
+        // ── VỊ TRÍ ──────────────────────────────────────────────────────
+        if (_cinematicActive)
+        {
+            DungQuanTinh();
+            transform.position = Vector3.SmoothDamp(
+                transform.position, targetPosition, ref panVelocity, cinematicSmoothTime, Mathf.Infinity, dt);
+        }
+        else if (dragOneToOne && (isDragging || _dangPinch))
+        {
+            // Ngón đang chạm: bám 1:1, KHÔNG SmoothDamp → hết cảm giác khựng/trễ tay.
+            transform.position = targetPosition;
+            panVelocity        = Vector3.zero;
+        }
+        else if (dragOneToOne && _quanTinhDangChay)
+        {
+            // Vừa nhả tay: trượt theo quán tính giảm dần.
+            CapNhatQuanTinh(dt);
+            transform.position = targetPosition;
+            panVelocity        = Vector3.zero;
+        }
+        else
+        {
+            transform.position = Vector3.SmoothDamp(
+                transform.position, targetPosition, ref panVelocity, ThoiGianMutPan(), Mathf.Infinity, dt);
+        }
 
-        // Smooth damp zoom về targetSize
+        // ── ZOOM ────────────────────────────────────────────────────────
+        float zoomTime = _cinematicActive ? cinematicSmoothTime : Mathf.Max(0.0001f, _zoomTimeHienTai);
         float prevSize = cam.orthographicSize;
         cam.orthographicSize = Mathf.SmoothDamp(
-            cam.orthographicSize, targetSize, ref zoomVelocity, zoomTime);
+            cam.orthographicSize, targetSize, ref zoomVelocity, zoomTime, Mathf.Infinity, dt);
 
         if (prevSize > 550f && cam.orthographicSize <= 480f)
         {
             CheckAndTriggerNearbyCharacterGreeting();
         }
+    }
+
+    // ── KÉO 1:1 + QUÁN TÍNH ──────────────────────────────────────────────
+
+    /// <summary>World unit trên 1 pixel màn hình ở orthographic size cho trước.</summary>
+    private float DonViMoiPixel(float orthoSize)
+    {
+        return Screen.height > 0 ? (2f * orthoSize) / Screen.height : 0f;
+    }
+
+    /// <summary>Vượt dragThreshold → bắt đầu kéo: chốt mốc màn hình, bỏ dư SmoothDamp.</summary>
+    private void BatDauKeo(Vector2 screenPos)
+    {
+        isDragging        = true;
+        lastPointerScreen = screenPos;
+        DungQuanTinh();
+        XoaMauVanToc();
+        if (dragOneToOne)
+        {
+            targetPosition = transform.position;
+            panVelocity    = Vector3.zero;
+        }
+    }
+
+    /// <summary>
+    /// Dời camera đúng bằng delta MÀN HÌNH của con trỏ (đổi ra world theo size đang thấy),
+    /// kẹp bounds, rồi ghi mẫu vận tốc cho quán tính. Không phụ thuộc vị trí camera đang lerp.
+    /// </summary>
+    private void KeoTheoManHinh(Vector2 screenPos)
+    {
+        Vector2 dPix      = screenPos - lastPointerScreen;
+        lastPointerScreen = screenPos;
+
+        if (dPix.sqrMagnitude < 1e-6f)
+        {
+            GhiMauVanToc(Vector3.zero);
+            return;
+        }
+
+        float   upp   = DonViMoiPixel(cam.orthographicSize);
+        Vector3 delta = ApDungHeSoKeo(new Vector3(-dPix.x * upp, -dPix.y * upp, 0f));
+
+        Vector3 truoc  = targetPosition;
+        targetPosition = ClampToBounds(targetPosition + delta);
+        GhiMauVanToc(targetPosition - truoc);   // mẫu THỰC (sau kẹp biên) → không văng khi đụng biên
+    }
+
+    private void XoaMauVanToc()
+    {
+        _mauDem   = 0;
+        _mauChiSo = 0;
+    }
+
+    private void GhiMauVanToc(Vector3 delta)
+    {
+        float dt = Time.unscaledDeltaTime;
+        if (dt <= 0f) return;
+        _mauDelta[_mauChiSo] = delta;
+        _mauDt[_mauChiSo]    = dt;
+        _mauChiSo = (_mauChiSo + 1) % QUAN_TINH_SO_MAU;
+        if (_mauDem < QUAN_TINH_SO_MAU) _mauDem++;
+    }
+
+    /// <summary>Nhả tay sau khi kéo: vận tốc TB 3 frame cuối × QUAN_TINH_HE_SO → trượt tiếp.</summary>
+    private void BatDauQuanTinh()
+    {
+        if (!dragOneToOne || _mauDem == 0) { XoaMauVanToc(); return; }
+
+        Vector3 tongDelta = Vector3.zero;
+        float   tongDt    = 0f;
+        for (int i = 0; i < _mauDem; i++)
+        {
+            tongDelta += _mauDelta[i];
+            tongDt    += _mauDt[i];
+        }
+        XoaMauVanToc();
+        if (tongDt <= 0f) return;
+
+        Vector3 v = (tongDelta / tongDt) * QUAN_TINH_HE_SO;
+        v.z = 0f;
+        if (v.sqrMagnitude < QUAN_TINH_DUNG_KHI * QUAN_TINH_DUNG_KHI) return;
+
+        _quanTinhVanToc   = v;
+        _quanTinhDangChay = true;
+        panVelocity       = Vector3.zero;
+    }
+
+    private void DungQuanTinh()
+    {
+        _quanTinhDangChay = false;
+        _quanTinhVanToc   = Vector3.zero;
+    }
+
+    /// <summary>Mỗi frame khi quán tính đang chạy: trượt rồi giảm dần exp(-dt/T); đụng biên thì dừng.</summary>
+    private void CapNhatQuanTinh(float dt)
+    {
+        Vector3 truoc  = targetPosition;
+        targetPosition = ClampToBounds(targetPosition + _quanTinhVanToc * dt);
+        _quanTinhVanToc *= Mathf.Exp(-dt / QUAN_TINH_THOI_GIAN);
+
+        bool dungLai = (targetPosition - truoc).sqrMagnitude < 1e-8f;
+        if (dungLai || _quanTinhVanToc.sqrMagnitude < QUAN_TINH_DUNG_KHI * QUAN_TINH_DUNG_KHI)
+            DungQuanTinh();
     }
 
     // ── [PERF P1] Cache danh sach CharacterVoiceReaction ─────────────────────
@@ -762,23 +933,33 @@ public class CameraController : MonoBehaviour
     private void ApplyZoomStep(float steps, Vector2 screenFocus)
     {
         if (Mathf.Abs(steps) < 0.0001f) return;
+        // Lăn chuột: nhân/chia (1 + zoomStepPercent) mỗi nấc (mặc định 1.1), mượt zoomSmoothTime (0.1s).
+        ApplyZoomRatio(Mathf.Pow(1f + zoomStepPercent, -steps), screenFocus, zoomSmoothTime);
+    }
+
+    /// <summary>
+    /// Zoom NHÂN trực tiếp: newSize = targetSize × heSo (heSo &gt; 1 = zoom RA, &lt; 1 = zoom VÀO).
+    /// Giữ world point dưới <paramref name="screenFocus"/> đứng yên. <paramref name="smoothTime"/>
+    /// là thời gian SmoothDamp về đích cho nguồn zoom này (pinch 0.08s / lăn chuột zoomSmoothTime).
+    /// </summary>
+    private void ApplyZoomRatio(float heSo, Vector2 screenFocus, float smoothTime)
+    {
+        if (heSo <= 0f || Mathf.Approximately(heSo, 1f)) return;
 
         float minS = ActiveMinSize;
         float maxS = ActiveMaxSize;
 
         // Ghi lại world point dưới con trỏ TRƯỚC khi zoom, để giữ nguyên sau khi zoom.
-        bool    useFocus  = zoomTowardCursor && !float.IsNegativeInfinity(screenFocus.x);
+        bool    useFocus    = zoomTowardCursor && !float.IsNegativeInfinity(screenFocus.x);
         Vector3 worldBefore = Vector3.zero;
         if (useFocus)
             worldBefore = ScreenToWorldAtSize(screenFocus, targetSize);
 
-        // Zoom nhân: mỗi step nhân/chia cho (1 + zoomStepPercent).
-        float newSize = targetSize * Mathf.Pow(1f + zoomStepPercent, -steps);
-        newSize       = Mathf.Clamp(newSize, minS, maxS);
-
+        float newSize = Mathf.Clamp(targetSize * heSo, minS, maxS);
         if (Mathf.Approximately(newSize, targetSize)) return; // đã chạm giới hạn
 
-        targetSize = newSize;
+        targetSize       = newSize;
+        _zoomTimeHienTai = smoothTime;
 
         // Zoom-to-cursor: dịch camera sao cho world point dưới con trỏ đứng yên.
         if (useFocus)

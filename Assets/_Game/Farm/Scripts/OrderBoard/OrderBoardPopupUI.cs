@@ -115,12 +115,18 @@ public class OrderBoardPopupUI : MonoBehaviour
     /// </summary>
     public static OrderBoardPopupUI Instance { get; private set; }
 
+    private static int _frameTimCuoi = -1;
     public static bool AnyOpen
     {
         get
         {
-            if (Instance == null)
+            // [FIX 2026-09-21 P0] Ban cu FindFirstObjectByType(Include) MOI LAN GOI khi Instance null
+            // (popup khong co trong scene => tim mai, moi frame, tu nhieu noi). Chi tim lai toi da 1 lan/frame.
+            if (Instance == null && _frameTimCuoi != Time.frameCount)
+            {
+                _frameTimCuoi = Time.frameCount;
                 Instance = FindFirstObjectByType<OrderBoardPopupUI>(FindObjectsInactive.Include);
+            }
             return Instance != null && Instance.IsOpen;
         }
     }
@@ -278,8 +284,82 @@ public class OrderBoardPopupUI : MonoBehaviour
         _animating = false;
 
         RefreshAll();
+        // [FIX 2026-09-21] Ruy-băng "Header_Banner" (620×126 ở y=+415, thò lên trên mép
+        // Popup_Main 48) bị màn hình cắt ở tỉ lệ rộng — dịch/co bảng cho lọt canvas.
+        VuaKhungManHinh();
+        // [SkinUnifier 2026-09-21] Dong bo nut/vien/ruy bang theo bo cua Shop (chi doi sprite/mau/font).
+        PopupSkinUnifier.ApDung(popupRoot.transform);
         // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
         Loc.RequestRescan();
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  VỪA KHUNG MÀN HÌNH (fit-to-screen) — dùng chung PopupFitClamp với Shop
+    // ─────────────────────────────────────────────────────────────────────────
+
+    private const float LE_AN_TOAN_POPUP = 16f;
+
+    private RectTransform _bangPopup;
+    private Vector3       _scaleGocBang;
+    private Vector2       _viTriGocBang;
+    private bool          _daLuuBang;
+
+    /// <summary>
+    /// Tấm bảng gỗ (Popup_Main) — thứ phải dịch/co. KHÔNG đụng <see cref="popupRoot"/>:
+    /// đó là Panel_Dim phủ kín màn (anchor 0;0 → 1;1), co nó là nền mờ thu thành ô vuông.
+    /// </summary>
+    private RectTransform TimBangPopup()
+    {
+        if (_bangPopup != null) return _bangPopup;
+        if (popupRoot == null) return null;
+
+        RectTransform rtRoot = popupRoot.transform as RectTransform;
+        bool rootPhuKin = rtRoot != null && rtRoot.anchorMin == Vector2.zero && rtRoot.anchorMax == Vector2.one;
+        if (!rootPhuKin) { _bangPopup = rtRoot; return _bangPopup; }
+
+        Transform t = popupRoot.transform.Find("Popup_Main");
+        if (t != null) _bangPopup = t as RectTransform;
+
+        if (_bangPopup == null && ticketGridContent != null)
+        {
+            // Leo từ lưới vé lên tới con trực tiếp của Panel_Dim.
+            Transform cur = ticketGridContent;
+            while (cur != null && cur.parent != popupRoot.transform) cur = cur.parent;
+            _bangPopup = cur as RectTransform;
+        }
+
+        if (_bangPopup == null)
+        {
+            for (int i = 0; i < popupRoot.transform.childCount; i++)
+            {
+                RectTransform con = popupRoot.transform.GetChild(i) as RectTransform;
+                if (con == null) continue;
+                if (con.anchorMin == Vector2.zero && con.anchorMax == Vector2.one) continue;
+                _bangPopup = con;
+                break;
+            }
+        }
+        return _bangPopup;
+    }
+
+    /// <summary>
+    /// Đo dấu chân thật (kể cả Header_Banner thò lên trên), ưu tiên DỊCH xuống cho lọt
+    /// canvas trừ lề 16, chỉ CO khi dấu chân to hơn khung. Gọi mỗi lần mở vì cỡ canvas
+    /// đổi theo cửa sổ; scale/vị trí gốc nhớ ở lần đầu nên không dồn nén/trôi.
+    /// </summary>
+    private void VuaKhungManHinh()
+    {
+        RectTransform rtBang = TimBangPopup();
+        if (rtBang == null) return;
+
+        if (!_daLuuBang)
+        {
+            _daLuuBang    = true;
+            _scaleGocBang = rtBang.localScale;
+            _viTriGocBang = rtBang.anchoredPosition;
+        }
+
+        PopupFitClamp.VuaKhung(rtBang, _scaleGocBang, _viTriGocBang, LE_AN_TOAN_POPUP);
     }
 
     public void ClosePopup()

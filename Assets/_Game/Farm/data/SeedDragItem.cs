@@ -115,7 +115,7 @@ public class SeedDragItem : MonoBehaviour,
         }
 
         if (txtName != null && data != null)
-            txtName.text = data.displayName;
+            txtName.text = Loc.T(data.displayName);
 
         RefreshStockDisplay();
     }

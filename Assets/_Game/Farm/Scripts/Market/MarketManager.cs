@@ -337,6 +337,9 @@ public class MarketManager : MonoBehaviour
         // sua chua doc lap o day de KHONG BAO GIO con phu thuoc dieu kien do.
         BaoDamBamDuoc(popupRoot);
 
+        // [SkinUnifier 2026-09-21] Dong bo nut/vien/ruy bang theo bo cua Shop (chi doi sprite/mau/font).
+        PopupSkinUnifier.ApDung(popupRoot != null ? popupRoot.transform : transform);
+
         PlayOpenAnimation();
 
         OnMarketChanged?.Invoke();

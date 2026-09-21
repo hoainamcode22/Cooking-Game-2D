@@ -11,8 +11,9 @@ using UnityEngine;
 /// CACH LAM: quy safeArea (pixel) ve anchorMin/anchorMax (0-1) roi zero hoa offset.
 /// Vi lam qua anchor nen moi con ben trong giu nguyen ti le, khong phai sua gi them.
 ///
-/// AN TOAN: may khong khuyet (Editor, PC, phan lon Android) thi safeArea = ca man
-/// hinh, component tra anchor ve DUNG gia tri goc, khong doi mot pixel nao.
+/// LE TOI THIEU: [2026-09-21] moi canh luon lui vao it nhat LE_TOI_THIEU_PX (nhan theo
+/// Screen.dpi/160, kep [1,3]) ke ca may KHONG khuyet, de HUD khong dan sat mep man hinh.
+/// Vung ap dung = giao cua Screen.safeArea va man hinh da lui le.
 /// </summary>
 [RequireComponent(typeof(RectTransform))]
 [DisallowMultipleComponent]
@@ -28,6 +29,20 @@ public class SafeAreaFitter : MonoBehaviour
     [Header("Debug")]
     [Tooltip("In log moi lan ap lai vung an toan. Chi bat khi test tren may that.")]
     public bool ghiLog = false;
+
+    /// <summary>Le toi thieu (pixel o dpi 160) ap cho MOI canh, ke ca may khong notch.</summary>
+    public const float LE_TOI_THIEU_PX = 12f;
+
+    /// <summary>He so DPI: Screen.dpi/160 kep [1,3]; dpi = 0 (Editor/khong ro) coi nhu 160.</summary>
+    public static float HeSoDpi()
+    {
+        float dpi = Screen.dpi;
+        if (dpi <= 1f) dpi = 160f;
+        return Mathf.Clamp(dpi / 160f, 1f, 3f);
+    }
+
+    /// <summary>Le toi thieu THUC (pixel man hinh) sau khi nhan he so DPI.</summary>
+    public static float LeToiThieuPixel() => LE_TOI_THIEU_PX * HeSoDpi();
 
     private RectTransform _rect;
 
@@ -127,22 +142,31 @@ public class SafeAreaFitter : MonoBehaviour
             return;
         }
 
-        // May khong co khuyet nao => tra ve dung anchor goc, giu nguyen layout thiet ke.
-        bool khongKhuyet = safe.x <= 0.5f && safe.y <= 0.5f &&
-                           safe.width  >= w - 0.5f &&
-                           safe.height >= h - 0.5f;
-        if (khongKhuyet)
+        // Le toi thieu moi canh (ke ca may khong khuyet): vung dung = giao(safeArea, man hinh lui le).
+        float le = LeToiThieuPixel();
+        // Le khong duoc "an" qua 1/4 moi chieu (man hinh rat nho / dpi bao sai).
+        le = Mathf.Min(le, Mathf.Min(w, h) * 0.25f);
+
+        float xMinPx = Mathf.Max(safe.xMin, le);
+        float yMinPx = Mathf.Max(safe.yMin, le);
+        float xMaxPx = Mathf.Min(safe.xMax, w - le);
+        float yMaxPx = Mathf.Min(safe.yMax, h - le);
+
+        // Khong lui gi ca (le = 0 va khong khuyet) => tra ve dung anchor goc, giu nguyen layout thiet ke.
+        bool khongDoi = xMinPx <= 0.5f && yMinPx <= 0.5f &&
+                        xMaxPx >= w - 0.5f && yMaxPx >= h - 0.5f;
+        if (khongDoi)
         {
             _rect.anchorMin = _anchorMinGoc;
             _rect.anchorMax = _anchorMaxGoc;
             ZeroOffset();
-            if (ghiLog) Debug.Log("[SafeArea] " + name + ": may khong co vung khuyet, giu nguyen layout goc.");
+            if (ghiLog) Debug.Log("[SafeArea] " + name + ": khong khuyet va khong le, giu nguyen layout goc.");
             return;
         }
 
-        // safeArea (pixel) -> ti le 0-1
-        Vector2 min = new Vector2(safe.x / w, safe.y / h);
-        Vector2 max = new Vector2((safe.x + safe.width) / w, (safe.y + safe.height) / h);
+        // pixel -> ti le 0-1
+        Vector2 min = new Vector2(xMinPx / w, yMinPx / h);
+        Vector2 max = new Vector2(xMaxPx / w, yMaxPx / h);
 
         // Chieu nao khong ap thi tra ve anchor goc cua chieu do.
         if (!apDungNgang) { min.x = _anchorMinGoc.x; max.x = _anchorMaxGoc.x; }
@@ -160,6 +184,7 @@ public class SafeAreaFitter : MonoBehaviour
 
         if (ghiLog)
             Debug.Log("[SafeArea] " + name + ": safeArea=" + safe + " man hinh=" + w + "x" + h +
+                      " le=" + le.ToString("F1") + "px (dpi " + Screen.dpi + ")" +
                       " -> anchorMin=" + min + " anchorMax=" + max);
     }
 
