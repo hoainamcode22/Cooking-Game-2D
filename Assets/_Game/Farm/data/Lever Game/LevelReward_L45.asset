@@ -37,7 +37,7 @@ MonoBehaviour:
     icon: {fileID: -5058163638871099337, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 22
   unlockEntries:
-  - label: "M\u1edf b\u00e1n L\u00f4 \u0111\u1ea5t 18 (279.600 v\u00e0ng)"
+  - label: New land plot 22 on sale  -  281.130 gold
     icon: {fileID: 21300000, guid: c1d278193612f0d4a95620fb6c62090d, type: 3}
   - label: "M\u1ed1c 45: qu\u00e0 kim c\u01b0\u01a1ng l\u1edbn"
     icon: {fileID: 0}

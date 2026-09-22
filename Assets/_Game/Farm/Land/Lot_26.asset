@@ -31,7 +31,7 @@ MonoBehaviour:
     y: 21
     width: 6
     height: 1
-  unlockLevel: 58
+  unlockLevel: 49
   goldPrice: 367270
   gemPrice: 0
   materialCosts:

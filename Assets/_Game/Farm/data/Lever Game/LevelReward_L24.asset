@@ -41,6 +41,8 @@ MonoBehaviour:
     icon: {fileID: 0}
   - label: "\u0110\u01a1n t\u00e0u cao c\u1ea5p"
     icon: {fileID: 0}
+  - label: New land plot 10 on sale  -  79.620 gold
+    icon: {fileID: 0}
   unlockDescriptions:
   - "Nh\u00e0 h\u00e0ng ven bi\u1ec3n"
   - "\u0110\u01a1n t\u00e0u cao c\u1ea5p"

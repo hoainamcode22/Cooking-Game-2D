@@ -201,7 +201,7 @@ public class OrderBoardPopupUI : MonoBehaviour
         WireButton(buttonDeliver,       OnClickDeliver);
 
         if (textTitle != null && string.IsNullOrEmpty(textTitle.text))
-            textTitle.text = "BẢNG ĐƠN HÀNG";
+            textTitle.text = Loc.T("BẢNG ĐƠN HÀNG");
 
         // Tắt popup trong Awake chứ KHÔNG trong Start. Đây đúng chỗ `MarketPopupUI` đang
         // hỏng: Start() gọi SetActive(false) lên chính cái root vừa được bật, nên popup
@@ -491,6 +491,9 @@ public class OrderBoardPopupUI : MonoBehaviour
             if (_tickets[i] != null) _tickets[i].SetSelected(i == slotIndex);
 
         RefreshDetail();
+        Loc.RequestRescan();   // 2026-09-22: khong co dong nay, nhan de/tieu de dong bi ket
+                               // tieng Viet 1-8s vi nhip quet cua LocRuntimeInterceptor bi
+                               // reset moi lan cham tay vao man hinh.
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -516,7 +519,7 @@ public class OrderBoardPopupUI : MonoBehaviour
         // nấu ăn) nên con số cũ trong view gần như luôn lỗi thời.
         order.RefreshOwnedAmounts();
 
-        if (textOrderTitle != null) textOrderTitle.text = order.title;
+        if (textOrderTitle != null) textOrderTitle.text = Loc.T(order.title);
 
         if (imageArtCustomerAvatar != null)
         {
@@ -571,7 +574,7 @@ public class OrderBoardPopupUI : MonoBehaviour
             imageDeliverBackground.color = ready ? colorDeliverReady : colorDeliverBlocked;
 
         if (textDeliverLabel != null)
-            textDeliverLabel.text = "GIAO HÀNG";
+            textDeliverLabel.text = Loc.T("GIAO HÀNG");
 
         SetInteractable(buttonDeliver, FindSelectedOrder() != null);
     }
@@ -609,7 +612,7 @@ public class OrderBoardPopupUI : MonoBehaviour
         {
             _animating = false;
             RewardFlyFX.XoaGoiYDiemXuatPhat();   // giao hỏng: không để gợi ý treo lại lệch chỗ
-            ShowMessage(string.IsNullOrEmpty(failReason) ? "Chưa giao được đơn này." : failReason);
+            ShowMessage(string.IsNullOrEmpty(failReason) ? Loc.T("Chưa giao được đơn này.") : Loc.T(failReason));
             RefreshAll();
             return;
         }
@@ -663,7 +666,7 @@ public class OrderBoardPopupUI : MonoBehaviour
         if (!board.DiscardOrder(order.orderId))
         {
             _animating = false;
-            ShowMessage("Không bỏ được đơn này.");
+            ShowMessage(Loc.T("Không bỏ được đơn này."));
             RefreshAll();
             return;
         }

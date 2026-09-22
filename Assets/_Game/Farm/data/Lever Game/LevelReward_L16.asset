@@ -37,6 +37,8 @@ MonoBehaviour:
     icon: {fileID: 0}
   - label: "Nh\u00e0 D\u00e2n 5, C\u00e2y Th\u00f4ng, B\u1ee5i C\u00e2y L\u1edbn \u0111\u00e3 m\u1edf b\u00e1n"
     icon: {fileID: 0}
+  - label: New land plot 6 on sale  -  35.160 gold
+    icon: {fileID: 0}
   unlockDescriptions:
   - "H\u1ed3 C\u00e1 \u0111\u00e3 m\u1edf \u2014 b\u1eaft \u0111\u1ea7u c\u00e2u c\u00e1"
   - "Nh\u00e0 D\u00e2n 5, C\u00e2y Th\u00f4ng, B\u1ee5i C\u00e2y L\u1edbn \u0111\u00e3 m\u1edf b\u00e1n"

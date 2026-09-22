@@ -75,33 +75,35 @@ public class StallCategoryTabUI : MonoBehaviour
         imageArtCategoryIcon.preserveAspect = true;
     }
 
+    /// <summary>
+    /// [SỬA 2026-09-22] NGUYÊN NHÂN LỖI "MỌI TAB ĐỀU LÀ TÔ PHỞ" TRÊN APK:
+    /// bản cũ đặt TOÀN BỘ switch trong #if UNITY_EDITOR và dùng AssetDatabase. Khi build
+    /// Android, cả khối đó bị cắt bỏ, hàm rơi thẳng xuống dòng cuối
+    /// `Resources.Load("UI_ChuyenCanh/MonAn_ChuyenCanh")` — đúng là cái tô phở — nên MỌI
+    /// tab đều nhận cùng một ảnh. Trong Editor thì AssetDatabase chạy được nên nhìn vẫn đúng.
+    /// CÁCH SỬA: 7 icon đã được copy vào Assets/_Game/Resources/UI_Stall/ (đã cắt viền và
+    /// thu về 192 px: 17 MB -> 156 KB) và nạp bằng Resources.Load — chạy giống hệt nhau ở
+    /// Editor lẫn build. KHÔNG còn ảnh dự phòng sai: thà thiếu icon còn hơn icon sai.
+    /// </summary>
     private static Sprite GetCategoryIcon(StallItemCategory cat)
     {
-#if UNITY_EDITOR
+        string ten = null;
         switch (cat)
         {
-            case StallItemCategory.TatCa:
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Icon_Processed/QuayHang/stall_tab_tatca.png")
-                    ?? UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/thietke/Redesign popup nhiệm vụ game1/Export_Popups_Chon/Design_Assets/baothoc.png");
-
-            case StallItemCategory.NongSan:
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Icon_Processed/QuayHang/stall_tab_nongsan.png")
-                    ?? UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/thietke/Redesign popup nhiệm vụ game1/Export_Popups_Chon/Design_Assets/iconlua.png");
-
-            case StallItemCategory.Hoa:
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Icon_Processed/QuayHang/stall_tab_hoa.png")
-                    ?? UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Hoa/hoahong-removebg-preview.png");
-
-            case StallItemCategory.HatGiong:
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Icon_Processed/QuayHang/stall_tab_hatgiong.png")
-                    ?? UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/Icons/tab_seeds.png");
-
-            case StallItemCategory.CheBien:
-                return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/Icon_Processed/QuayHang/stall_tab_chebien.png")
-                    ?? UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/thietke/Redesign popup nhiệm vụ game1/Export_Popups_Chon/Design_Assets/monan1.png");
+            case StallItemCategory.TatCa:        ten = "stall_tab_tatca";        break;
+            case StallItemCategory.NongSan:      ten = "stall_tab_nongsan";      break;
+            case StallItemCategory.Hoa:          ten = "stall_tab_hoa";          break;
+            case StallItemCategory.HatGiong:     ten = "stall_tab_hatgiong";     break;
+            case StallItemCategory.CheBien:      ten = "stall_tab_chebien";      break;
+            case StallItemCategory.VatLieu:      ten = "stall_tab_vatlieu";      break;
+            case StallItemCategory.ThucAnGiaSuc: ten = "stall_tab_thucangiasuc"; break;
         }
-#endif
-        return Resources.Load<Sprite>("UI_ChuyenCanh/MonAn_ChuyenCanh");
+        if (string.IsNullOrEmpty(ten)) return null;
+
+        Sprite spr = Resources.Load<Sprite>("UI_Stall/" + ten);
+        if (spr == null)
+            Debug.LogWarning("[StallTab] Thieu icon Resources/UI_Stall/" + ten + " — tab se khong co anh.");
+        return spr;
     }
 
     public void SetSelected(bool selected)

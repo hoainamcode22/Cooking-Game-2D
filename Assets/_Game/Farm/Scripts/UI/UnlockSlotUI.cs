@@ -187,7 +187,7 @@ public class UnlockSlotUI : MonoBehaviour
             captionText.gameObject.SetActive(has);
             if (has)
             {
-                captionText.text = nhanNgan;
+                captionText.text = Loc.T(nhanNgan);   // [Loc 2026-09-21] ten mo khoa / ten qua => dich ngay, khong cho interceptor
                 ApDinhDangCaption(captionText);   // [V7] khuôn chữ dùng MỘT chỗ, xem hàm đó
             }
         }

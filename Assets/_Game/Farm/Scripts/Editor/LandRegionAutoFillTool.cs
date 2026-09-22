@@ -968,6 +968,9 @@ public class LandRegionAutoFillTool : EditorWindow
             XoaLoCuaTool();
         GUI.backgroundColor = mauCu;
 
+        if (GUILayout.Button("DIEN nguyen lieu cho lo dang RONG materialCosts (copy tu lo cu gia gan nhat)", GUILayout.Height(24f)))
+            DienNguyenLieuChoLoRong();
+
         EditorGUILayout.HelpBox(
             "Tao lo: asset duoc ghi ra dia, manager duoc Undo.RecordObject — Ctrl+Z go duoc phan gan vao scene, " +
             "asset thi dung nut XOA. Scene KHONG tu luu — tu bam Ctrl+S sau khi kiem tra.",
@@ -1041,7 +1044,9 @@ public class LandRegionAutoFillTool : EditorWindow
                 data.rushGemCost       = 0;
                 data.workerCount       = 4;
                 data.unlockedByDefault = false;
-                data.materialCosts     = new List<BuildMaterialCost>();
+                // [FIX 2026-09-21] Truoc day de RONG => popup mua dat khong hien khung nguyen lieu nao.
+                // Gio copy danh sach nguyen lieu tu lo cu co goldPrice GAN NHAT (Lot_XX da can tay).
+                data.materialCosts     = NguyenLieuTheoLoGanNhat(mgr, lo.goldPrice);
                 data.requiredRegionIds = new List<string>();
 
                 AssetDatabase.CreateAsset(data, path);
@@ -1090,6 +1095,62 @@ public class LandRegionAutoFillTool : EditorWindow
         logQuet = $"Da tao {taoMoi.Count} lo, gan {them} vao regions. Scene chua luu (Ctrl+S).";
         if (taoMoi.Count > 0) EditorGUIUtility.PingObject(taoMoi[0]);
         SceneView.RepaintAll();
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    //  NGUYEN LIEU XAY DUNG — copy tu lo cu co gia gan nhat
+    // ═════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Tra ban sao materialCosts cua lo hien co (uu tien regions trong scene, fallback moi asset)
+    /// co goldPrice gan <paramref name="goldPrice"/> nhat va DA co nguyen lieu. Khong co mau -> list rong.
+    /// </summary>
+    private List<BuildMaterialCost> NguyenLieuTheoLoGanNhat(LandExpansionManager mgr, int goldPrice)
+    {
+        LandRegionData tot = null;
+        long lech = long.MaxValue;
+        void Xet(LandRegionData r)
+        {
+            if (r == null || r.materialCosts == null) return;
+            bool coHang = false;
+            foreach (var c in r.materialCosts) if (c.IsValid) { coHang = true; break; }
+            if (!coHang || r.goldPrice <= 0) return;
+            long d = Math.Abs((long)r.goldPrice - goldPrice);
+            if (d < lech) { lech = d; tot = r; }
+        }
+        if (mgr != null && mgr.regions != null) foreach (var r in mgr.regions) Xet(r);
+        if (tot == null) foreach (var k in khuHienCo) Xet(k.data);
+
+        var kq = new List<BuildMaterialCost>();
+        if (tot == null) return kq;
+        foreach (var c in tot.materialCosts) if (c.IsValid) kq.Add(new BuildMaterialCost(c.itemId, c.amount));
+        return kq;
+    }
+
+    /// <summary>Dien nguyen lieu cho moi asset LandRegionData dang rong materialCosts (tru lo mo san).</summary>
+    private void DienNguyenLieuChoLoRong()
+    {
+        NapKhuHienCoGiuThamSo();
+        var mgr = TimManager();
+        int sua = 0;
+        foreach (var k in khuHienCo)
+        {
+            var d = k.data;
+            if (d == null || d.unlockedByDefault || d.goldPrice <= 0) continue;
+            bool coHang = false;
+            if (d.materialCosts != null) foreach (var c in d.materialCosts) if (c.IsValid) { coHang = true; break; }
+            if (coHang) continue;
+            var moi = NguyenLieuTheoLoGanNhat(mgr, d.goldPrice);
+            if (moi.Count == 0) continue;
+            Undo.RecordObject(d, "Dien nguyen lieu lo dat");
+            d.materialCosts = moi;
+            EditorUtility.SetDirty(d);
+            sua++;
+            Debug.Log($"[LandRegionAutoFill] {d.name}: dien {BuildMaterials.Describe(moi)}");
+        }
+        if (sua > 0) AssetDatabase.SaveAssets();
+        logQuet = $"Da dien nguyen lieu cho {sua} lo dang rong.";
+        Debug.Log("[LandRegionAutoFill] " + logQuet);
     }
 
     // ═════════════════════════════════════════════════════════════════════

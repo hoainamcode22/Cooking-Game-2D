@@ -39,6 +39,8 @@ MonoBehaviour:
   unlockEntries:
   - label: "M\u1edf kh\u00f3a B\u00ed \u0111\u1ecf"
     icon: {fileID: 21300000, guid: f2f7cdd3014d441eaf8a9290146e55d6, type: 3}
+  - label: New land plot 4 on sale  -  18.380 gold
+    icon: {fileID: 0}
   unlockDescriptions:
   - "M\u1edf kh\u00f3a B\u00ed \u0111\u1ecf"
   hintText: "L\u00ean c\u1ea5p 11! M\u1edf shop xem th\u1ee9 m\u1edbi."

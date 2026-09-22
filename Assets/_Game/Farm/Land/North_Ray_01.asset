@@ -66,7 +66,15 @@ MonoBehaviour:
   unlockLevel: 32
   goldPrice: 111840
   gemPrice: 0
-  materialCosts: []
+  materialCosts:
+  - itemId: go
+    amount: 42
+  - itemId: da
+    amount: 28
+  - itemId: dinh
+    amount: 26
+  - itemId: kinh
+    amount: 14
   clearSeconds: 300
   rushGemCost: 0
   workerCount: 4

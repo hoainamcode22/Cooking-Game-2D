@@ -1,0 +1,936 @@
+fileFormatVersion: 2
+guid: 8ca02b17424f05a4e91824e20b11d275
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 1995643982488001304
+    second: shelf_ingredients_0
+  - first:
+      213: -9087408273956647391
+    second: shelf_ingredients_1
+  - first:
+      213: 2833122677115065198
+    second: shelf_ingredients_2
+  - first:
+      213: -7247222432618023829
+    second: shelf_ingredients_3
+  - first:
+      213: -851233124148430432
+    second: shelf_ingredients_4
+  - first:
+      213: -1405055581405902259
+    second: shelf_ingredients_5
+  - first:
+      213: -7581064367182970459
+    second: shelf_ingredients_6
+  - first:
+      213: -4676235338820803733
+    second: shelf_ingredients_7
+  - first:
+      213: 8575181204319092819
+    second: shelf_ingredients_8
+  - first:
+      213: 3069412640314618343
+    second: shelf_ingredients_9
+  - first:
+      213: 8463247430783827343
+    second: shelf_ingredients_10
+  - first:
+      213: -6998964760927037935
+    second: shelf_ingredients_11
+  - first:
+      213: -6822111141725726881
+    second: shelf_ingredients_12
+  - first:
+      213: -1524990939011844818
+    second: shelf_ingredients_13
+  - first:
+      213: 240933780289626183
+    second: shelf_ingredients_14
+  - first:
+      213: 2709189539434016391
+    second: shelf_ingredients_15
+  - first:
+      213: -8406176814721231606
+    second: shelf_ingredients_16
+  - first:
+      213: 3725667191115409467
+    second: shelf_ingredients_17
+  - first:
+      213: -3697317086843253450
+    second: shelf_ingredients_18
+  - first:
+      213: 5678570630682686257
+    second: shelf_ingredients_19
+  - first:
+      213: -149163313761776808
+    second: shelf_ingredients_20
+  - first:
+      213: -4121236544071234614
+    second: shelf_ingredients_21
+  - first:
+      213: -3744540858941960778
+    second: shelf_ingredients_22
+  - first:
+      213: 479147989273712715
+    second: shelf_ingredients_23
+  - first:
+      213: 4095419168474797695
+    second: shelf_ingredients_24
+  - first:
+      213: -1616995569485616131
+    second: shelf_ingredients_25
+  - first:
+      213: -6624274838160561689
+    second: shelf_ingredients_26
+  - first:
+      213: -1693074894413476793
+    second: shelf_ingredients_27
+  - first:
+      213: -5113067603455963986
+    second: shelf_ingredients_28
+  - first:
+      213: -8933688837670054872
+    second: shelf_ingredients_29
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: shelf_ingredients_0
+      rect:
+        serializedVersion: 2
+        x: 33
+        y: 343
+        width: 388
+        height: 81
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 81bd752f0a3f1bb10800000000000000
+      internalID: 1995643982488001304
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_1
+      rect:
+        serializedVersion: 2
+        x: 113
+        y: 307
+        width: 27
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 12e4edd625a03e180800000000000000
+      internalID: -9087408273956647391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_2
+      rect:
+        serializedVersion: 2
+        x: 139
+        y: 306
+        width: 17
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e631c867016415720800000000000000
+      internalID: 2833122677115065198
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_3
+      rect:
+        serializedVersion: 2
+        x: 155
+        y: 307
+        width: 18
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b647f8f4891bc6b90800000000000000
+      internalID: -7247222432618023829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_4
+      rect:
+        serializedVersion: 2
+        x: 173
+        y: 307
+        width: 16
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 0a9361ecbffcf24f0800000000000000
+      internalID: -851233124148430432
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_5
+      rect:
+        serializedVersion: 2
+        x: 190
+        y: 306
+        width: 16
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d4a0f9c946d308ce0800000000000000
+      internalID: -1405055581405902259
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_6
+      rect:
+        serializedVersion: 2
+        x: 206
+        y: 307
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a100becf16aac690800000000000000
+      internalID: -7581064367182970459
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_7
+      rect:
+        serializedVersion: 2
+        x: 230
+        y: 307
+        width: 18
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b63257f2cbcaa1fb0800000000000000
+      internalID: -4676235338820803733
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_8
+      rect:
+        serializedVersion: 2
+        x: 247
+        y: 307
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 350cb004fd9210770800000000000000
+      internalID: 8575181204319092819
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_9
+      rect:
+        serializedVersion: 2
+        x: 263
+        y: 306
+        width: 14
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e1fb0fa88eb89a20800000000000000
+      internalID: 3069412640314618343
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_10
+      rect:
+        serializedVersion: 2
+        x: 278
+        y: 325
+        width: 7
+        height: 7
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f8d7b16b2be737570800000000000000
+      internalID: 8463247430783827343
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_11
+      rect:
+        serializedVersion: 2
+        x: 278
+        y: 307
+        width: 7
+        height: 18
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 116977dc1aeaede90800000000000000
+      internalID: -6998964760927037935
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_12
+      rect:
+        serializedVersion: 2
+        x: 286
+        y: 301
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f57143bcf0ef251a0800000000000000
+      internalID: -6822111141725726881
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_13
+      rect:
+        serializedVersion: 2
+        x: 303
+        y: 306
+        width: 16
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e25728a12d426dae0800000000000000
+      internalID: -1524990939011844818
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_14
+      rect:
+        serializedVersion: 2
+        x: 326
+        y: 307
+        width: 17
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7402e842ff7f75300800000000000000
+      internalID: 240933780289626183
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_15
+      rect:
+        serializedVersion: 2
+        x: 343
+        y: 306
+        width: 18
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 78e2b2f3889f89520800000000000000
+      internalID: 2709189539434016391
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_16
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 307
+        width: 17
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a059a6f89b2475b80800000000000000
+      internalID: -8406176814721231606
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_17
+      rect:
+        serializedVersion: 2
+        x: 377
+        y: 307
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b38e2c5229a34b330800000000000000
+      internalID: 3725667191115409467
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_18
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 55
+        width: 421
+        height: 231
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 63dc9b0e2bd70bcc0800000000000000
+      internalID: -3697317086843253450
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_19
+      rect:
+        serializedVersion: 2
+        x: 159
+        y: 22
+        width: 26
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 133bec9f6e55ece40800000000000000
+      internalID: 5678570630682686257
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_20
+      rect:
+        serializedVersion: 2
+        x: 184
+        y: 22
+        width: 17
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85b85b5a1c01eedf0800000000000000
+      internalID: -149163313761776808
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_21
+      rect:
+        serializedVersion: 2
+        x: 201
+        y: 22
+        width: 17
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: acb864bc23d6ec6c0800000000000000
+      internalID: -4121236544071234614
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_22
+      rect:
+        serializedVersion: 2
+        x: 217
+        y: 22
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6bd04df9de7b80cc0800000000000000
+      internalID: -3744540858941960778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_23
+      rect:
+        serializedVersion: 2
+        x: 235
+        y: 22
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b48908fbe8646a600800000000000000
+      internalID: 479147989273712715
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_24
+      rect:
+        serializedVersion: 2
+        x: 251
+        y: 22
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f761447090ad5d830800000000000000
+      internalID: 4095419168474797695
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_25
+      rect:
+        serializedVersion: 2
+        x: 274
+        y: 22
+        width: 17
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dfbed65c8174f89e0800000000000000
+      internalID: -1616995569485616131
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_26
+      rect:
+        serializedVersion: 2
+        x: 291
+        y: 22
+        width: 16
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7e9a1e0b129d114a0800000000000000
+      internalID: -6624274838160561689
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_27
+      rect:
+        serializedVersion: 2
+        x: 308
+        y: 22
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 74c4a549a5df088e0800000000000000
+      internalID: -1693074894413476793
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_28
+      rect:
+        serializedVersion: 2
+        x: 324
+        y: 22
+        width: 9
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: eac0377da1cba09b0800000000000000
+      internalID: -5113067603455963986
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: shelf_ingredients_29
+      rect:
+        serializedVersion: 2
+        x: 332
+        y: 22
+        width: 12
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 824ddc8b559250480800000000000000
+      internalID: -8933688837670054872
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      shelf_ingredients_0: 1995643982488001304
+      shelf_ingredients_1: -9087408273956647391
+      shelf_ingredients_10: 8463247430783827343
+      shelf_ingredients_11: -6998964760927037935
+      shelf_ingredients_12: -6822111141725726881
+      shelf_ingredients_13: -1524990939011844818
+      shelf_ingredients_14: 240933780289626183
+      shelf_ingredients_15: 2709189539434016391
+      shelf_ingredients_16: -8406176814721231606
+      shelf_ingredients_17: 3725667191115409467
+      shelf_ingredients_18: -3697317086843253450
+      shelf_ingredients_19: 5678570630682686257
+      shelf_ingredients_2: 2833122677115065198
+      shelf_ingredients_20: -149163313761776808
+      shelf_ingredients_21: -4121236544071234614
+      shelf_ingredients_22: -3744540858941960778
+      shelf_ingredients_23: 479147989273712715
+      shelf_ingredients_24: 4095419168474797695
+      shelf_ingredients_25: -1616995569485616131
+      shelf_ingredients_26: -6624274838160561689
+      shelf_ingredients_27: -1693074894413476793
+      shelf_ingredients_28: -5113067603455963986
+      shelf_ingredients_29: -8933688837670054872
+      shelf_ingredients_3: -7247222432618023829
+      shelf_ingredients_4: -851233124148430432
+      shelf_ingredients_5: -1405055581405902259
+      shelf_ingredients_6: -7581064367182970459
+      shelf_ingredients_7: -4676235338820803733
+      shelf_ingredients_8: 8575181204319092819
+      shelf_ingredients_9: 3069412640314618343
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

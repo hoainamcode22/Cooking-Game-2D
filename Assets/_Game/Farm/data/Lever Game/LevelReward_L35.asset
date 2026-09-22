@@ -39,6 +39,8 @@ MonoBehaviour:
   unlockEntries:
   - label: "M\u1ed1c 35: qu\u00e0 kim c\u01b0\u01a1ng l\u1edbn"
     icon: {fileID: 0}
+  - label: New land plot 15 on sale  -  152.330 gold
+    icon: {fileID: 0}
   unlockDescriptions:
   - "M\u1ed1c 35: qu\u00e0 kim c\u01b0\u01a1ng l\u1edbn"
   hintText: "L\u00ean c\u1ea5p 35! M\u1edf shop xem th\u1ee9 m\u1edbi."

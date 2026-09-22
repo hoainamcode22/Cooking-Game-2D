@@ -1,0 +1,832 @@
+fileFormatVersion: 2
+guid: 3c06fe6a59f0f6f44b97936e27d50581
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 2150622178170117810
+    second: tabs_category_wood_0
+  - first:
+      213: 324915309553663142
+    second: tabs_category_wood_1
+  - first:
+      213: 1851258086205656475
+    second: tabs_category_wood_2
+  - first:
+      213: 2910351362737552991
+    second: tabs_category_wood_3
+  - first:
+      213: 5314283684186454639
+    second: tabs_category_wood_4
+  - first:
+      213: -1994693504505037532
+    second: tabs_category_wood_5
+  - first:
+      213: 6146978220898174526
+    second: tabs_category_wood_6
+  - first:
+      213: 1362206136812296475
+    second: tabs_category_wood_7
+  - first:
+      213: 8284068059185020957
+    second: tabs_category_wood_8
+  - first:
+      213: -5429334546850197474
+    second: tabs_category_wood_9
+  - first:
+      213: -8903314814646978474
+    second: tabs_category_wood_10
+  - first:
+      213: -6541059478895477835
+    second: tabs_category_wood_11
+  - first:
+      213: 415948334292376955
+    second: tabs_category_wood_12
+  - first:
+      213: 7682128748984563014
+    second: tabs_category_wood_13
+  - first:
+      213: -7973962892883792040
+    second: tabs_category_wood_14
+  - first:
+      213: 9015730615939853972
+    second: tabs_category_wood_15
+  - first:
+      213: -4234935054410751917
+    second: tabs_category_wood_16
+  - first:
+      213: 8462811073175295913
+    second: tabs_category_wood_17
+  - first:
+      213: -2701323679744889496
+    second: tabs_category_wood_18
+  - first:
+      213: 3312823033017578411
+    second: tabs_category_wood_19
+  - first:
+      213: -6771761962942762717
+    second: tabs_category_wood_20
+  - first:
+      213: 1772481957986751082
+    second: tabs_category_wood_21
+  - first:
+      213: -6727248091321970956
+    second: tabs_category_wood_22
+  - first:
+      213: -7908940933219196308
+    second: tabs_category_wood_23
+  - first:
+      213: -8350432846810698006
+    second: tabs_category_wood_24
+  - first:
+      213: 9039857573408528690
+    second: tabs_category_wood_25
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 1
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: tabs_category_wood_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 281
+        width: 421
+        height: 143
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2be18eff97b88dd10800000000000000
+      internalID: 2150622178170117810
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_1
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 82
+        width: 398
+        height: 147
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ac3808a0c4528400800000000000000
+      internalID: 324915309553663142
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_2
+      rect:
+        serializedVersion: 2
+        x: 26
+        y: 22
+        width: 26
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b9d8bd7cb6df0b910800000000000000
+      internalID: 1851258086205656475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_3
+      rect:
+        serializedVersion: 2
+        x: 51
+        y: 22
+        width: 18
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f5ebb8b0525a36820800000000000000
+      internalID: 2910351362737552991
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_4
+      rect:
+        serializedVersion: 2
+        x: 68
+        y: 22
+        width: 17
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f6a769fbad020c940800000000000000
+      internalID: 5314283684186454639
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_5
+      rect:
+        serializedVersion: 2
+        x: 85
+        y: 22
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 42db23473dc6154e0800000000000000
+      internalID: -1994693504505037532
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_6
+      rect:
+        serializedVersion: 2
+        x: 102
+        y: 22
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e36c2b2bf147e4550800000000000000
+      internalID: 6146978220898174526
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_7
+      rect:
+        serializedVersion: 2
+        x: 119
+        y: 22
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b19dd8f934787e210800000000000000
+      internalID: 1362206136812296475
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_8
+      rect:
+        serializedVersion: 2
+        x: 142
+        y: 22
+        width: 18
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d1002ea420ce6f270800000000000000
+      internalID: 8284068059185020957
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_9
+      rect:
+        serializedVersion: 2
+        x: 159
+        y: 22
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e10dc38def027a4b0800000000000000
+      internalID: -5429334546850197474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_10
+      rect:
+        serializedVersion: 2
+        x: 174
+        y: 22
+        width: 13
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6587e7d0952117480800000000000000
+      internalID: -8903314814646978474
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_11
+      rect:
+        serializedVersion: 2
+        x: 186
+        y: 22
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bbbbb95f0d7935a0800000000000000
+      internalID: -6541059478895477835
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_12
+      rect:
+        serializedVersion: 2
+        x: 201
+        y: 15
+        width: 17
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b7d99666eceb5c500800000000000000
+      internalID: 415948334292376955
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_13
+      rect:
+        serializedVersion: 2
+        x: 217
+        y: 22
+        width: 17
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6457a0245676c9a60800000000000000
+      internalID: 7682128748984563014
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_14
+      rect:
+        serializedVersion: 2
+        x: 235
+        y: 15
+        width: 27
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 85fe38d2ffac65190800000000000000
+      internalID: -7973962892883792040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_15
+      rect:
+        serializedVersion: 2
+        x: 269
+        y: 22
+        width: 15
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 49e65b15a3f4e1d70800000000000000
+      internalID: 9015730615939853972
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_16
+      rect:
+        serializedVersion: 2
+        x: 284
+        y: 40
+        width: 7
+        height: 8
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3506ff2710d7a35c0800000000000000
+      internalID: -4234935054410751917
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_17
+      rect:
+        serializedVersion: 2
+        x: 284
+        y: 22
+        width: 7
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9a71bd945d1f17570800000000000000
+      internalID: 8462811073175295913
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_18
+      rect:
+        serializedVersion: 2
+        x: 293
+        y: 22
+        width: 8
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 86d647dec68f28ad0800000000000000
+      internalID: -2701323679744889496
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_19
+      rect:
+        serializedVersion: 2
+        x: 299
+        y: 22
+        width: 13
+        height: 23
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ba3beb61ff289fd20800000000000000
+      internalID: 3312823033017578411
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_20
+      rect:
+        serializedVersion: 2
+        x: 311
+        y: 22
+        width: 16
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 3217b4f7f5ed502a0800000000000000
+      internalID: -6771761962942762717
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_21
+      rect:
+        serializedVersion: 2
+        x: 327
+        y: 22
+        width: 13
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a62d69423fe199810800000000000000
+      internalID: 1772481957986751082
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_22
+      rect:
+        serializedVersion: 2
+        x: 344
+        y: 22
+        width: 18
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4fe44d0e08304a2a0800000000000000
+      internalID: -6727248091321970956
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_23
+      rect:
+        serializedVersion: 2
+        x: 360
+        y: 22
+        width: 15
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c626ce5ef1ccd3290800000000000000
+      internalID: -7908940933219196308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_24
+      rect:
+        serializedVersion: 2
+        x: 376
+        y: 22
+        width: 17
+        height: 25
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: aee281d719d4d1c80800000000000000
+      internalID: -8350432846810698006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: tabs_category_wood_25
+      rect:
+        serializedVersion: 2
+        x: 393
+        y: 22
+        width: 14
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 239d32b5196047d70800000000000000
+      internalID: 9039857573408528690
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      tabs_category_wood_0: 2150622178170117810
+      tabs_category_wood_1: 324915309553663142
+      tabs_category_wood_10: -8903314814646978474
+      tabs_category_wood_11: -6541059478895477835
+      tabs_category_wood_12: 415948334292376955
+      tabs_category_wood_13: 7682128748984563014
+      tabs_category_wood_14: -7973962892883792040
+      tabs_category_wood_15: 9015730615939853972
+      tabs_category_wood_16: -4234935054410751917
+      tabs_category_wood_17: 8462811073175295913
+      tabs_category_wood_18: -2701323679744889496
+      tabs_category_wood_19: 3312823033017578411
+      tabs_category_wood_2: 1851258086205656475
+      tabs_category_wood_20: -6771761962942762717
+      tabs_category_wood_21: 1772481957986751082
+      tabs_category_wood_22: -6727248091321970956
+      tabs_category_wood_23: -7908940933219196308
+      tabs_category_wood_24: -8350432846810698006
+      tabs_category_wood_25: 9039857573408528690
+      tabs_category_wood_3: 2910351362737552991
+      tabs_category_wood_4: 5314283684186454639
+      tabs_category_wood_5: -1994693504505037532
+      tabs_category_wood_6: 6146978220898174526
+      tabs_category_wood_7: 1362206136812296475
+      tabs_category_wood_8: 8284068059185020957
+      tabs_category_wood_9: -5429334546850197474
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

@@ -22,7 +22,7 @@ MonoBehaviour:
     amount: 4
   - itemId: seed_hoa_oai_huong
     displayName: "H\u1EA1t Hoa O\u1EA3i H\u01B0\u01A1ng"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 05ec61e749584c398f739183298b2b67, type: 3}
     amount: 4
   - itemId: go
     displayName: "G\u1ED7"

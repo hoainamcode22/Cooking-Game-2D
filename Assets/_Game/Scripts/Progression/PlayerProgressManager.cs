@@ -24,7 +24,9 @@ public class PlayerProgressManager : MonoBehaviour
     [SerializeField] private int startLevel = 1;
     [SerializeField] private int startExp = 0;
     /// <summary>
-    /// TRẦN CỨNG của game — mọi nội dung (nhiệm vụ, món ăn, mở khoá) kết thúc ở cấp 30.
+    /// TRẦN CỨNG của game. [2026-09-21] 30 -> 50: bo du lieu LevelReward_L2..L50 da day du
+    /// (vang 100 -> 5.010, moc gem L35/40/45/50, unlock o L31/40/45/50), truoc day code chan o 30
+    /// nen 20 cap cuoi khong bao gio dung toi.
     /// Trước đây field dưới để 100 nên người chơi farm lên 31, 32… vào vùng không có
     /// nội dung nào. Trần khai bằng const và kẹp đè lên giá trị Inspector: field
     /// serialize trong scene vẫn đang lưu 100, đổi mỗi default là không đủ.

@@ -173,9 +173,11 @@ public class GiftSlotBounceTooltip : MonoBehaviour, IPointerClickHandler
         else if (_tipRoot.parent != host) _tipRoot.SetParent(host, false);
 
         // Nội dung
-        string tieuDe = _soLuong > 1 ? $"{_tenQua}  ×{_soLuong}" : _tenQua;
-        if (_tipTitle != null) _tipTitle.text = tieuDe;
-        if (_tipDesc  != null) _tipDesc.text  = _moTa;
+        // [Loc 2026-09-21] (c) chuoi ghep: dich TEN truoc roi moi ghep so luong; mo ta dich thang (khoa co trong bang).
+        string tenDich = Loc.T(_tenQua);
+        string tieuDe = _soLuong > 1 ? $"{tenDich}  ×{_soLuong}" : tenDich;
+        if (_tipTitle != null) { _tipTitle.text = tieuDe; LocFit.Fit(_tipTitle); }
+        if (_tipDesc  != null) { _tipDesc.text  = Loc.T(_moTa); LocFit.Fit(_tipDesc); }
 
         // Vị trí: ngay TRÊN ô quà, kẹp trong bề ngang host để không tràn màn hình
         Vector3 dinhO = myRt.TransformPoint(new Vector3(0f, myRt.rect.yMax * Mathf.Abs(myRt.localScale.y), 0f));

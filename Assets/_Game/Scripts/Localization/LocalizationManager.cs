@@ -60,15 +60,40 @@ public static class LocalizationManager
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void KhoiTao()
     {
+        // [FIX 2026-09-22 — StackOverflow] CO NAY PHAI CHOT NGAY, VO DIEU KIEN.
+        // Ban truoc dat "_daKhoiTao = Application.isPlaying" nen o Edit Mode co khong bao gio
+        // chot, sinh ra vong lap vo tan:
+        //     T() -> KhoiTao() -> QuetVaDich() -> T() -> KhoiTao() -> ...
+        // Unity bao StackOverflowException tai PlayerPrefs.GetString. StackOverflowException
+        // KHONG bat duoc bang try/catch trong .NET nen no xuyen qua ca rao an toan cua tool.
+        // Viec "vao Play phai khoi tao lai" duoc lo bang DatLaiKhiVaoPlay() ben duoi.
         if (_daKhoiTao) return;
         _daKhoiTao = true;
+
         _lang = PlayerPrefs.GetString(PREF_KEY, EN);
         if (_lang != VI && _lang != EN) _lang = EN;
 
         // [FIX 2026-09-06] Bat bo dich chay nen: dich MOI chu tren man hinh, khong phai boc
         // Loc.T() cho tung file UI. Dang tieng Viet thi no khong lam gi ca.
         LocRuntimeInterceptor.KhoiTao();
-        if (_lang == EN) LocRuntimeInterceptor.QuetVaDich();
+
+        // Edit Mode thi KHONG quet: QuetVaDich() duyet moi TMP_Text trong TAT CA scene dang mo
+        // va ghi de chu cua chung — mot tool Editor vo tinh goi Loc.T() se lam ban ca nhung
+        // scene khong lien quan. Luc chay thi quet nhu cu.
+        if (_lang == EN && Application.isPlaying) LocRuntimeInterceptor.QuetVaDich();
+    }
+
+    /// <summary>
+    /// Xoa co khoi tao MOI LAN vao Play. Can vi Unity cho phep tat Domain Reload — khi do bien
+    /// static giu nguyen tu Edit Mode sang Play, co da chot se lam KhoiTao() thoat som va
+    /// LocRuntimeInterceptor khong bao gio duoc dung => game chay ma khong dich gi ca.
+    /// SubsystemRegistration la moc chay SOM NHAT khi vao Play, truoc BeforeSceneLoad.
+    /// </summary>
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void DatLaiKhiVaoPlay()
+    {
+        _daKhoiTao = false;
+        LocRuntimeInterceptor.DatLaiCoKhoiTao();
     }
 
     /// <summary>

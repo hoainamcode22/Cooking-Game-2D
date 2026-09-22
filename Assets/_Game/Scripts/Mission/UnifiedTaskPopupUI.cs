@@ -1021,6 +1021,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         // [Localization 2026-09-19] Popup vừa dựng/đổi tab ⇒ xin bộ dịch quét NGAY khung hình kế,
         // không chờ nhịp poll nền (tới 8s) — trước đây chữ Việt hiện vài giây rồi mới đổi.
         Loc.RequestRescan();
+        LocFitSweeper.Sweep();   // [Loc 2026-09-21] quet chu to khung nho sau khi popup dung xong
     }
 
     private void ApplyTabState(TabButtonView view, bool selected)

@@ -404,6 +404,9 @@ public class LevelUpPopupUI : MonoBehaviour
         StartCoroutine(AnimateIn());
         // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
         Loc.RequestRescan();
+        // [Loc 2026-09-21] Nut "NHAN" + tieu de: chu EN dai hon => vua khung; roi quet toan cuc chu to khung nho.
+        if (claimButton != null) LocFit.Fit(claimButton.GetComponentInChildren<TMP_Text>(true));
+        LocFitSweeper.Sweep();
     }
 
     /// <summary>Đường dẫn hierarchy đầy đủ, dùng cho log lỗi.</summary>
@@ -418,7 +421,10 @@ public class LevelUpPopupUI : MonoBehaviour
     {
         // Title
         if (titleText != null)
-            titleText.text = "LÊN CẤP!";
+        {
+            titleText.text = Loc.T("LÊN CẤP!");   // [Loc 2026-09-21] (a) TMP set truc tiep => boc Loc.T
+            LocFit.Fit(titleText);                 // tieu de EN dai hon => vua khung
+        }
         if (levelNumberText != null)
             levelNumberText.text = Mathf.Clamp(level, 1, 30).ToString();
 
@@ -460,7 +466,7 @@ public class LevelUpPopupUI : MonoBehaviour
             if (cfg.giftGold > 0)
                 quaHienThi.Add(new LevelRewardConfig.ItemGift
                 {
-                    itemId = LevelUpRewardIconResolver.GoldId, displayName = "Vàng", amount = cfg.giftGold,
+                    itemId = LevelUpRewardIconResolver.GoldId, displayName = "Vàng", amount = cfg.giftGold,   // [Loc 2026-09-21] giu khoa VI: UnlockSlotUI/Tooltip tu Loc.T khi ve
                     // [R2 ICON] TimIconVangV4 (library → HUD) vẫn là nguồn chính; miss thì
                     // resolver lo tiếp + log [LevelUp] một lần (trước đây miss là ô trống câm).
                     icon = LevelUpRewardIconResolver.Resolve(LevelUpRewardIconResolver.GoldId, TimIconVangV4(), "Vàng"),
@@ -468,7 +474,7 @@ public class LevelUpPopupUI : MonoBehaviour
             if (cfg.giftGems > 0)
                 quaHienThi.Add(new LevelRewardConfig.ItemGift
                 {
-                    itemId = LevelUpRewardIconResolver.GemId, displayName = "Kim cương", amount = cfg.giftGems,
+                    itemId = LevelUpRewardIconResolver.GemId, displayName = "Kim cương", amount = cfg.giftGems,   // [Loc 2026-09-21] giu khoa VI, xem tren
                     icon = LevelUpRewardIconResolver.Resolve(LevelUpRewardIconResolver.GemId, TimIconGemV4(), "Kim cương"),
                 });
 
@@ -685,6 +691,8 @@ public class LevelUpPopupUI : MonoBehaviour
             string chu = cfg != null ? cfg.hintText : null;
             if (string.IsNullOrWhiteSpace(chu))
                 chu = Loc.TF("Lên cấp {0}! Quà mới đã vào kho của bạn.", level);
+            else
+                chu = Loc.T(chu);   // [Loc 2026-09-21] hintText tu asset (khoa da co trong bang)
             if (hint.text != chu) hint.text = chu;
 
             if (!hint.gameObject.activeSelf) hint.gameObject.SetActive(true);

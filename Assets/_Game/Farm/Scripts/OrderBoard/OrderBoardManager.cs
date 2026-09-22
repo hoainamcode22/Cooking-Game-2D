@@ -268,7 +268,7 @@ public class OrderBoardManager : OrderBoardManagerBase
         int slot = IndexOf(orderId);
         if (slot < 0)
         {
-            failReason = "Đơn hàng này không còn nữa.";
+            failReason = Loc.T("Đơn hàng này không còn nữa.");
             return false;
         }
 
@@ -276,7 +276,7 @@ public class OrderBoardManager : OrderBoardManagerBase
 
         if (FarmInventoryManager.Instance == null)
         {
-            failReason = "Chưa mở được kho, thử lại sau.";
+            failReason = Loc.T("Chưa mở được kho, thử lại sau.");
             Debug.LogError("[BảngĐơn] FarmInventoryManager.Instance = null — không giao đơn được.");
             return false;
         }
@@ -327,7 +327,7 @@ public class OrderBoardManager : OrderBoardManagerBase
             for (int i = 0; i < removed.Count; i++)
                 FarmInventoryManager.Instance.AddItem(removed[i].itemId, removed[i].requiredAmount);
 
-            failReason = "Kho vừa thay đổi, thử lại nhé.";
+            failReason = Loc.T("Kho vừa thay đổi, thử lại nhé.");
             return false;
         }
 

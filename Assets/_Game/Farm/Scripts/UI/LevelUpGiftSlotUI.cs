@@ -103,7 +103,7 @@ public class LevelUpGiftSlotUI : MonoBehaviour
         }
         if (nameText != null)
         {
-            nameText.text = displayName;
+            nameText.text = Loc.T(displayName);   // [Loc 2026-09-21] ten qua tu asset => dich ngay
         }
     }
 

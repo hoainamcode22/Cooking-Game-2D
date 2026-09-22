@@ -103,6 +103,12 @@ public class HarvestFlyItemFX : MonoBehaviour
         if (visualRoot != null)
             visualRoot.localScale = startScale * zoomMul;
 
+        // LUOI AN TOAN (2026-09-22): coroutine la thu DUY NHAT huy object nay.
+        // Neu no bi dung giua chung (timeScale = 0, SetActive(false), exception) thi
+        // icon treo vinh vien tren HUD kho. Destroy co delay khong phu thuoc timeScale.
+        if (destroyOnFinish)
+            Destroy(gameObject, dropDuration + groundStayDuration + flyDuration + 2f);
+
         routine = StartCoroutine(CoPlay(worldSpawnPos, worldTargetPos));
     }
 
@@ -115,7 +121,7 @@ public class HarvestFlyItemFX : MonoBehaviour
 
         while (timer < dropDuration)
         {
-            timer += Time.deltaTime;
+            timer += Time.unscaledDeltaTime;
             float t = dropDuration <= 0f ? 1f : Mathf.Clamp01(timer / dropDuration);
             
             Vector3 basePos = Vector3.LerpUnclamped(worldSpawnPos, groundPos, t);
@@ -134,14 +140,14 @@ public class HarvestFlyItemFX : MonoBehaviour
             visualRoot.localScale = normalScale * zoomMul;
 
         if (groundStayDuration > 0f)
-            yield return new WaitForSeconds(groundStayDuration);
+            yield return new WaitForSecondsRealtime(groundStayDuration);
 
         timer = 0f;
         Vector3 flyStart = transform.position;
 
         while (timer < flyDuration)
         {
-            timer += Time.deltaTime;
+            timer += Time.unscaledDeltaTime;
             float t = flyDuration <= 0f ? 1f : Mathf.Clamp01(timer / flyDuration);
             float ease = Mathf.SmoothStep(0f, 1f, t);
 
@@ -152,7 +158,7 @@ public class HarvestFlyItemFX : MonoBehaviour
         transform.position = worldTargetPos;
 
         try { onArrived?.Invoke(); }
-        catch (Exception) { }
+        catch (Exception e) { Debug.LogWarning("[HarvestFly] onArrived loi: " + e); }
 
         routine = null;
 

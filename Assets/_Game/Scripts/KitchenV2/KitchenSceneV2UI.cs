@@ -152,8 +152,20 @@ namespace KitchenUIv2
         /// luôn dựng bản tươi — nhờ đó preview không bao giờ bị nhân đôi khi Play.
         /// ⚠ Preview chỉ để QUAN SÁT: chỉnh tay lên preview sẽ bị dựng lại đè khi Play/chạy tool.
         /// </summary>
+        [Header("Khoa layout (2026-09-21)")]
+        [Tooltip("Bat = code KHONG duoc ghi vi tri / kich thuoc nua. Chinh tay bang keo tha se giu nguyen sau khi Play. " +
+                 "Bat bang tool 'Kitchen: Dong bang UI thanh Hierarchy' hoac tick tay o day.")]
+        [SerializeField] private bool khoaLayout = false;
+
+        /// <summary>Dung lai UI bang CODE. Da khoa layout thi tu choi, tranh xoa sach chinh tay cua Sep.</summary>
         public void RebuildNow()
         {
+            if (khoaLayout || KhoaLayout)
+            {
+                Debug.LogWarning("[KitchenV2] RebuildNow() bi TU CHOI vi dang KHOA LAYOUT. " +
+                                 "Muon dung lai bang code thi bo tick 'Khoa layout' trong Inspector truoc.");
+                return;
+            }
             for (int i = transform.childCount - 1; i >= 0; i--)
             {
                 var child = transform.GetChild(i).gameObject;
@@ -167,12 +179,83 @@ namespace KitchenUIv2
             EnsureBuilt();
         }
 
+        /// <summary>
+        /// [2026-09-22] TOOL AN TOAN cho Edit Mode — CHI THEM phan con thieu, KHONG XOA GI.
+        ///
+        /// Khac han <see cref="BuildEditorPreview"/>: ham do goi RebuildNow() -> xoa sach con
+        /// roi dung lai. Do la dung cai da lam hong hierarchy cua Sep hom 21/09.
+        /// Ham nay chi chay cac ham Build cua DUNG NHUNG NHANH KHONG TON TAI, phan da co
+        /// khong bi dung vao mot li nao. Chay xong Sep Ctrl+S la luu vinh vien.
+        ///
+        /// Tra ve: mo ta nhung gi vua duoc them (de tool in ra cho Sep doc).
+        /// </summary>
+        public string VaPhanThieuChoEditor()
+        {
+            bool khoaCu = KhoaLayout;
+            DangVaTrongEditor = true;
+            // KHOA LAYOUT trong suot ca luot va. Ly do: KhoaLayout la bien static chi duoc gan
+            // trong Start() — o Edit Mode no dang la false, nen Anchor()/Stretch() se GHI DE
+            // vi tri Sep vua keo tay. Bat len thi 87 cho goi Anchor deu tro thanh khong lam gi.
+            // Rieng luc dung object MOI thi VaPhanThieuTrongHierarchy() tu mo khoa tam thoi,
+            // vi object moi bat buoc phai co anchor.
+            KhoaLayout = true;
+            try
+            {
+            _canvas = GetComponent<Canvas>();
+            _root   = KhungGoc();
+            EnsureSkinLoaded();
+
+            var truoc = new System.Text.StringBuilder();
+            if (_root.Find("Tray")          == null) truoc.Append("Tray (khay nguyen lieu + gia vi), ");
+            if (_root.Find("Btn_Action")    == null) truoc.Append("Btn_Action, ");
+            if (_root.Find("Btn_BackFarm")  == null) truoc.Append("Btn_BackFarm, ");
+            if (_root.Find("Cat_Chef")      == null) truoc.Append("Cat_Chef, ");
+            if (_root.Find("Deco_Garlic_R") == null) truoc.Append("bo trang tri treo tuong (7 mon), ");
+            var whKiemTra = _root.Find("Warehouse_Box");
+            if (whKiemTra != null && whKiemTra.Find("Txt_Sent") == null) truoc.Append("Txt_Sent, ");
+
+            VaPhanThieuTrongHierarchy();
+
+            // Noi tham chieu lai (khong xoa gi) de cac buoc duoi co _gridIngredients, _dishListContent...
+            BindExistingHierarchy();
+
+            if (selection == null)
+                selection = FindFirstObjectByType<CookingSelectionManager>(FindObjectsInactive.Include);
+
+            int theTruoc = _gridIngredients != null ? _gridIngredients.childCount : 0;
+            if (selection != null && theTruoc == 0) BuildTrayCards();
+
+            int monTruoc = _dishListContent != null ? _dishListContent.childCount : 0;
+            // CO Y KHONG goi PickDefaultDish() o day: no dat "mon dang nau" -> keo theo viec
+            // ve lai Need_Chips (co vong Destroy con). Danh sach mon khong can no. Bo di la
+            // luot va nay khong con MOT lenh xoa nao.
+            if (monTruoc == 0) RebuildDishList();
+
+            if (truoc.Length == 0 && theTruoc > 0 && monTruoc > 0)
+                return "Khong thieu gi — hierarchy da day du, tool khong dong vao gi ca.";
+
+            return "Da them: " + (truoc.Length > 0 ? truoc.ToString() : "")
+                 + (theTruoc == 0 ? ((_gridIngredients != null ? _gridIngredients.childCount : 0) + " the nguyen lieu, "
+                                   + (_gridSeasonings  != null ? _gridSeasonings.childCount  : 0) + " the gia vi, ") : "")
+                 + (monTruoc == 0 ? ((_dishListContent != null ? _dishListContent.childCount : 0) + " dong mon an") : "");
+            }
+            finally
+            {
+                DangVaTrongEditor = false;
+                KhoaLayout        = khoaCu;
+            }
+        }
+
         /// <summary>Editor tool gọi: dựng cả thẻ nguyên liệu cho preview đầy đủ.</summary>
         public void BuildEditorPreview()
         {
             RebuildNow();
             if (selection == null) selection = FindFirstObjectByType<CookingSelectionManager>(FindObjectsInactive.Include);
             if (selection != null) BuildTrayCards();
+            // [FIX 2026-09-21] Truoc day THIEU 2 dong nay: Dish_Scroll/Content sinh ra RONG,
+            // 7 the mon chi hien luc Play -> Sep nhin Scene view thay danh sach trong.
+            PickDefaultDish();
+            RebuildDishList();
             ShowBoardDetail(true);
         }
 
@@ -195,10 +278,11 @@ namespace KitchenUIv2
             // AddComponent<GridLayoutGroup> trả null) giết cả chuỗi Start → bảng công thức
             // trống + MỌI nút (kể cả VỀ NÔNG TRẠI, khay nguyên liệu) mất listener cùng lúc.
             // Một tài nguyên/hierarchy gãy chỉ được phép làm hỏng đúng phần của nó.
+            KhoaLayout = khoaLayout;   // [2026-09-21] ap co truoc moi buoc init
             EnsureSkinLoaded();
             BuocInit("Bind/Build khung", () =>
             {
-                if (transform.Find("Order_Banner") != null) BindExistingHierarchy();
+                if (KhungGoc().Find("Order_Banner") != null) BindExistingHierarchy();
                 else RebuildNow(); // scene trống → dựng khung lần đầu (sau đó Ctrl+S là thành hierarchy cố định)
             });
             BuocInit("RaiseLegacyOverlays", RaiseLegacyOverlays);
@@ -245,6 +329,11 @@ namespace KitchenUIv2
         private void HandleLanguageChanged(string lang)
         {
             RefreshAll();
+            // Danh sach mon dung ten bang Loc.T() (khong qua interceptor) ⇒ dung lai de doi ngon ngu.
+            if (_boardList != null && _boardList.activeSelf) RebuildDishList();
+            // Goi y khay trong dung mot lan bang Loc.T() ⇒ doi lai chu theo ngon ngu moi.
+            if (_hintEmptyIng != null) SetText(_hintEmptyIng, Loc.T(HintEmptyIngVi));
+            if (_hintEmptySea != null) SetText(_hintEmptySea, Loc.T(HintEmptySeaVi));
         }
 
         private void Update()
@@ -263,7 +352,7 @@ namespace KitchenUIv2
         private void HandleCookStarted(DishData d)
         {
             _ovenBusy = true;
-            SetText(_txtOvenState, "LÒ ĐANG CHÁY...");
+            SetText(_txtOvenState, Loc.T("LÒ ĐANG CHÁY..."));
             SetText(_txtPrepToast, Loc.TF("Sơ chế: {0}", d != null ? Loc.T(d.dishName) : ""));
         }
 
@@ -271,7 +360,7 @@ namespace KitchenUIv2
         {
             _ovenBusy = false;
             SetText(_txtOvenState, Loc.TF("XONG! {0}đ", score));
-            SetText(_txtPrepToast, "Chạm bàn trình bày để cất vào kho →");
+            SetText(_txtPrepToast, Loc.T("Chạm bàn trình bày để cất vào kho →"));
         }
 
         private void HandleDishFailed(DishData d, int score)
@@ -280,7 +369,7 @@ namespace KitchenUIv2
             _ovenFakeProgress = 0f;
             if (_imgOvenFill != null) _imgOvenFill.fillAmount = 0f;
             SetText(_txtOvenState, Loc.TF("HỎNG... {0}đ", score));
-            SetText(_txtPrepToast, "Chọn lại nguyên liệu rồi nấu tiếp nhé!");
+            SetText(_txtPrepToast, Loc.T("Chọn lại nguyên liệu rồi nấu tiếp nhé!"));
         }
 
         private void HandleDishCollected(DishData d)
@@ -290,7 +379,7 @@ namespace KitchenUIv2
             int n = PlayerPrefs.GetInt(SentCountKey, 0) + 1;
             PlayerPrefs.SetInt(SentCountKey, n);
             SetText(_txtSentCount, Loc.TF("Đã gửi {0} món", n));
-            SetText(_txtOvenState, "Lò đã nghỉ");
+            SetText(_txtOvenState, Loc.T("Lò đã nghỉ"));
             SetText(_txtPrepToast, "");
         }
 
@@ -474,6 +563,7 @@ namespace KitchenUIv2
         {
             RefreshStatic();
             RefreshDynamic();
+            Loc.RequestRescan(); // chip/nhan vua dung lai ⇒ interceptor dich ngay khung sau
         }
 
         private void RefreshStatic()
@@ -509,7 +599,7 @@ namespace KitchenUIv2
                 _imgCustomerAvatar.enabled = customerAvatar != null;
             }
 
-            SetText(_txtOrderName, orderDish != null ? orderDish.dishName : (frontTourist != null ? "Đang chọn món..." : "Chưa có khách chờ"));
+            SetText(_txtOrderName, orderDish != null ? Loc.T(orderDish.dishName) : Loc.T(frontTourist != null ? "Đang chọn món..." : "Chưa có khách chờ"));
             if (_imgOrderIcon != null)
             {
                 _imgOrderIcon.sprite  = orderDish != null ? orderDish.dishSprite : null;
@@ -535,7 +625,7 @@ namespace KitchenUIv2
 
             var dish = challenge != null ? challenge.CurrentDish : null;
 
-            SetText(_txtDishName, dish != null ? dish.dishName : "—");
+            SetText(_txtDishName, dish != null ? Loc.T(dish.dishName) : "—");
             if (_imgDishIcon != null)
             {
                 _imgDishIcon.sprite  = dish != null ? dish.dishSprite : null;
@@ -558,10 +648,10 @@ namespace KitchenUIv2
                     bool twoRows = count >= 5;
 
                     var rtChips = (RectTransform)_needChipsRoot;
-                    rtChips.sizeDelta = new Vector2(285f, twoRows ? 136f : 66f);
+                    if (!KhoaLayout) rtChips.sizeDelta = new Vector2(285f, twoRows ? 136f : 66f);
 
                     if (_txtTasteTitle != null)
-                        _txtTasteTitle.rectTransform.anchoredPosition = new Vector2(12f, twoRows ? -276f : -206f);
+                        if (!KhoaLayout) _txtTasteTitle.rectTransform.anchoredPosition = new Vector2(12f, twoRows ? -276f : -206f);
 
                     for (int i = 0; i < 5; i++)
                     {
@@ -584,7 +674,7 @@ namespace KitchenUIv2
                 var sb = new System.Text.StringBuilder(Loc.T("MÓN HÔM NAY (+vàng)")).Append('\n');
                 foreach (var d in daily.TodayDishes)
                     if (d != null) sb.Append("· ").Append(Loc.T(d.dishName)).Append('\n');
-                _txtChalk.text = sb.ToString();
+                SetText(_txtChalk, sb.ToString());
             }
         }
 
@@ -621,11 +711,11 @@ namespace KitchenUIv2
                     var result = CookingScoreCalculator.Evaluate(dish, selIng, selSea);
                     SetText(_txtProjection, Loc.TF("Điểm dự kiến:  {0}đ", result.finalScore));
                 }
-                else SetText(_txtProjection, "Điểm dự kiến:  — đ");
+                else SetText(_txtProjection, Loc.T("Điểm dự kiến:  — đ"));
             }
             else
             {
-                SetText(_txtProjection, "Điểm dự kiến:  — đ");
+                SetText(_txtProjection, Loc.T("Điểm dự kiến:  — đ"));
             }
 
             // Nút hành động 3 trạng thái + bàn trình bày
@@ -634,7 +724,7 @@ namespace KitchenUIv2
 
             EnsurePlatingDishVisual();
             if (_btnPlating != null) _btnPlating.interactable = plateReady;
-            SetText(_txtPlating, plateReady ? "CHẠM ĐỂ CẤT VÀO KHO!" : "Trình bày");
+            SetText(_txtPlating, Loc.T(plateReady ? "CHẠM ĐỂ CẤT VÀO KHO!" : "Trình bày"));
 
             if (_imgPlateDish != null)
             {
@@ -663,29 +753,29 @@ namespace KitchenUIv2
                 {
                     _btnAction.interactable = false;
                     ApplyActionSkin(useSkin, false);
-                    SetText(_txtAction, "ĐANG NẤU...");
+                    SetText(_txtAction, Loc.T("ĐANG NẤU..."));
                     SetText(_txtActionSub, "");
                 }
                 else if (plateReady)
                 {
                     _btnAction.interactable = false;
                     ApplyActionSkin(useSkin, false);
-                    SetText(_txtAction, "MÓN TRÊN DĨA");
-                    SetText(_txtActionSub, "cất vào kho trước đã");
+                    SetText(_txtAction, Loc.T("MÓN TRÊN DĨA"));
+                    SetText(_txtActionSub, Loc.T("cất vào kho trước đã"));
                 }
                 else if (nIng + nSea > 0)
                 {
                     _btnAction.interactable = true;
                     ApplyActionSkin(useSkin, true);
-                    SetText(_txtAction, "NẤU!");
+                    SetText(_txtAction, Loc.T("NẤU!"));
                     SetText(_txtActionSub, Loc.TF("{0} nguyên liệu · {1} gia vị", nIng, nSea));
                 }
                 else
                 {
                     _btnAction.interactable = false;
                     ApplyActionSkin(useSkin, false);
-                    SetText(_txtAction, "CHỌN NGUYÊN LIỆU");
-                    SetText(_txtActionSub, "chạm khay bên dưới");
+                    SetText(_txtAction, Loc.T("CHỌN NGUYÊN LIỆU"));
+                    SetText(_txtActionSub, Loc.T("chạm khay bên dưới"));
                 }
                 PunchChangedCards();
             }
@@ -752,12 +842,15 @@ namespace KitchenUIv2
         }
 
         /// <summary>Khay trống → chỉ đường cho người chơi cách gửi nguyên liệu từ Kho nông trại.</summary>
+        private const string HintEmptyIngVi = "Khay trống — về nông trại mở KHO,\nchọn nguyên liệu rồi bấm GỬI BẾP nhé!";
+        private const string HintEmptySeaVi = "Chưa có gia vị — về nông trại mở KHO,\nchọn gia vị rồi bấm GỬI BẾP nhé!";
+
         private void UpdateTrayEmptyHints(int nIng, int nSea)
         {
             if (_hintEmptyIng == null && _gridIngredients != null)
-                _hintEmptyIng = MakeTrayEmptyHint(_gridIngredients, "Khay trống — về nông trại mở KHO,\nchọn nguyên liệu rồi bấm GỬI BẾP nhé!");
+                _hintEmptyIng = MakeTrayEmptyHint(_gridIngredients, HintEmptyIngVi);
             if (_hintEmptySea == null && _gridSeasonings != null)
-                _hintEmptySea = MakeTrayEmptyHint(_gridSeasonings, "Chưa có gia vị — về nông trại mở KHO,\nchọn gia vị rồi bấm GỬI BẾP nhé!");
+                _hintEmptySea = MakeTrayEmptyHint(_gridSeasonings, HintEmptySeaVi);
 
             if (_hintEmptyIng != null && _hintEmptyIng.gameObject.activeSelf != (nIng == 0))
                 _hintEmptyIng.gameObject.SetActive(nIng == 0);
@@ -777,7 +870,7 @@ namespace KitchenUIv2
             go.transform.SetParent(host, false);
             var t = go.AddComponent<TextMeshProUGUI>();
             ApplyFont(t);
-            t.text = message;
+            t.text = Loc.T(message);
             t.fontSize = 14;
             t.alignment = TextAlignmentOptions.Center;
             t.color = new Color(0.55f, 0.42f, 0.28f);
@@ -796,7 +889,7 @@ namespace KitchenUIv2
             var row = _flavorRows[i];
             if (row.label == null) return;
 
-            row.label.text = label;
+            SetText(row.label, Loc.T(label));
             float barMax = Mathf.Max(target * 1.5f, target + 2f, 1f);
             if (row.fill != null)
             {
@@ -810,7 +903,7 @@ namespace KitchenUIv2
             // Sếp 2026-08-27: bỏ vạch đỏ (đè lên thanh) — fill bar + số cur/target là đủ.
             if (row.marker != null)
                 row.marker.gameObject.SetActive(false);
-            if (row.value != null) row.value.text = $"{cur}/{target}";
+            if (row.value != null) SetText(row.value, $"{cur}/{target}");
         }
 
         // ── Helpers ────────────────────────────────────────────────
@@ -826,7 +919,18 @@ namespace KitchenUIv2
             return n;
         }
 
-        private static void SetText(TMP_Text t, string s) { if (t != null) t.text = s; }
+        /// <summary>
+        /// [2026-09-21] Gan chu + tu vua khung. Chi ghi khi chu THAT SU doi (RefreshDynamic chay moi
+        /// pollInterval; ghi lai chu cu moi lan se danh nhau voi LocRuntimeInterceptor va lam TMP
+        /// do lai layout vo ich). Chu tieng Anh do Loc.T() tra ve dai hon ⇒ LocFit.Fit thu nho cho vua.
+        /// </summary>
+        private static void SetText(TMP_Text t, string s)
+        {
+            if (t == null || s == null) return;
+            if (t.text == s) return;
+            t.text = s;
+            LocFit.Fit(t);
+        }
 
         /// <summary>Nâng sorting canvas của popup CŨ lên trên UI v2 (runtime, không sửa scene).</summary>
         // [DỌN 2026-08-31] Đã xoá hẳn 2 minigame (LetterMiniGame + CookingTimingMiniGameUI)
@@ -892,17 +996,157 @@ namespace KitchenUIv2
             _built = true;
         }
 
+        /// <summary>Dung lai CHI nhung nhanh bi thieu trong Hierarchy (Tray, Btn_Action,
+        /// Btn_BackFarm, Cat_Chef). Khong dung den cac nhanh da co -> chinh sua tay duoc giu.
+        /// Trong luc va phai MO khoa layout, neu khong object moi sinh ra se khong co anchor.</summary>
+        /// <summary>
+        /// [FIX 2026-09-22 — LOI NANG NHAT] SafeAreaBootstrap boc TOAN BO con cua canvas vao
+        /// mot lop "~SafeArea" luc chay, va no chay o RuntimeInitializeLoadType.AfterSceneLoad
+        /// tuc la XONG TRUOC Start() cua lop nay. Sau khi boc, "Order_Banner" khong con la con
+        /// TRUC TIEP cua canvas nua. Ma Start() lai kiem tra dung
+        ///     transform.Find("Order_Banner") != null
+        /// -> luon tra ve null -> chay nhanh RebuildNow() -> XOA SACH con (ke ca "~SafeArea")
+        /// roi dung lai bang code. Do la ly do that su vi sao moi lan Sep bam Play la toan bo
+        /// chinh sua tay bay mat, du da bat "Khoa layout".
+        /// Ham nay tra ve dung khung goc de moi phep Find/ dung moi deu di qua lop boc neu co.
+        /// </summary>
+        private RectTransform KhungGoc()
+        {
+            var boc = transform.Find("~SafeArea") as RectTransform;
+            return boc != null ? boc : (RectTransform)transform;
+        }
+
+        private void VaPhanThieuTrongHierarchy()
+        {
+            // [2026-09-22] "Thieu" khong chi la KHONG CO. Lan chay truoc nem exception giua
+            // chung BuildTray (Loc.T goi DontDestroyOnLoad ngoai Play mode) nen co the con lai
+            // mot 'Tray' DUNG DO: co vo nhung thieu luoi ben trong. Neu de nguyen, lan chay sau
+            // thay Tray != null se bo qua va Sep giu mai cai khay hong. Nen: phat hien khay hong
+            // thi XOA DUNG NO roi dung lai. Day la truong hop DUY NHAT tool nay duoc phep xoa.
+            _root = KhungGoc();   // dung trong "~SafeArea" neu lop boc da ton tai
+
+            // Lan chay hong truoc co the de lai 'Tray' NGOAI lop boc -> xoa cho sach.
+            if (_root != transform)
+            {
+                var lac = transform.Find("Tray");
+                if (lac != null) CatSangMotBen(lac, "lac ngoai ~SafeArea");
+            }
+
+            var trayCu = _root.Find("Tray");
+            if (trayCu != null &&
+                (trayCu.Find("Scroll_Grid_Ingredients/Viewport/Grid_Ingredients") == null ||
+                 trayCu.Find("Scroll_Grid_Seasonings/Viewport/Grid_Seasonings")  == null))
+            {
+                CatSangMotBen(trayCu, "dung do — thieu luoi ben trong");
+                _gridIngredients = null; _gridSeasonings = null;
+                _tabIngredients = null;  _tabSeasonings = null;
+                _txtTabIng = null;       _txtTabSea = null;
+                _btnClearAll = null;
+            }
+
+            bool thieuTray   = _root.Find("Tray")         == null;
+            bool thieuAction = _root.Find("Btn_Action")   == null;
+            bool thieuBack   = _root.Find("Btn_BackFarm") == null;
+            bool thieuCat    = _root.Find("Cat_Chef")     == null;
+            bool thieuDeco   = _root.Find("Deco_Garlic_R") == null || _root.Find("Deco_Onion_R")  == null
+                            || _root.Find("Deco_Herbs_R")  == null || _root.Find("Deco_Herbs_L")  == null
+                            || _root.Find("Deco_Garlic_L") == null || _root.Find("Deco_Lights_L") == null
+                            || _root.Find("Deco_Lights_R") == null;
+            var whBox = _root.Find("Warehouse_Box");
+            bool thieuSent = whBox != null && whBox.Find("Txt_Sent") == null;
+
+            if (!thieuTray && !thieuAction && !thieuBack && !thieuCat && !thieuDeco && !thieuSent) return;
+
+            bool khoaCu = KhoaLayout;
+            KhoaLayout = false;                 // object moi bat buoc phai duoc anchor
+            try
+            {
+                if (thieuSent && whBox != null) VaTxtSent(whBox);
+                if (thieuDeco)   { VaTrangTri();           Debug.LogWarning("[KitchenV2] Va lai bo trang tri treo tuong (toi, hanh, thao moc, den day)."); }
+                if (thieuCat)    { VaCatChef(); }
+                if (thieuTray)   { BuildTray();            Debug.LogWarning("[KitchenV2] Va lai 'Tray' (khay nguyen lieu + gia vi) bi thieu trong Hierarchy."); }
+                if (thieuAction) { BuildActionButton();    Debug.LogWarning("[KitchenV2] Va lai 'Btn_Action' bi thieu trong Hierarchy."); }
+                if (thieuBack)   { BuildBackFarmButton();  Debug.LogWarning("[KitchenV2] Va lai 'Btn_BackFarm' bi thieu trong Hierarchy."); }
+            }
+            finally { KhoaLayout = khoaCu; }
+        }
+
+        /// <summary>
+        /// Dong "Da gui N mon" duoi hop kho. Day la dong DAU TIEN trong chuoi dung goi Loc.TF,
+        /// va cung la dong ma exception DontDestroyOnLoad tung giet chuoi dung o Edit Mode —
+        /// moi thu sinh ra SAU no (trang tri, meo dau bep, khay, 2 nut) deu bien mat theo.
+        /// </summary>
+        private void VaTxtSent(Transform wh)
+        {
+            _txtSentCount = MakeText(wh, "Txt_Sent", Loc.TF("Đã gửi {0} món", PlayerPrefs.GetInt(SentCountKey, 0)), 14, new Color(0.99f, 0.96f, 0.88f));
+            Anchor(_txtSentCount.rectTransform, 0.5f, 0f, new Vector2(0f, 8f), new Vector2(176f, 22f), new Vector2(0.5f, 0f));
+            _txtSentCount.alignment = TextAlignmentOptions.Center;
+        }
+
+        /// <summary>
+        /// KHONG XOA, chi doi ten + tat di roi day xuong cuoi. Lenh cua Sep: co gi sai thi phai
+        /// con duong lui. Object bi cat sang mot ben van nam trong Hierarchy de Sep xem lai
+        /// (hoac lay lai thu da keo tay trong do); thay khong can thi tu xoa bang tay.
+        /// </summary>
+        private void CatSangMotBen(Transform t, string lyDo)
+        {
+            if (t == null) return;
+            t.name = t.name + "_CU_" + System.DateTime.Now.ToString("HHmmss");
+            t.gameObject.SetActive(false);
+            t.SetAsLastSibling();
+            Debug.LogWarning($"[KitchenV2] '{t.name}' ({lyDo}) — da TAT va doi ten, KHONG xoa. Xem lai roi tu xoa neu khong can.", t);
+        }
+
+        /// <summary>Bo trang tri treo tuong — copy nguyen ven tu BuildStage(), chi dung cai nao con thieu.</summary>
+        private void VaTrangTri()
+        {
+            void D(string ten, Sprite sp, Vector2 pos, Vector2 size)
+            {
+                if (_root.Find(ten) != null) return;
+                MakeDecor(_root, ten, sp, 0.5f, 1f, pos, size, new Vector2(0.5f, 1f));
+            }
+            D("Deco_Garlic_R", skin.decorGarlic, new Vector2(330f, -4f),  new Vector2(48f, 82f));
+            D("Deco_Onion_R",  skin.decorOnion,  new Vector2(392f, -6f),  new Vector2(50f, 86f));
+            D("Deco_Herbs_R",  skin.decorHerbs,  new Vector2(456f, -4f),  new Vector2(52f, 78f));
+            D("Deco_Herbs_L",  skin.decorHerbs,  new Vector2(-540f, -4f), new Vector2(52f, 78f));
+            D("Deco_Garlic_L", skin.decorGarlic, new Vector2(-478f, -6f), new Vector2(48f, 82f));
+            D("Deco_Lights_L", skin.decorLights, new Vector2(-360f, 0f),  new Vector2(280f, 40f));
+            D("Deco_Lights_R", skin.decorLights, new Vector2(520f, 0f),   new Vector2(300f, 40f));
+        }
+
+        private void VaCatChef()
+        {
+            if (skin == null || skin.catChefWalk == null || skin.catChefWalk.Length == 0 || skin.catChefWalk[0] == null) return;
+            var catGo = new GameObject("Cat_Chef", typeof(RectTransform), typeof(Image), typeof(KitchenCatWalker));
+            catGo.transform.SetParent(_root, false);
+            var ci = catGo.GetComponent<Image>();
+            ci.sprite = skin.catChefWalk[0]; ci.preserveAspect = true; ci.raycastTarget = false;
+            Anchor((RectTransform)catGo.transform, 0.5f, 0.5f, new Vector2(-100f, -84f), new Vector2(96f, 88f), new Vector2(0.5f, 0.5f));
+            var walker = catGo.GetComponent<KitchenCatWalker>();
+            walker.frames = skin.catChefWalk;
+            walker.minX = -280f; walker.maxX = 260f;
+            Debug.LogWarning("[KitchenV2] Va lai 'Cat_Chef' bi thieu trong Hierarchy.");
+        }
+
         /// <summary>UI đã nằm sẵn trong Hierarchy (Sếp chỉnh tay tự do, Ctrl+S là vĩnh viễn).
         /// Hàm này chỉ NỐI tham chiếu + gắn listener + dọn nội dung động để runtime sinh lại.
         /// Đổi tên/xóa object trong hierarchy sẽ được log warning rõ ràng, không crash.</summary>
         private void BindExistingHierarchy()
         {
             _canvas = GetComponent<Canvas>();
-            _root = (RectTransform)transform;
+            _root = KhungGoc();   // [2026-09-22] di qua lop boc "~SafeArea" neu co
+
+            // ── TU VA PHAN THIEU (2026-09-22) ─────────────────────────────────────
+            // Su co: Hierarchy da luu de mat Tray / Btn_Action / Btn_BackFarm / Cat_Chef.
+            // Vi Order_Banner van con nen Start() chon nhanh Bind -> khay nguyen lieu,
+            // gia vi va nut ve nong trai khong bao gio duoc dung lai => man hinh trong.
+            // Cach xu ly: chi dung LAI DUNG PHAN THIEU, khong dung ham RebuildNow()
+            // (RebuildNow xoa sach con -> mat toan bo chinh sua tay cua Sep).
+            VaPhanThieuTrongHierarchy();
 
             RectTransform F(string path)
             {
-                var t = transform.Find(path);
+                var t = _root.Find(path);
                 if (t == null) Debug.LogWarning($"[KitchenV2] Bind: thiếu '{path}' trong hierarchy (bị đổi tên/xóa?)");
                 return t as RectTransform;
             }
@@ -922,7 +1166,7 @@ namespace KitchenUIv2
             if (orderCardT != null)
             {
                 var cardRt = orderCardT as RectTransform;
-                if (cardRt != null && cardRt.sizeDelta.x < 550f)
+                if (!KhoaLayout && cardRt != null && cardRt.sizeDelta.x < 550f)
                 {
                     cardRt.sizeDelta = new Vector2(596f, 72f);
                     var bannerRt = orderCardT.parent as RectTransform;
@@ -968,7 +1212,7 @@ namespace KitchenUIv2
                 }
 
                 var oldChips = orderCardT.Find("Txt_Chips"); // bản cũ trước 2026-08-27 — thay bằng chip icon màu
-                if (oldChips != null) DestroyImmediate(oldChips.gameObject);
+                if (oldChips != null && !DangVaTrongEditor) DestroyImmediate(oldChips.gameObject);
                 for (int i = 0; i < 5; i++)
                 {
                     var chip = orderCardT.Find($"Chip_{i}");
@@ -1017,8 +1261,8 @@ namespace KitchenUIv2
             // (cuối frame) nên AddComponent<GridLayoutGroup> ngay sau đó bị Unity TỪ CHỐI
             // (mỗi GameObject chỉ 1 LayoutGroup) và trả về null → gl.cellSize nổ NullReference
             // → chết cả BindExistingHierarchy. Dùng helper DestroyImmediate + null-check.
-            if (_needChipsRoot != null)
-                EnsureNeedChipsGrid(_needChipsRoot);
+            if (_needChipsRoot != null && !DangVaTrongEditor)
+                EnsureNeedChipsGrid(_needChipsRoot);   // doi component layout -> khong chay o luot va Editor
 
             _txtRewards    = FT("Recipe_Board/Board_Detail/Txt_Rewards");
             _txtProjection = FT("Recipe_Board/Board_Detail/Txt_Projection");
@@ -1116,10 +1360,10 @@ namespace KitchenUIv2
             }
 
             // Xóa triệt để các decor thừa nếu từng sinh
-            var oldCrates = transform.Find("Deco_Crates");
-            if (oldCrates != null) DestroyImmediate(oldCrates.gameObject);
-            var oldWood = transform.Find("Deco_Firewood");
-            if (oldWood != null) DestroyImmediate(oldWood.gameObject);
+            var oldCrates = _root.Find("Deco_Crates");
+            if (oldCrates != null && !DangVaTrongEditor) DestroyImmediate(oldCrates.gameObject);
+            var oldWood = _root.Find("Deco_Firewood");
+            if (oldWood != null && !DangVaTrongEditor) DestroyImmediate(oldWood.gameObject);
             var maneki = F("ManekiCat");
             if (maneki != null) _imgManeki = maneki.GetComponent<Image>();
             _txtPrepToast = FT("Txt_PrepToast");
@@ -1206,12 +1450,22 @@ namespace KitchenUIv2
             }
 
             // ── Dọn nội dung ĐỘNG đã bake (thẻ, ô trống, danh sách món, chip) → runtime sinh lại ──
-            ClearDynamicChildren(_gridIngredients);
-            ClearDynamicChildren(_gridSeasonings);
-            ClearDynamicChildren(_dishListContent);
-            ClearDynamicChildren(_needChipsRoot);
-            _cards.Clear();
-            _lastSelected.Clear();
+            // [2026-09-22] Tool Editor thi KHONG don: Sep co the vua keo tay tung the trong
+            // 4 khung nay, xoa di la mat sach cong suc. Luc CHAY thi van don nhu cu vi runtime
+            // se sinh lai ngay sau do.
+            // [2026-09-22] Them dieu kien !KhoaLayout. Truoc day khoa layout van khong cuu duoc
+            // noi dung khay: dong nay xoa sach TRUOC, nen BuildTrayCards/RebuildDishList thay
+            // childCount == 0 va dung lai tu dau — dung thu ma Sep vua keo tay. Khi da khoa thi
+            // giu nguyen the cu, hai ham kia co duong cap nhat tai cho.
+            if (!DangVaTrongEditor && !KhoaLayout)
+            {
+                ClearDynamicChildren(_gridIngredients);
+                ClearDynamicChildren(_gridSeasonings);
+                ClearDynamicChildren(_dishListContent);
+                ClearDynamicChildren(_needChipsRoot);
+                _cards.Clear();
+                _lastSelected.Clear();
+            }
 
             ShowTrayTab(true);
             TrySpawnFirePrefab();
@@ -1481,9 +1735,82 @@ namespace KitchenUIv2
             _orderChipValues[index] = val;
         }
 
+        /// <summary>
+        /// [2026-09-21] Cap nhat danh sach mon MA KHONG huy object — dung khi da khoa layout.
+        /// Doi chieu theo TEN object "Row_&lt;dishId&gt;": the nao con trong bo loc thi bat + doi
+        /// chu/anh/mau/interactable; the ngoai bo loc thi TAT, khong xoa. Nho vay moi chinh tay
+        /// cua Sep (vi tri, co chu, sprite thay the) deu giu nguyen qua moi lan Play.
+        /// </summary>
+        private void CapNhatDanhSachMonTaiCho()
+        {
+            int lv = PlayerProgressManager.Instance != null ? PlayerProgressManager.Instance.Level : 999;
+
+            var theo = new Dictionary<string, Transform>();
+            for (int i = 0; i < _dishListContent.childCount; i++)
+            {
+                var c = _dishListContent.GetChild(i);
+                if (c.name.StartsWith("Row_")) theo[c.name.Substring(4)] = c;
+                c.gameObject.SetActive(false);
+            }
+
+            foreach (var d in dishBook.allDishes)
+            {
+                if (d == null) continue;
+                if (_listFilter >= 0 && (int)d.difficulty != _listFilter) continue;
+                if (!theo.TryGetValue(d.dishId, out var row) || row == null) continue;
+
+                row.gameObject.SetActive(true);
+                bool unlocked = d.unlockLevel <= lv;
+
+                var bg = row.GetComponent<Image>();
+                if (bg != null)
+                {
+                    Skin9(row.gameObject, unlocked ? skin.cardIngredient : skin.cardLocked);
+                    bg.color = unlocked ? new Color(1f, 0.99f, 0.94f) : new Color(0.88f, 0.84f, 0.76f);
+                }
+
+                var btn = row.GetComponent<Button>();
+                if (btn != null)
+                {
+                    btn.onClick.RemoveAllListeners();
+                    btn.interactable = unlocked;
+                    if (unlocked) { var dd = d; btn.onClick.AddListener(() => SelectDish(dd)); }
+                }
+
+                var ico = row.Find("Img_Icon");
+                if (ico != null)
+                {
+                    var im = ico.GetComponent<Image>();
+                    if (im != null)
+                    {
+                        im.sprite  = d.dishSprite;
+                        im.enabled = d.dishSprite != null;
+                        im.color   = unlocked ? Color.white : new Color(0.45f, 0.45f, 0.45f, 0.65f);
+                    }
+                }
+
+                var kh = row.Find("Img_Lock");
+                if (kh != null) kh.gameObject.SetActive(!unlocked);
+
+                var chu = row.GetComponentsInChildren<TMP_Text>(true);
+                if (chu.Length > 0 && chu[0] != null) SetText(chu[0], Loc.T(d.dishName));
+                if (chu.Length > 1 && chu[1] != null)
+                    SetText(chu[1], Loc.TF("{0} · Lv {1} · {2} vàng", DiffName(d.difficulty), d.unlockLevel, d.sellPrice));
+            }
+        }
+
         private void RebuildDishList()
         {
             if (_dishListContent == null || dishBook == null || dishBook.allDishes == null) return;
+
+            // [FIX 2026-09-21 — KHOA LAYOUT] Ban cu XOA SACH roi tao lai moi lan goi.
+            // Khi Sep da dong bang UI thanh Hierarchy va chinh tay tung the, xoa sach = mat het.
+            // Khoa layout thi CHI cap nhat chu/anh/mau tren the DA CO SAN, khong huy object nao.
+            if (KhoaLayout && _dishListContent.childCount > 0)
+            {
+                CapNhatDanhSachMonTaiCho();
+                return;
+            }
 
             for (int i = _dishListContent.childCount - 1; i >= 0; i--)
                 Destroy(_dishListContent.GetChild(i).gameObject);
@@ -1526,7 +1853,7 @@ namespace KitchenUIv2
                     Anchor((RectTransform)lockGo.transform, 0f, 0.5f, new Vector2(26f, 0f), new Vector2(24f, 24f), new Vector2(0.5f, 0.5f));
                 }
 
-                var name = MakeText(row.transform, "Txt_Name", d.dishName, 16, unlocked ? new Color(0.36f, 0.20f, 0.09f) : new Color(0.52f, 0.46f, 0.40f));
+                var name = MakeText(row.transform, "Txt_Name", Loc.T(d.dishName), 16, unlocked ? new Color(0.36f, 0.20f, 0.09f) : new Color(0.52f, 0.46f, 0.40f));
                 Anchor(name.rectTransform, 0f, 1f, new Vector2(52f, -4f), new Vector2(210f, 22f), new Vector2(0f, 1f));
 
                 string meta = unlocked
@@ -1535,6 +1862,7 @@ namespace KitchenUIv2
                 var sub = MakeText(row.transform, "Txt_Meta", meta, 12, new Color(0.6f, 0.45f, 0.28f));
                 Anchor(sub.rectTransform, 0f, 0f, new Vector2(52f, 4f), new Vector2(220f, 18f), new Vector2(0f, 0f));
             }
+            Loc.RequestRescan(); // danh sach vua dung sau luot quet ⇒ xin quet lai
         }
 
         private void BuildStage()
@@ -1708,17 +2036,17 @@ namespace KitchenUIv2
             Anchor(tray, 0.5f, 0f, new Vector2(30f, 12f), new Vector2(880f, 250f), new Vector2(0.5f, 0f));
             var trt = (RectTransform)tray.transform;
 
-            var tabIng = MakeButton(trt, "Tab_Ingredients", "Nguyên liệu 0/4", new Color(0.55f, 0.78f, 0.35f), () => ShowTrayTab(true));
+            var tabIng = MakeButton(trt, "Tab_Ingredients", Loc.TF("Nguyên liệu {0}/{1}", 0, 4), new Color(0.55f, 0.78f, 0.35f), () => ShowTrayTab(true));
             Anchor((RectTransform)tabIng.transform, 0f, 1f, new Vector2(12f, -8f), new Vector2(160f, 34f), new Vector2(0f, 1f));
             _tabIngredients = tabIng.gameObject;
             _txtTabIng = tabIng.GetComponentInChildren<TMP_Text>();
 
-            var tabSea = MakeButton(trt, "Tab_Seasonings", "Gia vị 0/3", new Color(0.45f, 0.65f, 0.90f), () => ShowTrayTab(false));
+            var tabSea = MakeButton(trt, "Tab_Seasonings", Loc.TF("Gia vị {0}/{1}", 0, 3), new Color(0.45f, 0.65f, 0.90f), () => ShowTrayTab(false));
             Anchor((RectTransform)tabSea.transform, 0f, 1f, new Vector2(182f, -8f), new Vector2(120f, 34f), new Vector2(0f, 1f));
             _tabSeasonings = tabSea.gameObject;
             _txtTabSea = tabSea.GetComponentInChildren<TMP_Text>();
 
-            var clear = MakeButton(trt, "Btn_ClearAll", "Bỏ hết", new Color(0.82f, 0.30f, 0.22f), OnClearAllClicked);
+            var clear = MakeButton(trt, "Btn_ClearAll", Loc.T("Bỏ hết"), new Color(0.82f, 0.30f, 0.22f), OnClearAllClicked);
             Skin9(clear.gameObject, skin.btnRedSmall);
             Anchor((RectTransform)clear.transform, 1f, 1f, new Vector2(-12f, -8f), new Vector2(90f, 34f), new Vector2(1f, 1f));
             _btnClearAll = clear;
@@ -1787,6 +2115,16 @@ namespace KitchenUIv2
         private void BuildTrayCards()
         {
             if (allIngredients == null || _gridIngredients == null || selection == null) return;
+
+            // [2026-09-22] KHOA LAYOUT + khay DA CO the san ⇒ DUNG LAI the cu, khong dung moi.
+            // Neu khong, moi lan bam Play la the bi xoa roi sinh lai, va moi tinh chinh tay
+            // cua Sep trong khay bay sach. Day la doi xung voi CapNhatDanhSachMonTaiCho()
+            // ma RebuildDishList() da lam cho danh sach mon.
+            if (KhoaLayout && _gridIngredients.childCount > 0)
+            {
+                DungLaiTheKhayCoSan();
+                return;
+            }
 
             int playerLevel = PlayerProgressManager.Instance != null ? PlayerProgressManager.Instance.Level : 999; // chạy riêng scene = dev mode mở hết
 
@@ -1871,6 +2209,40 @@ namespace KitchenUIv2
             // Ô trống + nút mua thêm slot (mockup: "Ô trống" + "Mở 7 ô") — cả nguyên liệu lẫn gia vị
             BuildSlotShop(_gridIngredients, "ing");
             BuildSlotShop(_gridSeasonings, "sea");
+            Loc.RequestRescan(); // the khay + o trong vua dung ⇒ xin quet lai
+        }
+
+        /// <summary>
+        /// Nhan lai cac the nguyen lieu/gia vi DA CO trong Hierarchy thay vi dung moi:
+        /// dung lai so tra _cards roi dang ky voi SelectionManager nhu binh thuong.
+        /// Id lay tu ten object ("Card_&lt;id&gt;") nen khong phu thuoc vao field private.
+        /// </summary>
+        private void DungLaiTheKhayCoSan()
+        {
+            _cards.Clear();
+
+            void Nhan(Transform khung)
+            {
+                if (khung == null) return;
+                foreach (var sel in khung.GetComponentsInChildren<SelectableIngredientCard>(true))
+                {
+                    if (sel == null) continue;
+                    string id = sel.name.StartsWith("Card_") ? sel.name.Substring(5) : sel.name;
+                    var dat = sel.GetIngredientData();
+                    if (dat != null && !string.IsNullOrEmpty(dat.id)) id = dat.id;
+                    _cards[id.Trim().ToLower()] = sel;
+                }
+            }
+
+            Nhan(_gridIngredients);
+            Nhan(_gridSeasonings);
+
+            selection.RegisterAllLeftCards(_gridIngredients, _gridSeasonings);
+            selection.EnableIngredientSelection();
+            RefreshCardQuantities();
+            Loc.RequestRescan();
+
+            Debug.Log($"[KitchenV2] Khoa layout — dung lai {_cards.Count} the khay co san, khong dung lai.");
         }
 
         private const string SlotKeyPrefix = "kitchen_extra_slots_v2_";
@@ -1943,6 +2315,7 @@ namespace KitchenUIv2
                     Destroy(c.gameObject);
             }
             BuildSlotShop(parent, tab);
+            Loc.RequestRescan();
         }
 
         private void BuildLockedCard(Transform parent, IngredientData data)
@@ -1978,7 +2351,7 @@ namespace KitchenUIv2
 
         private void BuildActionButton()
         {
-            var btn = MakeButton(_root, "Btn_Action", "CHỌN NGUYÊN LIỆU", new Color(0.62f, 0.58f, 0.53f), OnActionClicked);
+            var btn = MakeButton(_root, "Btn_Action", Loc.T("CHỌN NGUYÊN LIỆU"), new Color(0.62f, 0.58f, 0.53f), OnActionClicked);
             Anchor((RectTransform)btn.transform, 1f, 0f, new Vector2(-16f, 24f), new Vector2(264f, 80f), new Vector2(1f, 0f));
             _btnAction = btn;
             _imgAction = btn.GetComponent<Image>();
@@ -1994,14 +2367,14 @@ namespace KitchenUIv2
         /// <summary>Nút VỀ NÔNG TRẠI treo góc trái trên — gọi CookingSceneUI.BackToFarm() cũ (logic giữ nguyên).</summary>
         private void BuildBackFarmButton()
         {
-            var b = MakeButton(_root, "Btn_BackFarm", "VỀ NÔNG TRẠI", new Color(0.62f, 0.42f, 0.20f), OnBackFarmClicked);
+            var b = MakeButton(_root, "Btn_BackFarm", Loc.T("VỀ NÔNG TRẠI"), new Color(0.62f, 0.42f, 0.20f), OnBackFarmClicked);
             Anchor((RectTransform)b.transform, 0f, 1f, new Vector2(14f, -2f), new Vector2(170f, 92f), new Vector2(0f, 1f));
             if (skin.btnBackFarm != null)
                 SkinFlat(b.gameObject, skin.btnBackFarm);
             var lb = b.GetComponentInChildren<TMP_Text>();
             if (lb != null)
             {
-                lb.text = "VỀ NÔNG TRẠI";
+                lb.text = Loc.T("VỀ NÔNG TRẠI");
                 lb.fontStyle = FontStyles.Bold;
                 lb.enableAutoSizing = true; lb.fontSizeMin = 10f; lb.fontSizeMax = 16f;
                 lb.color = new Color(0.30f, 0.16f, 0.07f);
@@ -2059,7 +2432,7 @@ namespace KitchenUIv2
             im.preserveAspect = true; im.raycastTarget = false;
             Anchor((RectTransform)ico.transform, 0.5f, 1f, new Vector2(0f, -3f), new Vector2(iconSize, iconSize), new Vector2(0.5f, 1f));
 
-            var t = MakeText(chip.transform, "Txt", ing.displayName, fontSize, new Color(0.36f, 0.20f, 0.09f));
+            var t = MakeText(chip.transform, "Txt", Loc.T(ing.displayName), fontSize, new Color(0.36f, 0.20f, 0.09f));
             t.enableAutoSizing = true; t.fontSizeMin = 7f; t.fontSizeMax = fontSize;
             Anchor(t.rectTransform, 0.5f, 0f, new Vector2(0f, 2f), new Vector2(width - 4f, 16f), new Vector2(0.5f, 0f));
             t.alignment = TextAlignmentOptions.Center;
@@ -2460,8 +2833,28 @@ namespace KitchenUIv2
             return img;
         }
 
+        // ════════════════════════════════════════════════════════════════════
+        //  KHOA LAYOUT  [2026-09-21]
+        //  Sep muon UI song trong Hierarchy va chinh tay bang keo tha, chinh xong
+        //  Ctrl+S la vinh vien. Van de: mot so cho trong duong Bind/Refresh van ghi de
+        //  sizeDelta / anchoredPosition, lam mat chinh tay ngay khi bam Play.
+        //  Khi KhoaLayout = true: MOI phep ghi vi tri / kich thuoc do CODE thuc hien
+        //  deu bi chan. Code chi con doi CHU, SO, SPRITE, mau va bat/tat object.
+        //  Bat bang tool: Tools > Farm Game > Kitchen: Dong bang UI thanh Hierarchy
+        //  hoac tick o "Khoa layout" tren component trong Inspector.
+        // ════════════════════════════════════════════════════════════════════
+        public static bool KhoaLayout;
+
+        /// <summary>
+        /// [2026-09-22] TRUE khi tool Editor "Va phan thieu" dang chay. Luc do TUYET DOI
+        /// khong duoc dong vao nhung gi Sep da chinh tay: khong ghi de anchor (KhoaLayout = true
+        /// lo viec do) va khong xoa con cua 4 khung dong (co nay lo viec do).
+        /// </summary>
+        public static bool DangVaTrongEditor;
+
         private static void Stretch(RectTransform rt, float xMin, float yMin, float xMax, float yMax)
         {
+            if (KhoaLayout) return;
             rt.anchorMin = new Vector2(xMin, yMin);
             rt.anchorMax = new Vector2(xMax, yMax);
             rt.offsetMin = Vector2.zero;
@@ -2473,6 +2866,7 @@ namespace KitchenUIv2
 
         private static void StretchText(TMP_Text t, float padX, float padY)
         {
+            if (KhoaLayout) return;
             var rt = t.rectTransform;
             rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
             rt.offsetMin = new Vector2(padX, padY);
@@ -2484,6 +2878,7 @@ namespace KitchenUIv2
 
         private static void Anchor(RectTransform rt, float ax, float ay, Vector2 pos, Vector2 size, Vector2 pivot)
         {
+            if (KhoaLayout) return;
             rt.anchorMin = rt.anchorMax = new Vector2(ax, ay);
             rt.pivot = pivot;
             rt.anchoredPosition = pos;

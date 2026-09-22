@@ -83,7 +83,7 @@ public class OrderRequireCellUI : MonoBehaviour
             textAmount.color = enough ? colorAmountEnough : colorAmountLack;
         }
 
-        if (textName != null) textName.text = req.ResolveDisplayName();
+        if (textName != null) textName.text = Loc.T(req.ResolveDisplayName());
 
         SetActiveSafe(checkBadge, enough);
 

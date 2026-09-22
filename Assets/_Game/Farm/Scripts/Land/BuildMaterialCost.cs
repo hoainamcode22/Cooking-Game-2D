@@ -140,16 +140,52 @@ public static class BuildMaterials
         // nap vao day, khoi phai di chuyen asset.
         Sprite found = null;
         if (_registry.TryGetValue(itemId, out var reg) && reg != null) { found = reg.icon; }
-        var all = found != null ? System.Array.Empty<InventoryItemData>()
-                                : Resources.LoadAll<InventoryItemData>("");
-        foreach (var d in all)
+
+        // [FIX 2026-09-21] Tu nap luoi danh muc (1 lan, cache static) thay vi cho man hinh khac
+        // goi NapDanhMuc — WarehousePopupUI chi nap trong Awake, popup kho tat trong scene thi
+        // Awake chua chay => popup mua dat mo truoc se mat het icon nguyen lieu.
+        if (found == null)
         {
-            if (d == null) continue;
-            if (string.Equals(d.itemId, itemId, StringComparison.OrdinalIgnoreCase))
-            { found = d.icon; break; }
+            string ten = DisplayNameOf(itemId);
+            foreach (var d in DanhMucTuNap())
+            {
+                if (d == null || d.icon == null) continue;
+                if (string.Equals(d.itemId, itemId, StringComparison.OrdinalIgnoreCase)
+                    || (!string.IsNullOrEmpty(d.displayName) &&
+                        (string.Equals(d.displayName, itemId, StringComparison.OrdinalIgnoreCase) ||
+                         string.Equals(d.displayName, ten, StringComparison.OrdinalIgnoreCase)))
+                    || string.Equals(d.name, ten, StringComparison.OrdinalIgnoreCase))
+                { found = d.icon; break; }
+            }
         }
+        // Fallback cuoi: sprite roi trong Resources theo ma nguyen lieu.
+        if (found == null) found = Resources.Load<Sprite>("Icons/" + itemId);
+        if (found == null) found = Resources.Load<Sprite>("UI/Standard/" + itemId);
+
         _iconCache[itemId] = found;
         return found;
+    }
+
+    private static InventoryItemData[] _danhMucTuNap;
+
+    /// <summary>
+    /// Danh muc InventoryItemData nap 1 lan: Resources.LoadAll (build) + AssetDatabase (Editor,
+    /// vi 5 asset nguyen lieu nam o Assets/_Game/Farm/data/item_taulua/, ngoai Resources).
+    /// </summary>
+    private static InventoryItemData[] DanhMucTuNap()
+    {
+        if (_danhMucTuNap != null) return _danhMucTuNap;
+        var list = new List<InventoryItemData>(Resources.LoadAll<InventoryItemData>(""));
+#if UNITY_EDITOR
+        foreach (var guid in UnityEditor.AssetDatabase.FindAssets("t:InventoryItemData"))
+        {
+            var d = UnityEditor.AssetDatabase.LoadAssetAtPath<InventoryItemData>(
+                UnityEditor.AssetDatabase.GUIDToAssetPath(guid));
+            if (d != null && !list.Contains(d)) list.Add(d);
+        }
+#endif
+        _danhMucTuNap = list.ToArray();
+        return _danhMucTuNap;
     }
 
     private static readonly Dictionary<string, Sprite> _iconCache = new Dictionary<string, Sprite>();
@@ -178,5 +214,5 @@ public static class BuildMaterials
     }
 
     /// <summary>Xoa cache icon (goi khi doi scene / reload catalog).</summary>
-    public static void ClearIconCache() => _iconCache.Clear();
+    public static void ClearIconCache() { _iconCache.Clear(); _danhMucTuNap = null; }
 }

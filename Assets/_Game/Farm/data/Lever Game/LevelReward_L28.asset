@@ -39,6 +39,8 @@ MonoBehaviour:
   unlockEntries:
   - label: "Decor hi\u1ebfm"
     icon: {fileID: 0}
+  - label: New land plot 12 on sale  -  106.590 gold
+    icon: {fileID: 0}
   unlockDescriptions:
   - "Decor hi\u1ebfm"
   hintText: "L\u00ean c\u1ea5p 28! M\u1edf shop xem th\u1ee9 m\u1edbi."

@@ -22,15 +22,15 @@ MonoBehaviour:
     amount: 4
   - itemId: seed_hoa_anh_thao
     displayName: "H\u1EA1t Hoa Anh Th\u1EA3o"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: ce1a3b78120d4d76a49f5cb4c481069b, type: 3}
     amount: 4
   - itemId: seed_hoa_cam_tu_cau
     displayName: "H\u1EA1t Hoa C\u1EA9m T\xFA C\u1EA7u"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 73605a00b0a24c8a8d123918640c6c61, type: 3}
     amount: 4
   - itemId: seed_hoa_mau_don
     displayName: "H\u1EA1t Hoa M\u1EABu \u0110\u01A1n"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: d96bc1e88c9d42a39d23185407eecf44, type: 3}
     amount: 4
   - itemId: go
     displayName: "G\u1ED7"

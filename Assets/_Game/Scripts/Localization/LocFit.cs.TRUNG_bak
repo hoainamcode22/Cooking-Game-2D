@@ -1,0 +1,40 @@
+using TMPro;
+using UnityEngine;
+
+/// <summary>
+/// [Localization 2026-09-21] Ham "vua khung" DUNG CHUNG cho chu dai / khung nho.
+/// Bat autosize voi tran = co chu HIEN TAI (khong bao gio to hon thiet ke), san = max(8, co * minRatio).
+/// Idempotent: goi lai nhieu lan khong doi ket qua; null-safe. KHONG doi overflowMode.
+/// Dung duoc cho ca chu da bat autosize san (chi siet lai san duoi, khong keo fontSizeMax len).
+/// </summary>
+public static class LocFit
+{
+    public static void Fit(TMP_Text t, float minRatio = 0.6f)
+    {
+        if (t == null) return;
+        try
+        {
+            // Co goc: neu da autosize thi fontSize dang la co DA BOP => lay fontSizeMax lam co goc.
+            float coGoc = t.enableAutoSizing ? t.fontSizeMax : t.fontSize;
+            if (coGoc <= 0f) coGoc = t.fontSize;
+            if (coGoc <= 0f) return;
+
+            if (minRatio <= 0f || minRatio > 1f) minRatio = 0.6f;
+            float san = Mathf.Max(8f, coGoc * minRatio);
+            if (san > coGoc) san = coGoc;
+
+            bool doi = !t.enableAutoSizing
+                    || !Mathf.Approximately(t.fontSizeMax, coGoc)
+                    || !Mathf.Approximately(t.fontSizeMin, san);
+            if (!doi) return;
+
+            t.enableAutoSizing = true;
+            t.fontSizeMax      = coGoc;
+            t.fontSizeMin      = san;
+        }
+        catch
+        {
+            // TMP dang bi Destroy / font null => bo qua, khong lam do UI.
+        }
+    }
+}

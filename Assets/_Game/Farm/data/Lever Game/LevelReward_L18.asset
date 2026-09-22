@@ -33,7 +33,7 @@ MonoBehaviour:
     icon: {fileID: -2175608135934987369, guid: 1949807e11e35604c923915186458b4d, type: 3}
     amount: 6
   unlockEntries:
-  - label: "M\u1edf r\u1ed9ng \u0111\u1ea5t khu 2"
+  - label: New land plot 7 on sale  -  45.000 gold
     icon: {fileID: 0}
   unlockDescriptions:
   - "M\u1edf r\u1ed9ng \u0111\u1ea5t khu 2"

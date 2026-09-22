@@ -41,6 +41,8 @@ MonoBehaviour:
     icon: {fileID: 0}
   - label: "Decor cao c\u1ea5p b\u1eadc 1"
     icon: {fileID: 0}
+  - label: New land plot 8 on sale  -  55.720 gold
+    icon: {fileID: 0}
   unlockDescriptions:
   - "C\u00e2y & \u0111\u01a1n h\u00e0ng cao c\u1ea5p"
   - "Decor cao c\u1ea5p b\u1eadc 1"

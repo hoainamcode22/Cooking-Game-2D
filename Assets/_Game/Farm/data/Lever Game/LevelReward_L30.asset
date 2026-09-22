@@ -45,6 +45,8 @@ MonoBehaviour:
     icon: {fileID: 0}
   - label: "Decor cao c\u1ea5p b\u1eadc 3"
     icon: {fileID: 0}
+  - label: New land plot 13 on sale  -  121.150 gold
+    icon: {fileID: 0}
   unlockDescriptions:
   - "Ho\u00e0n th\u00e0nh ch\u01b0\u01a1ng 1 \u2014 Trang tr\u1ea1i v\u1eefng v\u00e0ng"
   - "Decor cao c\u1ea5p b\u1eadc 3"

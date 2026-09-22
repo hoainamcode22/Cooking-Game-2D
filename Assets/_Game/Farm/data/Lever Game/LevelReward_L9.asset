@@ -26,7 +26,7 @@ MonoBehaviour:
     amount: 4
   - itemId: seed_tulip
     displayName: "H\u1EA1t Tulip"
-    icon: {fileID: 0}
+    icon: {fileID: 21300000, guid: 455b0765f53b4e1e8db9fec07c56dd96, type: 3}
     amount: 4
   - itemId: go
     displayName: "G\u1ED7"
@@ -44,6 +44,8 @@ MonoBehaviour:
   - label: "M\u1edf kh\u00f3a \u1edat, Tulip, C\u00fac v\u1ea1n th\u1ecd"
     icon: {fileID: 21300000, guid: 152f970f6621487081a875ea9f14e19e, type: 3}
   - label: "Decor b\u1eadc 2 (\u0111\u00e8n t\u01b0\u1eddng, th\u00f9ng g\u1ed7, \u0111\u00e1 l\u1edbn)"
+    icon: {fileID: 0}
+  - label: New land plot 3 on sale  -  11.600 gold
     icon: {fileID: 0}
   unlockDescriptions:
   - "M\u1edf kh\u00f3a \u1edat, Tulip, C\u00fac v\u1ea1n th\u1ecd"

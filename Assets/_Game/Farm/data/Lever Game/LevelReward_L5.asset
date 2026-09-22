@@ -37,6 +37,8 @@ MonoBehaviour:
     icon: {fileID: 0}
   - label: "M\u1edf kh\u00f3a Khoai t\u00e2y"
     icon: {fileID: 21300000, guid: 02387b6edee64d6e81282b50f1da868d, type: 3}
+  - label: New land plot 1 on sale  -  2.000 gold
+    icon: {fileID: 0}
   unlockDescriptions:
   - "M\u1ede KH\u00d3A NH\u00c0 B\u1ebeP \u2014 n\u1ea5u \u0103n ngay!"
   - "M\u1edf kh\u00f3a Khoai t\u00e2y"

@@ -17,6 +17,13 @@ public enum StallItemCategory
     /// cá hiện ở tab "Tất cả"; muốn tab "Cá" riêng phải dựng thêm ở StallHierarchyBuilderTool.
     /// </summary>
     Ca       = 5,
+
+    /// <summary>[2026-09-22] Vật liệu xây dựng: gỗ, đá, kính, đinh, sơn, gạch.
+    /// Thêm ở CUỐI — `CategoryOverride.category` serialize theo SỐ, đổi thứ tự là hỏng dữ liệu.</summary>
+    VatLieu      = 6,
+
+    /// <summary>[2026-09-22] Thức ăn gia súc: cám gà, cám heo, cỏ trộn bò, cám bò sữa.</summary>
+    ThucAnGiaSuc = 7,
 }
 
 /// <summary>
@@ -164,6 +171,17 @@ public class StallItemCatalog : MonoBehaviour
                 store       = StallSourceStore.FarmInventory,
                 sellGold    = 0,   // để BasePriceBook rơi xuống bảng dự phòng / bảng của DEV-A
             });
+        }
+
+        // ── 2.5 · Định tuyến mặc định theo ID (2026-09-22) ───────────────────
+        // VÌ SAO: mọi InventoryItemData đều rơi vào CheBien ở bước 2, nên gỗ/đá/kính và
+        // cám gà/cám heo nằm chung tab "Cook". Danh sách `categoryOverrides` trong scene
+        // đang RỖNG nên không ai sửa việc đó. Bảng cứng dưới đây bảo đảm đúng tab kể cả
+        // khi Sếp chưa điền gì trong Inspector; `categoryOverrides` chạy SAU nên vẫn thắng.
+        foreach (var kv in _entries)
+        {
+            StallItemCategory dm = PhanLoaiMacDinhTheoId(kv.Key);
+            if (dm != StallItemCategory.TatCa) kv.Value.category = dm;
         }
 
         // ── 3 · Ghi đè tay ───────────────────────────────────────────────────
@@ -337,8 +355,45 @@ public class StallItemCatalog : MonoBehaviour
         return e != null ? e.displayName : itemId;
     }
 
+    /// <summary>Bảng định tuyến ID → tab, dùng khi dữ liệu asset không nói rõ danh mục.
+    /// Trả về TatCa nghĩa là "không biết, đừng đụng vào".</summary>
+    public static StallItemCategory PhanLoaiMacDinhTheoId(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId)) return StallItemCategory.TatCa;
+        string k = itemId.Trim().ToLowerInvariant();
+
+        switch (k)
+        {
+            // Vật liệu xây dựng
+            case "go": case "go_":  case "wood":
+            case "da": case "stone":
+            case "kinh": case "glass":
+            case "dinh": case "nail": case "nails":
+            case "son": case "paint":
+            case "gach": case "brick":
+                return StallItemCategory.VatLieu;
+
+            // Thức ăn gia súc
+            case "cam_ga": case "cam_heo": case "cam_bo_sua":
+            case "co_tron_bo": case "co_tron":
+                return StallItemCategory.ThucAnGiaSuc;
+        }
+
+        if (k.StartsWith("cam_") || k.StartsWith("co_tron") || k.StartsWith("feed_"))
+            return StallItemCategory.ThucAnGiaSuc;
+
+        return StallItemCategory.TatCa;
+    }
+
     public StallItemCategory GetCategory(string itemId)
-        => Find(itemId)?.category ?? StallItemCategory.CheBien;
+    {
+        Entry e = Find(itemId);
+        if (e != null) return e.category;
+        // Khong co trong so tra (vd cam_ga chua duoc keo vao itemDatabase trong scene):
+        // van phai ve dung tab thay vi roi het vao "Cook".
+        StallItemCategory dm = PhanLoaiMacDinhTheoId(itemId);
+        return dm != StallItemCategory.TatCa ? dm : StallItemCategory.CheBien;
+    }
 
     /// <summary>
     /// Kho nào đang giữ vật phẩm này. Mặc định là kho nông sản — an toàn hơn, vì đoán

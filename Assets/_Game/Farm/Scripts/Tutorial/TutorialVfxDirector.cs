@@ -71,13 +71,46 @@ public class TutorialVfxDirector : MonoBehaviour
 
     private const string kLayerName = "FX_Tutorial_Layer";
 
-    // ═══════════════════════════════════════════════════════════════════════
-    // API công khai — TutorialManager gọi ở 4 mốc
-    // ═══════════════════════════════════════════════════════════════════════
+    private void Awake()
+    {
+        EnsureArtLoaded();
+    }
+
+    private void EnsureArtLoaded()
+    {
+#if UNITY_EDITOR
+        if (glowRing == null)
+            glowRing = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/TutorialV2/vfx/tut_glow_ring.png");
+        if (arrowDown == null)
+            arrowDown = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/TutorialV2/vfx/tut_arrow_down.png");
+        if (burstRay == null)
+            burstRay = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/TutorialV2/vfx/tut_burst_ray.png");
+        if (sparkles == null || sparkles.Length == 0)
+        {
+            sparkles = new Sprite[]
+            {
+                UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/TutorialV2/vfx/tut_sparkle_01.png"),
+                UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/TutorialV2/vfx/tut_sparkle_02.png"),
+                UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/TutorialV2/vfx/tut_sparkle_03.png"),
+                UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/TutorialV2/vfx/tut_sparkle_04.png"),
+            };
+        }
+        if (dustPuffs == null || dustPuffs.Length == 0)
+        {
+            dustPuffs = new Sprite[]
+            {
+                UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/TutorialV2/vfx/tut_dust_puff_01.png"),
+                UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/TutorialV2/vfx/tut_dust_puff_02.png"),
+                UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Art/UI/TutorialV2/vfx/tut_dust_puff_03.png"),
+            };
+        }
+#endif
+    }
 
     /// <summary>MỐC 1 — vừa vào một bước mới: chùm tia toả tại tâm card (hoặc điểm chỉ định).</summary>
     public void OnStepEnter(RectTransform tai = null)
     {
+        EnsureArtLoaded();
         if (burstRay == null) { CanhBaoThieuArt("burstRay"); return; }
 
         var layer = EnsureLayer();

@@ -35,10 +35,11 @@ public class MarketCategoryTabUI : MonoBehaviour
 
         if (tabActiveSprite == null)
         {
-#if UNITY_EDITOR
-            tabActiveSprite   = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"{PerfectSvgDir}/tab_active.png");
-            tabInactiveSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"{PerfectSvgDir}/tab_inactive.png");
-#endif
+            // [SUA 2026-09-22] Truoc day 2 dong nay nam trong #if UNITY_EDITOR nen trong BUILD
+            // nen tab bi rong, chi con o mau phang -> "tab khong hien thi hinh anh".
+            // 2 anh da copy sang Resources (kem .meta giu spriteBorder 9-slice).
+            tabActiveSprite   = Resources.Load<Sprite>("UI_MarketBoard/tab_active");
+            tabInactiveSprite = Resources.Load<Sprite>("UI_MarketBoard/tab_inactive");
         }
 
         // Gắn icon vẽ tay cho từng danh mục
@@ -135,10 +136,12 @@ public class MarketCategoryTabUI : MonoBehaviour
             default:                      idx = 0; break;
         }
 
-#if UNITY_EDITOR
-        return UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>($"{MarketArtDir}/tab_icon_{idx}.png");
-#else
-        return null;
-#endif
+        // [SUA 2026-09-22] Truoc day khoi nay nam trong #if UNITY_EDITOR nen BUILD KHONG CO
+        // ICON NAO — dung mot lop loi voi lo icon quay hang. 8 anh da copy sang
+        // Assets/_Game/Resources/UI_MarketBoard/ (cat vien + thu ve 192px) de nap runtime.
+        Sprite spr = Resources.Load<Sprite>($"UI_MarketBoard/tab_icon_{idx}");
+        if (spr == null)
+            Debug.LogWarning($"[MarketTab] Thieu Resources/UI_MarketBoard/tab_icon_{idx}");
+        return spr;
     }
 }

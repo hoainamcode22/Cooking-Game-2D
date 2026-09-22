@@ -39,6 +39,8 @@ MonoBehaviour:
   unlockEntries:
   - label: "Combo 3 m\u00f3n xu\u1ea5t hi\u1ec7n th\u01b0\u1eddng xuy\u00ean"
     icon: {fileID: 0}
+  - label: New land plot 23 on sale  -  301.850 gold
+    icon: {fileID: 0}
   unlockDescriptions:
   - "Combo 3 m\u00f3n xu\u1ea5t hi\u1ec7n th\u01b0\u1eddng xuy\u00ean"
   hintText: "L\u00ean c\u1ea5p 46! M\u1edf shop xem th\u1ee9 m\u1edbi."

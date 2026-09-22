@@ -247,6 +247,7 @@ public class WarehousePopupUI : MonoBehaviour
         PopupSkinUnifier.ApDung(popupRoot != null ? popupRoot.transform : transform);
         // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
         Loc.RequestRescan();
+        LocFitSweeper.Sweep();   // [Loc 2026-09-21] quet chu to khung nho sau khi popup dung xong
     }
 
     public void ClosePopup()
@@ -311,6 +312,7 @@ public class WarehousePopupUI : MonoBehaviour
         RefreshUpgradeBox();
         // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
         Loc.RequestRescan();
+        LocFitSweeper.Sweep();   // [Loc 2026-09-21] quet chu to khung nho sau khi popup dung xong
     }
 
     private void EnsureSlotPool(int totalSlotsToRender)

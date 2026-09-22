@@ -91,9 +91,20 @@ public static class LocRuntimeInterceptor
     public static int SoChuaDich    => _chuaDich.Count;
 
     /// <summary>Goi mot lan luc game khoi dong (LocalizationManager.KhoiTao goi ho).</summary>
+    /// <summary>LocalizationManager goi khi vao Play (Domain Reload co the dang bi tat).</summary>
+    public static void DatLaiCoKhoiTao() { _daKhoiTao = false; }
+
     public static void KhoiTao()
     {
         if (_daKhoiTao) return;
+
+        // [FIX 2026-09-22] EDIT MODE: DontDestroyOnLoad nem InvalidOperationException khi
+        // khong o Play mode. Bat cu tool Editor nao goi Loc.T() (vd tool va UI bep) se chet
+        // ngay tai day. Bang dich la Dictionary C# TINH nen Loc.T van tra cuu binh thuong
+        // ma khong can runner; runner chi lam viec quet dinh ky luc chay.
+        // CHU Y: khong dat _daKhoiTao = true o nhanh nay, de khi vao Play van khoi tao du.
+        if (!Application.isPlaying) return;
+
         _daKhoiTao = true;
 
         LocalizationManager.OnChanged += KhiDoiNgonNgu;
@@ -329,7 +340,13 @@ public static class LocRuntimeInterceptor
     /// (tran max = co chu goc ⇒ chi co the NHO LAI, khong bao gio to len) va dat Ellipsis cho
     /// nhan mot dong. Goi duoc tu ngoai (LocalizedText goi sau khi tu dat chu tieng Anh).
     /// </summary>
-    public static void ApVuaKhung(TMP_Text t)
+    public static void ApVuaKhung(TMP_Text t) => ApVuaKhung(t, TI_LE_MIN_MAC_DINH);
+
+    /// <summary>
+    /// Nhu <see cref="ApVuaKhung(TMP_Text)"/> nhung cho chon san duoi co chu (ti le so voi co goc).
+    /// <see cref="LocFit.Fit(TMP_Text, float)"/> goi ham nay sau khi code tu gan Loc.T() vao .text.
+    /// </summary>
+    public static void ApVuaKhung(TMP_Text t, float tiLeMin)
     {
         if (t == null) return;
         if (!_theoDoi.TryGetValue(t, out var muc))
@@ -338,8 +355,11 @@ public static class LocRuntimeInterceptor
             _theoDoi[t] = muc;
         }
         if (muc.boQua) return;
-        ApVuaKhung(t, muc);
+        ApVuaKhung(t, muc, tiLeMin);
     }
+
+    /// <summary>San duoi mac dinh khi interceptor tu thu nho: 72% co goc.</summary>
+    private const float TI_LE_MIN_MAC_DINH = 0.72f;
 
     /// <summary>Tra lai co chu / overflow nguyen ban cho mot nhan (dung khi ve tieng Viet).</summary>
     public static void HoanVuaKhung(TMP_Text t)
@@ -348,9 +368,12 @@ public static class LocRuntimeInterceptor
         if (_theoDoi.TryGetValue(t, out var muc)) HoanVuaKhung(t, muc);
     }
 
-    private static void ApVuaKhung(TMP_Text t, Muc m)
+    private static void ApVuaKhung(TMP_Text t, Muc m) => ApVuaKhung(t, m, TI_LE_MIN_MAC_DINH);
+
+    private static void ApVuaKhung(TMP_Text t, Muc m, float tiLeMin)
     {
         if (!AutoFitEnabled || t == null || m == null || m.boQua) return;
+        tiLeMin = Mathf.Clamp(tiLeMin, 0.3f, 1f);
 
         var rt = t.rectTransform;
         if (rt == null) return;
@@ -416,7 +439,7 @@ public static class LocRuntimeInterceptor
 
         t.enableAutoSizing = true;
         t.fontSizeMax      = coGoc;                             // KHONG cho to hon thiet ke goc
-        t.fontSizeMin      = Mathf.Max(8f, coGoc * 0.72f);      // san duoi: duoi 8pt la khong doc noi
+        t.fontSizeMin      = Mathf.Max(8f, coGoc * tiLeMin);    // san duoi: duoi 8pt la khong doc noi
         if (motDong) t.overflowMode = TextOverflowModes.Ellipsis;
         m.dangApVuaKhung = true;
     }
@@ -505,6 +528,25 @@ public static class LocRuntimeInterceptor
             _soLuotKhongDoi = 0;
         }
 
+        /// <summary>
+        /// [2026-09-22] CHONG NHAN BAN. Object "~LocRuntimeInterceptor" duoc tao luc chay voi
+        /// DontDestroyOnLoad + HideInHierarchy, nhung neu scene bi LUU trong luc dang Play
+        /// (tool dong bang UI da tung lam vay) thi no bi ghi thang vao file scene. SampleScene
+        /// dang chua 3 ban sao nhu vay, cong them 1 ban tu sinh luc chay = 4 Update cung quet
+        /// toan bo TMP_Text moi nhip — dung 4 lan chi phi ma khong duoc gi.
+        /// Ban nao khong phai ban chinh thi tu huy ngay.
+        /// </summary>
+        private void Awake()
+        {
+            if (_chay != null && _chay != this)
+            {
+                Debug.LogWarning("[Loc] Xoa ban sao thua cua ~LocRuntimeInterceptor (bi luu nham vao scene).", gameObject);
+                Destroy(gameObject);
+                return;
+            }
+            _chay = this;
+        }
+
         private void OnEnable()
         {
             DatLaiNhip();
@@ -540,5 +582,43 @@ public static class LocRuntimeInterceptor
             int soDoi = LocRuntimeInterceptor.QuetVaDich(true, false);
             _soLuotKhongDoi = soDoi > 0 ? 0 : _soLuotKhongDoi + 1;
         }
+    }
+}
+
+/// <summary>
+/// [2026-09-21] VUA KHUNG GOI TAY. Interceptor chi tu thu nho nhan ma CHINH NO vua dich (VN→EN).
+/// Nhan do code gan thang bang <c>Loc.T()</c> / <c>Loc.TF()</c> thi interceptor khong dong den
+/// ⇒ chu tieng Anh dai hon van tran khung. Sau moi lan gan .text nhu vay, goi
+/// <c>LocFit.Fit(tmp)</c>. Ham khong bao gio nem; nhan chua co rect (LayoutGroup chua tinh) thi bo qua.
+/// </summary>
+public static class LocFit
+{
+    /// <summary>
+    /// Do lai nhan TMP voi chu HIEN TAI; tran khung thi bat autosize (max = co goc, min = co goc × minRatio)
+    /// + Ellipsis neu la nhan mot dong. Vua khung thi tra lai co chu goc. An toan goi nhieu lan.
+    /// </summary>
+    public static void Fit(TMP_Text t, float minRatio = 0.6f)
+    {
+        if (t == null) return;
+        try { LocRuntimeInterceptor.ApVuaKhung(t, minRatio); }
+        catch (System.Exception e) { Debug.LogWarning("[LocFit] bo qua: " + e.Message); }
+    }
+
+    /// <summary>
+    /// Ban cho <c>UnityEngine.UI.Text</c> legacy (interceptor KHONG quet loai nay): bat BestFit,
+    /// co nho nhat = co hien tai × minRatio, cho phep xuong dong theo be ngang.
+    /// </summary>
+    public static void Fit(UnityEngine.UI.Text t, float minRatio = 0.6f)
+    {
+        if (t == null) return;
+        try
+        {
+            int co = t.fontSize > 0 ? t.fontSize : 14;
+            if (!t.resizeTextForBestFit || t.resizeTextMaxSize < co) t.resizeTextMaxSize = co;
+            t.resizeTextMinSize      = Mathf.Max(8, Mathf.RoundToInt(co * Mathf.Clamp(minRatio, 0.3f, 1f)));
+            t.resizeTextForBestFit   = true;
+            t.horizontalOverflow     = HorizontalWrapMode.Wrap;
+        }
+        catch (System.Exception e) { Debug.LogWarning("[LocFit] bo qua (legacy Text): " + e.Message); }
     }
 }

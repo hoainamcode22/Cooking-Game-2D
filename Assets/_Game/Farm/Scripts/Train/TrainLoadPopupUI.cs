@@ -24,8 +24,31 @@ public class TrainLoadPopupUI : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    /// <summary>
+    /// [SUA 2026-09-22] Day la popup CU, nam san trong SCN_Farm o duoi Canvas_Popup — tuc la
+    /// ANH EM cua popup nha ga, KHONG nam trong khung popup nao. Vi vay khi no bat len, mon
+    /// hang hien "ngoai" popup, lech han sang trai (anchoredPosition x = -601).
+    ///
+    /// Dung ra no khong bao gio duoc dung den: popup that la
+    /// ExportTrainUIPackage.TrainLoadPopupUI (co khung go + nut close giong popup nha ga).
+    /// Nhung 3 prefab popup nam ngoai Resources/ va o TrainStationBuilding chua gan Inspector,
+    /// nen trong BUILD ANDROID chung khong bao gio duoc tao ra -> rot xuong popup cu nay.
+    /// Da chuyen 3 prefab vao Assets/_Game/Resources/Train/ nen build tu tao duoc.
+    ///
+    /// Chot chan duoi day de chac chan: neu popup that co mat thi day hang sang no va
+    /// KHONG bat popup cu len nua.
+    /// </summary>
     public void OpenForCargoSlot(int slotIndex, TrainWagonSlotData slotData)
     {
+        var pkg = ExportTrainUIPackage.TrainLoadPopupUI.Instance
+               ?? FindFirstObjectByType<ExportTrainUIPackage.TrainLoadPopupUI>(FindObjectsInactive.Include);
+        if (pkg != null)
+        {
+            gameObject.SetActive(false);
+            pkg.OpenForWagon(slotIndex);
+            return;
+        }
+
         _selectedSlotIndex = slotIndex;
         _selectedSlot      = slotData;
 

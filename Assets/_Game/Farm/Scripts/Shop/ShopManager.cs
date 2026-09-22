@@ -203,6 +203,7 @@ public class ShopManager : MonoBehaviour
         TutorialManager.Instance?.NotifyOpenShop();
         // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
         Loc.RequestRescan();
+        LocFitSweeper.Sweep();   // [Loc 2026-09-21] quet chu to khung nho sau khi popup dung xong
     }
 
     public void CloseShop()
@@ -294,6 +295,7 @@ public class ShopManager : MonoBehaviour
         RenderItems(searchBar != null ? searchBar.text : "");
         // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
         Loc.RequestRescan();
+        LocFitSweeper.Sweep();   // [Loc 2026-09-21] quet chu to khung nho sau khi popup dung xong
     }
 
     private void UpdateTabVisuals()

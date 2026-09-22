@@ -39,6 +39,8 @@ MonoBehaviour:
   unlockEntries:
   - label: "\u0110\u01a1n t\u00e0u si\u00eau c\u1ea5p"
     icon: {fileID: 0}
+  - label: New land plot 17 on sale  -  186.100 gold
+    icon: {fileID: 0}
   unlockDescriptions:
   - "\u0110\u01a1n t\u00e0u si\u00eau c\u1ea5p"
   hintText: "L\u00ean c\u1ea5p 39! M\u1edf shop xem th\u1ee9 m\u1edbi."
