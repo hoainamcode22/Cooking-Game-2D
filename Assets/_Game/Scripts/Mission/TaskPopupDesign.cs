@@ -207,7 +207,7 @@ public static class TaskPopupDesign
     public const float TabBoGoc = 22f;
     public const int   CoChuTab = 26;
     public const float TabDiaKichThuoc = 54f;
-    public const float TabIconKichThuoc = 38f;
+    public const float TabIconKichThuoc = 114f;   // [2026-09-23] x3 (truoc 38) — icon noi bat, tran khoi dia
 
     private const float LeNgang = 48f;
     public const float VungRong = BangRong - LeNgang * 2f;              // 1404

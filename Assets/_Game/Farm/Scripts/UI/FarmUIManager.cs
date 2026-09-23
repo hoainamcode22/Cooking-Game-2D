@@ -177,9 +177,14 @@ public class FarmUIManager : MonoBehaviour
     private TMP_Text _hintFallback;
     private float    _hintClearAt;
 
+    /// <summary>[2026-09-23] Sep yeu cau bo het thanh chu goi y ngang man hinh. false = chi ghi Console.
+    /// Bat lai: FarmUIManager.HintsEnabled = true.</summary>
+    public static bool HintsEnabled = false;
+
     public void ShowHint(string message)
     {
         if (string.IsNullOrEmpty(message)) return;
+        if (!HintsEnabled) { Debug.Log("[Hint] " + message); return; }
 
         TMP_Text dich = txtHint != null ? txtHint : LayHoacDungOChuDuPhong();
         if (dich == null)
@@ -254,6 +259,7 @@ public class FarmUIManager : MonoBehaviour
 
     private void LateUpdate()
     {
+        TuHuyKhayLiem();
         // Tự tắt sau vài giây, nếu không dòng chữ nằm lì trên màn hình mãi mãi.
         if (_hintClearAt <= 0f || Time.unscaledTime < _hintClearAt) return;
 
@@ -269,6 +275,7 @@ public class FarmUIManager : MonoBehaviour
 
     public void HideAllPopups()
     {
+        if (!FarmInputLock.IsDraggingSickle) HideSickleTool();
         if (popupSeed != null)
             popupSeed.SetActive(false);
 
@@ -309,8 +316,39 @@ public class FarmUIManager : MonoBehaviour
 
         if (sickleToolRoot != null)
             sickleToolRoot.SetActive(true);
+        _khayLiemHienFrame = Time.frameCount;
+        _khayLiemHienLuc   = Time.unscaledTime;
 
         TutorialManager.Instance?.NotifySickleShown();
+    }
+
+    // ── [2026-09-23] Khay liem khong duoc "dinh" mai ─────────────────────────────
+    // Loi cu: cham o chin -> hien khay liem; neu KHONG keo liem ma cham cho khac / mo popup thi
+    // khong co gi tat khay -> liem hien mai. Nay tu tat khi: cham ra ngoai khay, mo popup bat ky,
+    // hoac de yen qua thoiGianGiuKhayLiem giay. Khong tat khi dang keo liem hoac dang tutorial.
+    [SerializeField] private float thoiGianGiuKhayLiem = 6f;
+    private int _khayLiemHienFrame = -1;
+    private float _khayLiemHienLuc;
+
+    private void TuHuyKhayLiem()
+    {
+        if (sickleToolRoot == null || !sickleToolRoot.activeSelf) return;
+        if (FarmInputLock.IsDraggingSickle) return;
+        var tm = TutorialManager.Instance;
+        if (tm != null && tm.DangChayTutorial) return;
+
+        bool huy = false;
+        if (Time.unscaledTime - _khayLiemHienLuc > thoiGianGiuKhayLiem) huy = true;
+        else if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen()) huy = true;
+        else if (Time.frameCount != _khayLiemHienFrame && TouchInput.TapDownThisFrame())
+        {
+            var rt = sickleToolRoot.transform as RectTransform;
+            Vector2 p = Input.touchCount > 0 ? (Vector2)Input.GetTouch(0).position : (Vector2)Input.mousePosition;
+            var cv = sickleToolRoot.GetComponentInParent<Canvas>();
+            Camera cam = cv != null && cv.renderMode != RenderMode.ScreenSpaceOverlay ? cv.worldCamera : null;
+            if (rt == null || !RectTransformUtility.RectangleContainsScreenPoint(rt, p, cam)) huy = true;
+        }
+        if (huy) HideSickleTool();
     }
 
     // Bước 2: player nhấn giữ icon liềm trong tray → bắt đầu harvest mode

@@ -63,4 +63,10 @@ public class DishData : ScriptableObject
     // chợ và bán ở kho ra hai số khác nhau, người chơi phát hiện ngay.
     [Tooltip("Giá bán 1 đĩa. Phải khớp MarketPriceTable.GetBasePrice(dishId).")]
     public int sellPrice = 0;
+
+    // [2026-09-23] Thoi gian nau THAT (giay). 0 = tu tinh theo do kho + so nguyen lieu
+    // (xem CookingChallengeManager.CookTimeOf). Muon mon nao nau lau/nhanh hon thi dien so vao day.
+    [Header("Cooking time")]
+    [Tooltip("Giây nấu. 0 = tự tính: Dễ 8s, Vừa 15s, Khó 25s, +2s mỗi nguyên liệu từ cái thứ 3.")]
+    public float cookTimeSeconds = 0f;
 }

@@ -102,6 +102,20 @@ public class StallItemCatalog : MonoBehaviour
     {
         _entries.Clear();
 
+        // Tự động tìm nguồn dữ liệu dự phòng nếu danh sách trong scene bị trống
+        if (cropDatabase == null || cropDatabase.Count == 0)
+        {
+            var mm = UnityEngine.Object.FindFirstObjectByType<MarketManager>(FindObjectsInactive.Include);
+            if (mm != null && mm.CropDatabase != null && mm.CropDatabase.Count > 0)
+                cropDatabase = new List<CropData>(mm.CropDatabase);
+        }
+        if (itemDatabase == null || itemDatabase.Count == 0)
+        {
+            var mm = UnityEngine.Object.FindFirstObjectByType<MarketManager>(FindObjectsInactive.Include);
+            if (mm != null && mm.ItemDatabase != null && mm.ItemDatabase.Count > 0)
+                itemDatabase = new List<InventoryItemData>(mm.ItemDatabase);
+        }
+
         // ── 1 · Từ CropData: ra cả HẠT GIỐNG lẫn NÔNG SẢN/HOA ────────────────
         for (int i = 0; i < cropDatabase.Count; i++)
         {
@@ -249,8 +263,19 @@ public class StallItemCatalog : MonoBehaviour
 
     private static Sprite ResolveMissingIcon(string id)
     {
-        Sprite s = MarketManager.TryResolveFallbackIcon(id);
+        if (string.IsNullOrEmpty(id)) return null;
+        string key = Normalize(id);
+
+        Sprite s = MarketManager.TryResolveFallbackIcon(key);
         if (s != null) return s;
+
+        // Thử tìm qua WarehousePopupUI
+        var wh = UnityEngine.Object.FindFirstObjectByType<WarehousePopupUI>(FindObjectsInactive.Include);
+        if (wh != null)
+        {
+            Sprite whIcon = wh.GetDirectIconFromDatabases(key);
+            if (whIcon != null) return whIcon;
+        }
 
         // ── F4: PHẢI NẠP ĐƯỢC CẢ Ở BẢN RELEASE ──────────────────────────────
         // Trước đây cả khối tra cứu này nằm trong #if UNITY_EDITOR + AssetDatabase, nên
@@ -261,7 +286,7 @@ public class StallItemCatalog : MonoBehaviour
         // xoá/đổi chỗ thư mục Resources thì trong Editor vẫn thấy icon mà sửa).
         string resName = null;
         string editorPath = null;
-        switch (id)
+        switch (key)
         {
             case "cam_ga":
                 resName = "Mill/Icons/feed_cam_ga";
@@ -286,6 +311,13 @@ public class StallItemCatalog : MonoBehaviour
             Sprite fromRes = Resources.Load<Sprite>(resName);
             if (fromRes != null) return fromRes;
         }
+
+        // Thử load trực tiếp từ Resources với các folder icon
+        Sprite rSpr = Resources.Load<Sprite>($"UI_Crop/{key}") ??
+                      Resources.Load<Sprite>($"UI_Items/{key}") ??
+                      Resources.Load<Sprite>($"Icons/{key}") ??
+                      Resources.Load<Sprite>($"UI_MarketBoard/{key}");
+        if (rSpr != null) return rSpr;
 
 #if UNITY_EDITOR
         if (!string.IsNullOrEmpty(editorPath))
@@ -342,17 +374,18 @@ public class StallItemCatalog : MonoBehaviour
     public string GetDisplayName(string itemId)
     {
         Entry e = Find(itemId);
+        // [2026-09-23] Tra ten qua Loc.T (truoc day tra thang "Gao", "Go", "Da"...).
         if (e != null && !string.IsNullOrEmpty(e.displayName) && e.displayName != itemId)
-            return e.displayName;
+            return Loc.T(e.displayName);
         string id = Normalize(itemId);
         switch (id)
         {
-            case "cam_ga": return "Cám cho gà";
-            case "cam_heo": return "Cám cho heo";
-            case "co_tron_bo": return "Cỏ trộn cho bò";
-            case "cam_bo_sua": return "Cám cho bò sữa";
+            case "cam_ga": return Loc.T("Cám cho gà");
+            case "cam_heo": return Loc.T("Cám cho heo");
+            case "co_tron_bo": return Loc.T("Cỏ trộn cho bò");
+            case "cam_bo_sua": return Loc.T("Cám cho bò sữa");
         }
-        return e != null ? e.displayName : itemId;
+        return e != null ? Loc.T(e.displayName) : itemId;
     }
 
     /// <summary>Bảng định tuyến ID → tab, dùng khi dữ liệu asset không nói rõ danh mục.

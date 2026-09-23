@@ -33,7 +33,7 @@ MonoBehaviour:
   sellPrice: 110
   required1:
     displayName: Rice
-    icon: {fileID: 9135130128162984572, guid: 83b0ddd2946e3e94e9671b1686386e1b, type: 3}
+    icon: {fileID: -824634444736196842, guid: 35d011bc0d40a0f4d8f5b4d58f965248, type: 3}
   required2:
     displayName: "Tr\u1EE9ng"
     icon: {fileID: 2803214821265307967, guid: 15faf402283724c4a8c0194063d3fe76, type: 3}

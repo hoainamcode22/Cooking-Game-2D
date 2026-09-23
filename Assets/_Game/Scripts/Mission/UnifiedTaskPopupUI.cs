@@ -935,6 +935,11 @@ public class UnifiedTaskPopupUI : MonoBehaviour
             new Vector2(TaskPopupDesign.TabIconKichThuoc, TaskPopupDesign.TabIconKichThuoc), false)
             .GetComponent<Image>();
         icon.preserveAspect = true;
+        // [2026-09-23] Icon to x3 (114px) -> an dia tron 54px phia sau (khong con khop), nang icon len nhe
+        // cho "noi" khoi tab nhu tab kho/bep.
+        var diaImg = dia.GetComponent<Image>(); if (diaImg != null) diaImg.enabled = false;
+        var vien = dia.Find("Disc_Rim"); if (vien != null) vien.gameObject.SetActive(false);
+        icon.rectTransform.anchoredPosition = new Vector2(0f, 6f);
 
         // [RIBBON-TAB 2026-09-17] Ô chữ tính từ MÉP PHẢI đĩa icon tới MÉP PHẢI tab, trừ
         // padding hai đầu — bản cũ căn giữa theo nửa đường kính đĩa nên dải chữ (-106..160)
@@ -943,7 +948,7 @@ public class UnifiedTaskPopupUI : MonoBehaviour
         //   trái chữ  = -57 + KHE_NHAN_TAB          = -45
         //   phải chữ  = 360/2 - PAD_NHAN_TAB        = 164
         //   rộng 209 · tâm 59,5  ⇒ hở đều 12px với đĩa và 16px với viền tab.
-        float xDiaPhai = X_DIA_TAB + TaskPopupDesign.TabDiaKichThuoc * 0.5f;
+        float xDiaPhai = X_DIA_TAB + Mathf.Max(TaskPopupDesign.TabDiaKichThuoc, TaskPopupDesign.TabIconKichThuoc * 0.85f) * 0.5f;
         float xNhanTrai = xDiaPhai + KHE_NHAN_TAB;
         float xNhanPhai = TaskPopupDesign.TabRong * 0.5f - PAD_NHAN_TAB;
 

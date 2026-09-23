@@ -21,6 +21,19 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public static class SafeAreaBootstrap
 {
+    /// <summary>
+    /// Anh nen trai kin canvas (ten bat dau "BG_" / "Background"): KHONG dua vao lop boc.
+    /// Chi nen, nut/chu van nam trong vung an toan.
+    /// </summary>
+    private static bool LaNenToanManHinh(Transform t)
+    {
+        if (t == null) return false;
+        string ten = t.name;
+        if (!(ten.StartsWith("BG_") || ten.StartsWith("Bg_") || ten.StartsWith("Background"))) return false;
+        var rt = t as RectTransform;
+        return rt != null && rt.anchorMin == Vector2.zero && rt.anchorMax == Vector2.one;
+    }
+
     /// <summary>Ten cua object boc. Dau "~" de no luon nam cuoi khi sap xep theo ten.</summary>
     public const string TEN_LOP_BOC = "~SafeArea";
 
@@ -38,6 +51,16 @@ public static class SafeAreaBootstrap
         "Canvas_Loading",
         "LoadingCanvas",
         "Canvas_Splash",
+    };
+
+    /// <summary>
+    /// Canvas da can tay tung pixel (bep): van tranh tai tho THAT nhung KHONG lui le toi thieu 12px
+    /// o moi canh — le do lam khay bep bi day len de vao dong ho / thanh tien trinh luc Play.
+    /// </summary>
+    public static readonly HashSet<string> CanvasKhongLeToiThieu = new HashSet<string>
+    {
+        "Kitchen_UI_v3",
+        "Kitchen_UI_v2",
     };
 
     /// <summary>Bat/tat toan bo co che (de debug nhanh tren may that).</summary>
@@ -92,6 +115,11 @@ public static class SafeAreaBootstrap
 
         RectTransform lopBoc = LayHoacTaoLopBoc(goc);
         if (lopBoc == null) return null;
+        if (CanvasKhongLeToiThieu.Contains(canvas.name))
+        {
+            var fit = lopBoc.GetComponent<SafeAreaFitter>();
+            if (fit != null && !fit.boLeToiThieu) { fit.boLeToiThieu = true; fit.ApDung(); }   // tinh lai ngay
+        }
 
         ChuyenConVaoLopBoc(goc, lopBoc);
         return lopBoc;
@@ -149,7 +177,16 @@ public static class SafeAreaBootstrap
             Transform con = goc.GetChild(i);
             if (con == null) continue;
             if (con == lopBoc) continue;
+            if (LaNenToanManHinh(con)) continue;   // [2026-09-23] nen phai phu KIN man hinh
             canChuyen.Add(con);
+        }
+
+        // Nen toan man hinh (BG_*) giu NGOAI lop boc va nam SAU CUNG (ve truoc) — neu boc vao,
+        // SafeAreaFitter lui le moi canh => ho vien mau nen camera (xanh) quanh man bep.
+        for (int i = goc.childCount - 1; i >= 0; i--)
+        {
+            Transform con = goc.GetChild(i);
+            if (con != null && con != lopBoc && LaNenToanManHinh(con)) con.SetAsFirstSibling();
         }
 
         if (canChuyen.Count == 0) return;

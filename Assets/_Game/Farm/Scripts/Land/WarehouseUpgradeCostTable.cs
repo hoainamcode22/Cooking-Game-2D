@@ -71,7 +71,7 @@ public static class WarehouseUpgradeCostTable
         }
         if (!BuildMaterials.HasAll(e.materials))
         {
-            reason = "Thieu nguyen lieu: " + BuildMaterials.Describe(e.materials, true);
+            reason = Loc.T("Thiếu nguyên liệu:") + " " + BuildMaterials.Describe(e.materials, true);
             return false;
         }
         return true;
@@ -103,11 +103,11 @@ public static class WarehouseUpgradeCostTable
     /// <summary>Mo ta chi phi de hien tren nut: "1.500 vang · 10 Go, 6 Da".</summary>
     public static string Describe(int currentLevel)
     {
-        if (!CanUpgradeFurther(currentLevel)) return "Da toi da";
+        if (!CanUpgradeFurther(currentLevel)) return Loc.T("Đã tối đa");
         var e = CostFor(currentLevel);
         string mat = BuildMaterials.Describe(e.materials);
-        if (e.gold > 0 && !string.IsNullOrEmpty(mat)) return $"{e.gold:n0} vang · {mat}";
-        if (e.gold > 0) return $"{e.gold:n0} vang";
+        if (e.gold > 0 && !string.IsNullOrEmpty(mat)) return Loc.TF("{0} vàng", e.gold.ToString("n0")) + " · " + mat;
+        if (e.gold > 0) return Loc.TF("{0} vàng", e.gold.ToString("n0"));
         return mat;
     }
 }

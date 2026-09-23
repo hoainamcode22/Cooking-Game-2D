@@ -94,7 +94,7 @@ public class StallSlotUI : MonoBehaviour
         switch (state)
         {
             case StallSlotState.Empty:
-                if (textEmptyLabel != null) textEmptyLabel.text = "Bán vật phẩm";
+                if (textEmptyLabel != null) textEmptyLabel.text = Loc.T("Bán vật phẩm");
                 break;
 
             case StallSlotState.Selling:
@@ -102,7 +102,7 @@ public class StallSlotUI : MonoBehaviour
                 break;
 
             case StallSlotState.Unlockable:
-                if (textUnlockLabel != null) textUnlockLabel.text = "Thêm ô";
+                if (textUnlockLabel != null) textUnlockLabel.text = stall.DuCapMoO(_slotIndex) ? Loc.T("Thêm ô") : Loc.TF("Cần cấp {0}", stall.GetSlotRequiredLevel(_slotIndex));
                 if (textUnlockCost  != null) textUnlockCost.text  = stall.GetSlotUnlockGoldCost(_slotIndex).ToString("N0");
                 break;
 
@@ -146,9 +146,20 @@ public class StallSlotUI : MonoBehaviour
         if (imageArtSlotBackground != null)
         {
             // Ô chưa tới lượt chìm hẳn xuống nền; ô dùng được thì nổi lên.
+            // [2026-09-23] BO tint tim toi: sprite goc la the go bo tron dep; tint bien no thanh
+            // o vuong tim den, chu nau tren do khong doc duoc. O chua toi luot chi mo di.
             imageArtSlotBackground.color = state == StallSlotState.Locked
-                ? new Color(0.16f, 0.10f, 0.24f, 1f)
-                : new Color(0.24f, 0.15f, 0.35f, 1f);
+                ? new Color(1f, 1f, 1f, 0.45f)
+                : Color.white;
+        }
+        // [2026-09-23 FIX VO CHU] KHONG dung outlineWidth/outlineColor: goi 2 thuoc tinh do tao
+        // ra material rieng gan voi atlas cua font CU; ngay sau do SkinKit.ApFont doi font =>
+        // material tro sai atlas => chu vo thanh vun trang. Chi doi mau + dam (khong dung material).
+        var sang = new Color(1f, 0.97f, 0.88f, 1f);
+        foreach (var t in new[] { textEmptyLabel, textUnlockLabel })
+        {
+            if (t == null) continue;
+            t.color = sang; t.fontStyle |= TMPro.FontStyles.Bold;
         }
     }
 

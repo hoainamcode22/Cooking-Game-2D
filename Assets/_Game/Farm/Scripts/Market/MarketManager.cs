@@ -45,6 +45,9 @@ public class MarketManager : MonoBehaviour
     [Tooltip("Tự điền bằng Tools/Farm/Chợ/Nạp lại nguồn icon cho MarketManager.")]
     [SerializeField] private List<InventoryItemData> itemDatabase = new List<InventoryItemData>();
 
+    public List<CropData> CropDatabase => cropDatabase;
+    public List<InventoryItemData> ItemDatabase => itemDatabase;
+
     [Header("Làm mới — CHỈ DÙNG VÀNG, không gem, không đồng tiền thứ ba")]
     [SerializeField] private int refreshDurationSeconds = 300;
     [Tooltip("Giá làm mới lần đầu trong ngày. Lần sau nhân lên theo số lần đã trả.")]

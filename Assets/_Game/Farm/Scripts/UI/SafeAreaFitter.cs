@@ -26,6 +26,10 @@ public class SafeAreaFitter : MonoBehaviour
     [Tooltip("Ap vung an toan theo chieu DOC (tren + duoi). Chu yeu de tranh thanh cu chi Android / iPhone o canh duoi.")]
     public bool apDungDoc = true;
 
+    [Tooltip("Bo le toi thieu 12px (chi con tranh tai tho THAT). Dung cho man da can tay tung pixel " +
+             "nhu bep: tren PC/Editor khong co tai tho => Play giong het Edit mode.")]
+    public bool boLeToiThieu = false;
+
     [Header("Debug")]
     [Tooltip("In log moi lan ap lai vung an toan. Chi bat khi test tren may that.")]
     public bool ghiLog = false;
@@ -143,7 +147,7 @@ public class SafeAreaFitter : MonoBehaviour
         }
 
         // Le toi thieu moi canh (ke ca may khong khuyet): vung dung = giao(safeArea, man hinh lui le).
-        float le = LeToiThieuPixel();
+        float le = boLeToiThieu ? 0f : LeToiThieuPixel();
         // Le khong duoc "an" qua 1/4 moi chieu (man hinh rat nho / dpi bao sai).
         le = Mathf.Min(le, Mathf.Min(w, h) * 0.25f);
 

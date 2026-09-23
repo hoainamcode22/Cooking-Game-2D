@@ -119,6 +119,23 @@ public static class PopupFitClamp
         // So tường minh `== null`: component đã Destroy trả "fake-null".
         if (node == null || !node.gameObject.activeSelf) return;
 
+        // Bỏ qua các lớp phủ làm mờ toàn màn hình (Panel_Dim, Dim, Overlay, Blocker...)
+        // Tránh làm sai lệch kích thước thật của bảng popup khiến popup bị co nhỏ vô lý.
+        string name = node.name;
+        if (name.IndexOf("Dim", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+            name.IndexOf("Overlay", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+            name.IndexOf("Blocker", System.StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            return;
+        }
+
+        // Nếu node là một tấm stretch toàn màn hình quá khổ (>2000x1500), không gom vào dấu chân bảng
+        Rect r = node.rect;
+        if (r.width > 2000f || r.height > 1500f)
+        {
+            return;
+        }
+
         node.GetWorldCorners(_goc);
         for (int i = 0; i < 4; i++)
         {

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::IngredientData
   id: pepper
   displayName: Pepper
-  icon: {fileID: 5124880379220198488, guid: 051c1fd8ffdf47a89aef471f7f65a07e, type: 3}
+  icon: {fileID: -129843895585617143, guid: 051c1fd8ffdf47a89aef471f7f65a07e, type: 3}
   kind: 1
   tier: 1
   vector:

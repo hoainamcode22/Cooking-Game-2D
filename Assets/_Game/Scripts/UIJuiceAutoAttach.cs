@@ -77,6 +77,16 @@ public class UIJuiceAutoAttach : MonoBehaviour
             if (!Known.Add(id)) continue;   // Add trả false = đã xử lý lần trước
 
             foundNew = true;
+            // [2026-09-23] BO QUA lop nen (Panel_Dim/Overlay/Blocker) va nut transition None.
+            // Loi that: WarehousePopupUI gan Button len Panel_Dim (cham nen de dong) — ma MOI THU cua
+            // popup kho la con cua Panel_Dim. Gan UIJuiceFeedback vao day thi di chuot qua popup la
+            // ca popup phong 1.06x, bam la nay 1.1x -> tieu de bi cat mep tren khi Play.
+            string tenB = b.gameObject.name;
+            if (b.transition == Selectable.Transition.None ||
+                tenB.IndexOf("Dim", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                tenB.IndexOf("Overlay", System.StringComparison.OrdinalIgnoreCase) >= 0 ||
+                tenB.IndexOf("Blocker", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                continue;
             if (b.GetComponent<UIJuiceFeedback>() == null)
                 b.gameObject.AddComponent<UIJuiceFeedback>();
         }

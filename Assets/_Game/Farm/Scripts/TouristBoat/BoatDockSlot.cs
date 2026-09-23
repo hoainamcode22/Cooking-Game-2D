@@ -52,7 +52,7 @@ public class BoatDockSlot : MonoBehaviour
     [SerializeField] private float floatingTextSeconds = 1.6f;
 
     // [FIX 2026-09-19] Hệ số phóng to biển cọc gỗ khóa bến (sprite 240x180 px, PPU 1) để chữ teaser không tràn mép.
-    private const float BangGoScale = 1.35f;
+    private const float BangGoScale = 1.9f;   // [2026-09-23] 1.35 -> 1.9: bang go to hon, chu nam gon trong mat bang
 
     // [QA M-6] Ngưỡng coi là "chạm" chứ không phải "kéo" (pixel màn hình).
     private const float NguongKeoPixel = 24f;
@@ -303,17 +303,17 @@ public class BoatDockSlot : MonoBehaviour
                     if (font == null) font = TMP_Settings.defaultFontAsset;
                     if (font != null) teaserText.font = font;
 
-                    teaserText.text = BuildTeaserText(mgr.Config);
+                    // [2026-09-23] Dong 1 = "UNLOCKS AT LV 12" (1 dong, gon, can giua).
+                    // Dong 2 = [icon vang/kim cuong] + so tien — la 2 object rieng Cost_Icon + Cost_Text.
+                    teaserText.text = Loc.TF("MỞ Ở CẤP {0}", CapMo(mgr.Config));
                     teaserText.isOrthographic = true;
-                    // [FIX 2026-09-19] Auto-size để 3 dòng ("UNLOCKS AT / LV 12 / 2.000 GOLD") luôn nằm gọn trong mặt bảng.
-                    // fontSizeMax = 28 (size cũ), fontSizeMin = 60% = 17. KHÔNG dùng Ellipsis (sẽ cắt mất "GOLD"/"GEMS").
-                    teaserText.fontSize = 28f;
+                    teaserText.fontSize = 20f;
                     teaserText.enableAutoSizing = true;
-                    teaserText.fontSizeMax = 28f;
-                    teaserText.fontSizeMin = 17f;
+                    teaserText.fontSizeMax = 20f;
+                    teaserText.fontSizeMin = 12f;
                     teaserText.fontStyle = FontStyles.Bold;
                     teaserText.alignment = TextAlignmentOptions.Center;
-                    teaserText.textWrappingMode = TextWrappingModes.Normal;
+                    teaserText.textWrappingMode = TextWrappingModes.NoWrap;
                     teaserText.overflowMode = TextOverflowModes.Overflow;
                     teaserText.color = new Color(1f, 0.98f, 0.88f, 1f); // Màu kem vàng sáng
                     teaserText.outlineWidth = 0.22f;
@@ -327,9 +327,10 @@ public class BoatDockSlot : MonoBehaviour
                     {
                         // [FIX 2026-09-19] Rect chữ = ~85% bề rộng mặt bảng (224px) x chiều cao ván trong (~98px).
                         // Trước: 210x90 (sát mép, 3 dòng tràn dọc). Đơn vị local của lockRoot, tự to theo scale 1.35.
-                        rt.sizeDelta = new Vector2(190f, 96f);
+                        rt.sizeDelta = new Vector2(196f, 30f);
                     }
-                    teaserText.transform.localPosition = new Vector3(0f, 120f, -0.5f); // Đặt chính giữa mặt bảng gỗ phía trên cọc
+                    teaserText.transform.localPosition = new Vector3(0f, 140f, -0.5f);   // nua tren mat bang
+                    DungDongGia(mgr.Config, teaserText.font, mr != null ? mr.sortingOrder : 58);
                 }
 
                 // Đảm bảo BoxCollider2D phủ vừa khít kích thước toàn bộ biển cọc gỗ để chạm là ăn 100%
@@ -354,6 +355,86 @@ public class BoatDockSlot : MonoBehaviour
     ///   dock 1: "MỞ Ở CẤP 12 \n 2.000 VÀNG"
     ///   dock 2: "MỞ Ở CẤP 14 \n 25 KIM CƯƠNG"
     /// </summary>
+    private int CapMo(TouristBoatConfig c)
+    {
+        if (c == null) return 0;
+        return dockIndex == 0 ? c.unlockLevel : dockIndex == 1 ? c.dock2Level : c.dock3Level;
+    }
+
+    /// <summary>
+    /// [2026-09-23] Dong gia o nua duoi mat bang: [icon] + so. Icon vang (ben 2) / kim cuong (ben 3);
+    /// ben 1 mien phi thi chi chu "FREE" (truoc dung ky tu ★ ma font khong co => hien o vuong).
+    /// Cap icon + chu duoc CAN GIUA theo tong be ngang. Object Cost_Icon / Cost_Text nam trong lockRoot.
+    /// </summary>
+    private void DungDongGia(TouristBoatConfig c, TMP_FontAsset font, int thuTu)
+    {
+        if (lockRoot == null || c == null) return;
+        string chu; Color mau; Sprite icon = null;
+        switch (dockIndex)
+        {
+            case 0:  chu = Loc.T("MIỄN PHÍ"); mau = new Color(0.51f, 0.93f, 0.93f); break;
+            case 1:  chu = FormatVN(c.dock2GoldCost); mau = new Color(1f, 0.84f, 0f); icon = Resources.Load<Sprite>("UI/Standard/icon_gold"); break;
+            default: chu = c.dock3GemCost.ToString(); mau = new Color(0.45f, 0.73f, 1f); icon = Resources.Load<Sprite>("UI/Standard/kimcuong-removebg-preview"); break;
+        }
+
+        // Chu
+        var tTr = lockRoot.transform.Find("Cost_Text");
+        TextMeshPro t = tTr != null ? tTr.GetComponent<TextMeshPro>() : null;
+        if (t == null)
+        {
+            var go = new GameObject("Cost_Text", typeof(RectTransform));
+            go.transform.SetParent(lockRoot.transform, false);
+            t = go.AddComponent<TextMeshPro>();
+        }
+        if (font != null) t.font = font;
+        t.text = chu;
+        t.isOrthographic = true;
+        t.enableAutoSizing = false;
+        t.fontSize = 24f;
+        t.fontStyle = FontStyles.Bold;
+        t.textWrappingMode = TextWrappingModes.NoWrap;
+        t.overflowMode = TextOverflowModes.Overflow;
+        t.color = mau;
+        t.outlineWidth = 0.22f;
+        t.outlineColor = new Color(0.24f, 0.12f, 0.04f, 1f);
+        t.rectTransform.sizeDelta = new Vector2(160f, 30f);
+        t.rectTransform.pivot = new Vector2(0f, 0.5f);
+        var tmr = t.GetComponent<MeshRenderer>(); if (tmr != null) tmr.sortingOrder = thuTu;
+
+        // Icon
+        var iTr = lockRoot.transform.Find("Cost_Icon");
+        SpriteRenderer sr = iTr != null ? iTr.GetComponent<SpriteRenderer>() : null;
+        if (sr == null && icon != null)
+        {
+            var go = new GameObject("Cost_Icon");
+            go.transform.SetParent(lockRoot.transform, false);
+            sr = go.AddComponent<SpriteRenderer>();
+        }
+        const float ICON = 32f, KHE = 6f, Y = 102f;
+        float iconW = 0f;
+        if (sr != null)
+        {
+            sr.gameObject.SetActive(icon != null);
+            if (icon != null)
+            {
+                sr.sprite = icon;
+                sr.sortingOrder = thuTu;
+                float cao = Mathf.Max(0.0001f, icon.bounds.size.y), rong = Mathf.Max(0.0001f, icon.bounds.size.x);
+                float k = ICON / Mathf.Max(cao, rong);
+                sr.transform.localScale = new Vector3(k, k, 1f);
+                iconW = rong * k;
+            }
+        }
+
+        // Can giua ca cum [icon + khe + chu]
+        float chuW = t.GetPreferredValues(chu).x;
+        float tong = iconW + (iconW > 0f ? KHE : 0f) + chuW;
+        float x0 = -tong * 0.5f;
+        if (sr != null && iconW > 0f) sr.transform.localPosition = new Vector3(x0 + iconW * 0.5f, Y, -0.5f);
+        t.alignment = TextAlignmentOptions.Left;
+        t.transform.localPosition = new Vector3(x0 + (iconW > 0f ? iconW + KHE : 0f), Y, -0.5f);
+    }
+
     private string BuildTeaserText(TouristBoatConfig config)
     {
         if (config == null) return string.Empty;

@@ -19,7 +19,7 @@ public class SickleController : MonoBehaviour
     [SerializeField] private float followSpeed = 28f;
 
     [Header("Visual & Sorting")]
-    [SerializeField] private float sickleScale = 7.5f;
+    [SerializeField] private float sickleScale = 16.25f;   // [2026-09-23] to hon 1.3x theo yeu cau Sep
     [SerializeField] private string targetSortingLayer = "Foreground";
     [SerializeField] private int targetSortingOrder = 30000;
 
@@ -52,13 +52,6 @@ public class SickleController : MonoBehaviour
 
     public void EnforceVisualAndSorting()
     {
-        // [FIX 2026-09-18] Truoc day: sickleScale > 5.5 thi bi ep ve 4.8. Scene dang dat
-        // sickleScale = 7 nen cai liem LUON bi thu nho con 4.8 (~69% co thiet ke) - dung
-        // la loi "icon liem qua nho". Nay ton trong gia tri Inspector, chi con mot cai kep
-        // rong de gia tri hong khong lam liem bien mat hoac phu kin man hinh.
-        //
-        // [ZOOM 2026-09-21] Nhân thêm hệ số ortho/orthoThamChieu (kẹp [0.5, 2]) để liềm giữ
-        // cỡ trên màn hình khi zoom. Ở ortho 750 hệ số = 1 ⇒ đúng scale 7 như cũ.
         ApDungScaleTheoZoom();
         var sr = GetComponent<SpriteRenderer>();
         if (sr != null)
@@ -74,7 +67,8 @@ public class SickleController : MonoBehaviour
     private void ApDungScaleTheoZoom()
     {
         float heSo  = ZoomScaleHelper.HeSo(mainCam, orthoThamChieu);
-        float scale = Mathf.Clamp(sickleScale, 0.1f, 20f) * heSo;
+        float baseScale = Mathf.Max(sickleScale, 12f);
+        float scale = Mathf.Clamp(baseScale, 0.1f, 30f) * heSo;
         transform.localScale = new Vector3(scale, scale, 1f);
         _orthoDaApDung = (mainCam != null) ? mainCam.orthographicSize : float.NegativeInfinity;
     }

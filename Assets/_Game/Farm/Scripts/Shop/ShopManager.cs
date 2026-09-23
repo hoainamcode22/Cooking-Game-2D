@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -637,10 +637,10 @@ public class ShopManager : MonoBehaviour
         RectTransform rtPopup = (shopPanel != null ? shopPanel.transform : transform) as RectTransform;
         if (rtPopup == null) return;
 
-        if (!daLuuScalePopup)
+        if (!daLuuScalePopup || scaleGocPopup.x < 0.9f)
         {
             daLuuScalePopup = true;
-            scaleGocPopup   = rtPopup.localScale;
+            scaleGocPopup   = (rtPopup.localScale.x < 0.9f || rtPopup.localScale.y < 0.9f) ? Vector3.one : rtPopup.localScale;
             viTriGocPopup   = rtPopup.anchoredPosition;
         }
 

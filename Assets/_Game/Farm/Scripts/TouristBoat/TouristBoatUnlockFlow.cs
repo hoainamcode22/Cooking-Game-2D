@@ -337,7 +337,7 @@ public class TouristBoatUnlockFlow : MonoBehaviour
     /// phình 27.000 unit che kín map).
     /// </summary>
     /// <summary>[FIX 2026-09-19] Phải bằng BoatDockSlot.BangGoScale (1.35) để 2 đường set không đá nhau.</summary>
-    private const float BoatDockSlotBangGoScale = 1.35f;
+    private const float BoatDockSlotBangGoScale = 1.9f;   // = BoatDockSlot.BangGoScale
 
     private void ApSpriteBangKhoa(int dockIndex, Transform board, TouristBoatConfig cfg)
     {
@@ -366,38 +366,10 @@ public class TouristBoatUnlockFlow : MonoBehaviour
         // Gán tuyệt đối nên chạy lại nhiều lần vẫn không dồn hệ số; pivot chân cọc giữ nguyên vị trí.
         board.localScale = new Vector3(BoatDockSlotBangGoScale, BoatDockSlotBangGoScale, 1f);
 
-        // Định dạng lại chữ teaser to, rõ nét trên mặt bảng gỗ
-        Transform tt = board.Find("TeaserText");
-        if (tt != null)
-        {
-            var tmp = tt.GetComponent<TextMeshPro>();
-            if (tmp != null)
-            {
-                var font = Resources.Load<TMP_FontAsset>("Fonts/Baloo2 SDF");
-                if (font == null) font = TMP_Settings.defaultFontAsset;
-                if (font != null) tmp.font = font;
-
-                tmp.isOrthographic = true;
-                // [FIX 2026-09-19] Auto-size 17..28 + Overflow (không Ellipsis) — giống BoatDockSlot.RefreshLockUI.
-                tmp.fontSize = 28f;
-                tmp.enableAutoSizing = true;
-                tmp.fontSizeMax = 28f;
-                tmp.fontSizeMin = 17f;
-                tmp.fontStyle = FontStyles.Bold;
-                tmp.alignment = TextAlignmentOptions.Center;
-                tmp.textWrappingMode = TextWrappingModes.Normal;
-                tmp.overflowMode = TextOverflowModes.Overflow;
-                tmp.color = new Color(1f, 0.98f, 0.88f, 1f);
-                tmp.outlineWidth = 0.22f;
-                tmp.outlineColor = new Color(0.24f, 0.12f, 0.04f, 1f);
-                var rt = tmp.rectTransform;
-                if (rt != null)
-                {
-                    rt.sizeDelta = new Vector2(190f, 96f); // [FIX 2026-09-19] trước 210x90; ~85% bề rộng mặt bảng
-                }
-                tt.localPosition = new Vector3(0f, 120f, -0.5f);
-            }
-        }
+        // [2026-09-23] Chu tren bang (dong "UNLOCKS AT LV x" + [icon] gia) do DUY NHAT BoatDockSlot.RefreshLockUI
+        // dung — truoc day ham nay dat lai chu 28pt xuong dong + scale 1.35 => de len dong gia moi.
+        var slot = board.GetComponentInParent<BoatDockSlot>();
+        if (slot != null) slot.RefreshLockUI();
 
         // Icon ổ khóa (nếu Sếp gán art riêng)
         if (lockIconSprite != null)

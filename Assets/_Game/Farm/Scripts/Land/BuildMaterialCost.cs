@@ -120,7 +120,7 @@ public static class BuildMaterials
         {
             if (!list[i].IsValid) continue;
             if (sb.Length > 0) sb.Append(", ");
-            sb.Append(list[i].amount).Append(' ').Append(DisplayNameOf(list[i].itemId));
+            sb.Append(list[i].amount).Append(' ').Append(Loc.T(DisplayNameOf(list[i].itemId)));
         }
         return sb.ToString();
     }

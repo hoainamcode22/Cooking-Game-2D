@@ -34,13 +34,9 @@ public class MarketCategoryTabUI : MonoBehaviour
         onSelected = selectCallback;
 
         if (tabActiveSprite == null)
-        {
-            // [SUA 2026-09-22] Truoc day 2 dong nay nam trong #if UNITY_EDITOR nen trong BUILD
-            // nen tab bi rong, chi con o mau phang -> "tab khong hien thi hinh anh".
-            // 2 anh da copy sang Resources (kem .meta giu spriteBorder 9-slice).
-            tabActiveSprite   = Resources.Load<Sprite>("UI_MarketBoard/tab_active");
-            tabInactiveSprite = Resources.Load<Sprite>("UI_MarketBoard/tab_inactive");
-        }
+            tabActiveSprite = LoadResourceSprite("UI_MarketBoard/tab_active");
+        if (tabInactiveSprite == null)
+            tabInactiveSprite = LoadResourceSprite("UI_MarketBoard/tab_inactive");
 
         // Gắn icon vẽ tay cho từng danh mục
         Sprite catIcon = GetCategoryIcon(value);
@@ -136,12 +132,28 @@ public class MarketCategoryTabUI : MonoBehaviour
             default:                      idx = 0; break;
         }
 
-        // [SUA 2026-09-22] Truoc day khoi nay nam trong #if UNITY_EDITOR nen BUILD KHONG CO
-        // ICON NAO — dung mot lop loi voi lo icon quay hang. 8 anh da copy sang
-        // Assets/_Game/Resources/UI_MarketBoard/ (cat vien + thu ve 192px) de nap runtime.
-        Sprite spr = Resources.Load<Sprite>($"UI_MarketBoard/tab_icon_{idx}");
-        if (spr == null)
-            Debug.LogWarning($"[MarketTab] Thieu Resources/UI_MarketBoard/tab_icon_{idx}");
-        return spr;
+        return LoadResourceSprite($"UI_MarketBoard/tab_icon_{idx}");
+    }
+
+    public static Sprite LoadResourceSprite(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return null;
+
+        // 1. Thử load trực tiếp dạng Sprite
+        Sprite spr = Resources.Load<Sprite>(path);
+        if (spr != null) return spr;
+
+        // 2. Thử LoadAll nếu texture bị set spriteMode Multiple
+        Sprite[] all = Resources.LoadAll<Sprite>(path);
+        if (all != null && all.Length > 0) return all[0];
+
+        // 3. Thử load Texture2D và tự đóng gói Sprite nếu importer chưa set Sprite
+        Texture2D tex = Resources.Load<Texture2D>(path);
+        if (tex != null)
+        {
+            return Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+        }
+
+        return null;
     }
 }

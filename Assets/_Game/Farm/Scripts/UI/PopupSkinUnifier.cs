@@ -59,6 +59,7 @@ public static class PopupSkinUnifier
         try
         {
             ApKhungVaRuyBang(popupRoot);
+            ApKieuKho(popupRoot);
             ApNut(popupRoot);
         }
         catch (System.Exception e)
@@ -70,6 +71,43 @@ public static class PopupSkinUnifier
     public static void ApDung(GameObject popupRoot)
     {
         if (popupRoot != null) ApDung(popupRoot.transform);
+    }
+
+    // ── KIEU KHO (2026-09-23): moi popup co Board_Border dung dung vo cua popup Kho ────────
+    // Kho/Shop dep vi: Board_Border = WoodBoard_Frame (Sliced, da gom vien go bo tron + giay kem),
+    // cac lop Board_Fill_* TAT, dinh goc = WoodBoard_Stud, lop Stud Base/Shine TAT.
+    // Order Board / Quay hang / Nhiem vu co cung ten object nhung Board_Fill_* van BAT, day dac, ve
+    // DE LEN khung go -> nhin thanh tam nau phang goc nhon; dinh goc la 3 o vuong mau phang.
+    // Chi doi sprite/mau/bat-tat, KHONG dong RectTransform (khong pha layout).
+    private static Sprite _dinh;
+    private static void ApKieuKho(Transform goc)
+    {
+        if (_dinh == null) _dinh = Resources.Load<Sprite>(Res + "WoodBoard_Stud");
+        foreach (var t in goc.GetComponentsInChildren<Transform>(true))
+        {
+            if (t == null || t.Find("Board_Border") == null) continue;   // t = cha cua bo khung
+            for (int i = 0; i < t.childCount; i++)
+            {
+                var c = t.GetChild(i); string n = c.name;
+                if (n == "Board_Fill_Bottom" || n == "Board_Fill_Top" || n == "Img_WoodBoard")
+                { if (c.gameObject.activeSelf) c.gameObject.SetActive(false); continue; }
+                if (n.StartsWith("Stud_") && (n.EndsWith("_Base") || n.EndsWith("_Shine")))
+                { if (c.gameObject.activeSelf) c.gameObject.SetActive(false); continue; }
+                if (n.StartsWith("Stud_") && n.EndsWith("_Rim"))
+                {
+                    var im = c.GetComponent<Image>();
+                    if (im != null && _dinh != null) { im.sprite = _dinh; im.type = Image.Type.Simple; im.color = Color.white; im.preserveAspect = true; }
+                    continue;
+                }
+                // Nhiem vu: 5 lop giay chong nhau -> giu Paper_Fill, tat phan con lai
+                if (n == "Paper_Border" || n == "Paper_Fill_Top" || n == "Paper_InnerRing" || n == "Paper_Fill_Inner")
+                { if (c.gameObject.activeSelf) c.gameObject.SetActive(false); continue; }
+            }
+            var bb = t.Find("Board_Border");
+            var bim = bb != null ? bb.GetComponent<Image>() : null;
+            if (bim != null && _khung != null)
+            { bim.sprite = _khung; bim.type = Image.Type.Sliced; bim.pixelsPerUnitMultiplier = 1f; bim.color = Color.white; bim.preserveAspect = false; }
+        }
     }
 
     // ── KHUNG / GIẤY / RUY BĂNG ──────────────────────────────────────────────

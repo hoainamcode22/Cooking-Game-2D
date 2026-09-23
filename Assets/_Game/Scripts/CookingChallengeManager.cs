@@ -36,6 +36,26 @@ public class CookingChallengeManager : MonoBehaviour
     /// <summary>Đang trong nhịp nấu (sau minigame) — UI v2 đọc.</summary>
     public bool IsCooking => isCooking;
 
+    // ── [2026-09-23] THOI GIAN NAU THAT theo tung mon ──
+    /// <summary>Tong giay cua lan nau hien tai (0 khi khong nau).</summary>
+    public float CookDuration => _cookDuration;
+    /// <summary>Tien do 0..1 cua lan nau hien tai (dong ho / thanh fill / lo doc).</summary>
+    public float CookProgress01 => (isCooking && _cookDuration > 0f) ? Mathf.Clamp01((Time.time - _cookStartTime) / _cookDuration) : 0f;
+    /// <summary>Giay con lai cua lan nau hien tai.</summary>
+    public float CookRemaining => isCooking ? Mathf.Max(0f, _cookDuration - (Time.time - _cookStartTime)) : 0f;
+    private float _cookDuration, _cookStartTime;
+
+    /// <summary>Giay nau cua 1 mon: dung cookTimeSeconds neu &gt; 0, khong thi Dễ 8 / Vừa 15 / Khó 25 (+2s moi nguyen lieu tu cai thu 3).</summary>
+    public static float CookTimeOf(DishData dish)
+    {
+        if (dish == null) return 5f;
+        if (dish.cookTimeSeconds > 0f) return dish.cookTimeSeconds;
+        float t = dish.difficulty == DishDifficulty.Easy ? 8f : dish.difficulty == DishDifficulty.Hard ? 25f : 15f;
+        int n = dish.requiredIngredients != null ? dish.requiredIngredients.Count : 0;
+        if (n > 2) t += (n - 2) * 2f;
+        return t;
+    }
+
     private DishData cookedDishOnPlate;
     private DishData currentDishData;
 
@@ -142,6 +162,8 @@ public class CookingChallengeManager : MonoBehaviour
     private IEnumerator CookSubmitRoutine()
     {
         isCooking = true;
+        _cookDuration  = Mathf.Max(cookSubmitDelay, CookTimeOf(currentDishData));
+        _cookStartTime = Time.time;
         OnCookStarted?.Invoke(currentDishData);
         if (AudioManager.Instance != null)
         {
@@ -149,7 +171,7 @@ public class CookingChallengeManager : MonoBehaviour
         }
 
 
-        yield return new WaitForSeconds(cookSubmitDelay);
+        yield return new WaitForSeconds(_cookDuration);
 
         List<SelectableIngredientCard> selectedIngredients = cookingSelectionManager.GetSelectedIngredientCards();
         List<SelectableIngredientCard> selectedSeasonings = cookingSelectionManager.GetSelectedSeasoningCards();

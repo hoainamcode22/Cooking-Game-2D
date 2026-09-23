@@ -121,6 +121,22 @@ public class StallPopupUI : MonoBehaviour
     private StallItemCategory _category = StallItemCategory.TatCa;
 
     private Coroutine _slideRoutine;
+
+    // [2026-09-23] Panel chon vat pham nam GON trong khung go cua bang chinh (1 khung duy nhat,
+    // khong con khung thu 2 de len lech nhau). Khi panel mo thi an luoi o quay + khung vang
+    // phia sau, dong lai thi hien lai.
+    private const float DO_TRUOT_PICKER = 140f;
+    private CanvasGroup _cgPicker;
+    private void AnNoiDungBangChinh(bool an)
+    {
+        if (slotGridContent != null) slotGridContent.gameObject.SetActive(!an);
+        if (textGold != null)
+        {
+            Transform k = textGold.transform.parent;
+            if (k != null && k.name.IndexOf("Gold", System.StringComparison.OrdinalIgnoreCase) >= 0)
+                k.gameObject.SetActive(!an);
+        }
+    }
     private Coroutine _messageRoutine;
     private float     _nextSlotRefresh;
 
@@ -641,10 +657,11 @@ public class StallPopupUI : MonoBehaviour
 
         // TRƯỢT ĐÈ lên lưới, không mở popup mới: người chơi vẫn thấy các ô quầy phía sau
         // nên không mất phương hướng về việc "mình đang đặt hàng vào ô nào".
+        AnNoiDungBangChinh(true);
         if (pickerPanel != null)
         {
             if (_slideRoutine != null) StopCoroutine(_slideRoutine);
-            _slideRoutine = StartCoroutine(SlidePicker(pickerHiddenX, pickerShownX, false));
+            _slideRoutine = StartCoroutine(SlidePicker(pickerShownX + DO_TRUOT_PICKER, pickerShownX, false));
         }
     }
 
@@ -656,7 +673,7 @@ public class StallPopupUI : MonoBehaviour
         {
             if (_slideRoutine != null) StopCoroutine(_slideRoutine);
             _slideRoutine = StartCoroutine(
-                SlidePicker(pickerPanel.anchoredPosition.x, pickerHiddenX, true));
+                SlidePicker(pickerPanel.anchoredPosition.x, pickerShownX + DO_TRUOT_PICKER, true));
         }
         else
         {
@@ -679,6 +696,8 @@ public class StallPopupUI : MonoBehaviour
         }
 
         if (pickerRoot != null) pickerRoot.SetActive(false);
+        AnNoiDungBangChinh(false);
+        if (_cgPicker != null) _cgPicker.alpha = 1f;
 
         _targetSlotIndex = -1;
         _selectedItemId  = null;
@@ -701,6 +720,12 @@ public class StallPopupUI : MonoBehaviour
     {
         Vector2 p = pickerPanel.anchoredPosition;
         pickerPanel.anchoredPosition = new Vector2(fromX, p.y);
+        if (_cgPicker == null)
+        {
+            _cgPicker = pickerPanel.GetComponent<CanvasGroup>();
+            if (_cgPicker == null) _cgPicker = pickerPanel.gameObject.AddComponent<CanvasGroup>();
+        }
+        _cgPicker.alpha = hideWhenDone ? 1f : 0f;
 
         float t = 0f;
         float dur = Mathf.Max(0.01f, pickerSlideSeconds);
@@ -713,10 +738,12 @@ public class StallPopupUI : MonoBehaviour
             float k = Mathf.Clamp01(t / dur);
             k = 1f - (1f - k) * (1f - k);   // ease-out: nhanh lúc đầu, dừng êm
             pickerPanel.anchoredPosition = new Vector2(Mathf.Lerp(fromX, toX, k), p.y);
+            _cgPicker.alpha = hideWhenDone ? 1f - k : k;
             yield return null;
         }
 
         pickerPanel.anchoredPosition = new Vector2(toX, p.y);
+        _cgPicker.alpha = hideWhenDone ? 0f : 1f;
         _slideRoutine = null;
 
         if (hideWhenDone) HidePickerImmediate();
@@ -818,6 +845,7 @@ public class StallPopupUI : MonoBehaviour
             // đúng tông với Text_PriceHint / Text_SetupHint trong cùng panel.
             textPickEmptyHint.color = colorEmptyHint;
         }
+        Loc.RequestRescan();   // [2026-09-23] the vua dung -> dich ngay, khong cho nhip quet 8s
     }
 
     public void OnPickItem(string itemId)

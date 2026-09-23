@@ -142,7 +142,7 @@ public class ShopItemUI : MonoBehaviour, IInitializePotentialDragHandler, IBegin
 
         if (data == null) return;
 
-        if (txtName != null) txtName.text = data.itemName;
+        if (txtName != null) txtName.text = Loc.T(data.itemName);   // [2026-09-23] ten decor/cong trinh tieng Viet -> dich
         if (imgIcon != null)
         {
             imgIcon.sprite = data.itemIcon;

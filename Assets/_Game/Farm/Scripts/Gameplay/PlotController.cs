@@ -295,6 +295,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
         }
 
         FarmManager.Instance.SetSelectedPlot(this);
+        SelectionGlowFX.Play(this, groundSprite);   // [2026-09-23] sang len khi chon (o dat + chau hoa)
 
         if (state == PlotState.Locked)
         {

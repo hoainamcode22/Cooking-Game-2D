@@ -8,7 +8,8 @@ public enum WarehouseCategory
 {
     NongSan = 0,    // 🌾 Nông sản (Crops)
     ChanNuoi = 1,   // 🐔 Chăn nuôi (Animal products)
-    MonAn = 2       // 🍲 Món ăn & Chế biến (Cooked dishes & Processed goods)
+    MonAn = 2,      // 🍲 Món ăn & Chế biến (Cooked dishes & Processed goods)
+    TatCa = 3       // [2026-09-23] Tab "Tất cả" — hien moi vat pham
 }
 
 public class WarehousePopupUI : MonoBehaviour
@@ -36,6 +37,8 @@ public class WarehousePopupUI : MonoBehaviour
     [SerializeField] private RectTransform rectTabMonAn;
     [SerializeField] private Sprite tabActiveSprite;
     [SerializeField] private Sprite tabInactiveSprite;
+    [Tooltip("Icon cho tab 'Tat ca' (mac dinh: icon kho cua nut KHO tren HUD).")]
+    [SerializeField] private Sprite iconTabTatCa;
 
     [Header("Slots Grid")]
     [SerializeField] private GameObject slotPrefab;
@@ -75,7 +78,94 @@ public class WarehousePopupUI : MonoBehaviour
     private Dictionary<string, CropData> cropLookup = new Dictionary<string, CropData>();
     private Dictionary<string, InventoryItemData> extraItemLookup = new Dictionary<string, InventoryItemData>();
 
-    private WarehouseCategory currentCategory = WarehouseCategory.NongSan;
+    private WarehouseCategory currentCategory = WarehouseCategory.TatCa;
+
+    // [2026-09-23] Tab "Tat ca" (clone tu Tab_NongSan neu scene chua co) + 4 tab xep deu.
+    private RectTransform rectTabTatCa; private Image imgTabTatCa; private TMP_Text txtTabTatCa;
+    public const float TAB_RONG = 236f, TAB_CACH = 14f;
+    private static float ViTriTab(int i) => (i - 1.5f) * (TAB_RONG + TAB_CACH);   // -375,-125,125,375 (hang 1008)
+    private const float ICON_TAB_SCALE = 1.9f;   // icon 38 x 1.9 = 72px, nam gon trong tab (truoc 2.5 = 95px de sang tab ben)
+
+    /// <summary>
+    /// Dam bao co tab "Tat ca" dung dau hang va 4 tab cung rong 190 cach nhau 10.
+    /// Dung duoc ca o Edit mode (tool "Tools/Kho/Them tab Tat ca") lan luc chay. Goi nhieu lan an toan.
+    /// </summary>
+    public static RectTransform DamBaoTabTatCa(RectTransform nongSan, RectTransform chanNuoi, RectTransform monAn)
+        => DamBaoTabTatCa(nongSan, chanNuoi, monAn, null);
+
+    public static RectTransform DamBaoTabTatCa(RectTransform nongSan, RectTransform chanNuoi, RectTransform monAn, Sprite iconTatCa)
+    {
+        if (nongSan == null || nongSan.parent == null) return null;
+        Transform hang = nongSan.parent;
+        var tab = hang.Find("Tab_All") as RectTransform;
+        if (tab == null)
+        {
+            var go = UnityEngine.Object.Instantiate(nongSan.gameObject, hang, false);
+            go.name = "Tab_All";
+            tab = (RectTransform)go.transform;
+            var nut = go.GetComponent<Button>();
+            if (nut != null) nut.onClick = new Button.ButtonClickedEvent();
+            foreach (var im in tab.GetComponentsInChildren<Image>(true))
+                if (im.gameObject != go && im.name.Contains("Icon")) im.gameObject.SetActive(false);
+            var lb = tab.GetComponentInChildren<TMP_Text>(true);
+            if (lb != null)
+            {
+                lb.text = "Tất cả";
+                var lrt = lb.rectTransform;
+                lrt.anchoredPosition = new Vector2(0f, lrt.anchoredPosition.y);
+            }
+        }
+        tab.SetSiblingIndex(0);
+        // Icon tab "Tat ca" = icon kho (bat lai neu truoc do da an)
+        foreach (var im in tab.GetComponentsInChildren<Image>(true))
+        {
+            if (im.transform == tab || !im.name.Contains("Icon")) continue;
+            im.gameObject.SetActive(true);
+            if (iconTatCa != null) { im.sprite = iconTatCa; im.preserveAspect = true; }
+        }
+        RectTransform[] ds = { tab, nongSan, chanNuoi, monAn };
+        for (int i = 0; i < ds.Length; i++)
+        {
+            var r = ds[i]; if (r == null) continue;
+            r.sizeDelta = new Vector2(TAB_RONG, r.sizeDelta.y);
+            r.anchoredPosition = new Vector2(ViTriTab(i), r.anchoredPosition.y);
+            if (r.childCount > 0)
+            {
+                var noiDung = r.GetChild(0) as RectTransform;
+                if (noiDung != null) noiDung.sizeDelta = new Vector2(TAB_RONG - 14f, noiDung.sizeDelta.y);
+            }
+            var chu = r.GetComponentInChildren<TMP_Text>(true);
+            if (chu != null)
+            {
+                chu.enableAutoSizing = true; chu.fontSizeMin = 15f; chu.fontSizeMax = 24f;
+                chu.textWrappingMode = TextWrappingModes.NoWrap;
+                var crt = chu.rectTransform;
+                // chu nam tu sau icon (x = -rong/2 + 60) toi mep phai tru 10
+                float trai = -TAB_RONG * 0.5f + 60f, phai = TAB_RONG * 0.5f - 10f;
+                crt.anchoredPosition = new Vector2((trai + phai) * 0.5f, crt.anchoredPosition.y);
+                crt.sizeDelta = new Vector2(phai - trai, crt.sizeDelta.y);
+                chu.alignment = TextAlignmentOptions.Center;
+            }
+            foreach (var im in r.GetComponentsInChildren<Image>(true))
+                if (im.transform != r && im.name.Contains("Icon"))
+                {
+                    var irt = (RectTransform)im.transform;
+                    irt.localScale = Vector3.one * ICON_TAB_SCALE;
+                    irt.anchoredPosition = new Vector2(-(TAB_RONG * 0.5f) + 32f, irt.anchoredPosition.y);
+                }
+        }
+        return tab;
+    }
+
+    private void GanTabTatCa()
+    {
+        rectTabTatCa = DamBaoTabTatCa(rectTabNongSan, rectTabChanNuoi, rectTabMonAn, iconTabTatCa);
+        if (rectTabTatCa == null) return;
+        imgTabTatCa = rectTabTatCa.GetComponent<Image>();
+        txtTabTatCa = rectTabTatCa.GetComponentInChildren<TMP_Text>(true);
+        var nut = rectTabTatCa.GetComponent<Button>();
+        if (nut != null) { nut.onClick.RemoveAllListeners(); nut.onClick.AddListener(() => SetCategory(WarehouseCategory.TatCa)); }
+    }
     private string selectedItemId;
     private int transferQuantity = 1;
     private int warehouseLevel = 1;
@@ -104,6 +194,7 @@ public class WarehousePopupUI : MonoBehaviour
         LoadWarehouseProgress();
         BuildLookups();
         WireButtons();
+        GanTabTatCa();
     }
 
     private void Start()
@@ -204,11 +295,17 @@ public class WarehousePopupUI : MonoBehaviour
             Transform dim = popupRoot.transform.Find("Panel_Dim");
             if (dim != null)
             {
-                Button dimBtn = dim.GetComponent<Button>();
-                if (dimBtn == null) dimBtn = dim.gameObject.AddComponent<Button>();
-                dimBtn.transition = Selectable.Transition.None;
-                dimBtn.onClick.RemoveAllListeners();
-                dimBtn.onClick.AddListener(ClosePopup);
+                // [2026-09-23] KHONG gan Button len Panel_Dim nua. Panel_Dim la CHA cua toan bo popup,
+                // Button tren no (1) bi UIJuiceAutoAttach gan hieu ung nhun -> ca popup phong to,
+                // (2) nhan ca click noi len tu ban go -> bam vao cho trong tren bang la dong popup.
+                // Thay bang handler chi dong khi diem cham trung CHINH Panel_Dim.
+                Button cu = dim.GetComponent<Button>();
+                if (cu != null) Destroy(cu);
+                var cu2 = dim.GetComponent<UIJuiceFeedback>();
+                if (cu2 != null) Destroy(cu2);
+                var dong = dim.GetComponent<DimClickClose>();
+                if (dong == null) dong = dim.gameObject.AddComponent<DimClickClose>();
+                dong.khiDong = ClosePopup;
             }
         }
 
@@ -238,6 +335,7 @@ public class WarehousePopupUI : MonoBehaviour
 
             popupRoot.SetActive(true);
             EnsurePopupRaycastBlock();
+            TraVeKichThuocGoc();
         }
 
         LoadWarehouseProgress();
@@ -248,6 +346,57 @@ public class WarehousePopupUI : MonoBehaviour
         // [FIX QA] Chu vua dung xong => xin dich sang tieng Anh ngay (re, da gop chung 1 khung hinh).
         Loc.RequestRescan();
         LocFitSweeper.Sweep();   // [Loc 2026-09-21] quet chu to khung nho sau khi popup dung xong
+    }
+
+    // [2026-09-23] Nho scale/vi tri Sep dat trong Hierarchy o lan mo dau, moi lan mo tra lai y nguyen
+    // (xoa scale do dang do hieu ung nhun bi SetActive(false) cat ngang de lai).
+    private bool _daNhoGoc; private Vector3 _scaleRoot, _scaleDim; private Vector2 _posRoot;
+    private void TraVeKichThuocGoc()
+    {
+        if (popupRoot == null) return;
+        var rt = popupRoot.transform as RectTransform;
+        var dim = popupRoot.transform.Find("Panel_Dim");
+        if (!_daNhoGoc)
+        {
+            _daNhoGoc = true;
+            _scaleRoot = popupRoot.transform.localScale;
+            _scaleDim  = dim != null ? dim.localScale : Vector3.one;
+            _posRoot   = rt != null ? rt.anchoredPosition : Vector2.zero;
+        }
+        popupRoot.transform.localScale = _scaleRoot;
+        if (dim != null) dim.localScale = _scaleDim;
+        if (rt != null) rt.anchoredPosition = _posRoot;
+        VuaManHinh(rt, dim as RectTransform);
+    }
+
+    /// <summary>
+    /// [2026-09-23] Bang kho cao ~930 (khung 866 + ruy bang) > man 16:9 thap (canvas ~850) => day bi cat.
+    /// Do dau chan THAT (moi con cua Panel_Dim tru nen mo), co cho vua man + le 24, roi can giua.
+    /// </summary>
+    private void VuaManHinh(RectTransform rt, RectTransform dim)
+    {
+        if (rt == null || dim == null) return;
+        var khung = rt.parent as RectTransform;
+        if (khung == null) return;
+        Canvas.ForceUpdateCanvases();
+        bool co = false; Bounds b = new Bounds();
+        for (int i = 0; i < dim.childCount; i++)
+        {
+            var c = dim.GetChild(i) as RectTransform;
+            if (c == null || !c.gameObject.activeInHierarchy) continue;
+            var bc = RectTransformUtility.CalculateRelativeRectTransformBounds(dim, c);
+            if (!co) { b = bc; co = true; } else b.Encapsulate(bc);
+        }
+        if (!co) return;
+        const float LE = 24f;
+        float sx = Mathf.Abs(_scaleRoot.x) * Mathf.Abs(_scaleDim.x), sy = Mathf.Abs(_scaleRoot.y) * Mathf.Abs(_scaleDim.y);
+        float rong = b.size.x * sx, cao = b.size.y * sy;
+        if (rong < 1f || cao < 1f) return;
+        float heSo = Mathf.Min(1f, (khung.rect.width - LE * 2f) / rong, (khung.rect.height - LE * 2f) / cao);
+        popupRoot.transform.localScale = _scaleRoot * heSo;
+        // tam dau chan -> tam man hinh
+        Vector2 tam = new Vector2(b.center.x * sx, b.center.y * sy) * heSo;
+        rt.anchoredPosition = new Vector2(-tam.x, -tam.y);   // popupRoot neo giua canvas
     }
 
     public void ClosePopup()
@@ -280,9 +429,12 @@ public class WarehousePopupUI : MonoBehaviour
         Color activeTextColor = new Color(0.36f, 0.20f, 0.09f, 1f);   // #5B3417 bold dark brown
         Color inactiveTextColor = new Color(0.43f, 0.25f, 0.08f, 1f); // #6E4014 warm brown
 
-        UpdateSingleTabVisual(imgTabNongSan, txtTabNongSan, rectTabNongSan, currentCategory == WarehouseCategory.NongSan, activeTextColor, inactiveTextColor, -255f);
-        UpdateSingleTabVisual(imgTabChanNuoi, txtTabChanNuoi, rectTabChanNuoi, currentCategory == WarehouseCategory.ChanNuoi, activeTextColor, inactiveTextColor, 0f);
-        UpdateSingleTabVisual(imgTabMonAn, txtTabMonAn, rectTabMonAn, currentCategory == WarehouseCategory.MonAn, activeTextColor, inactiveTextColor, 255f);
+        bool coTatCa = rectTabTatCa != null;
+        UpdateSingleTabVisual(imgTabTatCa, txtTabTatCa, rectTabTatCa, currentCategory == WarehouseCategory.TatCa, activeTextColor, inactiveTextColor, ViTriTab(0));
+        UpdateSingleTabVisual(imgTabNongSan, txtTabNongSan, rectTabNongSan, currentCategory == WarehouseCategory.NongSan, activeTextColor, inactiveTextColor, coTatCa ? ViTriTab(1) : -255f);
+        UpdateSingleTabVisual(imgTabChanNuoi, txtTabChanNuoi, rectTabChanNuoi, currentCategory == WarehouseCategory.ChanNuoi, activeTextColor, inactiveTextColor, coTatCa ? ViTriTab(2) : 0f);
+        UpdateSingleTabVisual(imgTabMonAn, txtTabMonAn, rectTabMonAn, currentCategory == WarehouseCategory.MonAn, activeTextColor, inactiveTextColor, coTatCa ? ViTriTab(3) : 255f);
+        if (currentCategory == WarehouseCategory.TatCa && rectTabTatCa != null) rectTabTatCa.SetAsLastSibling();
 
         // Đảm bảo tab đang active nổi lên trên cùng, không bị tab bên cạnh đè lên viền
         if (currentCategory == WarehouseCategory.NongSan && rectTabNongSan != null) rectTabNongSan.SetAsLastSibling();
@@ -664,7 +816,7 @@ public class WarehousePopupUI : MonoBehaviour
             }
 
             WarehouseCategory itemCat = ClassifyItem(id);
-            if (itemCat == category)
+            if (category == WarehouseCategory.TatCa || itemCat == category)
             {
                 result.Add(new WarehouseViewItem
                 {
@@ -684,6 +836,13 @@ public class WarehousePopupUI : MonoBehaviour
         if (string.IsNullOrEmpty(itemId)) return WarehouseCategory.NongSan;
 
         string key = itemId.Trim().ToLowerInvariant();
+
+        // 0. [2026-09-23 Sep] Vat lieu xay dung (go, da, kinh, dinh, son...) KHONG phai nong san
+        //    -> xep sang tab thu 2 (Chan nuoi / Livestock) theo yeu cau.
+        if (key == "go" || key == "da" || key == "kinh" || key == "dinh" || key == "son" ||
+            key == "wood" || key == "stone" || key == "glass" || key == "nail" || key == "paint" ||
+            key.StartsWith("vatlieu_") || key.StartsWith("mat_"))
+            return WarehouseCategory.ChanNuoi;
 
         // 1. Check Cooked Dish or Processed Good FIRST (Ưu tiên món ăn lên hàng đầu để các món như "trứng chiên", "bò xào" không bị nuốt vào chăn nuôi)
         if (IsCookedDish(key) || key.StartsWith("item_") || key.StartsWith("dish_") ||
@@ -784,6 +943,21 @@ public class WarehousePopupUI : MonoBehaviour
         }
 
         // 2. Crop Lookup (seed -> itemIcon; harvest -> harvestIcon > readySprite > itemIcon)
+        Sprite directIcon = GetDirectIconFromDatabases(key);
+        if (directIcon != null) return directIcon;
+
+        // 4. OrderBoard resolver
+        Sprite obIcon = OrderBoardIconResolver.GetIcon(key);
+        if (obIcon != null) return obIcon;
+
+        return null;
+    }
+
+    /// <summary>Tra cứu icon trực tiếp từ cơ sở dữ liệu CropData và InventoryItemData đã nạp sẵn.</summary>
+    public Sprite GetDirectIconFromDatabases(string itemId)
+    {
+        if (string.IsNullOrEmpty(itemId)) return null;
+        string key = itemId.Trim().ToLowerInvariant();
         string cleanCropKey = key.StartsWith("seed_") ? key.Substring(5) : (key.StartsWith("seed") ? key.Substring(4) : key);
         if ((cropLookup.TryGetValue(key, out CropData crop) || cropLookup.TryGetValue(cleanCropKey, out crop)) && crop != null)
         {
@@ -796,15 +970,10 @@ public class WarehousePopupUI : MonoBehaviour
             if (crop.itemIcon != null) return crop.itemIcon;
         }
 
-        // 3. Extra Item Lookup
         if (extraItemLookup.TryGetValue(key, out InventoryItemData extra) && extra != null)
         {
             if (extra.icon != null) return extra.icon;
         }
-
-        // 4. OrderBoard resolver
-        Sprite obIcon = OrderBoardIconResolver.GetIcon(key);
-        if (obIcon != null) return obIcon;
 
         return null;
     }

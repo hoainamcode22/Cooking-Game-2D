@@ -277,6 +277,10 @@ namespace KitchenCozyV3.Editor
             // Load Processed Sprites
             Sprite spBg = LoadSprite("kitchen_background_main");
             Sprite spRecipeBook = LoadSprite("frame_recipe_book");
+            Sprite spRecipeHeader = LoadSprite("banner_recipe_scroll_spoon") ?? LoadSprite("banner_recipe_book_pill");
+            Sprite spTabActive = LoadSprite("tab_filter_active");
+            Sprite spTabInactive = LoadSprite("tab_filter_inactive");
+            Sprite spRowSelected = LoadSprite("recipe_row_selected");
             Sprite spDishCard = LoadSprite("frame_dish_card");
             Sprite spChalkboard = LoadSprite("frame_chalkboard");
             Sprite spShelf = LoadSprite("shelf_ingredients");
@@ -325,22 +329,23 @@ namespace KitchenCozyV3.Editor
             if (spRecipeBook != null) { leftPanelImg.sprite = spRecipeBook; leftPanelImg.color = Color.white; }
 
             // Recipe Book Dynamic Header
-            var bookHeader = CreateUIElement("Header_RecipeBook", leftPanel.transform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -60), new Vector2(320, 50));
-            CreateText("Txt_Header", bookHeader.transform, "👨‍🍳 Recipe Book", 26, new Color(0.24f, 0.14f, 0.06f), fontAsset, TextAlignmentOptions.Center);
+            var bookHeader = CreateUIElement("Header_RecipeBook", leftPanel.transform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -60), new Vector2(340, 65));
+            var headerImg = bookHeader.AddComponent<Image>();
+            if (spRecipeHeader != null) { headerImg.sprite = spRecipeHeader; headerImg.color = Color.white; }
+            CreateText("Txt_Header", bookHeader.transform, "RECIPE BOOK", 22, new Color(0.24f, 0.14f, 0.06f), fontAsset, TextAlignmentOptions.Center);
 
             // Category Filter Tabs
-            var tabsGroup = CreateUIElement("Tabs_CategoryGroup", leftPanel.transform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -115), new Vector2(360, 40));
+            var tabsGroup = CreateUIElement("Tabs_CategoryGroup", leftPanel.transform, new Vector2(0.5f, 1), new Vector2(0.5f, 1), new Vector2(0, -125), new Vector2(380, 42));
             var tabsLayout = tabsGroup.AddComponent<HorizontalLayoutGroup>();
             tabsLayout.childForceExpandWidth = true;
-            tabsLayout.spacing = 5;
-            CreateTabButton("Tab_All", tabsGroup.transform, "All", new Color(0.96f, 0.62f, 0.12f), fontAsset);
-            CreateTabButton("Tab_Main", tabsGroup.transform, "Main", new Color(0.56f, 0.38f, 0.22f), fontAsset);
-            CreateTabButton("Tab_Side", tabsGroup.transform, "Side", new Color(0.56f, 0.38f, 0.22f), fontAsset);
-            CreateTabButton("Tab_Soup", tabsGroup.transform, "Soup", new Color(0.56f, 0.38f, 0.22f), fontAsset);
-            CreateTabButton("Tab_Dessert", tabsGroup.transform, "Dessert", new Color(0.56f, 0.38f, 0.22f), fontAsset);
+            tabsLayout.spacing = 6;
+            CreateSpriteTabButton("Tab_All", tabsGroup.transform, "All", spTabActive, Color.white, fontAsset);
+            CreateSpriteTabButton("Tab_Easy", tabsGroup.transform, "Easy", spTabInactive, new Color(0.35f, 0.25f, 0.15f), fontAsset);
+            CreateSpriteTabButton("Tab_Medium", tabsGroup.transform, "Medium", spTabInactive, new Color(0.35f, 0.25f, 0.15f), fontAsset);
+            CreateSpriteTabButton("Tab_Hard", tabsGroup.transform, "Hard", spTabInactive, new Color(0.35f, 0.25f, 0.15f), fontAsset);
 
             // ScrollView for Recipes
-            var scrollGo = CreateUIElement("ScrollView_Dishes", leftPanel.transform, new Vector2(0, 0), new Vector2(1, 1), new Vector2(35, 30), new Vector2(-70, -195), new Vector2(0.5f, 0.5f));
+            var scrollGo = CreateUIElement("ScrollView_Dishes", leftPanel.transform, new Vector2(0, 0), new Vector2(1, 1), new Vector2(35, 30), new Vector2(-70, -205), new Vector2(0.5f, 0.5f));
             var scrollRect = scrollGo.AddComponent<ScrollRect>();
             var viewport = CreateUIElement("Viewport", scrollGo.transform, Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero);
             viewport.AddComponent<Mask>().showMaskGraphic = false;
@@ -356,11 +361,11 @@ namespace KitchenCozyV3.Editor
             scrollRect.horizontal = false;
             scrollRect.vertical = true;
 
-            string[] demoDishes = { "Cabbage Fried Rice", "Beef Carrot Stew", "Pepper Beef", "Potato Pork Soup", "Egg Fried Rice", "Roast Chicken", "Chili Chicken" };
-            int[] demoLevels = { 6, 8, 10, 6, 5, 7, 9 };
+            string[] demoDishes = { "Fried Rice", "Vegetable Soup", "Grilled Fish", "Tomato Pasta", "Roasted Chicken", "Beef Stew", "Fruit Salad" };
+            int[] demoStars = { 3, 3, 3, 3, 3, 3, 3 };
             for (int i = 0; i < demoDishes.Length; i++)
             {
-                CreateDemoDishCard(content.transform, demoDishes[i], demoLevels[i], spDishCardRow, spFriedRice, fontAsset, i == 0);
+                CreateDemoDishCard(content.transform, demoDishes[i], demoStars[i], spRowSelected, spFriedRice, fontAsset, i == 3);
             }
 
             // ── Center Top: Selected Dish Overview Card ──
@@ -517,34 +522,42 @@ namespace KitchenCozyV3.Editor
             return txt;
         }
 
-        private static void CreateTabButton(string name, Transform parent, string label, Color color, TMP_FontAsset font)
+        private static void CreateSpriteTabButton(string name, Transform parent, string label, Sprite tabSprite, Color textColor, TMP_FontAsset font)
         {
-            var go = CreateUIElement(name, parent, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(60, 36));
+            var go = CreateUIElement(name, parent, Vector2.zero, Vector2.one, Vector2.zero, new Vector2(80, 36));
             var img = go.AddComponent<Image>();
-            img.color = color;
+            if (tabSprite != null) { img.sprite = tabSprite; img.color = Color.white; }
+            else { img.color = new Color(0.9f, 0.85f, 0.75f); }
             go.AddComponent<Button>();
-            CreateText("Txt_Label", go.transform, label, 14, Color.white, font, TextAlignmentOptions.Center);
+            CreateText("Txt_Label", go.transform, label, 14, textColor, font, TextAlignmentOptions.Center);
         }
 
-        private static void CreateDemoDishCard(Transform parent, string dishName, int level, Sprite cardBgSprite, Sprite iconSprite, TMP_FontAsset font, bool isSelected)
+        private static void CreateDemoDishCard(Transform parent, string dishName, int stars, Sprite selectedRowSprite, Sprite iconSprite, TMP_FontAsset font, bool isSelected)
         {
-            var card = CreateUIElement("Card_" + dishName.Replace(" ", ""), parent, new Vector2(0, 1), new Vector2(1, 1), Vector2.zero, new Vector2(0, 75));
+            var card = CreateUIElement("Card_" + dishName.Replace(" ", ""), parent, new Vector2(0, 1), new Vector2(1, 1), Vector2.zero, new Vector2(0, 68));
             var cardBg = card.AddComponent<Image>();
-            if (cardBgSprite != null) { cardBg.sprite = cardBgSprite; cardBg.color = isSelected ? new Color(1f, 0.95f, 0.8f) : Color.white; }
-            else { cardBg.color = isSelected ? new Color(1f, 0.94f, 0.75f) : new Color(0.96f, 0.92f, 0.82f); }
+            if (isSelected && selectedRowSprite != null)
+            {
+                cardBg.sprite = selectedRowSprite;
+                cardBg.color = Color.white;
+            }
+            else
+            {
+                cardBg.color = Color.clear;
+            }
 
-            var iconCircle = CreateUIElement("Img_DishIcon", card.transform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(38, 0), new Vector2(50, 50));
+            var iconCircle = CreateUIElement("Img_DishIcon", card.transform, new Vector2(0, 0.5f), new Vector2(0, 0.5f), new Vector2(38, 0), new Vector2(48, 48));
             var iconImg = iconCircle.AddComponent<Image>();
             if (iconSprite != null) { iconImg.sprite = iconSprite; iconImg.color = Color.white; }
 
             var txtName = CreateText("Txt_Name", card.transform, dishName, 16, new Color(0.24f, 0.14f, 0.06f), font, TextAlignmentOptions.Left);
-            SetRect(txtName.rectTransform, new Vector2(0, 1), new Vector2(1, 1), new Vector2(75, -15), new Vector2(-90, 24));
+            SetRect(txtName.rectTransform, new Vector2(0, 0.5f), new Vector2(1, 0.5f), new Vector2(75, 0), new Vector2(-120, 30));
 
-            var txtLv = CreateText("Txt_Level", card.transform, $"Lv.{level}", 13, new Color(0.55f, 0.45f, 0.35f), font, TextAlignmentOptions.Left);
-            SetRect(txtLv.rectTransform, new Vector2(0, 0), new Vector2(1, 0), new Vector2(75, 12), new Vector2(-90, 20));
+            var txtStars = CreateText("Txt_Stars", card.transform, "★★★", 12, new Color(0.85f, 0.65f, 0.35f), font, TextAlignmentOptions.Right);
+            SetRect(txtStars.rectTransform, new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-45, 0), new Vector2(50, 25));
 
-            var txtArrow = CreateText("Txt_Arrow", card.transform, ">", 20, new Color(0.56f, 0.38f, 0.22f), font, TextAlignmentOptions.Right);
-            SetRect(txtArrow.rectTransform, new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-15, 0), new Vector2(25, 25));
+            var txtArrow = CreateText("Txt_Arrow", card.transform, ">", 18, new Color(0.7f, 0.55f, 0.4f), font, TextAlignmentOptions.Right);
+            SetRect(txtArrow.rectTransform, new Vector2(1, 0.5f), new Vector2(1, 0.5f), new Vector2(-15, 0), new Vector2(20, 25));
         }
 
         private static void CreateIngredientSlot(string name, Transform parent, string ingName, string count, TMP_FontAsset font)

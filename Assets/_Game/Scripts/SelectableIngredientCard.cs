@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.EventSystems;
 using TMPro;
 using UnityEngine.UI;
@@ -75,6 +75,13 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
         {
             Transform t = transform.Find("Img_Status");
             if (t != null) statusGO = t.gameObject;
+        }
+
+        if (txtQuantity == null)
+        {
+            Transform t = transform.Find("Qty_Badge/Txt_Quantity");
+            if (t == null) t = transform.Find("Txt_Quantity");
+            if (t != null) txtQuantity = t.GetComponent<TMP_Text>();
         }
     }
 

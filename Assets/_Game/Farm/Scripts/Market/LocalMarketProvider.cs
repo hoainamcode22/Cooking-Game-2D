@@ -131,15 +131,33 @@ public class LocalMarketProvider : IMarketProvider
         Dictionary<string, int> appearCount = new Dictionary<string, int>();
         HashSet<int> usedSellerIndices = new HashSet<int>();
 
-        int guard = slotCount * 12;   // chặn vòng lặp vô hạn khi rổ quá nhỏ
-        while (npcListings.Count < slotCount && guard-- > 0)
+        // [2026-09-23] GIA VI LUON CO 4-5 DONG MOI LAN LAM MOI. Muoi, duong, nuoc mam, nuoc tuong,
+        // tieu... nguoi choi KHONG trong/khai thac duoc, cho la nguon duy nhat -> phai ban nhieu.
+        // Lay tu TOAN BO pool (khong bi tran cap chan) de cap 1 cung mua duoc nuoc mam.
+        var poolGiaVi = new List<MarketItemDef>(); int wGiaVi = 0;
+        for (int i = 0; i < pool.Count; i++)
+            if (LaGiaVi(pool[i])) { poolGiaVi.Add(pool[i]); wGiaVi += Mathf.Max(1, pool[i].Weight); }
+        var poolKhac = new List<MarketItemDef>(); int wKhac = 0;
+        for (int i = 0; i < eligible.Count; i++)
+            if (!LaGiaVi(eligible[i])) { poolKhac.Add(eligible[i]); wKhac += Mathf.Max(1, eligible[i].Weight); }
+        if (poolKhac.Count == 0) { poolKhac = eligible; wKhac = totalWeight; }
+        // [2026-09-23 Sep] Gia vi (nuoc mam, nuoc tuong, tieu, muoi, duong...) KHONG khai thac duoc
+        // => ban NHIEU: ~2 hang (11-13 dong), moi mon toi da 3 dong. Hang khac giu nguyen so cu,
+        // gia vi cong THEM vao bang (khong chiem cho cua nong san/thit).
+        const int TOI_DA_GIA_VI_MOI_MON = 3;
+        int soGiaVi = Mathf.Min(rng.Next(11, 14), poolGiaVi.Count * TOI_DA_GIA_VI_MOI_MON);
+        int tongDong = soGiaVi + Mathf.Max(0, slotCount - 5);
+
+        int guard = tongDong * 12;   // chặn vòng lặp vô hạn khi rổ quá nhỏ
+        while (npcListings.Count < tongDong && guard-- > 0)
         {
-            MarketItemDef def = PickWeighted(eligible, totalWeight, rng);
+            bool dangLayGiaVi = npcListings.Count < soGiaVi;
+            MarketItemDef def = dangLayGiaVi ? PickWeighted(poolGiaVi, wGiaVi, rng) : PickWeighted(poolKhac, wKhac, rng);
             if (def == null)
                 break;
 
             appearCount.TryGetValue(def.ItemID, out int seen);
-            if (seen >= 2)
+            if (seen >= (dangLayGiaVi ? TOI_DA_GIA_VI_MOI_MON : 2))
                 continue;
             appearCount[def.ItemID] = seen + 1;
 
@@ -167,6 +185,14 @@ public class LocalMarketProvider : IMarketProvider
         }
 
         OnListingsChanged?.Invoke();
+    }
+
+    private static bool LaGiaVi(MarketItemDef d)
+    {
+        if (d == null) return false;
+        if (d.Category == MarketCategory.GiaVi) return true;
+        switch (d.ItemID) { case "pepper": case "chili": case "lemon": return true; }
+        return false;
     }
 
     private static MarketItemDef PickWeighted(List<MarketItemDef> items, int totalWeight, System.Random rng)

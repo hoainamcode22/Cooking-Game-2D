@@ -1,16 +1,20 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 /// <summary>
-/// Thanh kho kiểu Township (video tham khảo 2026-08-26): khi nhận BẤT KỲ vật phẩm nào
-/// (thu hoạch, chuồng, chợ, tàu, thưởng nhiệm vụ — mọi nguồn đi qua FarmInventoryManager.AddItem),
-/// một pill [icon nhà kho | fill bar | 25/30] trượt hiện ra mép trên màn hình,
-/// bar nảy nhẹ + text "+N" bay lên, rồi tự ẩn sau 2.5s không có gì mới.
-/// Số hiển thị = UsedSlots/SlotCapacity (slot THEO LOẠI — duyệt 2026-08-26, phương án A).
-/// Kho đầy (OnAddRejectedByCapacity) → pill flash đỏ + "KHO ĐẦY!".
-/// Tự build hierarchy runtime nếu chưa được tool setup — không bắt buộc prefab.
+/// Thanh kho kieu Township: khi nhan BAT KY vat pham nao (moi nguon di qua FarmInventoryManager.AddItem)
+/// thanh [icon kho | fill bar "used/cap"] truot xuong tu mep tren, nay nhe + "+N" bay len,
+/// roi TU AN sau idleBeforeHide giay khong co gi moi.
+///
+/// [2026-09-23] VIET LAI GON:
+///   • Dung 3 thanh phan: 1 khung (Panel), 1 icon (Img_Icon), 1 fill bar (Bar_Track/Bar_Fill/Txt_Count).
+///     Cac lop cu chong len nhau (Img_BarnHouse 145px, Badge_Header, Progress_Container, Img_CrateBadge)
+///     bi tat — tool "Tools/Kho/Dung thanh kho (toast) gon" xoa han khoi Hierarchy.
+///   • Hien/an chay bang Update (khong coroutine) => khong bao gio bi "ket" tren man hinh.
+///   • Fill bar dung anchor (khong can sprite Filled) => luon chay dung.
+///   • boCucGon = true (tool danh dau) => code KHONG dat lai vi tri/kich thuoc: Sep chinh tay trong
+///     Hierarchy bao nhieu thi Play giu nguyen bay nhieu.
 /// </summary>
 public class WarehouseGainToastUI : MonoBehaviour
 {
@@ -25,47 +29,48 @@ public class WarehouseGainToastUI : MonoBehaviour
         }
     }
 
-    [Header("Wiring (Setup tool gán — thiếu thì tự tìm/tự vẽ)")]
+    [Header("Wiring (thieu thi tu tim)")]
     [SerializeField] private Canvas canvas;
-    [SerializeField] private Sprite panelSprite;       // khung gỗ chính (storage_main_frame)
-    [SerializeField] private Sprite iconSprite;        // icon nhà kho 3D (storage_barn_house)
-    [SerializeField] private Sprite headerBadgeSprite; // badge gỗ trên có icon hòm (storage_header_badge)
-    [SerializeField] private Sprite crateBadgeSprite;  // huy hiệu tròn xanh có hòm gỗ (storage_crate_icon)
-    [SerializeField] private Sprite barTrackSprite;    // rãnh bar (storage_bar_track)
-    [SerializeField] private Sprite barFillSprite;     // fill bar (storage_bar_fill)
+    [SerializeField] private Sprite panelSprite;       // khung (mac dinh Resources/UI/Standard/WoodBoard_Frame)
+    [SerializeField] private Sprite iconSprite;        // icon kho
+    [SerializeField] private Sprite headerBadgeSprite; // (cu — khong dung nua, giu de khong mat tham chieu)
+    [SerializeField] private Sprite crateBadgeSprite;  // (cu — khong dung nua)
+    [SerializeField] private Sprite barTrackSprite;    // ranh bar (mac dinh Resources/UI/Standard/inner_panel)
+    [SerializeField] private Sprite barFillSprite;     // fill bar (mac dinh = ranh, to mau xanh)
 
     [Header("Layout")]
-    [Tooltip("Vị trí pill so với mép TRÊN-GIỮA canvas")]
-    [SerializeField] private Vector2 anchoredPos = new Vector2(120f, -60f);
-    [SerializeField] private Vector2 panelSize   = new Vector2(340f, 110f);
+    [Tooltip("Vi tri thanh so voi mep TREN-GIUA canvas (chi dung khi boCucGon = false)")]
+    [SerializeField] private Vector2 anchoredPos = new Vector2(0f, -36f);
+    [SerializeField] private Vector2 panelSize   = new Vector2(330f, 84f);
+    [Tooltip("Da dung bo cuc gon (tool danh dau). TRUE => code khong dat lai vi tri/kich thuoc, giu chinh tay.")]
+    [SerializeField] private bool boCucGon = false;
 
     [Header("Timing")]
-    [SerializeField] private float showDuration = 0.28f;
-    [SerializeField] private float idleBeforeHide = 2.5f;
+    [SerializeField] private float showDuration = 0.25f;
+    [SerializeField] private float idleBeforeHide = 2.2f;
 
-    // ─── Runtime refs (build 1 lần) ───────────────────────────────
-    private RectTransform _panel;
-    private Image  _imgPanel, _imgIcon, _imgTrack, _imgFill;
+    // ─── Runtime refs ─────────────────────────────────────────────
+    private RectTransform _panel, _fillRt;
+    private Image _imgPanel, _imgIcon, _imgTrack, _imgFill;
     private TMP_Text _txtCount;
     private CanvasGroup _cg;
-    private float _hideAt;
-    private float _shownFill;
+    private float _hideAt, _alpha, _shownFill, _targetFill;
     private int _currentDisplayUsed = -1;
-    private Coroutine _showRoutine, _pulseRoutine;
     private bool _visible;
+    private Vector2 _posShown;
+    private float _flashT = -1f;
+    private Color _panelColor = Color.white;
 
-    /// <summary>Lưới an toàn: scene chưa được tool setup thì tự sinh toast (sprite fallback màu phẳng).</summary>
+    /// <summary>Luoi an toan: scene chua co toast thi tu sinh.</summary>
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void Bootstrap()
     {
         if (Instance != null) return;
         if (FindFirstObjectByType<WarehouseGainToastUI>(FindObjectsInactive.Include) != null) return;
-
-        var canvas = FindFirstObjectByType<Canvas>();
-        if (canvas == null) return;
-
+        var cv = FindFirstObjectByType<Canvas>();
+        if (cv == null) return;
         var go = new GameObject("WarehouseGainToast", typeof(RectTransform));
-        go.transform.SetParent(canvas.transform, false);
+        go.transform.SetParent(cv.transform, false);
         var rt = (RectTransform)go.transform;
         rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
         rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
@@ -78,480 +83,324 @@ public class WarehouseGainToastUI : MonoBehaviour
         Instance = this;
     }
 
+    // Dung + AN ngay khi vao game (neu Sep de Panel dang bat trong Hierarchy de chinh, Play khong bi ket hien).
+    private void Start() { EnsureBuilt(); }
+
     private void OnEnable()
     {
-        FarmInventoryManager.OnItemAddedFx        += HandleItemAdded;
+        FarmInventoryManager.OnItemAddedFx           += HandleItemAdded;
         FarmInventoryManager.OnAddRejectedByCapacity += HandleRejected;
     }
 
     private void OnDisable()
     {
-        FarmInventoryManager.OnItemAddedFx        -= HandleItemAdded;
+        FarmInventoryManager.OnItemAddedFx           -= HandleItemAdded;
         FarmInventoryManager.OnAddRejectedByCapacity -= HandleRejected;
     }
 
+    // ─── Hien / an + fill: tat ca trong Update, khong the ket ─────
     private void Update()
     {
-        if (_visible && Time.unscaledTime >= _hideAt)
-            HideToast();
+        if (_panel == null) return;
+        float dt = Time.unscaledDeltaTime;
+
+        if (_visible && Time.unscaledTime >= _hideAt) _visible = false;
+
+        if (!_panel.gameObject.activeSelf)
+        {
+            if (!_visible) return;
+            _panel.gameObject.SetActive(true);
+        }
+
+        _alpha = Mathf.MoveTowards(_alpha, _visible ? 1f : 0f, dt / Mathf.Max(0.05f, showDuration));
+        float k = _visible ? 1f - (1f - _alpha) * (1f - _alpha) : _alpha * _alpha;
+        if (_cg != null) _cg.alpha = _alpha;
+        _panel.anchoredPosition = Vector2.Lerp(_posShown + new Vector2(0f, 70f), _posShown, k);
+
+        // fill chay muot toi dich
+        if (!Mathf.Approximately(_shownFill, _targetFill))
+        {
+            _shownFill = Mathf.MoveTowards(_shownFill, _targetFill, dt * 2.5f);
+            ApFill(_shownFill);
+        }
+
+        // nhay do khi kho day
+        if (_flashT >= 0f && _imgPanel != null)
+        {
+            _flashT += dt;
+            float t = Mathf.Clamp01(_flashT / 0.5f);
+            _imgPanel.color = Color.Lerp(new Color(1f, 0.72f, 0.68f, _panelColor.a), _panelColor, t);
+            if (t >= 1f) _flashT = -1f;
+        }
+
+        if (!_visible && _alpha <= 0f)
+        {
+            _panel.anchoredPosition = _posShown;
+            _panel.gameObject.SetActive(false);
+        }
     }
 
-    // ─── Event handlers & Progressive Harvest Increments ─────────
+    // ─── Su kien ─────────────────────────────────────────────────
 
     public void OnHarvestItemArrived(Sprite icon = null)
     {
         if (!EnsureBuilt()) return;
-        ShowToast();
-
+        Show();
         var inv = FarmInventoryManager.Instance;
         int cap = inv != null ? Mathf.Max(1, inv.SlotCapacity) : 50;
-        int actualUsed = inv != null ? inv.UsedSlots : 0;
-
-        if (_currentDisplayUsed < 0)
-            _currentDisplayUsed = Mathf.Max(0, actualUsed - 1);
-
-        _currentDisplayUsed++;
-        if (_currentDisplayUsed > actualUsed)
-            _currentDisplayUsed = actualUsed;
-
+        int actual = inv != null ? inv.UsedSlots : 0;
+        if (_currentDisplayUsed < 0) _currentDisplayUsed = Mathf.Max(0, actual - 1);
+        _currentDisplayUsed = Mathf.Min(_currentDisplayUsed + 1, actual);
         UpdateDisplayValues(_currentDisplayUsed, cap, animate: true);
         SpawnPlusText("+1", new Color(0.30f, 0.62f, 0.12f));
-        JuicyPulseFX.Play(_panel, 1.18f, 0.22f);
+        JuicyPulseFX.Play(_panel, 1.12f, 0.2f);
     }
 
     private void HandleItemAdded(string itemId, int amount)
     {
         if (!EnsureBuilt()) return;
-        ShowToast();
-        RefreshNumbers(animate: true);
-        SpawnPlusText($"+{amount}", new Color(0.30f, 0.62f, 0.12f));
-        JuicyPulseFX.Play(_panel, 1.18f, 0.22f);
+        Show();
+        RefreshNumbers(true);
+        SpawnPlusText("+" + amount, new Color(0.30f, 0.62f, 0.12f));
+        JuicyPulseFX.Play(_panel, 1.12f, 0.2f);
     }
 
     private void HandleRejected(string itemId)
     {
         if (!EnsureBuilt()) return;
-        ShowToast();
-        RefreshNumbers(animate: false);
+        Show();
+        RefreshNumbers(false);
         SpawnPlusText("STORAGE FULL!", new Color(0.86f, 0.22f, 0.16f));
-        StartCoroutine(RoutineFlashRed());
+        _flashT = 0f;
     }
 
-    // ─── Show / hide ──────────────────────────────────────────────
-
-    private void ShowToast()
+    private void Show()
     {
         _hideAt = Time.unscaledTime + idleBeforeHide;
-        if (_visible) return;
         _visible = true;
-
-        if (_showRoutine != null) StopCoroutine(_showRoutine);
-        _showRoutine = StartCoroutine(RoutineShow(true));
+        if (!_panel.gameObject.activeSelf) _panel.gameObject.SetActive(true);
     }
 
-    private void HideToast()
-    {
-        if (!_visible) return;
-        _visible = false;
-
-        if (_showRoutine != null) StopCoroutine(_showRoutine);
-        _showRoutine = StartCoroutine(RoutineShow(false));
-    }
-
-    private IEnumerator RoutineShow(bool show)
-    {
-        _panel.gameObject.SetActive(true);
-        float t = 0f;
-        float from      = _cg.alpha;
-        float to        = show ? 1f : 0f;
-        Vector2 posFrom = _panel.anchoredPosition;
-        Vector2 posShown  = anchoredPos;
-        Vector2 posHidden = anchoredPos + new Vector2(0f, 60f);
-        Vector2 posTo   = show ? posShown : posHidden;
-
-        while (t < showDuration)
-        {
-            t += Time.unscaledDeltaTime;
-            float k = Mathf.Clamp01(t / showDuration);
-            k = show ? 1f - (1f - k) * (1f - k) : k * k; // ease-out khi hiện, ease-in khi ẩn
-            _cg.alpha = Mathf.Lerp(from, to, k);
-            _panel.anchoredPosition = Vector2.Lerp(posFrom, posTo, k);
-
-            if (show) // nảy overshoot nhẹ kiểu Township
-                _panel.localScale = Vector3.one * (0.85f + 0.15f * Mathf.Sin(k * Mathf.PI * 0.5f) + 0.08f * Mathf.Sin(k * Mathf.PI));
-            yield return null;
-        }
-
-        _cg.alpha = to;
-        _panel.anchoredPosition = posTo;
-        _panel.localScale = Vector3.one;
-        if (!show) _panel.gameObject.SetActive(false);
-    }
-
-    // ─── Numbers / fill ───────────────────────────────────────────
+    // ─── So / fill ───────────────────────────────────────────────
 
     public void UpdateDisplayValues(int used, int cap, bool animate)
     {
         _currentDisplayUsed = used;
+        cap = Mathf.Max(1, cap);
         if (_txtCount != null)
         {
-            _txtCount.text  = $"{used}/{cap}";
-            _txtCount.color = used >= cap ? new Color(0.96f, 0.13f, 0.18f) : Color.white;
+            _txtCount.text = used + "/" + cap;
+            _txtCount.color = Color.white;
         }
-
-        float target = Mathf.Clamp01((float)used / Mathf.Max(1, cap));
+        _targetFill = Mathf.Clamp01((float)used / cap);
         if (_imgFill != null)
-        {
-            if (target >= 1f) _imgFill.color = new Color(0.96f, 0.13f, 0.18f); // Đỏ khi đầy
-            else if (target >= 0.8f) _imgFill.color = new Color(0.98f, 0.55f, 0.09f); // Cam khi gần đầy
-            else _imgFill.color = new Color(0.32f, 0.77f, 0.10f); // Xanh lá chuẩn
-        }
+            _imgFill.color = _targetFill >= 1f ? new Color(0.90f, 0.20f, 0.18f)
+                           : _targetFill >= 0.8f ? new Color(0.98f, 0.58f, 0.12f)
+                           : new Color(0.38f, 0.74f, 0.18f);
+        if (!animate) { _shownFill = _targetFill; ApFill(_shownFill); }
+    }
 
-        if (!animate || !_panel.gameObject.activeInHierarchy)
-        {
-            _shownFill = target;
-            if (_imgFill != null) _imgFill.fillAmount = target;
-        }
-        else
-        {
-            StartCoroutine(RoutineFillTo(target));
-        }
+    private void ApFill(float v)
+    {
+        if (_fillRt == null) return;
+        _fillRt.anchorMin = new Vector2(0f, 0f);
+        _fillRt.anchorMax = new Vector2(Mathf.Clamp01(v), 1f);
+        _fillRt.gameObject.SetActive(v > 0.001f);
     }
 
     private void RefreshNumbers(bool animate)
     {
         var inv = FarmInventoryManager.Instance;
         if (inv == null) return;
-
-        int used = inv.UsedSlots;
-        int cap  = Mathf.Max(1, inv.SlotCapacity);
-        UpdateDisplayValues(used, cap, animate);
-    }
-
-    private IEnumerator RoutineFillTo(float target)
-    {
-        float from = _shownFill;
-        float t = 0f, dur = 0.25f;
-        while (t < dur)
-        {
-            t += Time.unscaledDeltaTime;
-            _shownFill = Mathf.Lerp(from, target, Mathf.Clamp01(t / dur));
-            if (_imgFill != null) _imgFill.fillAmount = _shownFill;
-            yield return null;
-        }
-        _shownFill = target;
-        if (_imgFill != null) _imgFill.fillAmount = target;
-    }
-
-    // ─── Juice ────────────────────────────────────────────────────
-
-    private void Pulse()
-    {
-        if (_pulseRoutine != null) StopCoroutine(_pulseRoutine);
-        if (_panel.gameObject.activeInHierarchy)
-            _pulseRoutine = StartCoroutine(RoutinePulse());
-    }
-
-    private IEnumerator RoutinePulse()
-    {
-        float t = 0f, dur = 0.22f;
-        while (t < dur)
-        {
-            t += Time.unscaledDeltaTime;
-            float k = Mathf.Sin(Mathf.Clamp01(t / dur) * Mathf.PI);
-            _panel.localScale = Vector3.one * (1f + 0.09f * k);
-            yield return null;
-        }
-        _panel.localScale = Vector3.one;
-    }
-
-    private IEnumerator RoutineFlashRed()
-    {
-        if (_imgPanel == null) yield break;
-        Color baseCol = _imgPanel.color;
-        Color red     = new Color(1f, 0.72f, 0.68f, baseCol.a);
-        float t = 0f, dur = 0.5f;
-        while (t < dur)
-        {
-            t += Time.unscaledDeltaTime;
-            _imgPanel.color = Color.Lerp(red, baseCol, Mathf.Clamp01(t / dur));
-            yield return null;
-        }
-        _imgPanel.color = baseCol;
+        UpdateDisplayValues(inv.UsedSlots, Mathf.Max(1, inv.SlotCapacity), animate);
     }
 
     private void SpawnPlusText(string text, Color color)
     {
         if (_panel == null || !_panel.gameObject.activeInHierarchy) return;
-
         var go = new GameObject("Txt_Plus", typeof(RectTransform));
         go.transform.SetParent(_panel, false);
         var txt = go.AddComponent<TextMeshProUGUI>();
-        var plusFont = GetViFont();
-        if (plusFont != null) txt.font = plusFont;
-        txt.text = text;
-        txt.fontSize = 26;
-        txt.fontStyle = FontStyles.Bold;
-        txt.color = color;
-        txt.alignment = TextAlignmentOptions.Center;
-        txt.raycastTarget = false;
-
+        var f = GetViFont(); if (f != null) txt.font = f;
+        txt.text = text; txt.fontSize = 24; txt.fontStyle = FontStyles.Bold;
+        txt.color = color; txt.alignment = TextAlignmentOptions.Center; txt.raycastTarget = false;
         var rt = (RectTransform)go.transform;
-        rt.anchorMin = rt.anchorMax = new Vector2(0.72f, 1f);
-        rt.anchoredPosition = new Vector2(0f, 6f);
-        rt.sizeDelta = new Vector2(160f, 34f);
-
-        StartCoroutine(RoutinePlusText(txt, rt));
+        rt.anchorMin = rt.anchorMax = new Vector2(0.75f, 1f);
+        rt.anchoredPosition = new Vector2(0f, 4f);
+        rt.sizeDelta = new Vector2(180f, 32f);
+        go.AddComponent<ToastPlusFloat>();
     }
 
-    private IEnumerator RoutinePlusText(TMP_Text txt, RectTransform rt)
+    /// <summary>Chu "+N" bay len roi mo dan (Update rieng, tu huy).</summary>
+    private class ToastPlusFloat : MonoBehaviour
     {
-        Vector2 from = rt.anchoredPosition;
-        float t = 0f, dur = 0.85f;
-        while (t < dur && txt != null)
+        private float _t; private Vector2 _from; private TMP_Text _txt; private RectTransform _rt;
+        private void Start() { _rt = (RectTransform)transform; _from = _rt.anchoredPosition; _txt = GetComponent<TMP_Text>(); }
+        private void Update()
         {
-            t += Time.unscaledDeltaTime;
-            float k = Mathf.Clamp01(t / dur);
-            rt.anchoredPosition = from + new Vector2(0f, 42f * (1f - (1f - k) * (1f - k)));
-            txt.alpha = k > 0.6f ? 1f - (k - 0.6f) / 0.4f : 1f;
-            yield return null;
+            _t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(_t / 0.85f);
+            if (_rt != null) _rt.anchoredPosition = _from + new Vector2(0f, 40f * (1f - (1f - k) * (1f - k)));
+            if (_txt != null) _txt.alpha = k > 0.6f ? 1f - (k - 0.6f) / 0.4f : 1f;
+            if (k >= 1f) Destroy(gameObject);
         }
-        if (txt != null) Destroy(txt.gameObject);
     }
 
-    // ─── Build hierarchy (idempotent — tool gọi trong Editor, runtime tự gọi khi cần) ───
+    // ─── Dung / noi hierarchy (idempotent; tool Editor goi duoc) ──
 
-    public bool EnsureBuilt()
+    /// <summary>Dung thanh gon. apDungBoCuc = true thi dat lai vi tri/kich thuoc chuan (tool dung).</summary>
+    public bool EnsureBuilt() => EnsureBuilt(false);
+
+    public bool EnsureBuilt(bool apDungBoCuc)
     {
-        if (_panel != null) return true;
+        if (_panel != null && !apDungBoCuc) return true;
 
         if (canvas == null)
         {
-            var spawner = HarvestFeedbackSpawner.Instance;
-            if (spawner != null && spawner.WarehouseTarget != null)
-                canvas = spawner.WarehouseTarget.GetComponentInParent<Canvas>();
-            if (canvas == null) canvas = GetComponentInParent<Canvas>();
+            canvas = GetComponentInParent<Canvas>();
             if (canvas == null) canvas = FindFirstObjectByType<Canvas>();
             if (canvas == null) return false;
         }
+        if (panelSprite == null) panelSprite = Resources.Load<Sprite>("UI/Standard/WoodBoard_Frame");
+        if (barTrackSprite == null) barTrackSprite = Resources.Load<Sprite>("UI/Standard/inner_panel");
+        if (barFillSprite == null) barFillSprite = barTrackSprite;
 
-#if UNITY_EDITOR
-        if (panelSprite == null)
-            panelSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Farm/Sprites/StorageHUD/storage_main_frame.png");
-        if (iconSprite == null)
-            iconSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Farm/Sprites/StorageHUD/storage_barn_house.png");
-        if (headerBadgeSprite == null)
-            headerBadgeSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Farm/Sprites/StorageHUD/storage_header_badge.png");
-        if (crateBadgeSprite == null)
-            crateBadgeSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Farm/Sprites/StorageHUD/storage_crate_icon.png");
-        if (barTrackSprite == null)
-            barTrackSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Farm/Sprites/StorageHUD/storage_bar_track.png");
-        if (barFillSprite == null)
-            barFillSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Game/Farm/Sprites/StorageHUD/storage_bar_fill.png");
-#endif
+        bool datBoCuc = apDungBoCuc || !boCucGon;
 
-        // Panel pill
+        // 1. KHUNG
         var panelTr = transform.Find("Panel_WarehouseToast") as RectTransform;
-        if (panelTr == null)
+        bool moi = panelTr == null;
+        if (moi)
         {
             var go = new GameObject("Panel_WarehouseToast", typeof(RectTransform));
             go.transform.SetParent(transform, false);
             panelTr = (RectTransform)go.transform;
         }
         _panel = panelTr;
-        _panel.anchorMin = _panel.anchorMax = new Vector2(0.5f, 1f);
-        _panel.pivot = new Vector2(0.5f, 1f);
-        _panel.anchoredPosition = anchoredPos;
-        _panel.sizeDelta = panelSize;
+        if (datBoCuc || moi)
+        {
+            _panel.anchorMin = _panel.anchorMax = new Vector2(0.5f, 1f);
+            _panel.pivot = new Vector2(0.5f, 1f);
+            _panel.anchoredPosition = anchoredPos;
+            _panel.sizeDelta = panelSize;
+            _panel.localScale = Vector3.one;
+        }
+        _posShown = _panel.anchoredPosition;
 
-        _imgPanel = _panel.GetComponent<Image>();
-        if (_imgPanel == null) _imgPanel = _panel.gameObject.AddComponent<Image>();
-        if (panelSprite != null) { _imgPanel.sprite = panelSprite; _imgPanel.type = Image.Type.Simple; _imgPanel.preserveAspect = true; _imgPanel.color = Color.white; }
-        else { _imgPanel.color = new Color(0.96f, 0.90f, 0.78f, 0.96f); }
+        _imgPanel = _panel.GetComponent<Image>(); if (_imgPanel == null) _imgPanel = _panel.gameObject.AddComponent<Image>();
+        if (datBoCuc || moi)
+        {
+            _imgPanel.sprite = panelSprite;
+            _imgPanel.type = panelSprite != null ? Image.Type.Sliced : Image.Type.Simple;
+            _imgPanel.pixelsPerUnitMultiplier = 2.2f;   // vien go mong vua thanh cao 84
+            _imgPanel.preserveAspect = false;
+            _imgPanel.color = panelSprite != null ? Color.white : new Color(0.96f, 0.90f, 0.78f, 0.96f);
+        }
         _imgPanel.raycastTarget = false;
+        _panelColor = _imgPanel.color;
+        var glow = _panel.GetComponent<UIGlowPulseFX>();
+        if (glow != null) glow.enabled = false;         // lop sang nhap nhay de len icon
 
-        _cg = _panel.GetComponent<CanvasGroup>();
-        if (_cg == null) _cg = _panel.gameObject.AddComponent<CanvasGroup>();
-        _cg.blocksRaycasts = false;
-        _cg.interactable = false;
+        _cg = _panel.GetComponent<CanvasGroup>(); if (_cg == null) _cg = _panel.gameObject.AddComponent<CanvasGroup>();
+        _cg.blocksRaycasts = false; _cg.interactable = false;
 
-        // A. Icon nhà kho 3D (Img_BarnHouse hoặc Img_Icon)
-        var barnTr = _panel.Find("Img_BarnHouse") ?? _panel.Find("Img_Icon");
-        if (barnTr == null) barnTr = FindOrCreate(_panel, "Img_BarnHouse");
-        _imgIcon = barnTr.GetComponent<Image>();
-        if (_imgIcon == null) _imgIcon = barnTr.gameObject.AddComponent<Image>();
-        if (iconSprite != null) _imgIcon.sprite = iconSprite;
-        _imgIcon.preserveAspect = true;
-        _imgIcon.color = Color.white;
-        _imgIcon.raycastTarget = false;
-        var bRt = (RectTransform)barnTr;
-        bRt.anchorMin = bRt.anchorMax = new Vector2(0f, 0.5f);
-        bRt.pivot = new Vector2(0.5f, 0.5f);
-        bRt.anchoredPosition = new Vector2(-15f, 6f);
-        bRt.sizeDelta = new Vector2(145f, 145f);
-
-        // B. Header Badge ("Storage")
-        var headerTr = _panel.Find("Badge_Header");
-        if (headerTr == null)
+        // Tat cac lop cu chong len nhau (tool Editor xoa han)
+        foreach (var ten in new[] { "Img_BarnHouse", "Badge_Header", "Progress_Container", "Img_CrateBadge" })
         {
-            headerTr = FindOrCreate(_panel, "Badge_Header");
-            var imgH = headerTr.gameObject.AddComponent<Image>();
-            imgH.sprite = headerBadgeSprite;
-            imgH.preserveAspect = true;
-            imgH.color = Color.white;
-            imgH.raycastTarget = false;
-            var hRt = (RectTransform)headerTr;
-            hRt.anchorMin = hRt.anchorMax = new Vector2(0f, 1f);
-            hRt.pivot = new Vector2(0f, 1f);
-            hRt.anchoredPosition = new Vector2(135f, -16f);
-            hRt.sizeDelta = new Vector2(175f, 40f);
-
-            var txtHTr = FindOrCreate(hRt, "Txt_Title");
-            var txtH = txtHTr.gameObject.AddComponent<TextMeshProUGUI>();
-            var viF = GetViFont();
-            if (viF != null) txtH.font = viF;
-            txtH.text = "Storage";
-            txtH.fontSize = 20;
-            txtH.fontStyle = FontStyles.Bold;
-            txtH.alignment = TextAlignmentOptions.Center;
-            txtH.color = Color.white;
-            txtH.outlineColor = new Color32(0x38, 0x1F, 0x0C, 0xFF);
-            txtH.outlineWidth = 0.22f;
-            txtH.raycastTarget = false;
-            var thRt = (RectTransform)txtHTr;
-            thRt.anchorMin = Vector2.zero;
-            thRt.anchorMax = Vector2.one;
-            thRt.offsetMin = new Vector2(36f, 0f);
-            thRt.offsetMax = new Vector2(-8f, 0f);
+            var x = _panel.Find(ten);
+            if (x != null && x.gameObject.activeSelf) x.gameObject.SetActive(false);
         }
 
-        // C. Progress Bar Container
-        var pcTr = _panel.Find("Progress_Container") as RectTransform;
-        if (pcTr == null)
+        // 2. ICON
+        var iconTr = _panel.Find("Img_Icon") as RectTransform;
+        bool moiIcon = iconTr == null;
+        if (moiIcon) iconTr = (RectTransform)TaoCon(_panel, "Img_Icon");
+        _imgIcon = iconTr.GetComponent<Image>(); if (_imgIcon == null) _imgIcon = iconTr.gameObject.AddComponent<Image>();
+        if (_imgIcon.sprite == null && iconSprite != null) _imgIcon.sprite = iconSprite;
+        _imgIcon.preserveAspect = true; _imgIcon.raycastTarget = false; _imgIcon.color = Color.white;
+        if (datBoCuc || moiIcon)
         {
-            pcTr = (RectTransform)FindOrCreate(_panel, "Progress_Container");
-            pcTr.anchorMin = pcTr.anchorMax = new Vector2(0f, 1f);
-            pcTr.pivot = new Vector2(0f, 1f);
-            pcTr.anchoredPosition = new Vector2(135f, -64f);
-            pcTr.sizeDelta = new Vector2(240f, 36f);
+            iconTr.anchorMin = iconTr.anchorMax = new Vector2(0f, 0.5f);
+            iconTr.pivot = new Vector2(0.5f, 0.5f);
+            iconTr.anchoredPosition = new Vector2(48f, 2f);
+            iconTr.sizeDelta = new Vector2(66f, 66f);
+            iconTr.localScale = Vector3.one;
         }
 
-        // Bar track (Rãnh capsule màu nâu lõm sâu)
-        var trackTr = pcTr.Find("Bar_Track") ?? _panel.Find("Bar_Track");
-        if (trackTr == null) trackTr = FindOrCreate(pcTr, "Bar_Track");
-        _imgTrack = trackTr.GetComponent<Image>();
-        if (_imgTrack == null) _imgTrack = trackTr.gameObject.AddComponent<Image>();
-        if (barTrackSprite == null)
+        // 3. FILL BAR (Bar_Track > Bar_Fill + Txt_Count)
+        var trackTr = _panel.Find("Bar_Track") as RectTransform;
+        bool moiTrack = trackTr == null;
+        if (moiTrack) trackTr = (RectTransform)TaoCon(_panel, "Bar_Track");
+        if (trackTr.parent != _panel) trackTr.SetParent(_panel, false);
+        _imgTrack = trackTr.GetComponent<Image>(); if (_imgTrack == null) _imgTrack = trackTr.gameObject.AddComponent<Image>();
+        if (datBoCuc || moiTrack)
         {
-#if UNITY_EDITOR
-            barTrackSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_svg_perfect/generated_sprites/progress_track.png")
-                          ?? UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Export_Train_UI_Package/Sprites/progress_track_bar.png");
-#endif
+            _imgTrack.sprite = barTrackSprite;
+            _imgTrack.type = barTrackSprite != null ? Image.Type.Sliced : Image.Type.Simple;
+            _imgTrack.color = new Color(0.30f, 0.18f, 0.08f, 1f);
+            trackTr.anchorMin = trackTr.anchorMax = new Vector2(0f, 0.5f);
+            trackTr.pivot = new Vector2(0f, 0.5f);
+            trackTr.anchoredPosition = new Vector2(90f, 0f);
+            trackTr.sizeDelta = new Vector2(panelSize.x - 90f - 22f, 32f);
+            trackTr.localScale = Vector3.one;
         }
-        if (barTrackSprite != null) { _imgTrack.sprite = barTrackSprite; _imgTrack.type = Image.Type.Sliced; _imgTrack.color = new Color32(0x38, 0x1F, 0x0C, 0xFF); }
-        else { _imgTrack.color = new Color32(0x38, 0x1F, 0x0C, 0xFF); }
         _imgTrack.raycastTarget = false;
-        var tRt = (RectTransform)trackTr;
-        tRt.anchorMin = Vector2.zero;
-        tRt.anchorMax = Vector2.one;
-        tRt.offsetMin = new Vector2(16f, 2f);
-        tRt.offsetMax = new Vector2(-4f, -2f);
 
-        // Bar fill (Thanh fill trắng có tô màu xanh dynamic)
-        var fillTr = trackTr.Find("Bar_Fill");
-        if (fillTr == null) fillTr = FindOrCreate(trackTr as RectTransform, "Bar_Fill");
-        _imgFill = fillTr.GetComponent<Image>();
-        if (_imgFill == null) _imgFill = fillTr.gameObject.AddComponent<Image>();
-        if (barFillSprite == null)
-        {
-#if UNITY_EDITOR
-            barFillSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Assetsgame/popup/ui_svg_perfect/generated_sprites/progress_fill.png")
-                         ?? UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/Export_Train_UI_Package/Sprites/progress_fill_green.png");
-#endif
-        }
-        if (barFillSprite != null) _imgFill.sprite = barFillSprite;
-        _imgFill.type = Image.Type.Filled;
-        _imgFill.fillMethod = Image.FillMethod.Horizontal;
-        _imgFill.fillOrigin = (int)Image.OriginHorizontal.Left;
-        _imgFill.color = new Color32(0x4C, 0xCE, 0x15, 0xFF); // Xanh lá tươi rực rỡ
+        var fillTr = trackTr.Find("Bar_Fill") as RectTransform;
+        bool moiFill = fillTr == null;
+        if (moiFill) fillTr = (RectTransform)TaoCon(trackTr, "Bar_Fill");
+        _fillRt = fillTr;
+        _imgFill = fillTr.GetComponent<Image>(); if (_imgFill == null) _imgFill = fillTr.gameObject.AddComponent<Image>();
+        _imgFill.sprite = barFillSprite;
+        _imgFill.type = barFillSprite != null ? Image.Type.Sliced : Image.Type.Simple;   // fill bang anchor, khong can Filled
         _imgFill.raycastTarget = false;
-        var fRt = (RectTransform)fillTr;
-        fRt.anchorMin = Vector2.zero;
-        fRt.anchorMax = Vector2.one;
-        fRt.offsetMin = new Vector2(3f, 3f);
-        fRt.offsetMax = new Vector2(-3f, -3f);
+        fillTr.pivot = new Vector2(0f, 0.5f);
+        fillTr.offsetMin = new Vector2(3f, 3f);
+        fillTr.offsetMax = new Vector2(-3f, -3f);
+        fillTr.SetAsFirstSibling();
 
-        // Circular Crate Badge
-        var crateBadgeTr = pcTr.Find("Img_CrateBadge");
-        if (crateBadgeTr == null && crateBadgeSprite != null)
-        {
-            crateBadgeTr = FindOrCreate(pcTr, "Img_CrateBadge");
-            var imgCrate = crateBadgeTr.gameObject.AddComponent<Image>();
-            imgCrate.sprite = crateBadgeSprite;
-            imgCrate.preserveAspect = true;
-            imgCrate.color = Color.white;
-            imgCrate.raycastTarget = false;
-            var cRt = (RectTransform)crateBadgeTr;
-            cRt.anchorMin = cRt.anchorMax = new Vector2(0f, 0.5f);
-            cRt.pivot = new Vector2(0.5f, 0.5f);
-            cRt.anchoredPosition = new Vector2(16f, 0f);
-            cRt.sizeDelta = new Vector2(46f, 46f);
-        }
-
-        // Text 18/25
-        var txtTr = trackTr.Find("Txt_Count");
-        if (txtTr == null) txtTr = FindOrCreate(trackTr as RectTransform, "Txt_Count");
-        _txtCount = txtTr.GetComponent<TextMeshProUGUI>();
+        var txtTr = trackTr.Find("Txt_Count") as RectTransform;
+        if (txtTr == null) txtTr = (RectTransform)TaoCon(trackTr, "Txt_Count");
+        _txtCount = txtTr.GetComponent<TMP_Text>();
         if (_txtCount == null) _txtCount = txtTr.gameObject.AddComponent<TextMeshProUGUI>();
-        var viFont = GetViFont();
-        if (viFont != null) _txtCount.font = viFont;
-        _txtCount.fontSize = 19;
-        _txtCount.fontStyle = FontStyles.Bold;
-        _txtCount.alignment = TextAlignmentOptions.Center;
-        _txtCount.color = Color.white;
-        _txtCount.outlineColor = new Color32(0x1A, 0x49, 0x06, 0xFF);
-        _txtCount.outlineWidth = 0.22f;
+        var vf = GetViFont(); if (vf != null && _txtCount.font != vf) _txtCount.font = vf;
+        if (datBoCuc)
+        {
+            _txtCount.fontSize = 20; _txtCount.enableAutoSizing = false;
+            _txtCount.fontStyle = FontStyles.Bold;
+            _txtCount.alignment = TextAlignmentOptions.Center;
+            txtTr.anchorMin = Vector2.zero; txtTr.anchorMax = Vector2.one;
+            txtTr.offsetMin = Vector2.zero; txtTr.offsetMax = Vector2.zero;
+        }
         _txtCount.raycastTarget = false;
-        var tcRt = (RectTransform)txtTr;
-        tcRt.anchorMin = Vector2.zero;
-        tcRt.anchorMax = Vector2.one;
-        tcRt.offsetMin = new Vector2(14f, 0f);
-        tcRt.offsetMax = Vector2.zero;
+        txtTr.SetAsLastSibling();
 
-        RefreshNumbers(animate: false);
-        _cg.alpha = 0f;
-        _panel.gameObject.SetActive(false);
-        _visible = false;
+        if (apDungBoCuc) boCucGon = true;
+
+        RefreshNumbers(false);
+        if (Application.isPlaying)
+        {
+            _alpha = 0f; _cg.alpha = 0f; _visible = false;
+            _panel.gameObject.SetActive(false);
+        }
         return true;
     }
 
-    // Font mặc định của TMP thiếu dấu tiếng Việt (Ầ, Đ...) — mượn font từ text có sẵn trên HUD.
     private static TMP_FontAsset _viFont;
-
     private TMP_FontAsset GetViFont()
     {
         if (_viFont != null) return _viFont;
+        try { var f = SkinKit.FontVo; if (f != null) return _viFont = f; } catch { }
         if (canvas == null) return null;
-        foreach (var txt in canvas.GetComponentsInChildren<TextMeshProUGUI>(true))
-        {
-            if (txt != null && txt != _txtCount && txt.font != null)
-            {
-                _viFont = txt.font;
-                break;
-            }
-        }
-        return _viFont;
+        foreach (var t in canvas.GetComponentsInChildren<TextMeshProUGUI>(true))
+            if (t != null && t != _txtCount && t.font != null) return _viFont = t.font;
+        return null;
     }
 
-    private static Transform FindOrCreate(RectTransform parent, string name)
+    private static Transform TaoCon(Transform parent, string name)
     {
-        var tr = parent.Find(name);
-        if (tr == null)
-        {
-            var go = new GameObject(name, typeof(RectTransform));
-            go.transform.SetParent(parent, false);
-            tr = go.transform;
-        }
-        return tr;
+        var go = new GameObject(name, typeof(RectTransform));
+        go.transform.SetParent(parent, false);
+        return go.transform;
     }
 }

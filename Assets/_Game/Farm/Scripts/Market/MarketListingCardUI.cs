@@ -125,9 +125,9 @@ public class MarketListingCardUI : MonoBehaviour, IInitializePotentialDragHandle
         }
 
         if (textItemName != null)
-            textItemName.text = string.IsNullOrEmpty(visual.DisplayName)
+            textItemName.text = Loc.T(string.IsNullOrEmpty(visual.DisplayName)
                 ? MarketPriceTable.GetDisplayName(listing.ItemId)
-                : visual.DisplayName;
+                : visual.DisplayName);   // [2026-09-23] ten vat pham tieng Viet -> dich
 
         if (textQuantity != null)
             textQuantity.text = listing.Quantity.ToString();

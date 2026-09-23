@@ -100,10 +100,26 @@ public class StallCategoryTabUI : MonoBehaviour
         }
         if (string.IsNullOrEmpty(ten)) return null;
 
-        Sprite spr = Resources.Load<Sprite>("UI_Stall/" + ten);
-        if (spr == null)
-            Debug.LogWarning("[StallTab] Thieu icon Resources/UI_Stall/" + ten + " — tab se khong co anh.");
-        return spr;
+        return LoadResourceSprite("UI_Stall/" + ten);
+    }
+
+    public static Sprite LoadResourceSprite(string path)
+    {
+        if (string.IsNullOrEmpty(path)) return null;
+
+        Sprite spr = Resources.Load<Sprite>(path);
+        if (spr != null) return spr;
+
+        Sprite[] all = Resources.LoadAll<Sprite>(path);
+        if (all != null && all.Length > 0) return all[0];
+
+        Texture2D tex = Resources.Load<Texture2D>(path);
+        if (tex != null)
+        {
+            return Sprite.Create(tex, new Rect(0f, 0f, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+        }
+
+        return null;
     }
 
     public void SetSelected(bool selected)

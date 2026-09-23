@@ -273,10 +273,12 @@ public class PlayerStallManager : MonoBehaviour
         // biến mất — người chơi không còn "ô kế tiếp đang chờ" để hướng tới.
         if (slotIndex != UnlockedSlotCount) return StallSlotState.Locked;
 
-        return GetPlayerLevel() >= GetSlotRequiredLevel(slotIndex)
-            ? StallSlotState.Unlockable
-            : StallSlotState.Locked;
+        // [2026-09-23] O ke tiep LUON hien o "+ mua them" (truoc day chua du cap thi thanh o trong
+        // tron -> Sep tuong mat nut mua o). Chua du cap: van hien gia, bam vao se bao can cap may.
+        return StallSlotState.Unlockable;
     }
+
+    public bool DuCapMoO(int slotIndex) => GetPlayerLevel() >= GetSlotRequiredLevel(slotIndex);
 
     public int GetSlotUnlockGoldCost(int slotIndex) => ReadArray(slotUnlockGoldCosts, slotIndex, 0);
     public int GetSlotRequiredLevel(int slotIndex)  => ReadArray(slotUnlockLevels, slotIndex, 0);
@@ -299,7 +301,13 @@ public class PlayerStallManager : MonoBehaviour
 
         if (GetSlotState(slotIndex) != StallSlotState.Unlockable)
         {
-            error = "Ô này chưa tới lượt mở.";
+            error = Loc.T("Ô này chưa tới lượt mở.");
+            return false;
+        }
+
+        if (!DuCapMoO(slotIndex))
+        {
+            error = Loc.TF("Cần cấp {0} để mở ô này.", GetSlotRequiredLevel(slotIndex));
             return false;
         }
 
@@ -309,7 +317,7 @@ public class PlayerStallManager : MonoBehaviour
         {
             // KHÔNG mở chùa khi thiếu manager — đây đúng là LỖI 2 của chợ (mua chùa) mà
             // mục 1 file TEAM bắt sửa; đừng lặp lại nó ở quầy hàng.
-            error = "Chưa sẵn sàng, thử lại sau.";
+            error = Loc.T("Chưa sẵn sàng, thử lại sau.");
             return false;
         }
 
@@ -321,7 +329,7 @@ public class PlayerStallManager : MonoBehaviour
 
         if (!FarmEconomyManager.Instance.SpendGold(cost))
         {
-            error = "Trừ vàng thất bại.";
+            error = Loc.T("Trừ vàng thất bại.");
             return false;
         }
 
@@ -514,7 +522,9 @@ public class PlayerStallManager : MonoBehaviour
             }
         }
 
-        if (WarehouseManager.Instance != null)
+        // [2026-09-23] TAT: WarehouseManager chi la lop chuyen tiep, .Items liet ke LAI dung
+        // FarmInventoryManager o tren -> moi vat pham hien 2 lan trong bang chon (Gao 32 x2...).
+        if (false && WarehouseManager.Instance != null)
         {
             IReadOnlyList<WarehouseItemEntry> kho = WarehouseManager.Instance.Items;
             for (int i = 0; i < kho.Count; i++)
@@ -638,7 +648,7 @@ public class PlayerStallManager : MonoBehaviour
         {
             if (FarmEconomyManager.Instance == null)
             {
-                error = "Chưa sẵn sàng, thử lại sau.";
+                error = Loc.T("Chưa sẵn sàng, thử lại sau.");
                 return false;
             }
 
@@ -740,7 +750,7 @@ public class PlayerStallManager : MonoBehaviour
 
         if (!SellListing(l))
         {
-            error = "Chưa sẵn sàng, thử lại sau.";
+            error = Loc.T("Chưa sẵn sàng, thử lại sau.");
             return false;
         }
 
@@ -873,21 +883,26 @@ public class PlayerStallManager : MonoBehaviour
     /// </summary>
     private float RollNpcWaitSeconds(string itemId, int pricePerUnit, bool hasLoa)
     {
-        int suggested = GetSuggestedPricePerUnit(itemId);
-        float ratio = suggested > 0 ? pricePerUnit / (float)suggested : 1f;
-        ratio = Mathf.Clamp(ratio, 0.4f, 4f);
+        // [2026-09-23] Do theo GIA GOC (truoc day do theo gia de xuat = goc x1.3, va MOI mon deu
+        // ban duoc trong 4h -> dat hay re cung nhu nhau).
+        //   ratio <= 0.8 (ban re)   : 40s - 3 phut
+        //   ratio  = 1.0 (gia goc)  : 2   - 6 phut
+        //   ratio  = 1.3 (de xuat)  : ~4  - 12 phut
+        //   ratio  = 2.0 (kich tran): ~12 - 35 phut, va chi ~50% co nguoi mua (con lai het han, hoan kho)
+        int goc = BasePriceBook.GetBasePrice(itemId);
+        if (goc <= 0) goc = Mathf.Max(1, Mathf.RoundToInt(GetSuggestedPricePerUnit(itemId) / 1.3f));
+        float ratio = Mathf.Clamp(pricePerUnit / (float)goc, 0.3f, 4f);
 
-        float minWait = Mathf.Max(10, Mathf.Min(npcBuyMinSeconds, npcBuyMaxSeconds));
-        float maxWait = Mathf.Max(minWait + 1f, Mathf.Max(npcBuyMinSeconds, npcBuyMaxSeconds));
-
-        float wait = UnityEngine.Random.Range(minWait, maxWait)
-                   * Mathf.Pow(ratio, npcPriceSensitivity);
+        float wait;
+        if (ratio <= 0.8f) wait = UnityEngine.Random.Range(40f, 180f);
+        else               wait = UnityEngine.Random.Range(120f, 360f) * Mathf.Pow(ratio, 2.5f);
 
         if (hasLoa) wait *= loaSpeedMultiplier;
 
-        // Trần = 3× thời hạn: giá kịch trần thì gần như chắc chắn hết hạn phải hoàn kho,
-        // nhưng vẫn chừa một cửa may mắn để người chơi thỉnh thoảng trúng quả đậm.
-        return Mathf.Clamp(wait, 10f, ListingDurationSeconds * 3f);
+        float coNguoiMua = Mathf.Clamp01(1.5f - 0.5f * ratio);
+        if (UnityEngine.Random.value > coNguoiMua) return ListingDurationSeconds * 3f;   // qua han -> khong ai mua
+
+        return Mathf.Clamp(wait, 30f, ListingDurationSeconds * 0.95f);
     }
 
     private void MarkListingsDirty() => _activeCacheDirty = true;
