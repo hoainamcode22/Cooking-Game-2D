@@ -121,6 +121,16 @@ public class TutorialManager : MonoBehaviour
 
     [SerializeField] private AnimationCurve _introEase = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
 
+    [Header("Intro — May mo ao + hao quang (VFX diu nhe 2026-09-24)")]
+    [Tooltip("Bat: them suong mem, bui sang lap lanh, may tach cham + tan som (mo ao). Tat: nhu cu.")]
+    [SerializeField] private bool _mayMoAo = true;
+    [Tooltip("Thoi gian tach may khi bat mo ao (giay) - dai hon mot chut cho diu mat.")]
+    [SerializeField] private float _thoiGianMayMoAo = 2.2f;
+    [Tooltip("Nhip may dung yen troi nhe truoc khi tach (giay).")]
+    [SerializeField] private float _choTruocTachMay = 0.6f;
+    [Tooltip("Hao quang mem + bui lap lanh quanh ban tay chi dan.")]
+    [SerializeField] private bool _haoQuangBanTay = true;
+
     [Header("Intro — Camera Zoom")]
     [SerializeField] private TutorialCameraZoom _cameraZoom;
 
@@ -404,6 +414,7 @@ public class TutorialManager : MonoBehaviour
         StartCoroutine(WatchdogChongKet());   // [VÒNG 14] lưới an toàn chống kẹt
         if (_cloudLeft  != null) _cloudLeftOrigin  = _cloudLeft.anchoredPosition;
         if (_cloudRight != null) _cloudRightOrigin = _cloudRight.anchoredPosition;
+        if (_haoQuangBanTay && _handPointer != null) TutorialHandGlowFX.GanVao(_handPointer);
 
         // Cache CanvasGroup Ä‘á»ƒ Ä‘iá»u khiá»ƒn blocksRaycasts khi áº©n/hiá»‡n
         if (_cloudPanel != null)
@@ -523,14 +534,31 @@ public class TutorialManager : MonoBehaviour
         var leftEnd  = _cloudLeftOrigin  + new Vector2(-_cloudSlideDistance, 0f);
         var rightEnd = _cloudRightOrigin + new Vector2( _cloudSlideDistance, 0f);
 
+        // [VFX 2026-09-24] Suong mem + bui sang phu len may (mo ao, diu mat)
+        TutorialMistFX mist = _mayMoAo ? TutorialMistFX.GanVao(_cloudPanel, _cloudSlideDistance) : null;
+        if (mist != null) mist.BatDau();
+        float thoiGianTach = mist != null ? Mathf.Max(_introDuration, _thoiGianMayMoAo) : _introDuration;
+        float batDauMo = mist != null ? 0.3f : 0.45f;
+
         // Giữ mây 1 nhịp ngắn cho cảm giác "bình minh ló dạng" trước khi tách
-        yield return new WaitForSeconds(0.25f);
+        if (mist == null) yield return new WaitForSeconds(0.25f);
+        else
+        {
+            float cho = 0f;
+            while (cho < _choTruocTachMay)
+            {
+                cho += Time.deltaTime;
+                mist.Tick(-1f, Time.deltaTime);
+                yield return null;
+            }
+        }
 
         float elapsed = 0f;
-        while (elapsed < _introDuration)
+        while (elapsed < thoiGianTach)
         {
             elapsed += Time.deltaTime;
-            float t = _introEase.Evaluate(Mathf.Clamp01(elapsed / _introDuration));
+            float t = _introEase.Evaluate(Mathf.Clamp01(elapsed / thoiGianTach));
+            if (mist != null) mist.Tick(t, Time.deltaTime);
 
             // Trượt ra hai bên + phóng to nhẹ + mờ dần nửa sau → mượt, bắt mắt
             if (_cloudLeft != null)
@@ -544,13 +572,15 @@ public class TutorialManager : MonoBehaviour
                 _cloudRight.localScale       = Vector3.Lerp(rightScale0, rightScale0 * 1.15f, t);
             }
 
-            float fade = Mathf.InverseLerp(0.45f, 1f, t); // bắt đầu mờ từ 45% thời lượng
+            float fade = Mathf.InverseLerp(batDauMo, 1f, t); // bắt đầu mờ từ 45% (mo ao: 30%) thời lượng
+            fade = fade * fade * (3f - 2f * fade);            // tan mem, khong gat
             if (leftCG  != null) leftCG.alpha  = 1f - fade;
             if (rightCG != null) rightCG.alpha = 1f - fade;
 
             yield return null;
         }
 
+        if (mist != null) mist.KetThuc();
         SetCloudPanelVisible(false);
 
         // Reset trạng thái mây để lần replay sau vẫn đẹp

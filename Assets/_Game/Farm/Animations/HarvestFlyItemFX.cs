@@ -25,6 +25,11 @@ public class HarvestFlyItemFX : MonoBehaviour
     [Header("Misc")]
     [SerializeField] private bool destroyOnFinish = true;
 
+    [Header("V2 2026-09-24: roi rai rac xuong dat -> nam 1 nhip -> bay ve kho")]
+    [Tooltip("Bat = dung chuyen dong moi (tung, nay, bong mo, nam dat roi bay). Tat = chuyen dong cu.")]
+    [SerializeField] private bool roiDatV2 = true;
+    [SerializeField] private RoiDatFX.CauHinh roiDat = new RoiDatFX.CauHinh();
+
     private Action onArrived;
     private Coroutine routine;
 
@@ -107,9 +112,17 @@ public class HarvestFlyItemFX : MonoBehaviour
         // Neu no bi dung giua chung (timeScale = 0, SetActive(false), exception) thi
         // icon treo vinh vien tren HUD kho. Destroy co delay khong phu thuoc timeScale.
         if (destroyOnFinish)
-            Destroy(gameObject, dropDuration + groundStayDuration + flyDuration + 2f);
+            Destroy(gameObject, (roiDatV2 ? roiDat.TongThoiGian : dropDuration + groundStayDuration + flyDuration) + 2f);
 
-        routine = StartCoroutine(CoPlay(worldSpawnPos, worldTargetPos));
+        routine = StartCoroutine(roiDatV2 ? CoPlayV2(worldSpawnPos, worldTargetPos) : CoPlay(worldSpawnPos, worldTargetPos));
+    }
+
+    private IEnumerator CoPlayV2(Vector3 worldSpawnPos, Vector3 worldTargetPos)
+    {
+        yield return RoiDatFX.Chay(transform, visualRoot, iconRenderer, worldSpawnPos, worldTargetPos,
+                                   startScale * zoomMul, normalScale * zoomMul, zoomMul, roiDat, onArrived);
+        routine = null;
+        if (destroyOnFinish && this != null) Destroy(gameObject);
     }
 
     private IEnumerator CoPlay(Vector3 worldSpawnPos, Vector3 worldTargetPos)

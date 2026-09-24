@@ -17,6 +17,12 @@ public class CookingChallengeManager : MonoBehaviour
     [SerializeField] private float cookSubmitDelay = 0.8f;
     [SerializeField] private int successScoreThreshold = 70;
 
+    [Header("Cong thuc (2026-09-24)")]
+    [Tooltip("Bat: phai bo DUNG nguyen lieu trong sach (du mon, khong thua mon la). Sai -> that bai NGAY, khong chay dong ho.")]
+    [SerializeField] private bool batBuocDungCongThuc = true;
+    [Tooltip("Sai cong thuc van tru nguyen lieu da bo vao noi (nhu nau hong).")]
+    [SerializeField] private bool truNguyenLieuKhiSai = true;
+
 
 
     // ── Events cho Kitchen UI v2 (additive 2026-08-26 — view mới nghe, KHÔNG đổi logic) ──
@@ -154,6 +160,13 @@ public class CookingChallengeManager : MonoBehaviour
         if (!CanStartCooking())
             return;
 
+        // [2026-09-24] Sai / thieu cong thuc: noi xet len roi tat, that bai ngay (khong dong ho, khong tien trinh)
+        if (batBuocDungCongThuc && !DungCongThuc(out string lyDo))
+        {
+            StartCoroutine(SaiCongThucRoutine(lyDo));
+            return;
+        }
+
         // Sếp 2026-08-27: GỠ minigame khỏi luồng nấu — bấm NẤU là nấu thẳng,
         // thành/bại do điểm hương vị quyết định (CookSubmitRoutine). Minigame cũ
         // (StartRandomMiniGame + 2 panel) không còn được gọi, chờ xoá hẳn đợt dọn UI cũ.
@@ -182,6 +195,10 @@ public class CookingChallengeManager : MonoBehaviour
             selectedIngredients,
             selectedSeasonings
         );
+
+        // [2026-09-24] Dung cong thuc trong sach = nau thanh cong (diem van tinh de nhan thuong theo huong vi)
+        if (batBuocDungCongThuc && DungCongThuc(out _) && result.finalScore < successScoreThreshold)
+            result.finalScore = successScoreThreshold;
 
         // TRá»ª NGUYÃŠN LIá»†U ÄÃƒ CHá»ŒN SAU KHI Náº¤U
         if (cookingItemConsumer != null)
@@ -460,6 +477,64 @@ public class CookingChallengeManager : MonoBehaviour
             yield return new WaitForSeconds(5f);
             centerCookingPanelUI.SetCookSubmitScore(0);
         }
+    }
+
+    /// <summary>
+    /// [2026-09-24] Dung cong thuc trong sach khong: du MOI nguyen lieu mon can, va KHONG co nguyen
+    /// lieu chinh la (gia vi them vao de chinh huong vi thi duoc).
+    /// </summary>
+    public bool DungCongThuc(out string lyDo)
+    {
+        lyDo = "";
+        if (currentDishData == null || cookingSelectionManager == null) { lyDo = Loc.T("Chưa chọn món."); return false; }
+        var can = currentDishData.requiredIngredients;
+        var chon = new HashSet<string>();
+        var chonChinh = new List<IngredientData>();
+        foreach (var c in cookingSelectionManager.GetSelectedIngredientCards())
+        {
+            var d = c != null ? c.GetIngredientData() : null;
+            if (d == null || string.IsNullOrEmpty(d.id)) continue;
+            chon.Add(d.id.Trim().ToLower()); chonChinh.Add(d);
+        }
+        foreach (var c in cookingSelectionManager.GetSelectedSeasoningCards())
+        {
+            var d = c != null ? c.GetIngredientData() : null;
+            if (d != null && !string.IsNullOrEmpty(d.id)) chon.Add(d.id.Trim().ToLower());
+        }
+        if (chon.Count == 0) { lyDo = Loc.T("Nồi trống!"); return false; }
+
+        var canSet = new HashSet<string>();
+        if (can != null)
+            foreach (var d in can)
+            {
+                if (d == null || string.IsNullOrEmpty(d.id)) continue;
+                string id = d.id.Trim().ToLower();
+                canSet.Add(id);
+                if (!chon.Contains(id))
+                {
+                    lyDo = Loc.TF("Thiếu {0}", Loc.T(!string.IsNullOrEmpty(d.displayName) ? d.displayName : d.id));
+                    return false;
+                }
+            }
+        foreach (var d in chonChinh)
+            if (!canSet.Contains(d.id.Trim().ToLower()))
+            {
+                lyDo = Loc.TF("{0} không có trong công thức", Loc.T(!string.IsNullOrEmpty(d.displayName) ? d.displayName : d.id));
+                return false;
+            }
+        return true;
+    }
+
+    private IEnumerator SaiCongThucRoutine(string lyDo)
+    {
+        Debug.Log("[Cooking] Sai cong thuc '" + (currentDishData != null ? currentDishData.dishId : "?") + "': " + lyDo);
+        var result = CookingScoreCalculator.Evaluate(currentDishData,
+            cookingSelectionManager.GetSelectedIngredientCards(), cookingSelectionManager.GetSelectedSeasoningCards());
+        if (result.finalScore >= successScoreThreshold) result.finalScore = successScoreThreshold - 1;
+        if (truNguyenLieuKhiSai && cookingItemConsumer != null) cookingItemConsumer.ConsumeSelectedCookingItems();
+        cookingSelectionManager.DisableIngredientSelection();
+        yield return StartCoroutine(HandleCookingFailed(result));
+        ResetCookingSelectionState();
     }
 
     private void ResetCookingSelectionState()

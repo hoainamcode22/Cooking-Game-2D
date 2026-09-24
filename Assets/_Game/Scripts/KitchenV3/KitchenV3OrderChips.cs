@@ -141,14 +141,26 @@ namespace KitchenUIv3
             if (rong < 10f) return;
             float gian = _hl != null ? _hl.spacing : 8f;
             float gio = 0f;
+            bool gioNeoRieng = false;
             if (_chipGio != null)
             {
                 var le = _chipGio.GetComponent<LayoutElement>();
-                gio = ((RectTransform)_chipGio.transform).sizeDelta.x + gian + 4f;
-                if (le == null || !le.ignoreLayout) gio = 0f;   // chip gio nam trong hang -> da tinh trong n
+                gioNeoRieng = le != null && le.ignoreLayout;
+                gio = gioNeoRieng ? ((RectTransform)_chipGio.transform).sizeDelta.x + gian + 4f : 0f;
             }
-            int soO = (_chipGio != null && gio == 0f) ? n + 1 : n;
-            float w = Mathf.Min(kichThuocChip.x, (rong - gio - gian * (soO - 1)) / soO);
+            int soO = (_chipGio != null && !gioNeoRieng) ? n + 1 : n;
+            float conTrong = rong - gio;
+            if (gioNeoRieng && _chipGio.activeSelf)
+            {
+                // [2026-09-24] Do THAT: tu mep trai hang toi mep TRAI chip dong ho (chip gio co the
+                // khong nam sat mep phai hang) -> 4-5 nguyen lieu khong bao gio de len dong ho.
+                var grt = (RectTransform)_chipGio.transform;
+                var goc = new Vector3[4]; grt.GetWorldCorners(goc);
+                float traiGio = rt.InverseTransformPoint(goc[0]).x;
+                float traiHang = rt.rect.xMin + (_hl != null ? _hl.padding.left : 0);
+                conTrong = Mathf.Min(conTrong, traiGio - traiHang - gian - 6f);
+            }
+            float w = Mathf.Min(kichThuocChip.x, (conTrong - gian * (soO - 1)) / soO);
             w = Mathf.Max(56f, w);
             for (int i = 0; i < _chips.Count; i++)
             {
@@ -211,7 +223,7 @@ namespace KitchenUIv3
             var ii = chip.transform.Find("Img")?.GetComponent<Image>();
             if (ii != null) { ii.sprite = icon; ii.enabled = icon != null; }
             var t = chip.transform.Find("Txt")?.GetComponent<TMP_Text>();
-            if (t != null && t.text != chu) t.text = chu;
+            if (t != null && t.text != chu) { t.text = chu; TmpVuaKhung.ApDung(t); }   // chip hep -> chu tu co vua
         }
     }
 }

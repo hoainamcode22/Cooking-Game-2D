@@ -22,7 +22,7 @@ public class TouristBoatConfig : ScriptableObject
 
     [Header("Mở khóa")]
     [Tooltip("Level mở hội thoại intro + bến 1 miễn phí")]
-    public int unlockLevel = 10;
+    public int unlockLevel = 7;   // [2026-09-24] Sep: mo tau o cap 7 (truoc 10)
 
     [Tooltip("Level yêu cầu của bến 2")]
     public int dock2Level = 12;

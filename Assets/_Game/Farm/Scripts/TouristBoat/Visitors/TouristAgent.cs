@@ -531,6 +531,11 @@ public class TouristAgent : MonoBehaviour
         // Popup đang mở / đang kéo hạt giống-liềm → không nhận tap world (luật FarmInputLock).
         if (FarmInputLock.IsPopupOpen || FarmInputLock.BlockMapPan) return;
         if (_manager == null) return;
+        // [BUBBLE DON HANG 2026-09-24] Bam nut tren bubble to khong duoc xuyen xuong khach phia sau.
+        if (TouristOrderBubbleUI.ConTroTrenBubble()) return;
+        // Khach dang hoi mon -> mo bubble to (mon, nguyen lieu, thuong, nut Nau ngay/Giao).
+        // Scene chua dung bubble (chua chay tool) -> giu cach cu: giao thang.
+        if (CanReceiveDish && TouristOrderBubbleUI.Mo(this)) return;
         _manager.DeliverTo(this);
     }
 

@@ -593,6 +593,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
         Save();
         RefreshVisual();
         PlaySeedPlantVFX(crop, 1);
+        FarmAmbientFX.BuiDat(transform.position, 5);   // [VFX 2026-09-24] bui dat mem khi trong
         AudioManager.Instance?.PlayPlanting();
 
         // Tiến độ nhiệm vụ trồng cây (đếm theo ô đất, 1 lần trồng = 1)
@@ -712,6 +713,7 @@ public class PlotController : MonoBehaviour, IPointerClickHandler, IPointerDownH
         );
         
         HarvestSlashFX.Spawn(fxSpawn);
+        FarmAmbientFX.BuiDat(transform.position, 4);   // [VFX 2026-09-24] bui dat khi thu hoach
 
         PlayHarvestAmountTextVFX(amount);
         AudioManager.Instance?.PlayHarvest();

@@ -49,7 +49,8 @@ public static class CookingGateAccess
     {
         if (CanEnter) return true;
 
-        FarmUIManager.Instance?.ShowHint(LockedMessage);
+        // [2026-09-24] Dong chu "Cooking unlocks at Level N" hien len roi mo dan
+        LockedHintFX.ChanTheoCap("Nấu ăn", RequiredLevel);
         Debug.Log($"[CookingGate] Chặn vào Bếp: đang cấp {CurrentLevel}, cần cấp {RequiredLevel}.");
         return false;
     }

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e53292a63bc932b4a8f7713061effbdc, type: 3}
   m_Name: TouristBoatConfig
   m_EditorClassIdentifier: Assembly-CSharp::TouristBoatConfig
-  unlockLevel: 10
+  unlockLevel: 7
   dock2Level: 12
   dock2GoldCost: 2000
   dock3Level: 14

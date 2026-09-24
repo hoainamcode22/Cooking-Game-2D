@@ -165,6 +165,9 @@ public class BoatDockSlot : MonoBehaviour
             _tapPunchRoutine = StartCoroutine(TapPunchRoutine());
         }
 
+        // [2026-09-24] Chua du cap: dong chu "This dock unlocks at Level N" hien len roi mo dan
+        if (mgr.Config != null && LockedHintFX.ChanTheoCap("Bến tàu này", CapMo(mgr.Config))) return;
+
         // ── V2: tap bảng khóa → MỞ POPUP MUA ──
         if (_popupMua == null)
             _popupMua = FindFirstObjectByType<DockPurchasePopupUI>(FindObjectsInactive.Include);

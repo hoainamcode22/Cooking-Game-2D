@@ -54,6 +54,29 @@ public class PlotCropVisual : MonoBehaviour
     [Range(1, 4)]
     [SerializeField] private int swayBuocFrame = 2;
 
+    // ── [VFX 2026-09-24] cay dang lon cung lac nhe + gio theo dot + lap lanh khi chin + nay khi len stage ──
+    [Header("VFX nong trai (2026-09-24)")]
+    [Tooltip("Cay CHUA chin cung lac nhe theo gio (nho hon cay chin).")]
+    [SerializeField] private bool  swayKhiDangLon   = true;
+    [SerializeField] private float heSoSwayDangLon  = 0.45f;
+    [Tooltip("Goc lac nhan he so gio dung chung (GioNongTrai) -> ca canh dong nghieng theo tung dot gio.")]
+    [SerializeField] private bool  theoGioNongTrai  = true;
+    [Tooltip("Cay chin: thinh thoang loe 1 ngoi sao lap lanh tren ngon (chi khi dang trong khung hinh).")]
+    [SerializeField] private bool  lapLanhKhiChin   = true;
+    [SerializeField] private Vector2 lapLanhCachGiay = new Vector2(2.5f, 5f);
+    [Tooltip("Cay len stage moi: 'bat' len nhe (co lai roi nay to) + vai hat lap lanh.")]
+    [SerializeField] private bool  nayKhiLenStage   = true;
+
+    private float _heSoGoc = 1f;
+
+    // ── [VFX 2026-09-24] Cho buom dau: o dang trong HOA (moi stage) hoac vua GIEO HAT (stage 0) ──
+    public static readonly System.Collections.Generic.List<PlotCropVisual> DiemDauBuom =
+        new System.Collections.Generic.List<PlotCropVisual>();
+    private bool _laDiemDau;
+    private int  _oHoa = -1;   // -1 chua xet, 0 khong, 1 co (o/chau hoa) - xet 1 lan, khong GetComponentInParent moi khung
+    private float _henLapLanh = -1f;
+    private Coroutine _nayRoutine;
+
     // â”€â”€ Internal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private CropData         currentCrop;
     private SpriteRenderer[] slotRenderers;
@@ -101,6 +124,17 @@ public class PlotCropVisual : MonoBehaviour
         if (chiSwayKhiThayDuoc && slotRenderers != null && !CoCayNaoDangHien())
             return;
 
+        // [VFX 2026-09-24] Lap lanh cay chin (dong ho theo swayTimer, khong cap phat gi)
+        if (lapLanhKhiChin && _lastShownReady)
+        {
+            if (_henLapLanh < 0f) _henLapLanh = swayTimer + Random.Range(lapLanhCachGiay.x, lapLanhCachGiay.y);
+            else if (swayTimer >= _henLapLanh)
+            {
+                _henLapLanh = swayTimer + Random.Range(lapLanhCachGiay.x, lapLanhCachGiay.y);
+                PhatLapLanh(1);
+            }
+        }
+
         // [PERF F4.9] ② giam nhip. Goc chi phu thuoc swayTimer (da cong du o tren) nen
         // bo frame KHONG lam troi pha.
         int buoc = Mathf.Clamp(swayBuocFrame, 1, 4);
@@ -108,13 +142,14 @@ public class PlotCropVisual : MonoBehaviour
         if (buoc > 1 && (Time.frameCount % buoc) != (_swayOffsetFrame % buoc))
             return;
 
+        float heSo = _heSoGoc * (theoGioNongTrai ? GioNongTrai.HeSo(transform.position.x) : 1f);
         for (int i = 0; i < slotVisuals.Length; i++)
         {
             Transform      v  = slotVisuals[i];
             SpriteRenderer sr = slotRenderers[i];
             if (v == null || sr == null || !sr.enabled) continue;
 
-            float angle = Mathf.Sin((swayTimer + slotPhase[i]) * swaySpeed) * swayAngle;
+            float angle = Mathf.Sin((swayTimer + slotPhase[i]) * swaySpeed) * swayAngle * heSo;
             v.localRotation = Quaternion.Euler(0f, 0f, angle);
         }
     }
@@ -227,10 +262,12 @@ public class PlotCropVisual : MonoBehaviour
         progress01  = Mathf.Clamp01(progress01);
         // 2026-08-27: số stage do CropData quyết định (bộ mới = 5, cây chưa chuyển = 3).
         int  stage   = crop.StageFromProgress(progress01);
+        DatDiemDau(stage == 0 || LaHoa(crop));   // [VFX 2026-09-24] re: chi Add/Remove khi doi trang thai
         bool isReady = stage >= crop.StageCount - 1;
 
         ApplyLattice(crop.displayCount);      // tự bỏ qua khi số cây không đổi
-        SetReadySwayActive(isReady);          // tự bỏ qua khi trạng thái không đổi
+        SetReadySwayActive(isReady || (swayKhiDangLon && enableReadySway));   // tự bỏ qua khi trạng thái không đổi
+        _heSoGoc = isReady ? 1f : heSoSwayDangLon;
 
         // Không có gì đổi so với lần vẽ trước ⇒ khỏi ghi lại 12 slot.
         bool sameAsLast = !_isCleared
@@ -240,6 +277,10 @@ public class PlotCropVisual : MonoBehaviour
                        && crop.displayCount == _lastShownCount;
         if (sameAsLast) return;
 
+        // [VFX 2026-09-24] Cung cay, stage tang (khong tinh lan hien dau / vua trong lai)
+        bool lenStage = nayKhiLenStage && !_isCleared && ReferenceEquals(crop, _lastShownCrop)
+                        && _lastShownStage >= 0 && stage > _lastShownStage;
+
         _isCleared      = false;
         _lastShownCrop  = crop;
         _lastShownStage = stage;
@@ -248,13 +289,69 @@ public class PlotCropVisual : MonoBehaviour
 
         UpdateVisual(stage);
 
-        if (!isReady)
+        if (!isReady && !swayKhiDangLon)
             foreach (var v in slotVisuals)
                 if (v != null) v.localRotation = Quaternion.identity;
 
         for (int i = 0; i < cropPoints.Length; i++)
             if (cropPoints[i] != null)
                 cropPoints[i].gameObject.SetActive(i < crop.displayCount);
+
+        if (lenStage) NayLenStage(isReady);
+        if (!isReady) _henLapLanh = -1f;
+    }
+
+    // ── [VFX 2026-09-24] ─────────────────────────────────────────────────────
+
+    /// <summary>Loe sao lap lanh tren ngon vai cay ngau nhien trong o (dung pool FarmAmbientFX).</summary>
+    private void PhatLapLanh(int soSao)
+    {
+        if (slotRenderers == null || FarmAmbientFX.Instance == null) return;
+        for (int n = 0; n < soSao; n++)
+        {
+            int batDau = Random.Range(0, slotRenderers.Length);
+            for (int k = 0; k < slotRenderers.Length; k++)
+            {
+                var sr = slotRenderers[(batDau + k) % slotRenderers.Length];
+                if (sr == null || !sr.enabled || !sr.gameObject.activeInHierarchy) continue;
+                Bounds b = sr.bounds;
+                var p = new Vector3(b.center.x + Random.Range(-0.3f, 0.3f) * b.size.x,
+                                    b.max.y - b.size.y * Random.Range(0.1f, 0.35f), 0f);
+                FarmAmbientFX.LapLanh(p, 0.9f);
+                break;
+            }
+        }
+    }
+
+    private void NayLenStage(bool vuaChin)
+    {
+        if (!isActiveAndEnabled || slotVisuals == null) return;
+        if (chiSwayKhiThayDuoc && !CoCayNaoDangHien()) return;   // ngoai khung hinh: khoi ton
+        if (_nayRoutine != null) StopCoroutine(_nayRoutine);
+        _nayRoutine = StartCoroutine(CoNayLenStage());
+        PhatLapLanh(vuaChin ? 3 : 1);
+    }
+
+    private System.Collections.IEnumerator CoNayLenStage()
+    {
+        Vector3 goc = GetCurrentTargetScale();
+        float t = 0f;
+        const float D = 0.38f;
+        while (t < D)
+        {
+            t += Time.unscaledDeltaTime;
+            float k = Mathf.Clamp01(t / D);
+            // co lai 0.82 -> vuot 1.12 -> ve 1 (gio tu goc: pivot duoi cua bo stage moi)
+            float s = k < 0.35f ? Mathf.Lerp(0.82f, 1.12f, Mathf.Sin(k / 0.35f * Mathf.PI * 0.5f))
+                                : Mathf.Lerp(1.12f, 1f, 1f - (1f - (k - 0.35f) / 0.65f) * (1f - (k - 0.35f) / 0.65f));
+            Vector3 sc = new Vector3(goc.x * (1f + (s - 1f) * 0.4f), goc.y * s, goc.z);   // ngang it hon doc
+            for (int i = 0; i < slotVisuals.Length; i++)
+                if (slotVisuals[i] != null) slotVisuals[i].localScale = sc;
+            yield return null;
+        }
+        for (int i = 0; i < slotVisuals.Length; i++)
+            if (slotVisuals[i] != null) slotVisuals[i].localScale = goc;
+        _nayRoutine = null;
     }
 
     private void EnsurePointsCount(int requiredCount)
@@ -468,8 +565,48 @@ public class PlotCropVisual : MonoBehaviour
     }
 
     /// <summary>Táº¯t toÃ n bá»™ visual.</summary>
+    private void OnDisable() => DatDiemDau(false);   // [VFX 2026-09-24]
+
+    private void DatDiemDau(bool co)
+    {
+        if (co == _laDiemDau) return;
+        _laDiemDau = co;
+        if (co) DiemDauBuom.Add(this); else DiemDauBuom.Remove(this);
+    }
+
+    private bool LaHoa(CropData crop)
+    {
+        if (crop != null && crop.cropCategory == CropCategory.Flower) return true;
+        if (_oHoa < 0)
+        {
+            var plot = GetComponentInParent<PlotController>();
+            string cha = transform.parent != null ? transform.parent.name.ToLower() : "";
+            _oHoa = (plot != null && plot.Category == PlotCategory.Flower) || cha.Contains("chau") || cha.Contains("pot") || cha.Contains("hoa") ? 1 : 0;
+        }
+        return _oHoa == 1;
+    }
+
+    /// <summary>Diem buom dau: ngon 1 cay ngau nhien dang hien trong khung hinh. Khong co -> false.</summary>
+    public bool LayDiemDau(out Vector3 p)
+    {
+        p = Vector3.zero;
+        if (slotRenderers == null || slotRenderers.Length == 0) return false;
+        int batDau = Random.Range(0, slotRenderers.Length);
+        for (int k = 0; k < slotRenderers.Length; k++)
+        {
+            var sr = slotRenderers[(batDau + k) % slotRenderers.Length];
+            if (sr == null || !sr.enabled || sr.sprite == null || !sr.isVisible) continue;
+            Bounds b = sr.bounds;
+            p = new Vector3(b.center.x + Random.Range(-0.15f, 0.15f) * b.size.x, b.max.y - b.size.y * 0.2f, 0f);
+            return true;
+        }
+        return false;
+    }
+
     public void ClearAll()
     {
+        DatDiemDau(false);   // [VFX 2026-09-24]
+        if (_nayRoutine != null) { StopCoroutine(_nayRoutine); _nayRoutine = null; }   // [VFX 2026-09-24]
         EnsureSetup();
         SetReadySwayActive(false);
 

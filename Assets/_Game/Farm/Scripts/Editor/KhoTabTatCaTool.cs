@@ -137,6 +137,28 @@ public static class KhoTabTatCaTool
         Debug.Log("[Kho] Thanh kho gon: xoa " + xoa + " lop cu chong nhau; con Panel (khung) + Img_Icon + Bar_Track/Bar_Fill/Txt_Count. Chinh tay xong bam Ctrl+S.");
     }
 
+    [MenuItem("Tools/Kho/Hien thanh kho tren HUD de chinh tay (khong doi bo cuc)", false, 12)]
+    private static void HienToastDeChinh()
+    {
+        var t = Object.FindFirstObjectByType<WarehouseGainToastUI>(FindObjectsInactive.Include);
+        if (t == null) { EditorUtility.DisplayDialog("Kho", "Khong thay WarehouseGainToastUI. Hay mo SCN_Farm.", "OK"); return; }
+        var panel = t.transform.Find("Panel_WarehouseToast");
+        if (panel == null) { EditorUtility.DisplayDialog("Kho", "Chua co Panel_WarehouseToast - bam 'Dung thanh kho (toast) gon' truoc.", "OK"); return; }
+        Undo.RegisterFullObjectHierarchyUndo(t.gameObject, "Hien thanh kho");
+        var glow = panel.GetComponent<UIGlowPulseFX>();
+        if (glow != null) Undo.DestroyObjectImmediate(glow);            // vong sang cam
+        var halo = panel.Find("FX_GlowHalo");
+        if (halo != null) Undo.DestroyObjectImmediate(halo.gameObject);
+        panel.gameObject.SetActive(true);
+        var cg = panel.GetComponent<CanvasGroup>(); if (cg != null) cg.alpha = 1f;
+        var so = new SerializedObject(t);
+        var p = so.FindProperty("boCucGon"); if (p != null) { p.boolValue = true; so.ApplyModifiedProperties(); }
+        EditorSceneManager.MarkSceneDirty(t.gameObject.scene);
+        Selection.activeTransform = panel;
+        EditorGUIUtility.PingObject(panel.gameObject);
+        Debug.Log("[Kho] Thanh kho dang hien o Canvas_HUD/WarehouseGainToast/Panel_WarehouseToast: keo tha Img_Icon, Bar_Track, Bar_Fill, Txt_Count tuy y roi Ctrl+S. Play se giu nguyen (boCucGon = true), tu an/hien khi thu hoach.");
+    }
+
     private static RectTransform Lay(Transform cha, string ten)
     {
         var t = cha.Find(ten) as RectTransform;

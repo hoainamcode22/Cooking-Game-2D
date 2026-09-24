@@ -70,7 +70,7 @@ public static class TrainGateAccess
     {
         if (CanOpen) return true;
 
-        FarmUIManager.Instance?.ShowHint(LockedMessage);
+        LockedHintFX.ChanTheoCap("Tàu hỏa", RequiredLevel);   // [2026-09-24] "Train unlocks at Level N"
         {
             Debug.Log($"[Train] Chan mo tau: dang cap {CurrentLevel}, can cap {RequiredLevel}.");
         }

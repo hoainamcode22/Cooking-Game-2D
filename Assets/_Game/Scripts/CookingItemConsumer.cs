@@ -54,7 +54,13 @@ public class CookingItemConsumer : MonoBehaviour
 
         if (KitchenTransferManager.Instance != null)
         {
+            // [2026-09-24] Moi mon chi tru DUNG 1 cho moi nguyen lieu/gia vi trong noi; phan con lai o khay.
+            var ktm = KitchenTransferManager.Instance;
+            var truoc = new System.Text.StringBuilder();
+            foreach (var id in cookedItemIds) truoc.Append(id).Append(' ').Append(ktm.GetTransferredAmount(id)).Append("->");
             KitchenTransferManager.Instance.SetAfterCooking(cookedItemIds);
+            foreach (var id in cookedItemIds) truoc.Append(' ').Append(id).Append('=').Append(ktm.GetTransferredAmount(id));
+            Debug.Log("[Bep] Tru nguyen lieu sau khi nau: " + truoc);
         }
         else
         {

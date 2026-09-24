@@ -102,6 +102,7 @@ public class LandRegionSign : MonoBehaviour
 
         if (!_manager.CanBuy(_region, out string reason))
         {
+            if (LockedHintFX.ChanTheoCap("Vùng đất này", _region.unlockLevel)) { Refresh(); return; }   // [2026-09-24]
             onBlocked?.Invoke(reason);
             Refresh();
             return;

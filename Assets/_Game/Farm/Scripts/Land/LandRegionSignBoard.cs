@@ -392,6 +392,9 @@ public class LandRegionSignBoard : MonoBehaviour
             return;
         }
 
+        // [2026-09-24] Chua du cap: chi hien dong chu "This land unlocks at Level N" roi mo dan
+        if (LockedHintFX.ChanTheoCap("Vùng đất này", _region.unlockLevel)) return;
+
         // Lo chua mua: nguyen ven duong cu, khong dong gi vao.
         LandPurchasePopupUI.Show(_region, _manager);
     }

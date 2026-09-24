@@ -108,7 +108,9 @@ public class SelectableIngredientCard : MonoBehaviour, IPointerClickHandler
     public void SetSelected(bool selected)
     {
         IsSelected = selected;
-        if (statusGO != null) statusGO.SetActive(selected);
+        // [2026-09-24] Sep: tha vao noi thi the GIU NGUYEN, chi giam so luong (-1) -> khong bat lop
+        // Img_Status (o vang de che icon) nua. Muon bat lai: doi 'false' thanh 'selected'.
+        if (statusGO != null) statusGO.SetActive(false);
     }
 
     private void CacheFromUI()

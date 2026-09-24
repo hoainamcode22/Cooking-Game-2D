@@ -2287,5 +2287,23 @@ public static class LocStringTable
         { "Gia vị {0}/{1}",                    "Seasonings {0}/{1}" },
         { "Cần cấp {0} để mở ô này.", "Reach level {0} to unlock this slot." },
         { "Cần cấp {0}", "Needs Lv {0}" },
+        // [BUBBLE DON HANG 2026-09-24]
+        { "Khách đặt món", "Tourist Order" },
+        { "Nguyên liệu cần nấu:", "Ingredients needed:" },
+        { "Trong kho: {0}", "In storage: {0}" },
+        { "Nấu ngay", "Cook now" },
+        { "Giao món", "Deliver" },
+        { "Ngon quá! Cảm ơn!", "Delicious! Thank you!" },
+        { "Bấm liên tục để nhóm lửa!", "Tap fast to light the fire!" },
+        { "TỐT!", "GOOD!" },
+        { "{0} mở ở cấp {1}", "{0} unlocks at Level {1}" },
+        { "Tàu hỏa", "Train" },
+        { "Vùng đất này", "This land" },
+        { "Bến tàu này", "This dock" },
+        { "THẤT BẠI!", "FAILED!" },
+        { "Nồi trống!", "The pot is empty!" },
+        { "Chưa chọn món.", "Pick a dish first." },
+        { "Thiếu {0}", "Missing {0}" },
+        { "{0} không có trong công thức", "{0} is not in the recipe" },
     };
 }

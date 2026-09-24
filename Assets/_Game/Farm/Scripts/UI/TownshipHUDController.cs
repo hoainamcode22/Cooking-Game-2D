@@ -562,11 +562,12 @@ namespace FarmGame.UI
 
         private void UpdateCurrency(int gold, int gems)
         {
+            // [VFX 2026-09-24] So dem chay (SoDemChay tu tat khi dung yen -> khong ton Update)
             if (txtGold != null)
-                txtGold.text = gold.ToString("N0", DinhDangTien);
+                SoDemChay.Dat(txtGold, gold, "N0", DinhDangTien);
 
             if (txtDiamond != null)
-                txtDiamond.text = gems.ToString("N0", DinhDangTien);
+                SoDemChay.Dat(txtDiamond, gems, "N0", DinhDangTien);
         }
 
         private void OnExpChanged(int cur, int req)
@@ -579,11 +580,11 @@ namespace FarmGame.UI
             if (req <= 0) req = 1;
             float ratio = Mathf.Clamp01((float)cur / req);
 
-            if (imgExpFill != null)
-                imgExpFill.fillAmount = ratio;
-
+            // [VFX 2026-09-24] EXP dem chay + thanh EXP truot theo; len cap (EXP giam) thi hien ngay
             if (txtExp != null)
-                txtExp.text = cur.ToString("N0", DinhDangExp) + " / " + req.ToString("N0", DinhDangExp);
+                SoDemChay.Dat(txtExp, cur, "N0", DinhDangExp, " / " + req.ToString("N0", DinhDangExp), imgExpFill, ratio, false);
+            else if (imgExpFill != null)
+                imgExpFill.fillAmount = ratio;
         }
 
         private void OnLevelChanged(int level)

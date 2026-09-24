@@ -298,8 +298,16 @@ public class WarehouseGainToastUI : MonoBehaviour
         }
         _imgPanel.raycastTarget = false;
         _panelColor = _imgPanel.color;
+        // [2026-09-24] Vong sang CAM quanh thanh: UIGlowPulseFX tao 'FX_GlowHalo' ngay trong Awake
+        // (ke ca khi component bi tat) -> go han component + vong sang.
         var glow = _panel.GetComponent<UIGlowPulseFX>();
-        if (glow != null) glow.enabled = false;         // lop sang nhap nhay de len icon
+        if (glow != null)
+        {
+            glow.Stop();
+            if (Application.isPlaying) Destroy(glow); else DestroyImmediate(glow);
+        }
+        var halo = _panel.Find("FX_GlowHalo");
+        if (halo != null) { if (Application.isPlaying) Destroy(halo.gameObject); else DestroyImmediate(halo.gameObject); }
 
         _cg = _panel.GetComponent<CanvasGroup>(); if (_cg == null) _cg = _panel.gameObject.AddComponent<CanvasGroup>();
         _cg.blocksRaycasts = false; _cg.interactable = false;

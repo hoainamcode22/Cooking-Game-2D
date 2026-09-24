@@ -1333,6 +1333,9 @@ public class LevelUpPopupUI : MonoBehaviour
     /// </summary>
     private void StartV2Fx()
     {
+        // [VFX 2026-09-24] Tia nang xoay cham sau ngoi sao + anh sang luot nut "Tiep tuc"
+        LevelUpSunRaysFX.GanVao(transform.Find("Root_HienThi/Content"));
+
         if (sparkleFx != null)
             sparkleFx.Play();
 

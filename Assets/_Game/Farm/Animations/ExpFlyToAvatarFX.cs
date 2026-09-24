@@ -24,6 +24,14 @@ public class ExpFlyToAvatarFX : MonoBehaviour
     [Header("Misc")]
     [SerializeField] private bool destroyOnFinish = true;
 
+    [Header("V2 2026-09-24: sao EXP roi xuong dat cung nong san roi moi bay len thanh EXP")]
+    [SerializeField] private bool roiDatV2 = true;
+    [SerializeField] private RoiDatFX.CauHinh roiDat = new RoiDatFX.CauHinh
+    {
+        banKinhRai = 110f, doCaoTung = 120f, thoiGianRoi = 0.45f, namDat = 0.35f, namDatNgauNhien = 0.25f,
+        thoiGianBay = 0.55f, doCongBay = 70f, scaleDich = 0.6f
+    };
+
     private Action onArrived;
     private Coroutine routine;
 
@@ -74,7 +82,19 @@ public class ExpFlyToAvatarFX : MonoBehaviour
         if (visualRoot != null)
             visualRoot.localScale = startScale * zoomMul;
 
-        routine = StartCoroutine(CoPlay(worldSpawnPos, worldTargetPos));
+        // Luoi an toan: coroutine bi dung giua chung (SetActive false...) thi van tu huy
+        if (destroyOnFinish && roiDatV2) Destroy(gameObject, roiDat.TongThoiGian + 2f);
+
+        routine = StartCoroutine(roiDatV2 ? CoPlayV2(worldSpawnPos, worldTargetPos) : CoPlay(worldSpawnPos, worldTargetPos));
+    }
+
+    private IEnumerator CoPlayV2(Vector3 worldSpawnPos, Vector3 worldTargetPos)
+    {
+        var sr = GetComponentInChildren<SpriteRenderer>(true);
+        yield return RoiDatFX.Chay(transform, visualRoot, sr, worldSpawnPos, worldTargetPos,
+                                   startScale * zoomMul, normalScale * zoomMul, zoomMul, roiDat, onArrived);
+        routine = null;
+        if (destroyOnFinish && this != null) Destroy(gameObject);
     }
 
     private IEnumerator CoPlay(Vector3 worldSpawnPos, Vector3 worldTargetPos)
