@@ -360,6 +360,17 @@ public class PlacementGhostVisualController : MonoBehaviour
              "Người chơi cần thấy đúng vùng SẼ BỊ CHIẾM.")]
     [SerializeField] private bool useRectChevrons = true;
 
+    [Header("[2026-09-24] KHUNG KIEU VIDEO MAU")]
+    [Tooltip("Bat: vien xanh OM SAT 4 dinh vung o (dung hinh thoi cua o luoi) + 4 tam giac xanh o 4 goc " +
+             "hop bao, giong video mau. Tat: ve lai kieu cu (chevron chu L).")]
+    [SerializeField] private bool khungKieuVideo = true;
+    [SerializeField] private float vienVideoDay = 9f;
+    [SerializeField] private float vienVideoSangDay = 26f;
+    [Range(0.15f, 0.7f)] [SerializeField] private float tamGiacTiLe = 0.40f;
+    [SerializeField] private float tamGiacCachGoc = 10f;
+    [SerializeField] private Color mauVideoHopLe = new Color(0.22f, 1f, 0.18f, 1f);
+    [SerializeField] private Color mauVideoKhongHopLe = new Color(1f, 0.22f, 0.18f, 1f);
+
     [Tooltip("Cạnh của mỗi chevron, WORLD unit (1 ô lưới = 100). 46 ≈ nửa ô.")]
     [SerializeField] private float chevronWorldSize = 46f;
 
@@ -583,6 +594,140 @@ public class PlacementGhostVisualController : MonoBehaviour
 
         NeoCardVaoWorld();      // V10 — đặt card dưới vùng ô + bù zoom + tránh mép màn
         UpdateChevrons();
+        CapNhatKhungVideo();    // [2026-09-24]
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    //  [2026-09-24] KHUNG KIEU VIDEO: vien om sat hinh thoi + 4 tam giac goc
+    // ═════════════════════════════════════════════════════════════════════
+    private Transform        _videoRoot;
+    private LineRenderer     _vienVideo, _vienVideoSang;
+    private SpriteRenderer[] _tamGiac;
+    private static Sprite    _spTamGiac;
+    private readonly Vector3[] _dinhVideo = new Vector3[4];
+
+    private void DamBaoKhungVideo()
+    {
+        if (_videoRoot != null) return;
+        var t = transform.Find("Video_Frame");
+        if (t == null)
+        {
+            var go = new GameObject("Video_Frame");
+            go.layer = gameObject.layer;
+            t = go.transform;
+            t.SetParent(transform, false);
+        }
+        _videoRoot = t;
+        _vienVideoSang = TaoVienVideo("Vien_Sang", BaseOrder + 6);
+        _vienVideo     = TaoVienVideo("Vien",      BaseOrder + 7);
+        if (_spTamGiac == null) _spTamGiac = TaoSpriteTamGiac();
+        _tamGiac = new SpriteRenderer[4];
+        for (int i = 0; i < 4; i++)
+        {
+            _tamGiac[i] = CreateOrGetRenderer(_videoRoot, "TamGiac_" + i, _spTamGiac, BaseOrder + 7);
+        }
+    }
+
+    private LineRenderer TaoVienVideo(string ten, int thuTu)
+    {
+        var t = _videoRoot.Find(ten);
+        var go = t != null ? t.gameObject : new GameObject(ten);
+        if (t == null) go.transform.SetParent(_videoRoot, false);
+        go.layer = gameObject.layer;
+        var lr = go.GetComponent<LineRenderer>();
+        if (lr == null) lr = go.AddComponent<LineRenderer>();
+        lr.useWorldSpace = true;
+        lr.loop = true;
+        lr.positionCount = 4;
+        lr.numCornerVertices = 3;
+        lr.sharedMaterial = BuildingFootprintKit.VatLieuVien;
+        lr.sortingLayerName = SortingLayerName;
+        lr.sortingOrder = thuTu;
+        return lr;
+    }
+
+    /// <summary>Tam giac vuong trang, goc vuong o (0,0), 2 canh theo +X/+Y, mep mem. 1 unit = 1 world khi scale 1.</summary>
+    private static Sprite TaoSpriteTamGiac()
+    {
+        const int N = 64;
+        var tex = new Texture2D(N, N, TextureFormat.RGBA32, false) { wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear, name = "Tex_TamGiacGoc" };
+        var px = new Color32[N * N];
+        for (int y = 0; y < N; y++)
+            for (int x = 0; x < N; x++)
+            {
+                float u = (x + 0.5f) / N, v = (y + 0.5f) / N;
+                float d = 1f - (u + v);                 // > 0 la ben trong tam giac
+                float a = Mathf.Clamp01(d * N / 2.5f);  // mep mem ~2.5 px
+                px[y * N + x] = new Color32(255, 255, 255, (byte)(a * 255f));
+            }
+        tex.SetPixels32(px);
+        tex.Apply(false, true);
+        return Sprite.Create(tex, new Rect(0, 0, N, N), Vector2.zero, N);
+    }
+
+    private void CapNhatKhungVideo()
+    {
+        if (!khungKieuVideo)
+        {
+            if (_videoRoot != null && _videoRoot.gameObject.activeSelf) _videoRoot.gameObject.SetActive(false);
+            return;
+        }
+        PlacementManager pm = PlacementManager.Instance;
+        RectInt rect = pm != null ? pm.CurrentRect : new RectInt(0, 0, 0, 0);
+        DamBaoKhungVideo();
+        bool co = rect.width > 0 && rect.height > 0;
+        if (_videoRoot.gameObject.activeSelf != co) _videoRoot.gameObject.SetActive(co);
+        if (!co) return;
+
+        // Kieu cu tat han de khong chong hinh
+        ToggleArray(_chevrons, false);
+        SetEdgesVisible(false);
+        ToggleArray(_corners, false);
+
+        // 4 dinh vung o: Nam, Dong, Bac, Tay (cung ham voi PlacementManager -> khit o luoi)
+        Vector3 S = PlacementManager.CellCornerToWorld(rect.xMin, rect.yMin);
+        Vector3 E = PlacementManager.CellCornerToWorld(rect.xMax, rect.yMin);
+        Vector3 N = PlacementManager.CellCornerToWorld(rect.xMax, rect.yMax);
+        Vector3 W = PlacementManager.CellCornerToWorld(rect.xMin, rect.yMax);
+        float z = transform.position.z;
+        _dinhVideo[0] = new Vector3(S.x, S.y, z); _dinhVideo[1] = new Vector3(E.x, E.y, z);
+        _dinhVideo[2] = new Vector3(N.x, N.y, z); _dinhVideo[3] = new Vector3(W.x, W.y, z);
+
+        float nhip = 0.75f + 0.25f * FxEase.Sin01(Time.time / 0.9f);
+        Color c = _lastValid ? mauVideoHopLe : mauVideoKhongHopLe;
+        Color cs = new Color(c.r, c.g, c.b, 0.28f * nhip);
+
+        _vienVideo.SetPositions(_dinhVideo);
+        _vienVideo.startWidth = _vienVideo.endWidth = vienVideoDay;
+        _vienVideo.startColor = _vienVideo.endColor = c;
+        _vienVideoSang.SetPositions(_dinhVideo);
+        _vienVideoSang.startWidth = _vienVideoSang.endWidth = vienVideoSangDay;
+        _vienVideoSang.startColor = _vienVideoSang.endColor = cs;
+
+        // 4 tam giac o 4 goc HOP BAO, canh huyen song song canh hinh thoi (giong video)
+        float xL = W.x, xR = E.x, yB = S.y, yT = N.y, p = tamGiacCachGoc;
+        float k = tamGiacTiLe;
+        float lxTL = (N.x - W.x) * k, lyTL = (N.y - W.y) * k;
+        float lxTR = (E.x - N.x) * k, lyTR = (N.y - E.y) * k;
+        float lxBR = (E.x - S.x) * k, lyBR = (E.y - S.y) * k;
+        float lxBL = (S.x - W.x) * k, lyBL = (W.y - S.y) * k;
+        DatTamGiac(0, new Vector3(xL - p, yT + p, z),  lxTL, -lyTL, c);
+        DatTamGiac(1, new Vector3(xR + p, yT + p, z), -lxTR, -lyTR, c);
+        DatTamGiac(2, new Vector3(xR + p, yB - p, z), -lxBR,  lyBR, c);
+        DatTamGiac(3, new Vector3(xL - p, yB - p, z),  lxBL,  lyBL, c);
+    }
+
+    private void DatTamGiac(int i, Vector3 gocWorld, float sx, float sy, Color c)
+    {
+        var sr = _tamGiac != null ? _tamGiac[i] : null;
+        if (sr == null) return;
+        sr.enabled = true;
+        var tr = sr.transform;
+        tr.position = gocWorld;
+        tr.rotation = Quaternion.identity;
+        Vector3 ls = transform.lossyScale;   // bu scale cua ghost (root 100) -> sx/sy la world unit
+        tr.localScale = new Vector3(sx / Mathf.Max(0.0001f, Mathf.Abs(ls.x)), sy / Mathf.Max(0.0001f, Mathf.Abs(ls.y)), 1f);
+        sr.color = c;
     }
 
     public void ConfigureFromFootprintScale(Vector3 footprintScale)

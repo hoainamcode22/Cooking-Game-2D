@@ -42,7 +42,7 @@ public class FarmAmbientFX : MonoBehaviour
     [Header("So luong (may yeu tu giam 1/2)")]
     [SerializeField] private int soLapLanh = 14;
     [SerializeField] private int soGonSong = 4;
-    [SerializeField] private int soBuom = 4;
+    [SerializeField] private int soBuom = 18;
     [SerializeField] private int soChimToiDa = 5;
     [SerializeField] private int soDomDom = 14;
     [SerializeField] private int poolBui = 20;
@@ -57,11 +57,13 @@ public class FarmAmbientFX : MonoBehaviour
     [SerializeField] private float buomKichThuoc = 34f;
     [SerializeField] private float buomToc = 70f;
     [Tooltip("Ti le buom chon bay toi DAU tren hoa / o vua gieo hat (con lai bay lang thang).")]
-    [Range(0f, 1f)] [SerializeField] private float buomTiLeDau = 0.8f;
-    [SerializeField] private Vector2 buomDauGiay = new Vector2(3f, 7f);
+    [Range(0f, 1f)] [SerializeField] private float buomTiLeDau = 0.95f;
+    [SerializeField] private Vector2 buomDauGiay = new Vector2(4f, 9f);
+    [Tooltip("Ten sprite chua 1 trong cac tu nay = hoa trang tri -> buom bay toi dau (ngoai o trong vua gieo / hoa trong o).")]
+    [SerializeField] private string tuKhoaHoa = "hoa,flower,daisy,tulip,rose,sunflower,huongduong,lavender,bloom";
     [SerializeField] private Vector2 chimCachGiay = new Vector2(25f, 50f);
     [SerializeField] private float chimToc = 240f;
-    [SerializeField] private float chimKichThuoc = 200f;
+    [SerializeField] private float chimKichThuoc = 100f;
     [Tooltip("Do cao chim (phoi canh): chim bi day ra xa tam man hinh theo ti le nay + to hon + troi nhanh hon mat dat khi keo camera -> cam giac bay tren cao, gan mat nguoi choi.")]
     [SerializeField] private float chimDoCao = 0.75f;
     [Tooltip("Bong chim duoi mat dat (lech theo huong nang).")]
@@ -69,7 +71,7 @@ public class FarmAmbientFX : MonoBehaviour
     [SerializeField] private float chimBongAlpha = 0.12f;
     [Tooltip("Tu nang cap thong so cu (chim nho/thap) khi object da luu trong scene tu ban truoc.")]
     [SerializeField, HideInInspector] private int _phienBan = 0;
-    private const int PHIEN_BAN = 2;
+    private const int PHIEN_BAN = 4;
     [SerializeField] private float domDomKichThuoc = 40f;
 
     [Header("Sorting")]
@@ -231,6 +233,20 @@ public class FarmAmbientFX : MonoBehaviour
             chimLechBong = new Vector2(160f, -150f);
             chimBongAlpha = 0.12f;
             chimToc = 240f;
+            if (_phienBan < 3)
+            {
+                // [2026-09-24 v3] chim nho lai (giu do cao) · nhieu buom hon, bam hoa nhieu hon
+                if (chimKichThuoc >= 200f) chimKichThuoc = 150f;
+                if (soBuom < 9) soBuom = 9;
+                if (buomTiLeDau < 0.95f) buomTiLeDau = 0.95f;
+                buomDauGiay = new Vector2(4f, 9f);
+            }
+            if (_phienBan < 4)
+            {
+                // [2026-09-24 v4] chim 150 -> 100 · buom 15-20 con
+                if (chimKichThuoc > 100f) chimKichThuoc = 100f;
+                if (soBuom < 18) soBuom = 18;
+            }
             _phienBan = PHIEN_BAN;
         }
         Dung();
@@ -388,9 +404,11 @@ public class FarmAmbientFX : MonoBehaviour
         _khung = new Rect(c.x - w, c.y - h, w * 2f, h * 2f);
 
         if (Time.time >= _henKiemDem) KiemDem();
+        // [2026-09-24] Icon san thu hoach / khoa tren map giu co theo zoom (quet 15s/lan, bat ca o moi dat)
+        if (Time.time >= _henGanZoom) { _henGanZoom = Time.time + 15f; CoTheoZoom.GanTheoTen("ReadyIcon", "LockIcon"); }
 
         if (lapLanhNuoc && _nuoc != null) { CapNhatLapLanh(dt); CapNhatSong(dt); } else { TatNhom(_lap); TatNhom(_song); }
-        if (buom && !_laDem) CapNhatBuom(dt); else TatNhom(_buom);
+        if (buom && !_laDem) { if (Time.time >= _henQuetHoa) QuetHoa(); CapNhatBuom(dt); } else TatNhom(_buom);
         if (chim) CapNhatChim(dt); else { TatNhom(_chim); TatNhom(_bongChim); _dangChimBay = false; }
         if (domDom && _laDem) CapNhatDom(dt); else TatNhom(_dom);
         XuLyChamBui();
@@ -547,8 +565,14 @@ public class FarmAmbientFX : MonoBehaviour
                     }
                     else
                     {
-                        b.trangThai = 0; b.doi = UnityEngine.Random.Range(1.5f, 3.5f);
+                        b.trangThai = 0; b.doi = UnityEngine.Random.Range(0.8f, 2f);
                         Vector2 r = UnityEngine.Random.insideUnitCircle * 260f; b.a0 = r.x; b.kt = r.y;
+                        // [2026-09-24] Lang thang QUANH hoa: neo goc gan 1 bong hoa trong khung (neu co)
+                        if (UnityEngine.Random.value < 0.75f && TimHoaGan(out Vector3 hoa))
+                        {
+                            b.goc = hoa;
+                            r = UnityEngine.Random.insideUnitCircle * 90f; b.a0 = r.x; b.kt = r.y + 40f;
+                        }
                     }
                 }
                 Vector3 dich = b.trangThai == 1 ? b.dich : b.goc + new Vector3(b.a0, b.kt, 0f);
@@ -578,6 +602,17 @@ public class FarmAmbientFX : MonoBehaviour
     private bool TimChoDau(Hat buomNay, out Vector3 cho)
     {
         cho = Vector3.zero;
+        // [2026-09-24] Hoa trang tri trong scene cung la cho dau (chon ngau nhien giua 2 nguon)
+        if (_hoa.Count > 0 && (PlotCropVisual.DiemDauBuom.Count == 0 || UnityEngine.Random.value < 0.5f))
+        {
+            int m = _hoa.Count, bd = UnityEngine.Random.Range(0, m);
+            for (int k = 0; k < m; k++)
+            {
+                Vector3 p = _hoa[(bd + k) % m];
+                if (!_khung.Contains(p) || CoBuomKhac(buomNay, p)) continue;
+                cho = p; return true;
+            }
+        }
         var ds = PlotCropVisual.DiemDauBuom;
         int n = ds.Count;
         if (n == 0) return false;
@@ -596,6 +631,60 @@ public class FarmAmbientFX : MonoBehaviour
             if (daCo) continue;
             cho = p;
             return true;
+        }
+        return false;
+    }
+
+    private bool CoBuomKhac(Hat buomNay, Vector3 p)
+    {
+        for (int j = 0; j < _buom.Length; j++)
+        {
+            var o = _buom[j];
+            if (o != buomNay && o.song && o.trangThai != 0 && (o.dich - p).sqrMagnitude < 45f * 45f) return true;
+        }
+        return false;
+    }
+
+    // ── Hoa trang tri (quet ten sprite 1 lan luc dau + moi 30s; khong ton gi moi frame) ──
+    private float _henGanZoom;
+    private readonly List<Vector3> _hoa = new List<Vector3>(64);
+    private float _henQuetHoa;
+
+    private void QuetHoa()
+    {
+        _henQuetHoa = Time.time + 30f;
+        _hoa.Clear();
+        var tu = tuKhoaHoa.ToLowerInvariant().Split(',');
+        foreach (var sr in FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None))
+        {
+            if (sr == null || sr.sprite == null || !sr.enabled || sr.transform.IsChildOf(transform)) continue;
+            string ten = sr.sprite.name.ToLowerInvariant();
+            bool la = false;
+            for (int i = 0; i < tu.Length; i++) { var t = tu[i].Trim(); if (t.Length > 0 && ten.Contains(t)) { la = true; break; } }
+            if (!la) continue;
+            var b = sr.bounds;
+            _hoa.Add(new Vector3(b.center.x + UnityEngine.Random.Range(-0.15f, 0.15f) * b.size.x, b.max.y - b.size.y * 0.3f, 0f));
+            if (_hoa.Count >= 64) break;
+        }
+    }
+
+    private bool TimHoaGan(out Vector3 hoa)
+    {
+        hoa = Vector3.zero;
+        int m = _hoa.Count;
+        if (m > 0)
+        {
+            int bd = UnityEngine.Random.Range(0, m);
+            for (int k = 0; k < m; k++) { var p = _hoa[(bd + k) % m]; if (_khung.Contains(p)) { hoa = p; return true; } }
+        }
+        var ds = PlotCropVisual.DiemDauBuom;
+        int n = ds.Count;
+        if (n == 0) return false;
+        int b0 = UnityEngine.Random.Range(0, n);
+        for (int k = 0; k < Mathf.Min(n, 8); k++)
+        {
+            var v = ds[(b0 + k) % n];
+            if (v != null && v.LayDiemDau(out Vector3 p) && _khung.Contains(p)) { hoa = p; return true; }
         }
         return false;
     }
@@ -623,7 +712,8 @@ public class FarmAmbientFX : MonoBehaviour
             {
                 var b = _chim[i];
                 int hang = (i + 1) / 2; float ben = (i % 2 == 0) ? 1f : -1f;
-                b.pos = dau - _chimHuong * (hang * 110f) + new Vector3(0f, ben * hang * 70f, 0f);
+                float kc = chimKichThuoc / 200f;   // khoang cach doi hinh theo co chim
+                b.pos = dau - _chimHuong * (hang * 110f * kc) + new Vector3(0f, ben * hang * 70f * kc, 0f);
                 b.pha = UnityEngine.Random.Range(0f, 6f);
                 b.kt = chimKichThuoc * UnityEngine.Random.Range(0.85f, 1.1f);
                 Bat(b);

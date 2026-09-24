@@ -676,6 +676,29 @@ public class PlacementManager : MonoBehaviour
 
     // ── Serializable helpers ─────────────────────────────────────────────────
 
+    /// <summary>[2026-09-24] Chan doan: vat nao dang chiem o nay (de biet vi sao khong dat sat duoc).</summary>
+    private string TenVatChiem(Vector2Int o)
+    {
+        foreach (var kv in occupancyByObject)
+            if (kv.Key != null && kv.Value.Contains(o)) return kv.Key.name + " " + kv.Value.width + "x" + kv.Value.height;
+        return "cho giu cong truong";
+    }
+
+    private readonly List<RectInt> _vungDaLoad = new List<RectInt>();
+    private static bool ChongVung(RectInt r, List<RectInt> ds)
+    {
+        for (int i = 0; i < ds.Count; i++) if (r.Overlaps(ds[i])) return true;
+        return false;
+    }
+
+    /// <summary>[2026-09-24] Phien ban neo hien tai cua prefab (0 neu khong co kit) - ghi vao entry moi.</summary>
+    private static int PhienBanNeoCua(PlaceableItemData d)
+    {
+        if (d == null || d.prefabToBuild == null) return 0;
+        var k = d.prefabToBuild.GetComponentInChildren<BuildingFootprintKit>(true);
+        return k != null ? k.PhienBanNeo : 0;
+    }
+
     [Serializable]
     private class BuildingEntry
     {
@@ -685,6 +708,10 @@ public class PlacementManager : MonoBehaviour
         // TƯƠNG THÍCH NGƯỢC: save cũ không có key "rot".
         // JsonUtility bỏ qua field thiếu và giữ giá trị mặc định của C# = 0 → không xoay.
         public int    rot;
+        // [2026-09-24] Phien ban NEO cua prefab luc luu (BuildingFootprintKit.PhienBanNeo).
+        // Tool "Edit Mode > 1" nan o dat thanh 2x2 va doi chan art ve dung goc -> save cu (neoV
+        // nho hon) duoc dich 1 lan theo LechNeoCu roi hut vao luoi. Save cu khong co key = 0.
+        public int    neoV;
     }
 
     [Serializable]
@@ -713,8 +740,68 @@ public class PlacementManager : MonoBehaviour
 
     private void Start()
     {
+        ApDungDiChuyenCanh();   // [2026-09-24] vat dat SAN trong scene ma nguoi choi da keo di cho khac
         LoadBuildings();
         RefreshOccupancy();
+    }
+
+    // ═════════════════════════════════════════════════════════════════════
+    // [FIX P0 2026-09-24] LUU VI TRI VAT DAT SAN TRONG SCENE (o dat, chau hoa, nha co san...)
+    // Truoc day keo cac vat nay trong Edit Mode chi doi transform: save chi khop voi vat MUA
+    // (placedBuildings) nen tat game mo lai la chung NHAY VE CHO CU. Nay ghi rieng theo ID:
+    //   o dat / chau hoa: "plot:<plotId>" (plotId duy nhat) · vat khac: "path:<duong dan Hierarchy>".
+    // ═════════════════════════════════════════════════════════════════════
+    public const string SceneMovesKey = "FARM_SCENE_MOVES_V1";
+
+    [Serializable] private class DiChuyenCanh { public string id; public float x, y; public int rot; }
+    [Serializable] private class GoiDiChuyenCanh { public List<DiChuyenCanh> ds = new List<DiChuyenCanh>(); }
+
+    private static string IdCanh(GameObject go)
+    {
+        var pc = go.GetComponentInChildren<PlotController>(true);
+        if (pc != null) return "plot:" + pc.PlotId;
+        var sb = new System.Text.StringBuilder(go.name);
+        for (var t = go.transform.parent; t != null; t = t.parent) sb.Insert(0, t.name + "/");
+        return "path:" + sb;
+    }
+
+    private static GoiDiChuyenCanh DocDiChuyenCanh()
+    {
+        string json = PlayerPrefs.GetString(SceneMovesKey, "");
+        if (string.IsNullOrEmpty(json)) return new GoiDiChuyenCanh();
+        try { return JsonUtility.FromJson<GoiDiChuyenCanh>(json) ?? new GoiDiChuyenCanh(); }
+        catch { return new GoiDiChuyenCanh(); }
+    }
+
+    private void GhiDiChuyenCanh(GameObject go, Vector3 pos, int rot)
+    {
+        if (go == null) return;
+        var goi = DocDiChuyenCanh();
+        string id = IdCanh(go);
+        var v = goi.ds.Find(d => d != null && d.id == id);
+        if (v == null) { v = new DiChuyenCanh { id = id }; goi.ds.Add(v); }
+        v.x = pos.x; v.y = pos.y; v.rot = rot & 3;
+        PlayerPrefs.SetString(SceneMovesKey, JsonUtility.ToJson(goi));
+        LuuGopPrefs.Hen();
+    }
+
+    private void ApDungDiChuyenCanh()
+    {
+        var goi = DocDiChuyenCanh();
+        if (goi.ds.Count == 0) return;
+        var map = new Dictionary<string, DiChuyenCanh>();
+        foreach (var d in goi.ds) if (d != null && !string.IsNullOrEmpty(d.id)) map[d.id] = d;
+        int n = 0;
+        foreach (var eb in FindObjectsByType<EditableBuilding>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (eb == null) continue;
+            if (!map.TryGetValue(IdCanh(eb.gameObject), out var d)) continue;
+            var t = eb.transform;
+            t.position = new Vector3(d.x, d.y, t.position.z);
+            t.rotation = RotationOf(d.rot);
+            n++;
+        }
+        if (n > 0) { Debug.Log($"[Placement] Tra lai vi tri {n} vat dat san trong scene (nguoi choi da keo)."); }
     }
 
     private void Update()
@@ -1299,6 +1386,7 @@ public class PlacementManager : MonoBehaviour
 
             // Cập nhật vị trí + hướng xoay trong save data
             // (khớp theo tọa độ cũ vì grid đảm bảo không trùng)
+            bool daKhop = false;
             foreach (BuildingEntry e in placedBuildings)
             {
                 if (Mathf.Approximately(e.x, originalEditPosition.x) &&
@@ -1307,10 +1395,13 @@ public class PlacementManager : MonoBehaviour
                     e.x   = pos.x;
                     e.y   = pos.y;
                     e.rot = rotationSteps;
+                    daKhop = true;
                     break;
                 }
             }
             SaveBuildings();
+            // [2026-09-24] Khong phai vat MUA -> vat dat san trong scene -> luu rieng de lan sau mo game giu dung cho
+            if (!daKhop) GhiDiChuyenCanh(moved, pos, rotationSteps);
 
             Cleanup(refund: false);
             RefreshOccupancy();
@@ -1391,7 +1482,8 @@ public class PlacementManager : MonoBehaviour
             x      = pos.x,
             y      = pos.y,
             plotId = assignedPlotId,
-            rot    = rotationSteps
+            rot    = rotationSteps,
+            neoV   = PhienBanNeoCua(currentItem as PlaceableItemData)
         });
         SaveBuildings();
 
@@ -1509,7 +1601,8 @@ public class PlacementManager : MonoBehaviour
             x      = pos.x,
             y      = pos.y,
             plotId = assignedPlotId,
-            rot    = rotationStepsUsed & 3
+            rot    = rotationStepsUsed & 3,
+            neoV   = PhienBanNeoCua(data)
         });
         SaveBuildings();
 
@@ -1574,6 +1667,7 @@ public class PlacementManager : MonoBehaviour
 
         if (save?.list == null) return;
 
+        _vungDaLoad.Clear();
         // v0 = save do bản V7 ghi ra (không có key saveVersion → JsonUtility để 0).
         bool needMigrate = save.saveVersion < CurrentSaveVersion;
         int  migratedCount = 0;
@@ -1610,9 +1704,52 @@ public class PlacementManager : MonoBehaviour
                 migratedCount++;
             }
 
+            // [2026-09-24] Prefab da duoc nan lai chan (vd o dat 2x2) -> dich save cu DUNG 1 lan.
+            {
+                var kitPf = itemData.prefabToBuild.GetComponentInChildren<BuildingFootprintKit>(true);
+                if (kitPf != null && kitPf.PhienBanNeo > entry.neoV)
+                {
+                    Vector3 p = new Vector3(entry.x + kitPf.LechNeoCu.x, entry.y + kitPf.LechNeoCu.y, 0f);
+                    p = IsoGrid.SnapAnchor(p, GridSizeOf(itemData, rot));
+                    entry.x = p.x; entry.y = p.y;
+                    entry.neoV = kitPf.PhienBanNeo;
+                    migratedCount++;
+                }
+            }
+
             // entry.x/y là ĐIỂM NEO = mép dưới vùng ô (V8) → Instantiate thẳng vào đây.
             // Vùng ô được tính lại sau đó bởi RefreshOccupancy() qua RectFromAnchor().
             Vector3 pos = new(entry.x, entry.y, 0f);
+
+            // [2026-09-24] TACH CHONG: 2 cong trinh trong save ma trung o (vd sau 1 lan nan luoi loi) ->
+            // day cai sau sang o trong GAN NHAT. Binh thuong khong bao gio xay ra vi luc dat da chan chong.
+            {
+                Vector2Int soOTach = GridSizeOf(itemData, rot);
+                RectInt rTach = IsoGrid.RectFromAnchor(pos, soOTach);
+                if (ChongVung(rTach, _vungDaLoad))
+                {
+                    RectInt tot = rTach; float totD = float.MaxValue;
+                    for (int ban = 1; ban <= 6 && totD == float.MaxValue; ban++)
+                        for (int dx = -ban; dx <= ban; dx++)
+                            for (int dy = -ban; dy <= ban; dy++)
+                            {
+                                if (Mathf.Max(Mathf.Abs(dx), Mathf.Abs(dy)) != ban) continue;
+                                var r2 = new RectInt(rTach.x + dx, rTach.y + dy, soOTach.x, soOTach.y);
+                                if (ChongVung(r2, _vungDaLoad)) continue;
+                                float d = Vector2.Distance(IsoGrid.RectAnchorWorld(r2), pos);
+                                if (d < totD) { totD = d; tot = r2; }
+                            }
+                    if (totD < float.MaxValue)
+                    {
+                        Vector3 moi = IsoGrid.RectAnchorWorld(tot);
+                        entry.x = moi.x; entry.y = moi.y; pos = new Vector3(moi.x, moi.y, 0f);
+                        rTach = tot;
+                        migratedCount++;
+                    }
+                }
+                _vungDaLoad.Add(rTach);
+            }
+
             GameObject obj = Instantiate(itemData.prefabToBuild, pos, RotationOf(rot));
 
             FixBuildingRenderSorting(obj);
@@ -2237,7 +2374,7 @@ public class PlacementManager : MonoBehaviour
         if (!free)
         {
             Vector2Int c = FirstCellFailing(rect, cell => occupiedCells.Contains(cell));
-            return $"CHONG_LAN(o {c.x},{c.y} da bi chiem)";
+            return $"CHONG_LAN(o {c.x},{c.y} da bi chiem boi '{TenVatChiem(c)}')";
         }
 
         // Cổng 3 — biên bản đồ. Tới đây cổng 1 đã chắc chắn PASS nên

@@ -29,6 +29,27 @@ public class WarehouseGainToastUI : MonoBehaviour
         }
     }
 
+    // [2026-09-24] DICH BAY CHUNG cho moi vat pham vao kho (thu hoach, mua cho, tau, may, thuong):
+    // icon kho TREN thanh toast. Goi HienNgay() truoc khi bay de thanh da hien san cho icon bay vao.
+    public RectTransform IconRect
+    {
+        get
+        {
+            if (!EnsureBuilt()) return null;
+            return _imgIcon != null ? _imgIcon.rectTransform : _panel;
+        }
+    }
+
+    public void HienNgay()
+    {
+        if (!EnsureBuilt()) return;
+        Show();
+    }
+
+    [Header("[2026-09-24] Uu tien hien tren cung")]
+    [Tooltip("Thanh kho ve TREN cac UI khac (sort order rieng). 0 = theo canvas cha nhu cu.")]
+    [SerializeField] private int thuTuVeTren = 440;
+
     [Header("Wiring (thieu thi tu tim)")]
     [SerializeField] private Canvas canvas;
     [SerializeField] private Sprite panelSprite;       // khung (mac dinh Resources/UI/Standard/WoodBoard_Frame)
@@ -154,6 +175,7 @@ public class WarehouseGainToastUI : MonoBehaviour
         UpdateDisplayValues(_currentDisplayUsed, cap, animate: true);
         SpawnPlusText("+1", new Color(0.30f, 0.62f, 0.12f));
         JuicyPulseFX.Play(_panel, 1.12f, 0.2f);
+        if (_imgIcon != null) JuicyPulseFX.Play(_imgIcon.rectTransform, 1.35f, 0.18f);   // icon kho nhun khi vat pham bay vao
     }
 
     private void HandleItemAdded(string itemId, int amount)
@@ -311,6 +333,13 @@ public class WarehouseGainToastUI : MonoBehaviour
 
         _cg = _panel.GetComponent<CanvasGroup>(); if (_cg == null) _cg = _panel.gameObject.AddComponent<CanvasGroup>();
         _cg.blocksRaycasts = false; _cg.interactable = false;
+        if (thuTuVeTren > 0 && Application.isPlaying)
+        {
+            var cvTren = _panel.GetComponent<Canvas>();
+            if (cvTren == null) cvTren = _panel.gameObject.AddComponent<Canvas>();
+            cvTren.overrideSorting = true;
+            cvTren.sortingOrder = thuTuVeTren;
+        }
 
         // Tat cac lop cu chong len nhau (tool Editor xoa han)
         foreach (var ten in new[] { "Img_BarnHouse", "Badge_Header", "Progress_Container", "Img_CrateBadge" })

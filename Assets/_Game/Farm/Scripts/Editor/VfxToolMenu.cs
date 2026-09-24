@@ -32,7 +32,24 @@ public static class VfxToolMenu
     private static void GanNay() => Gan<UIPopBounce>("nay mo");
 
     [MenuItem("Tools/VFX/3. Gan anh sang luot cho nut dang chon", false, 21)]
-    private static void GanShine() => Gan<UIShineSweep>("anh sang luot");
+    private static void GanShine()
+    {
+        // [2026-09-24] Chi gan cho NUT (co Button, khong phai Canvas, khong qua to). Truoc day chon nham
+        // popup/canvas van gan duoc -> vet sang khong lo quet ngang man hinh.
+        int n = 0, bo = 0;
+        foreach (var go in Selection.gameObjects)
+        {
+            var rt = go.transform as RectTransform;
+            bool laNut = rt != null && go.GetComponent<UnityEngine.UI.Selectable>() != null && go.GetComponent<Canvas>() == null
+                         && rt.rect.width <= 900f && rt.rect.height <= 400f;
+            if (!laNut) { bo++; Debug.LogWarning("[VFX] Bo qua '" + go.name + "': khong phai nut. Anh sang luot chi gan cho NUT (object co Button)."); continue; }
+            if (go.GetComponent<UIShineSweep>() != null) continue;
+            Undo.AddComponent<UIShineSweep>(go);
+            EditorSceneManager.MarkSceneDirty(go.scene);
+            n++;
+        }
+        Debug.Log("[VFX] Gan anh sang luot cho " + n + " nut" + (bo > 0 ? (", bo qua " + bo + " object khong phai nut.") : "."));
+    }
 
     [MenuItem("Tools/VFX/4. Go nay mo + anh sang luot khoi object dang chon", false, 22)]
     private static void Go()
@@ -119,5 +136,42 @@ public static class VfxToolMenu
         int moi = fx.CheDoDomDom == 1 ? 0 : 1;
         fx.DatCheDoDomDom(moi);
         Debug.Log("[VFX] Dom dom: " + (moi == 1 ? "LUON BAT (xem thu)" : "theo gio may (18h-6h)"));
+    }
+
+    // [2026-09-24] Vet sang to quet ngang man hinh = UIShineSweep lo gan vao Canvas/popup toan man hinh.
+    [MenuItem("Tools/VFX/7. Go vet sang luot khoi popup + canvas (chi giu tren nut)", false, 23)]
+    private static void GoShineKhoiPopup()
+    {
+        int n = 0;
+        foreach (var s in Object.FindObjectsByType<UIShineSweep>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+        {
+            if (s == null) continue;
+            var rt = s.transform as RectTransform;
+            bool laNut = s.GetComponent<UnityEngine.UI.Selectable>() != null && s.GetComponent<Canvas>() == null
+                         && rt != null && rt.rect.width <= 900f && rt.rect.height <= 400f;
+            if (laNut) continue;
+            var m = s.transform.Find("Fx_ShineMask");
+            if (m != null) Undo.DestroyObjectImmediate(m.gameObject);
+            EditorSceneManager.MarkSceneDirty(s.gameObject.scene);
+            Debug.Log("[VFX] Go vet sang khoi: " + s.gameObject.name);
+            Undo.DestroyObjectImmediate(s);
+            n++;
+        }
+        Debug.Log("[VFX] Da go vet sang luot khoi " + n + " popup/canvas. Bam Ctrl+S.");
+    }
+
+    // [2026-09-24] Icon tren map giu co theo zoom (zoom xa to len, zoom gan nho lai)
+    [MenuItem("Tools/VFX/8. Icon dang chon: giu co theo zoom (CoTheoZoom)", false, 24)]
+    private static void GanCoTheoZoom()
+    {
+        int n = 0;
+        foreach (var go in Selection.gameObjects)
+        {
+            if (go.GetComponent<CoTheoZoom>() != null) continue;
+            Undo.AddComponent<CoTheoZoom>(go);
+            EditorSceneManager.MarkSceneDirty(go.scene);
+            n++;
+        }
+        Debug.Log("[VFX] Gan CoTheoZoom cho " + n + " object. Chinh 'Do Manh' (0 tat - 1 giu dung co man hinh) roi Ctrl+S.");
     }
 }

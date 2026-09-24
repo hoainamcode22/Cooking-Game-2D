@@ -43,6 +43,69 @@ public static class MarketSellerDirectory
 
     public static int Count => Sellers.Length;
 
+    // [2026-09-24] Ten tieng Anh cho NPC (tieng Anh la mac dinh). Save/listing cu van giu ten Viet ->
+    // doi luc HIEN THI qua TenHienThi(), khong dung vao SellerId nen khong lech du lieu.
+    private static readonly Dictionary<string, string> TenAnh = new Dictionary<string, string>
+    {
+        { "Ngọc Hằng", "Holly Grant" },
+        { "Tạ Trân", "Tracy Tan" },
+        { "Hiệp Trần Thị", "Heather Tran" },
+        { "Hạnh Bùi Thị", "Hailey Brooks" },
+        { "Mơ Mơ", "Momo" },
+        { "Thái Trần", "Tyler Trent" },
+        { "Tăng Thu Hậu", "Tessa Hale" },
+        { "Hoài Thương", "Hope Turner" },
+        { "Su Hào Bany", "Benny Sprout" },
+        { "Hằng Nguyễn", "Hannah Nolan" },
+        { "Lê Minh Tuấn", "Leo Mitchell" },
+        { "Phạm Thu Trang", "Paige Thompson" },
+        { "Vũ Đình Khoa", "Victor Kane" },
+        { "Đặng Bảo Ngọc", "Daisy Baker" },
+        { "Bùi Quang Huy", "Brian Quinn" },
+        { "Trịnh Mai Anh", "Mia Trent" },
+        { "Đỗ Hải Yến", "Hazel Dean" },
+        { "Lý Gia Bảo", "Liam Bailey" },
+        { "Ngô Thanh Vân", "Nora Vance" },
+        { "Hoàng Văn Sơn", "Henry Stone" },
+        { "Cao Thị Lụa", "Clara Lewis" },
+        { "Dương Tiểu Mi", "Millie Young" },
+        { "Chu Văn Đức", "Charlie Duke" },
+        { "Tô Ngọc Diệp", "Tina Dale" },
+        { "Mai Hữu Phước", "Max Porter" },
+        { "Lâm Khánh Chi", "Chloe Lamb" },
+        { "Kiều Anh Thư", "Kate Thorne" },
+        { "Hà Bảo Lâm", "Harry Bloom" },
+        { "Uông Mỹ Duyên", "Molly Dawn" },
+        { "Tống Gia Hân", "Grace Hart" },
+        { "Bảy Ròm", "Skinny Sam" },
+        { "Út Mập", "Little Bun" },
+        { "Chị Ba Rau Sạch", "Aunt Greens" },
+        { "Cô Tư Miệt Vườn", "Miss Orchard" },
+        { "Anh Năm Lúa", "Farmer Joe" },
+        { "Dì Sáu Bánh Bèo", "Auntie Cakes" },
+        { "Thím Chín Chợ", "Market Nina" },
+        { "Ông Mười Vườn", "Grandpa Garden" },
+        { "Hai Lúa Miền Tây", "Country Hank" },
+        { "Nhóc Tí", "Tiny Tim" },
+        { "Nguyễn Thảo My", "Nina Myers" },
+        { "Trương Bảo Trân", "Tracy Bowen" },
+        { "Phan Đức Trọng", "Peter Drake" },
+        { "Võ Kim Ngân", "Kim Vaughn" },
+        { "Đinh Hồng Nhung", "Rose Dean" },
+        { "Lưu Gia Huy", "Luke Harris" },
+        { "Tạ Bích Phượng", "Phoebe Taylor" },
+        { "Huỳnh Nhật Nam", "Nathan Hunt" },
+        { "Bành Tiểu Yến", "Ella Banks" },
+        { "Quách Thành Đạt", "Dan Quincy" },
+    };
+
+    /// <summary>Ten nguoi ban de hien len UI theo ngon ngu dang chon.</summary>
+    public static string TenHienThi(string ten)
+    {
+        if (string.IsNullOrEmpty(ten) || !LocalizationManager.DangTiengAnh) return ten;
+        return TenAnh.TryGetValue(ten, out var en) ? en : ten;
+    }
+
     /// <summary>Lấy người bán theo chỉ số bất kỳ — tự cuộn vòng nên gọi kiểu gì cũng an toàn.</summary>
     public static MarketSeller GetByIndex(int index)
     {

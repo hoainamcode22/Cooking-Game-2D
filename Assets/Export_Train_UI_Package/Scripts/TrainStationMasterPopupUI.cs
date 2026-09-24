@@ -548,7 +548,7 @@ namespace ExportTrainUIPackage
             thRt.anchorMax = Vector2.one;
             thRt.offsetMin = Vector2.zero;
             thRt.offsetMax = Vector2.zero;
-            txtHint.text = "Nạp đủ hàng cho các toa để tàu khởi hành vận chuyển!";
+            txtHint.text = Loc.T("Nạp đủ hàng cho các toa để tàu khởi hành vận chuyển!");
             txtHint.alignment = TextAlignmentOptions.Center;
             txtHint.fontSize = 20;
             txtHint.fontStyle = FontStyles.Bold;
@@ -589,7 +589,7 @@ namespace ExportTrainUIPackage
             trRt.anchorMax = Vector2.one;
             trRt.offsetMin = Vector2.zero;
             trRt.offsetMax = Vector2.zero;
-            txtTitle.text = "TÀU LỬA";
+            txtTitle.text = Loc.T("TÀU LỬA");
             txtTitle.alignment = TextAlignmentOptions.Center;
             txtTitle.fontSize = 42;
             txtTitle.fontStyle = FontStyles.Bold;
@@ -638,7 +638,7 @@ namespace ExportTrainUIPackage
 
             if (currentState == TrainState.WaitingForLoad)
             {
-                if (txtTitle != null) txtTitle.text = "TÀU CHỞ HÀNG";
+                if (txtTitle != null) txtTitle.text = Loc.T("TÀU CHỞ HÀNG");
                 if (txtHint != null)
                 {
                     int cargoCount = 0;
@@ -648,8 +648,8 @@ namespace ExportTrainUIPackage
 
                     int total = slots != null ? slots.Length : wagonSlots.Length;
                     txtHint.text = cargoCount > 0 && cargoCount < total
-                        ? $"Tàu {total} toa · chuyến này yêu cầu {cargoCount} loại hàng — chạm toa để nạp!"
-                        : "Chạm vào toa để nạp hàng — nạp đủ các toa yêu cầu, tàu sẽ khởi hành!";
+                        ? Loc.TF("Tàu {0} toa · chuyến này yêu cầu {1} loại hàng — chạm toa để nạp!", total, cargoCount)
+                        : Loc.T("Chạm vào toa để nạp hàng — nạp đủ các toa yêu cầu, tàu sẽ khởi hành!");
                 }
 
                 for (int i = 0; i < wagonSlots.Length; i++)
@@ -661,19 +661,19 @@ namespace ExportTrainUIPackage
                     if (data == null || data.mode != global::TrainWagonSlotMode.CargoRequest)
                     {
                         Sprite defaultIcon = GetFallbackCargoIcon(wagonIdx);
-                        wagonSlots[i].SetupCargoMode("Nông sản", defaultIcon, 0, 10, () => OnWagonClicked(wagonIdx));
+                        wagonSlots[i].SetupCargoMode(Loc.T("Nông sản"), defaultIcon, 0, 10, () => OnWagonClicked(wagonIdx));
                         continue;
                     }
 
-                    wagonSlots[i].SetupCargoMode(data.displayName, data.icon,
+                    wagonSlots[i].SetupCargoMode(Loc.T(data.displayName), data.icon,
                         data.currentAmount, data.requiredAmount,
                         () => OnWagonClicked(wagonIdx));
                 }
             }
             else if (currentState == TrainState.RewardReadyToCollect)
             {
-                if (txtTitle != null) txtTitle.text = "NHẬN THƯỞNG";
-                if (txtHint != null) txtHint.text = "Chạm từng toa để thu — thu hết các toa, tàu sẽ rời ga!";
+                if (txtTitle != null) txtTitle.text = Loc.T("NHẬN THƯỞNG");
+                if (txtHint != null) txtHint.text = Loc.T("Chạm từng toa để thu — thu hết các toa, tàu sẽ rời ga!");
 
                 for (int i = 0; i < wagonSlots.Length; i++)
                 {
@@ -687,7 +687,7 @@ namespace ExportTrainUIPackage
                         continue;
                     }
 
-                    wagonSlots[i].SetupRewardMode(data.displayName, data.icon,
+                    wagonSlots[i].SetupRewardMode(Loc.T(data.displayName), data.icon,
                         data.rewardAmount, data.isCollected,
                         () => OnRewardWagonClicked(wagonIdx));
                 }
@@ -764,7 +764,7 @@ namespace ExportTrainUIPackage
 
         private IEnumerator RoutineDepartAndOpenTransit()
         {
-            if (txtHint != null) txtHint.text = "Tất cả các toa đã đủ hàng! Tàu đang khởi hành...";
+            if (txtHint != null) txtHint.text = Loc.T("Tất cả các toa đã đủ hàng! Tàu đang khởi hành...");
 
             yield return new WaitForSeconds(0.6f);
 
@@ -808,7 +808,7 @@ namespace ExportTrainUIPackage
 
             if (mgr.State == global::TrainState.RewardArriving)
             {
-                FarmUIManager.Instance?.ShowHint("Tàu đang vào ga — chờ một chút nhé!");
+                FarmUIManager.Instance?.ShowHint(Loc.T("Tàu đang vào ga — chờ một chút nhé!"));
                 return;
             }
 
@@ -928,7 +928,7 @@ namespace ExportTrainUIPackage
 
         private IEnumerator RoutineDepartRewardTrainAndReset()
         {
-            if (txtHint != null) txtHint.text = "Tàu đang rời ga... chuyến tàu mới sắp tới!";
+            if (txtHint != null) txtHint.text = Loc.T("Tàu đang rời ga... chuyến tàu mới sắp tới!");
 
             yield return new WaitForSeconds(1.0f);
 

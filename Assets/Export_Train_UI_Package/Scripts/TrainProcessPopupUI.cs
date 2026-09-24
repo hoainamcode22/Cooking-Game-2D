@@ -138,7 +138,7 @@ namespace ExportTrainUIPackage
         private void UpdateSpeedUpCost()
         {
             if (txtSpeedUp == null || TrainManager.Instance == null) return;
-            txtSpeedUp.text = $"TĂNG TỐC · {TrainManager.Instance.SpeedUpCost}";
+            txtSpeedUp.text = Loc.TF("TĂNG TỐC · {0}", TrainManager.Instance.SpeedUpCost);
         }
 
         public void OpenPopup(float duration = 0f)
@@ -326,10 +326,10 @@ namespace ExportTrainUIPackage
 
             if (isArrived)
             {
-                if (txtTitle != null) txtTitle.text = "TÀU ĐÃ VỀ!";
+                if (txtTitle != null) txtTitle.text = Loc.T("TÀU ĐÃ VỀ!");
                 if (txtStatus != null)
                 {
-                    txtStatus.text = "Tàu đã về — có hàng cho bạn!";
+                    txtStatus.text = Loc.T("Tàu đã về — có hàng cho bạn!");
                     txtStatus.color = new Color(0.30f, 0.56f, 0.11f);
                 }
                 if (txtTimer != null) txtTimer.text = "00:00";
@@ -338,10 +338,10 @@ namespace ExportTrainUIPackage
             }
             else
             {
-                if (txtTitle != null) txtTitle.text = "ĐANG VẬN CHUYỂN";
+                if (txtTitle != null) txtTitle.text = Loc.T("ĐANG VẬN CHUYỂN");
                 if (txtStatus != null)
                 {
-                    txtStatus.text = "Đang vận chuyển...";
+                    txtStatus.text = Loc.T("Đang vận chuyển...");
                     txtStatus.color = new Color(0.36f, 0.20f, 0.09f);
                 }
                 if (btnSpeedUp != null) btnSpeedUp.gameObject.SetActive(true);

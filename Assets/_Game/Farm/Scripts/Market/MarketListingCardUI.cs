@@ -159,13 +159,13 @@ public class MarketListingCardUI : MonoBehaviour, IInitializePotentialDragHandle
                 if (textSellerInitial != null)
                 {
                     textSellerInitial.gameObject.SetActive(true);
-                    textSellerInitial.text = MarketSellerDirectory.GetAvatarInitial(listing.SellerName);
+                    textSellerInitial.text = MarketSellerDirectory.GetAvatarInitial(MarketSellerDirectory.TenHienThi(listing.SellerName));
                 }
             }
         }
 
         if (textSellerName != null)
-            textSellerName.text = listing.SellerName;
+            textSellerName.text = MarketSellerDirectory.TenHienThi(listing.SellerName);   // [2026-09-24] ten tieng Anh
 
         if (textSellerLevel != null)
             textSellerLevel.text = listing.SellerLevel.ToString();

@@ -554,8 +554,11 @@ public class MarketBoardUI : MonoBehaviour
 
         // Đích đến: WarehouseGainToastUI hoặc vị trí mặc định trên HUD
         RectTransform warehouseTarget = null;
-        if (WarehouseGainToastUI.Instance != null && WarehouseGainToastUI.Instance.PanelRect != null)
-            warehouseTarget = WarehouseGainToastUI.Instance.PanelRect;
+        if (WarehouseGainToastUI.Instance != null && WarehouseGainToastUI.Instance.IconRect != null)
+        {
+            WarehouseGainToastUI.Instance.HienNgay();
+            warehouseTarget = WarehouseGainToastUI.Instance.IconRect;   // [2026-09-24] bay vao icon kho tren thanh
+        }
 
         Vector2 endScreen;
         if (warehouseTarget != null)
@@ -828,7 +831,7 @@ public class MarketBoardUI : MonoBehaviour
 
         // Mathf.Min(1f, …) ⇒ CHỈ ĐƯỢC CO, không bao giờ phóng to. Bảng vẽ ở 1880×840 cho
         // màn 16:9 là cố ý; kéo to ra trên màn rộng là làm vỡ art.
-        float heSo = Mathf.Min(1f, Mathf.Min(rongKhung / rongDauChan, caoKhung / caoDauChan));
+        float heSo = Mathf.Min(Mathf.Clamp(tiLeToiDaBang, 0.5f, 1f), Mathf.Min(rongKhung / rongDauChan, caoKhung / caoDauChan));
         rtBang.localScale = _scaleGocBang * heSo;
 
         // ── CĂN GIỮA THEO HÌNH, KHÔNG THEO RECT ───────────────────────────────────
@@ -841,6 +844,12 @@ public class MarketBoardUI : MonoBehaviour
         float dichX = (tamCanvas.x - tam.x * rx * heSo) - pivotHienTai.x;
         float dichY = (tamCanvas.y - tam.y * ry * heSo) - pivotHienTai.y;
 
-        rtBang.anchoredPosition = _viTriGocBang + new Vector2(dichX / kx, dichY / ky);
+        rtBang.anchoredPosition = _viTriGocBang + new Vector2(dichX / kx, (dichY + nangBangLen) / ky);
     }
+
+    [Header("[2026-09-24] Co bang cho tren man hinh")]
+    [Tooltip("Bang cho to TOI DA bao nhieu so voi thiet ke (1 = nhu cu, 0.88 = gon hon, khong lan ra mep man hinh).")]
+    [SerializeField] private float tiLeToiDaBang = 0.88f;
+    [Tooltip("Nang ca bang len (don vi canvas) de day bang khong che thanh nut phia duoi man hinh.")]
+    [SerializeField] private float nangBangLen = 24f;
 }

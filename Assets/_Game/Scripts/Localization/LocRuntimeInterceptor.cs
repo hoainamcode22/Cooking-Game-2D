@@ -94,6 +94,53 @@ public static class LocRuntimeInterceptor
     /// <summary>LocalizationManager goi khi vao Play (Domain Reload co the dang bi tat).</summary>
     public static void DatLaiCoKhoiTao() { _daKhoiTao = false; }
 
+    // ── [2026-09-24] Dich ngay khi TMP doi chu ─────────────────────────────
+    private static bool _daNgheDoiChu;
+    private static readonly HashSet<TMP_Text> _choDich = new HashSet<TMP_Text>();
+    private static readonly List<TMP_Text> _tamDich = new List<TMP_Text>(64);
+
+    private static void KhiChuDoi(Object o)
+    {
+        if (o is TMP_Text t && LocalizationManager.DangTiengAnh) _choDich.Add(t);
+    }
+
+    /// <summary>Runner goi moi LateUpdate: chi xu ly cac o chu VUA doi (re, khong FindObjects).</summary>
+    public static void DichCacChuVuaDoi()
+    {
+        if (_choDich.Count == 0) return;
+        _tamDich.Clear();
+        _tamDich.AddRange(_choDich);
+        _choDich.Clear();
+        for (int i = 0; i < _tamDich.Count; i++)
+        {
+            var t = _tamDich[i];
+            if (t == null) continue;
+            try { DichMot(t); } catch { }
+        }
+        _tamDich.Clear();
+    }
+
+    private static void DichMot(TMP_Text t)
+    {
+        if (!_theoDoi.TryGetValue(t, out var muc))
+        {
+            muc = new Muc { boQua = LaChuKhongDuocDich(t) };
+            _theoDoi[t] = muc;
+        }
+        if (muc.boQua) return;
+        string hienTai = t.text;
+        if (string.IsNullOrEmpty(hienTai) || hienTai.Length > DAI_TOI_DA) return;
+        if (muc.enDaAp != null && hienTai == muc.enDaAp) return;
+        string en = LocalizationManager.T(hienTai);
+        if (en != hienTai)
+        {
+            muc.vnGoc  = hienTai;
+            muc.enDaAp = en;
+            t.text     = en;
+            ApVuaKhung(t, muc);
+        }
+    }
+
     public static void KhoiTao()
     {
         if (_daKhoiTao) return;
@@ -108,6 +155,14 @@ public static class LocRuntimeInterceptor
         _daKhoiTao = true;
 
         LocalizationManager.OnChanged += KhiDoiNgonNgu;
+
+        // [2026-09-24] DICH NGAY KHI CHU DOI: nghe su kien doi chu cua TMP -> chu tieng Viet code vua ghi
+        // duoc dich o khung hinh ke tiep (khong phai cho luot quet 1-8 giay nhu truoc -> het "loe" tieng Viet).
+        if (!_daNgheDoiChu)
+        {
+            _daNgheDoiChu = true;
+            TMPro_EventManager.TEXT_CHANGED_EVENT.Add(KhiChuDoi);
+        }
 
         if (_runner == null)
         {
@@ -550,6 +605,12 @@ public static class LocRuntimeInterceptor
         private void OnEnable()
         {
             DatLaiNhip();
+        }
+
+        // [2026-09-24] Dich ngay cac chu vua doi (xem KhiChuDoi) — chay moi khung hinh nhung chi dung toi chu moi doi.
+        private void LateUpdate()
+        {
+            if (LocalizationManager.DangTiengAnh) LocRuntimeInterceptor.DichCacChuVuaDoi();
         }
 
         private void Update()

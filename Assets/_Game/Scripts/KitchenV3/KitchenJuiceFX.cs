@@ -797,18 +797,49 @@ public class KitchenJuiceFX : MonoBehaviour
 
     // Chu TRANG hien luc Play tren bang don / thanh thoi gian -> nau dat #8B4513 cho doc duoc
     private static readonly Color NauDat = new Color(0x8B / 255f, 0x45 / 255f, 0x13 / 255f, 1f);
+    // [2026-09-24] Code bep V2 GHI LAI mau trang moi lan lam moi (0.x s) -> quet 1s/lan khong thang duoc
+    // (chu nhay trang/nau). Nay: quet 1s de GOM danh sach, con DOI MAU thi lam MOI KHUNG HINH o LateUpdate
+    // (chay SAU code V2) -> luon nau dat. Nut chinh (Btn_Action) chi nau khi nut dang TAT (nen be nhat);
+    // nut sang xanh thi giu chu trang cho de doc.
+    private readonly System.Collections.Generic.List<TMP_Text> _chuNau = new System.Collections.Generic.List<TMP_Text>(16);
+    private readonly System.Collections.Generic.List<TMP_Text> _chuNutChinh = new System.Collections.Generic.List<TMP_Text>(4);
+    private Button _nutChinh;
     private void DoiMauChuTrang()
     {
-        foreach (var ten in new[] { "Txt_PrepToast", "Txt_Time", "Order_Banner" })
+        _chuNau.Clear();
+        foreach (var ten in new[] { "Txt_PrepToast", "Txt_Time", "Order_Banner", "Oven_StateBar" })
         {
             var t = TimSau(transform, ten);
             if (t == null) continue;
-            foreach (var x in t.GetComponentsInChildren<TMP_Text>(true))
-            {
-                var c = x.color;
-                if (c.r > 0.9f && c.g > 0.9f && c.b > 0.9f) x.color = new Color(NauDat.r, NauDat.g, NauDat.b, c.a);
-            }
+            _chuNau.AddRange(t.GetComponentsInChildren<TMP_Text>(true));
         }
+        _chuNutChinh.Clear();
+        var nc = TimSau(transform, "Btn_Action");
+        _nutChinh = nc != null ? nc.GetComponent<Button>() : null;
+        if (nc != null) _chuNutChinh.AddRange(nc.GetComponentsInChildren<TMP_Text>(true));
+        ToMauNau();
+    }
+
+    private void LateUpdate() => ToMauNau();
+
+    private void ToMauNau()
+    {
+        for (int i = 0; i < _chuNau.Count; i++) NauNeuTrang(_chuNau[i]);
+        bool nutTat = _nutChinh != null && !_nutChinh.interactable;
+        for (int i = 0; i < _chuNutChinh.Count; i++)
+        {
+            var x = _chuNutChinh[i];
+            if (x == null) continue;
+            if (nutTat) NauNeuTrang(x);
+            else if (x.color.r < 0.6f && Mathf.Abs(x.color.r - NauDat.r) < 0.02f) x.color = new Color(1f, 1f, 1f, x.color.a);   // nut bat lai -> tra chu trang
+        }
+    }
+
+    private static void NauNeuTrang(TMP_Text x)
+    {
+        if (x == null) return;
+        var c = x.color;
+        if (c.r > 0.9f && c.g > 0.9f && c.b > 0.9f) x.color = new Color(NauDat.r, NauDat.g, NauDat.b, c.a);
     }
 
     // The da cho vao noi khong bi o vang (Img_Status) che icon nua - chi giam so luong

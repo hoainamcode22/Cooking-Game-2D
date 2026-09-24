@@ -590,10 +590,35 @@ public class LevelUpPopupUI : MonoBehaviour
     //  field null → tự tìm theo tên trong cây popupRoot; không thấy thì bỏ qua mục đó.
     // =========================================================================
 
-    private const float V6_STRIP_Y   = -215f;
-    private const float V6_HINT_Y    = -385f;
-    private const float V6_BUTTON_Y  = -500f;
-    private static readonly Vector2 V6_HINT_SIZE = new Vector2(1100f, 66f);
+    // [2026-09-24] Nut "Let's Go" nang len (truoc -500 bi chot sat mep duoi man hinh); chinh duoc trong Inspector.
+    [Header("[2026-09-24] Vung day popup len cap")]
+    [SerializeField] private float V6_STRIP_Y   = -215f;
+    [SerializeField] private float V6_HINT_Y    = -372f;
+    [SerializeField] private float V6_BUTTON_Y  = -462f;
+    private static readonly Vector2 V6_HINT_SIZE = new Vector2(1100f, 56f);
+
+    /// <summary>[2026-09-24] Ten qua (Mushroom Seeds, Potato Pork Soup...) cung 1 co chu = co nho nhat sau khi vua khung.</summary>
+    private System.Collections.IEnumerator DongBoCoChuTen()
+    {
+        yield return null;   // doi layout + autosize xong
+        Transform goc = unlockStripRoot != null ? unlockStripRoot.transform : (popupRoot != null ? popupRoot.transform : transform);
+        var ds = new List<TMPro.TMP_Text>();
+        foreach (var t in goc.GetComponentsInChildren<TMPro.TMP_Text>(false))
+        {
+            if (t == null || string.IsNullOrEmpty(t.text) || t == hintText) continue;
+            string s = t.text.Trim();
+            char c0 = s.Length > 0 ? s[0] : ' ';
+            if (c0 == '+' || c0 == 'x' || c0 == 'X' || char.IsDigit(c0)) continue;          // nhan so luong
+            if (s == "NEW" || s == "MỚI" || s.Length <= 2) continue;                        // tem
+            if (!t.enableAutoSizing) t.enableAutoSizing = true;                              // do lai tu dau
+            ds.Add(t);
+        }
+        if (ds.Count < 2) yield break;
+        float nho = float.MaxValue;
+        foreach (var t in ds) { t.ForceMeshUpdate(); if (t.fontSize > 1f) nho = Mathf.Min(nho, t.fontSize); }
+        if (nho == float.MaxValue) yield break;
+        foreach (var t in ds) { t.enableAutoSizing = false; t.fontSize = nho; }
+    }
 
     /// <summary>Tìm con theo tên ở MỌI độ sâu (kể cả object đang tắt). Không có → null.</summary>
     private static Transform TimConDeQuy(Transform goc, string ten)
@@ -698,6 +723,8 @@ public class LevelUpPopupUI : MonoBehaviour
             if (!hint.gameObject.activeSelf) hint.gameObject.SetActive(true);
             if (!hint.enabled) hint.enabled = true;
         }
+
+        if (isActiveAndEnabled) StartCoroutine(DongBoCoChuTen());   // [2026-09-24]
 
         // ── 6 · Nền mờ: chỉ 1 lớp Bg_NenToi 0.65; tắt lớp trùng V3_DimBackground ──
         var dimV3 = TimConDeQuy(goc, "V3_DimBackground");

@@ -15,7 +15,7 @@ MonoBehaviour:
   id: lemon
   displayName: Lemon
   icon: {fileID: 3469545249588112995, guid: 2fb67aa1523f6cf499fd0815f52679bc, type: 3}
-  kind: 1
+  kind: 0
   tier: 1
   vector:
     sweet: 0

@@ -15,7 +15,7 @@ MonoBehaviour:
   id: chili
   displayName: Chili
   icon: {fileID: 4621141094492874311, guid: e07bc155db7814a4db8dd70af2ab53c0, type: 3}
-  kind: 1
+  kind: 0
   tier: 2
   vector:
     sweet: 0

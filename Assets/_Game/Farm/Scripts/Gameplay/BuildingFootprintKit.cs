@@ -54,6 +54,23 @@ public class BuildingFootprintKit : MonoBehaviour
     [Tooltip("Màu chip nắm kéo.")]
     [SerializeField] private Color mauChip = new Color(1f, 0.98f, 0.86f, 0.92f);
 
+    [Header("[2026-09-24] Kieu gon nhu video mau")]
+    [Tooltip("Bat: cong trinh dung yen trong Edit Mode chi hien 1 DUONG VIEN MANH om sat hinh thoi vung o " +
+             "(khong tham, khong net dut, khong ngoac, khong chip) -> map nhin ra tung o tung o, gon nhu video.")]
+    [SerializeField] private bool kieuGon = true;
+    [Tooltip("Hien duong vien manh duoi chan cong trinh DUNG YEN trong Edit Mode. Mac dinh TAT: map sach nhu video, chi vat dang keo moi co khung xanh.")]
+    [SerializeField] private bool hienVienDungYen = false;
+    [SerializeField] private Color mauVienGon = new Color(1f, 1f, 1f, 0.55f);
+    [SerializeField] private float dayVienGon = 5f;
+
+    [Header("[2026-09-24] Neo art (tool Edit Mode > 1 dien, khong sua tay)")]
+    [Tooltip("Tang moi lan tool nan lai chan art cua prefab. Save cu co neoV nho hon se duoc dich 1 lan.")]
+    [SerializeField] private int phienBanNeo = 0;
+    [Tooltip("Luong dich (world) de dua goc cu ve chan moi: neoMoi = neoCu + LechNeoCu roi hut vao luoi.")]
+    [SerializeField] private Vector2 lechNeoCu = Vector2.zero;
+    public int PhienBanNeo { get => phienBanNeo; set => phienBanNeo = value; }
+    public Vector2 LechNeoCu { get => lechNeoCu; set => lechNeoCu = value; }
+
     [Header("Tinh chỉnh")]
     [Tooltip("Chiều cao chip nắm kéo so với đỉnh vùng ô, tính theo world unit.")]
     [SerializeField] private float caoChip = 46f;
@@ -160,6 +177,47 @@ public class BuildingFootprintKit : MonoBehaviour
 
         _chip = TaoRenderer("Chip_Keo", spriteChip ?? PlacementKitSpriteFactory.ChipNamKeo(),
                             mauChip, thuTu + 3);
+
+        // [2026-09-24] Vien manh om sat hinh thoi (kieu gon)
+        Transform vc = _goc.Find("Vien_Gon");
+        GameObject vgo = vc != null ? vc.gameObject : new GameObject("Vien_Gon");
+        if (vc == null) vgo.transform.SetParent(_goc, false);
+        vgo.layer = gameObject.layer;
+        _vienGon = vgo.GetComponent<LineRenderer>();
+        if (_vienGon == null) _vienGon = vgo.AddComponent<LineRenderer>();
+        _vienGon.useWorldSpace = false;
+        _vienGon.loop = true;
+        _vienGon.positionCount = 4;
+        _vienGon.numCornerVertices = 2;
+        _vienGon.textureMode = LineTextureMode.Stretch;
+        _vienGon.alignment = LineAlignment.TransformZ;
+        _vienGon.sharedMaterial = VatLieuVien;
+        _vienGon.sortingLayerName = _layerVe;
+        _vienGon.sortingOrder = thuTu + 1;
+    }
+
+    private LineRenderer _vienGon;
+    private static Material _vatLieuVien;
+    /// <summary>Vat lieu dung chung cho moi duong vien (1 material cho ca map -> khong tang draw call).</summary>
+    public static Material VatLieuVien
+    {
+        get
+        {
+            if (_vatLieuVien == null)
+            {
+                // URP 2D: uu tien shader Unlit (vien khong bi toi theo den ngay/dem), roi Sprites/Default.
+                var sh = Shader.Find("Universal Render Pipeline/2D/Sprite-Unlit-Default");
+                if (sh == null) sh = Shader.Find("Sprites/Default");
+                if (sh != null) _vatLieuVien = new Material(sh) { name = "Mat_VienEditMode" };
+                else
+                {
+                    // Build khong kem 2 shader tren -> muon material cua 1 sprite bat ky trong scene
+                    var sr = Object.FindFirstObjectByType<SpriteRenderer>();
+                    _vatLieuVien = sr != null ? sr.sharedMaterial : null;
+                }
+            }
+            return _vatLieuVien;
+        }
     }
 
     /// <summary>
@@ -265,6 +323,25 @@ public class BuildingFootprintKit : MonoBehaviour
         {
             _chip.transform.localPosition = new Vector3(0f, h + caoChip, 0f);
             DatKichThuoc(_chip, 54f, 54f);
+        }
+
+        // [2026-09-24] Kieu gon: chi 1 duong vien manh om sat 4 dinh vung o
+        if (_vienGon != null)
+        {
+            _vienGon.enabled = kieuGon && hienVienDungYen;
+            _vienGon.startWidth = _vienGon.endWidth = dayVienGon;
+            _vienGon.startColor = _vienGon.endColor = mauVienGon;
+            _vienGon.SetPosition(0, new Vector3(0f, 0f, 0f));          // dinh Nam (chan)
+            _vienGon.SetPosition(1, new Vector3(w * 0.5f, h * 0.5f, 0f)); // Dong
+            _vienGon.SetPosition(2, new Vector3(0f, h, 0f));            // Bac
+            _vienGon.SetPosition(3, new Vector3(-w * 0.5f, h * 0.5f, 0f)); // Tay
+        }
+        if (kieuGon)
+        {
+            if (_tham != null) _tham.enabled = false;
+            if (_chip != null) _chip.enabled = false;
+            if (_vach != null) foreach (var v in _vach) if (v != null) v.enabled = false;
+            if (_ngoac != null) foreach (var v in _ngoac) if (v != null) v.enabled = false;
         }
 
         // Mốc gốc đã cũ vì vừa đổi kích thước — buộc nhịp thở chụp lại ở khung sau.
@@ -383,7 +460,7 @@ public class BuildingFootprintKit : MonoBehaviour
 
     private void BatNhip()
     {
-        if (!nhipTho || _nhip != null || !isActiveAndEnabled) return;
+        if (kieuGon || !nhipTho || _nhip != null || !isActiveAndEnabled) return;   // kieu gon: khong ngoac/chip -> khong can nhip
         _nhip = StartCoroutine(CoNhip());
     }
 

@@ -250,6 +250,9 @@ public class MillCollectFlyFX : MonoBehaviour
     private Vector2 LayDiemDen()
     {
         RectTransform muc = diemDen;
+        // [2026-09-24] Uu tien icon kho tren thanh WarehouseGainToast
+        var toast = WarehouseGainToastUI.Instance;
+        if (toast != null && toast.IconRect != null) { toast.HienNgay(); muc = toast.IconRect; }
 
         if (muc == null)
         {

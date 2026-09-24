@@ -585,7 +585,27 @@ namespace KitchenUIv2
         {
             if (_boardDetail != null) _boardDetail.SetActive(detail);
             if (_boardList != null)  _boardList.SetActive(!detail);
-            if (!detail) RebuildDishList();
+            if (!detail)
+            {
+                RebuildDishList();
+                // [FIX 2026-09-24] Luot dau vao bep chu ten mon chua hien (phai bam mon roi quay lai moi hien).
+                // Lam moi lai danh sach sau 1 khung hinh + sau 0.25s (luc layout / font / bo dich da xong).
+                if (Application.isPlaying && isActiveAndEnabled)
+                {
+                    if (_coLamMoiDs != null) StopCoroutine(_coLamMoiDs);
+                    _coLamMoiDs = StartCoroutine(CoLamMoiDanhSach());
+                }
+            }
+        }
+
+        private Coroutine _coLamMoiDs;
+        private System.Collections.IEnumerator CoLamMoiDanhSach()
+        {
+            yield return null;
+            if (_boardList != null && _boardList.activeInHierarchy) { Canvas.ForceUpdateCanvases(); RebuildDishList(); }
+            yield return new WaitForSecondsRealtime(0.25f);
+            if (_boardList != null && _boardList.activeInHierarchy) { Canvas.ForceUpdateCanvases(); RebuildDishList(); }
+            _coLamMoiDs = null;
         }
 
         /// <summary>[2026-09-23] Danh sach mon xep theo cap mo khoa tang dan (giu thu tu goc khi cung cap).</summary>
@@ -2626,6 +2646,7 @@ namespace KitchenUIv2
 
             Nhan(_gridIngredients);
             Nhan(_gridSeasonings);
+            ChuyenTheDungKhay();   // [2026-09-24] the nam sai khay (vd ot, chanh doi sang nguyen lieu) -> dua ve dung khay
 
             selection.RegisterAllLeftCards(_gridIngredients, _gridSeasonings);
             selection.EnableIngredientSelection();
@@ -2633,6 +2654,40 @@ namespace KitchenUIv2
             Loc.RequestRescan();
 
             Debug.Log($"[KitchenV2] Khoa layout — dung lai {_cards.Count} the khay co san, tu dong gan data cho card thieu.");
+        }
+
+        /// <summary>[2026-09-24] Theo IngredientData.kind: nguyen lieu ve khay Nguyen lieu, gia vi ve khay Gia vi.
+        /// The chuyen sang duoc dat TRUOC o trong / nut mo o cua khay moi.</summary>
+        private void ChuyenTheDungKhay()
+        {
+            if (_gridIngredients == null || _gridSeasonings == null) return;
+            var canChuyen = new List<(Transform the, Transform dich)>();
+            void Xet(Transform khung, bool laKhayGiaVi)
+            {
+                for (int i = 0; i < khung.childCount; i++)
+                {
+                    var c = khung.GetChild(i);
+                    var sel = c.GetComponent<SelectableIngredientCard>();
+                    var d = sel != null ? sel.GetIngredientData() : null;
+                    if (d == null) continue;
+                    bool laGiaVi = d.kind == IngredientKind.Seasoning;
+                    if (laGiaVi != laKhayGiaVi) canChuyen.Add((c, laGiaVi ? _gridSeasonings : _gridIngredients));
+                    sel.isSeasoning = laGiaVi;
+                }
+            }
+            Xet(_gridIngredients, false);
+            Xet(_gridSeasonings, true);
+            foreach (var (the, dich) in canChuyen)
+            {
+                int viTri = dich.childCount;
+                for (int i = 0; i < dich.childCount; i++)
+                {
+                    var n = dich.GetChild(i).name;
+                    if (n.StartsWith("Slot_Empty_") || n == "Btn_BuySlots") { viTri = i; break; }
+                }
+                the.SetParent(dich, false);
+                the.SetSiblingIndex(Mathf.Min(viTri, dich.childCount - 1));
+            }
         }
 
         private const string SlotKeyPrefix = "kitchen_extra_slots_v2_";

@@ -22,6 +22,16 @@ public class PlotCropVisual : MonoBehaviour
     [SerializeField] private string sortingLayerName = "Crop";
     [SerializeField] private int    sortingOrder     = 20;
 
+    // [2026-09-24] SAP XEP THEO DO SAU giua CAC O: o nao gan nguoi choi (y thap) ve SAU cung = nam tren.
+    // Truoc day moi o cung 1 moc (20 / 500) -> cay o ruong ben canh chen lung tung (nam nam duoi bap cai).
+    // Cay luon tren MOI mat dat (moc = order mat dat + 1), moi nua hang o cach nhau 13 bac (du cho 12 cay/o).
+    private int NenSapXepTheoDoSau(SpriteRenderer ground)
+    {
+        int nen = (ground != null ? ground.sortingOrder : sortingOrder) + 1;
+        int doSau = Mathf.Clamp(Mathf.RoundToInt(-transform.position.y / 37.5f) + 150, 0, 300);
+        return nen + doSau * 13;
+    }
+
     [Header("Lattice — rải cây đều theo lưới iso (2026-08-27)")]
     // Thay cho việc rải tay CropPoint trong prefab: tính lưới ngay lúc chạy theo
     // ĐÚNG hình thoi của sprite nền plot, nên số cây bao nhiêu cũng đều (6, 12, 16...).
@@ -445,7 +455,7 @@ public class PlotCropVisual : MonoBehaviour
             {
                 int idx = orderPot[rank];
                 if (slotRenderers != null && idx < slotRenderers.Length && slotRenderers[idx] != null)
-                    slotRenderers[idx].sortingOrder = sortingOrder + rank;
+                    { slotRenderers[idx].sortingLayerID = ground.sortingLayerID; slotRenderers[idx].sortingOrder = NenSapXepTheoDoSau(ground) + rank; }
             }
 
             lastLatticeCount = n;
@@ -474,7 +484,7 @@ public class PlotCropVisual : MonoBehaviour
         {
             int idx = order[rank];
             if (slotRenderers != null && idx < slotRenderers.Length && slotRenderers[idx] != null)
-                slotRenderers[idx].sortingOrder = sortingOrder + rank;
+                { slotRenderers[idx].sortingLayerID = ground.sortingLayerID; slotRenderers[idx].sortingOrder = NenSapXepTheoDoSau(ground) + rank; }
         }
 
         lastLatticeCount = n;

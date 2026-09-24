@@ -83,10 +83,19 @@ public class FarmInventoryManager : MonoBehaviour
         transform.SetParent(null); // Tách ra root để DontDestroyOnLoad hoạt động (fix warning)
         DontDestroyOnLoad(gameObject);
         LoadInventory();
+        _daLoad = true;
     }
+
+    // [FIX P0 2026-09-24] MAT DO TRONG KHO: quay ve farm -> scene tao them 1 FarmInventoryManager ->
+    // Awake thay da co Instance nen Destroy ban sao -> OnDisable cua BAN SAO (kho RONG, chua Load)
+    // goi SaveInventory() ghi DE save bang kho rong. Tat game luc do = lan sau mo len mat het hat giong,
+    // nong san... Tu nay chi ban CHINH (da Load) moi duoc ghi save.
+    private bool _daLoad;
+    private bool DuocLuu => _daLoad && Instance == this;
 
     private void OnApplicationPause(bool pauseStatus)
     {
+        if (!DuocLuu) return;
         if (pauseStatus)
         {
             SaveInventory();
@@ -97,6 +106,7 @@ public class FarmInventoryManager : MonoBehaviour
 
     private void OnApplicationQuit()
     {
+        if (!DuocLuu) return;
         SaveInventory();
         LuuGopPrefs.LuuNgay();
         PlayerPrefs.Save();
@@ -104,6 +114,7 @@ public class FarmInventoryManager : MonoBehaviour
 
     private void OnDisable()
     {
+        if (!DuocLuu) return;
         SaveInventory();
         LuuGopPrefs.LuuNgay();
         PlayerPrefs.Save();
@@ -237,6 +248,7 @@ public class FarmInventoryManager : MonoBehaviour
 
     private void SaveInventory()
     {
+        if (!DuocLuu) return;   // ban sao sap bi huy / chua doc save -> KHONG BAO GIO ghi de
         var data = new InventorySaveData { saveVersion = CurrentSaveVersion };
         foreach (string id in itemOrder)
         {

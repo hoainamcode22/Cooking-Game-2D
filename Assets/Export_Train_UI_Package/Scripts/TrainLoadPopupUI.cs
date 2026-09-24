@@ -296,15 +296,15 @@ namespace ExportTrainUIPackage
             if (txtWagonTag != null)
             {
                 txtWagonTag.text = isDone
-                    ? $"Toa số {currentWagonIndex + 1} / {slotCount} — đã đủ hàng"
-                    : $"Toa số {currentWagonIndex + 1} / {slotCount}";
+                    ? Loc.TF("Toa số {0} / {1} — đã đủ hàng", currentWagonIndex + 1, slotCount)
+                    : Loc.TF("Toa số {0} / {1}", currentWagonIndex + 1, slotCount);
             }
 
-            if (txtItemName != null) txtItemName.text = slot.displayName;
+            if (txtItemName != null) txtItemName.text = Loc.T(slot.displayName);
 
             if (txtStock != null)
             {
-                txtStock.text = $"Trong kho: x{stockCount}";
+                txtStock.text = Loc.TF("Trong kho: x{0}", stockCount);
                 txtStock.color = (stockCount > 0) ? new Color(0.54f, 0.39f, 0.22f) : new Color(0.85f, 0.25f, 0.20f);
             }
 
@@ -337,8 +337,8 @@ namespace ExportTrainUIPackage
                     if (txtNote != null)
                     {
                         txtNote.text = remaining > 0
-                            ? $"Còn {remaining} toa chưa đủ — nạp xong các toa yêu cầu, tàu sẽ khởi hành."
-                            : "Đã nạp đủ tất cả toa! Tàu đang chuẩn bị khởi hành vận chuyển.";
+                            ? Loc.TF("Còn {0} toa chưa đủ — nạp xong các toa yêu cầu, tàu sẽ khởi hành.", remaining)
+                            : Loc.T("Đã nạp đủ tất cả toa! Tàu đang chuẩn bị khởi hành vận chuyển.");
                     }
                     if (imgNoteIcon != null && slot.icon != null)
                         imgNoteIcon.sprite = slot.icon;
@@ -364,7 +364,7 @@ namespace ExportTrainUIPackage
                     bool showLack = stockCount <= 0;
                     noteBox.SetActive(showLack);
                     if (showLack && txtNote != null)
-                        txtNote.text = $"Bạn chưa đủ hàng — trồng/sản xuất thêm {slot.displayName} rồi quay lại nhé!";
+                        txtNote.text = Loc.TF("Bạn chưa đủ hàng — trồng/sản xuất thêm {0} rồi quay lại nhé!", Loc.T(slot.displayName));
                     if (showLack && imgNoteIcon != null && slot.icon != null)
                         imgNoteIcon.sprite = slot.icon;
                 }

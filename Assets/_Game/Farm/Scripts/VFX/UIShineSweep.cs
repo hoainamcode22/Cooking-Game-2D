@@ -31,6 +31,17 @@ public class UIShineSweep : MonoBehaviour
     private void OnEnable()
     {
         _nut = transform as RectTransform;
+        // [2026-09-24] CHI cho NUT. Truoc day lo gan vao ca Canvas/popup toan man hinh -> vet sang
+        // khong lo quet ngang man hinh game. Khong phai nut (hoac qua to) -> tu go bo, khong chay.
+        if (_nut == null || GetComponent<Canvas>() != null || GetComponent<Selectable>() == null
+            || (_nut.rect.width > 900f || _nut.rect.height > 400f))
+        {
+            var m = _nut != null ? _nut.Find("Fx_ShineMask") : null;
+            if (m != null) Destroy(m.gameObject);
+            enabled = false;
+            Destroy(this);
+            return;
+        }
         DamBao();
         _t = -1f;
         _hen = Time.unscaledTime + Random.Range(0.6f, cachGiay.y);

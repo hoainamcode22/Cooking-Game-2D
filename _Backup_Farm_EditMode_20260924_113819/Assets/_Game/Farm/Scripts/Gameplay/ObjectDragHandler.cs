@@ -1,0 +1,536 @@
+﻿using System.Collections;
+using UnityEngine;
+using UnityEngine.InputSystem.EnhancedTouch;
+
+/// <summary>
+/// Drag-drop kiểu Hay Day cho công trình di chuyển được (chuồng bò, bếp, kho...).
+/// Hoạt động khi EditModeManager.IsEditMode == true.
+///
+/// Dùng InputBridge để thống nhất Mouse + Touch — không còn #if UNITY_EDITOR.
+/// Flow: nhấn object → kéo > dragThreshold px → StartDragging → theo con trỏ
+///       → nhả → EndDragging (đặt hợp lệ hoặc bounce về cũ).
+///
+/// Yêu cầu: Collider2D trên object.
+/// </summary>
+public class ObjectDragHandler : MonoBehaviour
+{
+    [Header("Drag Detection")]
+    [SerializeField] private float dragThreshold = 15f;
+
+    [Header("Drag Visual")]
+    [SerializeField] private float          dragScaleMultiplier = 1.1f;
+    [SerializeField] private SpriteRenderer shadowSprite;
+    [SerializeField] private float          shadowAlphaActive   = 0.6f;
+
+    // GRID SNAP: KHÔNG còn field gridSize riêng.
+    // Trước đây script này snap theo 50 còn PlacementManager snap theo 100 → hai hệ lưới
+    // lệch nhau, kéo lại một công trình đã đặt là nó rơi vào mốc nửa ô (lỗi L4 §1).
+    // 🟢 V10 — giờ cả hai dùng chung IsoGrid (ô 300 x 150), không còn hằng CELL vuông.
+
+    [Header("Placement Validation (dự phòng khi thiếu PlacementManager)")]
+    // ⚠ VÌ SAO KHÔNG ĐỂ `= new Vector2(IsoGrid.CellWidth, IsoGrid.CellHeight)` Ở ĐÂY:
+    //   1. Field initializer chạy lúc DỰNG component, trước Awake. IsoGrid.CellWidth phải
+    //      GameObject.Find("Grid_Iso45") → gọi Find trong constructor là vừa đắt vừa có thể
+    //      chạy khi scene chưa nạp xong, ra thẳng số fallback mà không ai biết.
+    //   2. Quan trọng hơn: `collisionCheckSize` là [SerializeField]. Mọi prefab/scene ĐÃ
+    //      serialize sẵn (100, 100), nên đổi initializer KHÔNG sửa được component cũ —
+    //      Unity ghi đè bằng giá trị YAML. Sửa initializer là sửa một thứ không ai đọc.
+    // CÁCH LÀM: thêm cờ MỚI. Field mới chưa có trong YAML của prefab/scene nào nên Unity
+    // dùng default `true` ⇒ mọi component cũ tự động lấy cỡ ô từ IsoGrid, KHÔNG cần Sếp mở
+    // prefab sửa tay. Ai muốn số cứng thì bỏ tick, giá trị dưới mới được dùng.
+    [Tooltip("Bat (mac dinh) = lay co hop kiem = IsoGrid.CellWidth x IsoGrid.CellHeight " +
+             "luc chay, BO QUA so duoi. Tat = dung dung so duoi.")]
+    [SerializeField] private bool       autoCollisionSizeFromIsoGrid = true;
+    [Tooltip("Chi dung khi scene khong co PlacementManager VA da bo tick auto o tren. " +
+             "Duong chinh la kiem tra o luoi.")]
+    [SerializeField] private Vector2    collisionCheckSize    = new Vector2(300f, 150f);
+    [SerializeField] private LayerMask  obstacleLayerMask;
+
+    /// <summary>
+    /// Cỡ hộp kiểm va chạm dự phòng. Đọc IsoGrid LÚC CHẠY (không cache) vì
+    /// Grid_Iso45 có thể đổi scale giữa phiên và IsoGrid tự dò lại.
+    /// </summary>
+    private Vector2 CollisionCheckSize
+        => autoCollisionSizeFromIsoGrid
+               ? new Vector2(IsoGrid.CellWidth, IsoGrid.CellHeight)
+               : collisionCheckSize;
+
+    [Header("Visual Feedback")]
+    [SerializeField] private SpriteRenderer placementIndicator;
+    [SerializeField] private Color          validPlacementColor   = Color.green;
+    [SerializeField] private Color          invalidPlacementColor = Color.red;
+
+    [Header("Bounce Animation")]
+    [SerializeField] private float bounceReturnDuration = 0.3f;
+    [SerializeField] private float bounceHeight         = 0.2f;
+
+    public static bool IsDraggingObject { get; private set; }
+
+    private Camera        _cam;
+    private Collider2D    _col;
+    private SpriteRenderer _sprite;
+
+    private Vector3 _originalPos;
+    private Vector3 _originalScale;
+    private Color   _originalColor;
+
+    private bool    _pressHeld;
+    private bool    _isDragging;
+    private Vector2 _pressStartScreen;
+    private Vector3 _dragWorldPos;
+    private Vector2Int _gridSizeCells = Vector2Int.one;
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // V8 — HAI ĐỘ LỆCH ĐO TỪ HỘP BAO THẬT, KHÔNG ĐOÁN PIVOT
+    //
+    // PlacementManager V8 quy ước: ĐIỂM NEO của một công trình = MÉP DƯỚI + GIỮA NGANG
+    // của vùng ô nó chiếm (xem PlacementManager.SnapAnchor). Với art của dự án (pivot ở
+    // ĐÁY sprite) thì transform.position ĐÃ là điểm neo đó, hai số dưới đây đều = 0.
+    //
+    // NHƯNG script này chạy trên vật do DESIGNER KÉO TAY vào scene — không có
+    // PlaceableItemData, và pivot có thể ở GIỮA sprite (decor, ô đất). Nên phải đo:
+    //   _pivotOffsetX = tâm ngang hộp bao − transform.position.x
+    //   _footOffsetY   = ĐÁY hộp bao      − transform.position.y   (âm nếu pivot ở giữa)
+    // Nhờ hai số này, "chân vật" luôn được snap đúng lên đường kẻ lưới, dù pivot ở đâu.
+    // Đo MỘT LẦN ở Awake vì vật không đổi hình trong lúc kéo.
+    // ═══════════════════════════════════════════════════════════════════════════
+    private float _pivotOffsetX = 0f;
+    private float _footOffsetY  = 0f;
+
+    // =========================================================================
+    // Unity Lifecycle
+    // =========================================================================
+
+    private void OnEnable()  => EnhancedTouchSupport.Enable();
+    private void OnDisable()
+    {
+        EnhancedTouchSupport.Disable();
+        if (_isDragging) ForceCancelDrag();
+    }
+
+    private void Awake()
+    {
+        _cam    = Camera.main;
+        _col    = GetComponent<Collider2D>();
+        _sprite = GetComponent<SpriteRenderer>();
+
+        // BUG CŨ (L11 §1): `if (_col == null)` bị treo, KHÔNG có {} và KHÔNG có thân lệnh
+        // → nó "nuốt" luôn dòng `_originalPos = ...` làm thân của mình. Hậu quả:
+        // _originalPos/_originalScale/_originalColor chỉ được gán khi THIẾU collider,
+        // tức gần như không bao giờ → bounce-back trả vật về (0,0,0) và scale = 0.
+        if (_col == null)
+        {
+            Debug.LogWarning($"[ObjectDragHandler] '{name}' thiếu Collider2D — không kéo được.", this);
+        }
+
+        _originalPos   = transform.position;
+        _originalScale = transform.localScale;
+        _originalColor = _sprite != null ? _sprite.color : Color.white;
+
+        // Cỡ ô của vật này, suy từ hộp bao visual (vật kéo tay không có PlaceableItemData).
+        _gridSizeCells = MeasureGridSize();
+
+        if (shadowSprite != null) SetShadowAlpha(0f);
+    }
+
+    private void Start()
+    {
+        // Đặt lại vị trí đã lưu SAU Awake của mọi thứ: `PlacementManager` dựng bảng ô
+        // trong `Start` của nó, mà thứ tự Start giữa các object không bảo đảm. Nên gọi
+        // `RefreshOccupancy` ngay sau khi dời để bảng ô không giữ chỗ cũ.
+        NapViTriDaLuu();
+        PlacementManager.Instance?.RefreshOccupancy();
+    }
+
+    /// <summary>
+    /// Số ô lưới vật này chiếm, đo từ hộp bao các SpriteRenderer con.
+    /// Đồng thời ghi lại <see cref="_pivotOffsetX"/> và <see cref="_footOffsetY"/> —
+    /// cùng một phép đo, cùng một hộp bao, nên kích thước và độ lệch không bao giờ
+    /// nói hai chuyện khác nhau.
+    /// </summary>
+    private Vector2Int MeasureGridSize()
+    {
+        Bounds b = default;
+        bool found = false;
+        foreach (var sr in GetComponentsInChildren<SpriteRenderer>(true))
+        {
+            if (sr == null || sr.sprite == null) continue;
+            if (!found) { b = sr.bounds; found = true; }
+            else b.Encapsulate(sr.bounds);
+        }
+        if (!found) return Vector2Int.one;
+
+        // sr.bounds là hộp bao WORLD đã tính sẵn pivot + xoay → hiệu số với transform.position
+        // chính là độ lệch cần bù.
+        _pivotOffsetX = b.center.x - transform.position.x;
+        _footOffsetY  = b.min.y    - transform.position.y;
+
+        // 🔴 V14 — cùng lỗi đã chữa ở PlacementManager.MeasuredCellsOf:
+        // RectFromWorldBounds bao 4 góc hộp VUÔNG sang lưới ISO nên một ô kim cương
+        // 300×150 ra 3×3 ô → vật kéo tay tự chặn 8 ô quanh mình, không đặt sát được.
+        // EstimateSizeFromWorldSize mới là phép nghịch đảo đúng của FootprintWorldSize.
+        Vector2Int e = IsoGrid.EstimateSizeFromWorldSize(b.size);
+        return new Vector2Int(Mathf.Max(1, e.x), Mathf.Max(1, e.y));
+    }
+
+    private void Update()
+    {
+        if (!EditModeManager.IsEditMode) return;
+        if (PlacementManager.IsPlacingNewObject) return;
+
+        HandleInput();
+    }
+
+    // =========================================================================
+    // Unified Input (Mouse + Touch via InputBridge — runtime, không phải compile-time)
+    // =========================================================================
+
+    private void HandleInput()
+    {
+        // ── Nhấn xuống ──────────────────────────────────────────────────────
+        if (InputBridge.IsPointerDownThisFrame && !_pressHeld)
+        {
+            Vector2 screenPos = InputBridge.PointerPosition;
+
+            // Bỏ qua nếu đang chạm UI (tránh drag xuyên thấu qua nút UI)
+            if (InputBridge.IsPointerOverUI()) return;
+
+            if (IsPointerOverThisObject(screenPos))
+            {
+                _pressHeld        = true;
+                _pressStartScreen = screenPos;
+            }
+        }
+
+        // ── Đang giữ: kiểm tra đã kéo đủ ngưỡng chưa ──────────────────────
+        if (_pressHeld && !_isDragging && InputBridge.IsPointerHeld)
+        {
+            float moved = Vector2.Distance(InputBridge.PointerPosition, _pressStartScreen);
+            if (moved > dragThreshold)
+            {
+                BeginDrag();
+            }
+        }
+
+        // ── Đang drag: cập nhật vị trí ─────────────────────────────────────
+        if (_isDragging && InputBridge.IsPointerHeld)
+        {
+            _dragWorldPos = ScreenToWorld(InputBridge.PointerPosition);
+            UpdateDragPosition();
+        }
+
+        // ── Nhả ra ─────────────────────────────────────────────────────────
+        if (InputBridge.IsPointerUpThisFrame)
+        {
+            if (_isDragging)
+            {
+                EndDrag();
+                _isDragging = false;
+            }
+            _pressHeld        = false;
+            _pressStartScreen = Vector2.zero;
+        }
+    }
+
+    // =========================================================================
+    // Drag Logic
+    // =========================================================================
+
+    private void BeginDrag()
+    {
+        IsDraggingObject = true;
+        _isDragging      = true;
+        _originalPos     = transform.position;
+
+        // Chụp lại bảng ô đã chiếm ở đúng thời điểm này: vùng ô ghi cho chính vật đang
+        // kéo sẽ là vùng GỐC, nên luôn thả về chỗ cũ được, còn ô của vật khác vẫn chặn.
+        PlacementManager.Instance?.RefreshOccupancy();
+
+        transform.localScale = _originalScale * dragScaleMultiplier;
+        if (shadowSprite != null) SetShadowAlpha(shadowAlphaActive);
+
+        FreeCursor();
+    }
+
+    private void UpdateDragPosition()
+    {
+        Vector3 snapped = SnapToGrid(_dragWorldPos);
+        transform.position = snapped;
+
+        bool valid = IsValidPlacement(snapped);
+        UpdatePlacementIndicator(snapped, valid);
+
+        if (_sprite != null)
+            _sprite.color = valid
+                ? new Color(0f, 1f, 0f, 0.5f)
+                : new Color(1f, 0f, 0f, 0.5f);
+    }
+
+    private void EndDrag()
+    {
+        bool valid = IsValidPlacement(transform.position);
+
+        transform.localScale = _originalScale;
+        if (shadowSprite != null) SetShadowAlpha(0f);
+        if (placementIndicator != null) placementIndicator.enabled = false;
+        if (_sprite != null) _sprite.color = _originalColor;
+
+        if (valid)
+        {
+            _originalPos = transform.position;
+            GhiViTriVaoSave();          // ← trước đây thiếu: Play lại là vật về chỗ cũ
+        }
+        else
+        {
+            StartCoroutine(BounceBack(_originalPos));
+        }
+
+        IsDraggingObject = false;
+        FreeCursor();
+
+        // Vật đã đứng ở chỗ mới → cập nhật lại bảng ô cho lần kéo/đặt kế tiếp.
+        PlacementManager.Instance?.RefreshOccupancy();
+    }
+
+    // =========================================================================
+    //  LƯU VỊ TRÍ
+    // =========================================================================
+
+    /// <summary>Khoá lưu riêng cho nhóm công trình kéo thẳng (Chợ · Cổng Bếp · Kho).</summary>
+    private const string SaveKey = "FARM_DRAG_OBJECT_POS";
+    private const int    SaveVersion = 1;
+
+    [System.Serializable]
+    private class MotVat
+    {
+        public string ten;
+        public float  x, y;
+    }
+
+    [System.Serializable]
+    private class GoiLuu
+    {
+        public int saveVersion;
+        public System.Collections.Generic.List<MotVat> ds = new System.Collections.Generic.List<MotVat>();
+    }
+
+    /// <summary>
+    /// Ghi vị trí vật này vào save.
+    ///
+    /// VÌ SAO CÓ KHOÁ RIÊNG chứ không nhét vào `FARM_PLACED_BUILDINGS`: khoá đó là danh
+    /// sách vật do `PlacementManager` SINH RA lúc chạy — `LoadBuildings()` đọc nó rồi
+    /// `Instantiate` prefab tương ứng. Chợ/Cổng Bếp/Kho là object DỰNG SẴN TRONG SCENE,
+    /// không có `itemId` trong shop; nhét vào đó thì lần load sau sẽ sinh thêm một bản
+    /// sao nữa nằm chồng lên bản gốc.
+    ///
+    /// Định danh bằng TÊN object. Chấp nhận được vì ba vật này là duy nhất trong scene
+    /// và không ai đổi tên chúng; đổi tên thì mất vị trí đã lưu, chứ không hỏng gì.
+    /// </summary>
+    private void GhiViTriVaoSave()
+    {
+        GoiLuu goi = DocGoiLuu();
+
+        MotVat v = goi.ds.Find(t => t != null && t.ten == gameObject.name);
+        if (v == null)
+        {
+            v = new MotVat { ten = gameObject.name };
+            goi.ds.Add(v);
+        }
+
+        v.x = transform.position.x;
+        v.y = transform.position.y;
+
+        goi.saveVersion = SaveVersion;
+        PlayerPrefs.SetString(SaveKey, JsonUtility.ToJson(goi));
+        LuuGopPrefs.Hen();
+    }
+
+    /// <summary>
+    /// Nạp lại vị trí đã lưu. Gọi ở `Start` chứ không phải `Awake`: `PlacementManager`
+    /// dựng bảng ô trong `Start`, đặt vật trước đó thì bảng ô ghi nhận vị trí cũ.
+    /// </summary>
+    private void NapViTriDaLuu()
+    {
+        GoiLuu goi = DocGoiLuu();
+        MotVat v = goi.ds.Find(t => t != null && t.ten == gameObject.name);
+        if (v == null) return;
+
+        transform.position = new Vector3(v.x, v.y, transform.position.z);
+        _originalPos = transform.position;
+    }
+
+    private static GoiLuu DocGoiLuu()
+    {
+        string json = PlayerPrefs.GetString(SaveKey, "");
+        if (string.IsNullOrEmpty(json)) return new GoiLuu { saveVersion = SaveVersion };
+
+        try
+        {
+            GoiLuu g = JsonUtility.FromJson<GoiLuu>(json);
+            if (g == null) return new GoiLuu { saveVersion = SaveVersion };
+            if (g.ds == null) g.ds = new System.Collections.Generic.List<MotVat>();
+
+            if (g.saveVersion > SaveVersion)
+            {
+                // Save mới hơn code = vừa hạ cấp bản game. Đọc tiếp chứ không xoá:
+                // dữ liệu chỉ là (tên, x, y), tên lạ thì không vật nào khớp — vô hại.
+                Debug.LogWarning($"[KéoVật] Save v{g.saveVersion} mới hơn code v{SaveVersion} " +
+                                 "— đọc tiếp, mục lạ sẽ bị bỏ qua.");
+            }
+
+            return g;
+        }
+        catch (System.Exception e)
+        {
+            Debug.LogWarning($"[KéoVật] Không đọc được save vị trí — bỏ qua. {e.Message}");
+            return new GoiLuu { saveVersion = SaveVersion };
+        }
+    }
+
+    /// <summary>Gọi khi script bị disable giữa chừng drag — reset state không bounce.</summary>
+    private void ForceCancelDrag()
+    {
+        transform.localScale = _originalScale;
+        transform.position   = _originalPos;
+        if (_sprite != null) _sprite.color = _originalColor;
+        if (shadowSprite != null) SetShadowAlpha(0f);
+        if (placementIndicator != null) placementIndicator.enabled = false;
+        IsDraggingObject = false;
+        _isDragging      = false;
+        _pressHeld       = false;
+        FreeCursor();
+    }
+
+    // =========================================================================
+    // Placement Helpers
+    // =========================================================================
+
+    /// <summary>
+    /// 🔴 V8 — Snap CHÂN VẬT vào lưới, dùng chung đúng một công thức với PlacementManager
+    /// (PlacementManager.SnapAnchor → IsoGrid.SnapAnchor, ô 300 × 150 từ V10).
+    ///
+    /// VÌ SAO SNAP CHÂN CHỨ KHÔNG SNAP TÂM: nếu snap tâm thì chân rơi vào
+    /// (đường kẻ − nửa chiều cao sprite) — mỗi vật một con số khác nhau vì sprite cao thấp
+    /// khác nhau → kéo hai công trình cạnh nhau là chân lệch nhau, đúng lỗi "méo méo
+    /// không đều" mà V8 sinh ra để sửa. Snap chân thì chân LUÔN nằm trên lưới ô iso.
+    ///
+    /// Quy trình: neo → chân (cộng offset đo được) → snap chân → trả về neo (trừ lại).
+    /// Với pivot ở đáy (mọi công trình của dự án) hai offset đều 0 nên đây đúng bằng
+    /// SnapAnchor(pos) — giống hệt Ghost của PlacementManager, không lệch một pixel.
+    /// </summary>
+    private Vector3 SnapToGrid(Vector3 pos)
+    {
+        Vector3 foot        = FootAnchorOf(pos);
+        Vector3 snappedFoot = PlacementManager.SnapAnchor(foot, _gridSizeCells);
+
+        return new Vector3(snappedFoot.x - _pivotOffsetX,
+                           snappedFoot.y - _footOffsetY,
+                           pos.z);
+    }
+
+    /// <summary>
+    /// Hợp lệ = ô lưới còn trống (bỏ qua ô của chính mình) VÀ nằm trong biên bản đồ.
+    ///
+    /// BỎ Physics2D: obstacleLayer trong scene có m_Bits = 0 và groundLayerMask trỏ vào
+    /// layer không có collider nền → OverlapBox luôn null nên hàm cũ hoặc LUÔN đúng
+    /// (nhánh obstacle) hoặc LUÔN sai (nhánh ground, bắt buộc phải trúng mới hợp lệ).
+    /// Kiểm tra theo ô lưới không phụ thuộc layer/collider nên chính xác tuyệt đối.
+    /// </summary>
+    private bool IsValidPlacement(Vector3 pos)
+    {
+        PlacementManager pm = PlacementManager.Instance;
+        if (pm != null)
+        {
+            RectInt rect = RectOf(pos);
+            return pm.IsAreaFree(rect, gameObject) && pm.IsRectInsideMap(rect);
+        }
+
+        // Dự phòng (scene test không có PlacementManager): giữ lại phép kiểm tra vật cản cũ.
+        Collider2D[] overlaps = Physics2D.OverlapBoxAll(pos, CollisionCheckSize, 0f, obstacleLayerMask);
+        foreach (var c in overlaps)
+            if (c.gameObject != gameObject) return false;
+        return true;
+    }
+
+    /// <summary>
+    /// Đổi transform.position thành ĐIỂM NEO theo quy ước V8 = CHÂN vật, giữa ngang.
+    /// Với pivot ở đáy thì hai offset = 0 và hàm này là phép đồng nhất.
+    /// </summary>
+    private Vector3 FootAnchorOf(Vector3 objectPos)
+        => new Vector3(objectPos.x + _pivotOffsetX, objectPos.y + _footOffsetY, 0f);
+
+    /// <summary>Vùng ô vật này chiếm nếu transform.position = objectPos.</summary>
+    private RectInt RectOf(Vector3 objectPos)
+        => PlacementManager.RectFromAnchor(FootAnchorOf(objectPos), _gridSizeCells);
+
+    private void UpdatePlacementIndicator(Vector3 pos, bool valid)
+    {
+        if (placementIndicator == null) return;
+        placementIndicator.enabled          = true;
+        // Vẽ ở TÂM VÙNG Ô ĐANG ĐƯỢC KIỂM TRA để người chơi thấy đúng chỗ sẽ bị chặn.
+        // Lấy tâm từ chính `rect` (không tự tính lại từ bounds) — một nguồn sự thật duy nhất,
+        // nên khung chỉ báo không bao giờ nói khác kết quả hợp lệ/không hợp lệ.
+        Vector3 c = PlacementManager.RectCenterWorld(RectOf(pos));
+        c.z = placementIndicator.transform.position.z;
+        placementIndicator.transform.position = c;
+        placementIndicator.color            = valid ? validPlacementColor : invalidPlacementColor;
+    }
+
+    // =========================================================================
+    // Bounce Animation
+    // =========================================================================
+
+    private IEnumerator BounceBack(Vector3 target)
+    {
+        Vector3 start   = transform.position;
+        float   elapsed = 0f;
+
+        while (elapsed < bounceReturnDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t   = elapsed / bounceReturnDuration;
+            Vector3 p = Vector3.Lerp(start, target, t);
+            p.y += Mathf.Sin(t * Mathf.PI) * bounceHeight;
+            transform.position = p;
+            yield return null;
+        }
+
+        transform.position = target;
+    }
+
+    // =========================================================================
+    // Helpers
+    // =========================================================================
+
+    private bool IsPointerOverThisObject(Vector2 screenPos)
+    {
+        if (_cam == null) _cam = Camera.main;
+        Vector3 world = _cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 0f));
+        RaycastHit2D hit = Physics2D.Raycast(world, Vector2.zero, 0f);
+        return hit.collider != null && hit.collider.gameObject == gameObject;
+    }
+
+    private Vector3 ScreenToWorld(Vector2 screenPos)
+    {
+        if (_cam == null) _cam = Camera.main;
+        Vector3 w = _cam.ScreenToWorldPoint(new Vector3(screenPos.x, screenPos.y, 10f));
+        w.z = transform.position.z;
+        return w;
+    }
+
+    private void SetShadowAlpha(float alpha)
+    {
+        if (shadowSprite == null) return;
+        Color c = shadowSprite.color;
+        c.a = alpha;
+        shadowSprite.color = c;
+    }
+
+    private static void FreeCursor()
+    {
+#if UNITY_EDITOR || UNITY_STANDALONE
+        if (Cursor.lockState != CursorLockMode.None) Cursor.lockState = CursorLockMode.None;
+        if (!Cursor.visible) Cursor.visible = true;
+#endif
+    }
+}

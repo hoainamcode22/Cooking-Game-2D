@@ -442,6 +442,10 @@ public class WarehousePopupUI : MonoBehaviour
         else if (currentCategory == WarehouseCategory.MonAn && rectTabMonAn != null) rectTabMonAn.SetAsLastSibling();
     }
 
+    [Header("[2026-09-24] Tab kho")]
+    [Tooltip("Nang ca hang tab len bao nhieu (UI unit) de chu tab khong bi khung o vat pham de len. Chinh o day, Play ap ngay.")]
+    [SerializeField] private float tabNangLen = 16f;
+
     private void UpdateSingleTabVisual(Image img, TMP_Text txt, RectTransform rect, bool isActive, Color activeColor, Color inactiveColor, float posX)
     {
         if (img != null && tabActiveSprite != null && tabInactiveSprite != null)
@@ -452,7 +456,7 @@ public class WarehousePopupUI : MonoBehaviour
 
         if (rect != null)
         {
-            rect.anchoredPosition = new Vector2(posX, isActive ? 0f : -6f);
+            rect.anchoredPosition = new Vector2(posX, tabNangLen + (isActive ? 0f : -6f));   // [2026-09-24] nang tab len, khong bi khung luoi de
         }
     }
 

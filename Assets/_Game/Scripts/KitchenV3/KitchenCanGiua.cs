@@ -182,7 +182,7 @@ public static class KitchenCanGiua
     public static int DongBoOTrong(Transform goc)
     {
         if (goc == null) return 0;
-        int n = 0;
+        int n = DongBoTheGiaVi(goc);
         foreach (var ten in new[] { "Scroll_Grid_Ingredients", "Scroll_Grid_Seasonings" })
         {
             var g = TimSau(goc, ten);
@@ -219,6 +219,58 @@ public static class KitchenCanGiua
         return n;
     }
 
+    /// <summary>[2026-09-24] The khay GIA VI (va the chuyen khay) cung khung nen + nhan so luong "x4"
+    /// giong het the NGUYEN LIEU (lay the nguyen lieu dau tien lam mau). Chi ghi khi khac -> re.</summary>
+    private static int DongBoTheGiaVi(Transform goc)
+    {
+        var gNL = TimSau(goc, "Scroll_Grid_Ingredients");
+        if (gNL == null) return 0;
+        SelectableIngredientCard mau = null;
+        foreach (var c in gNL.GetComponentsInChildren<SelectableIngredientCard>(true))
+            if (c.transform.Find("Qty_Badge") != null) { mau = c; break; }
+        if (mau == null) return 0;
+        var imgMau = mau.GetComponent<Image>();
+        var bMau = mau.transform.Find("Qty_Badge") as RectTransform;
+        var bImgMau = bMau.GetComponent<Image>();
+        var tMau = bMau.GetComponentInChildren<TMP_Text>(true);
+        int n = 0;
+        foreach (var ten in new[] { "Scroll_Grid_Ingredients", "Scroll_Grid_Seasonings" })
+        {
+            var g = TimSau(goc, ten);
+            if (g == null) continue;
+            foreach (var the in g.GetComponentsInChildren<SelectableIngredientCard>(true))
+            {
+                if (the == mau) continue;
+                var img = the.GetComponent<Image>();
+                if (img != null && imgMau != null && img.sprite != imgMau.sprite)
+                {
+                    img.sprite = imgMau.sprite; img.type = imgMau.type;
+                    img.pixelsPerUnitMultiplier = imgMau.pixelsPerUnitMultiplier; img.color = imgMau.color;
+                    n++;
+                }
+                var b = the.transform.Find("Qty_Badge") as RectTransform;
+                if (b == null) continue;
+                var bImg = b.GetComponent<Image>();
+                if (bImg != null && bImgMau != null && (bImg.sprite != bImgMau.sprite || bImg.color != bImgMau.color))
+                {
+                    bImg.sprite = bImgMau.sprite; bImg.type = bImgMau.type;
+                    bImg.pixelsPerUnitMultiplier = bImgMau.pixelsPerUnitMultiplier; bImg.color = bImgMau.color;
+                    b.anchorMin = bMau.anchorMin; b.anchorMax = bMau.anchorMax; b.pivot = bMau.pivot;
+                    b.anchoredPosition = bMau.anchoredPosition; b.sizeDelta = bMau.sizeDelta;
+                    var t = b.GetComponentInChildren<TMP_Text>(true);
+                    if (t != null && tMau != null)
+                    {
+                        t.fontSize = tMau.fontSize; t.color = tMau.color; t.fontStyle = tMau.fontStyle;
+                        t.enableAutoSizing = tMau.enableAutoSizing; t.fontSizeMin = tMau.fontSizeMin; t.fontSizeMax = tMau.fontSizeMax;
+                        t.alignment = tMau.alignment;
+                    }
+                    n++;
+                }
+            }
+        }
+        return n;
+    }
+
     /// <summary>Nut "+ Mo 7 o / 500 vang" -> dong 1 chu, dong 2 = [icon vang] 500, ca 2 can giua.</summary>
     private static void TachDongGia(Transform nut)
     {
@@ -246,9 +298,10 @@ public static class KitchenCanGiua
 
         var cu = nut.Find("Img_Gold");
         Sprite vang = null;
-        if (cu != null) { var ci = cu.GetComponent<Image>(); if (ci != null) vang = ci.sprite; cu.gameObject.SetActive(false); }
-        if (vang == null) { var lib = RewardIconLibrary.Instance; if (lib != null) vang = lib.goldSprite; }
+        // [2026-09-24] Uu tien icon vang CHUAN (ban cu trong nut la manh cat tu sheet -> chi thay 10% dong xu)
+        { var lib = RewardIconLibrary.Instance; if (lib != null) vang = lib.goldSprite; }
         if (vang == null) vang = Resources.Load<Sprite>("UI/Standard/icon_gold");
+        if (cu != null) { var ci = cu.GetComponent<Image>(); if (vang == null && ci != null) vang = ci.sprite; cu.gameObject.SetActive(false); }
         var ig = new GameObject("Img_Gold", typeof(RectTransform), typeof(Image));
         ig.layer = nut.gameObject.layer;
         var irt = (RectTransform)ig.transform; irt.SetParent(rrt, false); irt.sizeDelta = new Vector2(26f, 26f);

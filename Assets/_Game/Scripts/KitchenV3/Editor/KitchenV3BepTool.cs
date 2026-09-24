@@ -155,6 +155,58 @@ public static class KitchenV3BepTool
         return null;
     }
 
+    // [2026-09-24] Chu bang chi tiet mon bi phong to (scale 1.5 / 1.58 / 1.8) -> ve scale 1, co chu vua khung,
+    // ten + cap + thuong xep 3 dong gon ben phai anh mon; tieu de "Ingredients needed" / "Flavor" nam gon trong the.
+    [MenuItem("Tools/Kitchen V3/16. Thu nho chu bang chi tiet mon (ten, cap, thuong, tieu de)", false, 116)]
+    private static void ThuNhoChuChiTiet()
+    {
+        var bep = TimBep();
+        if (bep == null) { EditorUtility.DisplayDialog("Kitchen V3", "Khong thay Kitchen_UI_v3. Hay mo SampleScene.", "OK"); return; }
+        Transform bd = null;
+        foreach (var t in bep.GetComponentsInChildren<Transform>(true))
+            if (t.name == "Board_Detail" && t.Find("Card_Info") != null) { bd = t; break; }
+        if (bd == null) { EditorUtility.DisplayDialog("Kitchen V3", "Khong thay Board_Detail/Card_Info.", "OK"); return; }
+        //            ten              vi tri (goc trai tren)        khung                 co max  co min
+        var ds = new (string ten, Vector2 pos, Vector2 size, float coMax, float coMin)[]
+        {
+            ("Txt_DishName",   new Vector2(130f, -66f),  new Vector2(275f, 32f), 24f, 16f),
+            ("Txt_DishMeta",   new Vector2(130f, -98f),  new Vector2(275f, 24f), 16f, 11f),
+            ("Txt_Rewards",    new Vector2(130f, -122f), new Vector2(275f, 22f), 14f, 10f),
+            ("Txt_NeedTitle",  new Vector2(48f, -165f),  new Vector2(360f, 26f), 18f, 12f),
+            ("Txt_TasteTitle", new Vector2(48f, -282f),  new Vector2(360f, 26f), 18f, 12f),
+        };
+        int n = 0;
+        foreach (var c in ds)
+        {
+            var rt = bd.Find(c.ten) as RectTransform;
+            if (rt == null) continue;
+            Undo.RecordObject(rt, "Thu nho chu chi tiet");
+            rt.anchorMin = rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0f, 1f);
+            rt.localScale = Vector3.one;
+            rt.anchoredPosition = c.pos;
+            rt.sizeDelta = c.size;
+            var tx = rt.GetComponent<TMPro.TMP_Text>();
+            if (tx != null)
+            {
+                Undo.RecordObject(tx, "Thu nho chu chi tiet");
+                tx.enableAutoSizing = true;
+                tx.fontSizeMax = c.coMax;
+                tx.fontSizeMin = c.coMin;
+                tx.fontSize = c.coMax;
+                tx.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+                tx.overflowMode = TMPro.TextOverflowModes.Ellipsis;
+                tx.verticalAlignment = TMPro.VerticalAlignmentOptions.Middle;
+                EditorUtility.SetDirty(tx);
+            }
+            n++;
+        }
+        EditorSceneManager.MarkSceneDirty(bd.gameObject.scene);
+        Selection.activeTransform = bd.Find("Txt_DishName");
+        Debug.Log("[Kitchen V3] Thu nho " + n + " o chu bang chi tiet (scale ve 1, co chu toi da: ten 24, cap 16, thuong 14, tieu de 18). " +
+                  "Mon nao ten dai tu co nho lai vua khung. Keo tay tiep neu muon roi Ctrl+S - Play giu dung nhu Edit.");
+    }
+
     [MenuItem("Tools/Kitchen V3/13. Ra soat: can giua chu + icon, chu khong loi khung", false, 113)]
     private static void CanGiua()
     {

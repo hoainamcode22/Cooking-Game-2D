@@ -328,6 +328,9 @@ public class RewardFlyFX : MonoBehaviour
 
     private RectTransform ResolveKhoTarget()
     {
+        // [2026-09-24] Uu tien icon kho tren thanh WarehouseGainToast (hien thanh truoc khi bay)
+        var toast = WarehouseGainToastUI.Instance;
+        if (toast != null && toast.IconRect != null) { toast.HienNgay(); return toast.IconRect; }
         if (targetKho != null) return targetKho;
         var hud = FarmGame.UI.TownshipHUDController.Instance;
         if (hud != null && hud.btnTabWarehouse != null)

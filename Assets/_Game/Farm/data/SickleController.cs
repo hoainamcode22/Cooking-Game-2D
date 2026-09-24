@@ -29,6 +29,15 @@ public class SickleController : MonoBehaviour
              "giữ ổn định. Kẹp [0.5x, 2x]. Mặc định 750 = CameraController.defaultSize.")]
     [SerializeField] private float orthoThamChieu = ZoomScaleHelper.ORTHO_THAM_CHIEU;
 
+    [Header("[2026-09-24] To bang icon liem trong khay (Sickle_Icon)")]
+    [Tooltip("Bat: liem khi keo to DUNG bang icon liem trong khay duoi (Canvas_Popup/Sickle_Bottom_Tray/Sickle_Icon), " +
+             "giu nguyen kich thuoc tren man hinh khi zoom. Tat: dung Sickle Scale nhu cu.")]
+    [SerializeField] private bool toBangIconKhay = true;
+    [Tooltip("1 = bang dung icon khay. 1.2 = to hon 20%.")]
+    [SerializeField] private float heSoSoVoiIcon = 1.1f;
+    private RectTransform _iconKhay;
+    private bool _daTimIcon;
+
     // Ortho lần áp scale gần nhất — LateUpdate chỉ tính lại khi lệch > 0.5.
     private float _orthoDaApDung = float.NegativeInfinity;
 
@@ -66,11 +75,44 @@ public class SickleController : MonoBehaviour
     /// </summary>
     private void ApDungScaleTheoZoom()
     {
+        if (toBangIconKhay && ApDungTheoIconKhay()) return;
         float heSo  = ZoomScaleHelper.HeSo(mainCam, orthoThamChieu);
         float baseScale = Mathf.Max(sickleScale, 12f);
         float scale = Mathf.Clamp(baseScale, 0.1f, 30f) * heSo;
         transform.localScale = new Vector3(scale, scale, 1f);
         _orthoDaApDung = (mainCam != null) ? mainCam.orthographicSize : float.NegativeInfinity;
+    }
+
+    /// <summary>Kich thuoc tren man hinh = icon liem trong khay x heSoSoVoiIcon (khong phu thuoc zoom).</summary>
+    private bool ApDungTheoIconKhay()
+    {
+        var sr = GetComponent<SpriteRenderer>();
+        if (sr == null || sr.sprite == null || mainCam == null || !mainCam.orthographic) return false;
+        if (!_daTimIcon)
+        {
+            _daTimIcon = true;
+            foreach (var rt in FindObjectsByType<RectTransform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+                if (rt != null && rt.name == "Sickle_Icon") { _iconKhay = rt; break; }
+        }
+        float tiLe = 130f / 1080f;   // du phong: icon 130 tren canvas cao 1080
+        if (_iconKhay != null)
+        {
+            var cv = _iconKhay.GetComponentInParent<Canvas>(true);
+            var goc = cv != null ? cv.rootCanvas.transform as RectTransform : null;
+            if (goc != null && goc.rect.height > 1f && goc.lossyScale.y > 0f)
+            {
+                float t = (_iconKhay.rect.height * _iconKhay.lossyScale.y) / (goc.rect.height * goc.lossyScale.y);
+                if (t > 0.02f && t < 0.5f) tiLe = t;
+            }
+        }
+        Vector2 kt = sr.sprite.bounds.size;
+        float s = Mathf.Max(kt.x, kt.y);
+        if (s <= 0.0001f) return false;
+        float scale = tiLe * heSoSoVoiIcon * 2f * mainCam.orthographicSize / s;
+        if (transform.parent != null && transform.parent.lossyScale.x > 0.0001f) scale /= transform.parent.lossyScale.x;
+        transform.localScale = new Vector3(scale, scale, 1f);
+        _orthoDaApDung = mainCam.orthographicSize;
+        return true;
     }
 
     // Chỉ chạy khi liềm đang bật (đang gặt). Rẻ: 1 phép so; chỉ set scale khi ortho đổi > 0.5.

@@ -2305,5 +2305,13 @@ public static class LocStringTable
         { "Chưa chọn món.", "Pick a dish first." },
         { "Thiếu {0}", "Missing {0}" },
         { "{0} không có trong công thức", "{0} is not in the recipe" },
+        // [TAU LUA 2026-09-24]
+        { "Toa số {0} / {1} — đã đủ hàng", "Wagon {0} / {1} — full" },
+        { "Toa số {0} / {1}", "Wagon {0} / {1}" },
+        { "Còn {0} toa chưa đủ — nạp xong các toa yêu cầu, tàu sẽ khởi hành.", "{0} wagon(s) still need goods — fill them all and the train departs." },
+        { "Bạn chưa đủ hàng — trồng/sản xuất thêm {0} rồi quay lại nhé!", "Not enough goods — grow or make more {0}, then come back!" },
+        { "Trong kho: x{0}", "In storage: x{0}" },
+        { "Tàu {0} toa · chuyến này yêu cầu {1} loại hàng — chạm toa để nạp!", "{0}-wagon train · this trip needs {1} kinds of goods — tap a wagon to load!" },
+        { "TĂNG TỐC · {0}", "SPEED UP · {0}" },
     };
 }

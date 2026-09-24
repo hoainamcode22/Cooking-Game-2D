@@ -1,0 +1,20 @@
+fileFormatVersion: 2
+guid: 830bde77725a44b6955c8e8e9e263719
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+  textureType: 8
+  spriteMode: 2
+  spritePixelsToUnits: 100
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  platformSettings: []
+  spriteSheet:
+    serializedVersion: 2
+    sprites: []

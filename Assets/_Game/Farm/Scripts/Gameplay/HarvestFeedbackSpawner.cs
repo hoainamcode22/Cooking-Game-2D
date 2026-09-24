@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 
 public class HarvestFeedbackSpawner : MonoBehaviour
@@ -152,9 +152,10 @@ public class HarvestFeedbackSpawner : MonoBehaviour
 
     private Transform ResolveWarehouseTarget()
     {
-        if (WarehouseGainToastUI.Instance != null && WarehouseGainToastUI.Instance.PanelRect != null)
+        if (WarehouseGainToastUI.Instance != null && WarehouseGainToastUI.Instance.IconRect != null)
         {
-            warehouseTarget = WarehouseGainToastUI.Instance.PanelRect;
+            WarehouseGainToastUI.Instance.HienNgay();                    // [2026-09-24] hien thanh kho truoc
+            warehouseTarget = WarehouseGainToastUI.Instance.IconRect;   // bay vao ICON kho tren thanh
             return warehouseTarget;
         }
 

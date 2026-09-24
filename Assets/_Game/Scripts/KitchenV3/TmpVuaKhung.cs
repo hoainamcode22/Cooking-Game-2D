@@ -32,17 +32,34 @@ public static class TmpVuaKhung
         if (t == null) return false;
         int id = t.GetInstanceID();
         if (_daXuLy.Contains(id)) return false;
-        _daXuLy.Add(id);
-        if (LaFx(t.transform)) return false;
+        // [2026-09-24] Danh sach mon (Dish_Scroll) do KitchenSceneV2UI.DatChuGiuCo lo co chu -> KHONG dong vao.
+        // Truoc day bat autosize cho ca dong mon -> ten mon bi TMP bop theo chieu cao o (nho xiu) cho toi khi bam mon.
+        if (LaFx(t.transform) || TrongDanhSachMon(t.transform)) { _daXuLy.Add(id); return false; }
 
         float co = t.enableAutoSizing ? t.fontSizeMax : t.fontSize;
         if (co <= 0f) return false;
+        if (!t.enableAutoSizing)
+        {
+            // Chi can thiep khi chu THAT SU tran BE NGANG khung. Vua khung -> giu nguyen co chu Edit mode.
+            float rong = t.rectTransform.rect.width;
+            if (rong <= 1f || string.IsNullOrEmpty(t.text)) return false;        // chua co chu / chua co khung: lan sau xet lai
+            _daXuLy.Add(id);
+            if (t.GetPreferredValues(t.text, float.PositiveInfinity, float.PositiveInfinity).x <= rong + 1f) return false;
+        }
+        _daXuLy.Add(id);
         float nho = Mathf.Max(9f, co * TI_LE_NHO_NHAT);
         if (t.enableAutoSizing && t.fontSizeMin <= nho) return false;   // da tu co san, khong dong vao
         t.fontSizeMax = co;
         t.fontSizeMin = nho;
         t.enableAutoSizing = true;
         return true;
+    }
+
+    private static bool TrongDanhSachMon(Transform t)
+    {
+        for (int k = 0; k < 6 && t != null; k++, t = t.parent)
+            if (t.name == "Dish_Scroll" || t.name == "Board_List") return true;
+        return false;
     }
 
     private static bool LaFx(Transform t)

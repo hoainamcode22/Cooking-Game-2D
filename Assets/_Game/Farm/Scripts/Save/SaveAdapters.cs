@@ -422,6 +422,7 @@ public static class SaveAdapters
             "FARM_PLACED_BUILDINGS",     // PlacementManager.BuildingsSaveKey (blob)
             "FARM_CONSTRUCTION_SITES",   // ConstructionManager.SaveKey (blob, v2)
             "FARM_DRAG_OBJECT_POS",      // ObjectDragHandler (blob)
+            "FARM_SCENE_MOVES_V1",       // [2026-09-24] PlacementManager: vi tri vat dat san trong scene da keo (blob)
             "FARM_PLAYER_STALL",         // PlayerStallManager (blob)
             "OrderBoard_Save",           // OrderBoardManager (blob)
             "KITCHEN_TRANSFER_SAVE",     // KitchenTransferManager (blob)
