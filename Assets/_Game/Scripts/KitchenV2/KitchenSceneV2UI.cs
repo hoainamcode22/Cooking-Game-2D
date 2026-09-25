@@ -392,7 +392,7 @@ namespace KitchenUIv2
         {
             _ovenBusy = true;
             SetText(_txtOvenState, Loc.T("LÒ ĐANG CHÁY..."));
-            SetText(_txtPrepToast, Loc.TF("Sơ chế: {0}", d != null ? Loc.T(d.dishName) : ""));
+            SetText(_txtPrepToast, "");   // [2026-09-25] bo dong "Preparing: ..." (trung ten mon tren banner, de len chip nguyen lieu)
         }
 
         private void HandleDishCooked(DishData d, int score)
@@ -400,12 +400,67 @@ namespace KitchenUIv2
             _ovenBusy = false;
             SetText(_txtOvenState, Loc.TF("XONG! {0}đ", score));
             SetText(_txtPrepToast, Loc.T("Chạm bàn trình bày để cất vào kho →"));
+            // [2026-09-25] Mon vua nau nam tren dia = coi nhu da co -> banner LUOT sang mon khach ke tiep
+            TouristVisitorManager.MonDangTrenDia = d != null ? d.dishId : null;
+            if (isActiveAndEnabled) { if (_coLuotDon != null) StopCoroutine(_coLuotDon); _coLuotDon = StartCoroutine(CoLuotSangKhachSau(0.9f)); }
+        }
+
+        // ── [2026-09-25] Tu chuyen sang don khach ke tiep ─────────────────────
+        private Coroutine _coLuotDon;
+        private RectTransform _rtBanner;
+        private Vector2 _bannerPos0;
+        private bool _coBannerPos0;
+
+        private System.Collections.IEnumerator CoLuotSangKhachSau(float cho)
+        {
+            yield return new WaitForSecondsRealtime(cho);       // de mon bay len dia xong da
+            _coLuotDon = null;
+            // [2026-09-25] Khong tu chon mon nua: bang phan (KitchenChalkDonKhach) tu luot sang khach can nau tiep,
+            // Sep cham vao mon tren bang phan moi hien len bang giua.
+            RefreshAll();
+        }
+
+        /// <summary>[2026-09-25] Bang phan goi khi Sep cham mon khach -> bang giua hien dung mon + nguyen lieu.</summary>
+        public void ChonMonKhach(DishData d)
+        {
+            if (d == null || challenge == null || challenge.IsCooking) return;
+            SelectDish(d);
+            if (isActiveAndEnabled) StartCoroutine(CoLuotBanner());
+        }
+
+        private System.Collections.IEnumerator CoLuotBanner()
+        {
+            if (_rtBanner == null) _rtBanner = TimSauTen(transform, "Order_Banner") as RectTransform;
+            if (_rtBanner == null) yield break;
+            if (!_coBannerPos0) { _coBannerPos0 = true; _bannerPos0 = _rtBanner.anchoredPosition; }
+            var cg = _rtBanner.GetComponent<CanvasGroup>();
+            if (cg == null) cg = _rtBanner.gameObject.AddComponent<CanvasGroup>();
+            float t = 0f, T = 0.32f;
+            while (t < T)
+            {
+                t += Time.unscaledDeltaTime;
+                float k = Mathf.Clamp01(t / T), e = 1f - (1f - k) * (1f - k) * (1f - k);
+                _rtBanner.anchoredPosition = _bannerPos0 + new Vector2(120f * (1f - e), 0f);
+                cg.alpha = Mathf.Lerp(0.2f, 1f, e);
+                yield return null;
+            }
+            _rtBanner.anchoredPosition = _bannerPos0;
+            cg.alpha = 1f;
+        }
+
+        private static Transform TimSauTen(Transform goc, string ten)
+        {
+            if (goc == null) return null;
+            if (goc.name == ten) return goc;
+            for (int i = 0; i < goc.childCount; i++) { var r = TimSauTen(goc.GetChild(i), ten); if (r != null) return r; }
+            return null;
         }
 
         private void HandleDishFailed(DishData d, int score)
         {
             _ovenBusy = false;
             _ovenFakeProgress = 0f;
+            TouristVisitorManager.MonDangTrenDia = null;
             if (_imgOvenFill != null) _imgOvenFill.fillAmount = 0f;
             SetText(_txtOvenState, Loc.TF("HỎNG... {0}đ", score));
             SetText(_txtPrepToast, Loc.T("Chọn lại nguyên liệu rồi nấu tiếp nhé!"));
@@ -413,6 +468,7 @@ namespace KitchenUIv2
 
         private void HandleDishCollected(DishData d)
         {
+            TouristVisitorManager.MonDangTrenDia = null;   // mon da vao kho -> kho tu dem
             _ovenFakeProgress = 0f;
             if (_imgOvenFill != null) _imgOvenFill.fillAmount = 0f;
             int n = PlayerPrefs.GetInt(SentCountKey, 0) + 1;
@@ -655,7 +711,9 @@ namespace KitchenUIv2
 
         private void RefreshStatic()
         {
-            var frontTourist = TouristVisitorManager.Instance != null ? TouristVisitorManager.Instance.GetFrontWaitingTourist() : null;
+            // [2026-09-25] BANG GIUA = mon dang chon trong SACH CONG THUC (hoac mon khach Sep cham tren bang phan).
+            // Don khach du lich nay nam o BANG PHAN ben phai (KitchenChalkDonKhach), khong ep vao bang giua nua.
+            TouristAgent frontTourist = null;
             DishData orderDish = null;
             Sprite customerAvatar = null;
             int orderGold = 0;
@@ -1524,7 +1582,7 @@ namespace KitchenUIv2
                     var front = TouristVisitorManager.Instance != null ? TouristVisitorManager.Instance.GetFrontWaitingTourist() : null;
                     if (front != null && front.Dish != null)
                     {
-                        SelectDish(front.Dish);
+                        // [2026-09-25] cham banner giua KHONG doi sang mon khach nua (don khach nam o bang phan)
                     }
                 });
             }
@@ -1619,6 +1677,14 @@ namespace KitchenUIv2
 
             // ── Sân khấu ──
             _txtChalk = FT("Chalkboard/Txt_Chalk");
+            // [2026-09-25] Bang phan = don khach du lich (keo ngang doi khach, cham de nau)
+            var chalkT = F("Chalkboard");
+            if (chalkT != null)
+            {
+                var dk = chalkT.GetComponent<KitchenChalkDonKhach>();
+                if (dk == null) dk = chalkT.gameObject.AddComponent<KitchenChalkDonKhach>();
+                dk.Init(this);
+            }
             if (_txtChalk != null) { _txtChalk.enableAutoSizing = true; _txtChalk.fontSizeMin = 9f; _txtChalk.fontSizeMax = 15f; } // chữ tràn viền (Sếp 2026-08-27) — tự co vừa bảng
             EnsureChalkGoldIcon(F("Chalkboard"));
             _ovenRect = F("Oven");
@@ -1847,7 +1913,7 @@ namespace KitchenUIv2
                 var front = TouristVisitorManager.Instance != null ? TouristVisitorManager.Instance.GetFrontWaitingTourist() : null;
                 if (front != null && front.Dish != null)
                 {
-                    SelectDish(front.Dish);
+                    // [2026-09-25] cham banner giua KHONG doi sang mon khach nua (don khach nam o bang phan)
                 }
             });
         }

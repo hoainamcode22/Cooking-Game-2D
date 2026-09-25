@@ -269,7 +269,7 @@ public class AudioManager : MonoBehaviour
                 var btn = go.GetComponentInParent<Button>();
                 if (btn != null && btn.interactable && btn.isActiveAndEnabled)
                 {
-                    PlayUIClick();
+                    if (!_nutKhongTiengTuDong.Contains(btn.GetInstanceID())) PlayUIClick();   // [2026-09-24] nut co tieng rieng thi bo qua
                     break;
                 }
 
@@ -392,6 +392,8 @@ public class AudioManager : MonoBehaviour
         if (coinTing == null)       coinTing       = Resources.Load<AudioClip>("Audio/sfx_coin");
         // vang.mp3 cung dung duoc cho tieng vang chung neu gold.wav khong co.
         if (coinReward == null)     coinReward     = Resources.Load<AudioClip>("Audio/sfx_coin");
+        // [AM THANH 2026-09-24] file moi da cat gon (.ogg)
+        if (successJingle == null)  successJingle  = Resources.Load<AudioClip>("Audio/success");
 
 #if UNITY_EDITOR
         // 2. Fallback trực tiếp từ Assets/Audio Game
@@ -591,8 +593,13 @@ public class AudioManager : MonoBehaviour
         PlayFX(cookStart != null ? cookStart : uiClick, 0.75f, 1f, 1.03f);
     }
 
+    private float _lastSuccessTime = -999f;
     public void PlaySuccess()
     {
+        // [2026-09-24] Nau xong goi 2 noi (CookingChallengeManager + pop mon len dia) -> chi keu 1 lan
+        if (Time.unscaledTime - _lastSuccessTime < 0.9f) return;
+        _lastSuccessTime = Time.unscaledTime;
+        if (successJingle == null) LoadDefaultClipsIfMissing();
         DuckBGM(0.5f, 0.5f);
         PlayFX(successJingle != null ? successJingle : expClip, 0.8f, 1f, 1.02f);
     }
@@ -649,7 +656,7 @@ public class AudioManager : MonoBehaviour
     public void PlayCookingSizzle()
     {
         if (cookingSizzle == null) LoadDefaultClipsIfMissing();
-        PlayFX(cookingSizzle != null ? cookingSizzle : cookStart, 0.85f, 0.97f, 1.03f);
+        PlayFX(cookingSizzle != null ? cookingSizzle : cookStart, 0.5f, 0.97f, 1.03f);   // [2026-09-24] 0.85 -> 0.5: xeo xeo 3s, nho duoi nhac nen
     }
 
     /// <summary>🔪 Tiếng Băm Chặt / Thái rau củ trên thớt (cooking_chop.wav)</summary>
@@ -695,6 +702,123 @@ public class AudioManager : MonoBehaviour
         if (characterGreet == null) LoadDefaultClipsIfMissing();
         PlayFX(characterGreet != null ? characterGreet : uiClick, 1f, 0.98f, 1.04f);
     }
+
+    // =====================================================================
+    //  [AM THANH 2026-09-24] SFX MOI — Resources/Audio/*.ogg (da cat doan thua, mono, ~5-30KB/file)
+    //  - Moi tieng co COOLDOWN RIENG -> bam lien tuc khong don tieng, khong de nhac nen.
+    //  - Phat qua POOL 4 nguon rieng -> doi pitch (combo x1 x2 x3 cao dan) khong lam meo tieng khac.
+    //  - Tieng moi truong farm chi phat khi camera ZOOM GAN + vat nam trong man hinh (PlaySfxGan).
+    //  - Khong co loop nao chay suot: lua lo dang chay = sfx_fire_burst nho, lap lai thua thot.
+    // =====================================================================
+    [Header("SFX moi 2026-09-24")]
+    [Tooltip("Tieng moi truong farm chi phat khi ortho camera NHO hon muc nay (zoom gan). Mac dinh 750 = luc vao game.")]
+    [SerializeField] private float orthoGanDePhat = 620f;
+    [Range(0f, 1f)] [SerializeField] private float heSoSfxMoi = 1f;
+
+    private readonly Dictionary<string, AudioClip> _sfxCache = new Dictionary<string, AudioClip>();
+    private readonly Dictionary<string, float> _sfxLast = new Dictionary<string, float>();
+    private AudioSource[] _sfxPool;
+    private int _sfxKe;
+    private static readonly HashSet<int> _nutKhongTiengTuDong = new HashSet<int>();
+
+    /// <summary>Nut nay co tieng rieng (vd nut NAU combo) -> AudioManager KHONG tu phat tieng bam nut nua.</summary>
+    public static void BoQuaTiengNutTuDong(Button b)
+    {
+        if (b != null) _nutKhongTiengTuDong.Add(b.GetInstanceID());
+    }
+
+    private AudioClip LaySfx(string ten)
+    {
+        if (string.IsNullOrEmpty(ten)) return null;
+        AudioClip c;
+        if (_sfxCache.TryGetValue(ten, out c)) return c;
+        c = Resources.Load<AudioClip>("Audio/" + ten);
+        _sfxCache[ten] = c;                       // cache ca null -> khong Load lai moi lan
+        return c;
+    }
+
+    private AudioSource LayNguonPool()
+    {
+        if (_sfxPool == null)
+        {
+            _sfxPool = new AudioSource[4];
+            for (int i = 0; i < _sfxPool.Length; i++)
+            {
+                var s = CreateChildSource("SFX_Pool_" + i);
+                SetupSource(s, false, 1f);
+                _sfxPool[i] = s;
+            }
+        }
+        _sfxKe = (_sfxKe + 1) % _sfxPool.Length;
+        return _sfxPool[_sfxKe];
+    }
+
+    /// <summary>Phat 1 SFX theo ten file trong Resources/Audio. Tra false neu dang cooldown / thieu file.</summary>
+    public bool PlaySfx(string ten, float vol = 1f, float cooldown = 0.08f, float pitchMin = 0.97f, float pitchMax = 1.03f, string khoaCooldown = null)
+    {
+        string khoa = khoaCooldown ?? ten;
+        float now = Time.unscaledTime;
+        float t;
+        if (_sfxLast.TryGetValue(khoa, out t) && now - t < cooldown) return false;
+        var clip = LaySfx(ten);
+        if (clip == null) return false;
+        float gain = SfxGain;
+        if (gain <= 0f) return false;
+        _sfxLast[khoa] = now;
+        var src = LayNguonPool();
+        src.pitch = Random.Range(pitchMin, pitchMax);
+        src.PlayOneShot(clip, fxVolume * vol * heSoSfxMoi * gain);
+        return true;
+    }
+
+    /// <summary>Camera dang zoom gan va diem world nam trong man hinh?</summary>
+    public bool CameraDangGan(Vector3 world)
+    {
+        var cam = Camera.main;
+        if (cam == null || !cam.orthographic) return false;
+        if (cam.orthographicSize > orthoGanDePhat) return false;
+        Vector3 v = cam.WorldToViewportPoint(world);
+        return v.x > -0.05f && v.x < 1.05f && v.y > -0.05f && v.y < 1.05f;
+    }
+
+    /// <summary>Tieng moi truong farm: CHI phat khi zoom gan + trong man hinh.</summary>
+    public bool PlaySfxGan(string ten, Vector3 world, float vol = 1f, float cooldown = 1f)
+    {
+        if (!CameraDangGan(world)) return false;
+        return PlaySfx(ten, vol, cooldown, 0.95f, 1.05f);
+    }
+
+    // ── BEP ──
+    /// <summary>Moi lan bam NAU (x1 x2 x3...): tieng tap cao dan theo combo + lua lach tach nho.</summary>
+    public void PlayComboTap(int dem)
+    {
+        float p = 1f + Mathf.Min(Mathf.Max(0, dem - 1), 14) * 0.028f;
+        PlaySfx("sfx_combo_tap", 0.6f, 0.04f, p - 0.01f, p + 0.01f);
+        PlaySfx("sfx_fire_flicker", 0.45f, 0.22f, 0.92f, 1.1f);
+    }
+    public void PlayFireBurst()   { PlaySfx("sfx_fire_burst", 0.75f, 0.4f, 0.97f, 1.03f); }
+    /// <summary>Lua lo DANG CHAY luc nau: sfx_fire_burst nho, pitch tram (goi thua thot, cooldown 2.5s).</summary>
+    public void PlayOvenFireTick() { PlaySfx("sfx_fire_burst", 0.22f, 2.5f, 0.82f, 0.95f, "oven_tick"); }
+    public void PlayPerfect()     { DuckBGM(0.6f, 0.7f); PlaySfx("sfx_perfect", 0.8f, 0.5f, 1f, 1.02f); }
+    public void PlayCookFail()    { PlaySfx("sfx_cook_fail", 0.65f, 0.5f, 0.97f, 1.02f); }
+    public void PlayPotDrop()     { PlaySfx("sfx_pot_drop", 0.55f, 0.09f, 0.9f, 1.15f); }
+    public void PlayDishWhoosh()  { PlaySfx("sfx_dish_whoosh", 0.55f, 0.2f, 0.97f, 1.05f); }
+    public void PlayPlateClink()  { PlaySfx("sfx_plate_clink", 0.5f, 0.2f, 0.97f, 1.05f); }
+    /// <summary>sfx_card_pick va sfx_card_return dung CHUNG 1 file (tra ve thi pitch tram hon).</summary>
+    public void PlayCardPick()    { PlaySfx("sfx_card_pick", 0.45f, 0.06f, 1.02f, 1.08f); }
+    public void PlayCardReturn()  { PlaySfx("sfx_card_pick", 0.35f, 0.06f, 0.85f, 0.9f, "card_return"); }
+    /// <summary>Roi vang / kim cuong / gia vi hiem: dung chung tieng vang "ting ting".</summary>
+    public void PlayRareDrop()    { PlayCoinTing(); }
+
+    // ── FARM ──
+    public void PlayBushRustle()  { PlaySfx("sfx_bush_rustle", 0.45f, 0.35f, 0.92f, 1.1f); }
+    public void PlayItemBounce()  { PlaySfx("sfx_item_bounce", 0.4f, 0.2f, 0.95f, 1.08f); }
+    /// <summary>sfx_warehouse_collect dung CHUNG file sfx_item_bounce (pitch cao hon, gon hon).</summary>
+    public void PlayWarehouseCollect() { PlaySfx("sfx_item_bounce", 0.4f, 0.1f, 1.12f, 1.22f, "warehouse_collect"); }
+    /// <summary>sfx_locked = tieng nut bam.</summary>
+    public void PlayLocked()      { PlayUIClick(); }
+    public void PlayPickupLift()  { PlaySfx("sfx_pickup_lift", 0.45f, 0.2f, 0.98f, 1.04f); }
+    public void PlayTouristHappy() { PlaySfx("sfx_tourist_happy", 0.5f, 1.2f, 0.96f, 1.06f); }
 
     private void DuckBGM(float multiplier, float duration)
     {

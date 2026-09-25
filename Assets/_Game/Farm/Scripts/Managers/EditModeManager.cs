@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+using TMPro;
 
 /// <summary>
 /// Quáº£n lÃ½ cháº¿ Ä‘á»™ sáº¯p xáº¿p (Edit Mode).
@@ -62,8 +63,12 @@ public class EditModeManager : MonoBehaviour
         }
 
         // PhÃ­m E Ä‘á»ƒ toggle (tiá»‡n test trong Editor) â€” dÃ¹ng New Input System
-        if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
+        // [2026-09-25] Phim tat CHI trong Editor va phai giu SHIFT (Shift+E). Truoc day bam nham E
+        // (ca ban build co ban phim) -> lot vao Edit Mode ma khong biet -> cham o dat khong gat duoc.
+#if UNITY_EDITOR
+        if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame && Keyboard.current.shiftKey.isPressed)
             ToggleEditMode();
+#endif
     }
 
     // â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -195,5 +200,56 @@ public class EditModeManager : MonoBehaviour
 
         if (editModeLabel != null)
             editModeLabel.SetActive(active);
+        else
+            BangBaoEditMode(active);
+    }
+
+    // ── [2026-09-25] BANG BAO "EDIT MODE" ─────────────────────────────────────────
+    // Dang Edit Mode thi cham o dat / nha chi de SAP XEP, khong gat / khong mo popup. Truoc day
+    // khong co gi bao tren man hinh -> tuong game hong. Nay hien 1 bang nho giua mep tren,
+    // bam vao la THOAT Edit Mode. Tu dung luc chay (Sep co editModeLabel rieng thi dung cai do).
+    private GameObject _bangBao;
+
+    private void BangBaoEditMode(bool hien)
+    {
+        if (!hien) { if (_bangBao != null) _bangBao.SetActive(false); return; }
+        if (_bangBao == null)
+        {
+            var cvGo = new GameObject("EditMode_Banner", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            // de o GOC scene (khong lam con cua object nao) -> luon la canvas goc, khong bi canvas cha nuot
+            var cv = cvGo.GetComponent<Canvas>();
+            cv.renderMode = RenderMode.ScreenSpaceOverlay;
+            cv.sortingOrder = 460;
+            var sc = cvGo.GetComponent<CanvasScaler>();
+            sc.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            sc.referenceResolution = new Vector2(1920f, 1080f);
+            sc.matchWidthOrHeight = 0.5f;
+
+            var nen = new GameObject("Btn_ThoatEditMode", typeof(RectTransform), typeof(Image), typeof(Button));
+            var rt = (RectTransform)nen.transform;
+            rt.SetParent(cvGo.transform, false);
+            rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 1f);
+            rt.pivot = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = new Vector2(0f, -112f);
+            rt.sizeDelta = new Vector2(520f, 64f);
+            var img = nen.GetComponent<Image>();
+            img.color = new Color(0.36f, 0.2f, 0.08f, 0.9f);
+            nen.GetComponent<Button>().onClick.AddListener(() => { if (isEditMode) ToggleEditMode(); });
+
+            var chuGo = new GameObject("Txt", typeof(RectTransform), typeof(TextMeshProUGUI));
+            var crt = (RectTransform)chuGo.transform;
+            crt.SetParent(rt, false);
+            crt.anchorMin = Vector2.zero; crt.anchorMax = Vector2.one;
+            crt.offsetMin = crt.offsetMax = Vector2.zero;
+            var chu = chuGo.GetComponent<TextMeshProUGUI>();
+            chu.text = "EDIT MODE  \u00b7  Tap here to exit";
+            chu.fontSize = 30f;
+            chu.fontStyle = FontStyles.Bold;
+            chu.alignment = TextAlignmentOptions.Center;
+            chu.color = new Color(1f, 0.94f, 0.78f);
+            chu.raycastTarget = false;
+            _bangBao = cvGo;
+        }
+        _bangBao.SetActive(true);
     }
 }

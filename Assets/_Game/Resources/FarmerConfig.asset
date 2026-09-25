@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1b1596489b781e43b982e2a18902c76, type: 3}
+  m_Name: FarmerConfig
+  m_EditorClassIdentifier: Assembly-CSharp::FarmerConfig
+  walkFrames:
+  - {fileID: 2605922, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: 696700067, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: -205153389, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: -659825162, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: 1258503546, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: -753954430, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: -257921844, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: -2098146377, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: 539788749, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: 2054009478, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: -1718429339, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  - {fileID: 1751107335, guid: a5ef0fd60a31403993036477306c4bc6, type: 3}
+  hoeFrames:
+  - {fileID: 309850246, guid: 90532ccef00d4a229862b2081417704e, type: 3}
+  - {fileID: -1207211141, guid: 90532ccef00d4a229862b2081417704e, type: 3}
+  - {fileID: -109446451, guid: 90532ccef00d4a229862b2081417704e, type: 3}
+  - {fileID: -893750548, guid: 90532ccef00d4a229862b2081417704e, type: 3}
+  - {fileID: 973291384, guid: 90532ccef00d4a229862b2081417704e, type: 3}
+  - {fileID: 446965953, guid: 90532ccef00d4a229862b2081417704e, type: 3}
+  - {fileID: 1402020706, guid: 90532ccef00d4a229862b2081417704e, type: 3}
+  - {fileID: -623551587, guid: 90532ccef00d4a229862b2081417704e, type: 3}
+  waterFrames:
+  - {fileID: 950167777, guid: 210e48e2c474498a98374e91759534d6, type: 3}
+  - {fileID: 1548272738, guid: 210e48e2c474498a98374e91759534d6, type: 3}
+  - {fileID: 1709521732, guid: 210e48e2c474498a98374e91759534d6, type: 3}
+  - {fileID: 1759823396, guid: 210e48e2c474498a98374e91759534d6, type: 3}
+  - {fileID: -1813938809, guid: 210e48e2c474498a98374e91759534d6, type: 3}
+  - {fileID: 517724606, guid: 210e48e2c474498a98374e91759534d6, type: 3}
+  - {fileID: -1133813268, guid: 210e48e2c474498a98374e91759534d6, type: 3}
+  - {fileID: -1787656767, guid: 210e48e2c474498a98374e91759534d6, type: 3}
+  chieuCaoNhinThay: 120
+  tiLeNhinThay: 0.611
+  tocDoDi: 55
+  walkFps: 6
+  hoeFps: 9
+  waterFps: 7
+  soVongCuoc: 3
+  soVongTuoi: 2
+  nghiGiuaViec: {x: 0.4, y: 1}
+  nghiKhiDiDao: {x: 1.2, y: 2.8}
+  soODatMoiNguoi: 4
+  xaQuaThiHienLai: 1400
+  vungDung: 0.6
+  chuKyQuet: 1.5
+  vetMo: 1
+  nhipBong: 0.28
+  doiBong: 0.6
+  alphaBong: 0.26
+  mauBong: {r: 1, g: 0.95, b: 0.85, a: 1}
+  thoiGianHien: 0.6

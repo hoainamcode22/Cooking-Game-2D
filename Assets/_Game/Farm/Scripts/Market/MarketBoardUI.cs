@@ -788,6 +788,16 @@ public class MarketBoardUI : MonoBehaviour
         RectTransform rtCanvas = (cv.rootCanvas != null ? cv.rootCanvas : cv).transform as RectTransform;
         if (rtCanvas == null) return;
 
+        // [2026-09-24] Dien thoai: kep trong lop "~SafeArea" (SafeAreaBootstrap boc san, tranh tai tho /
+        // thanh cu chi) thay vi ca canvas. Lop boc scale 1 so voi canvas nen don vi do khong doi.
+        SafeAreaFitter saf = rtBang.GetComponentInParent<SafeAreaFitter>();
+        if (saf != null)
+        {
+            RectTransform rtSafe = saf.transform as RectTransform;
+            if (rtSafe != null && rtSafe != rtBang && rtSafe.rect.width > 1f && rtSafe.rect.height > 1f)
+                rtCanvas = rtSafe;
+        }
+
         if (!_daLuuBang)
         {
             _daLuuBang    = true;
@@ -826,7 +836,7 @@ public class MarketBoardUI : MonoBehaviour
         if (rongDauChan < 1f || caoDauChan < 1f) return;
 
         float rongKhung = rtCanvas.rect.width  - LE_AN_TOAN_POPUP * 2f;
-        float caoKhung  = rtCanvas.rect.height - LE_AN_TOAN_POPUP * 2f;
+        float caoKhung  = rtCanvas.rect.height - LE_AN_TOAN_POPUP * 2f - leTrenChoTieuDe;   // chua cho ruy-bang tieu de
         if (rongKhung < 1f || caoKhung < 1f) return;
 
         // Mathf.Min(1f, …) ⇒ CHỈ ĐƯỢC CO, không bao giờ phóng to. Bảng vẽ ở 1880×840 cho
@@ -838,13 +848,17 @@ public class MarketBoardUI : MonoBehaviour
         // Bảng căn giữa theo RECT, nhưng phần NHÌN THẤY lệch sang phải/lên trên vì Btn_Close
         // thò ra khỏi hai mép đó mà hai mép kia không thò gì. Căn theo hình mới bảo đảm nút
         // đóng không bao giờ ra ngoài màn.
-        Vector2 tamCanvas    = rtCanvas.rect.center;
+        Vector2 tamCanvas    = rtCanvas.rect.center - new Vector2(0f, leTrenChoTieuDe * 0.5f);   // ha bang xuong nhuong cho tieu de
         Vector3 pivotHienTai = rtCanvas.InverseTransformPoint(rtBang.position);
 
         float dichX = (tamCanvas.x - tam.x * rx * heSo) - pivotHienTai.x;
         float dichY = (tamCanvas.y - tam.y * ry * heSo) - pivotHienTai.y;
 
-        rtBang.anchoredPosition = _viTriGocBang + new Vector2(dichX / kx, (dichY + nangBangLen) / ky);
+        // [2026-09-24] Nang bang (nhuong nut duoi man hinh) NHUNG KHONG de ruy-bang tieu de cham mep tren.
+        float dinhSauCanGiua = tamCanvas.y + caoDauChan * heSo * 0.5f;
+        float dinhChoPhep    = rtCanvas.rect.yMax - LE_AN_TOAN_POPUP - leTrenChoTieuDe;
+        float nang = Mathf.Clamp(nangBangLen, 0f, Mathf.Max(0f, dinhChoPhep - dinhSauCanGiua));
+        rtBang.anchoredPosition = _viTriGocBang + new Vector2(dichX / kx, (dichY + nang) / ky);
     }
 
     [Header("[2026-09-24] Co bang cho tren man hinh")]
@@ -852,4 +866,6 @@ public class MarketBoardUI : MonoBehaviour
     [SerializeField] private float tiLeToiDaBang = 0.88f;
     [Tooltip("Nang ca bang len (don vi canvas) de day bang khong che thanh nut phia duoi man hinh.")]
     [SerializeField] private float nangBangLen = 24f;
+    [Tooltip("[2026-09-24] Chua them khoang TREN cho ruy-bang tieu de (ORDERS) - khong bao gio bi mep man hinh che.")]
+    [SerializeField] private float leTrenChoTieuDe = 28f;
 }

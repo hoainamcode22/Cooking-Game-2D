@@ -176,6 +176,7 @@ public class WarehouseGainToastUI : MonoBehaviour
         SpawnPlusText("+1", new Color(0.30f, 0.62f, 0.12f));
         JuicyPulseFX.Play(_panel, 1.12f, 0.2f);
         if (_imgIcon != null) JuicyPulseFX.Play(_imgIcon.rectTransform, 1.35f, 0.18f);   // icon kho nhun khi vat pham bay vao
+        AudioManager.Instance?.PlayWarehouseCollect();   // [AM THANH 2026-09-24] vao kho (chung file item_bounce, cooldown 0.1s)
     }
 
     private void HandleItemAdded(string itemId, int amount)

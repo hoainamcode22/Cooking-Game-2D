@@ -785,6 +785,32 @@ public class PlacementManager : MonoBehaviour
         LuuGopPrefs.Hen();
     }
 
+    /// <summary>
+    /// [2026-09-25] Doi cho 1 cong trinh (nha / o dat) BANG CODE va LUU nhu khi nguoi choi keo trong Edit Mode:
+    /// vat MUA -> sua danh sach cong trinh (khop plotId, hoac toa do cu); vat co san trong scene -> luu "plot:/path:".
+    /// Dung cho tool "Xep gon o dat". Nho goi RefreshOccupancy() sau khi doi xong ca loat.
+    /// </summary>
+    public void DoiChoVaLuu(GameObject go, Vector3 pos)
+    {
+        if (go == null) return;
+        Vector3 cu = go.transform.position;
+        pos.z = cu.z;
+        go.transform.position = pos;
+        var pc = go.GetComponentInChildren<PlotController>(true);
+        bool daKhop = false;
+        foreach (BuildingEntry e in placedBuildings)
+        {
+            bool trung = (pc != null && e.plotId > 0 && e.plotId == pc.PlotId)
+                      || (Mathf.Approximately(e.x, cu.x) && Mathf.Approximately(e.y, cu.y));
+            if (!trung) continue;
+            e.x = pos.x; e.y = pos.y;
+            daKhop = true;
+            break;
+        }
+        if (daKhop) SaveBuildings();
+        else GhiDiChuyenCanh(go, pos, RotationStepsOf(go.transform));
+    }
+
     private void ApDungDiChuyenCanh()
     {
         var goi = DocDiChuyenCanh();
@@ -1040,6 +1066,7 @@ public class PlacementManager : MonoBehaviour
         Transform pickupVisual = ghostVisualCloneRoot != null ? ghostVisualCloneRoot : houseRenderer != null ? houseRenderer.transform : null;
         if (pickupVisual != null)
             pickupRoutine = StartCoroutine(AnimatePickup(pickupVisual, footprintTransform));
+        AudioManager.Instance?.PlayPickupLift();     // [AM THANH 2026-09-24] nhac cong trinh len
     }
 
     /// <summary>

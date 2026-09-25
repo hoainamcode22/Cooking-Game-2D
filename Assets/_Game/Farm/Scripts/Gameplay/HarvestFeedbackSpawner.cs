@@ -91,6 +91,7 @@ public class HarvestFeedbackSpawner : MonoBehaviour
             if (fx == null) continue;
 
             fx.ClearIconImmediate();
+            if (i == 0) AudioManager.Instance?.PlayItemBounce();   // [AM THANH 2026-09-24] icon nay len (1 lan / dot)
             fx.SetZoomScale(HeSoZoom());   // icon giữ cỡ trên màn hình theo zoom
 
             Vector3 worldTarget = GetWarehouseTargetWorldPosition(spawnPos);

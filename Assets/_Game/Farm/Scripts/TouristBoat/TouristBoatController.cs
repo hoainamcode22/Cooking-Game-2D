@@ -75,6 +75,34 @@ public class TouristBoatController : MonoBehaviour
              "Tool: Tools/Farm Game/Tourist Boat/10.")]
     [SerializeField] private Vector3 berthOffset = Vector3.zero;
 
+    // ── [2026-09-25] CHAY THANG THEO MUI TAU ─────────────────────────────────────
+    // Bo 12 sprite thuc te chi ve 4 huong cheo iso (DB / TB / TN / DN), khong phai 12 huong deu 30 do.
+    // Truoc day tau di ngang / cheo tuy y -> chon sprite gan dung -> nhin nhu tau TRUOT NGANG.
+    // Nay: moi doan duong bi be thanh cac doan chay DOC truc iso (chu L), doan cuoi vao ben chay
+    // THANG theo truc ben -> mui tau luon trung huong chay, dau ben thi mui huong thang vao ben.
+    public enum HuongIso { TuDong, DongBac, TayBac, TayNam, DongNam }
+    [Header("[2026-09-25] Chay thang theo mui tau")]
+    [Tooltip("BAT: tau chi chay doc 4 huong cheo iso (giong sprite), doan cuoi vao ben chay thang.")]
+    [SerializeField] private bool chayTheoTrucIso = true;
+    [Tooltip("Huong MUI TAU khi dau ben. TuDong = theo doan duong cuoi. Sai huong thi chon tay (thu ngay luc Play).")]
+    [SerializeField] private HuongIso huongMuiKhiCapBen = HuongIso.TuDong;
+    [Tooltip("Doan cuoi chay thang vao ben dai bao nhieu (unit world).")]
+    [SerializeField] private float doanVaoBenThang = 700f;
+    [Tooltip("Sprite (0-11) cho 4 huong mui tau: Dong Bac, Tay Bac, Tay Nam, Dong Nam. Nhin sai thi doi so.")]
+    [SerializeField] private int[] spriteTheoHuong = { 0, 2, 4, 9 };
+    private static readonly float IsoC = Mathf.Cos(Mathf.Atan(0.5f)), IsoS = Mathf.Sin(Mathf.Atan(0.5f));
+    private static Vector3 TrucIso(int h)   // 0 DB, 1 TB, 2 TN, 3 DN
+    {
+        switch (h) { case 0: return new Vector3(IsoC, IsoS, 0f); case 1: return new Vector3(-IsoC, IsoS, 0f);
+                     case 2: return new Vector3(-IsoC, -IsoS, 0f); default: return new Vector3(IsoC, -IsoS, 0f); }
+    }
+    private static int HuongGanNhat(Vector3 d)
+    {
+        int best = 0; float bd = -2f;
+        for (int h = 0; h < 4; h++) { float k = Vector3.Dot(d.normalized, TrucIso(h)); if (k > bd) { bd = k; best = h; } }
+        return best;
+    }
+
     // ─── Runtime ────────────────────────────────────────────────────────
 
     private int       _dockIndex = -1;     // index đã resolve (serialized hoặc suy từ tên cha)
@@ -355,6 +383,9 @@ public class TouristBoatController : MonoBehaviour
 
         // Mỗi nấc 30 độ (12 hướng: 0..11)
         int dirIndex = Mathf.RoundToInt(clockDeg / 30f) % 12;
+        // [2026-09-25] Sprite that chi co 4 huong cheo iso -> chon theo huong cheo gan nhat
+        if (chayTheoTrucIso && spriteTheoHuong != null && spriteTheoHuong.Length >= 4)
+            dirIndex = Mathf.Clamp(spriteTheoHuong[HuongGanNhat(dir)], 0, 11);
 
         if (directionalSprites != null && dirIndex < directionalSprites.Length && directionalSprites[dirIndex] != null)
         {
@@ -472,7 +503,52 @@ public class TouristBoatController : MonoBehaviour
         if (_totalLength <= 0.01f)
             return;
 
+        if (chayTheoTrucIso) DungDuongTrucIso();
         _pathReady = true;
+    }
+
+    /// <summary>
+    /// [2026-09-25] Be polyline thanh cac doan doc truc iso: doan cuoi = truc ben (dai doanVaoBenThang),
+    /// cac doan truoc la chu L 2 nhip cheo. Chi chay 1 lan khi path san sang.
+    /// </summary>
+    private void DungDuongTrucIso()
+    {
+        int n = _points.Length;
+        if (n < 2) return;
+        Vector3 ben = _points[n - 1];
+        int h = huongMuiKhiCapBen == HuongIso.TuDong ? HuongGanNhat(ben - _points[n - 2]) : (int)huongMuiKhiCapBen - 1;
+        Vector3 truc = TrucIso(h);
+        Vector3 vao = ben - truc * Mathf.Max(50f, doanVaoBenThang);
+
+        var goc = new System.Collections.Generic.List<Vector3>(n + 1);
+        goc.Add(_points[0]);
+        for (int i = 1; i < n - 1; i++)
+            if (Vector3.Distance(_points[i], ben) > doanVaoBenThang * 1.1f) goc.Add(_points[i]);   // bo diem nam trong doan vao ben
+        goc.Add(vao);
+
+        var ds = new System.Collections.Generic.List<Vector3>(goc.Count * 2 + 1);
+        ds.Add(goc[0]);
+        bool trucLaDB_TN = (h == 0 || h == 2);   // truc ben song song e1 (DB-TN) hay e2 (TB-DN)
+        for (int i = 1; i < goc.Count; i++)
+        {
+            Vector3 p = goc[i - 1], q = goc[i], v = q - p;
+            float a = (v.x / IsoC + v.y / IsoS) * 0.5f;    // thanh phan theo e1 (Dong Bac)
+            float b = (v.y / IsoS - v.x / IsoC) * 0.5f;    // thanh phan theo e2 (Tay Bac)
+            Vector3 e1 = TrucIso(0), e2 = TrucIso(1);
+            // nhip cuoi vao diem "vao" nen cung truc ben -> toi cho la da dung huong, re thang vao ben
+            bool truocE2 = (i == goc.Count - 1) ? trucLaDB_TN : Mathf.Abs(b) < Mathf.Abs(a);
+            Vector3 goc1 = truocE2 ? p + e2 * b : p + e1 * a;
+            if (Mathf.Abs(a) > 5f && Mathf.Abs(b) > 5f) ds.Add(goc1);
+            ds.Add(q);
+        }
+        ds.Add(ben);
+
+        _points = ds.ToArray();
+        _cumLengths = new float[_points.Length];
+        _cumLengths[0] = 0f;
+        for (int i = 1; i < _points.Length; i++)
+            _cumLengths[i] = _cumLengths[i - 1] + Vector3.Distance(_points[i - 1], _points[i]);
+        _totalLength = _cumLengths[_points.Length - 1];
     }
 
     /// <summary>Cấp buffer polyline đúng kích thước — chỉ alloc khi count đổi (QA m-2).</summary>

@@ -560,6 +560,25 @@ public class TouristAgent : MonoBehaviour
     {
         if (_pathPoints != null && _pathIndex < _pathPoints.Length)
         {
+            // [2026-09-25] Hang cho xep DOC duong dat: slot cua minh nam tren doan sap di -> re vao slot,
+            // khong di het duong roi quay nguoc lai (truoc day khach chay qua chay lai).
+            if (_slotIndex >= 0 && _queue != null)
+            {
+                Vector3 s = QueueSlotPosition(), cur = transform.position, nx = _pathPoints[_pathIndex];
+                Vector2 seg = nx - cur;
+                float l2 = seg.sqrMagnitude;
+                if (l2 > 1f)
+                {
+                    float t = Vector2.Dot((Vector2)(s - cur), seg) / l2;
+                    if (t >= 0f && t <= 1f && ((Vector2)(s - cur) - seg * t).magnitude < 40f)
+                    {
+                        _pathIndex = _pathPoints.Length;
+                        SetState(AgentState.WalkingToSlot);
+                        SetTarget(s);
+                        return;
+                    }
+                }
+            }
             SetState(AgentState.WalkingPath);
             SetTarget(_pathPoints[_pathIndex]);
             return;

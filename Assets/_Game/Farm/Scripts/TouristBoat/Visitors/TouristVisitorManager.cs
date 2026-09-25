@@ -47,13 +47,52 @@ public class TouristVisitorManager : MonoBehaviour
     public TouristQueue Queue => queue;
 
     /// <summary>Lấy khách du lịch đang đứng đầu hàng chờ và đang đợi nhận món.</summary>
+    /// <summary>[2026-09-25] Danh sach khach DANG CHO mon (theo thu tu hang) cho bang phan trong bep.</summary>
+    public void LayKhachDangCho(List<TouristAgent> ra)
+    {
+        if (ra == null) return;
+        ra.Clear();
+        if (queue == null) return;
+        var ds = queue.Agents;
+        for (int i = 0; i < ds.Count; i++)
+        {
+            var a = ds[i];
+            if (a != null && a.Dish != null && !a.WasServed && !a.WasTimedOut) ra.Add(a);
+        }
+    }
+
+    /// <summary>[2026-09-25] Bep dat khi mon vua nau xong con NAM TREN DIA (chua cat vao kho) -> tinh nhu da co.</summary>
+    public static string MonDangTrenDia;
+
+    /// <summary>
+    /// Khach KE TIEP can nau: di theo thu tu hang, khach nao mon cua ho DA CO SAN (trong kho / tren dia,
+    /// tru dan cho tung khach) thi coi nhu xong va xet khach sau. Nau xong mon khach 1 -> banner bep
+    /// luot sang ngay mon khach 2. Khong con ai can nau -> null.
+    /// </summary>
     public TouristAgent GetFrontWaitingTourist()
     {
         if (queue == null) return null;
-        TouristAgent front = queue.Front;
-        if (front != null && front.Dish != null && (front.State == TouristAgent.AgentState.WaitingServe || front.State == TouristAgent.AgentState.WalkingToSlot))
-            return front;
-        return front;
+        var kho = FarmInventoryManager.Instance;
+        var con = new Dictionary<string, int>();
+        var ds = queue.Agents;
+        for (int i = 0; i < ds.Count; i++)
+        {
+            TouristAgent a = ds[i];
+            if (a == null || a.Dish == null || a.WasServed || a.WasTimedOut) continue;
+            string id = a.Dish.dishId;
+            if (!string.IsNullOrEmpty(id))
+            {
+                if (!con.TryGetValue(id, out int n))
+                {
+                    n = kho != null ? kho.GetAmount(id) : 0;
+                    if (!string.IsNullOrEmpty(MonDangTrenDia) && MonDangTrenDia == id) n++;
+                }
+                if (n > 0) { con[id] = n - 1; continue; }
+                con[id] = 0;
+            }
+            return a;
+        }
+        return null;
     }
 
     /// <summary>Báo cho toàn bộ UI cập nhật đơn khách.</summary>
@@ -846,6 +885,7 @@ public class TouristVisitorManager : MonoBehaviour
         // ── ④ CỘNG THƯỞNG (chắc chắn thành công vì đã kiểm ở ②) ──
         eco.AddGold(vang);              // tự bắn OnGoldAddedFx → CoinFlyFX có sẵn
         AudioManager.Instance?.PlayCoinTing();   // [THEM 2026-09-10] tieng vang khi khach tra tien
+        AudioManager.Instance?.PlayTouristHappy();   // [AM THANH 2026-09-24] khach vui
         if (exp > 0) tien.AddExp(exp);
 
         if (banMissionEvent)
@@ -1140,6 +1180,11 @@ public class TouristVisitorManager : MonoBehaviour
                 if (dock != null) gangplanks[i] = dock.Find("Gangplank");
             }
         }
+
+        // [2026-09-25] Tinh san duong dat (1 lan / ben) de hang cho xep doc duong NGAY tu dau, ke ca khach nap tu save
+        if (diTheoDuongDat && queue != null)
+            for (int i = 0; i < BoatDockManager.DockCount; i++)
+                if (gangplanks[i] != null && !_duongDatCache.ContainsKey(i)) GetPathPoints(i);
     }
 
     private Transform VisitorsRoot()
@@ -1218,7 +1263,169 @@ public class TouristVisitorManager : MonoBehaviour
             Debug.LogWarning($"[TouristVisitor] Bến {dock + 1} chưa có đường đi bộ (Gangplank/TouristPath) — " +
                              "khách sẽ đi thẳng tới hàng chờ. Chạy tool Setup Tourist Visitors (Scene) rồi kéo WP theo đường đất.");
         }
+
+        // [2026-09-25] DI TREN DUONG DAT: tu tim duong tu dau van toi hang cho, bam tile dat, ne hoa / nuoc
+        if (diTheoDuongDat && coDiemDau && queue != null)
+        {
+            if (_duongDatCache.TryGetValue(dock, out var daCo)) return daCo;
+            var duong = TimDuongDat(diemDau, queue.transform.position);
+            if (duong != null)
+            {
+                _duongDatCache[dock] = duong;
+                if (xepHangTheoDuong && !_daDatDuongHang) { _daDatDuongHang = true; queue.DatDuong(duong); }
+                return duong;
+            }
+            var cu = points.ToArray();
+            _duongDatCache[dock] = cu;          // khong tim duoc: nho ket qua cu, khong tim lai moi lan
+            Debug.Log($"[TouristVisitor] Ben {dock + 1}: khong tim duoc duong dat -> di theo waypoint TouristPath.");
+            return cu;
+        }
         return points.ToArray();
+    }
+
+    // =====================================================================
+    //  [2026-09-25] TIM DUONG TREN TILEMAP (A*) — khach di tren duong dat Sep ve, khong dap len hoa
+    // =====================================================================
+    [Header("[2026-09-25] Di tren duong dat")]
+    [Tooltip("BAT: khach tu tim duong tren tile dat (ne hoa / nuoc). TAT: di theo waypoint TouristPath nhu cu.")]
+    [SerializeField] private bool diTheoDuongDat = true;
+    [Tooltip("Tilemap DI DUOC uu tien (duong dat, cau cang, cat, da). Ten dau tien la luoi goc de tim duong.")]
+    [SerializeField] private string[] tilemapDuongDi = { "Tilemap_IsoDirt", "Tilemap_IsoDock", "Tilemap_IsoSand", "Tilemap_IsoStone" };
+    [Tooltip("Tilemap NE (hoa / bui / da / hang rao). Van di qua duoc neu khong con duong nao khac (ton kem).")]
+    [SerializeField] private string[] tilemapNe = { "Co_Grass", "Tilemap_IsoRock", "Tilemap_IsoFence", "Tilemap_IsoDecor" };
+    [SerializeField] private string tilemapNuoc = "Water_Tilemap";
+    [Tooltip("Hang cho xep DOC theo duong dat (lui lai tu QueueAnchor) thay vi theo 1 huong co dinh.")]
+    [SerializeField] private bool xepHangTheoDuong = true;
+    private readonly Dictionary<int, Vector3[]> _duongDatCache = new Dictionary<int, Vector3[]>();
+    private bool _daDatDuongHang;
+
+    private Vector3[] TimDuongDat(Vector3 tu, Vector3 den)
+    {
+        var tms = FindObjectsByType<UnityEngine.Tilemaps.Tilemap>(FindObjectsSortMode.None);
+        UnityEngine.Tilemaps.Tilemap goc = null, nuoc = null;
+        var di = new List<UnityEngine.Tilemaps.Tilemap>();
+        var ne = new List<UnityEngine.Tilemaps.Tilemap>();
+        foreach (var tm in tms)
+        {
+            if (tm == null) continue;
+            if (Array.IndexOf(tilemapDuongDi, tm.name) >= 0) { di.Add(tm); if (tm.name == tilemapDuongDi[0]) goc = tm; }
+            else if (Array.IndexOf(tilemapNe, tm.name) >= 0) ne.Add(tm);
+            else if (tm.name == tilemapNuoc) nuoc = tm;
+        }
+        if (goc == null && di.Count > 0) goc = di[0];
+        if (goc == null) return null;
+
+        Vector3Int a = goc.WorldToCell(tu), b = goc.WorldToCell(den);
+        const int LE = 40;
+        int x0 = Mathf.Min(a.x, b.x) - LE, y0 = Mathf.Min(a.y, b.y) - LE;
+        int w = Mathf.Abs(a.x - b.x) + LE * 2 + 1, h = Mathf.Abs(a.y - b.y) + LE * 2 + 1;
+        if ((long)w * h > 250000) return null;                          // qua xa, khong tim
+        int N = w * h;
+        var chiPhi = new float[N]; for (int i = 0; i < N; i++) chiPhi[i] = float.NaN;
+        var g = new float[N]; for (int i = 0; i < N; i++) g[i] = float.MaxValue;
+        var tuDau = new int[N]; for (int i = 0; i < N; i++) tuDau[i] = -1;
+        var dong = new bool[N];
+        int Id(int x, int y) => (x - x0) * h + (y - y0);
+        Vector3 Tam(int x, int y) => goc.GetCellCenterWorld(new Vector3Int(x, y, a.z));
+
+        float ChiPhi(int x, int y)
+        {
+            int id = Id(x, y);
+            if (!float.IsNaN(chiPhi[id])) return chiPhi[id];
+            float c;
+            if ((x == a.x && y == a.y) || (x == b.x && y == b.y)) c = 1f;
+            else
+            {
+                Vector3 p = Tam(x, y);
+                bool duong = false;
+                for (int i = 0; i < di.Count && !duong; i++) duong = di[i].HasTile(di[i].WorldToCell(p));
+                bool vuong = false;
+                for (int i = 0; i < ne.Count && !vuong; i++) vuong = ne[i].HasTile(ne[i].WorldToCell(p));
+                if (!duong && nuoc != null && nuoc.HasTile(nuoc.WorldToCell(p))) c = -1f;   // nuoc (khong co cau) = cam
+                else if (vuong) c = 60f;                                                    // hoa / bui: tranh
+                else c = duong ? 1f : 6f;                                                   // co tron: di duoc nhung dat
+            }
+            chiPhi[id] = c;
+            return c;
+        }
+
+        // A* (heap nho tu viet)
+        var heap = new List<KeyValuePair<float, int>>();
+        void Day(float f, int id)
+        {
+            heap.Add(new KeyValuePair<float, int>(f, id));
+            int i = heap.Count - 1;
+            while (i > 0) { int p = (i - 1) / 2; if (heap[p].Key <= heap[i].Key) break; var t = heap[p]; heap[p] = heap[i]; heap[i] = t; i = p; }
+        }
+        int Lay()
+        {
+            int kq = heap[0].Value; var cuoi = heap[heap.Count - 1]; heap.RemoveAt(heap.Count - 1);
+            if (heap.Count > 0)
+            {
+                heap[0] = cuoi; int i = 0;
+                while (true)
+                {
+                    int l = i * 2 + 1, r = l + 1, m = i;
+                    if (l < heap.Count && heap[l].Key < heap[m].Key) m = l;
+                    if (r < heap.Count && heap[r].Key < heap[m].Key) m = r;
+                    if (m == i) break;
+                    var t = heap[m]; heap[m] = heap[i]; heap[i] = t; i = m;
+                }
+            }
+            return kq;
+        }
+
+        Vector3 dich = Tam(b.x, b.y);
+        int ia = Id(a.x, a.y), ib = Id(b.x, b.y);
+        g[ia] = 0f;
+        Day(Vector3.Distance(Tam(a.x, a.y), dich), ia);
+        int[] dx = { 1, -1, 0, 0, 1, 1, -1, -1 }, dy = { 0, 0, 1, -1, 1, -1, 1, -1 };
+        int buoc = 0;
+        while (heap.Count > 0 && buoc++ < 120000)
+        {
+            int cur = Lay();
+            if (dong[cur]) continue;
+            dong[cur] = true;
+            if (cur == ib) break;
+            int cx = cur / h + x0, cy = cur % h + y0;
+            Vector3 pc = Tam(cx, cy);
+            for (int k = 0; k < 8; k++)
+            {
+                int nx = cx + dx[k], ny = cy + dy[k];
+                if (nx < x0 || ny < y0 || nx >= x0 + w || ny >= y0 + h) continue;
+                int nid = Id(nx, ny);
+                if (dong[nid]) continue;
+                float c = ChiPhi(nx, ny);
+                if (c < 0f) continue;
+                Vector3 pn = Tam(nx, ny);
+                float ng = g[cur] + Vector3.Distance(pc, pn) * c;
+                if (ng >= g[nid]) continue;
+                g[nid] = ng; tuDau[nid] = cur;
+                Day(ng + Vector3.Distance(pn, dich), nid);
+            }
+        }
+        if (!dong[ib]) return null;
+
+        var o = new List<int>();
+        for (int id = ib; id != -1; id = tuDau[id]) o.Add(id);
+        o.Reverse();
+        // Gop cac o thang hang -> chi giu diem re
+        var kq = new List<Vector3> { new Vector3(tu.x, tu.y, tu.z) };
+        int hx = 0, hy = 0;
+        for (int i = 1; i < o.Count; i++)
+        {
+            int px = o[i - 1] / h, py = o[i - 1] % h, qx = o[i] / h, qy = o[i] % h;
+            int sx = qx - px, sy = qy - py;
+            if (i > 1 && (sx != hx || sy != hy))
+            {
+                Vector3 re = Tam(px + x0, py + y0);
+                kq.Add(new Vector3(re.x, re.y, tu.z));
+            }
+            hx = sx; hy = sy;
+        }
+        kq.Add(new Vector3(den.x, den.y, tu.z));
+        Debug.Log($"[TouristVisitor] Duong dat: {kq.Count} diem, {o.Count} o (luoi '{goc.name}').");
+        return kq.ToArray();
     }
 
     /// <summary>Khoảng cách phẳng (bỏ Z) — dùng so sánh "ai gần hàng chờ hơn".</summary>

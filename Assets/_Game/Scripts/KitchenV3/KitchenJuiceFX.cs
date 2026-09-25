@@ -125,6 +125,9 @@ public class KitchenJuiceFX : MonoBehaviour
         _oven = TimSau(transform, "Oven") as RectTransform;
         _pot  = TimSau(transform, "Pot_Anim") as RectTransform;
         _btn  = TimSau(transform, "Btn_Action") as RectTransform;
+        // [AM THANH 2026-09-24] nut NAU co tieng combo rieng -> tat tieng bam nut tu dong cua AudioManager
+        var nutNau = _btn != null ? _btn.GetComponent<Button>() : null;
+        if (nutNau != null) { AudioManager.BoQuaTiengNutTuDong(nutNau); _daTatTiengNut = true; }
         var cha = _oven != null ? _oven.parent : transform;
         if (cha == null) return false;
 
@@ -305,6 +308,7 @@ public class KitchenJuiceFX : MonoBehaviour
 
     private void KhiIconVaoNoi(Vector2 p)
     {
+        AudioManager.Instance?.PlayPotDrop();        // [AM THANH] lach tach roi vao noi (cooldown -> 2-3 tieng)
         _potKick = Mathf.Min(1.2f, _potKick + 0.55f);
         for (int k = 0; k < 3; k++)
         {
@@ -342,7 +346,18 @@ public class KitchenJuiceFX : MonoBehaviour
     // =====================================================================
 
     /// <summary>KitchenSceneV2UI goi khi bam nut NAU. true = combo da xu ly (khong nau ngay).</summary>
+    private static bool _daTatTiengNut;
+    private float _henLuaTick;
+
     public static bool XuLyNutNau(CookingChallengeManager c)
+    {
+        bool r = XuLyNutNauGoc(c);
+        // Nut NAU da tat tieng bam tu dong -> khi combo KHONG xu ly (vd dang nau / lay mon) thi tu keu 1 tieng nut
+        if (!r && _daTatTiengNut) AudioManager.Instance?.PlayUIClick();
+        return r;
+    }
+
+    private static bool XuLyNutNauGoc(CookingChallengeManager c)
     {
         var fx = Instance;
         if (fx == null || !fx.isActiveAndEnabled || c == null || c.IsCooking) return false;
@@ -382,7 +397,7 @@ public class KitchenJuiceFX : MonoBehaviour
         HienChu("x" + _dem, ViTriTrenLo(90f) + new Vector2(Random.Range(-70f, 70f), Random.Range(-10f, 20f)), co, mau, 0.65f, true);
         TiaLua(3 + Mathf.RoundToInt(_nhiet * 4f), 1f);
         NhunNut();
-        AudioManager.Instance?.PlayButton();
+        AudioManager.Instance?.PlayComboTap(_dem);   // [AM THANH] tap cao dan theo combo + lua lach tach
         ThuRoiQua();
 
         if (_dem >= _nguong) StartCoroutine(CoBung(true));
@@ -398,7 +413,10 @@ public class KitchenJuiceFX : MonoBehaviour
                 hoanHao ? new Color(1f, 0.82f, 0.2f) : new Color(1f, 0.95f, 0.6f), 1.3f, true, true);
         StartCoroutine(CoRays(p));
         StartCoroutine(CoFlash());
-        AudioManager.Instance?.PlayCookStart();
+        // [AM THANH 2026-09-24] lua bung (sfx_fire_burst) + PERFECT
+        AudioManager.Instance?.PlayFireBurst();
+        if (hoanHao) AudioManager.Instance?.PlayPerfect();
+        _henLuaTick = Time.unscaledTime + 3.5f;
 
         yield return new WaitForSecondsRealtime(0.35f);
         var c = _challenge;
@@ -428,7 +446,7 @@ public class KitchenJuiceFX : MonoBehaviour
         }
         HienChu(Loc.T("THẤT BẠI!"), ViTriTrenLo(150f), 96f, new Color(0.9f, 0.28f, 0.2f), 1.2f, true, true);
         if (!string.IsNullOrEmpty(lyDo)) HienChu(lyDo, ViTriTrenLo(70f), 36f, new Color(0.55f, 0.27f, 0.07f), 1.6f, false);
-        AudioManager.Instance?.PlayUIClick();
+        AudioManager.Instance?.PlayCookFail();       // [AM THANH] lua tat xi
     }
 
     private void HuyCombo()
@@ -469,7 +487,7 @@ public class KitchenJuiceFX : MonoBehaviour
         _qua++;
         var lib = RewardIconLibrary.Instance;
         BayQua(lib != null ? lib.gemSprite : null, "+1", new Color(0.55f, 0.9f, 1f));
-        AudioManager.Instance?.PlayGemSparkle();
+        AudioManager.Instance?.PlayRareDrop();       // [AM THANH] do hiem = tieng vang ting ting
     }
 
     private void RoiGiaVi()
@@ -486,7 +504,7 @@ public class KitchenJuiceFX : MonoBehaviour
         ktm.AddTransferredItem(chon.itemId, 1);
         _qua++;
         BayQua(chon.icon != null ? chon.icon : chon.cookingData.icon, "+1", new Color(1f, 0.95f, 0.8f));
-        AudioManager.Instance?.PlayIngredientPop();
+        AudioManager.Instance?.PlayRareDrop();       // [AM THANH] do hiem = tieng vang ting ting
     }
 
     /// <summary>Icon qua bat ra tu mieng lo, vong len roi mo dan + chu "+n".</summary>
@@ -541,6 +559,12 @@ public class KitchenJuiceFX : MonoBehaviour
         }
 
         CapNhatLua(dt);
+        // [AM THANH 2026-09-24] lua lo DANG CHAY luc nau: sfx_fire_burst nho, 3-5s moi lan (khong loop)
+        if (_challenge != null && _challenge.IsCooking && Time.unscaledTime >= _henLuaTick)
+        {
+            _henLuaTick = Time.unscaledTime + Random.Range(3.2f, 5f);
+            AudioManager.Instance?.PlayOvenFireTick();
+        }
         CapNhatNoi(dt);
         CapNhatHat(dt);
     }
@@ -796,7 +820,8 @@ public class KitchenJuiceFX : MonoBehaviour
     // =====================================================================
 
     // Chu TRANG hien luc Play tren bang don / thanh thoi gian -> nau dat #8B4513 cho doc duoc
-    private static readonly Color NauDat = new Color(0x8B / 255f, 0x45 / 255f, 0x13 / 255f, 1f);
+    // [2026-09-25] Nau DAM hon (#5A2D0C) cho de doc tren nen kem / thanh tien do trang
+    private static readonly Color NauDat = new Color(0x5A / 255f, 0x2D / 255f, 0x0C / 255f, 1f);
     // [2026-09-24] Code bep V2 GHI LAI mau trang moi lan lam moi (0.x s) -> quet 1s/lan khong thang duoc
     // (chu nhay trang/nau). Nay: quet 1s de GOM danh sach, con DOI MAU thi lam MOI KHUNG HINH o LateUpdate
     // (chay SAU code V2) -> luon nau dat. Nut chinh (Btn_Action) chi nau khi nut dang TAT (nen be nhat);
@@ -839,7 +864,8 @@ public class KitchenJuiceFX : MonoBehaviour
     {
         if (x == null) return;
         var c = x.color;
-        if (c.r > 0.9f && c.g > 0.9f && c.b > 0.9f) x.color = new Color(NauDat.r, NauDat.g, NauDat.b, c.a);
+        // [2026-09-25] ca mau KEM (0.99, 0.96, 0.88) cung doi -> truoc day nguong 0.9 bo sot Txt_PrepToast
+        if (c.r > 0.85f && c.g > 0.85f && c.b > 0.75f) x.color = new Color(NauDat.r, NauDat.g, NauDat.b, c.a);
     }
 
     // The da cho vao noi khong bi o vang (Img_Status) che icon nua - chi giam so luong

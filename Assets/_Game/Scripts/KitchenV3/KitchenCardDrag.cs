@@ -167,6 +167,7 @@ public class KitchenCardDrag : MonoBehaviour, IPointerDownHandler, IPointerUpHan
 
     private void TaoBong(PointerEventData e)
     {
+        AudioManager.Instance?.PlayCardPick();       // [AM THANH 2026-09-24] nhac the
         if (_canvas == null) _canvas = GetComponentInParent<Canvas>();
         var goc = _canvas != null ? _canvas.rootCanvas.transform : transform.root;
         var go = new GameObject("Fx_KeoThe", typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
@@ -195,6 +196,7 @@ public class KitchenCardDrag : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     private System.Collections.IEnumerator CoBongVe()
     {
         Vector3 a = _bong.position, b = transform.position;
+        AudioManager.Instance?.PlayCardReturn();     // [AM THANH] the bay ve (chung file card_pick)
         float t = 0f;
         while (t < 0.22f && _bong != null)
         {

@@ -307,6 +307,7 @@ public class FarmManager : MonoBehaviour
         if (plot == null)
             return;
 
+        AudioManager.Instance?.PlayLocked();         // [AM THANH 2026-09-24] sfx_locked = tieng nut
         FarmUIManager.Instance?.ShowHint(Loc.TF("Ô đất {0} chưa mở khóa.", plot.PlotId));
     }
 

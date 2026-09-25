@@ -89,9 +89,33 @@ public class TouristQueue : MonoBehaviour
         return agent != null && _agents.Count > 0 && _agents[0] == agent;
     }
 
+    // [2026-09-25] HANG CHO XEP DOC DUONG DAT: manager dua duong di bo (ket thuc o anchor) vao day,
+    // slot i nam lui lai i * spacing THEO duong -> hang khach nam tren duong dat, khong tran ra hoa.
+    private Vector3[] _duong;
+    public void DatDuong(Vector3[] duongDenAnchor)
+    {
+        if (duongDenAnchor == null || duongDenAnchor.Length < 2) return;
+        var ds = new List<Vector3>(duongDenAnchor.Length + 1) { transform.position };
+        for (int i = duongDenAnchor.Length - 1; i >= 0; i--)
+            if ((duongDenAnchor[i] - ds[ds.Count - 1]).sqrMagnitude > 4f) ds.Add(duongDenAnchor[i]);
+        if (ds.Count >= 2) _duong = ds.ToArray();
+    }
+
     /// <summary>Toạ độ world của slot thứ <paramref name="slotIndex"/> (0 = anchor).</summary>
     public Vector3 GetSlotPosition(int slotIndex)
     {
+        if (_duong != null)
+        {
+            float can = _spacing * Mathf.Max(0, slotIndex);
+            for (int i = 1; i < _duong.Length; i++)
+            {
+                float d = Vector3.Distance(_duong[i - 1], _duong[i]);
+                if (can <= d) return Vector3.Lerp(_duong[i - 1], _duong[i], d > 0.001f ? can / d : 0f);
+                can -= d;
+            }
+            Vector3 cuoi = _duong[_duong.Length - 1], huong = (cuoi - _duong[_duong.Length - 2]).normalized;
+            return cuoi + huong * can;
+        }
         Vector3 dir = queueDirection.sqrMagnitude > 0.0001f
             ? (Vector3)queueDirection.normalized
             : Vector3.right;

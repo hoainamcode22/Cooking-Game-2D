@@ -69,9 +69,8 @@ namespace KitchenUIv3
 
         private DishData MonDangDat()
         {
-            var tm = TouristVisitorManager.Instance;
-            var khach = tm != null ? tm.GetFrontWaitingTourist() : null;
-            if (khach != null && khach.Dish != null) return khach.Dish;
+            // [2026-09-25] Chip nguyen lieu tren bang giua = mon dang chon (sach cong thuc / cham tren bang phan)
+            if (_challenge == null) _challenge = FindFirstObjectByType<CookingChallengeManager>(FindObjectsInactive.Include);
             return _challenge != null ? _challenge.CurrentDish : null;
         }
 

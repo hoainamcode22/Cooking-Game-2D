@@ -167,6 +167,7 @@ namespace KitchenUIv3
 
             Vector3 a = diemXuatPhat.position;
             Vector3 b = diemDen.position;
+            AudioManager.Instance?.PlayDishWhoosh();     // [AM THANH 2026-09-24] mon bay ra
             float t = 0f;
             while (t < 1f)
             {
@@ -180,6 +181,7 @@ namespace KitchenUIv3
                 yield return null;
             }
             Destroy(go);
+            AudioManager.Instance?.PlayPlateClink();     // [AM THANH] cham dia
             if (imgDia != null) imgDia.enabled = true;
             _coBay = null;
         }

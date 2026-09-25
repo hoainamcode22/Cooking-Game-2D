@@ -49,6 +49,8 @@ public class TouristOrderBubbleUI : MonoBehaviour
     [SerializeField] private Color mauSangGiao = new Color(0.55f, 1f, 0.55f, 1f);
     [SerializeField] private Color mauChuNau = new Color(0.36f, 0.18f, 0.05f, 1f);
     [SerializeField] private Color mauChuGiao = Color.white;
+    [Tooltip("[2026-09-25] Nut GIAO MON luon dung nut XANH (btn_green_3d) du scene gan sprite khac -> nhin la biet giao duoc.")]
+    [SerializeField] private bool nutGiaoLuonXanh = true;
 
     [Header("Hieu ung")]
     [SerializeField] private float thoiGianMo = 0.30f;
@@ -190,6 +192,7 @@ public class TouristOrderBubbleUI : MonoBehaviour
         _mo = true;
         _dangDong = false;
         _moFrame = Time.frameCount;
+        _coDauChan = false;                 // do lai dau chan (ruy-bang tieu de + nut X tho ra ngoai khung)
         FillData();
         _root.gameObject.SetActive(true);
         _root.SetAsLastSibling();
@@ -298,6 +301,8 @@ public class TouristOrderBubbleUI : MonoBehaviour
         KiemKho(true);
     }
 
+    private Sprite _nutXanh;
+
     private void KiemKho(bool ep)
     {
         if (!ep && Time.unscaledTime < _hetKiemKho) return;
@@ -313,7 +318,9 @@ public class TouristOrderBubbleUI : MonoBehaviour
         if (_imgBtn != null)
         {
             var sp = _coMon ? nutGiaoMon : nutNauNgay;
+            if (_coMon && nutGiaoLuonXanh) { if (_nutXanh == null) _nutXanh = Resources.Load<Sprite>("UI/Standard/btn_green_3d"); if (_nutXanh != null) sp = _nutXanh; }
             if (sp != null) _imgBtn.sprite = sp;
+            _imgBtn.color = Color.white;
         }
         if (_txtAction != null) { _txtAction.text = Loc.T(_coMon ? chuGiaoMon : chuNauNgay); _txtAction.color = _coMon ? mauChuGiao : mauChuNau; }
     }
@@ -437,10 +444,48 @@ public class TouristOrderBubbleUI : MonoBehaviour
         Vector2 pv = _root.pivot;
         float minX = r.xMin + kt.x * pv.x + leManHinh, maxX = r.xMax - kt.x * (1f - pv.x) - leManHinh;
         float minY = r.yMin + kt.y * pv.y + leManHinh, maxY = r.yMax - kt.y * (1f - pv.y) - leManHinh;
+        // [2026-09-25] Kep theo DAU CHAN THAT (ruy-bang "Tourist Order" + nut X tho ra ngoai khung) -> khong bi mep man hinh cat
+        if (!_coDauChan) DoDauChan();
+        if (_coDauChan)
+        {
+            float sx = _rootScale0.x, sy = _rootScale0.y;
+            minX = r.xMin - _dcMin.x * sx + leManHinh; maxX = r.xMax - _dcMax.x * sx - leManHinh;
+            minY = r.yMin - _dcMin.y * sy + leManHinh; maxY = r.yMax - _dcMax.y * sy - leManHinh;
+        }
         if (minX <= maxX) local.x = Mathf.Clamp(local.x, minX, maxX);
         if (minY <= maxY) local.y = Mathf.Clamp(local.y, minY, maxY);
 
         _root.localPosition = new Vector3(local.x, local.y, 0f);
+    }
+
+    private bool _coDauChan;
+    private Vector2 _dcMin, _dcMax;
+    private static readonly Vector3[] _g4 = new Vector3[4];
+
+    /// <summary>Dau chan cua bubble trong toa do CUC BO cua _root (khong tinh hao quang / hieu ung).</summary>
+    private void DoDauChan()
+    {
+        _coDauChan = false;
+        if (_root == null) return;
+        Vector2 mn = new Vector2(float.MaxValue, float.MaxValue), mx = new Vector2(float.MinValue, float.MinValue);
+        GomDauChan(_root, true, ref mn, ref mx);
+        if (mn.x > mx.x || mn.y > mx.y) return;
+        _dcMin = mn; _dcMax = mx; _coDauChan = true;
+    }
+
+    private void GomDauChan(RectTransform n, bool goc, ref Vector2 mn, ref Vector2 mx)
+    {
+        if (n == null || (!goc && !n.gameObject.activeSelf)) return;
+        string t = n.name;
+        if (!goc && (t.StartsWith("Fx") || t.StartsWith("FX") || t.Contains("Glow") || t.Contains("Shine"))) return;
+        n.GetWorldCorners(_g4);
+        for (int i = 0; i < 4; i++)
+        {
+            Vector2 p = _root.InverseTransformPoint(_g4[i]);
+            mn = Vector2.Min(mn, p); mx = Vector2.Max(mx, p);
+        }
+        if (n.GetComponent<RectMask2D>() != null || n.GetComponent<Mask>() != null) return;
+        for (int i = 0; i < n.childCount; i++) GomDauChan(n.GetChild(i) as RectTransform, false, ref mn, ref mx);
     }
 
     // =====================================================================

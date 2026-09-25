@@ -339,6 +339,7 @@ public class FarmAmbientFX : MonoBehaviour
         _rung.Add(new Rung { o = tot, t = 0f, day = totSp.bounds.min.y, goc = _co.GetTransformMatrix(tot) });
         Vector3 dinh = _co.transform.TransformPoint(_co.CellToLocalInterpolated(tot + _co.tileAnchor) + new Vector3(0f, totSp.bounds.max.y * 0.7f, 0f));
         LaBay(dinh, 4);
+        AudioManager.Instance?.PlayBushRustle();     // [AM THANH 2026-09-24] cham bui co
     }
 
     private void CapNhatRungBui(float dt)
@@ -389,6 +390,15 @@ public class FarmAmbientFX : MonoBehaviour
     private void Update()
     {
         if (!_daDung) return;
+        // [2026-09-25] Unity compile lai script GIUA luc Play: bien thuong (pool _lap/_buom...) bi xoa ve null
+        // nhung _daDung van true -> NullReference moi khung. Phat hien thi dung lai pool (xoa pool cu).
+        if (_lap == null || _song == null || _buom == null || _chim == null || _bongChim == null || _dom == null || _bui == null || _sao == null || _goc == null)
+        {
+            if (_goc != null) Destroy(_goc.gameObject);
+            _daDung = false;
+            Dung();
+            return;
+        }
         if (_cam == null) { _cam = Camera.main; if (_cam == null) return; }
 
         bool an = FarmInputLock.IsCookingMode;

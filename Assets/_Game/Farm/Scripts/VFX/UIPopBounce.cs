@@ -20,9 +20,16 @@ public class UIPopBounce : MonoBehaviour
     private Vector3 _vuaDat;
     private float _t;
     private bool _chay;
+    private bool _boQua;
 
     private void OnEnable()
     {
+        // [FIX 2026-09-24] Gan nham len CANVAS GOC (Canvas_MarketPopup, WarehousePopup...): scale canvas goc
+        // do CanvasScaler quan ly. Bounce chup scale luc bat (co khi la scale cua do phan giai cu) roi dat lai
+        // -> CA popup phong to hon man hinh (bang cho bi che nua ruy-bang ORDERS). Canvas goc -> khong dong vao.
+        var cv = GetComponent<Canvas>();
+        if (cv != null && cv.isRootCanvas) { _boQua = true; _chay = false; return; }
+        _boQua = false;
         if (!_coGoc || transform.localScale != _vuaDat) { _goc = transform.localScale; _coGoc = true; }
         if (_goc == Vector3.zero) _goc = Vector3.one;
         _t = 0f;
@@ -32,6 +39,7 @@ public class UIPopBounce : MonoBehaviour
 
     private void OnDisable()
     {
+        if (_boQua) return;
         if (_chay) { transform.localScale = _goc; _chay = false; }
     }
 
