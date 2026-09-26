@@ -4210,7 +4210,7 @@ namespace Farm.EditorTools.Mill
             // HTML 551-571 card 4 KHOÁ — "Cám cho bò sữa", badge "Bò sữa", Ủ 10p00,
             // chip x6 + x6 + x4, chữ khoá "Mở ở cấp 14" ⇒ unlockLevel = 14.
             MillRecipeData sua = Recipe(rep, "MillRecipe_CamBoSua", "cam_bo_sua", "Cám cho bò sữa",
-                                        "Bò sữa", 10f, 14, new[] { 6, 6, 4 });
+                                        "Bò sữa", 10f, 4, new[] { 6, 6, 4 });   // [2026-09-25] = cap mo Chuong Bo Sua (4), truoc la 14
 
             // ── Config ────────────────────────────────────────────────────────────
             bool moi;

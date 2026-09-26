@@ -71,7 +71,7 @@ public class FarmAmbientFX : MonoBehaviour
     [SerializeField] private float chimBongAlpha = 0.12f;
     [Tooltip("Tu nang cap thong so cu (chim nho/thap) khi object da luu trong scene tu ban truoc.")]
     [SerializeField, HideInInspector] private int _phienBan = 0;
-    private const int PHIEN_BAN = 4;
+    private const int PHIEN_BAN = 5;
     [SerializeField] private float domDomKichThuoc = 40f;
 
     [Header("Sorting")]
@@ -246,6 +246,11 @@ public class FarmAmbientFX : MonoBehaviour
                 // [2026-09-24 v4] chim 150 -> 100 · buom 15-20 con
                 if (chimKichThuoc > 100f) chimKichThuoc = 100f;
                 if (soBuom < 18) soBuom = 18;
+            }
+            if (_phienBan < 5)
+            {
+                // [2026-09-25 v5] buom nhieu gay lag -> toi da 7 con
+                if (soBuom > 7) soBuom = 7;
             }
             _phienBan = PHIEN_BAN;
         }

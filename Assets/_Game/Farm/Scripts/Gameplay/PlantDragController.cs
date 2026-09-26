@@ -61,6 +61,7 @@ public class PlantDragController : MonoBehaviour
         // SetActive(false) sẽ kill OnDrag/OnEndDrag ngay lập tức.
         // Popup sẽ được đóng bởi EndPlantDrag sau khi drag kết thúc.
         FarmUIManager.Instance?.ShowFloatingDragIcon(crop.icon);
+        FarmUIManager.Instance?.AnKhayHatKhiKeo();   // [2026-09-26] dang cam hat keo ra -> an khay cho khoi che
 
     }
 
@@ -93,6 +94,11 @@ public class PlantDragController : MonoBehaviour
         {
             // Drag cancelled without planting — popup vẫn giữ nguyên
         }
+
+        // [2026-09-26] Tha tay: da gieo -> dong han khay; keo hut (chua gieo o nao) -> hien lai khay de chon tiep.
+        // Tutorial: luon hien lai (buoc tutorial co the can khay con mo).
+        bool tut = TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial;
+        FarmUIManager.Instance?.HienLaiKhayHat(didPlant && !tut);
     }
 
     /// <summary>

@@ -16,12 +16,17 @@ namespace FarmGame.Fishing
     public class FishCounterPopupUI : MonoBehaviour
     {
         public static FishCounterPopupUI Instance { get; private set; }
+        private static int _sceneDaTim = -1;
         public static bool AnyOpen
         {
             get
             {
-                if (Instance == null)
+                // [PERF 2026-09-26] Truoc: Find MOI LAN GOI khi scene khong co popup nay (Farm) -> 6ms/frame. Nay toi da 1 lan / 2 giay.
+                if (Instance == null && _sceneDaTim != UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetHashCode())
+                {
+                    _sceneDaTim = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetHashCode();   // [PERF v2] 1 lan / scene
                     Instance = FindFirstObjectByType<FishCounterPopupUI>(FindObjectsInactive.Include);
+                }
                 return Instance != null && Instance.IsOpen;
             }
         }

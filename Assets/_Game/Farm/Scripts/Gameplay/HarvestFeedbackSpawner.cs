@@ -8,6 +8,10 @@ public class HarvestFeedbackSpawner : MonoBehaviour
     /// <summary>Icon/thanh kho trên HUD — cho UI khác (vd popup tàu) bay vật phẩm về đúng chỗ.</summary>
     public Transform WarehouseTarget => ResolveWarehouseTarget();
 
+    /// <summary>[2026-09-25] Co prefab roi vat pham / orb EXP khong (he khac muon dung chung phai kiem truoc).</summary>
+    public bool CoItemFly => harvestFlyPrefab != null;
+    public bool CoExpFly => expFlyPrefab != null;
+
     [Header("Fly FX")]
     [SerializeField] private HarvestFlyItemFX harvestFlyPrefab;
     [SerializeField] private Transform warehouseTarget;

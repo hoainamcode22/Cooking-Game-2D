@@ -149,6 +149,15 @@ public class TouristAgent : MonoBehaviour
     // ─── Procedural Living Animation ─────────────────────────────────────
     private Vector3 _baseLocalScale = Vector3.one;
     private Vector3 _logicalWorldPos;
+
+    /// <summary>[2026-09-25] Diem tren dau khach KHONG dinh nhun / nghieng / rung (bubble bam vao day -> dung yen).</summary>
+    public Vector3 DiemDauOnDinh(Vector3 offsetLocal)
+    {
+        Vector3 goc = _logicalWorldPos.sqrMagnitude > 0.0001f ? _logicalWorldPos : transform.position;
+        Vector3 sc = _hasBaseScale ? _baseLocalScale : transform.localScale;
+        if (transform.parent != null) sc = Vector3.Scale(sc, transform.parent.lossyScale);
+        return goc + Vector3.Scale(offsetLocal, sc);
+    }
     private float   _motionSeed;
     private bool    _hasBaseScale;
     private float   _missingFoodTimer;

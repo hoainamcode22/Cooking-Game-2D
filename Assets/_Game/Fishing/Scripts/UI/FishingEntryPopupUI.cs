@@ -19,13 +19,18 @@ namespace FarmGame.Fishing
     public class FishingEntryPopupUI : MonoBehaviour
     {
         public static FishingEntryPopupUI Instance { get; private set; }
+        private static int _sceneDaTim = -1;
         /// <summary>Cho PopupManager.IsAnyPopupOpen (YÊU CẦU LIÊN DEV: Lead thêm 1 dòng) — chặn click world khi mở.</summary>
         public static bool AnyOpen
         {
             get
             {
-                if (Instance == null)
+                // [PERF 2026-09-26] Truoc: Find MOI LAN GOI khi scene khong co popup nay (Farm) -> 6ms/frame. Nay toi da 1 lan / 2 giay.
+                if (Instance == null && _sceneDaTim != UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetHashCode())
+                {
+                    _sceneDaTim = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetHashCode();   // [PERF v2] 1 lan / scene
                     Instance = FindFirstObjectByType<FishingEntryPopupUI>(FindObjectsInactive.Include);
+                }
                 return Instance != null && Instance.IsOpen;
             }
         }

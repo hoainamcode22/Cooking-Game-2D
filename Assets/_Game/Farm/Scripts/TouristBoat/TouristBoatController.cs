@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// Visual controller của MỘT tàu du lịch (mỗi bến 1 tàu — GDD §3.1).
@@ -61,6 +62,8 @@ public class TouristBoatController : MonoBehaviour
 
     [Tooltip("Nội dung nhãn khi tàu đang đậu đón khách (V2 — không còn mốc thời gian cố định).")]
     [SerializeField] private string dockedLabel = "Đang đón khách...";
+    [Tooltip("[2026-09-25] BAT: an chu nho giua tau; bam vao tau luc dau ben -> chu bay len (LockedHintFX) nhu cac cho khac.")]
+    [SerializeField] private bool hienChuKhiBamTau = true;
 
     [Tooltip("Vị trí chữ so với tàu (unit world)")]
     [SerializeField] private Vector3 countdownOffset = new Vector3(0f, 60f, 0f);
@@ -267,8 +270,9 @@ public class TouristBoatController : MonoBehaviour
                     // Hướng đậu bến: quay mặt vào bến
                     ApplyDirectionSprite(_lastDirection);
                 }
-                ShowCountdown(showDockedLabel);
-                if (showDockedLabel)
+                bool hienNhan = showDockedLabel && !hienChuKhiBamTau;
+                ShowCountdown(hienNhan);
+                if (hienNhan)
                     ApplyDockedLabel();
                 break;
 
@@ -282,6 +286,59 @@ public class TouristBoatController : MonoBehaviour
 
         if (_visualShown)
             Bob(mgr.Config, info.State == BoatState.Docked);
+
+        XuLyBamTau(info.State == BoatState.Docked && _visualShown);
+    }
+
+    // ─── [2026-09-25] Bam vao tau dang dau -> chu goi y bay len ─────────────
+    private bool _dangNhanTau;
+    private Vector2 _viTriNhanTau;
+
+    private void XuLyBamTau(bool dangDau)
+    {
+        if (!hienChuKhiBamTau || visual == null) { _dangNhanTau = false; return; }
+        if (DocNhan(out Vector2 p0))
+            _dangNhanTau = dangDau && TrungTau(p0) && !BiChanBam();
+        if (!_dangNhanTau || !DocNha(out Vector2 p1)) return;
+        _dangNhanTau = false;
+        if (!dangDau || (p1 - _viTriNhanTau).sqrMagnitude > 14f * 14f || !TrungTau(p1) || BiChanBam()) return;
+        LockedHintFX.Show(Loc.T(dockedLabel), p1);
+    }
+
+    private bool DocNhan(out Vector2 p)
+    {
+        p = default;
+        if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame) p = Mouse.current.position.ReadValue();
+        else if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasPressedThisFrame) p = Touchscreen.current.primaryTouch.position.ReadValue();
+        else return false;
+        _viTriNhanTau = p;
+        return true;
+    }
+
+    private static bool DocNha(out Vector2 p)
+    {
+        p = default;
+        if (Mouse.current != null && Mouse.current.leftButton.wasReleasedThisFrame) { p = Mouse.current.position.ReadValue(); return true; }
+        if (Touchscreen.current != null && Touchscreen.current.primaryTouch.press.wasReleasedThisFrame) { p = Touchscreen.current.primaryTouch.position.ReadValue(); return true; }
+        return false;
+    }
+
+    private bool TrungTau(Vector2 man)
+    {
+        Camera cam = Camera.main;
+        if (cam == null || visual == null || !visual.enabled) return false;
+        Vector3 w = cam.ScreenToWorldPoint(man);
+        Bounds b = visual.bounds;
+        return w.x >= b.min.x && w.x <= b.max.x && w.y >= b.min.y && w.y <= b.max.y;
+    }
+
+    private static bool BiChanBam()
+    {
+        if (FarmInputLock.BlockWorldInteraction) return true;
+        if (EditModeManager.IsEditMode) return true;
+        if (PopupManager.Instance != null && PopupManager.Instance.IsAnyPopupOpen()) return true;
+        if (TouristOrderBubbleUI.ConTroTrenBubble()) return true;
+        return false;
     }
 
     // ─── Di chuyển & Quay đầu 360° ──────────────────────────────────────

@@ -83,6 +83,7 @@ namespace Assetsgame.Animals
         private SortingGroup sortingGroup;
         private AudioSource audioSource;
         private Coroutine roamCoroutine;
+        private PenWalkArea _vung;              // [2026-09-25] vung san that cua chuong v3 (neu co)
         private float originalScaleX;
         private string _resolvedSortingLayerName;
         private static readonly int SpeedHash = Animator.StringToHash("Speed");
@@ -118,6 +119,7 @@ namespace Assetsgame.Animals
             targetLocalPos = startLocalPos;
 
             FindParentPen();
+            _vung = GetComponentInParent<PenWalkArea>();
 
             if (autoCalculateBounds && transform.parent != null)
             {
@@ -187,6 +189,11 @@ namespace Assetsgame.Animals
         {
             // SortingGroup đã gom tất cả các renderer con thành 1 khối.
             // Chuẩn hóa sorting nội bộ để tứ chi không bị chồng chéo lỗi:
+            // [2026-09-25] Con vat rig PSD (SpriteSkin: bo / heo / ga HappyHarvest) da xep thu tu chi dung
+            // san trong prefab. Ep lai o day lam chan bo noi LEN TREN than (chan dai, trang, lech) -> bo qua.
+            foreach (var mb in GetComponentsInChildren<MonoBehaviour>(true))
+                if (mb != null && mb.GetType().Name == "SpriteSkin") return;
+
             SpriteRenderer[] srs = GetComponentsInChildren<SpriteRenderer>(true);
             foreach (var sr in srs)
             {
@@ -363,6 +370,11 @@ namespace Assetsgame.Animals
 
         private Vector3 GetRandomTargetInBounds()
         {
+            if (_vung != null && _vung.CoHieuLuc)
+            {
+                Vector2 p = _vung.DiemNgauNhien();
+                return new Vector3(p.x, p.y, transform.localPosition.z);
+            }
             float rx = Random.Range(localBoundsMin.x, localBoundsMax.x);
             float ry = Random.Range(localBoundsMin.y, localBoundsMax.y);
 
@@ -383,6 +395,12 @@ namespace Assetsgame.Animals
 
         private void ClampInsideBounds(ref Vector3 pos)
         {
+            if (_vung != null && _vung.CoHieuLuc)
+            {
+                Vector2 q = _vung.KepVao(new Vector2(pos.x, pos.y));
+                pos.x = q.x; pos.y = q.y;
+                return;
+            }
             pos.x = Mathf.Clamp(pos.x, localBoundsMin.x, localBoundsMax.x);
             float centerY = (localBoundsMin.y + localBoundsMax.y) * 0.5f;
             float halfH = (localBoundsMax.y - localBoundsMin.y) * 0.5f;

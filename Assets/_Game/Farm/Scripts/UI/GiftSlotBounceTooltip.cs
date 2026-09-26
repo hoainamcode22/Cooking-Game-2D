@@ -163,14 +163,14 @@ public class GiftSlotBounceTooltip : MonoBehaviour, IPointerClickHandler
         var myRt = transform as RectTransform;
         if (myRt == null || myRt.parent == null) return;
 
-        // Parent tooltip = CHA CỦA DẢI QUÀ (thường là ContentPanel) → nằm trên các ô,
-        // chết theo popup. Fallback: cha trực tiếp của ô.
-        RectTransform host = myRt.parent as RectTransform;
-        if (host != null && host.parent is RectTransform hostCha) host = hostCha;
+        // [2026-09-25] Tooltip bi dai trang Dai_MoKhoa (Viewport co RectMask2D) cat mat.
+        // Host = Canvas nam TREN mask cao nhat -> khong bi cat; them Canvas con override sorting -> ve tren moi thu trong popup.
+        RectTransform host = TimHostNgoaiMask(myRt);
         if (host == null) return;
 
         if (_tipRoot == null) DungTooltip(host);
         else if (_tipRoot.parent != host) _tipRoot.SetParent(host, false);
+        DatLopVe(myRt);
 
         // Nội dung
         // [Loc 2026-09-21] (c) chuoi ghep: dich TEN truoc roi moi ghep so luong; mo ta dich thang (khoa co trong bang).
@@ -200,6 +200,40 @@ public class GiftSlotBounceTooltip : MonoBehaviour, IPointerClickHandler
         if (_tipHideCo != null && _tipHideHost != null) _tipHideHost.StopCoroutine(_tipHideCo);
         _tipHideHost = this;
         _tipHideCo   = StartCoroutine(CoTuAnTooltip());
+    }
+
+    /// <summary>Canvas gan nhat nam phia tren Mask / RectMask2D cao nhat cua o qua.</summary>
+    private static RectTransform TimHostNgoaiMask(RectTransform o)
+    {
+        Transform mask = null;
+        for (Transform t = o; t != null; t = t.parent)
+            if (t.GetComponent<RectMask2D>() != null || t.GetComponent<Mask>() != null) mask = t;
+        Transform tu = mask != null ? mask.parent : o.parent;
+        var cv = tu != null ? tu.GetComponentInParent<Canvas>() : null;
+        if (cv != null) return cv.transform as RectTransform;
+        return o.parent as RectTransform;
+    }
+
+    /// <summary>Canvas rieng cho tooltip: cung layer, order cao hon canvas cua o qua.</summary>
+    private static void DatLopVe(RectTransform o)
+    {
+        if (_tipRoot == null) return;
+        var cvO = o.GetComponentInParent<Canvas>();
+        while (cvO != null && !cvO.overrideSorting && !cvO.isRootCanvas && cvO.transform.parent != null)
+        {
+            var tren = cvO.transform.parent.GetComponentInParent<Canvas>();   // order thuc = canvas override / root phia tren
+            if (tren == null) break;
+            cvO = tren;
+        }
+        var cv = _tipRoot.GetComponent<Canvas>();
+        if (cv == null) cv = _tipRoot.gameObject.AddComponent<Canvas>();
+        cv.overrideSorting = true;
+        if (cvO != null)
+        {
+            cv.sortingLayerID = cvO.sortingLayerID;
+            cv.sortingOrder = cvO.sortingOrder + 40;
+        }
+        else cv.sortingOrder = 1000;
     }
 
     private IEnumerator CoTipPop()

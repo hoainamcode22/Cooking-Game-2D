@@ -35,6 +35,7 @@ public class FarmerNPC : MonoBehaviour
     private readonly List<Vector3> _duong = new List<Vector3>(8);   // diem vong qua chau hoa
     private bool _dichChuyenSauKhiAn, _viecCho;
     private Vector3 _viTriHienLai;
+    private bool _vuaTuoi;                    // dang / vua tuoi chau _oDangLam (ve SAU chau do)
 
     // animation
     private Sprite[] _frames;
@@ -167,6 +168,7 @@ public class FarmerNPC : MonoBehaviour
     // =====================================================================
     private void ChonViecTiep()
     {
+        if (_chiTuoi) DatCoTheoChau();                       // hoa lon dan -> ong cao theo
         for (int i = _ds.Count - 1; i >= 0; i--)
             if (_ds[i] == null || !_ds[i].IsPlanted) _ds.RemoveAt(i);
         if (_ds.Count == 0) { ThoiViec(); return; }
@@ -185,13 +187,55 @@ public class FarmerNPC : MonoBehaviour
 
         // Cay da lon het: di qua di lai giua cac o cua minh
         var d = _ds[Random.Range(0, _ds.Count)];
-        DiToi(d, ViTriTrongO(d), SauKhiDen.Nghi);
+        DiToi(d, _chiTuoi ? DiemNghiChau(d) : ViTriTrongO(d), SauKhiDen.Nghi);
+    }
+
+    /// <summary>
+    /// [2026-09-25 v6] CHO DUNG TUOI CHINH XAC: dong nuoc trong sheet water roi xuong NGANG CHAN ong, cach chan
+    /// diemNuocPx.x ve phia binh. Nen chan ong dat NGANG mat dat trong chau (sau chau, chau che chan) va lech ngang
+    /// dung diemNuocPx.x -> nuoc roi dung vao dat trong chau. Chi nhan cho nao ca THAN ong (hop chu nhat) khong de
+    /// len chau / hoa nao khac -> het "dam len chau". Thu 2 ben, ben ngau nhien truoc.
+    /// </summary>
+    private bool TimChoTuoi(PlotController o, out Vector3 p)
+    {
+        p = transform.position;
+        Bounds b; Vector3 dat;
+        if (_cfg == null || !FarmerCrew.ThongTinChau(o, out b, out dat)) return false;
+        var wf = _cfg.waterFrames;
+        float ppuW = wf != null && wf.Length > 0 && wf[0] != null ? wf[0].pixelsPerUnit : 111.1f;
+        float nx = _cfg.diemNuocPx.x / Mathf.Max(1f, ppuW) * _scale;
+        float ny = _cfg.diemNuocPx.y / Mathf.Max(1f, ppuW) * _scale;
+        float H = _hDon * _scale, hw = H * 0.2f;
+        float yF = dat.y - ny;
+        float s0 = Random.value < 0.5f ? -1f : 1f;
+        for (int ben = 0; ben < 2; ben++)
+        {
+            float sb = ben == 0 ? s0 : -s0;
+            float x = dat.x + sb * nx;
+            var than = new Rect(x - hw, yF + H * 0.04f, hw * 2f, H * 0.9f);
+            if (FarmerCrew.ThanDeChau(than, o)) continue;
+            p = new Vector3(x, yF, transform.position.z);
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>Cho dung nghi: DUOI ca nhom chau (khong dung giua cac chau).</summary>
+    private Vector3 DiemNghiChau(PlotController o)
+    {
+        Bounds b; Vector3 dat;
+        float minY = float.MaxValue, cx = transform.position.x, cao = 60f, rong = 60f;
+        for (int i = 0; i < _ds.Count; i++)
+            if (FarmerCrew.ThongTinChau(_ds[i], out b, out dat)) { minY = Mathf.Min(minY, b.min.y); cao = b.size.y; rong = b.size.x; }
+        if (o != null && FarmerCrew.ThongTinChau(o, out b, out dat)) cx = b.center.x;
+        if (minY == float.MaxValue) minY = transform.position.y;
+        return new Vector3(cx + Random.Range(-1f, 1f) * rong, minY - cao * Random.Range(0.35f, 0.6f), transform.position.z);
     }
 
     private bool CanLam(PlotController o)
     {
         if (o == null || !o.IsPlanted) return false;
-        if (_chiTuoi) return true;
+        if (_chiTuoi) { Vector3 bo; return TimChoTuoi(o, out bo); }
         return o.IsGrowing && !CayDaLon(o);
     }
 
@@ -219,12 +263,25 @@ public class FarmerNPC : MonoBehaviour
     /// <summary>Ong tuoi chau: cao it nhat tiLeCaoSoVoiChau x chieu cao chau (khong thap hon ong ruong).</summary>
     private void DatCoTheoChau()
     {
+        // [2026-09-25 v2] Cao hon CA chau + hoa: tong = (mat dat trong chau - day chau) + hoa no to nhat (0.9 x chau),
+        // hoac dinh hoa that dang hien neu cao hon.
+        // [2026-09-25 v3] Theo THAN CHAU: cao = tiLeCaoSoVoiChau x chau (mac dinh 3.4) -> voi binh o tren mieng chau.
+        // Van luon cao hon chau + hoa (x1.3) va khong thap hon ong ruong.
         float cao = _cfg.chieuCaoNhinThay;
+        float chauMax = 0f, tongMax = 0f;
         for (int i = 0; i < _ds.Count; i++)
         {
             Bounds b; Vector3 d;
-            if (FarmerCrew.ThongTinChau(_ds[i], out b, out d)) { cao = Mathf.Max(cao, b.size.y * _cfg.tiLeCaoSoVoiChau); break; }
+            if (!FarmerCrew.ThongTinChau(_ds[i], out b, out d)) continue;
+            chauMax = Mathf.Max(chauMax, b.size.y);
+            float tong = b.size.y * 1.9f;
+            float dinh = FarmerCrew.DinhCay(_ds[i]);
+            if (dinh > float.MinValue) tong = Mathf.Max(tong, dinh - b.min.y);
+            tongMax = Mathf.Max(tongMax, tong);
         }
+        // [2026-09-25 v5] Sep: "giam size". Ong chau cao = tiLeCaoSoVoiChau x than chau (1.9 ~ ngang chau + hoa),
+        // KHONG ep cao hon ong ruong / hoa nua. Nuoc roi dung chau nho NEO (diemNuocPx), khong nho do cao.
+        if (chauMax > 0f) cao = chauMax * Mathf.Max(0.8f, _cfg.tiLeCaoSoVoiChau);
         _scale = cao / _hDon;
         if (_tt != TT.Hien && _tt != TT.Bien) transform.localScale = new Vector3(_scale, _scale, 1f);
     }
@@ -234,7 +291,7 @@ public class FarmerNPC : MonoBehaviour
     {
         var w = _cfg.waterFrames;
         float ppu = w != null && w.Length > 0 && w[0] != null ? w[0].pixelsPerUnit : 111.1f;
-        return _cfg.tuoiXaPx / Mathf.Max(1f, ppu) * _scale;
+        return _cfg.tamChauPxNuoc / Mathf.Max(1f, ppu) * _scale;
     }
 
     private static bool TrongVatCan(Vector3 p, List<Vector4> vc)
@@ -249,21 +306,33 @@ public class FarmerNPC : MonoBehaviour
         return false;
     }
 
+    /// <summary>Than ong (rong 2*nuaThan, chan o p) co de len chau nao KHAC chau dang tuoi (tamX) khong.</summary>
+    private static bool DeChauKhac(Vector3 p, List<Vector4> vc, float nuaThan, float tamX)
+    {
+        if (vc == null) return false;
+        for (int i = 0; i < vc.Count; i++)
+        {
+            var e = vc[i];
+            if (Mathf.Abs(e.x - tamX) < 2f) continue;                         // chinh chau dang tuoi
+            if (Mathf.Abs(p.x - e.x) < e.z + nuaThan && Mathf.Abs(p.y - e.y) < e.w * 3f) return true;
+        }
+        return false;
+    }
+
     private Vector3 ViTriTrongO(PlotController o)
     {
         Vector3 c; float hw, hh; Bounds b;
         if (_chiTuoi)
         {
-            // Chau hoa: dung canh chau, chan ngang mat dat trong chau -> dong nuoc roi DUNG GIUA chau
+            // [v3] Chau hoa: dung CANH chau, chan hoi SAU day chau (ve sau chau) -> binh tren mieng chau,
+            // chau che doan nuoc phia duoi mieng -> nhin nhu nuoc roi vao dat trong chau, khong chay xuong day chau.
             Vector3 dat;
             if (FarmerCrew.ThongTinChau(o, out b, out dat))
             {
-                float x = TamTuoi();
-                float s = Random.value < 0.5f ? -1f : 1f;
-                var vc = FarmerCrew.VatCan();
-                Vector3 p1 = new Vector3(dat.x - s * x, dat.y, transform.position.z);
-                Vector3 p2 = new Vector3(dat.x + s * x, dat.y, transform.position.z);
-                return TrongVatCan(p1, vc) && !TrongVatCan(p2, vc) ? p2 : p1;
+                // [v6 NEO] Chi dung o cho THAN ong khong de len chau nao khac; khong co cho -> ra ngoai nghi.
+                Vector3 pt;
+                if (TimChoTuoi(o, out pt)) return pt;
+                return DiemNghiChau(o);
             }
         }
         if (!FarmerCrew.HinhThoi(o, out c, out hw, out hh, out b))
@@ -281,6 +350,7 @@ public class FarmerNPC : MonoBehaviour
     private void DiToi(PlotController o, Vector3 p, SauKhiDen sau)
     {
         _oDangLam = o;
+        _vuaTuoi = false;
         _dich = p;
         _sau = sau;
         _duong.Clear();
@@ -341,6 +411,7 @@ public class FarmerNPC : MonoBehaviour
         switch (_sau)
         {
             case SauKhiDen.Tuoi:
+                _vuaTuoi = true;
                 if (_cfg.waterFrames == null || _cfg.waterFrames.Length == 0) goto default;
                 _tt = TT.Tuoi;
                 HuongVeO();
@@ -356,13 +427,15 @@ public class FarmerNPC : MonoBehaviour
                 Nghi(Random.Range(_cfg.nghiKhiDiDao.x, _cfg.nghiKhiDiDao.y));
                 break;
         }
+        CapNhatSort(true);                                   // [v3] toi noi: tinh lai lop ve ngay (ong chau -> sau chau)
     }
 
     /// <summary>Sheet cuoc/tuoi: dung cu o phia PHAI anh. O nam ben trai -> lat ngang.</summary>
     private void HuongVeO()
     {
-        Vector3 c; float hw, hh; Bounds b;
+        Vector3 c; float hw, hh; Bounds b; Vector3 dat;
         float dx = FarmerCrew.HinhThoi(_oDangLam, out c, out hw, out hh, out b) ? c.x - transform.position.x : 0f;
+        if (_chiTuoi && FarmerCrew.ThongTinChau(_oDangLam, out b, out dat)) dx = b.center.x - transform.position.x;   // quay binh ve tam chau
         _sr.flipX = Mathf.Abs(dx) < 20f ? Random.value < 0.5f : dx < 0f;
     }
 
@@ -492,8 +565,16 @@ public class FarmerNPC : MonoBehaviour
                 if (_ds[i] != null && FarmerCrew.TrongO(_ds[i], p)) { o = _ds[i]; break; }
 
         int layer, order; float z;
+        // [v4] Ong chau: dung / tuoi canh chau -> ve TREN chau dang tuoi (Sep chot: sorting cao hon chau)
+        if (_chiTuoi && _vuaTuoi && _tt != TT.Di && _oDangLam != null && FarmerCrew.TinhSortTruocChau(_oDangLam, out layer, out order, out z, !_cfg.veTruocChauKhiTuoi))
+        {
+            _sr.sortingLayerID = layer;
+            _sr.sortingOrder = order;
+            if (Mathf.Abs(p.z - z) > 0.001f) transform.position = new Vector3(p.x, p.y, z);
+            return;
+        }
         if (o != null && o.Category == PlotCategory.Flower) o = null;          // chau hoa: sort theo chan chau
-        if (o != null || !FarmerCrew.TinhSortChau(p, out layer, out order, out z))
+        if (o != null || !FarmerCrew.TinhSortChau(p, out layer, out order, out z, false))
             FarmerCrew.TinhSort(o, p, out layer, out order, out z);
         _sr.sortingLayerID = layer;
         _sr.sortingOrder = order;

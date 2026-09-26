@@ -265,7 +265,8 @@ public class FarmManager : MonoBehaviour
         if (plot == null)
             return;
 
-        if (Time.frameCount == lastHandledClickFrame && lastHandledClickPlot == plot)
+        // [2026-09-25] 1 cu cham chi xu ly 1 o (truoc: cham trung 2 o chong nhau -> vua hien khay liem vua hien khay hat)
+        if (Time.frameCount == lastHandledClickFrame)
             return;
 
         lastHandledClickFrame = Time.frameCount;

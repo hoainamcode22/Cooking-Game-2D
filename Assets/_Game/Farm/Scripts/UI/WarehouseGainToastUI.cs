@@ -197,11 +197,45 @@ public class WarehouseGainToastUI : MonoBehaviour
         _flashT = 0f;
     }
 
+    // ── [2026-09-25] Ban build web/mobile: icon kho hien O VUONG TRANG (Image mat sprite luc chay).
+    //    Moi lan hien thanh: kiem tra lai, mat thi gan lai tu iconSprite / icon nut Kho duoi HUD
+    //    (cung 1 sprite, nut Kho hien dung tren may) / Resources. Ghi log 1 lan de biet.
+    private bool _daBaoMatIcon;
+    private void DamBaoIcon()
+    {
+        if (_imgIcon == null) return;
+        if (_imgIcon.material != null && _imgIcon.material != Canvas.GetDefaultCanvasMaterial() && _imgIcon.material.shader != null
+            && !_imgIcon.material.shader.isSupported) _imgIcon.material = null;
+        // Uu tien DUNG sprite cua icon nut Kho duoi HUD (cung 1 hinh, hien dung tren ban build)
+        Sprite sp = null;
+        var nut = GameObject.Find("Tab_Warehouse");
+        var ic = nut != null ? nut.transform.Find("Icon") : null;
+        var img = ic != null ? ic.GetComponent<Image>() : null;
+        if (img != null && img.sprite != null && img.sprite.texture != null) sp = img.sprite;
+        if (sp == null && iconSprite != null && iconSprite.texture != null) sp = iconSprite;
+        if (sp == null && _imgIcon.sprite != null && _imgIcon.sprite.texture != null) sp = _imgIcon.sprite;
+        if (sp == null) sp = Resources.Load<Sprite>("Icons/icon_warehouse");
+        bool mat = _imgIcon.sprite == null || _imgIcon.sprite.texture == null;
+        if (mat && !_daBaoMatIcon)
+        {
+            _daBaoMatIcon = true;
+            Debug.LogWarning("[KhoToast] Icon kho bi mat sprite luc chay -> gan lai: " + (sp != null ? sp.name : "KHONG TIM THAY"));
+        }
+        if (sp != null)
+        {
+            if (_imgIcon.sprite != sp) { _imgIcon.sprite = sp; _imgIcon.SetAllDirty(); }
+            iconSprite = sp;
+            var c = _imgIcon.color; if (c.a < 0.99f) { c.a = 1f; _imgIcon.color = c; }
+        }
+        else _imgIcon.color = new Color(1f, 1f, 1f, 0f);   // khong co gi thi an han, khong de o vuong trang
+    }
+
     private void Show()
     {
         _hideAt = Time.unscaledTime + idleBeforeHide;
         _visible = true;
         if (!_panel.gameObject.activeSelf) _panel.gameObject.SetActive(true);
+        DamBaoIcon();
     }
 
     // ─── So / fill ───────────────────────────────────────────────
@@ -354,7 +388,8 @@ public class WarehouseGainToastUI : MonoBehaviour
         bool moiIcon = iconTr == null;
         if (moiIcon) iconTr = (RectTransform)TaoCon(_panel, "Img_Icon");
         _imgIcon = iconTr.GetComponent<Image>(); if (_imgIcon == null) _imgIcon = iconTr.gameObject.AddComponent<Image>();
-        if (_imgIcon.sprite == null && iconSprite != null) _imgIcon.sprite = iconSprite;
+        if (iconSprite == null) iconSprite = _imgIcon.sprite;
+        DamBaoIcon();
         _imgIcon.preserveAspect = true; _imgIcon.raycastTarget = false; _imgIcon.color = Color.white;
         if (datBoCuc || moiIcon)
         {

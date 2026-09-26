@@ -79,6 +79,22 @@ public class BuilderWorkerCrew : MonoBehaviour
     private Bounds _bounds;
     private bool   _dismissed;
 
+    /// <summary>[2026-09-25] Diem dung tuy chon (vd 4 goc lo dat). null = tu tinh 3 diem quanh cong trinh.</summary>
+    private Vector3[] _viTriTuyChinh;
+    private static Vector3[] _choViTriTuyChinh;
+
+    /// <summary>
+    /// [2026-09-25] Gan to tho DUNG TAI cac diem cho truoc (so tho = so diem, khong bi kep maxWorkers).
+    /// Dung cho lo dat: 1 tho / goc lo. Tra null neu cfg tat.
+    /// </summary>
+    public static BuilderWorkerCrew AttachToTaiDiem(GameObject host, Bounds hostBounds, BuilderWorkerConfig cfg, Vector3[] diem)
+    {
+        if (diem == null || diem.Length == 0) return AttachTo(host, hostBounds, cfg, 0);
+        _choViTriTuyChinh = diem;
+        try { return AttachTo(host, hostBounds, cfg, diem.Length); }
+        finally { _choViTriTuyChinh = null; }
+    }
+
     private DecorGrowthController _decor;
     private bool _decorWired;
 
@@ -151,8 +167,9 @@ public class BuilderWorkerCrew : MonoBehaviour
     {
         _cfg    = cfg;
         _bounds = hostBounds;
+        _viTriTuyChinh = _choViTriTuyChinh;
 
-        int count = forcedCount > 0
+        int count = _viTriTuyChinh != null ? _viTriTuyChinh.Length : forcedCount > 0
             ? Mathf.Clamp(forcedCount, Mathf.Min(cfg.minWorkers, cfg.maxWorkers),
                                        Mathf.Max(cfg.minWorkers, cfg.maxWorkers))
             : cfg.WorkerCountForFootprint(hostBounds.size);
@@ -352,7 +369,7 @@ public class BuilderWorkerCrew : MonoBehaviour
 
         float padding = _cfg != null ? _cfg.placementRadiusPadding : 6f;
         float inset   = _cfg != null ? _cfg.placementInsetRatio : 0.62f;
-        Vector3[] diem = TinhViTri(_bounds, padding, inset);
+        Vector3[] diem = _viTriTuyChinh != null && _viTriTuyChinh.Length > 0 ? _viTriTuyChinh : TinhViTri(_bounds, padding, inset);
 
         // Layer resolve an toàn — KHÔNG hardcode (§2/§7 CONTRACT)
         string layer = TouristSortingLayers.Resolve(TouristSortingLayers.Visitor);
@@ -393,11 +410,15 @@ public class BuilderWorkerCrew : MonoBehaviour
         float dx  = ext * Mathf.Clamp(insetRatio, 0.15f, 1.4f) + padding;
         float chanY = b.min.y;
 
+        // [2026-09-25] Sep: "moi ong dung moi huong" -> khong xep 1 hang ngang nua.
+        // Chan cong trinh iso la hinh thoi: nua cao = extents.x / 2. Ong trai dung goc TRAI (lui ve sau),
+        // ong phai dung goc PHAI (lui it hon), ong thu 3 dung PHIA TRUOC, lech trai -> 3 huong khac nhau.
+        float q = ext * 0.5f;
         return new Vector3[]
         {
-            new Vector3(c.x - dx, chanY, z),
-            new Vector3(c.x + dx, chanY, z),
-            new Vector3(c.x,      chanY - padding * 0.5f, z)
+            new Vector3(c.x - dx,         chanY + q * 0.55f, z),
+            new Vector3(c.x + dx,         chanY + q * 0.25f, z),
+            new Vector3(c.x - ext * 0.12f, chanY - padding * 0.5f, z)
         };
     }
 

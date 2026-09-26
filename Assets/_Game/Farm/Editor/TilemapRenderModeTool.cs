@@ -133,3 +133,79 @@ public static class TilemapRenderModeTool
     }
 }
 #endif
+
+// ============================================================================
+//  Edric Tools > Toi uu > Tilemap nen sang SRP Batch   (2026-09-26)
+//  (dat chung file nay de Unity bien dich ngay, khong phu thuoc viec quet file moi)
+//  11 tilemap nen dang Individual (Unity sort + ve TUNG O). Chunk tung bi lo duong luoi (VONG 13) nen lan nay dung
+//  SRP Batch (giong Water_Tilemap, khong lo luoi). 1 = doi, 2 = tra lai. Co Undo, khong tu luu scene.
+// ============================================================================
+#if UNITY_EDITOR
+public static class TilemapSrpBatchTool
+{
+    private const string GOC = "Edric Tools/Toi uu/";
+    private const string KHOA = "EDRIC_TM_SRPBATCH_DA_DOI";
+    private static readonly string[] LOP =
+    {
+        "Tilemap_IsoGrass", "Co_Grass", "Tilemap_IsoSand", "Tilemap_IsoDirt", "Tilemap_IsoDock",
+        "Tilemap_IsoStone", "Tilemap_IsoDirtPatch", "Tilemap_LockedOverlay",
+    };
+
+    private static List<TilemapRenderer> Tim(HashSet<string> ten, TilemapRenderer.Mode dangLa)
+    {
+        var kq = new List<TilemapRenderer>();
+        foreach (var r in Object.FindObjectsByType<TilemapRenderer>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            if (r != null && !EditorUtility.IsPersistent(r) && ten.Contains(r.gameObject.name) && r.mode == dangLa) kq.Add(r);
+        return kq;
+    }
+
+    [MenuItem(GOC + "1. Tilemap nen sang SRP Batch (nhe CPU)", false, 1)]
+    public static void Doi()
+    {
+        if (Application.isPlaying) { Bao("Thoat Play mode truoc."); return; }
+        var ds = Tim(new HashSet<string>(LOP), TilemapRenderer.Mode.Individual);
+        if (ds.Count == 0) { Bao("Khong co tilemap nen nao dang Individual (da doi roi?)."); return; }
+        var sb = new StringBuilder();
+        foreach (var r in ds) sb.Append("- ").Append(r.gameObject.name).Append('\n');
+        if (!EditorUtility.DisplayDialog("Tilemap sang SRP Batch",
+                "Doi " + ds.Count + " lop nen tu Individual sang SRP Batch:\n" + sb +
+                "\nHang rao / da cao / decor GIU Individual.\nCo Undo. Xem map khong loi roi Ctrl+S.", "Doi", "Huy")) return;
+        Undo.SetCurrentGroupName("Tilemap sang SRP Batch");
+        int nhom = Undo.GetCurrentGroup();
+        var daDoi = new List<string>();
+        foreach (var r in ds)
+        {
+            Undo.RecordObject(r, "Tilemap sang SRP Batch");
+            r.mode = TilemapRenderer.Mode.SRPBatch;
+            EditorUtility.SetDirty(r);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(r.gameObject.scene);
+            daDoi.Add(r.gameObject.name);
+        }
+        Undo.CollapseUndoOperations(nhom);
+        EditorPrefs.SetString(KHOA, string.Join("|", daDoi.ToArray()));
+        Bao("Da doi " + daDoi.Count + " lop sang SRP Batch.\n\nBam Play xem ky (mep co, duong dat, ben tau).\nOn thi Ctrl+S. Loi (vien luoi, sai lop) -> Ctrl+Z hoac muc 2.");
+    }
+
+    [MenuItem(GOC + "2. Tra lai Individual (cac lop muc 1 da doi)", false, 2)]
+    public static void TraLai()
+    {
+        if (Application.isPlaying) { Bao("Thoat Play mode truoc."); return; }
+        var ten = new HashSet<string>(EditorPrefs.GetString(KHOA, string.Join("|", LOP)).Split('|'));
+        var ds = Tim(ten, TilemapRenderer.Mode.SRPBatch);
+        if (ds.Count == 0) { Bao("Khong co lop nao can tra lai."); return; }
+        Undo.SetCurrentGroupName("Tilemap tra lai Individual");
+        int nhom = Undo.GetCurrentGroup();
+        foreach (var r in ds)
+        {
+            Undo.RecordObject(r, "Tilemap tra lai Individual");
+            r.mode = TilemapRenderer.Mode.Individual;
+            EditorUtility.SetDirty(r);
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(r.gameObject.scene);
+        }
+        Undo.CollapseUndoOperations(nhom);
+        Bao("Da tra " + ds.Count + " lop ve Individual. Bam Ctrl+S.");
+    }
+
+    private static void Bao(string s) => EditorUtility.DisplayDialog("Toi uu Tilemap", s, "OK");
+}
+#endif

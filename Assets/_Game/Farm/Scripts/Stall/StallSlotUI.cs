@@ -161,6 +161,30 @@ public class StallSlotUI : MonoBehaviour
             if (t == null) continue;
             t.color = sang; t.fontStyle |= TMPro.FontStyles.Bold;
         }
+        // [2026-09-25] Sep: "text sang len". Gia / so luong / gio con lai tren the cam truoc day nau nhat -> kem sang, dam.
+        foreach (var t in new[] { textPrice, textQuantity })
+        {
+            if (t == null) continue;
+            t.color = sang; t.fontStyle |= TMPro.FontStyles.Bold;
+        }
+        if (textRemainTime != null) { textRemainTime.color = new Color(1f, 0.93f, 0.78f, 1f); textRemainTime.fontStyle |= TMPro.FontStyles.Bold; }
+        CanGiuaIcon();
+    }
+
+    private bool _daCanIcon;
+    /// <summary>[2026-09-25] Icon vat pham nam CHINH GIUA the (truoc lech len tren). Giu nguyen kich thuoc.</summary>
+    private void CanGiuaIcon()
+    {
+        if (_daCanIcon || imageItemIcon == null) return;
+        _daCanIcon = true;
+        var rt = imageItemIcon.rectTransform;
+        var cha = rt.parent as RectTransform;
+        Vector2 kt = rt.rect.size;
+        rt.anchorMin = rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = kt;
+        rt.anchoredPosition = new Vector2(0f, cha != null ? cha.rect.height * 0.04f : 8f);   // nhich len chut, chua cho dong gia o duoi
+        imageItemIcon.preserveAspect = true;
     }
 
     private static void SetActiveSafe(GameObject go, bool active)

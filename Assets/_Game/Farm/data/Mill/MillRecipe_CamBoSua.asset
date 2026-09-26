@@ -30,4 +30,4 @@ MonoBehaviour:
   - itemId: 
     amount: 4
     icon: {fileID: 0}
-  unlockLevel: 14
+  unlockLevel: 4

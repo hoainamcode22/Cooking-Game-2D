@@ -1,0 +1,105 @@
+00:00.047  color_management | Using OCIO=E:\Blender\5.2\datafiles\colormanagement\config.ocio
+00:00.766  blend            | Read blend: "E:\Game2\Cooking-Game-2D\Claude outputs\blender\farm_assets_v1.blend"
+Info: Saved "farm_assets_v1.blend"
+00:03.875  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\tree_apple_trunk.png'
+00:04.797  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\tree_apple_canopy.png'
+00:05.516  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\tree_orange_trunk.png'
+00:06.422  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\tree_orange_canopy.png'
+00:07.109  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\tree_lemon_trunk.png'
+00:08.156  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\tree_lemon_canopy.png'
+00:08.859  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\tree_palm_trunk.png'
+Blender 5.2.1 LTS (hash 9e2066aef7ef built 2026-08-25 02:38:20)
+Warning: edge 27 - 26 appears twice, correcting
+Warning: edge 26 - 27 appears twice, correcting
+Warning: edge 0 - 3 appears twice, correcting
+Warning: edge 3 - 0 appears twice, correcting
+Warning: edge 28 - 26 appears twice, correcting
+Warning: edge 29 - 28 appears twice, correcting
+Warning: edge 28 - 29 appears twice, correcting
+Warning: edge 60 - 28 appears twice, correcting
+Warning: edge 28 - 60 appears twice, correcting
+Warning: edge 26 - 28 appears twice, correcting
+Warning: edge 27 - 26 appears twice, correcting
+Warning: edge 26 - 27 appears twice, correcting
+Warning: edge 0 - 3 appears twice, correcting
+Warning: edge 3 - 0 appears twice, correcting
+Warning: edge 28 - 26 appears twice, correcting
+Warning: edge 29 - 28 appears twice, correcting
+Warning: edge 28 - 29 appears twice, correcting
+Warning: edge 60 - 28 appears twice, correcting
+Warning: edge 28 - 60 appears twice, correcting
+Warning: edge 26 - 28 appears twice, correcting
+Warning: edge 27 - 26 appears twice, correcting
+Warning: edge 26 - 27 appears twice, correcting
+Warning: edge 0 - 3 appears twice, correcting
+Warning: edge 3 - 0 appears twice, correcting
+Warning: edge 28 - 26 appears twice, correcting
+Warning: edge 29 - 28 appears twice, correcting
+Warning: edge 28 - 29 appears twice, correcting
+Warning: edge 26 - 28 appears twice, correcting
+Warning: edge 27 - 26 appears twice, correcting
+Warning: edge 26 - 27 appears twice, correcting
+Warning: edge 0 - 3 appears twice, correcting
+Warning: edge 3 - 0 appears twice, correcting
+Warning: edge 28 - 26 appears twice, correcting
+Warning: edge 29 - 28 appears twice, correcting
+Warning: edge 28 - 29 appears twice, correcting
+Warning: edge 60 - 28 appears twice, correcting
+Warning: edge 28 - 60 appears twice, correcting
+Warning: edge 26 - 28 appears twice, correcting
+Warning: edge 27 - 26 appears twice, correcting
+Warning: edge 26 - 27 appears twice, correcting
+Warning: edge 0 - 3 appears twice, correcting
+Warning: edge 3 - 0 appears twice, correcting
+Warning: edge 28 - 26 appears twice, correcting
+Warning: edge 29 - 28 appears twice, correcting
+Warning: edge 28 - 29 appears twice, correcting
+Warning: edge 60 - 28 appears twice, correcting
+Warning: edge 28 - 60 appears twice, correcting
+Warning: edge 26 - 28 appears twice, correcting
+Warning: edge 27 - 26 appears twice, correcting
+Warning: edge 26 - 27 appears twice, correcting
+Warning: edge 0 - 3 appears twice, correcting
+Warning: edge 3 - 0 appears twice, correcting
+Warning: edge 0 - 31 appears twice, correcting
+Warning: edge 31 - 0 appears twice, correcting
+Warning: edge 28 - 26 appears twice, correcting
+Warning: edge 29 - 28 appears twice, correcting
+Warning: edge 28 - 29 appears twice, correcting
+Warning: edge 26 - 28 appears twice, correcting
+Warning: edge 27 - 26 appears twice, correcting
+Warning: edge 26 - 27 appears twice, correcting
+Warning: edge 0 - 3 appears twice, correcting
+Warning: edge 3 - 0 appears twice, correcting
+Warning: edge 28 - 26 appears twice, correcting
+Warning: edge 29 - 28 appears twice, correcting
+Warning: edge 28 - 29 appears twice, correcting
+Warning: edge 60 - 28 appears twice, correcting
+Warning: edge 28 - 60 appears twice, correcting
+Warning: edge 26 - 28 appears twice, correcting
+Warning: edge 27 - 26 appears twice, correcting
+Warning: edge 26 - 27 appears twice, correcting
+Warning: edge 0 - 3 appears twice, correcting
+Warning: edge 3 - 0 appears twice, correcting
+Warning: edge 28 - 26 appears twice, correcting
+Warning: edge 29 - 28 appears twice, correcting
+Warning: edge 28 - 29 appears twice, correcting
+Warning: edge 60 - 28 appears twice, correcting
+Warning: edge 28 - 60 appears twice, correcting
+Warning: edge 26 - 28 appears twice, correcting
+Warning: edge 27 - 26 appears twice, correcting
+Warning: edge 26 - 27 appears twice, correcting
+Warning: edge 0 - 3 appears twice, correcting
+Warning: edge 3 - 0 appears twice, correcting
+Warning: edge 28 - 26 appears twice, correcting
+Warning: edge 29 - 28 appears twice, correcting
+Warning: edge 28 - 29 appears twice, correcting
+Warning: edge 26 - 28 appears twice, correcting
+00:09.672  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\tree_palm_canopy.png'
+00:10.594  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\lighthouse.png'
+00:11.359  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\fruit_apple.png'
+00:12.172  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\fruit_orange.png'
+00:13.156  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\fruit_lemon.png'
+00:13.875  render           | Saved: 'E:\Game2\Cooking-Game-2D\Claude outputs\blender\game\fruit_palm.png'
+
+Blender quit

@@ -115,16 +115,16 @@ public class OrderBoardPopupUI : MonoBehaviour
     /// </summary>
     public static OrderBoardPopupUI Instance { get; private set; }
 
-    private static int _frameTimCuoi = -1;
+    private static int _sceneDaTim = -1;   // [PERF 2026-09-26 v2] Find(Include) cap phat ca tram KB -> chi tim 1 LAN / scene (popup tu gan Instance trong Awake)
     public static bool AnyOpen
     {
         get
         {
             // [FIX 2026-09-21 P0] Ban cu FindFirstObjectByType(Include) MOI LAN GOI khi Instance null
             // (popup khong co trong scene => tim mai, moi frame, tu nhieu noi). Chi tim lai toi da 1 lan/frame.
-            if (Instance == null && _frameTimCuoi != Time.frameCount)
+            if (Instance == null && _sceneDaTim != UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetHashCode())
             {
-                _frameTimCuoi = Time.frameCount;
+                _sceneDaTim = UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetHashCode();
                 Instance = FindFirstObjectByType<OrderBoardPopupUI>(FindObjectsInactive.Include);
             }
             return Instance != null && Instance.IsOpen;

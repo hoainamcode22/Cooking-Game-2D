@@ -1363,6 +1363,11 @@ public class PlacementManager : MonoBehaviour
             SpriteRenderer sr = renderers[i];
             if (sr == null) continue;
 
+            // [2026-09-25] BO QUA con vat trong chuong (bo/heo/ga rig PSD co SortingGroup rieng). Ep moi bo phan
+            // len cung order 500 lam thu tu ve cac chi hong: chan noi len tren than, mat bi dau che mat.
+            var sg = sr.GetComponentInParent<UnityEngine.Rendering.SortingGroup>(true);
+            if (sg != null && sg.transform != buildingObj.transform) continue;
+
             sr.sortingLayerName = BuildingSortingLayerName;
             sr.sortingOrder = Mathf.Max(sr.sortingOrder, BuildingSortingOrder);
         }

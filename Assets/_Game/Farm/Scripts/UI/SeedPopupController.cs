@@ -147,7 +147,9 @@ public class SeedPopupController : MonoBehaviour
                 {
                     item.SetData(cropDataList[i]);
                 }
+                SeedPanelSkin.ApDungThe(child);
             }
+            SeedPanelSkin.ApDungKhung(GetComponent<Image>());
             return;
         }
 
@@ -183,6 +185,8 @@ public class SeedPopupController : MonoBehaviour
                 Debug.LogError($"[SeedPopup] Prefab thiếu SeedDragItem!");
             }
         }
+        for (int i = 0; i < content.childCount; i++) SeedPanelSkin.ApDungThe(content.GetChild(i));
+        SeedPanelSkin.ApDungKhung(GetComponent<Image>());
         Loc.RequestRescan();
     }
 

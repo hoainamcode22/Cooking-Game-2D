@@ -275,6 +275,7 @@ public class FarmUIManager : MonoBehaviour
 
     public void HideAllPopups()
     {
+        KhoiPhucKhayHat();
         if (!FarmInputLock.IsDraggingSickle) HideSickleTool();
         if (popupSeed != null)
             popupSeed.SetActive(false);
@@ -386,6 +387,7 @@ public class FarmUIManager : MonoBehaviour
             return;
 
         HideAllPopups();
+        if (!FarmInputLock.IsDraggingSickle) HideSickleTool();   // [2026-09-25] khay hat va khay liem khong hien cung luc
 
         if (popupSeed == null)
         {
@@ -431,6 +433,7 @@ public class FarmUIManager : MonoBehaviour
             return;
 
         HideAllPopups();
+        if (!FarmInputLock.IsDraggingSickle) HideSickleTool();   // [2026-09-25] khay hat va khay liem khong hien cung luc
 
         if (popupSeedFlower == null)
         {
@@ -459,8 +462,42 @@ public class FarmUIManager : MonoBehaviour
     }
 
     /// <summary>Close seed popup (cáº£ 2 loáº¡i) vÃ  clear input locks.</summary>
+    // ── [2026-09-26] An khay hat khi dang keo hat ra ruong ───────────────────────
+    // Chi an bang CanvasGroup (alpha 0, khong nhan cham) — KHONG SetActive(false) vi the hat dang keo
+    // nam trong khay, tat object se cat ngang su kien keo. Tha tay: HienLaiKhayHat(dong).
+    private CanvasGroup _cgKhayDangAn;
+
+    public void AnKhayHatKhiKeo()
+    {
+        GameObject k = null;
+        if (popupSeedFlower != null && popupSeedFlower.activeInHierarchy) k = popupSeedFlower;
+        else if (popupSeed != null && popupSeed.activeInHierarchy) k = popupSeed;
+        if (k == null) return;
+        var cg = k.GetComponent<CanvasGroup>();
+        if (cg == null) cg = k.AddComponent<CanvasGroup>();
+        cg.alpha = 0f;
+        cg.blocksRaycasts = false;
+        _cgKhayDangAn = cg;
+    }
+
+    /// <summary>dong = true: tat han khay. false: hien lai nhu cu.</summary>
+    public void HienLaiKhayHat(bool dong)
+    {
+        KhoiPhucKhayHat();
+        if (dong) HidePlantSelectPopup();
+    }
+
+    private void KhoiPhucKhayHat()
+    {
+        if (_cgKhayDangAn == null) return;
+        _cgKhayDangAn.alpha = 1f;
+        _cgKhayDangAn.blocksRaycasts = true;
+        _cgKhayDangAn = null;
+    }
+
     public void HidePlantSelectPopup()
     {
+        KhoiPhucKhayHat();
         if (popupSeed != null)
             popupSeed.SetActive(false);
 

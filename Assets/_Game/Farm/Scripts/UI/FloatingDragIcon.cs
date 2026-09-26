@@ -16,6 +16,12 @@ public class FloatingDragIcon : MonoBehaviour
 
     public void Show(Sprite icon)
     {
+        // [2026-09-26] Image cu gan tren chinh object nay (sprite LIEM, nam giua khay hat) tung hien len
+        // moi lan keo hat -> "cai liem trong panel". Icon keo that nam tren canvas rieng ben duoi, nen tat Image cu.
+        if (iconImage != null) iconImage.enabled = false;
+        var imgCu = GetComponent<Image>();
+        if (imgCu != null) imgCu.enabled = false;
+
         Hide(); // dá»n cÅ© náº¿u cÃ³
 
         // Táº¡o overlay canvas riÃªng â€” luÃ´n Ä‘Ãºng báº¥t ká»ƒ canvas cha lÃ  gÃ¬

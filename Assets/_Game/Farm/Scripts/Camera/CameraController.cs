@@ -305,7 +305,11 @@ public class CameraController : MonoBehaviour
 
         // ── BƯỚC 1: Nhấn chuột xuống → lưu vị trí screen, chưa drag ────
         // Không bắt đầu drag nếu con trỏ đang ở trên UI element hoặc popup
-        if (ConTroDangTrenUI(mouse.position.ReadValue()) || FarmInputLock.BlockMapPan)
+        // [PERF 2026-09-26] EventSystem.RaycastAll (Graphic + Physics2D) ton ~10ms/frame trong Editor khi scene co
+        // nhieu collider. Truoc day chay MOI FRAME ke ca khi chuot dung yen / dang keo map. Nay chi raycast khi dang
+        // NHAN ma CHUA keo (dung luc can quyet dinh co bat dau keo map hay khong).
+        bool xetUiChuot = !isDragging && (mouse.leftButton.isPressed || mouse.leftButton.wasPressedThisFrame);
+        if ((xetUiChuot && ConTroDangTrenUI(mouse.position.ReadValue())) || FarmInputLock.BlockMapPan)
         {
             isDragging          = false;
             pressHeld           = false;
@@ -409,7 +413,8 @@ public class CameraController : MonoBehaviour
         ApplyZoomStep(ReadLegacyScrollSteps(), (Vector2)Input.mousePosition);
 
         // ── BƯỚC 1: Nhấn chuột xuống → lưu vị trí screen, chưa drag ────
-        if (ConTroDangTrenUI((Vector2)Input.mousePosition) || FarmInputLock.BlockMapPan)
+        bool xetUiCu = !isDragging && (Input.GetMouseButton(0) || Input.GetMouseButtonDown(0));   // [PERF 2026-09-26]
+        if ((xetUiCu && ConTroDangTrenUI((Vector2)Input.mousePosition)) || FarmInputLock.BlockMapPan)
         {
             isDragging          = false;
             pressHeld           = false;
@@ -504,7 +509,8 @@ public class CameraController : MonoBehaviour
             var phase = t.phase;
 
             // Chặn kéo map nếu ngón tay chạm hoặc đang ở trên UI thật (Slider, Popup, v.v.)
-            if (ConTroDangTrenUI(t.screenPosition) || FarmInputLock.BlockMapPan)
+            // [PERF 2026-09-26] Dang keo map roi thi khong raycast UI moi frame nua (mobile keo map bi giat).
+            if ((!isDragging && ConTroDangTrenUI(t.screenPosition)) || FarmInputLock.BlockMapPan)
             {
                 isDragging          = false;
                 touchHeld           = false;

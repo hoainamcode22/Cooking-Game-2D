@@ -228,11 +228,32 @@ public class CookingBoot : MonoBehaviour
     private const string KhoaQuaKhoiDau = "KITCHEN_TRANSFER_STARTER_GIFT_V1";
     private const int SoQuaKhoiDau = 5;
 
+    // [2026-09-25] Qua GIA VI rieng (5 moi loai) - khoa rieng V2 nen save dang choi (da nhan qua V1
+    // truoc khi co gia vi / da mat gia vi) cung duoc tang 1 lan.
+    private const string KhoaQuaGiaVi = "KITCHEN_TRANSFER_STARTER_SEASONING_V2";
+
+    private void TangGiaViKhoiDau(KitchenTransferManager ktm)
+    {
+        if (PlayerPrefs.GetInt(KhoaQuaGiaVi, 0) == 1) return;
+        int n = 0;
+        foreach (var item in cookingInventoryItems)
+        {
+            if (item == null || string.IsNullOrEmpty(item.itemId) || item.cookingData == null) continue;
+            if (item.cookingData.kind != IngredientKind.Seasoning) continue;
+            ktm.AddTransferredItem(item.itemId, SoQuaKhoiDau);
+            n++;
+        }
+        PlayerPrefs.SetInt(KhoaQuaGiaVi, 1);
+        PlayerPrefs.Save();
+        Debug.Log("[CookingBoot] Qua gia vi: " + n + " loai gia vi x" + SoQuaKhoiDau + " vao bep." +
+                  (n == 0 ? " (0 loai: cookingInventoryItems cua CookingBoot chua co gia vi nao co cookingData.kind = Seasoning)" : ""));
+    }
+
     private void TangNguyenLieuKhoiDau()
     {
         var ktm = KitchenTransferManager.Instance;
         if (ktm == null || cookingInventoryItems == null) return;
-        if (PlayerPrefs.GetInt(KhoaQuaKhoiDau, 0) == 1) return;
+        if (PlayerPrefs.GetInt(KhoaQuaKhoiDau, 0) == 1) { TangGiaViKhoiDau(ktm); return; }
         int n = 0;
         foreach (var item in cookingInventoryItems)
         {
@@ -241,6 +262,7 @@ public class CookingBoot : MonoBehaviour
             n++;
         }
         PlayerPrefs.SetInt(KhoaQuaKhoiDau, 1);
+        PlayerPrefs.SetInt(KhoaQuaGiaVi, 1);                 // qua V1 da gom gia vi
         PlayerPrefs.Save();
         Debug.Log("[CookingBoot] Qua khoi dau: " + n + " nguyen lieu/gia vi x" + SoQuaKhoiDau + " vao bep.");
     }

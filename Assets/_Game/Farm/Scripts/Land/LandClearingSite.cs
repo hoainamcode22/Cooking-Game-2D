@@ -48,6 +48,12 @@ public class LandClearingSite : MonoBehaviour
              "Tat (mac dinh) = bui bam doc CANH ngoai cua o vien, kich thuoc theo be rong o luoi.")]
     [SerializeField] private bool dungBuiCachCu = false;
 
+    [Tooltip("[2026-09-25] Bat = moi tho dung 1 goc lo dat (3-4 nguoi). Tat = cum 3 nguoi nhu cu.")]
+    [SerializeField] private bool dungGocLoDat = true;
+
+    [Tooltip("[2026-09-25] Bat = bui + khoi + da / la / go bay tung quanh tho luc don lo.")]
+    [SerializeField] private bool hieuUngDonDat = true;
+
     /// <summary>Ep MOI site tao ra sau day dung cach cu — duong lui mot dong khi crew tro chung.</summary>
     public static bool EpDungCachCu = false;
 
@@ -269,14 +275,44 @@ public class LandClearingSite : MonoBehaviour
         if (cfg == null) return false;
         if (!TryLotBounds(out Bounds bounds)) return false;
 
-        _crew = BuilderWorkerCrew.AttachTo(gameObject, bounds, cfg, SoThoChoLo());
+        // [2026-09-25] Sep: tho dung 3-4 GOC lo dat cho can doi (truoc day dung cum 3 nguoi giua lo).
+        Vector3[] goc = dungGocLoDat ? TinhGocLo(bounds) : null;
+        _crew = goc != null ? BuilderWorkerCrew.AttachToTaiDiem(gameObject, bounds, cfg, goc)
+                            : BuilderWorkerCrew.AttachTo(gameObject, bounds, cfg, SoThoChoLo());
         if (_crew == null) return false;   // cfg.enabled = false => AttachTo tra null ngay
+        if (goc != null && hieuUngDonDat) gameObject.AddComponent<LandClearDebrisFX>().Init(goc, bounds);
 
         // BAT BUOC. AttachTo de moi tho o mode Hidden (SpriteRenderer tat) va cho
         // "nguoi dieu phoi" ra lenh. Khong goi dong nay = 3 tho VO HINH — dung loi
         // ma SpawnWorkers() ban cu dang mac phai.
         _crew.SetHammering();
         return true;
+    }
+
+    /// <summary>
+    /// 4 goc hinh thoi cua lo (trai / phai / tren / duoi) lay tu TAM o ngoai cung, lui vao tam 12%.
+    /// Lo nho (duoi 4 o) chi 3 goc (bo goc tren - nam sau lung, bi che). null neu khong co o.
+    /// </summary>
+    private Vector3[] TinhGocLo(Bounds b)
+    {
+        bool co = false;
+        Vector3 trai = Vector3.zero, phai = Vector3.zero, tren = Vector3.zero, duoi = Vector3.zero;
+        int so = 0;
+        foreach (var c in _region.AllCells())
+        {
+            Vector3 p = IsoGrid.CellCenterToWorld(c);
+            so++;
+            if (!co) { trai = phai = tren = duoi = p; co = true; continue; }
+            if (p.x < trai.x) trai = p;
+            if (p.x > phai.x) phai = p;
+            if (p.y > tren.y) tren = p;
+            if (p.y < duoi.y) duoi = p;
+        }
+        if (!co) return null;
+        Vector3 tam = b.center; tam.z = trai.z;
+        System.Func<Vector3, Vector3> vao = v => Vector3.Lerp(v, tam, 0.12f);
+        if (so < 4) return new[] { vao(trai), vao(phai), vao(duoi) };
+        return new[] { vao(trai), vao(phai), vao(tren), vao(duoi) };
     }
 
     // ── Duong CU: giu nguyen de con cho lui ve ───────────────────────────

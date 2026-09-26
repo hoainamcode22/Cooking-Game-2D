@@ -1,4 +1,4 @@
-﻿# Thư mục rác và cache của Unity
+# Thư mục rác và cache của Unity
 /[Ll]ibrary/
 /[Tt]emp/
 /[Oo]bj/
@@ -6,6 +6,8 @@
 /[Bb]uilds/
 /[Ll]ogs/
 /[Mm]emoryCaptures/
+/[Pp]rofilerCaptures/
+*.data
 /[Uu]ser[Ss]ettings/
 
 # File nhị phân, build APK, ZIP

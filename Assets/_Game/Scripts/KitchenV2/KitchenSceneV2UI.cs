@@ -399,7 +399,7 @@ namespace KitchenUIv2
         {
             _ovenBusy = false;
             SetText(_txtOvenState, Loc.TF("XONG! {0}đ", score));
-            SetText(_txtPrepToast, Loc.T("Chạm bàn trình bày để cất vào kho →"));
+            BaoNoi(Loc.T("Chạm bàn trình bày để cất vào kho →"));
             // [2026-09-25] Mon vua nau nam tren dia = coi nhu da co -> banner LUOT sang mon khach ke tiep
             TouristVisitorManager.MonDangTrenDia = d != null ? d.dishId : null;
             if (isActiveAndEnabled) { if (_coLuotDon != null) StopCoroutine(_coLuotDon); _coLuotDon = StartCoroutine(CoLuotSangKhachSau(0.9f)); }
@@ -463,7 +463,14 @@ namespace KitchenUIv2
             TouristVisitorManager.MonDangTrenDia = null;
             if (_imgOvenFill != null) _imgOvenFill.fillAmount = 0f;
             SetText(_txtOvenState, Loc.TF("HỎNG... {0}đ", score));
-            SetText(_txtPrepToast, Loc.T("Chọn lại nguyên liệu rồi nấu tiếp nhé!"));
+            BaoNoi(Loc.T("Chọn lại nguyên liệu rồi nấu tiếp nhé!"));
+        }
+
+        /// <summary>[2026-09-25] Thong bao ngan: KHONG ghi vao Txt_PrepToast (de len banner don khach) -> chu bay len roi mo dan.</summary>
+        private void BaoNoi(string s)
+        {
+            SetText(_txtPrepToast, "");
+            if (!string.IsNullOrEmpty(s)) LockedHintFX.Show(s, new Vector2(Screen.width * 0.5f, Screen.height * 0.45f));
         }
 
         private void HandleDishCollected(DishData d)
@@ -2803,15 +2810,13 @@ namespace KitchenUIv2
             var eco = FarmEconomyManager.Instance;
             if (eco == null || !eco.SpendGold(cost))
             {
-                if (_txtPrepToast != null)
-                { _txtPrepToast.text = Loc.TF("Không đủ {0:N0} vàng để mở ô!", cost); _txtPrepToast.color = new Color(0.85f, 0.25f, 0.18f); }
+                BaoNoi(Loc.TF("Không đủ {0:N0} vàng để mở ô!", cost));
                 return;
             }
             PlayerPrefs.SetInt(SlotKeyPrefix + tab, GetExtraSlots(tab) + slotPackSize);
             PlayerPrefs.SetInt(SlotKeyPrefix + "bought_" + tab, bought + 1);
             PlayerPrefs.Save();
-            if (_txtPrepToast != null)
-            { _txtPrepToast.text = Loc.TF("Đã mở thêm {0} ô khay!", slotPackSize); _txtPrepToast.color = new Color(0.30f, 0.55f, 0.15f); }
+            BaoNoi(Loc.TF("Đã mở thêm {0} ô khay!", slotPackSize));
             RebuildSlotShop(tab);
         }
 

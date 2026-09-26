@@ -1409,19 +1409,34 @@ public class TouristVisitorManager : MonoBehaviour
         var o = new List<int>();
         for (int id = ib; id != -1; id = tuDau[id]) o.Add(id);
         o.Reverse();
-        // Gop cac o thang hang -> chi giu diem re
-        var kq = new List<Vector3> { new Vector3(tu.x, tu.y, tu.z) };
-        int hx = 0, hy = 0;
-        for (int i = 1; i < o.Count; i++)
+        // [2026-09-25 v2] KEO THANG duong (string pulling): bo cac bac thang zic-zac theo o luoi.
+        // Doan i->j chi duoc di thang neu moi diem mau tren doan deu la o di duoc va khong "dat" hon
+        // o dat nhat tren doan duong goc (khong cat ngang hoa / nuoc). Truoc day khach di zic-zac -> chay qua chay lai.
+        Vector3 TamO(int id) => Tam(id / h + x0, id % h + y0);
+        float buocMau = Mathf.Max(1f, Vector3.Distance(Tam(a.x, a.y), Tam(a.x + 1, a.y)) * 0.3f);
+        bool ThangDuoc(int i0, int j0)
         {
-            int px = o[i - 1] / h, py = o[i - 1] % h, qx = o[i] / h, qy = o[i] % h;
-            int sx = qx - px, sy = qy - py;
-            if (i > 1 && (sx != hx || sy != hy))
+            float cmax = 1f;
+            for (int k = i0; k <= j0; k++) cmax = Mathf.Max(cmax, ChiPhi(o[k] / h + x0, o[k] % h + y0));
+            Vector3 p0 = TamO(o[i0]), p1 = TamO(o[j0]);
+            int n = Mathf.CeilToInt(Vector3.Distance(p0, p1) / buocMau);
+            for (int s = 1; s < n; s++)
             {
-                Vector3 re = Tam(px + x0, py + y0);
-                kq.Add(new Vector3(re.x, re.y, tu.z));
+                Vector3Int c = goc.WorldToCell(Vector3.Lerp(p0, p1, s / (float)n));
+                if (c.x < x0 || c.y < y0 || c.x >= x0 + w || c.y >= y0 + h) return false;
+                float cc = ChiPhi(c.x, c.y);
+                if (cc < 0f || cc > cmax) return false;
             }
-            hx = sx; hy = sy;
+            return true;
+        }
+        var kq = new List<Vector3> { new Vector3(tu.x, tu.y, tu.z) };
+        int iKeo = 0;
+        while (iKeo < o.Count - 1)
+        {
+            int j = o.Count - 1;
+            while (j > iKeo + 1 && !ThangDuoc(iKeo, j)) j--;
+            if (j < o.Count - 1) { Vector3 re = TamO(o[j]); kq.Add(new Vector3(re.x, re.y, tu.z)); }
+            iKeo = j;
         }
         kq.Add(new Vector3(den.x, den.y, tu.z));
         Debug.Log($"[TouristVisitor] Duong dat: {kq.Count} diem, {o.Count} o (luoi '{goc.name}').");

@@ -10499,6 +10499,7 @@ GameObject:
   - component: {fileID: 173053181}
   - component: {fileID: 173053183}
   - component: {fileID: 173053182}
+  - component: {fileID: 173053184}
   m_Layer: 0
   m_Name: Fx_LuaNho_1
   m_TagString: Untagged
@@ -10522,7 +10523,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 29, y: -9.7}
+  m_AnchoredPosition: {x: 29.4, y: -6.4}
   m_SizeDelta: {x: 44, y: 37.84}
   m_Pivot: {x: 0.5, y: 0.2}
 --- !u!114 &173053182
@@ -10545,7 +10546,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -10563,6 +10564,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 173053180}
   m_CullTransparentMesh: 1
+--- !u!114 &173053184
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 173053180}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd52f23f1809d4e4ba54840b7970026d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIFireFrames
+  frames:
+  - {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
+  - {fileID: 21300000, guid: 076c5fd5b5f80ce4a9c39725caeafd6d, type: 3}
+  - {fileID: 21300000, guid: c45a365df9a312940bf7062ba1080760, type: 3}
+  - {fileID: 21300000, guid: 7a69bc40e6360c5429640c0549a70930, type: 3}
+  - {fileID: 21300000, guid: 2842743aaca476a49900a5aa8e5e28a5, type: 3}
+  - {fileID: 21300000, guid: 59a63f79f070d6847bf6357a79488a60, type: 3}
+  fps: 10
+  spriteCu: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  giuTiLeCu: 1
 --- !u!1 &173213237
 GameObject:
   m_ObjectHideFlags: 0
@@ -44110,7 +44133,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -54077,6 +54100,7 @@ GameObject:
   - component: {fileID: 966506753}
   - component: {fileID: 966506755}
   - component: {fileID: 966506754}
+  - component: {fileID: 966506756}
   m_Layer: 0
   m_Name: Fx_LuaNho_2
   m_TagString: Untagged
@@ -54100,7 +54124,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 10.3, y: -16.1}
+  m_AnchoredPosition: {x: 25.9, y: 5.9}
   m_SizeDelta: {x: 62, y: 53.32}
   m_Pivot: {x: 0.5, y: 0.2}
 --- !u!114 &966506754
@@ -54123,7 +54147,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -54141,6 +54165,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 966506752}
   m_CullTransparentMesh: 1
+--- !u!114 &966506756
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 966506752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd52f23f1809d4e4ba54840b7970026d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIFireFrames
+  frames:
+  - {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
+  - {fileID: 21300000, guid: 076c5fd5b5f80ce4a9c39725caeafd6d, type: 3}
+  - {fileID: 21300000, guid: c45a365df9a312940bf7062ba1080760, type: 3}
+  - {fileID: 21300000, guid: 7a69bc40e6360c5429640c0549a70930, type: 3}
+  - {fileID: 21300000, guid: 2842743aaca476a49900a5aa8e5e28a5, type: 3}
+  - {fileID: 21300000, guid: 59a63f79f070d6847bf6357a79488a60, type: 3}
+  fps: 10
+  spriteCu: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  giuTiLeCu: 1
 --- !u!1 &968954282
 GameObject:
   m_ObjectHideFlags: 0
@@ -60673,6 +60719,7 @@ GameObject:
   - component: {fileID: 1088125440}
   - component: {fileID: 1088125442}
   - component: {fileID: 1088125441}
+  - component: {fileID: 1088125443}
   m_Layer: 0
   m_Name: Fx_LuaNho_0
   m_TagString: Untagged
@@ -60696,7 +60743,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -56.6, y: -13.6}
+  m_AnchoredPosition: {x: -55.8, y: -7.3}
   m_SizeDelta: {x: 50, y: 43}
   m_Pivot: {x: 0.5, y: 0.2}
 --- !u!114 &1088125441
@@ -60719,7 +60766,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -60737,6 +60784,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1088125439}
   m_CullTransparentMesh: 1
+--- !u!114 &1088125443
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1088125439}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd52f23f1809d4e4ba54840b7970026d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIFireFrames
+  frames:
+  - {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
+  - {fileID: 21300000, guid: 076c5fd5b5f80ce4a9c39725caeafd6d, type: 3}
+  - {fileID: 21300000, guid: c45a365df9a312940bf7062ba1080760, type: 3}
+  - {fileID: 21300000, guid: 7a69bc40e6360c5429640c0549a70930, type: 3}
+  - {fileID: 21300000, guid: 2842743aaca476a49900a5aa8e5e28a5, type: 3}
+  - {fileID: 21300000, guid: 59a63f79f070d6847bf6357a79488a60, type: 3}
+  fps: 10
+  spriteCu: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  giuTiLeCu: 1
 --- !u!1 &1091089686
 GameObject:
   m_ObjectHideFlags: 0
@@ -74660,7 +74729,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -14, y: -23}
+  m_AnchoredPosition: {x: -22.5, y: -12.9}
   m_SizeDelta: {x: 220, y: 189.2}
   m_Pivot: {x: 0.5, y: 0.2}
 --- !u!114 &1374476781
@@ -76430,7 +76499,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -85844,6 +85913,7 @@ GameObject:
   - component: {fileID: 1562968530}
   - component: {fileID: 1562968532}
   - component: {fileID: 1562968531}
+  - component: {fileID: 1562968533}
   m_Layer: 0
   m_Name: Oven_Fire
   m_TagString: Untagged
@@ -85890,7 +85960,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -85908,6 +85978,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1562968529}
   m_CullTransparentMesh: 1
+--- !u!114 &1562968533
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1562968529}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd52f23f1809d4e4ba54840b7970026d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIFireFrames
+  frames:
+  - {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
+  - {fileID: 21300000, guid: 076c5fd5b5f80ce4a9c39725caeafd6d, type: 3}
+  - {fileID: 21300000, guid: c45a365df9a312940bf7062ba1080760, type: 3}
+  - {fileID: 21300000, guid: 7a69bc40e6360c5429640c0549a70930, type: 3}
+  - {fileID: 21300000, guid: 2842743aaca476a49900a5aa8e5e28a5, type: 3}
+  - {fileID: 21300000, guid: 59a63f79f070d6847bf6357a79488a60, type: 3}
+  fps: 10
+  spriteCu: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  giuTiLeCu: 1
 --- !u!1 &1565315390
 GameObject:
   m_ObjectHideFlags: 0
@@ -87927,8 +88019,8 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 1600, y: 900}
-  m_ScreenMatchMode: 0
+  m_ReferenceResolution: {x: 1800, y: 800}
+  m_ScreenMatchMode: 1
   m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
   m_FallbackScreenDPI: 96
@@ -103376,6 +103468,7 @@ GameObject:
   - component: {fileID: 1843119203}
   - component: {fileID: 1843119205}
   - component: {fileID: 1843119204}
+  - component: {fileID: 1843119206}
   m_Layer: 0
   m_Name: Fx_ComboFire
   m_TagString: Untagged
@@ -103399,7 +103492,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -15.3, y: -4.5}
+  m_AnchoredPosition: {x: -21.2, y: -0.3}
   m_SizeDelta: {x: 100, y: 86}
   m_Pivot: {x: 0.5, y: 0.2}
 --- !u!114 &1843119204
@@ -103422,7 +103515,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -103440,6 +103533,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1843119202}
   m_CullTransparentMesh: 1
+--- !u!114 &1843119206
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1843119202}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd52f23f1809d4e4ba54840b7970026d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIFireFrames
+  frames:
+  - {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
+  - {fileID: 21300000, guid: 076c5fd5b5f80ce4a9c39725caeafd6d, type: 3}
+  - {fileID: 21300000, guid: c45a365df9a312940bf7062ba1080760, type: 3}
+  - {fileID: 21300000, guid: 7a69bc40e6360c5429640c0549a70930, type: 3}
+  - {fileID: 21300000, guid: 2842743aaca476a49900a5aa8e5e28a5, type: 3}
+  - {fileID: 21300000, guid: 59a63f79f070d6847bf6357a79488a60, type: 3}
+  fps: 10
+  spriteCu: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  giuTiLeCu: 1
 --- !u!1 &1844216399
 GameObject:
   m_ObjectHideFlags: 0
@@ -115581,7 +115696,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -120904,7 +121019,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  m_Sprite: {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
   m_Type: 0
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -121494,6 +121609,7 @@ GameObject:
   - component: {fileID: 6133763246053536088}
   - component: {fileID: 6822522020362052848}
   - component: {fileID: 1522955670118163470}
+  - component: {fileID: 6822522020362052849}
   m_Layer: 0
   m_Name: Oven_Fire
   m_TagString: Untagged
@@ -128231,6 +128347,28 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1961018939774184368}
   m_CullTransparentMesh: 1
+--- !u!114 &6822522020362052849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1961018939774184368}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd52f23f1809d4e4ba54840b7970026d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIFireFrames
+  frames:
+  - {fileID: 21300000, guid: a99d3beb12fc6bf46ac25b8f94b98c5a, type: 3}
+  - {fileID: 21300000, guid: 076c5fd5b5f80ce4a9c39725caeafd6d, type: 3}
+  - {fileID: 21300000, guid: c45a365df9a312940bf7062ba1080760, type: 3}
+  - {fileID: 21300000, guid: 7a69bc40e6360c5429640c0549a70930, type: 3}
+  - {fileID: 21300000, guid: 2842743aaca476a49900a5aa8e5e28a5, type: 3}
+  - {fileID: 21300000, guid: 59a63f79f070d6847bf6357a79488a60, type: 3}
+  fps: 10
+  spriteCu: {fileID: 21300000, guid: 16ef78bf086f4cb4a1a764b2d2e29551, type: 3}
+  giuTiLeCu: 1
 --- !u!1 &6887841408820310532
 GameObject:
   m_ObjectHideFlags: 0

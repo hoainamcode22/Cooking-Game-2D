@@ -136,6 +136,10 @@ public class PopupManager : MonoBehaviour
     private static bool _daTraCuuFishing;
     private static System.Reflection.PropertyInfo _propFishingEntry;
     private static System.Reflection.PropertyInfo _propFishCounter;
+    // [PERF 2026-09-26] Profiler: PM.E_Fishing 6.3ms/frame. AnyOpen cua popup cau ca goi FindFirstObjectByType(Include)
+    // MOI FRAME khi scene Farm khong co popup cau ca. Nay doc 'Instance' truoc: null = popup chua tung bat = chac chan dang dong.
+    private static System.Reflection.PropertyInfo _propFishingEntryInst;
+    private static System.Reflection.PropertyInfo _propFishCounterInst;
 
     private static void TraCuuFishingMotLan()
     {
@@ -145,9 +149,9 @@ public class PopupManager : MonoBehaviour
         try
         {
             var t1 = System.Type.GetType("FarmGame.Fishing.FishingEntryPopupUI, Assembly-CSharp");
-            if (t1 != null) _propFishingEntry = t1.GetProperty("AnyOpen", co);
+            if (t1 != null) { _propFishingEntry = t1.GetProperty("AnyOpen", co); _propFishingEntryInst = t1.GetProperty("Instance", co); }
             var t2 = System.Type.GetType("FarmGame.Fishing.FishCounterPopupUI, Assembly-CSharp");
-            if (t2 != null) _propFishCounter = t2.GetProperty("AnyOpen", co);
+            if (t2 != null) { _propFishCounter = t2.GetProperty("AnyOpen", co); _propFishCounterInst = t2.GetProperty("Instance", co); }
         }
         catch { /* khong co fishing => khong co popup fishing */ }
     }
@@ -158,11 +162,18 @@ public class PopupManager : MonoBehaviour
         if (_propFishingEntry == null && _propFishCounter == null) return false;
         try
         {
-            if (_propFishingEntry != null && (bool)_propFishingEntry.GetValue(null)) return true;
-            if (_propFishCounter  != null && (bool)_propFishCounter.GetValue(null))  return true;
+            if (_propFishingEntry != null && CoInstance(_propFishingEntryInst) && (bool)_propFishingEntry.GetValue(null)) return true;
+            if (_propFishCounter  != null && CoInstance(_propFishCounterInst)  && (bool)_propFishCounter.GetValue(null))  return true;
         }
         catch { }
         return false;
+    }
+
+    private static bool CoInstance(System.Reflection.PropertyInfo p)
+    {
+        if (p == null) return true;                          // khong doc duoc Instance -> hanh vi cu
+        var o = p.GetValue(null) as UnityEngine.Object;
+        return o != null;
     }
 
     /// <summary>Trả tên popup đang mở (chuỗi rỗng nếu không có). Dùng để ghi log chẩn đoán.</summary>

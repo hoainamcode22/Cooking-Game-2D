@@ -39,6 +39,7 @@ public class FarmerCrew : MonoBehaviour
         public SpriteRenderer dat;
         public SpriteRenderer[] cay = new SpriteRenderer[0];
         public float henLamMoiCay;
+        public Sprite spDo; public float tamXLocal;          // [2026-09-26] tam x phan co hinh cua sprite chau (local)
     }
     private readonly Dictionary<PlotController, ThongTinO> _o = new Dictionary<PlotController, ThongTinO>(64);
 
@@ -210,8 +211,63 @@ public class FarmerCrew : MonoBehaviour
         var t = Instance != null ? Instance.LayO(o) : null;
         if (t == null || t.dat == null) return false;
         b = t.dat.bounds;
-        dat = new Vector3(b.center.x, b.max.y - b.size.x * 0.24f, b.center.z);
+        // [2026-09-26] Sprite chau co le trong suot LECH 1 ben -> b.center.x khong phai giua mieng chau -> ong tuoi ra mep.
+        // Tam x lay tu luoi sprite (chi phan co hinh), do 1 lan / sprite.
+        float cx = b.center.x;
+        var sp = t.dat.sprite;
+        if (sp != null)
+        {
+            if (t.spDo != sp)
+            {
+                t.spDo = sp;
+                var v = sp.vertices;
+                float mn = float.MaxValue, mx = float.MinValue;
+                for (int i = 0; i < v.Length; i++) { if (v[i].x < mn) mn = v[i].x; if (v[i].x > mx) mx = v[i].x; }
+                t.tamXLocal = v.Length > 0 ? (mn + mx) * 0.5f : sp.bounds.center.x;
+            }
+            float lx = t.dat.flipX ? -t.tamXLocal : t.tamXLocal;
+            cx = t.dat.transform.TransformPoint(new Vector3(lx, 0f, 0f)).x;
+        }
+        dat = new Vector3(cx, b.max.y - b.size.x * 0.24f, b.center.z);
         return true;
+    }
+
+    /// <summary>Dinh cao nhat cua cay / hoa dang hien trong o (world y). Khong co -> float.MinValue.</summary>
+    public static float DinhCay(PlotController o)
+    {
+        var t = Instance != null ? Instance.LayO(o) : null;
+        float y = float.MinValue;
+        if (t == null) return y;
+        for (int i = 0; i < t.cay.Length; i++)
+        {
+            var cr = t.cay[i];
+            if (cr == null || !cr.enabled || cr.sprite == null || !cr.gameObject.activeInHierarchy) continue;
+            if (cr.bounds.max.y > y) y = cr.bounds.max.y;
+        }
+        return y;
+    }
+
+    /// <summary>[2026-09-25] Hop than ong (world) co de len chau / hoa nao (tru chau boQua) khong.</summary>
+    public static bool ThanDeChau(Rect than, PlotController boQua)
+    {
+        if (Instance == null) return false;
+        var me = Instance;
+        for (int i = 0; i < me._tatCaO.Count; i++)
+        {
+            var o = me._tatCaO[i];
+            if (o == null || o == boQua || !o.isActiveAndEnabled || o.Category != PlotCategory.Flower) continue;
+            var t = me.LayO(o);
+            if (t == null || t.dat == null) continue;
+            var b = t.dat.bounds;
+            for (int k = 0; k < t.cay.Length; k++)
+            {
+                var cr = t.cay[k];
+                if (cr != null && cr.enabled && cr.sprite != null && cr.gameObject.activeInHierarchy) b.Encapsulate(cr.bounds);
+            }
+            float co = b.extents.x * 0.15f;                           // mep trong suot cua sprite
+            if (than.xMin < b.max.x - co && than.xMax > b.min.x + co && than.yMin < b.max.y - co && than.yMax > b.min.y + co) return true;
+        }
+        return false;
     }
 
     /// <summary>Vat can khi di bo: moi chau hoa = 1 elip chan chau (x, y, rx, ry).</summary>
@@ -241,7 +297,7 @@ public class FarmerCrew : MonoBehaviour
     /// Ong dung canh 1 chau: chan cao hon day chau -> dung SAU chau (bi chau + cay che),
     /// thap hon -> dung TRUOC. Tra false neu khong co chau nao sat ben.
     /// </summary>
-    public static bool TinhSortChau(Vector3 p, out int layer, out int order, out float z)
+    public static bool TinhSortChau(Vector3 p, out int layer, out int order, out float z, bool luonTruoc = false)
     {
         layer = 0; order = 0; z = 0f;
         if (Instance == null) return false;
@@ -271,8 +327,27 @@ public class FarmerCrew : MonoBehaviour
             if (cr.sortingOrder > hi) hi = cr.sortingOrder;
         }
         layer = chon.dat.sortingLayerID;
-        order = p.y > bb.min.y + bb.size.y * 0.2f ? lo - 1 : hi + 1;
+        order = !luonTruoc && p.y > bb.min.y + bb.size.y * 0.2f ? lo - 1 : hi + 1;   // luonTruoc: ong chau luon ve tren chau
         z = chon.dat.transform.position.z;
+        return true;
+    }
+
+    /// <summary>[v4] Sort ngay TRUOC 1 chau (cao hon chau va moi cay trong chau 1 bac).</summary>
+    public static bool TinhSortTruocChau(PlotController o, out int layer, out int order, out float z, bool sauChau = false)
+    {
+        layer = 0; order = 0; z = 0f;
+        var t = Instance != null ? Instance.LayO(o) : null;
+        if (t == null || t.dat == null) return false;
+        int hi = t.dat.sortingOrder, lo = t.dat.sortingOrder;
+        for (int i = 0; i < t.cay.Length; i++)
+        {
+            if (t.cay[i] == null) continue;
+            if (t.cay[i].sortingOrder > hi) hi = t.cay[i].sortingOrder;
+            if (t.cay[i].sortingOrder < lo) lo = t.cay[i].sortingOrder;
+        }
+        layer = t.dat.sortingLayerID;
+        order = sauChau ? lo - 1 : hi + 1;
+        z = t.dat.transform.position.z;
         return true;
     }
 

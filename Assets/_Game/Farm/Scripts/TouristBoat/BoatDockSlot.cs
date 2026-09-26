@@ -4,6 +4,7 @@ using System.Collections;
 using System.Globalization;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 /// <summary>
 /// UI trạng thái KHÓA của một bến tàu du lịch — gắn trên Dock_01..03 (BOAT-001).
@@ -148,6 +149,65 @@ public class BoatDockSlot : MonoBehaviour
     /// </summary>
     private void OnMouseUpAsButton()
     {
+        if (_frameDaXuLy == Time.frameCount) return;
+        _frameDaXuLy = Time.frameCount;
+        XuLyBamBang();
+    }
+
+    // ── [2026-09-25] Bat cham bang Input System (collider nam tren lockRoot con -> OnMouse* cua
+    //    script nay khong bao gio chay, bam bang khong hien chu). Tu kiem trung hinh bang go. ──
+    private int _frameDaXuLy = -1;
+    private bool _nhanBang;
+    private Vector2 _viTriNhanBang;
+
+    private void BatChamBang()
+    {
+        if (lockRoot == null || !lockRoot.activeInHierarchy) { _nhanBang = false; return; }
+        Vector2 p;
+        bool nhan = false, nha = false;
+        if (Mouse.current != null)
+        {
+            if (Mouse.current.leftButton.wasPressedThisFrame) { nhan = true; p = Mouse.current.position.ReadValue(); _viTriNhanBang = p; }
+            if (Mouse.current.leftButton.wasReleasedThisFrame) nha = true;
+        }
+        if (Touchscreen.current != null)
+        {
+            var t = Touchscreen.current.primaryTouch;
+            if (t.press.wasPressedThisFrame) { nhan = true; _viTriNhanBang = t.position.ReadValue(); }
+            if (t.press.wasReleasedThisFrame) nha = true;
+        }
+        if (nhan)
+            _nhanBang = TrungBang(_viTriNhanBang) && !WorldClickGuard.ConTroTrenPopup(_viTriNhanBang);
+        if (!nha || !_nhanBang) return;
+        _nhanBang = false;
+        Vector2 q = Mouse.current != null ? Mouse.current.position.ReadValue()
+                  : (Touchscreen.current != null ? Touchscreen.current.primaryTouch.position.ReadValue() : _viTriNhanBang);
+        if ((q - _viTriNhanBang).sqrMagnitude > 18f * 18f) return;             // dang keo ban do
+        if (TutorialManager.Instance != null && TutorialManager.Instance.DangChayTutorial) return;
+        if (_frameDaXuLy == Time.frameCount) return;
+        _frameDaXuLy = Time.frameCount;
+        XuLyBamBang();
+    }
+
+    private bool TrungBang(Vector2 man)
+    {
+        var cam = Camera.main;
+        if (cam == null) return false;
+        Vector3 w3 = cam.ScreenToWorldPoint(man);
+        Vector2 w = new Vector2(w3.x, w3.y);
+        foreach (var c in lockRoot.GetComponentsInChildren<Collider2D>())
+            if (c != null && c.enabled && c.OverlapPoint(w)) return true;
+        var sr = lockRoot.GetComponent<SpriteRenderer>();
+        if (sr != null && sr.enabled)
+        {
+            var b = sr.bounds;
+            return w.x >= b.min.x && w.x <= b.max.x && w.y >= b.min.y && w.y <= b.max.y;
+        }
+        return false;
+    }
+
+    private void XuLyBamBang()
+    {
         // [FIX 2026-09-04] Chặn click xuyên khi đang ở Bếp (scene phụ load additive) / đang mở popup.
         if (FarmInputLock.BlockWorldClickBySceneOrPopup) return;
         _dangNhan = false;
@@ -225,6 +285,7 @@ public class BoatDockSlot : MonoBehaviour
 
     private void Update()
     {
+        BatChamBang();
         // Hiệu ứng lơ lửng nhấp nhô nhẹ nhàng trên sóng nước (subtle water bobbing)
         if (lockRoot != null && lockRoot.activeSelf)
         {

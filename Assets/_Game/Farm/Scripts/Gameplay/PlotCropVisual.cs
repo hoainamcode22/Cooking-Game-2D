@@ -210,9 +210,54 @@ public class PlotCropVisual : MonoBehaviour
         }
         if (isFlower)
         {
+            // [2026-09-25] Hoa trong CHAU: moi loai hoa cung 1 chieu cao so voi chau (khong con hoa to hoa nho)
+            if (TinhScaleHoaTrongChau(stage, out Vector3 sChau)) return sChau;
             targetScale *= 0.72f;
         }
         return targetScale;
+    }
+
+    [Header("[2026-09-25] Hoa trong chau")]
+    [Tooltip("Hoa luc no to nhat cao bang bao nhieu lan chieu cao chau (moi loai hoa bang nhau).")]
+    [SerializeField] private float hoaCaoSoVoiChau = 0.9f;
+    private static readonly System.Collections.Generic.Dictionary<Sprite, float> _caoThatSprite =
+        new System.Collections.Generic.Dictionary<Sprite, float>();
+
+    /// <summary>Chieu cao PHAN CO HINH cua sprite (bo le trong suot), don vi local cua sprite.</summary>
+    private static float CaoThat(Sprite sp)
+    {
+        if (sp == null) return 0f;
+        if (_caoThatSprite.TryGetValue(sp, out float h)) return h;
+        h = sp.bounds.size.y;
+        var v = sp.vertices;
+        if (v != null && v.Length > 2)
+        {
+            float lo = float.MaxValue, hi = float.MinValue;
+            for (int i = 0; i < v.Length; i++) { if (v[i].y < lo) lo = v[i].y; if (v[i].y > hi) hi = v[i].y; }
+            if (hi > lo) h = hi - lo;
+        }
+        _caoThatSprite[sp] = h;
+        return h;
+    }
+
+    private bool TinhScaleHoaTrongChau(int stage, out Vector3 scale)
+    {
+        scale = Vector3.one;
+        var plot = GetComponentInParent<PlotController>();
+        if (plot == null || plot.Category != PlotCategory.Flower || currentCrop == null) return false;
+        var chau = FindGround();
+        if (chau == null || chau.sprite == null) return false;
+        int cuoi = Mathf.Max(0, currentCrop.StageCount - 1);
+        float hSprite = CaoThat(currentCrop.GetSprite(cuoi));
+        float lossy = Mathf.Abs(transform.lossyScale.y);
+        float hChau = chau.bounds.size.y;
+        if (hSprite < 1e-4f || lossy < 1e-6f || hChau < 1e-3f) return false;
+        float sCuoi = hChau * Mathf.Max(0.1f, hoaCaoSoVoiChau) / (hSprite * lossy);
+        float yCuoi = Mathf.Abs(currentCrop.GetScale(cuoi).y);
+        float tiLe = yCuoi > 1e-5f ? Mathf.Clamp01(Mathf.Abs(currentCrop.GetScale(stage).y) / yCuoi) : 1f;
+        float s = sCuoi * Mathf.Max(0.15f, tiLe);
+        scale = new Vector3(s, s, 1f);
+        return true;
     }
 
     public void PlayWiggleAnimation()

@@ -239,12 +239,30 @@ namespace ExportTrainUIPackage
                     rt.offsetMin = Vector2.zero;
                     rt.offsetMax = Vector2.zero;
                     var tmp = xGo.AddComponent<TMPro.TextMeshProUGUI>();
-                    tmp.text = "✕";
+                    tmp.text = "X";
                     tmp.fontSize = UIStandardSprites.CloseGlyphSize > 0 ? UIStandardSprites.CloseGlyphSize : 26f;
                     tmp.fontStyle = TMPro.FontStyles.Bold;
                     tmp.color = Color.white;
                     tmp.alignment = TMPro.TextAlignmentOptions.Center;
                     tmp.raycastTarget = false;
+                }
+                // [2026-09-26] Giong nut dong popup lon: nut do tron (Sliced, khong giu ti le), chu "X" trang dam, om vao goc.
+                //  Font game khong co ky tu "✕" nen truoc day hien thanh o vuong trang.
+                var xCu = btnClose.transform.Find("Txt_X");
+                if (xCu != null)
+                {
+                    var t = xCu.GetComponent<TMPro.TMP_Text>();
+                    if (t != null) { t.text = "X"; t.fontSize = 28f; t.fontStyle = TMPro.FontStyles.Bold; t.color = Color.white; t.alignment = TMPro.TextAlignmentOptions.Center; }
+                }
+                var anhDong = btnClose.GetComponent<Image>();
+                if (anhDong != null) anhDong.preserveAspect = false;
+                var rtDong = btnClose.transform as RectTransform;
+                if (rtDong != null)
+                {
+                    rtDong.anchorMin = rtDong.anchorMax = new Vector2(1f, 1f);
+                    rtDong.pivot = new Vector2(0.5f, 0.5f);
+                    rtDong.sizeDelta = new Vector2(64f, 64f);
+                    rtDong.anchoredPosition = new Vector2(-6f, -6f);
                 }
             }
 

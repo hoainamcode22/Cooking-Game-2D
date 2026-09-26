@@ -1,0 +1,193 @@
+    // =====================================================================
+    //  4. CHUONG V4 (2026-09-26): art ve lai dung goc iso 2:1 + animation
+    //   - Pen_01 bo / Pen_04 bo sua (hinh rieng) / Pen_03 ga: doi hinh BarnSprite sang AnimalPens_v4/_Opt
+    //     (da xoa nen trang giua song rao), vung di moi, doi icon shop.
+    //   - Lop dong (con cua BarnSprite, ten PV4_*): co kho lay theo gio, nuoc mang gon song, trung lac trong o.
+    //   - Chuong heo: art v4 do duoc 30.8 do (lech > 1.5) nen GIU hinh v3, chi them BUN BAN TUNG khi heo
+    //     buoc vao vung bun (SpriteLoop2D che do "phat khi con vat di qua").
+    //   - Chuong ga: doi vi tri chong chong len dinh mai moi.
+    //   Moi frame xuat san dung khung + pivot = diem day hang rao -> dat localPosition 0 la khop hinh.
+    // =====================================================================
+    private const string OPT4 = "Assets/Art/Buildings/AnimalPens_v4/_Opt/";
+
+    private class Lop4
+    {
+        public string key; public int n; public Vector2 pivot; public float fps;
+        public bool phat; public Vector2 tamPx, banKinhPx;
+    }
+    private class Loai4
+    {
+        public string prefab, anh, icon; public float ppu; public Vector2 day;
+        public Vector2[] san; public Lop4[] lop; public bool doiHinh = true;
+        public bool coVane; public Vector2 vanePx;
+    }
+
+    private static readonly Loai4[] DS4 =
+    {
+        new Loai4 { prefab = "Pen_01.prefab", anh = "cow_barn_base_opt", icon = "icon_cow_barn", ppu = 990f / 4.13f, day = new Vector2(512, 937),
+            san = new[] { new Vector2(430, 570), new Vector2(690, 565), new Vector2(840, 680), new Vector2(512, 820), new Vector2(200, 690) },
+            lop = new[] {
+                new Lop4 { key = "cow_hay",   n = 6, pivot = new Vector2(1.4842f, -2.2765f), fps = 5f },
+                new Lop4 { key = "cow_water", n = 8, pivot = new Vector2(2.6063f, -3.5529f), fps = 6f } } },
+        new Loai4 { prefab = "Pen_04.prefab", anh = "dairy_barn_base_opt", icon = "icon_dairy_barn", ppu = 948f / 4.13f, day = new Vector2(512, 937),
+            san = new[] { new Vector2(410, 615), new Vector2(680, 600), new Vector2(840, 690), new Vector2(512, 825), new Vector2(210, 700) },
+            lop = new[] {
+                new Lop4 { key = "dairy_hay",   n = 6, pivot = new Vector2(1.6375f, -2.2313f), fps = 5f },
+                new Lop4 { key = "dairy_water", n = 8, pivot = new Vector2(2.48f, -3.1889f), fps = 6f } } },
+        new Loai4 { prefab = "Pen_03.prefab", anh = "chicken_coop_base_opt", icon = "icon_chicken_coop", ppu = 949f / 4.13f, day = new Vector2(512, 938),
+            san = new[] { new Vector2(340, 610), new Vector2(640, 660), new Vector2(800, 725), new Vector2(512, 830), new Vector2(200, 700) },
+            lop = new[] { new Lop4 { key = "chicken_egg", n = 6, pivot = new Vector2(-0.65f, -4.8667f), fps = 4f } },
+            coVane = true, vanePx = new Vector2(619, 206) },
+        // Heo: giu hinh v3 (ppu / day cua v3), chi them bun ban tung
+        new Loai4 { prefab = "Pen_02.prefab", doiHinh = false, ppu = 239.5f, day = new Vector2(512, 949),
+            lop = new[] { new Lop4 { key = "pig_splash", n = 8, pivot = new Vector2(-0.592f, -1.5792f), fps = 12f,
+                phat = true, tamPx = new Vector2(785, 535), banKinhPx = new Vector2(95, 45) } } },
+    };
+
+    [MenuItem(GOC + "4. Lap chuong v4 (goc 2:1 + animation)", false, 4)]
+    public static void LapV4()
+    {
+        if (Application.isPlaying) { Bao("Thoat Play mode truoc."); return; }
+        var thieu = new List<string>();
+        foreach (var l in DS4)
+        {
+            if (!File.Exists(PEN + l.prefab)) thieu.Add(l.prefab);
+            if (l.doiHinh) { if (!File.Exists(OPT4 + l.anh + ".png")) thieu.Add(l.anh); if (!File.Exists(OPT4 + l.icon + ".png")) thieu.Add(l.icon); }
+            foreach (var p in l.lop) for (int i = 0; i < p.n; i++) if (!File.Exists(OPT4 + p.key + "_" + i + ".png")) thieu.Add(p.key + "_" + i);
+        }
+        if (thieu.Count > 0) { Bao("Thieu file:\n" + string.Join("\n", thieu.Take(20))); return; }
+
+        var shop = new Dictionary<string, List<PlaceableItemData>>();
+        var prefabs = DS4.ToDictionary(d => d.prefab, d => AssetDatabase.LoadAssetAtPath<GameObject>(PEN + d.prefab));
+        foreach (var g in AssetDatabase.FindAssets("t:PlaceableItemData"))
+        {
+            var it = AssetDatabase.LoadAssetAtPath<PlaceableItemData>(AssetDatabase.GUIDToAssetPath(g));
+            if (it == null || it.prefabToBuild == null) continue;
+            foreach (var kv in prefabs)
+                if (kv.Value != null && it.prefabToBuild == kv.Value)
+                {
+                    if (!shop.ContainsKey(kv.Key)) shop[kv.Key] = new List<PlaceableItemData>();
+                    shop[kv.Key].Add(it);
+                }
+        }
+        if (!EditorUtility.DisplayDialog("Chuong v4",
+                "Lap chuong v4 (goc iso 2:1 khop luoi):\n- Bo, Bo sua (hinh rieng), Ga: hinh moi + vung di + icon shop\n" +
+                "- Animation: co kho, nuoc mang, trung trong o\n- Heo: giu hinh cu (art v4 lech goc), them bun ban tung khi heo di qua\n\n" +
+                "Backup truoc. Tra lai: muc 2.", "Lap", "Huy")) return;
+
+        // ---- Backup (cung dinh dang v3 -> muc 2 tra lai duoc)
+        string goc = Path.GetDirectoryName(Application.dataPath);
+        string bk = Path.Combine(goc, "_Backup_ChuongV3_" + System.DateTime.Now.ToString("yyyyMMdd_HHmmss") + "_v4");
+        Directory.CreateDirectory(bk);
+        var manifest = new List<string>();
+        int stt = 0;
+        void Luu(string asset)
+        {
+            string ten = (stt++).ToString("00") + "_" + Path.GetFileName(asset);
+            File.Copy(Path.Combine(goc, asset), Path.Combine(bk, ten), true);
+            manifest.Add(ten + "|" + asset);
+        }
+        foreach (var d in DS4) Luu(PEN + d.prefab);
+        foreach (var ds in shop.Values) foreach (var it in ds) Luu(AssetDatabase.GetAssetPath(it));
+        File.WriteAllLines(Path.Combine(bk, "manifest.txt"), manifest);
+
+        // ---- Import
+        foreach (var l in DS4)
+        {
+            if (l.doiHinh)
+            {
+                Nhap(OPT4 + l.anh + ".png", l.ppu, new Vector2(l.day.x / 1024f, (1024f - l.day.y) / 1024f), 1024);
+                Nhap(OPT4 + l.icon + ".png", 100f, new Vector2(0.5f, 0.5f), 512);
+            }
+            foreach (var p in l.lop) for (int i = 0; i < p.n; i++) Nhap(OPT4 + p.key + "_" + i + ".png", l.ppu, p.pivot, 256);
+        }
+
+        var baoCao = new List<string>();
+        foreach (var d in DS4)
+        {
+            string path = PEN + d.prefab;
+            var root = PrefabUtility.LoadPrefabContents(path);
+            try
+            {
+                var barnT = root.transform.Find("BarnSprite");
+                var barn = barnT != null ? barnT.GetComponent<SpriteRenderer>() : null;
+                if (barn == null) { baoCao.Add(d.prefab + ": KHONG thay BarnSprite, bo qua"); continue; }
+                string ghi = d.prefab + ":";
+                if (d.doiHinh)
+                {
+                    var sp = AssetDatabase.LoadAssetAtPath<Sprite>(OPT4 + d.anh + ".png");
+                    if (sp == null) { baoCao.Add(d.prefab + ": khong nap duoc " + d.anh); continue; }
+                    barn.sprite = sp;
+                    ghi += " hinh v4";
+
+                    Transform chuSan = root.transform;
+                    foreach (var mb in root.GetComponentsInChildren<MonoBehaviour>(true))
+                        if (mb != null && mb.GetType().Name == "HappyHarvestAnimalVisualSpawner") { chuSan = mb.transform; break; }
+                    var vung = chuSan.GetComponent<PenWalkArea>();
+                    if (vung == null) vung = chuSan.gameObject.AddComponent<PenWalkArea>();
+                    vung.diem = d.san.Select(px =>
+                    {
+                        Vector3 w = barnT.TransformPoint(Px4(px, d));
+                        Vector3 lc = chuSan.InverseTransformPoint(w);
+                        return new Vector2(lc.x, lc.y);
+                    }).ToArray();
+                    ghi += ", san " + vung.diem.Length + " diem";
+                }
+
+                // chong chong: bo tren moi chuong tru ga; ga doi len dinh mai moi
+                var vane = barnT.Find("PV_Weathervane");
+                if (vane != null)
+                {
+                    if (d.coVane) { vane.localPosition = Px4(d.vanePx, d); ghi += ", chong chong len dinh mai"; }
+                    else { Object.DestroyImmediate(vane.gameObject, true); ghi += ", bo chong chong"; }
+                }
+
+                // lop dong: xoa ban cu (chay lai khong nhan doi)
+                for (int c = barnT.childCount - 1; c >= 0; c--)
+                    if (barnT.GetChild(c).name.StartsWith("PV4_")) Object.DestroyImmediate(barnT.GetChild(c).gameObject, true);
+                foreach (var p in d.lop)
+                {
+                    var frames = new Sprite[p.n];
+                    for (int i = 0; i < p.n; i++) frames[i] = AssetDatabase.LoadAssetAtPath<Sprite>(OPT4 + p.key + "_" + i + ".png");
+                    var go = new GameObject("PV4_" + p.key);
+                    go.transform.SetParent(barnT, false);
+                    go.transform.localPosition = Vector3.zero;
+                    go.transform.localScale = Vector3.one;
+                    var sr = go.AddComponent<SpriteRenderer>();
+                    sr.sprite = frames[0];
+                    sr.sortingLayerID = barn.sortingLayerID;
+                    sr.sortingOrder = barn.sortingOrder + 1;
+                    sr.sharedMaterial = barn.sharedMaterial;
+                    var loop = go.AddComponent<SpriteLoop2D>();
+                    loop.frames = frames; loop.fps = p.fps;
+                    if (p.phat)
+                    {
+                        loop.chiPhatKhiConVatDiQua = true;
+                        loop.batDauNgauNhien = false;
+                        loop.tamVung = Px4(p.tamPx, d);
+                        loop.banKinhVung = new Vector2(p.banKinhPx.x / d.ppu, p.banKinhPx.y / d.ppu);
+                        sr.sprite = null;                          // an san, chi hien khi phat
+                    }
+                    ghi += ", " + p.key;
+                }
+                PrefabUtility.SaveAsPrefabAsset(root, path);
+                baoCao.Add(ghi);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(root); }
+        }
+
+        int soIcon = 0;
+        foreach (var d in DS4)
+        {
+            if (!d.doiHinh || !shop.ContainsKey(d.prefab)) continue;
+            var ic = AssetDatabase.LoadAssetAtPath<Sprite>(OPT4 + d.icon + ".png");
+            if (ic == null) continue;
+            foreach (var it in shop[d.prefab]) { it.itemIcon = ic; EditorUtility.SetDirty(it); soIcon++; }
+        }
+        AssetDatabase.SaveAssets();
+        Debug.Log("[ChuongV4] " + string.Join(" | ", baoCao) + $" | icon shop: {soIcon}. Backup: {Path.GetFileName(bk)}");
+        Bao($"Xong chuong v4.\n{string.Join("\n", baoCao)}\nIcon shop doi: {soIcon}\n\nCtrl+S roi Play xem.\nHong: muc 2 (tra lai). Backup: {Path.GetFileName(bk)}");
+    }
+
+    private static Vector3 Px4(Vector2 px, Loai4 l) => new Vector3((px.x - l.day.x) / l.ppu, (l.day.y - px.y) / l.ppu, 0f);
+

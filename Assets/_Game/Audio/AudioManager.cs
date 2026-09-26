@@ -73,6 +73,8 @@ public class AudioManager : MonoBehaviour
     [SerializeField] private AudioClip characterGreet;  // character_greet.wav
 
     [Header("Volume")]
+    // [2026-09-25] Sep bao nhac nen nho nhe lai: thanh truot Settings 0..1 -> am luong that 0..0.55
+    private const float NHAC_NEN_TOI_DA = 0.55f;
     [Range(0f, 1f)][SerializeField] private float bgmVolume = 0.35f;     // Nhạc nền rõ ràng, êm dịu
     [Range(0f, 1f)][SerializeField] private float uiVolume = 0.70f;      // Tiếng nút bấm nảy giòn
     [Range(0f, 1f)][SerializeField] private float fxVolume = 0.45f;      // [10/09] 0.85 -> 0.45: Sep bao SFX on qua. Nhan them SfxGain (mac dinh 0.85) => ~0.38
@@ -112,7 +114,7 @@ public class AudioManager : MonoBehaviour
         // [FIX 2026-09-06] Ap AM LUONG DA LUU ngay tu dau. Truoc day Awake dung gia tri mac
         // dinh trong Inspector nen thiet lap cua nguoi choi bi bo qua moi lan mo game.
         bgmVolume = Mathf.Clamp01(PlayerPrefs.GetFloat("SETTING_BGM_VOLUME", bgmVolume));
-        SetupSource(bgmSource, true, PlayerPrefs.GetInt("SETTING_BGM_ENABLED", 1) == 1 ? bgmVolume : 0f);
+        SetupSource(bgmSource, true, PlayerPrefs.GetInt("SETTING_BGM_ENABLED", 1) == 1 ? bgmVolume * NHAC_NEN_TOI_DA : 0f);
         SetupSource(uiSource, false, 1f);   // giam am o buoc phat (SfxGain)
         SetupSource(fxSource, false, 1f);
         SetupSource(waterAmbienceSource, true, 0f);
@@ -455,7 +457,7 @@ public class AudioManager : MonoBehaviour
             return;
 
         bgmSource.clip = bgmMain;
-        bgmSource.volume = IsBGMEnabled ? bgmVolume : 0f;   // [FIX 10/09] truoc day scene load lam nhac tu bat lai du da TAT
+        bgmSource.volume = IsBGMEnabled ? bgmVolume * NHAC_NEN_TOI_DA : 0f;   // [FIX 10/09] truoc day scene load lam nhac tu bat lai du da TAT
         bgmSource.spatialBlend = 0f;
         bgmSource.Play();
     }
@@ -472,7 +474,7 @@ public class AudioManager : MonoBehaviour
 
         bgmSource.clip = clip;
         bgmSource.loop = true;
-        bgmSource.volume = IsBGMEnabled ? bgmVolume : 0f;   // ton trong nut TAT NHAC
+        bgmSource.volume = IsBGMEnabled ? bgmVolume * NHAC_NEN_TOI_DA : 0f;   // ton trong nut TAT NHAC
         bgmSource.spatialBlend = 0f;
         bgmSource.Play();
     }
@@ -832,14 +834,14 @@ public class AudioManager : MonoBehaviour
     {
         if (bgmSource == null) yield break;
 
-        float originalVolume = bgmVolume;
+        float originalVolume = bgmVolume * NHAC_NEN_TOI_DA;
         bgmSource.volume = originalVolume * multiplier;
 
         yield return new WaitForSecondsRealtime(duration);
 
         // [FIX 10/09] Truoc day thieu dong nay: sau tieng coi tau/thuyen/fanfare dau tien,
         // BGM bi ket o 30-60% MAI MAI, lam moi SFX sau do nghe to len tuong ung.
-        bgmSource.volume = IsBGMEnabled ? bgmVolume : 0f;
+        bgmSource.volume = IsBGMEnabled ? bgmVolume * NHAC_NEN_TOI_DA : 0f;
 
         duckRoutine = null;
     }
@@ -854,7 +856,7 @@ public class AudioManager : MonoBehaviour
             bgmVolume = Mathf.Clamp01(value);
             PlayerPrefs.SetFloat("SETTING_BGM_VOLUME", bgmVolume);
             if (bgmSource != null)
-                bgmSource.volume = IsBGMEnabled ? bgmVolume : 0f;
+                bgmSource.volume = IsBGMEnabled ? bgmVolume * NHAC_NEN_TOI_DA : 0f;
         }
     }
 
@@ -1071,7 +1073,7 @@ public class AudioManager : MonoBehaviour
         {
             PlayerPrefs.SetInt("SETTING_BGM_ENABLED", value ? 1 : 0);
             if (bgmSource != null)
-                bgmSource.volume = value ? BGMVolume : 0f;
+                bgmSource.volume = value ? BGMVolume * NHAC_NEN_TOI_DA : 0f;
         }
     }
 

@@ -131,12 +131,12 @@ public class SeedDragItem : MonoBehaviour,
         if (txtSoLuong != null)
         {
             txtSoLuong.text  = "x" + stock;
-            txtSoLuong.color = stock > 0 ? Color.white : Color.red;
+            txtSoLuong.color = stock > 0 ? SeedPanelSkin.MauSoCon : SeedPanelSkin.MauSoHet;   // [2026-09-25] doc ro tren the be
         }
 
         // Không thay alpha trong lúc đang kéo Plant
         if (dragMode != DragMode.Plant && canvasGroup != null)
-            canvasGroup.alpha = stock > 0 ? 1f : 0.4f;
+            canvasGroup.alpha = stock > 0 ? 1f : 0.8f;   // [2026-09-25] het hat van sang ro, chi so luong do
     }
 
     // ── Drag Handlers ────────────────────────────────────────────────────

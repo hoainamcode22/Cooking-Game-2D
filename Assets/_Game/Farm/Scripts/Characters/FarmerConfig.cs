@@ -47,10 +47,21 @@ public class FarmerConfig : ScriptableObject
     public float chuKyQuet = 1.5f;
 
     [Header("Ong chau hoa")]
-    [Tooltip("Ong tuoi chau cao gap bao nhieu lan chau hoa (it nhat bang ong ruong).")]
-    public float tiLeCaoSoVoiChau = 1.5f;
-    [Tooltip("Dong nuoc trong sheet water roi xuong cach chan ong bao nhieu px (o 500). Dung de dung sao cho nuoc roi DUNG GIUA chau.")]
-    public float tuoiXaPx = 105f;
+    // [2026-09-25 v3] Do tu sheet water (o 500, nguoi cao ~307 px): voi binh cach chan ~96 px (31% chieu cao),
+    // dong nuoc cat mieng chau o ~120 px phia truoc chan. Muon nuoc roi VAO chau thi voi phai cao hon mieng chau
+    // -> ong phai cao >= 3.2 lan THAN chau (ngoai doi: chau hoa ngang goi nguoi).
+    [Tooltip("Ong tuoi chau cao gap bao nhieu lan THAN CHAU (khong tinh hoa). 1.9 = ngang chau + hoa.")]
+    public float tiLeCaoSoVoiChau = 1.9f;
+    [Tooltip("[NEO TUOI] Diem dong nuoc roi xuong trong sheet water, tinh tu CHAN ong (px o 500, x ve phia binh, y len tren). " +
+             "Do tu frame 5-6: vung nuoc x 289..406, cham dat y 458 -> tam ~ (105, 14). Ong dung sao cho diem nay TRUNG mat dat trong chau.")]
+    public Vector2 diemNuocPx = new Vector2(124f, 14f);   // [2026-09-26] do lai tren sheet tuoi: vung nuoc bat toe tu x 96..152 px -> tam 124
+    [Tooltip("Luc tuoi: tat = ong ve SAU chau (chau che chan ong, nuoc roi vao mieng chau - dung phoi canh vi chan ong ngang mat dat trong chau). " +
+             "Bat = ong ve TRUOC chau (chan ong de len than chau).")]
+    public bool veTruocChauKhiTuoi = false;
+    [Tooltip("Tam chau cach chan ong bao nhieu px (o 500 cua sheet water). Nuoc cat mieng chau o ~120 px.")]
+    public float tamChauPxNuoc = 140f;
+    [Tooltip("Chan ong lech so voi day chau (x chieu cao chau). Am = dung phia truoc day chau. Ong chau LUON ve TREN chau.")]
+    public float dungSauDayChau = -0.06f;
 
     [Header("Vet mo khi di (giong co giao hang nhung cham, diu)")]
     public bool vetMo = true;

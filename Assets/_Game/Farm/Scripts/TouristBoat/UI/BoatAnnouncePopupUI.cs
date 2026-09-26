@@ -88,6 +88,9 @@ public class BoatAnnouncePopupUI : MonoBehaviour
     [Tooltip("Alpha đích của dim nền (0 = tắt dim theo dạng toast notification).")]
     [SerializeField] private float dimAlpha = 0f;
 
+    [Tooltip("[2026-09-25] Sep chot tat thong bao 'Docking in X min' (de len o kho, nhin roi). Bo tick = bat lai.")]
+    [SerializeField] private bool tatThongBaoTau = true;
+
     [Tooltip("Tên scene bếp (cùng default với FarmUIManager.cookingSceneName) — đang ở bếp thì hoãn popup tới khi về farm (GDD §5 edge 6).")]
     [SerializeField] private string cookingSceneName = "SampleScene";
 
@@ -149,6 +152,7 @@ public class BoatAnnouncePopupUI : MonoBehaviour
     /// </summary>
     private IEnumerator BootRoutine()
     {
+        if (tatThongBaoTau) yield break;                    // Sep chot tat: khong nghe lich tau, khong bao gio hien
         float waited = 0f;
         while (BoatDockManager.Instance == null && waited < 8f)
         {

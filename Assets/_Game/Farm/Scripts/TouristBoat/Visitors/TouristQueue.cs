@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 /// <summary>
 /// HÀNG CHỜ khách du lịch trước nhà hàng cooking (GDD BOAT-002 §3.3).
@@ -99,11 +100,90 @@ public class TouristQueue : MonoBehaviour
         for (int i = duongDenAnchor.Length - 1; i >= 0; i--)
             if ((duongDenAnchor[i] - ds[ds.Count - 1]).sqrMagnitude > 4f) ds.Add(duongDenAnchor[i]);
         if (ds.Count >= 2) _duong = ds.ToArray();
+        // [2026-09-25 v2] Hang cho THANG 1 hang nhu truoc: huong = huong duong dat ngay truoc anchor
+        // (lui lai ~1.5 slot theo duong), khong be cong theo tung khuc duong nua.
+        _huongThang = Vector3.zero;
+        if (_duong != null)
+        {
+            float can = _spacing * 1.5f;
+            Vector3 q = _duong[_duong.Length - 1];
+            for (int i = 1; i < _duong.Length; i++)
+            {
+                float d = Vector3.Distance(_duong[i - 1], _duong[i]);
+                if (can <= d) { q = Vector3.Lerp(_duong[i - 1], _duong[i], d > 0.001f ? can / d : 0f); break; }
+                can -= d;
+            }
+            Vector3 h = q - transform.position; h.z = 0f;
+            if (h.sqrMagnitude > 1f) _huongThang = h.normalized;
+            // [2026-09-25 v3] Sep: dung HANG NGANG (canh nhau theo chieu ngang man hinh) -> khong chong len nhau, de cham.
+            if (xepTheoDuongDat && _huongThang.sqrMagnitude > 0.5f)
+            {
+                // [2026-09-25 v4] Sep: "xep hang ngang theo duong dirt" -> 1 hang THANG doc theo truc iso cua duong
+                // (duong dat chay cheo 2:1), chon truc iso gan huong duong nhat. Cach nhau >= cachNgangToiThieu.
+                float sx = _huongThang.x < 0f ? -1f : 1f, sy = _huongThang.y < 0f ? -1f : 1f;
+                // [2026-09-26 v5] Sep: huong tiep can (duong khach di toi) cat NGANG con duong -> hang dung cheo qua duong.
+                // Nay do thang tren Tilemap_IsoDirt: thu 4 huong truc iso, chon nhanh duong dat DAI nhat tai anchor.
+                // Khong do duoc -> lay truc iso VUONG GOC voi huong tiep can (doc theo con duong).
+                Vector3 theoDuong;
+                if (HuongTheoDuongDat(new Vector3(sx * 0.894f, sy * 0.447f, 0f), out theoDuong)) _huongThang = theoDuong;
+                else _huongThang = new Vector3(sx * 0.894f, -sy * 0.447f, 0f);
+            }
+            else if (xepHangNgang && _huongThang.sqrMagnitude > 0.5f)
+                _huongThang = new Vector3(_huongThang.x < 0f ? -1f : 1f, 0f, 0f);
+        }
     }
+    private Vector3 _huongThang;
+
+    private static Tilemap _dirt;
+
+    /// <summary>Huong (truc iso) doc theo con duong dat tai anchor: nhanh co nhieu o dat LIEN TIEP nhat.</summary>
+    private bool HuongTheoDuongDat(Vector3 hTiepCan, out Vector3 kq)
+    {
+        kq = Vector3.zero;
+        if (_dirt == null)
+        {
+            foreach (var t in FindObjectsByType<Tilemap>(FindObjectsSortMode.None))
+                if (t != null && t.name == "Tilemap_IsoDirt") { _dirt = t; break; }
+        }
+        if (_dirt == null) return false;
+        Vector3 p = transform.position;
+        Vector3Int c = _dirt.WorldToCell(p);
+        Vector3 o = _dirt.CellToWorld(c);
+        Vector3 a = _dirt.CellToWorld(c + Vector3Int.right) - o, b = _dirt.CellToWorld(c + Vector3Int.up) - o;
+        a.z = 0f; b.z = 0f;
+        if (a.sqrMagnitude < 1e-4f || b.sqrMagnitude < 1e-4f) return false;
+        a.Normalize(); b.Normalize();
+        Vector3[] ds = { a, -a, b, -b };
+        float buoc = Mathf.Max(_spacing, cachNgangToiThieu * 1.15f) * 0.5f;
+        Vector3 tc = hTiepCan.normalized;
+        int tot = -1; float diemTot = -1f, soTot = 0;
+        for (int i = 0; i < ds.Length; i++)
+        {
+            int so = 0;
+            for (int k = 1; k <= 10; k++)
+            {
+                if (_dirt.HasTile(_dirt.WorldToCell(p + ds[i] * buoc * k))) so++;
+                else if (k > 1) break;
+            }
+            float diem = so + (1f - Mathf.Abs(Vector3.Dot(ds[i], tc))) * 0.5f;   // hoa: uu tien vuong goc huong tiep can
+            if (diem > diemTot) { diemTot = diem; tot = i; soTot = so; }
+        }
+        if (tot < 0 || soTot < 2) return false;
+        kq = ds[tot];
+        return true;
+    }
+    [Tooltip("[2026-09-25] BAT: khach dung canh nhau theo HANG NGANG man hinh (de cham). TAT: xep doc theo duong dat.")]
+    [SerializeField] private bool xepHangNgang = true;
+    [Tooltip("[2026-09-25 v4] BAT (uu tien): 1 hang thang doc theo duong dat (truc iso cheo). Tat = dung xepHangNgang.")]
+    [SerializeField] private bool xepTheoDuongDat = true;
+    [Tooltip("Khoang cach toi thieu giua 2 khach khi xep hang ngang (world).")]
+    [SerializeField] private float cachNgangToiThieu = 110f;
 
     /// <summary>Toạ độ world của slot thứ <paramref name="slotIndex"/> (0 = anchor).</summary>
     public Vector3 GetSlotPosition(int slotIndex)
     {
+        if (_huongThang.sqrMagnitude > 0.5f)
+            return transform.position + _huongThang * (((xepHangNgang || xepTheoDuongDat) ? Mathf.Max(_spacing, cachNgangToiThieu * 1.15f) : _spacing) * Mathf.Max(0, slotIndex));
         if (_duong != null)
         {
             float can = _spacing * Mathf.Max(0, slotIndex);

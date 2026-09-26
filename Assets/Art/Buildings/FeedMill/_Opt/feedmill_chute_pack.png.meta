@@ -1,0 +1,378 @@
+fileFormatVersion: 2
+guid: ae465ecf493a0944ab02ffb8565e0ceb
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: 7923379773236239756
+    second: feedmill_chute_pack_0
+  - first:
+      213: 1516388895853494829
+    second: feedmill_chute_pack_1
+  - first:
+      213: 4950820308314472539
+    second: feedmill_chute_pack_2
+  - first:
+      213: 3006527041048566640
+    second: feedmill_chute_pack_3
+  - first:
+      213: 847101180763076573
+    second: feedmill_chute_pack_4
+  - first:
+      213: 2395489488634455183
+    second: feedmill_chute_pack_5
+  - first:
+      213: 4115693327927022962
+    second: feedmill_chute_pack_6
+  - first:
+      213: 1622043291593782594
+    second: feedmill_chute_pack_7
+  - first:
+      213: 4327225591112383200
+    second: feedmill_chute_pack_8
+  - first:
+      213: 8307241915951790216
+    second: feedmill_chute_pack_9
+  - first:
+      213: -3674161611257886853
+    second: feedmill_chute_pack_10
+  - first:
+      213: 2971037068503662569
+    second: feedmill_chute_pack_11
+  - first:
+      213: -1709845449212741109
+    second: feedmill_chute_pack_12
+  - first:
+      213: 632244992504027429
+    second: feedmill_chute_pack_13
+  - first:
+      213: 8096909510557838975
+    second: feedmill_chute_pack_14
+  - first:
+      213: 5619049493622493011
+    second: feedmill_chute_pack_15
+  - first:
+      213: -3542306825786362183
+    second: feedmill_chute_pack_16
+  - first:
+      213: 6596690615264065856
+    second: feedmill_chute_pack_17
+  - first:
+      213: -5611489990246778275
+    second: feedmill_chute_pack_18
+  - first:
+      213: -6274590066928588355
+    second: feedmill_chute_pack_19
+  - first:
+      213: -7817935032568381817
+    second: feedmill_chute_pack_20
+  - first:
+      213: -4710148174708897625
+    second: feedmill_chute_pack_21
+  - first:
+      213: 890691323260815691
+    second: feedmill_chute_pack_22
+  - first:
+      213: 554910151154174860
+    second: feedmill_chute_pack_23
+  - first:
+      213: 4559268796930482781
+    second: feedmill_chute_pack_24
+  - first:
+      213: 7618389354903783697
+    second: feedmill_chute_pack_25
+  - first:
+      213: 8496655834268323848
+    second: feedmill_chute_pack_26
+  - first:
+      213: 7329962857111769028
+    second: feedmill_chute_pack_27
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 200
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 2
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: feedmill_chute_pack_0
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 133
+        width: 101
+        height: 133
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c8dd2448cef75fd60800000000000000
+      internalID: 7923379773236239756
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: feedmill_chute_pack_1
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 133
+        width: 101
+        height: 133
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d22c1b6aaab4b0510800000000000000
+      internalID: 1516388895853494829
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: feedmill_chute_pack_2
+      rect:
+        serializedVersion: 2
+        x: 202
+        y: 133
+        width: 101
+        height: 133
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b50cfdff6d8d4b440800000000000000
+      internalID: 4950820308314472539
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: feedmill_chute_pack_3
+      rect:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 101
+        height: 133
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07b5e412a6459b920800000000000000
+      internalID: 3006527041048566640
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: feedmill_chute_pack_4
+      rect:
+        serializedVersion: 2
+        x: 101
+        y: 0
+        width: 101
+        height: 133
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: dd77238290281cb00800000000000000
+      internalID: 847101180763076573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: feedmill_chute_pack_5
+      rect:
+        serializedVersion: 2
+        x: 202
+        y: 0
+        width: 101
+        height: 133
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f842d318ffc7e3120800000000000000
+      internalID: 2395489488634455183
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: f2fdca51d20896d4b822064d756cc840
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      feedmill_chute_pack_0: 7923379773236239756
+      feedmill_chute_pack_1: 1516388895853494829
+      feedmill_chute_pack_2: 4950820308314472539
+      feedmill_chute_pack_3: 3006527041048566640
+      feedmill_chute_pack_4: 847101180763076573
+      feedmill_chute_pack_5: 2395489488634455183
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

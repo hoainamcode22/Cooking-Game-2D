@@ -1,0 +1,1300 @@
+fileFormatVersion: 2
+guid: 93e98a3b7f25323489b0de5cc2dad72b
+TextureImporter:
+  internalIDToNameTable:
+  - first:
+      213: -2170651178439498982
+    second: pig_mud_bubbles_sheet_0
+  - first:
+      213: -2538819173256943518
+    second: pig_mud_bubbles_sheet_1
+  - first:
+      213: -795757766646097547
+    second: pig_mud_bubbles_sheet_2
+  - first:
+      213: -6645614655078588146
+    second: pig_mud_bubbles_sheet_3
+  - first:
+      213: -4105175331312888360
+    second: pig_mud_bubbles_sheet_4
+  - first:
+      213: -3127719681735447371
+    second: pig_mud_bubbles_sheet_5
+  - first:
+      213: 3976040127855224836
+    second: pig_mud_bubbles_sheet_6
+  - first:
+      213: 1013789504640049043
+    second: pig_mud_bubbles_sheet_7
+  - first:
+      213: 1601779953403077297
+    second: pig_mud_bubbles_sheet_8
+  - first:
+      213: 8664042047057694783
+    second: pig_mud_bubbles_sheet_9
+  - first:
+      213: -8438265312257815465
+    second: pig_mud_bubbles_sheet_10
+  - first:
+      213: 5611739846011134728
+    second: pig_mud_bubbles_sheet_11
+  - first:
+      213: -7037548686986569929
+    second: pig_mud_bubbles_sheet_12
+  - first:
+      213: 8796383799724037564
+    second: pig_mud_bubbles_sheet_13
+  - first:
+      213: -4395891630380649806
+    second: pig_mud_bubbles_sheet_14
+  - first:
+      213: -3191991578098307169
+    second: pig_mud_bubbles_sheet_15
+  - first:
+      213: 7516913419176043515
+    second: pig_mud_bubbles_sheet_16
+  - first:
+      213: -2481086969123955787
+    second: pig_mud_bubbles_sheet_17
+  - first:
+      213: -8637201212195092116
+    second: pig_mud_bubbles_sheet_18
+  - first:
+      213: -1935646668925838180
+    second: pig_mud_bubbles_sheet_19
+  - first:
+      213: 741430122277106971
+    second: pig_mud_bubbles_sheet_20
+  - first:
+      213: -308505664285618522
+    second: pig_mud_bubbles_sheet_21
+  - first:
+      213: 675853327835614968
+    second: pig_mud_bubbles_sheet_22
+  - first:
+      213: 4817196579459820789
+    second: pig_mud_bubbles_sheet_23
+  - first:
+      213: 7152863017322232005
+    second: pig_mud_bubbles_sheet_24
+  - first:
+      213: 1268822791475583283
+    second: pig_mud_bubbles_sheet_25
+  - first:
+      213: 2515527470227268561
+    second: pig_mud_bubbles_sheet_26
+  - first:
+      213: 5499921716784187610
+    second: pig_mud_bubbles_sheet_27
+  - first:
+      213: -2036854409350966024
+    second: pig_mud_bubbles_sheet_28
+  - first:
+      213: -1332364497749626782
+    second: pig_mud_bubbles_sheet_29
+  - first:
+      213: -8016220170841872023
+    second: pig_mud_bubbles_sheet_30
+  - first:
+      213: 2132887899882889784
+    second: pig_mud_bubbles_sheet_31
+  - first:
+      213: 2956012104411971828
+    second: pig_mud_bubbles_sheet_32
+  - first:
+      213: 7177055738994246053
+    second: pig_mud_bubbles_sheet_33
+  - first:
+      213: -6370274482183881594
+    second: pig_mud_bubbles_sheet_34
+  - first:
+      213: -460155034917354928
+    second: pig_mud_bubbles_sheet_35
+  - first:
+      213: 5266245855800807313
+    second: pig_mud_bubbles_sheet_36
+  - first:
+      213: -1452949164916233930
+    second: pig_mud_bubbles_sheet_37
+  - first:
+      213: 7493556622031645362
+    second: pig_mud_bubbles_sheet_38
+  - first:
+      213: 3385547616302124273
+    second: pig_mud_bubbles_sheet_39
+  - first:
+      213: 2625427769115120650
+    second: pig_mud_bubbles_sheet_40
+  - first:
+      213: 6488448745816868242
+    second: pig_mud_bubbles_sheet_41
+  - first:
+      213: -1728882649185410205
+    second: pig_mud_bubbles_sheet_42
+  - first:
+      213: -3998162593488417680
+    second: pig_mud_bubbles_sheet_43
+  externalObjects: {}
+  serializedVersion: 13
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+    flipGreenChannel: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignoreMipmapLimit: 0
+  grayScaleToAlpha: 0
+  generateCubemap: 6
+  cubemapConvolution: 0
+  seamlessCubemap: 0
+  textureFormat: 1
+  maxTextureSize: 2048
+  textureSettings:
+    serializedVersion: 2
+    filterMode: 1
+    aniso: 1
+    mipBias: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
+  nPOTScale: 0
+  lightmap: 0
+  compressionQuality: 50
+  spriteMode: 2
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 1
+  spriteTessellationDetail: -1
+  textureType: 8
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSizeSet: 0
+  compressionQualitySet: 0
+  textureFormatSet: 0
+  ignorePngGamma: 0
+  applyGammaDecoding: 0
+  swizzle: 50462976
+  cookieLightType: 0
+  platformSettings:
+  - serializedVersion: 4
+    buildTarget: DefaultTexturePlatform
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Standalone
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: Android
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: WebGL
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  - serializedVersion: 4
+    buildTarget: iOS
+    maxTextureSize: 2048
+    resizeAlgorithm: 0
+    textureFormat: -1
+    textureCompression: 1
+    compressionQuality: 50
+    crunchedCompression: 0
+    allowsAlphaSplitting: 0
+    overridden: 0
+    ignorePlatformSupport: 0
+    androidETC2FallbackOverride: 0
+    forceMaximumCompressionQuality_BC6H_BC7: 0
+  spriteSheet:
+    serializedVersion: 2
+    sprites:
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_0
+      rect:
+        serializedVersion: 2
+        x: 64
+        y: 552
+        width: 53
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a13a4d9f04c40e1e0800000000000000
+      internalID: -2170651178439498982
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_1
+      rect:
+        serializedVersion: 2
+        x: 116
+        y: 555
+        width: 19
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 268a115c96d44ccd0800000000000000
+      internalID: -2538819173256943518
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_2
+      rect:
+        serializedVersion: 2
+        x: 181
+        y: 549
+        width: 77
+        height: 48
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5791dcff686e4f4f0800000000000000
+      internalID: -795757766646097547
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_3
+      rect:
+        serializedVersion: 2
+        x: 298
+        y: 549
+        width: 86
+        height: 45
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e0129e16ea806c3a0800000000000000
+      internalID: -6645614655078588146
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_4
+      rect:
+        serializedVersion: 2
+        x: 453
+        y: 549
+        width: 99
+        height: 70
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8d5166c49cc7707c0800000000000000
+      internalID: -4105175331312888360
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_5
+      rect:
+        serializedVersion: 2
+        x: 568
+        y: 549
+        width: 114
+        height: 85
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bc2925558b1894d0800000000000000
+      internalID: -3127719681735447371
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_6
+      rect:
+        serializedVersion: 2
+        x: 693
+        y: 550
+        width: 111
+        height: 81
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 40862892e6bbd2730800000000000000
+      internalID: 3976040127855224836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_7
+      rect:
+        serializedVersion: 2
+        x: 842
+        y: 555
+        width: 125
+        height: 131
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 39fd615ee24b11e00800000000000000
+      internalID: 1013789504640049043
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_8
+      rect:
+        serializedVersion: 2
+        x: 973
+        y: 555
+        width: 123
+        height: 127
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1b2aeea816aaa3610800000000000000
+      internalID: 1601779953403077297
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_9
+      rect:
+        serializedVersion: 2
+        x: 1098
+        y: 556
+        width: 131
+        height: 135
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f301ce5765cdc3870800000000000000
+      internalID: 8664042047057694783
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_10
+      rect:
+        serializedVersion: 2
+        x: 524
+        y: 258
+        width: 20
+        height: 33
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 75c4f56086245ea80800000000000000
+      internalID: -8438265312257815465
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_11
+      rect:
+        serializedVersion: 2
+        x: 563
+        y: 274
+        width: 30
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 803266d58a7e0ed40800000000000000
+      internalID: 5611739846011134728
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_12
+      rect:
+        serializedVersion: 2
+        x: 601
+        y: 278
+        width: 18
+        height: 28
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 73716a671ca955e90800000000000000
+      internalID: -7037548686986569929
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_13
+      rect:
+        serializedVersion: 2
+        x: 654
+        y: 290
+        width: 20
+        height: 27
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: cb55d8ae578031a70800000000000000
+      internalID: 8796383799724037564
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_14
+      rect:
+        serializedVersion: 2
+        x: 674
+        y: 267
+        width: 41
+        height: 35
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2b27c044ad7aef2c0800000000000000
+      internalID: -4395891630380649806
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_15
+      rect:
+        serializedVersion: 2
+        x: 762
+        y: 254
+        width: 22
+        height: 39
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: f9f69655294c3b3d0800000000000000
+      internalID: -3191991578098307169
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_16
+      rect:
+        serializedVersion: 2
+        x: 35
+        y: 147
+        width: 117
+        height: 123
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: bf3ea5dade0715860800000000000000
+      internalID: 7516913419176043515
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_17
+      rect:
+        serializedVersion: 2
+        x: 156
+        y: 146
+        width: 124
+        height: 132
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5bb14840c88619dd0800000000000000
+      internalID: -2481086969123955787
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_18
+      rect:
+        serializedVersion: 2
+        x: 281
+        y: 147
+        width: 124
+        height: 126
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c69c985624f722880800000000000000
+      internalID: -8637201212195092116
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_19
+      rect:
+        serializedVersion: 2
+        x: 429
+        y: 242
+        width: 40
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: c9cd1003c933325e0800000000000000
+      internalID: -1935646668925838180
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_20
+      rect:
+        serializedVersion: 2
+        x: 456
+        y: 147
+        width: 109
+        height: 114
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b15f91894c61a4a00800000000000000
+      internalID: 741430122277106971
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_21
+      rect:
+        serializedVersion: 2
+        x: 470
+        y: 252
+        width: 18
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6ae4f0d9bb7f7bbf0800000000000000
+      internalID: -308505664285618522
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_22
+      rect:
+        serializedVersion: 2
+        x: 575
+        y: 146
+        width: 115
+        height: 129
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8fe48e5550d116900800000000000000
+      internalID: 675853327835614968
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_23
+      rect:
+        serializedVersion: 2
+        x: 682
+        y: 255
+        width: 18
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5fcede334ce1ad240800000000000000
+      internalID: 4817196579459820789
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_24
+      rect:
+        serializedVersion: 2
+        x: 705
+        y: 261
+        width: 24
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5c8358a4403144360800000000000000
+      internalID: 7152863017322232005
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_25
+      rect:
+        serializedVersion: 2
+        x: 787
+        y: 258
+        width: 14
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 33952d83b93cb9110800000000000000
+      internalID: 1268822791475583283
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_26
+      rect:
+        serializedVersion: 2
+        x: 802
+        y: 247
+        width: 46
+        height: 34
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d322a508e2f8e220800000000000000
+      internalID: 2515527470227268561
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_27
+      rect:
+        serializedVersion: 2
+        x: 422
+        y: 217
+        width: 33
+        height: 19
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: ad8c06d59a5a35c40800000000000000
+      internalID: 5499921716784187610
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_28
+      rect:
+        serializedVersion: 2
+        x: 698
+        y: 147
+        width: 117
+        height: 110
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 8f49277d4b3abb3e0800000000000000
+      internalID: -2036854409350966024
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_29
+      rect:
+        serializedVersion: 2
+        x: 815
+        y: 232
+        width: 27
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 260ba486c8d728de0800000000000000
+      internalID: -1332364497749626782
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_30
+      rect:
+        serializedVersion: 2
+        x: 889
+        y: 227
+        width: 21
+        height: 29
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 96926a3f93aa0c090800000000000000
+      internalID: -8016220170841872023
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_31
+      rect:
+        serializedVersion: 2
+        x: 1153
+        y: 235
+        width: 11
+        height: 12
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 832af329e3a899d10800000000000000
+      internalID: 2132887899882889784
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_32
+      rect:
+        serializedVersion: 2
+        x: 1190
+        y: 228
+        width: 23
+        height: 26
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 4f00b3be85dd50920800000000000000
+      internalID: 2956012104411971828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_33
+      rect:
+        serializedVersion: 2
+        x: 867
+        y: 200
+        width: 23
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 5a14eef3b260a9360800000000000000
+      internalID: 7177055738994246053
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_34
+      rect:
+        serializedVersion: 2
+        x: 956
+        y: 197
+        width: 16
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 68cb1bf0c1d3897a0800000000000000
+      internalID: -6370274482183881594
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_35
+      rect:
+        serializedVersion: 2
+        x: 982
+        y: 141
+        width: 121
+        height: 68
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 052c42a0f633d99f0800000000000000
+      internalID: -460155034917354928
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_36
+      rect:
+        serializedVersion: 2
+        x: 986
+        y: 201
+        width: 25
+        height: 32
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 19f41ee34b6751940800000000000000
+      internalID: 5266245855800807313
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_37
+      rect:
+        serializedVersion: 2
+        x: 1079
+        y: 209
+        width: 18
+        height: 20
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 639a77cbe6616dbe0800000000000000
+      internalID: -1452949164916233930
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_38
+      rect:
+        serializedVersion: 2
+        x: 1125
+        y: 200
+        width: 19
+        height: 21
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2bae8709b067ef760800000000000000
+      internalID: 7493556622031645362
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_39
+      rect:
+        serializedVersion: 2
+        x: 851
+        y: 153
+        width: 24
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1fccbdf9e91ebfe20800000000000000
+      internalID: 3385547616302124273
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_40
+      rect:
+        serializedVersion: 2
+        x: 870
+        y: 143
+        width: 103
+        height: 49
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a049d8955a46f6420800000000000000
+      internalID: 2625427769115120650
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_41
+      rect:
+        serializedVersion: 2
+        x: 1112
+        y: 153
+        width: 103
+        height: 40
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2954ebdc1c99b0a50800000000000000
+      internalID: 6488448745816868242
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_42
+      rect:
+        serializedVersion: 2
+        x: 1154
+        y: 142
+        width: 30
+        height: 17
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 363a7fcf366c108e0800000000000000
+      internalID: -1728882649185410205
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: pig_mud_bubbles_sheet_43
+      rect:
+        serializedVersion: 2
+        x: 1210
+        y: 151
+        width: 24
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 07c4edced4ca388c0800000000000000
+      internalID: -3998162593488417680
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    outline: []
+    customData: 
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: 
+    edges: []
+    weights: []
+    secondaryTextures: []
+    spriteCustomMetadata:
+      entries: []
+    nameFileIdTable:
+      pig_mud_bubbles_sheet_0: -2170651178439498982
+      pig_mud_bubbles_sheet_1: -2538819173256943518
+      pig_mud_bubbles_sheet_10: -8438265312257815465
+      pig_mud_bubbles_sheet_11: 5611739846011134728
+      pig_mud_bubbles_sheet_12: -7037548686986569929
+      pig_mud_bubbles_sheet_13: 8796383799724037564
+      pig_mud_bubbles_sheet_14: -4395891630380649806
+      pig_mud_bubbles_sheet_15: -3191991578098307169
+      pig_mud_bubbles_sheet_16: 7516913419176043515
+      pig_mud_bubbles_sheet_17: -2481086969123955787
+      pig_mud_bubbles_sheet_18: -8637201212195092116
+      pig_mud_bubbles_sheet_19: -1935646668925838180
+      pig_mud_bubbles_sheet_2: -795757766646097547
+      pig_mud_bubbles_sheet_20: 741430122277106971
+      pig_mud_bubbles_sheet_21: -308505664285618522
+      pig_mud_bubbles_sheet_22: 675853327835614968
+      pig_mud_bubbles_sheet_23: 4817196579459820789
+      pig_mud_bubbles_sheet_24: 7152863017322232005
+      pig_mud_bubbles_sheet_25: 1268822791475583283
+      pig_mud_bubbles_sheet_26: 2515527470227268561
+      pig_mud_bubbles_sheet_27: 5499921716784187610
+      pig_mud_bubbles_sheet_28: -2036854409350966024
+      pig_mud_bubbles_sheet_29: -1332364497749626782
+      pig_mud_bubbles_sheet_3: -6645614655078588146
+      pig_mud_bubbles_sheet_30: -8016220170841872023
+      pig_mud_bubbles_sheet_31: 2132887899882889784
+      pig_mud_bubbles_sheet_32: 2956012104411971828
+      pig_mud_bubbles_sheet_33: 7177055738994246053
+      pig_mud_bubbles_sheet_34: -6370274482183881594
+      pig_mud_bubbles_sheet_35: -460155034917354928
+      pig_mud_bubbles_sheet_36: 5266245855800807313
+      pig_mud_bubbles_sheet_37: -1452949164916233930
+      pig_mud_bubbles_sheet_38: 7493556622031645362
+      pig_mud_bubbles_sheet_39: 3385547616302124273
+      pig_mud_bubbles_sheet_4: -4105175331312888360
+      pig_mud_bubbles_sheet_40: 2625427769115120650
+      pig_mud_bubbles_sheet_41: 6488448745816868242
+      pig_mud_bubbles_sheet_42: -1728882649185410205
+      pig_mud_bubbles_sheet_43: -3998162593488417680
+      pig_mud_bubbles_sheet_5: -3127719681735447371
+      pig_mud_bubbles_sheet_6: 3976040127855224836
+      pig_mud_bubbles_sheet_7: 1013789504640049043
+      pig_mud_bubbles_sheet_8: 1601779953403077297
+      pig_mud_bubbles_sheet_9: 8664042047057694783
+  mipmapLimitGroupName: 
+  pSDRemoveMatte: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

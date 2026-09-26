@@ -19,12 +19,7 @@ public static class PopupPillApplier
             if (go.name != popupName || !go.scene.IsValid()) continue;
 
             var img = go.GetComponent<Image>();
-            if (img != null)
-            {
-                img.sprite = pill;
-                img.type = Image.Type.Sliced;
-                img.color = new Color(0.1f, 0.16f, 0.1f, 0.78f);
-            }
+            if (img != null) SeedPanelSkin.ApDungKhung(img);   // [2026-09-25] khung go nau bo goc (thay vien den vuong)
             return;
         }
         Debug.LogWarning($"[PopupPillApplier] Không tìm thấy popup: {popupName}");

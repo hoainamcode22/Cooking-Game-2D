@@ -430,7 +430,7 @@ public class TouristOrderBubbleUI : MonoBehaviour
         var cha = _root.parent as RectTransform;
         if (cha == null) return;
 
-        Vector3 dau = _agent.transform.TransformPoint(dauKhachOffset);
+        Vector3 dau = _agent.DiemDauOnDinh(dauKhachOffset);   // [2026-09-25] khong theo nhip nhun / lac cua khach -> bubble dung yen
         Vector3 sp = _cam.WorldToScreenPoint(dau);
         if (sp.z < 0f) return;
 
